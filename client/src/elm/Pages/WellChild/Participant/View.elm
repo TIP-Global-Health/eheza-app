@@ -7,6 +7,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.IndividualEncounterParticipant.Utils exposing (isDailyEncounterActive)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getWellChildEncountersForParticipant)
+import Backend.Person.Utils exposing (isNewborn)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -109,12 +110,12 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                 |> List.head
                 |> Maybe.map Tuple.first
 
-        ( maybeActiveEncounterId, disableAction ) =
+        ( maybeActiveEncounterId, disableAction, newEncounterType ) =
             Maybe.map (getWellChildEncountersForParticipant db) maybeSessionId
                 |> Maybe.map
                     (\list ->
                         let
-                            ( pediatricCareEncounetrs, newbornEncounters ) =
+                            ( pediatricCareEncounters, chwPediatricCareEncounters ) =
                                 List.partition (Tuple.second >> .encounterType >> (==) PediatricCare) list
 
                             -- Resolve active encounter for person. There should not be more than one.
@@ -124,33 +125,57 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                                     |> Maybe.map Tuple.first
                         in
                         if isChw then
-                            ( resolveActiveEncounter newbornEncounters
-                            , -- We will not allow creating newborn exam encounter if
-                              -- child has performed SPV encounter.
-                              (not <| List.isEmpty pediatricCareEncounetrs)
-                                -- We will not to allow create new / edit existing action, if
-                                -- we already have one encounter (as there can be only one
-                                --  newborn exam encounter), and it is not active from today.
-                                || (List.head newbornEncounters
-                                        |> Maybe.map (Tuple.second >> isDailyEncounterActive currentDate >> not)
-                                        |> Maybe.withDefault False
-                                   )
+                            let
+                                newbornEncounterExists =
+                                    List.any (Tuple.second >> .encounterType >> (==) NewbornExam) chwPediatricCareEncounters
+                            in
+                            ( resolveActiveEncounter chwPediatricCareEncounters
+                            , -- We will not allow create new / edit existing action, if
+                              -- there was CHW pediatric care encounter completed today.
+                              List.filter
+                                (\( _, encounter ) ->
+                                    encounter.startDate == currentDate && encounter.endDate == Just currentDate
+                                )
+                                chwPediatricCareEncounters
+                                |> List.isEmpty
+                                |> not
+                            , if not newbornEncounterExists && newborn then
+                                -- Child is bellow 2 months old and did not
+                                -- have Newborn Exam before.
+                                NewbornExam
+
+                              else
+                                PediatricCareChw
                             )
 
                         else
-                            ( resolveActiveEncounter pediatricCareEncounetrs
-                            , -- We will not to allow create new / edit existing action, if
+                            ( resolveActiveEncounter pediatricCareEncounters
+                            , -- We will not allow create new / edit existing action, if
                               -- there was pediatric care encounter completed today.
                               List.filter
                                 (\( _, encounter ) ->
                                     encounter.startDate == currentDate && encounter.endDate == Just currentDate
                                 )
-                                pediatricCareEncounetrs
+                                pediatricCareEncounters
                                 |> List.isEmpty
                                 |> not
+                            , PediatricCare
                             )
                     )
-                |> Maybe.withDefault ( Nothing, False )
+                |> Maybe.withDefault
+                    ( Nothing
+                    , False
+                    , -- Since there's no participant, we know for sure there are
+                      -- no Pediatric Care encounters of any type.
+                      if not isChw then
+                        PediatricCare
+
+                      else if newborn then
+                        NewbornExam
+
+                      else
+                        PediatricCareChw
+                    )
 
         action =
             maybeActiveEncounterId
@@ -175,12 +200,11 @@ viewWellChildAction language currentDate selectedHealthCenter id isChw db sessio
                             ]
                     )
 
-        newEncounterType =
-            if isChw then
-                NewbornExam
-
-            else
-                PediatricCare
+        newborn =
+            Dict.get id db.people
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen (isNewborn currentDate)
+                |> Maybe.withDefault False
 
         navigateToEncounterAction id_ =
             [ Pages.Page.WellChildEncounterPage id_

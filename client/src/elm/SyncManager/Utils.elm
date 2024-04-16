@@ -6,6 +6,7 @@ import Backend.ChildScoreboardEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
+import Backend.EducationSession.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
@@ -24,10 +25,13 @@ import Backend.ResilienceMessage.Encoder
 import Backend.ResilienceSurvey.Encoder
 import Backend.Session.Encoder
 import Backend.StockUpdate.Encoder
+import Backend.TuberculosisEncounter.Encoder
 import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import Http
+import Json.Decode
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
@@ -179,15 +183,6 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadWhatsApp emptyUploadRec, syncInfoAuthorities )
-
-                        else
-                            noChange
-
-                    SyncUploadWhatsApp record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
                             ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
 
                         else
@@ -197,7 +192,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( SyncDownloadGeneral RemoteData.NotAsked
+                                ( SyncUploadWhatsApp emptyUploadRec
                                 , syncInfoAuthorities
                                 )
 
@@ -215,13 +210,27 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( SyncDownloadGeneral RemoteData.NotAsked
+                                        ( SyncUploadWhatsApp emptyUploadRec
                                         , Just (Zipper.first zipper)
                                         )
 
                             _ ->
                                 -- Still have data to upload.
                                 noChange
+
+                    -- It's important to have Whatsapp uploaded after Authority upload
+                    -- has completed, because Whatsapp record may refer to person
+                    -- that's pending upload at Authority.
+                    SyncUploadWhatsApp record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked
+                            , syncInfoAuthorities
+                            )
+
+                        else
+                            noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -547,6 +556,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityDashboardStats identifier ->
             getIdentifier identifier "statistics"
 
+        BackendAuthorityEducationSession identifier ->
+            getIdentifier identifier "education_session"
+
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
 
@@ -862,6 +874,33 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             getIdentifier identifier "treatment_history"
 
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            getIdentifier identifier "tuberculosis_diagnostics"
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            getIdentifier identifier "tuberculosis_dot"
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            getIdentifier identifier "tuberculosis_encounter"
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            getIdentifier identifier "tuberculosis_follow_up"
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            getIdentifier identifier "tuberculosis_health_education"
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            getIdentifier identifier "tuberculosis_medication"
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            getIdentifier identifier "tuberculosis_referral"
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            getIdentifier identifier "tuberculosis_symptom_review"
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            getIdentifier identifier "tuberculosis_treatment_review"
+
         BackendAuthorityVitals identifier ->
             getIdentifier identifier "vitals"
 
@@ -873,6 +912,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildBCGImmunisation identifier ->
             getIdentifier identifier "well_child_bcg_immunisation"
+
+        BackendAuthorityWellChildCaring identifier ->
+            getIdentifier identifier "well_child_caring"
 
         BackendAuthorityWellChildContributingFactors identifier ->
             getIdentifier identifier "well_child_contributing_factors"
@@ -889,8 +931,14 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityWellChildEncounter identifier ->
             getIdentifier identifier "well_child_encounter"
 
+        BackendAuthorityWellChildFeeding identifier ->
+            getIdentifier identifier "well_child_feeding"
+
         BackendAuthorityWellChildFollowUp identifier ->
             getIdentifier identifier "well_child_follow_up"
+
+        BackendAuthorityWellChildFoodSecurity identifier ->
+            getIdentifier identifier "well_child_food_security"
 
         BackendAuthorityWellChildHeadCircumference identifier ->
             getIdentifier identifier "well_child_head_circumference"
@@ -900,6 +948,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityWellChildHeight identifier ->
             getIdentifier identifier "well_child_height"
+
+        BackendAuthorityWellChildHygiene identifier ->
+            getIdentifier identifier "well_child_hygiene"
 
         BackendAuthorityWellChildHPVImmunisation identifier ->
             getIdentifier identifier "well_child_hpv_immunisation"
@@ -1033,6 +1084,9 @@ getSyncSpeedForSubscriptions model =
                 toFloat syncSpeed.idle
 
         SyncUploadGeneral record ->
+            checkWebData record.backendRemoteData
+
+        SyncUploadWhatsApp record ->
             checkWebData record.backendRemoteData
 
         SyncUploadAuthority record ->
@@ -1245,6 +1299,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityDashboardStats identifier ->
             encode Backend.Dashboard.Encoder.encodeDashboardStatsRaw identifier
+
+        BackendAuthorityEducationSession identifier ->
+            encode Backend.EducationSession.Encoder.encodeEducationSession identifier
 
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
@@ -1561,6 +1618,33 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityTreatmentReview identifier ->
             encode Backend.Measurement.Encoder.encodeTreatmentReview identifier
 
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisDiagnostics identifier
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisDOT identifier
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            encode Backend.TuberculosisEncounter.Encoder.encodeTuberculosisEncounter identifier
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisFollowUp identifier
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisHealthEducation identifier
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisMedication identifier
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisReferral identifier
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisSymptomReview identifier
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeTuberculosisTreatmentReview identifier
+
         BackendAuthorityVitals identifier ->
             encode Backend.Measurement.Encoder.encodeVitals identifier
 
@@ -1572,6 +1656,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildBCGImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildBCGImmunisation identifier
+
+        BackendAuthorityWellChildCaring identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildCaring identifier
 
         BackendAuthorityWellChildContributingFactors identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildContributingFactors identifier
@@ -1588,8 +1675,14 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityWellChildEncounter identifier ->
             encode Backend.WellChildEncounter.Encoder.encodeWellChildEncounter identifier
 
+        BackendAuthorityWellChildFeeding identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildFeeding identifier
+
         BackendAuthorityWellChildFollowUp identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildFollowUp identifier
+
+        BackendAuthorityWellChildFoodSecurity identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildFoodSecurity identifier
 
         BackendAuthorityWellChildHeadCircumference identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHeadCircumference identifier
@@ -1599,6 +1692,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityWellChildHeight identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHeight identifier
+
+        BackendAuthorityWellChildHygiene identifier ->
+            encode Backend.Measurement.Encoder.encodeWellChildHygiene identifier
 
         BackendAuthorityWellChildHPVImmunisation identifier ->
             encode Backend.Measurement.Encoder.encodeWellChildHPVImmunisation identifier
@@ -1773,6 +1869,12 @@ siteFeatureFromString str =
         "stock_management" ->
             Just FeatureStockManagement
 
+        "tuberculosis_management" ->
+            Just FeatureTuberculosisManagement
+
+        "group_education" ->
+            Just FeatureGroupEducation
+
         _ ->
             Nothing
 
@@ -1788,6 +1890,12 @@ siteFeatureToString feature =
 
         FeatureStockManagement ->
             "stock_management"
+
+        FeatureTuberculosisManagement ->
+            "tuberculosis_management"
+
+        FeatureGroupEducation ->
+            "group_education"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -1989,6 +2097,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityDashboardStats identifier ->
             DashboardStatsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityEducationSession identifier ->
+            EducationSessionRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityExposure identifier ->
             ExposureRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2305,6 +2416,33 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityTreatmentReview identifier ->
             TreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityTuberculosisDiagnostics identifier ->
+            TuberculosisDiagnosticsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisDOT identifier ->
+            TuberculosisDOTRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisEncounter identifier ->
+            TuberculosisEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisFollowUp identifier ->
+            TuberculosisFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisHealthEducation identifier ->
+            TuberculosisHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisMedication identifier ->
+            TuberculosisMedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisReferral identifier ->
+            TuberculosisReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisSymptomReview identifier ->
+            TuberculosisSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityTuberculosisTreatmentReview identifier ->
+            TuberculosisTreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityVitals identifier ->
             VitalsRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -2316,6 +2454,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildBCGImmunisation identifier ->
             WellChildBCGImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildCaring identifier ->
+            WellChildCaringRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildContributingFactors identifier ->
             WellChildContributingFactorsRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2332,8 +2473,14 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityWellChildEncounter identifier ->
             WellChildEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityWellChildFeeding identifier ->
+            WellChildFeedingRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityWellChildFollowUp identifier ->
             WellChildFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildFoodSecurity identifier ->
+            WellChildFoodSecurityRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildHeadCircumference identifier ->
             WellChildHeadCircumferenceRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2343,6 +2490,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildHeight identifier ->
             WellChildHeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityWellChildHygiene identifier ->
+            WellChildHygieneRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityWellChildHPVImmunisation identifier ->
             WellChildHPVImmunisationRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2397,6 +2547,29 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+resolveIncidentDetailsMsg : Http.Error -> List Msg
+resolveIncidentDetailsMsg error =
+    case error of
+        Http.BadStatus response ->
+            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
+                Ok decoded ->
+                    if String.startsWith "Could not find UUID" decoded.title then
+                        let
+                            uuidAsString =
+                                String.dropLeft 21 decoded.title
+                        in
+                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
+
+                    else
+                        []
+
+                Err _ ->
+                    []
+
+        _ ->
+            []
 
 
 fileUploadFailureThreshold : Int

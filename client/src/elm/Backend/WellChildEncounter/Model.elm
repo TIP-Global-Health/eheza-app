@@ -18,7 +18,12 @@ type alias WellChildEncounter =
     }
 
 
-emptyWellChildEncounter : IndividualEncounterParticipantId -> NominalDate -> WellChildEncounterType -> Maybe HealthCenterId -> WellChildEncounter
+emptyWellChildEncounter :
+    IndividualEncounterParticipantId
+    -> NominalDate
+    -> WellChildEncounterType
+    -> Maybe HealthCenterId
+    -> WellChildEncounter
 emptyWellChildEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate
@@ -32,6 +37,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
 
 type WellChildEncounterType
     = PediatricCare
+    | PediatricCareChw
     | NewbornExam
 
 
@@ -130,6 +136,10 @@ type alias Model =
     , saveVitaminA : WebData ()
     , saveNextVisit : WebData ()
     , saveNCDA : WebData ()
+    , saveFeeding : WebData ()
+    , saveHygiene : WebData ()
+    , saveFoodSecurity : WebData ()
+    , saveCaring : WebData ()
     }
 
 
@@ -164,6 +174,10 @@ emptyModel =
     , saveVitaminA = NotAsked
     , saveNextVisit = NotAsked
     , saveNCDA = NotAsked
+    , saveFeeding = NotAsked
+    , saveHygiene = NotAsked
+    , saveFoodSecurity = NotAsked
+    , saveCaring = NotAsked
     }
 
 
@@ -194,7 +208,7 @@ type Msg
     | HandleSavedContributingFactors (WebData ())
     | SaveHealthEducation PersonId (Maybe WellChildHealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
@@ -228,3 +242,11 @@ type Msg
     | HandleSavedNextVisit (WebData ())
     | SaveNCDA PersonId (Maybe WellChildNCDAId) NCDAValue
     | HandleSavedNCDA (WebData ())
+    | SaveFeeding PersonId (Maybe WellChildFeedingId) NutritionFeedingValue
+    | HandleSavedFeeding (WebData ())
+    | SaveHygiene PersonId (Maybe WellChildHygieneId) NutritionHygieneValue
+    | HandleSavedHygiene (WebData ())
+    | SaveFoodSecurity PersonId (Maybe WellChildFoodSecurityId) NutritionFoodSecurityValue
+    | HandleSavedFoodSecurity (WebData ())
+    | SaveCaring PersonId (Maybe WellChildCaringId) NutritionCaringValue
+    | HandleSavedCaring (WebData ())

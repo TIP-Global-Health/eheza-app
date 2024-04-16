@@ -396,6 +396,54 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveFeeding personId valueId value ->
+            ( { model | saveFeeding = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildFeedingEndpoint HandleSavedFeeding
+            , []
+            )
+
+        HandleSavedFeeding data ->
+            ( { model | saveFeeding = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveHygiene personId valueId value ->
+            ( { model | saveHygiene = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildHygieneEndpoint HandleSavedHygiene
+            , []
+            )
+
+        HandleSavedHygiene data ->
+            ( { model | saveHygiene = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFoodSecurity personId valueId value ->
+            ( { model | saveFoodSecurity = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildFoodSecurityEndpoint HandleSavedFoodSecurity
+            , []
+            )
+
+        HandleSavedFoodSecurity data ->
+            ( { model | saveFoodSecurity = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveCaring personId valueId value ->
+            ( { model | saveCaring = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value wellChildCaringEndpoint HandleSavedCaring
+            , []
+            )
+
+        HandleSavedCaring data ->
+            ( { model | saveCaring = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
 
 updateEncounter :
     NominalDate

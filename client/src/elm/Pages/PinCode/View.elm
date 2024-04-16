@@ -4,7 +4,7 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.Utils exposing (stockManagementEnabled)
@@ -58,7 +58,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                                     |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
                                     |> Maybe.withDefault False
                     in
-                    ( viewLoggedInHeader language nurse selectedAuthorizedLocation
+                    ( viewLoggedInHeader language isChw selectedAuthorizedLocation
                     , viewLoggedInContent language
                         currentTime
                         features
@@ -81,15 +81,15 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
         |> div [ class "ui basic segment page-pincode" ]
 
 
-viewLoggedInHeader : Language -> Nurse -> Bool -> Html Msg
-viewLoggedInHeader language nurse selectedAuthorizedLocation =
+viewLoggedInHeader : Language -> Bool -> Bool -> Html Msg
+viewLoggedInHeader language isChw selectedAuthorizedLocation =
     if selectedAuthorizedLocation then
         viewLogo language
 
     else
         let
             label =
-                if isCommunityHealthWorker nurse then
+                if isChw then
                     Translate.Village
 
                 else
@@ -205,6 +205,9 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
             currentDate =
                 fromLocalDateTime currentTime
 
+            isLabTech =
+                isLabTechnician nurse
+
             deviceInfo =
                 deviceName
                     |> Maybe.map
@@ -228,7 +231,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                 div [ class "general-info" ]
                     [ deviceInfo
                     , loggedInAs
-                    , viewLocationName nurse ( healthCenterId, villageId ) db
+                    , viewLocationName isChw ( healthCenterId, villageId ) db
                     ]
 
             viewCard activity =
@@ -247,7 +250,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
                             MenuDashboards ->
                                 ( "dashboards"
-                                , UserPage <| DashboardPage MainPage
+                                , UserPage <| DashboardPage PageMain
                                 )
 
                             MenuCaseManagement ->
@@ -284,27 +287,33 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                     (SendOutMsg <| SetActivePage navigationPage)
 
             activities =
-                [ MenuClinical
-                , MenuParticipantDirectory
-                , MenuDashboards
-                , MenuCaseManagement
-                , MenuDeviceStatus
-                ]
-                    ++ (if nurse.resilienceProgramEnabled then
-                            [ MenuWellbeing ]
+                if isLabTech then
+                    [ MenuCaseManagement
+                    , MenuDeviceStatus
+                    ]
 
-                        else
-                            []
-                       )
-                    ++ (if
-                            stockManagementEnabled features
-                                && not isChw
-                        then
-                            [ MenuStockManagement ]
+                else
+                    [ MenuClinical
+                    , MenuParticipantDirectory
+                    , MenuDashboards
+                    , MenuCaseManagement
+                    , MenuDeviceStatus
+                    ]
+                        ++ (if nurse.resilienceProgramEnabled then
+                                [ MenuWellbeing ]
 
-                        else
-                            []
-                       )
+                            else
+                                []
+                           )
+                        ++ (if
+                                stockManagementEnabled features
+                                    && not isChw
+                            then
+                                [ MenuStockManagement ]
+
+                            else
+                                []
+                           )
 
             cards =
                 div [ class "wrap-cards" ]
@@ -326,7 +335,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
     else
         let
             locationOptions =
-                if isCommunityHealthWorker nurse then
+                if isChw then
                     selectVillageOptions language nurse db
 
                 else
@@ -495,11 +504,11 @@ resolveTomorrow8AmUTC =
         >> Time.Extra.add Time.Extra.Hour 8 Time.utc
 
 
-viewLocationName : Nurse -> ( Maybe HealthCenterId, Maybe VillageId ) -> ModelIndexedDb -> Html Msg
-viewLocationName nurse ( healthCenterId, villageId ) db =
+viewLocationName : Bool -> ( Maybe HealthCenterId, Maybe VillageId ) -> ModelIndexedDb -> Html Msg
+viewLocationName isChw ( healthCenterId, villageId ) db =
     let
         locationName =
-            if isCommunityHealthWorker nurse then
+            if isChw then
                 villageId
                     |> Maybe.andThen
                         (\id ->

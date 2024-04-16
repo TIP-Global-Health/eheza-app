@@ -6,6 +6,7 @@ import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
@@ -22,6 +23,7 @@ import Backend.Relationship.Model exposing (Relationship)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
 import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
@@ -34,6 +36,7 @@ import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
+import Translate.Model exposing (Language)
 
 
 {-| The "general" entities are ones that currently don't belong to a specific
@@ -90,6 +93,7 @@ type BackendAuthorityEntity
     | BackendAuthorityCovidTesting (BackendEntity CovidTesting)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
+    | BackendAuthorityEducationSession (BackendEntity EducationSession)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
@@ -195,19 +199,32 @@ type BackendAuthorityEntity
     | BackendAuthorityTravelHistory (BackendEntity TravelHistory)
     | BackendAuthorityTreatmentOngoing (BackendEntity TreatmentOngoing)
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
+    | BackendAuthorityTuberculosisDiagnostics (BackendEntity TuberculosisDiagnostics)
+    | BackendAuthorityTuberculosisDOT (BackendEntity TuberculosisDOT)
+    | BackendAuthorityTuberculosisEncounter (BackendEntity TuberculosisEncounter)
+    | BackendAuthorityTuberculosisFollowUp (BackendEntity TuberculosisFollowUp)
+    | BackendAuthorityTuberculosisHealthEducation (BackendEntity TuberculosisHealthEducation)
+    | BackendAuthorityTuberculosisMedication (BackendEntity TuberculosisMedication)
+    | BackendAuthorityTuberculosisReferral (BackendEntity TuberculosisReferral)
+    | BackendAuthorityTuberculosisSymptomReview (BackendEntity TuberculosisSymptomReview)
+    | BackendAuthorityTuberculosisTreatmentReview (BackendEntity TuberculosisTreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
     | BackendAuthorityWellChildAlbendazole (BackendEntity WellChildAlbendazole)
     | BackendAuthorityWellChildBCGImmunisation (BackendEntity WellChildBCGImmunisation)
+    | BackendAuthorityWellChildCaring (BackendEntity WellChildCaring)
     | BackendAuthorityWellChildContributingFactors (BackendEntity WellChildContributingFactors)
     | BackendAuthorityWellChildDTPImmunisation (BackendEntity WellChildDTPImmunisation)
     | BackendAuthorityWellChildDTPStandaloneImmunisation (BackendEntity WellChildDTPStandaloneImmunisation)
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
+    | BackendAuthorityWellChildFeeding (BackendEntity WellChildFeeding)
     | BackendAuthorityWellChildFollowUp (BackendEntity WellChildFollowUp)
+    | BackendAuthorityWellChildFoodSecurity (BackendEntity WellChildFoodSecurity)
     | BackendAuthorityWellChildHeadCircumference (BackendEntity WellChildHeadCircumference)
     | BackendAuthorityWellChildHealthEducation (BackendEntity WellChildHealthEducation)
     | BackendAuthorityWellChildHeight (BackendEntity WellChildHeight)
+    | BackendAuthorityWellChildHygiene (BackendEntity WellChildHygiene)
     | BackendAuthorityWellChildHPVImmunisation (BackendEntity WellChildHPVImmunisation)
     | BackendAuthorityWellChildIPVImmunisation (BackendEntity WellChildIPVImmunisation)
     | BackendAuthorityWellChildMebendezole (BackendEntity WellChildMebendezole)
@@ -549,6 +566,9 @@ type IndexDbQueryType
     | IndexDbQueryRemoveUploadPhotos (List Int)
       -- Reports the number of entries at shardChanges table.
     | IndexDbQueryGetTotalEntriesToUpload
+      -- Pulls Entity from Shards table by UUID. We use so we can reslove
+      -- `Could not find UUID` error without performing remote debug on device.
+    | IndexDbQueryGetShardsEntityByUuid String
 
 
 type IndexDbQueryTypeResult
@@ -562,6 +582,8 @@ type IndexDbQueryTypeResult
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | IndexDbQueryGetTotalEntriesToUploadResult Int
+      -- JSON.stringify representation of pulled entity.
+    | IndexDbQueryGetShardsEntityByUuidResult String
 
 
 type UploadFileError
@@ -630,6 +652,7 @@ type alias BackendWhatsAppEntity =
     { localId : Int
     , personId : String
     , dateMeasured : NominalDate
+    , language : Language
     , reportType : ReportType
     , phoneNumber : String
     , screenshot : Int
@@ -691,6 +714,8 @@ type SiteFeature
     = FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
+    | FeatureTuberculosisManagement
+    | FeatureGroupEducation
 
 
 type Msg
@@ -729,6 +754,7 @@ type Msg
     | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
+    | BackendReportIncidentDetails String
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value

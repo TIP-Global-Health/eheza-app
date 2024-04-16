@@ -1,6 +1,7 @@
 module Backend.Measurement.Decoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Decoder exposing (decodeCounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -60,6 +61,11 @@ decodeNCDMeasurement =
 decodeChildScoreboardMeasurement : Decoder value -> Decoder (Measurement ChildScoreboardEncounterId value)
 decodeChildScoreboardMeasurement =
     decodeMeasurement "child_scoreboard_encounter"
+
+
+decodeTuberculosisMeasurement : Decoder value -> Decoder (Measurement TuberculosisEncounterId value)
+decodeTuberculosisMeasurement =
+    decodeMeasurement "tuberculosis_encounter"
 
 
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
@@ -203,9 +209,11 @@ decodeFollowUpMeasurements =
         |> optional "acute_illness_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessFollowUp)) Dict.empty
         |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
         |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
+        |> optional "tuberculosis_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeTuberculosisFollowUp)) Dict.empty
         |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
         |> optional "prenatal_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalLabsResults)) Dict.empty
         |> optional "ncd_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodeNCDLabsResults)) Dict.empty
+        |> optional "well_child_next_visit" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildNextVisit)) Dict.empty
 
 
 decodeHomeVisitMeasurements : Decoder HomeVisitMeasurements
@@ -248,6 +256,10 @@ decodeWellChildMeasurements =
         |> optional "well_child_pcv13_immunisation" (decodeHead decodeWellChildPCV13Immunisation) Nothing
         |> optional "well_child_rotarix_immunisation" (decodeHead decodeWellChildRotarixImmunisation) Nothing
         |> optional "well_child_ncda" (decodeHead decodeWellChildNCDA) Nothing
+        |> optional "well_child_feeding" (decodeHead decodeWellChildFeeding) Nothing
+        |> optional "well_child_hygiene" (decodeHead decodeWellChildHygiene) Nothing
+        |> optional "well_child_food_security" (decodeHead decodeWellChildFoodSecurity) Nothing
+        |> optional "well_child_caring" (decodeHead decodeWellChildCaring) Nothing
 
 
 decodeNCDMeasurements : Decoder NCDMeasurements
@@ -289,6 +301,19 @@ decodeChildScoreboardMeasurements =
         |> optional "child_scoreboard_opv_iz" (decodeHead decodeChildScoreboardOPVImmunisation) Nothing
         |> optional "child_scoreboard_pcv13_iz" (decodeHead decodeChildScoreboardPCV13Immunisation) Nothing
         |> optional "child_scoreboard_rotarix_iz" (decodeHead decodeChildScoreboardRotarixImmunisation) Nothing
+
+
+decodeTuberculosisMeasurements : Decoder TuberculosisMeasurements
+decodeTuberculosisMeasurements =
+    succeed TuberculosisMeasurements
+        |> optional "tuberculosis_diagnostics" (decodeHead decodeTuberculosisDiagnostics) Nothing
+        |> optional "tuberculosis_dot" (decodeHead decodeTuberculosisDOT) Nothing
+        |> optional "tuberculosis_followUp" (decodeHead decodeTuberculosisFollowUp) Nothing
+        |> optional "tuberculosis_health_education" (decodeHead decodeTuberculosisHealthEducation) Nothing
+        |> optional "tuberculosis_medication" (decodeHead decodeTuberculosisMedication) Nothing
+        |> optional "tuberculosis_referral" (decodeHead decodeTuberculosisReferral) Nothing
+        |> optional "tuberculosis_symptom_review" (decodeHead decodeTuberculosisSymptomReview) Nothing
+        |> optional "tuberculosis_treatment_review" (decodeHead decodeTuberculosisTreatmentReview) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -475,6 +500,11 @@ decodeBloodGpRsTestValue =
     succeed BloodGpRsTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "blood_group" (nullable decodeBloodGroup) Nothing
         |> optional "rhesus" (nullable decodeRhesus) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
@@ -512,6 +542,11 @@ decodeHemoglobinTestValue =
     succeed HemoglobinTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "hemoglobin_count" (nullable decodeFloat) Nothing
 
 
@@ -525,6 +560,11 @@ decodeHepatitisBTestValue =
     succeed HepatitisBTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
 
@@ -539,6 +579,11 @@ decodeHIVTestValue =
     succeed HIVTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
@@ -553,6 +598,11 @@ decodeHIVPCRTestValue =
     succeed HIVPCRTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "hiv_viral_load_status" (nullable decodeViralLoadStatus) Nothing
         |> optional "hiv_viral_load" (nullable decodeFloat) Nothing
 
@@ -567,6 +617,11 @@ decodePartnerHIVTestValue =
     succeed PartnerHIVTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
@@ -610,6 +665,11 @@ decodeMalariaTestValue =
     succeed MalariaTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "blood_smear_result" decodeBloodSmearResult BloodSmearNotTaken
 
@@ -670,6 +730,11 @@ decodeSyphilisTestValue =
     succeed SyphilisTestValue
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
         |> optional "illness_symptoms" (nullable (decodeEverySet decodeIllnessSymptom)) Nothing
         |> optional "originating_encounter" (nullable decodeEntityUuid) Nothing
@@ -697,6 +762,11 @@ decodeUrineDipstickTestValue =
         |> optional "test_variant" (nullable decodeTestVariant) Nothing
         |> required "test_execution_note" decodeTestExecutionNote
         |> optional "execution_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_prerequisites"
+            (nullable
+                (decodeWithFallback prerequisitesDefaultNonRDT (decodeEverySet decodeTestPrerequisite))
+            )
+            (Just prerequisitesDefaultNonRDT)
         |> optional "protein" (nullable decodeProteinValue) Nothing
         |> optional "ph" (nullable decodePHValue) Nothing
         |> optional "glucose" (nullable decodeGlucoseValue) Nothing
@@ -859,6 +929,9 @@ decodeTestExecutionNote =
                     "to-be-done-at-hospital" ->
                         succeed TestNoteToBeDoneAtHospital
 
+                    "run-confirmed-by-lab-tech" ->
+                        succeed TestNoteRunConfirmedByLabTech
+
                     _ ->
                         fail <|
                             note
@@ -877,6 +950,16 @@ decodeTestResult =
             )
 
 
+prerequisitesDefaultRDT : EverySet TestPrerequisite
+prerequisitesDefaultRDT =
+    EverySet.singleton PrerequisiteImmediateResult
+
+
+prerequisitesDefaultNonRDT : EverySet TestPrerequisite
+prerequisitesDefaultNonRDT =
+    EverySet.singleton NoTestPrerequisites
+
+
 decodePrenatalLabsResults : Decoder PrenatalLabsResults
 decodePrenatalLabsResults =
     decodePrenatalMeasurement decodeLabsResultsValue
@@ -889,6 +972,8 @@ decodeLabsResultsValue =
         |> required "completed_tests" (decodeEverySet decodeLaboratoryTest)
         |> required "date_concluded" Gizra.NominalDate.decodeYYYYMMDD
         |> optional "patient_notified" bool False
+        |> optional "review_state" (nullable decodeLabsResultsReviewState) Nothing
+        |> optional "tests_with_follow_up" (nullable (decodeEverySet decodeLaboratoryTest)) Nothing
 
 
 decodeLaboratoryTest : Decoder LaboratoryTest
@@ -897,6 +982,17 @@ decodeLaboratoryTest =
         |> andThen
             (\s ->
                 laboratoryTestFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is not a recognized LaboratoryTest")
+            )
+
+
+decodeLabsResultsReviewState : Decoder LabsResultsReviewState
+decodeLabsResultsReviewState =
+    string
+        |> andThen
+            (\s ->
+                reviewStateFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized LaboratoryTest")
             )
@@ -2340,22 +2436,22 @@ decodeContributingFactorsValue =
 
 decodeFollowUp : Decoder FollowUp
 decodeFollowUp =
-    decodeGroupMeasurement decodeFollowUpValue
+    decodeGroupMeasurement decodeNutritionFollowUpValue
 
 
 decodeNutritionFollowUp : Decoder NutritionFollowUp
 decodeNutritionFollowUp =
-    decodeNutritionMeasurement decodeFollowUpValue
+    decodeNutritionMeasurement decodeNutritionFollowUpValue
 
 
 decodeWellChildFollowUp : Decoder WellChildFollowUp
 decodeWellChildFollowUp =
-    decodeWellChildMeasurement decodeFollowUpValue
+    decodeWellChildMeasurement decodeNutritionFollowUpValue
 
 
-decodeFollowUpValue : Decoder FollowUpValue
-decodeFollowUpValue =
-    succeed FollowUpValue
+decodeNutritionFollowUpValue : Decoder NutritionFollowUpValue
+decodeNutritionFollowUpValue =
+    succeed NutritionFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
         |> custom decodeNutritionAssessment
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
@@ -2370,16 +2466,17 @@ decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
 decodeAcuteIllnessFollowUpValue =
     succeed AcuteIllnessFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "acute_illness_diagnosis" (nullable decodeAcuteIllnessDiagnosis) Nothing
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeNutritionFeeding : Decoder NutritionFeeding
 decodeNutritionFeeding =
-    decodeHomeVisitMeasurement decodeFeedingValue
+    decodeHomeVisitMeasurement decodeNutritionFeedingValue
 
 
-decodeFeedingValue : Decoder NutritionFeedingValue
-decodeFeedingValue =
+decodeNutritionFeedingValue : Decoder NutritionFeedingValue
+decodeNutritionFeedingValue =
     succeed NutritionFeedingValue
         |> required "nutrition_feeding_signs" (decodeEverySet decodeNutritionFeedingSign)
         |> required "supplement_type" decodeNutritionSupplementType
@@ -2556,11 +2653,11 @@ decodeWaterPreparationOption =
 
 decodeNutritionFoodSecurity : Decoder NutritionFoodSecurity
 decodeNutritionFoodSecurity =
-    decodeHomeVisitMeasurement decodeFoodSecurityValue
+    decodeHomeVisitMeasurement decodeNutritionFoodSecurityValue
 
 
-decodeFoodSecurityValue : Decoder NutritionFoodSecurityValue
-decodeFoodSecurityValue =
+decodeNutritionFoodSecurityValue : Decoder NutritionFoodSecurityValue
+decodeNutritionFoodSecurityValue =
     succeed NutritionFoodSecurityValue
         |> required "food_security_signs" (decodeEverySet decodeNutritionFoodSecuritySign)
         |> required "main_income_source" decodeMainIncomeSource
@@ -3798,12 +3895,16 @@ decodeAcuteIllnessMuac =
 
 decodeTreatmentOngoing : Decoder TreatmentOngoing
 decodeTreatmentOngoing =
+    decodeAcuteIllnessMeasurement decodeTreatmentOngoingValue
+
+
+decodeTreatmentOngoingValue : Decoder TreatmentOngoingValue
+decodeTreatmentOngoingValue =
     succeed TreatmentOngoingValue
         |> required "treatment_ongoing" (decodeEverySet decodeTreatmentOngoingSign)
         |> required "reason_for_not_taking" decodeReasonForNotTaking
         |> required "missed_doses" decodeInt
         |> required "adverse_events" (decodeEverySet decodeAdverseEvent)
-        |> decodeAcuteIllnessMeasurement
 
 
 decodeTreatmentOngoingSign : Decoder TreatmentOngoingSign
@@ -4659,7 +4760,9 @@ decodeNextVisitValue : Decoder NextVisitValue
 decodeNextVisitValue =
     succeed NextVisitValue
         |> required "immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> optional "asap_immunisation_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
         |> required "pediatric_visit_date" (nullable Gizra.NominalDate.decodeYYYYMMDD)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
 
 
 decodeWellChildBCGImmunisation : Decoder WellChildBCGImmunisation
@@ -5308,3 +5411,155 @@ decodeChildScoreboardPCV13Immunisation =
 decodeChildScoreboardRotarixImmunisation : Decoder ChildScoreboardRotarixImmunisation
 decodeChildScoreboardRotarixImmunisation =
     decodeChildScoreboardMeasurement decodeVaccinationValue
+
+
+decodeWellChildFeeding : Decoder WellChildFeeding
+decodeWellChildFeeding =
+    decodeWellChildMeasurement decodeNutritionFeedingValue
+
+
+decodeWellChildHygiene : Decoder WellChildHygiene
+decodeWellChildHygiene =
+    decodeWellChildMeasurement decodeNutritionHygieneValue
+
+
+decodeWellChildFoodSecurity : Decoder WellChildFoodSecurity
+decodeWellChildFoodSecurity =
+    decodeWellChildMeasurement decodeNutritionFoodSecurityValue
+
+
+decodeWellChildCaring : Decoder WellChildCaring
+decodeWellChildCaring =
+    decodeWellChildMeasurement decodeNutritionCaringValue
+
+
+decodeTuberculosisDiagnostics : Decoder TuberculosisDiagnostics
+decodeTuberculosisDiagnostics =
+    decodeTuberculosisMeasurement decodeTuberculosisDiagnosticsValue
+
+
+decodeTuberculosisDiagnosticsValue : Decoder TuberculosisDiagnosticsValue
+decodeTuberculosisDiagnosticsValue =
+    field "tuberculosis_diagnosis" decodeTuberculosisDiagnosis
+
+
+decodeTuberculosisDiagnosis : Decoder TuberculosisDiagnosis
+decodeTuberculosisDiagnosis =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisDiagnosisFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDiagnosis" |> fail)
+            )
+
+
+decodeTuberculosisDOT : Decoder TuberculosisDOT
+decodeTuberculosisDOT =
+    decodeTuberculosisMeasurement decodeTuberculosisDOTValue
+
+
+decodeTuberculosisDOTValue : Decoder TuberculosisDOTValue
+decodeTuberculosisDOTValue =
+    succeed TuberculosisDOTValue
+        |> required "dot_signs" decodeTuberculosisDOTSign
+        |> required "dot_meds_distribution_sign" decodeTuberculosisDOTSign
+
+
+decodeTuberculosisDOTSign : Decoder TuberculosisDOTSign
+decodeTuberculosisDOTSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisDOTSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisDOTSign" |> fail)
+            )
+
+
+decodeTuberculosisFollowUp : Decoder TuberculosisFollowUp
+decodeTuberculosisFollowUp =
+    decodeTuberculosisMeasurement decodeFollowUpValue
+
+
+decodeFollowUpValue : Decoder FollowUpValue
+decodeFollowUpValue =
+    succeed FollowUpValue
+        |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
+        |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+
+
+decodeTuberculosisHealthEducation : Decoder TuberculosisHealthEducation
+decodeTuberculosisHealthEducation =
+    decodeTuberculosisMeasurement decodeTuberculosisHealthEducationValue
+
+
+decodeTuberculosisHealthEducationValue : Decoder TuberculosisHealthEducationValue
+decodeTuberculosisHealthEducationValue =
+    decodeEverySet decodeTuberculosisHealthEducationSign
+        |> field "tb_health_education_signs"
+
+
+decodeTuberculosisHealthEducationSign : Decoder TuberculosisHealthEducationSign
+decodeTuberculosisHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisHealthEducationSign" |> fail)
+            )
+
+
+decodeTuberculosisMedication : Decoder TuberculosisMedication
+decodeTuberculosisMedication =
+    decodeTuberculosisMeasurement decodeTuberculosisMedicationValue
+
+
+decodeTuberculosisMedicationValue : Decoder TuberculosisMedicationValue
+decodeTuberculosisMedicationValue =
+    decodeEverySet decodeTuberculosisPrescribedMedication
+        |> field "prescribed_tb_medications"
+
+
+decodeTuberculosisPrescribedMedication : Decoder TuberculosisPrescribedMedication
+decodeTuberculosisPrescribedMedication =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisPrescribedMedicationFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisPrescribedMedication" |> fail)
+            )
+
+
+decodeTuberculosisReferral : Decoder TuberculosisReferral
+decodeTuberculosisReferral =
+    decodeTuberculosisMeasurement decodeSendToHCValue
+
+
+decodeTuberculosisSymptomReview : Decoder TuberculosisSymptomReview
+decodeTuberculosisSymptomReview =
+    decodeTuberculosisMeasurement decodeTuberculosisSymptomReviewValue
+
+
+decodeTuberculosisSymptomReviewValue : Decoder TuberculosisSymptomReviewValue
+decodeTuberculosisSymptomReviewValue =
+    decodeEverySet decodeTuberculosisSymptom
+        |> field "tuberculosis_symptoms"
+
+
+decodeTuberculosisSymptom : Decoder TuberculosisSymptom
+decodeTuberculosisSymptom =
+    string
+        |> andThen
+            (\result ->
+                tuberculosisSymptomFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized TuberculosisSymptom" |> fail)
+            )
+
+
+decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
+decodeTuberculosisTreatmentReview =
+    decodeTuberculosisMeasurement decodeTreatmentOngoingValue

@@ -2,8 +2,8 @@ module Pages.Prenatal.Outcome.Update exposing (update)
 
 import App.Model
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Decoder exposing (pregnancyOutcomeFromString)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..))
+import Backend.IndividualEncounterParticipant.Utils exposing (pregnancyOutcomeFromString)
 import Backend.Model
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Prenatal.Outcome.Model exposing (..)

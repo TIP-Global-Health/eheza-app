@@ -22,8 +22,8 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( viewContributingFactorsForm
-        , viewFollowUpForm
         , viewHealthEducationForm
+        , viewNutritionFollowUpForm
         , viewSendToHealthCenterForm
         )
 import Pages.NextSteps.Model exposing (Model, Msg(..))
@@ -194,8 +194,8 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                     |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
 
                             Just NextStepFollowUp ->
-                                followUpFormWithDefault model.followUpForm followUpValue
-                                    |> viewFollowUpForm language currentDate SetFollowUpOption
+                                nutritionFollowUpFormWithDefault model.followUpForm followUpValue
+                                    |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 
                             Nothing ->
                                 emptyNode
@@ -261,7 +261,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                                                         form =
                                                             model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })
                                                     in
-                                                    toFollowUpValueWithDefault followUpValue form
+                                                    toNutritionFollowUpValueWithDefault followUpValue form
                                                         |> Maybe.map
                                                             (\value ->
                                                                 let

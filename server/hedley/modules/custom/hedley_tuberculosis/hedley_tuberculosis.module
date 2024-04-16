@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Tuberculosis feature.
+ */
+
+include_once 'hedley_tuberculosis.features.inc';

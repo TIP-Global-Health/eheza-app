@@ -92,7 +92,7 @@ type Msg
     | SaveContributingFactors PersonId (Maybe ( WellChildContributingFactorsId, WellChildContributingFactors )) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe ( WellChildFollowUpId, WellChildFollowUp )) (EverySet NutritionAssessment) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
-    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
+    | SaveNextVisit PersonId (Maybe ( WellChildNextVisitId, WellChildNextVisit )) (Maybe NominalDate) (Maybe NominalDate) (Maybe NominalDate) (Maybe Pages.WellChild.Activity.Types.NextStepsTask)
       -- PHOTO
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
@@ -108,6 +108,23 @@ type Msg
     | SetNCDAFormStep NCDAStep
     | SetNCDAHelperState (Maybe NCDASign)
     | SaveNCDA PersonId (Maybe ( WellChildNCDAId, WellChildNCDA ))
+      -- HOME VISIT
+    | SetActiveHomeVisitTask Pages.WellChild.Activity.Types.HomeVisitTask
+    | SetFeedingBoolInput (Bool -> NutritionFeedingForm -> NutritionFeedingForm) Bool
+    | SetNutritionSupplementType NutritionSupplementType
+    | SetSachetsPerDay String
+    | SaveFeeding PersonId (Maybe ( WellChildFeedingId, WellChildFeeding )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetHygieneBoolInput (Bool -> NutritionHygieneForm -> NutritionHygieneForm) Bool
+    | SetMainWaterSource MainWaterSource
+    | SaveHygiene PersonId (Maybe ( WellChildHygieneId, WellChildHygiene )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetFoodSecurityBoolInput (Bool -> NutritionFoodSecurityForm -> NutritionFoodSecurityForm) Bool
+    | SetMainIncomeSource MainIncomeSource
+    | SetWaterPreparationOption WaterPreparationOption
+    | SaveFoodSecurity PersonId (Maybe ( WellChildFoodSecurityId, WellChildFoodSecurity )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
+    | SetParentsAliveAndHealthy Bool
+    | SetChildClean Bool
+    | SetNutritionCaringOption CaringOption
+    | SaveNutritionCaring PersonId (Maybe ( WellChildCaringId, WellChildCaring )) (Maybe Pages.WellChild.Activity.Types.HomeVisitTask)
 
 
 type alias Model =
@@ -120,6 +137,7 @@ type alias Model =
     , nextStepsData : NextStepsData
     , photoForm : PhotoForm
     , ncdaData : NCDAData
+    , homeVisitData : HomeVisitData
     , warningPopupState : Maybe WarningPopupType
     }
 
@@ -135,6 +153,7 @@ emptyModel =
     , nextStepsData = emptyNextStepsData
     , photoForm = emptyPhotoForm
     , ncdaData = emptyNCDAData
+    , homeVisitData = emptyHomeVisitData
     , warningPopupState = Nothing
     }
 
@@ -401,7 +420,7 @@ type alias NextStepsData =
     { contributingFactorsForm : ContributingFactorsForm
     , healthEducationForm : HealthEducationForm
     , sendToHCForm : SendToHCForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , nextVisitForm : NextVisitForm
     , activeTask : Maybe Pages.WellChild.Activity.Types.NextStepsTask
     }
@@ -411,7 +430,7 @@ emptyNextStepsData : NextStepsData
 emptyNextStepsData =
     { contributingFactorsForm = emptyContributingFactorsForm
     , healthEducationForm = emptyHealthEducationForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , sendToHCForm = emptySendToHCForm
     , nextVisitForm = emptyNextVisitForm
     , activeTask = Nothing
@@ -420,10 +439,31 @@ emptyNextStepsData =
 
 type alias NextVisitForm =
     { immunisationDate : Maybe NominalDate
+    , asapImmunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
+    , resolutionDate : Maybe NominalDate
     }
 
 
 emptyNextVisitForm : NextVisitForm
 emptyNextVisitForm =
-    NextVisitForm Nothing Nothing
+    NextVisitForm Nothing Nothing Nothing Nothing
+
+
+type alias HomeVisitData =
+    { feedingForm : NutritionFeedingForm
+    , hygieneForm : NutritionHygieneForm
+    , foodSecurityForm : NutritionFoodSecurityForm
+    , caringForm : NutritionCaringForm
+    , activeTask : Maybe Pages.WellChild.Activity.Types.HomeVisitTask
+    }
+
+
+emptyHomeVisitData : HomeVisitData
+emptyHomeVisitData =
+    { feedingForm = emptyNutritionFeedingForm
+    , hygieneForm = emptyNutritionHygieneForm
+    , foodSecurityForm = emptyNutritionFoodSecurityForm
+    , caringForm = emptyNutritionCaringForm
+    , activeTask = Nothing
+    }

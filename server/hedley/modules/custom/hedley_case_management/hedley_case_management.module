@@ -25,8 +25,15 @@ function hedley_case_management_node_insert($node) {
     return;
   }
 
+  // Acute Illness follow up where diagnosis is Tuberculosis suspect affects
+  // Tuberculosis case management instead of Acute Illness case management.
+  if ($node->type == 'acute_illness_follow_up') {
+    $node->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'] == 'tuberculosis-suspect' ?
+      hedley_case_management_handle_tuberculosis_insert_trigger($node) :
+      hedley_case_management_handle_acute_illness_insert_trigger($node);
+  }
+
   $acute_illness_triggers = [
-    'acute_illness_follow_up',
     'acute_illness_encounter',
   ];
   if (in_array($node->type, $acute_illness_triggers)) {
@@ -40,6 +47,20 @@ function hedley_case_management_node_insert($node) {
   ];
   if (in_array($node->type, $prenatal_triggers)) {
     hedley_case_management_handle_prenatal_insert_trigger($node);
+    return;
+  }
+
+  if ($node->type == 'well_child_encounter') {
+    hedley_case_management_handle_immunization_insert_trigger($node);
+    return;
+  }
+
+  $tuberculosis_triggers = [
+    'tuberculosis_follow_up',
+    'tuberculosis_encounter',
+  ];
+  if (in_array($node->type, $tuberculosis_triggers)) {
+    hedley_case_management_handle_tuberculosis_insert_trigger($node);
   }
 }
 
@@ -257,6 +278,150 @@ function hedley_case_management_resolve_prenatal_follow_ups($person_id, $to_nid 
 }
 
 /**
+ * Processes create events that trigger immunization follow-ups resolution.
+ *
+ * @param object $node
+ *   Created node.
+ */
+function hedley_case_management_handle_immunization_insert_trigger($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $encounter_type = $wrapper->field_well_child_encounter_type->value();
+
+  if ($encounter_type == 'newborn-exam') {
+    // Newborn exam happens once, only for child younger
+    // than 2 months old.
+    // This type of exam does not have Next Visit activity, so
+    // it should not resolve immunization follow-ups.
+    return;
+  }
+
+  $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+
+  if (empty($person_id)) {
+    // Failed to load required data.
+    return;
+  }
+
+  // Trigger follow-ups resolution.
+  hedley_case_management_resolve_immunization_follow_ups($person_id, $node->nid);
+}
+
+/**
+ * Marks immunization follow-ups belonging to person as resolved.
+ *
+ * @param int $person_id
+ *   Person ID.
+ * @param int $to_nid
+ *   IDs of loaded follow-ups should be below this node ID.
+ * @param int $limit
+ *   Maximal number of follow-ups to load. Defaults to 200.
+ */
+function hedley_case_management_resolve_immunization_follow_ups($person_id, $to_nid, $limit = 200) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'well_child_next_visit')
+    ->propertyCondition('nid', $to_nid, '<')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->addTag('exclude_resolved')
+    ->range(0, $limit)
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  foreach (array_keys($result['node']) as $follow_up) {
+    hedley_case_management_resolve_follow_up($follow_up);
+  }
+}
+
+/**
+ * Processes create events that trigger tuberculosis follow-ups resolution.
+ *
+ * @param object $node
+ *   Created node.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_case_management_handle_tuberculosis_insert_trigger($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  if ($node->type === 'tuberculosis_encounter') {
+    // At encounter, person is resolved from the participant.
+    $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+  }
+  else {
+    // At follow-ups, person is on the node itself.
+    $person_id = $wrapper->field_person->getIdentifier();
+  }
+
+  if (empty($person_id)) {
+    // Failed to load required data.
+    return;
+  }
+
+  // Trigger follow-ups resolution.
+  hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $node->nid);
+}
+
+/**
+ * Marks tuberculosis follow-ups belonging to person as resolved.
+ *
+ * Also, marks acute illness follow-ups belonging to person as resolved,
+ * in case their diagnose is TB suspect.
+ *
+ * @param int $person_id
+ *   Person ID.
+ * @param int $to_nid
+ *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param int $limit
+ *   Maximal number of follow-ups to load. Defaults to 200.
+ */
+function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'tuberculosis_follow_up')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->addTag('exclude_resolved')
+    ->range(0, $limit);
+
+  if (!empty($to_nid)) {
+    $query->propertyCondition('nid', $to_nid, '<');
+  }
+
+  $result = $query->execute();
+  $tb_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'acute_illness_follow_up')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->fieldCondition('field_acute_illness_diagnosis', 'value', 'tuberculosis-suspect')
+    ->addTag('exclude_resolved')
+    ->range(0, $limit);
+
+  if (!empty($to_nid)) {
+    $query->propertyCondition('nid', $to_nid, '<');
+  }
+
+  $result = $query->execute();
+  $ai_follow_ups = !empty($result['node']) ? array_keys($result['node']) : [];
+
+  if (empty($tb_follow_ups) && empty($ai_follow_ups)) {
+    return;
+  }
+
+  foreach (array_merge($tb_follow_ups, $ai_follow_ups) as $follow_up) {
+    hedley_case_management_resolve_follow_up($follow_up);
+  }
+}
+
+/**
  * Processes update that trigger acute illness / prenatal follow-ups resolution.
  *
  * @param object $node
@@ -268,7 +433,7 @@ function hedley_case_management_handle_update_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   $type = $wrapper->field_encounter_type->value();
-  if (!in_array($type, ['acute-illness', 'antenatal'])) {
+  if (!in_array($type, ['acute-illness', 'antenatal', 'tuberculosis'])) {
     // We only track resolution of illnesses and pregnancies.
     return;
   }
@@ -286,8 +451,9 @@ function hedley_case_management_handle_update_trigger($node) {
   // Outcome was set, meaning that illness / pregnancy was concluded.
   // Therefore, we need to resolve all it's follow-ups.
   $person_id = $wrapper->field_person->getIdentifier();
+
   if ($type === 'acute-illness') {
-    // Dealing with illness.
+    // Dealing with acute illness.
     // Load all encounters that were performed to the illness.
     $encounters = hedley_person_encounters_for_individual_participant($node->nid);
     // Trigger follow ups resolution.
@@ -295,8 +461,14 @@ function hedley_case_management_handle_update_trigger($node) {
     return;
   }
 
+  if ($type === 'tuberculosis') {
+    // Dealing with tuberculosis illness. Trigger follow ups resolution.
+    hedley_case_management_resolve_tuberculosis_follow_ups($person_id);
+    return;
+  }
+
   // If we got so far, we're dealing with pregnancy.
-  // Trigger follow-ups resolution.
+  // Trigger follow ups resolution.
   hedley_case_management_resolve_prenatal_follow_ups($person_id);
 }
 

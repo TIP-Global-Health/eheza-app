@@ -41,6 +41,7 @@ function hedley_schedule_field_default_field_bases() {
         'cough-and-cold' => 'Simple Cough and Cold',
         'fever-of-unknown-origin' => 'Fever of Unknown Origin',
         'undetermined' => 'Undetermined - more evaluation needed',
+        'tuberculosis-suspect' => 'Tuberculosis Suspect',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -241,6 +242,7 @@ function hedley_schedule_field_default_field_bases() {
         'inmmunization' => 'Inmmunization',
         'ncd' => 'NCD',
         'nutrition' => 'Nutrition',
+        'tuberculosis' => 'Tuberculosis',
         'well-child' => 'Well Child',
       ),
       'allowed_values_function' => '',
@@ -440,6 +442,33 @@ function hedley_schedule_field_default_field_bases() {
     'type' => 'entityreference',
   );
 
+  // Exported field_base: 'field_nutrition_encounter_type'.
+  $field_bases['field_nutrition_encounter_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_nutrition_encounter_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'nurse' => 'Nurse',
+        'chw' => 'CHW',
+        'unknown' => 'Unknown',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_outcome'.
   $field_bases['field_outcome'] = array(
     'active' => 1,
@@ -467,6 +496,7 @@ function hedley_schedule_field_default_field_bases() {
         'patient-died' => 'Patient Died',
         'referred-to-hc' => 'Referred to Health Center',
         'other' => 'Other',
+        'not-diagnosed' => 'Not Diagnosed',
       ),
       'allowed_values_function' => '',
     ),

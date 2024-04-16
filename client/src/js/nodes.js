@@ -130,6 +130,9 @@
                 else if (type === 'child-scoreboard-measurements') {
                   return viewMeasurements('child_scoreboard_encounter', uuid);
                 }
+                else if (type === 'tuberculosis-measurements') {
+                  return viewMeasurements('tuberculosis_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -516,6 +519,9 @@
                     else if (key === 'child_scoreboard_encounter') {
                         target = node.child_scoreboard_encounter;
                     }
+                    else if (key === 'tuberculosis_encounter') {
+                        target = node.tuberculosis_encounter;
+                    }
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
@@ -560,18 +566,23 @@
     }
 
     // List with all types of Follow Up measurements.
+    // Follow Ups get resolved using date_concluded field.
     var followUpMeasurementsTypes = [
       'acute_illness_follow_up',
       'follow_up',
       'nutrition_follow_up',
       'prenatal_follow_up',
       'well_child_follow_up',
+      'tuberculosis_follow_up',
       'acute_illness_trace_contact',
       'prenatal_labs_results',
-      'ncd_labs_results'
+      'ncd_labs_results',
+      'well_child_next_visit'
     ];
 
-    // Follow Ups that get resolved using date_concluded field.
+    // These are types of follow ups that need to be loaded, even if they
+    // were resolved during period of past 6 months.
+    // This is required to present data at Dashboard statistics.
     var resolvedFollowUpMeasurementsTypes = [
       'acute_illness_trace_contact',
       'prenatal_labs_results',
@@ -752,7 +763,6 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
-
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
@@ -795,6 +805,24 @@
 
                             return Promise.resolve();
                         });
+                    }
+                    else {
+                        var geoFields = params.get('geo_fields');
+                        if (geoFields) {
+                            var fields = geoFields.split('|');
+                            modifyQuery = modifyQuery.then(function () {
+                                criteria.province = fields[0];
+                                criteria.district = fields[1];
+                                criteria.sector = fields[2];
+                                criteria.cell = fields[3];
+                                criteria.village = fields[4];
+                                query = table.where(criteria);
+
+                                countQuery = query.clone();
+
+                                return Promise.resolve();
+                            });
+                        }
                     }
                 }
 
@@ -858,6 +886,7 @@
                   'ncd_encounter',
                   'nutrition_encounter',
                   'prenatal_encounter',
+                  'tuberculosis_encounter',
                   'well_child_encounter'
                 ];
                 if (encounterTypes.includes(type)) {
@@ -916,6 +945,22 @@
                   if (nurseId) {
                     modifyQuery = modifyQuery.then(function () {
                         criteria.nurse = nurseId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
+                // For education_session endpoint, check participant param and
+                // only return those sessions were participant has participated.
+                if (type === 'education_session') {
+                  var personId = params.get('participant');
+                  if (personId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.participating_patients = personId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();

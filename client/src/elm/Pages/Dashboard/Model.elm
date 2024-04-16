@@ -1,9 +1,10 @@
 module Pages.Dashboard.Model exposing (..)
 
 import AssocList exposing (Dict)
-import Backend.Dashboard.Model exposing (ParticipantStats)
+import Backend.Dashboard.Model exposing (EducationSessionData, ParticipantStats)
 import Backend.Entities exposing (VillageId)
-import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender)
+import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender, VaccineDose, WellChildVaccineType)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Page exposing (DashboardPage(..), Page)
@@ -110,6 +111,7 @@ type alias Model =
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
+    , educationSessionDrillIn : Maybe EducationSessionData
     , latestPage : DashboardPage
     , modalState : Maybe ModalState
 
@@ -143,7 +145,8 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = MainPage
+    , educationSessionDrillIn = Nothing
+    , latestPage = PageMain
     , modalState = Nothing
     , monthGap = 0
     }
@@ -248,3 +251,4 @@ type Msg
     | SetFilterProgramType String
     | SetSelectedVillage String
     | SetActivePage Page
+    | SetEducationSessionDrillIn (Maybe EducationSessionData)

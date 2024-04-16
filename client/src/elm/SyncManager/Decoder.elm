@@ -12,6 +12,7 @@ import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
+import Backend.EducationSession.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
@@ -28,6 +29,7 @@ import Backend.ResilienceMessage.Decoder
 import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
 import Backend.StockUpdate.Decoder
+import Backend.TuberculosisEncounter.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
 import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
@@ -39,6 +41,7 @@ import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
+import Translate.Utils exposing (decodeLanguage)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -79,6 +82,10 @@ decodeIndexDbQueryTypeResult =
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
                         field "data" decodeInt
                             |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+
+                    "IndexDbQueryGetShardsEntityByUuidResult" ->
+                        field "data" string
+                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
@@ -203,6 +210,7 @@ decodeBackendWhatsAppEntity =
         |> required "localId" decodeInt
         |> required "person" string
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "language" decodeLanguage
         |> required "report_type" decodeReportType
         |> required "phone_number" string
         |> required "fileId" decodeInt
@@ -582,6 +590,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeDangerSigns
                             BackendAuthorityDangerSigns
+
+                    "education_session" ->
+                        doDecode
+                            Backend.EducationSession.Decoder.decodeEducationSession
+                            BackendAuthorityEducationSession
 
                     "exposure" ->
                         doDecode
@@ -1111,6 +1124,51 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeTreatmentOngoing
                             BackendAuthorityTreatmentOngoing
 
+                    "tuberculosis_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDiagnostics
+                            BackendAuthorityTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDOT
+                            BackendAuthorityTuberculosisDOT
+
+                    "tuberculosis_encounter" ->
+                        doDecode
+                            Backend.TuberculosisEncounter.Decoder.decodeTuberculosisEncounter
+                            BackendAuthorityTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisFollowUp
+                            BackendAuthorityTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisHealthEducation
+                            BackendAuthorityTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisMedication
+                            BackendAuthorityTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisReferral
+                            BackendAuthorityTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisSymptomReview
+                            BackendAuthorityTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisTreatmentReview
+                            BackendAuthorityTuberculosisTreatmentReview
+
                     "vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeVitals
@@ -1130,6 +1188,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildBCGImmunisation
                             BackendAuthorityWellChildBCGImmunisation
+
+                    "well_child_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildCaring
+                            BackendAuthorityWellChildCaring
 
                     "well_child_contributing_factors" ->
                         doDecode
@@ -1156,10 +1219,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
                             BackendAuthorityWellChildEncounter
 
+                    "well_child_feeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFeeding
+                            BackendAuthorityWellChildFeeding
+
                     "well_child_follow_up" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildFollowUp
                             BackendAuthorityWellChildFollowUp
+
+                    "well_child_food_security" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFoodSecurity
+                            BackendAuthorityWellChildFoodSecurity
 
                     "well_child_head_circumference" ->
                         doDecode
@@ -1175,6 +1248,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildHeight
                             BackendAuthorityWellChildHeight
+
+                    "well_child_hygiene" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHygiene
+                            BackendAuthorityWellChildHygiene
 
                     "well_child_hpv_immunisation" ->
                         doDecode

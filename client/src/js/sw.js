@@ -31,7 +31,7 @@ var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
  *
  * @type {number}
  */
-var dbVerno = 22;
+var dbVerno = 25;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -73,6 +73,7 @@ var tableForType = {
     core_physical_exam: 'shards',
     covid_testing: 'shards',
     danger_signs: 'shards',
+    education_session: 'shards',
     exposure: 'shards',
     family_planning: 'shards',
     follow_up: 'shards',
@@ -184,21 +185,34 @@ var tableForType = {
     travel_history: 'shards',
     treatment_history: 'shards',
     treatment_ongoing: 'shards',
+    tuberculosis_diagnostics: 'shards',
+    tuberculosis_dot: 'shards',
+    tuberculosis_encounter: 'shards',
+    tuberculosis_follow_up: 'shards',
+    tuberculosis_health_education: 'shards',
+    tuberculosis_medication: 'shards',
+    tuberculosis_referral: 'shards',
+    tuberculosis_symptom_review: 'shards',
+    tuberculosis_treatment_review: 'shards',
     village: 'nodes',
     vitals: 'shards',
     weight: 'shards',
     well_child_albendazole: 'shards',
     well_child_bcg_immunisation: 'shards',
+    well_child_caring: 'shards',
     well_child_contributing_factors: 'shards',
     well_child_dtp_immunisation: 'shards',
     well_child_dtp_sa_immunisation: 'shards',
     well_child_ecd: 'shards',
     well_child_encounter: 'shards',
+    well_child_feeding: 'shards',
     well_child_follow_up: 'shards',
+    well_child_food_security: 'shards',
     well_child_head_circumference: 'shards',
     well_child_health_education: 'shards',
-    well_child_hpv_immunisation: 'shards',
+    well_child_hygiene: 'shards',
     well_child_height: 'shards',
+    well_child_hpv_immunisation: 'shards',
     well_child_ipv_immunisation: 'shards',
     well_child_mebendezole: 'shards',
     well_child_mr_immunisation: 'shards',

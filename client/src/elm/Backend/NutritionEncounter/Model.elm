@@ -11,17 +11,25 @@ type alias NutritionEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , encounterType : NutritionEncounterType
     , shard : Maybe HealthCenterId
     }
 
 
-emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> NutritionEncounter
-emptyNutritionEncounter participant startDate shard =
+emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> NutritionEncounterType -> Maybe HealthCenterId -> NutritionEncounter
+emptyNutritionEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , encounterType = encounterType
     , shard = shard
     }
+
+
+type NutritionEncounterType
+    = NutritionEncounterNurse
+    | NutritionEncounterCHW
+    | NutritionEncounterUnknown
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -79,5 +87,5 @@ type Msg
     | HandleSavedHealthEducation (WebData ())
     | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
     | HandleSavedContributingFactors (WebData ())
-    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())

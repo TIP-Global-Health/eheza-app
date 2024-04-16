@@ -1273,6 +1273,10 @@ div.page-activity.trace-contact  {
       min-height: 210px;
     }
 
+    .symptoms-form.respiratory .cough-period label {
+      font-size: 22px;
+    }
+
     .symptoms-form.gi .symptoms {
       margin-bottom: 30px;
     }
@@ -2328,7 +2332,8 @@ div.page-activity.prenatal {
 }
 
 div.page-activity.ncd,
-div.page-activity.well-child {
+div.page-activity.well-child,
+div.page-activity.tuberculosis {
 
   .ui.full.segment .full.content {
 
@@ -2365,6 +2370,14 @@ div.page-activity.well-child {
           left: 0;
         }
       }
+    }
+
+    .form-input.select {
+        background: $color-white;
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        padding: 5px;
+        width: 50%;
     }
   }
 }
@@ -2468,6 +2481,114 @@ div.page-activity.child-scoreboard {
     }
   }
 }
+
+div.page-activity.tuberculosis {
+
+  .ui.full.segment .full.content {
+
+    .ui.form.dot .prescribed-medications {
+      padding: 20px;
+
+      p {
+        margin-bottom: 5px;
+      }
+    }
+
+    .ui.form.health-education .follow-up-testing-table {
+      border: 1px solid black;
+      margin-bottom: 20px;
+
+      .row {
+        border-bottom: 1px solid black;
+        display: flex;
+        justify-content: center;
+
+        .item {
+          float: left;
+          font-size: 18px;
+          line-height: 24px;
+          padding: 10px;
+        }
+
+        .item.label {
+          border-right: 1px solid black;
+          margin-bottom: 0;
+          width: 14%;
+        }
+
+        .item.test {
+          border-right: 1px solid black;
+          width: 30%;
+        }
+
+        .item.guidance {
+          width: 55%;
+        }
+      }
+
+      .row:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+
+}
+
+div.page-activity.education-session {
+
+  .ui.full.segment {
+
+    .full.content {
+
+      .ui.checkbox.activity {
+        margin-bottom: 15px;
+      }
+    }
+
+    .registration-page.search {
+      min-height: 780px;
+
+      .search-top {
+        margin-bottom: 40px;
+
+        .toggle-initial-display {
+          cursor: pointer;
+          line-height: 50px;
+          margin-bottom: 10px;
+          padding-left: 1rem;
+
+          .toggle-text {
+            color: $color-primary;
+            font-weight: bold;
+            margin-left: 10px;
+          }
+        }
+      }
+
+      .items.participants-list {
+        max-height: 400px;
+        overflow: auto;
+
+        .item {
+          margin-bottom: 30px;
+          max-height: 400px;
+          overflow: auto;
+          padding: 0 30px;
+
+          .content {
+            margin-top: 15px;
+          }
+
+          .button-check-in,
+          .button-checked-in  {
+            margin-top: 30px;
+          }
+        }
+      }
+    }
+  }
+}
+
 
 div.page-outcome {
 
@@ -2628,12 +2749,15 @@ div.page-report {
 div.page-report.clinical,
 div.page-report.demographics,
 div.page-report.ncd {
-  padding: 0 20px 35px 20px;
   height: 100%;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
+  padding: 0 20px 35px 20px;
+
 
   .ui.unstackable.items {
+    overflow-x: hidden;
     overflow-y: auto;
 
     .pane-heading {
@@ -3759,7 +3883,9 @@ div.page-encounter.ncd,
 div.page-activity.ncd,
 div.page-encounter.child-scoreboard,
 div.page-activity.child-scoreboard,
-div.page-report.child-scoreboard {
+div.page-report.child-scoreboard,
+div.page-encounter.tuberculosis,
+div.page-activity.tuberculosis {
 
   .details {
     padding-left: 25px;
@@ -4187,9 +4313,10 @@ div.page-report.child-scoreboard {
       background-color: $color-white;
       border-radius: 3px;
       color: $color-dark-gray;
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 600;
-      padding: 15px;
+      margin-right: 0;
+      padding: 10px;
       text-transform: none;
     }
 
@@ -4567,6 +4694,39 @@ div.page-activity.patient-record {
 
   .entry.family-planning .date {
     margin: auto 0;
+  }
+
+  .heading.group-education,
+  .entry.group-education {
+    display: grid;
+    grid-gap: 20px;
+    grid-template-columns: 60% auto;
+    text-align: center;
+  }
+
+  .entry.group-education {
+    background: $color-white;
+    border-bottom: 2px solid $color-gray-border;
+    font-size: 18px;
+    font-weight: 500;
+    text-align: left;
+  }
+
+  .entry.group-education.header {
+    font-weight: 700;
+  }
+
+  .entry.group-education:last-child {
+    border-bottom: none;
+  }
+  .entry.group-education .topics {
+    margin: 0;
+    padding-left: 20px;
+  }
+
+  .entry.group-education .date {
+    align-self: center;
+    text-align: center;
   }
 
   .ui.unstackable.items .actions {

@@ -2,10 +2,11 @@ module Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitio
 
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessProgressReportInitiator(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -24,16 +25,17 @@ import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.AcuteIllness.Encounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate id isChw db model =
+view : Language -> NominalDate -> EverySet SiteFeature -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate features id isChw db model =
     let
         assembled =
-            generateAssembledData currentDate id isChw db
+            generateAssembledData currentDate features id isChw db
     in
     viewWebData language (viewHeaderAndContent language currentDate id isChw db model) identity assembled
 

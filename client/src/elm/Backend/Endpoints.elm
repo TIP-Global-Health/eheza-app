@@ -14,6 +14,9 @@ import Backend.Counseling.Encoder exposing (encodeCounselingSchedule, encodeCoun
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.EducationSession.Encoder exposing (encodeEducationSession)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
@@ -61,6 +64,9 @@ import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (Session)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
 import Backend.StockUpdate.Encoder exposing (encodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Encoder exposing (encodeTuberculosisEncounter)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
@@ -92,16 +98,19 @@ personEndpoint =
         |> withParamsEncoder encodePersonParams
 
 
-type alias PersonParams =
-    { nameContains : Maybe String
-    }
+type PersonParams
+    = ParamsNameContains String
+    | ParamsGeoFields String
 
 
 encodePersonParams : PersonParams -> List ( String, String )
 encodePersonParams params =
-    Maybe.Extra.values
-        [ Maybe.map (\name -> ( "name_contains", name )) params.nameContains
-        ]
+    case params of
+        ParamsNameContains value ->
+            [ ( "name_contains", value ) ]
+
+        ParamsGeoFields value ->
+            [ ( "geo_fields", value ) ]
 
 
 relationshipEndpoint : ReadWriteEndPoint Error RelationshipId Relationship Relationship RelationshipParams
@@ -1340,3 +1349,104 @@ childScoreboardRotarixImmunisationEndpoint : ReadWriteEndPoint Error ChildScoreb
 childScoreboardRotarixImmunisationEndpoint =
     swEndpoint "nodes/child_scoreboard_rotarix_iz" decodeChildScoreboardRotarixImmunisation
         |> withValueEncoder (object << encodeChildScoreboardRotarixImmunisation)
+
+
+wellChildFeedingEndpoint : ReadWriteEndPoint Error WellChildFeedingId WellChildFeeding WellChildFeeding ()
+wellChildFeedingEndpoint =
+    swEndpoint "nodes/well_child_feeding" decodeWellChildFeeding
+        |> withValueEncoder (object << encodeWellChildFeeding)
+
+
+wellChildHygieneEndpoint : ReadWriteEndPoint Error WellChildHygieneId WellChildHygiene WellChildHygiene ()
+wellChildHygieneEndpoint =
+    swEndpoint "nodes/well_child_hygiene" decodeWellChildHygiene
+        |> withValueEncoder (object << encodeWellChildHygiene)
+
+
+wellChildFoodSecurityEndpoint : ReadWriteEndPoint Error WellChildFoodSecurityId WellChildFoodSecurity WellChildFoodSecurity ()
+wellChildFoodSecurityEndpoint =
+    swEndpoint "nodes/well_child_food_security" decodeWellChildFoodSecurity
+        |> withValueEncoder (object << encodeWellChildFoodSecurity)
+
+
+wellChildCaringEndpoint : ReadWriteEndPoint Error WellChildCaringId WellChildCaring WellChildCaring ()
+wellChildCaringEndpoint =
+    swEndpoint "nodes/well_child_caring" decodeWellChildCaring
+        |> withValueEncoder (object << encodeWellChildCaring)
+
+
+tuberculosisEncounterEndpoint : ReadWriteEndPoint Error TuberculosisEncounterId TuberculosisEncounter TuberculosisEncounter (List IndividualEncounterParticipantId)
+tuberculosisEncounterEndpoint =
+    swEndpoint "nodes/tuberculosis_encounter" decodeTuberculosisEncounter
+        |> withValueEncoder (object << encodeTuberculosisEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+tuberculosisMeasurementsEndpoint : ReadOnlyEndPoint Error TuberculosisEncounterId TuberculosisMeasurements ()
+tuberculosisMeasurementsEndpoint =
+    swEndpoint "nodes/tuberculosis-measurements" decodeTuberculosisMeasurements
+
+
+tuberculosisDiagnosticsEndpoint : ReadWriteEndPoint Error TuberculosisDiagnosticsId TuberculosisDiagnostics TuberculosisDiagnostics ()
+tuberculosisDiagnosticsEndpoint =
+    swEndpoint "nodes/tuberculosis_diagnostics" decodeTuberculosisDiagnostics
+        |> withValueEncoder (object << encodeTuberculosisDiagnostics)
+
+
+tuberculosisDOTEndpoint : ReadWriteEndPoint Error TuberculosisDOTId TuberculosisDOT TuberculosisDOT ()
+tuberculosisDOTEndpoint =
+    swEndpoint "nodes/tuberculosis_dot" decodeTuberculosisDOT
+        |> withValueEncoder (object << encodeTuberculosisDOT)
+
+
+tuberculosisFollowUpEndpoint : ReadWriteEndPoint Error TuberculosisFollowUpId TuberculosisFollowUp TuberculosisFollowUp ()
+tuberculosisFollowUpEndpoint =
+    swEndpoint "nodes/tuberculosis_follow_up" decodeTuberculosisFollowUp
+        |> withValueEncoder (object << encodeTuberculosisFollowUp)
+
+
+tuberculosisHealthEducationEndpoint : ReadWriteEndPoint Error TuberculosisHealthEducationId TuberculosisHealthEducation TuberculosisHealthEducation ()
+tuberculosisHealthEducationEndpoint =
+    swEndpoint "nodes/tuberculosis_health_education" decodeTuberculosisHealthEducation
+        |> withValueEncoder (object << encodeTuberculosisHealthEducation)
+
+
+tuberculosisMedicationEndpoint : ReadWriteEndPoint Error TuberculosisMedicationId TuberculosisMedication TuberculosisMedication ()
+tuberculosisMedicationEndpoint =
+    swEndpoint "nodes/tuberculosis_medication" decodeTuberculosisMedication
+        |> withValueEncoder (object << encodeTuberculosisMedication)
+
+
+tuberculosisReferralEndpoint : ReadWriteEndPoint Error TuberculosisReferralId TuberculosisReferral TuberculosisReferral ()
+tuberculosisReferralEndpoint =
+    swEndpoint "nodes/tuberculosis_referral" decodeTuberculosisReferral
+        |> withValueEncoder (object << encodeTuberculosisReferral)
+
+
+tuberculosisSymptomReviewEndpoint : ReadWriteEndPoint Error TuberculosisSymptomReviewId TuberculosisSymptomReview TuberculosisSymptomReview ()
+tuberculosisSymptomReviewEndpoint =
+    swEndpoint "nodes/tuberculosis_symptom_review" decodeTuberculosisSymptomReview
+        |> withValueEncoder (object << encodeTuberculosisSymptomReview)
+
+
+tuberculosisTreatmentReviewEndpoint : ReadWriteEndPoint Error TuberculosisTreatmentReviewId TuberculosisTreatmentReview TuberculosisTreatmentReview ()
+tuberculosisTreatmentReviewEndpoint =
+    swEndpoint "nodes/tuberculosis_treatment_review" decodeTuberculosisTreatmentReview
+        |> withValueEncoder (object << encodeTuberculosisTreatmentReview)
+
+
+educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession (Maybe PersonId)
+educationSessionEndpoint =
+    swEndpoint "nodes/education_session" decodeEducationSession
+        |> withValueEncoder (object << encodeEducationSession)
+        |> withParamsEncoder encodeEducationSessionParams
+
+
+encodeEducationSessionParams : Maybe PersonId -> List ( String, String )
+encodeEducationSessionParams mPersonId =
+    case mPersonId of
+        Just id ->
+            [ ( "participant", fromEntityUuid id ) ]
+
+        Nothing ->
+            []

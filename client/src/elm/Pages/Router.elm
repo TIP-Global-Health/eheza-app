@@ -4,7 +4,7 @@ import Activity.Model exposing (Activity)
 import Activity.Utils
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessActivity.Utils
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils
@@ -28,6 +28,8 @@ import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurr
 import Backend.PrenatalActivity.Utils
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator, RecordPreganancyInitiator)
 import Backend.PrenatalEncounter.Utils exposing (..)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
+import Backend.TuberculosisActivity.Utils
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Backend.WellChildActivity.Utils
 import Pages.Page exposing (..)
@@ -68,42 +70,62 @@ pageToFragment current =
                 ClinicsPage ->
                     Just "clinics"
 
-                DashboardPage subPage ->
+                DashboardPage page ->
                     let
                         url =
-                            case subPage of
-                                MainPage ->
+                            case page of
+                                PageMain ->
                                     "main"
 
-                                NursePage nurseDashboardPage ->
-                                    case nurseDashboardPage of
-                                        StatsPage ->
-                                            "stats"
+                                PageAcuteIllness subPage ->
+                                    case subPage of
+                                        PageAcuteIllnessOverview ->
+                                            "acute-illness"
 
-                                        CaseManagementPage ->
-                                            "case-management"
+                                        PageCovid19 ->
+                                            "covid-19"
 
-                                ChwPage chwDashboardPage ->
-                                    case chwDashboardPage of
-                                        AcuteIllnessPage acuteIllnessSubPage ->
-                                            case acuteIllnessSubPage of
-                                                OverviewPage ->
-                                                    "acute-illness"
+                                        PageMalaria ->
+                                            "malaria"
 
-                                                Covid19Page ->
-                                                    "covid-19"
+                                        PageGastro ->
+                                            "gastro"
 
-                                                MalariaPage ->
-                                                    "malaria"
+                                PageNutrition subPage ->
+                                    case subPage of
+                                        PageCharts ->
+                                            "nutrition-charts"
 
-                                                GastroPage ->
-                                                    "gastro"
+                                        PageStats ->
+                                            "nutrition-stats"
 
-                                        NutritionPage ->
-                                            "nutrition"
+                                        PageCaseManagement ->
+                                            "nutrition-case-management"
 
-                                        AntenatalPage ->
-                                            "antenatal"
+                                PagePrenatal ->
+                                    "prenatal"
+
+                                PageNCD subPage ->
+                                    case subPage of
+                                        PageHypertension ->
+                                            "hypertension"
+
+                                        PageHIV ->
+                                            "hiv"
+
+                                        PageDiabetes ->
+                                            "diabetes"
+
+                                PageChildWellness subPage ->
+                                    case subPage of
+                                        PageChildWellnessOverview ->
+                                            "child-wellness"
+
+                                        PageChildWellnessNutrition ->
+                                            "child-wellness-nutrition"
+
+                                PageGroupEducation ->
+                                    "group-education"
                     in
                     Just ("dashboard/" ++ url)
 
@@ -173,6 +195,9 @@ pageToFragment current =
 
                 ChildScoreboardParticipantPage id ->
                     Just <| "child-scoreboard-participant/" ++ fromEntityUuid id
+
+                TuberculosisParticipantPage id ->
+                    Just <| "tuberculosis-participant/" ++ fromEntityUuid id
 
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
@@ -248,6 +273,9 @@ pageToFragment current =
                 IndividualEncounterTypesPage ->
                     Just "individual-encounter-types/"
 
+                GroupEncounterTypesPage ->
+                    Just "group-encounter-types/"
+
                 PregnancyOutcomePage initiator id ->
                     Just <| "pregnancy-outcome/" ++ fromEntityUuid id ++ "/" ++ recordPreganancyInitiatorToUrlFragment initiator
 
@@ -315,6 +343,15 @@ pageToFragment current =
                 ChildScoreboardProgressReportPage id ->
                     Just <| "child-scoreboard-progress-report/" ++ fromEntityUuid id
 
+                TuberculosisEncounterPage id ->
+                    Just <| "tuberculosis-encounter/" ++ fromEntityUuid id
+
+                TuberculosisActivityPage id activity ->
+                    Just <| "tuberculosis-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.TuberculosisActivity.Utils.activityToString activity
+
+                EducationSessionPage id ->
+                    Just <| "education-session/" ++ fromEntityUuid id
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -359,6 +396,7 @@ parser =
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
+        , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| PrenatalActivityPage id activity) (s "prenatal-activity" </> parseUuid </> parsePrenatalActivity)
@@ -368,6 +406,7 @@ parser =
         , map (\id initiator -> UserPage <| ClinicalProgressReportPage initiator id) (s "clinical-progress-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (\id initiator -> UserPage <| DemographicsReportPage initiator id) (s "demographics-report" </> parseUuid </> parsePrenatalProgressReportInitiator)
         , map (UserPage <| IndividualEncounterTypesPage) (s "individual-encounter-types")
+        , map (UserPage <| GroupEncounterTypesPage) (s "group-encounter-types")
         , map (\encounterType -> UserPage <| IndividualEncounterParticipantsPage encounterType) (s "individual-participants" </> parseIndividualEncounterType)
         , map (\id initiator -> UserPage <| PregnancyOutcomePage initiator id) (s "pregnancy-outcome" </> parseUuid </> parseRecordPreganancyInitiator)
         , map (\id -> UserPage <| NutritionEncounterPage id) (s "nutrition-encounter" </> parseUuid)
@@ -390,6 +429,9 @@ parser =
         , map (\id -> UserPage <| NCDRecurrentEncounterPage id) (s "ncd-recurrent-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| NCDRecurrentActivityPage id activity) (s "ncd-recurrent-activity" </> parseUuid </> parseNCDRecurrentActivity)
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
+        , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
+        , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
@@ -404,15 +446,21 @@ parser =
 parseDashboardPage : Parser (DashboardPage -> c) c
 parseDashboardPage =
     oneOf
-        [ map MainPage (s "main")
-        , map (NursePage StatsPage) (s "stats")
-        , map (NursePage CaseManagementPage) (s "case-management")
-        , map (ChwPage <| AcuteIllnessPage OverviewPage) (s "acute-illness")
-        , map (ChwPage <| AcuteIllnessPage Covid19Page) (s "covid-19")
-        , map (ChwPage <| AcuteIllnessPage MalariaPage) (s "malaria")
-        , map (ChwPage <| AcuteIllnessPage GastroPage) (s "gastro")
-        , map (ChwPage NutritionPage) (s "nutrition")
-        , map (ChwPage AntenatalPage) (s "antenatal")
+        [ map PageMain (s "main")
+        , map (PageNutrition PageCharts) (s "nutrition-charts")
+        , map (PageNutrition PageStats) (s "nutrition-stats")
+        , map (PageNutrition PageCaseManagement) (s "nutrition-case-management")
+        , map (PageAcuteIllness PageAcuteIllnessOverview) (s "acute-illness")
+        , map (PageAcuteIllness PageCovid19) (s "covid-19")
+        , map (PageAcuteIllness PageMalaria) (s "malaria")
+        , map (PageAcuteIllness PageGastro) (s "gastro")
+        , map PagePrenatal (s "prenatal")
+        , map (PageNCD PageHypertension) (s "hypertension")
+        , map (PageNCD PageHIV) (s "hiv")
+        , map (PageNCD PageDiabetes) (s "diabetes")
+        , map (PageChildWellness PageChildWellnessOverview) (s "child-wellness")
+        , map (PageChildWellness PageChildWellnessNutrition) (s "child-wellness-nutrition")
+        , map PageGroupEducation (s "group-education")
         ]
 
 
@@ -488,6 +536,11 @@ parseNCDRecurrentActivity =
 parseChildScoreboardActivity : Parser (ChildScoreboardActivity -> c) c
 parseChildScoreboardActivity =
     custom "ChildScoreboardActivity" Backend.ChildScoreboardActivity.Utils.activityFromString
+
+
+parseTuberculosisActivity : Parser (TuberculosisActivity -> c) c
+parseTuberculosisActivity =
+    custom "TuberculosisActivity" Backend.TuberculosisActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c

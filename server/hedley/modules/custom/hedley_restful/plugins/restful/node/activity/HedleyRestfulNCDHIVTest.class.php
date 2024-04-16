@@ -24,6 +24,7 @@ class HedleyRestfulNCDHIVTest extends HedleyRestfulNCDActivityBase {
    */
   protected $multiFields = [
     'field_hiv_signs',
+    'field_test_prerequisites',
   ];
 
   /**

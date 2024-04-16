@@ -4,7 +4,7 @@ import App.Model exposing (..)
 import App.Utils exposing (getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..), ParticipantDirectoryOperation(..))
 import Browser
 import Config.Model
@@ -38,7 +38,10 @@ import Pages.Clinical.View
 import Pages.Clinics.View
 import Pages.Dashboard.View
 import Pages.Device.View
+import Pages.EducationSession.Model
+import Pages.EducationSession.View
 import Pages.GlobalCaseManagement.View
+import Pages.GroupEncounterTypes.View
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.View
 import Pages.HomeVisit.Encounter.Model
@@ -96,6 +99,11 @@ import Pages.Session.View
 import Pages.StockManagement.View
 import Pages.TraceContact.Model
 import Pages.TraceContact.View
+import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Activity.View
+import Pages.Tuberculosis.Encounter.Model
+import Pages.Tuberculosis.Encounter.View
+import Pages.Tuberculosis.Participant.View
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.View
 import Pages.WellChild.Encounter.Model
@@ -346,9 +354,11 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     currentDate =
                         fromLocalDateTime model.currentTime
 
-                    isChw =
+                    ( isChw, isLabTech ) =
                         Tuple.second loggedInModel.nurse
-                            |> isCommunityHealthWorker
+                            |> (\nurse ->
+                                    ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                               )
                 in
                 case page of
                     MyAccountPage ->
@@ -356,7 +366,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> oldPageWrapper configured.config model
 
                     ClinicalPage ->
-                        Pages.Clinical.View.view model.language currentDate ( healthCenterId, model.villageId ) isChw model
+                        Pages.Clinical.View.view model.language currentDate healthCenterId isChw model
                             |> flexPageWrapper configured.config model
 
                     ClinicsPage ->
@@ -380,6 +390,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             currentDate
                             site
                             features
+                            (Tuple.second loggedInModel.nurse)
                             prenatalEncounterId
                             isChw
                             initiator
@@ -404,48 +415,26 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     DashboardPage subPage ->
-                        let
-                            viewDashboardPage =
-                                Pages.Dashboard.View.view model.language
-                                    subPage
-                                    currentDate
-                                    healthCenterId
-                                    isChw
-                                    (Tuple.second loggedInModel.nurse)
-                                    loggedInModel.dashboardPage
-                                    model.indexedDb
-                                    |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
-                                    |> flexPageWrapper configured.config model
-
-                            viewPageNotFound =
-                                Pages.PageNotFound.View.viewPage model.language (SetActivePage PinCodePage) (UserPage <| DashboardPage subPage)
-                        in
-                        case subPage of
-                            MainPage ->
-                                -- Main page is common for Nurse and CHw.
-                                viewDashboardPage
-
-                            NursePage _ ->
-                                if isChw then
-                                    -- Only Nursed may access Nursed pages.
-                                    viewPageNotFound
-
-                                else
-                                    viewDashboardPage
-
-                            ChwPage _ ->
-                                if isChw then
-                                    viewDashboardPage
-
-                                else
-                                    -- Only CHW may access CHW pages.
-                                    viewPageNotFound
+                        Pages.Dashboard.View.view model.language
+                            subPage
+                            currentDate
+                            site
+                            features
+                            healthCenterId
+                            isChw
+                            (Tuple.second loggedInModel.nurse)
+                            loggedInModel.dashboardPage
+                            model.indexedDb
+                            |> Html.map (MsgLoggedIn << MsgPageDashboard subPage)
+                            |> flexPageWrapper configured.config model
 
                     GlobalCaseManagementPage ->
                         Pages.GlobalCaseManagement.View.view model.language
                             currentDate
+                            features
                             healthCenterId
                             model.villageId
+                            isLabTech
                             model.syncManager
                             model.indexedDb
                             loggedInModel.globalCaseManagementPage
@@ -533,6 +522,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     ChildScoreboardParticipantPage id ->
                         Pages.ChildScoreboard.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisParticipantPage id ->
+                        Pages.Tuberculosis.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -624,7 +617,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.prenatalRecurrentEncounterPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate id model.indexedDb page_
+                        Pages.Prenatal.RecurrentEncounter.View.view model.language currentDate (Tuple.second loggedInModel.nurse) id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -634,7 +627,13 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get ( id, activity ) loggedInModel.prenatalRecurrentActivityPages
                                     |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
                         in
-                        Pages.Prenatal.RecurrentActivity.View.view model.language currentDate id activity model.indexedDb page_
+                        Pages.Prenatal.RecurrentActivity.View.view model.language
+                            currentDate
+                            (Tuple.second loggedInModel.nurse)
+                            id
+                            activity
+                            model.indexedDb
+                            page_
                             |> Html.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity)
                             |> flexPageWrapper configured.config model
 
@@ -650,6 +649,15 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     IndividualEncounterTypesPage ->
                         Pages.IndividualEncounterTypes.View.view model.language currentDate features healthCenterId isChw model
+                            |> flexPageWrapper configured.config model
+
+                    GroupEncounterTypesPage ->
+                        Pages.GroupEncounterTypes.View.view model.language
+                            currentDate
+                            features
+                            healthCenterId
+                            (Tuple.first loggedInModel.nurse)
+                            model
                             |> flexPageWrapper configured.config model
 
                     PregnancyOutcomePage initiator id ->
@@ -721,7 +729,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessEncounterPages
                                     |> Maybe.withDefault Pages.AcuteIllness.Encounter.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Encounter.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Encounter.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id)
                             |> flexPageWrapper configured.config model
 
@@ -734,6 +742,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         Pages.AcuteIllness.Activity.View.view model.language
                             currentDate
                             site
+                            features
                             geoInfo
                             id
                             isChw
@@ -767,7 +776,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get id loggedInModel.acuteIllnessOutcomePages
                                     |> Maybe.withDefault Pages.AcuteIllness.Outcome.Model.emptyModel
                         in
-                        Pages.AcuteIllness.Outcome.View.view model.language currentDate id isChw model.indexedDb page_
+                        Pages.AcuteIllness.Outcome.View.view model.language currentDate features id isChw model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id)
                             |> flexPageWrapper configured.config model
 
@@ -946,6 +955,36 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageChildScoreboardReport encounterId)
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.tuberculosisEncounterPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.Encounter.View.view model.language currentDate site id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.tuberculosisActivityPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
+                            |> flexPageWrapper configured.config model
+
+                    EducationSessionPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.educationSessionPages
+                                    |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
+                        in
+                        Pages.EducationSession.View.view model.language currentDate model.villageId id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageEducationSession id)
                             |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->

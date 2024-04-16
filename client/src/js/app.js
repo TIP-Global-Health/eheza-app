@@ -285,6 +285,19 @@ dbSync.version(22).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
 });
 
+dbSync.version(23).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn',
+});
+
+dbSync.version(24).stores({
+    whatsAppUploads: '++localId,screenshot,language,report_type,person,phone_number,fileId,syncStage',
+});
+
+dbSync.version(25).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn,*participating_patients',
+});
+
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -343,7 +356,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 22;
+const dbVersion = 25;
 
 /**
  * Return saved info for General sync.
@@ -743,7 +756,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               const uploadUrl = [
                 backendUrl,
-                '/api/file-upload-public?access_token=',
+                '/api/file-upload?access_token=',
                 accessToken,
               ].join('');
 
@@ -1014,6 +1027,22 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
         break;
 
+    case 'IndexDbQueryGetShardsEntityByUuid':
+      (async () => {
+
+        let result = await dbSync
+            .shards
+            .where('uuid')
+            .equals(data)
+            .limit(1)
+            .toArray();
+
+        if (result[0]) {
+          return sendIndexedDbFetchResult(queryType, JSON.stringify(result[0]));
+        }
+      })();
+        break;
+
     default:
       throw queryType + ' is not a known Query type for `askFromIndexDb`';
   }
@@ -1216,6 +1245,7 @@ function makeProgressReportScreenshot(elementId, data) {
              screenshot: json.url,
              person: data.personId,
              date_measured: today.toISOString().split('T')[0],
+             language: data.language,
              report_type: data.reportType,
              phone_number: data.phoneNumber,
              syncStage: 0,

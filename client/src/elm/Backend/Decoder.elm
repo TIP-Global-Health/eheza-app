@@ -5,6 +5,7 @@ import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardE
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -22,6 +23,7 @@ import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.Session.Decoder exposing (decodeSession)
 import Backend.StockUpdate.Decoder exposing (decodeStockUpdate)
+import Backend.TuberculosisEncounter.Decoder exposing (decodeTuberculosisEncounter)
 import Backend.Village.Decoder exposing (decodeVillage)
 import Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
 import Json.Decode exposing (..)
@@ -140,6 +142,9 @@ decodeRevision =
 
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
+
+                    "education_session" ->
+                        decodeWithUuid EducationSessionRevision decodeEducationSession
 
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
@@ -474,6 +479,33 @@ decodeRevision =
                     "treatment_ongoing" ->
                         decodeWithUuid TreatmentOngoingRevision decodeTreatmentOngoing
 
+                    "tuberculosis_diagnostics" ->
+                        decodeWithUuid TuberculosisDiagnosticsRevision decodeTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        decodeWithUuid TuberculosisDOTRevision decodeTuberculosisDOT
+
+                    "tuberculosis_encounter" ->
+                        decodeWithUuid TuberculosisEncounterRevision decodeTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        decodeWithUuid TuberculosisFollowUpRevision decodeTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        decodeWithUuid TuberculosisHealthEducationRevision decodeTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        decodeWithUuid TuberculosisMedicationRevision decodeTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        decodeWithUuid TuberculosisReferralRevision decodeTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        decodeWithUuid TuberculosisSymptomReviewRevision decodeTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        decodeWithUuid TuberculosisTreatmentReviewRevision decodeTuberculosisTreatmentReview
+
                     "village" ->
                         decodeWithUuid VillageRevision decodeVillage
 
@@ -488,6 +520,9 @@ decodeRevision =
 
                     "well_child_bcg_immunisation" ->
                         decodeWithUuid WellChildBCGImmunisationRevision decodeWellChildBCGImmunisation
+
+                    "well_child_caring" ->
+                        decodeWithUuid WellChildCaringRevision decodeWellChildCaring
 
                     "well_child_contributing_factors" ->
                         decodeWithUuid WellChildContributingFactorsRevision decodeWellChildContributingFactors
@@ -504,8 +539,14 @@ decodeRevision =
                     "well_child_encounter" ->
                         decodeWithUuid WellChildEncounterRevision decodeWellChildEncounter
 
+                    "well_child_feeding" ->
+                        decodeWithUuid WellChildFeedingRevision decodeWellChildFeeding
+
                     "well_child_follow_up" ->
                         decodeWithUuid WellChildFollowUpRevision decodeWellChildFollowUp
+
+                    "well_child_food_security" ->
+                        decodeWithUuid WellChildFoodSecurityRevision decodeWellChildFoodSecurity
 
                     "well_child_head_circumference" ->
                         decodeWithUuid WellChildHeadCircumferenceRevision decodeWellChildHeadCircumference
@@ -515,6 +556,9 @@ decodeRevision =
 
                     "well_child_height" ->
                         decodeWithUuid WellChildHeightRevision decodeWellChildHeight
+
+                    "well_child_hygiene" ->
+                        decodeWithUuid WellChildHygieneRevision decodeWellChildHygiene
 
                     "well_child_hpv_immunisation" ->
                         decodeWithUuid WellChildHPVImmunisationRevision decodeWellChildHPVImmunisation

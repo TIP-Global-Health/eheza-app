@@ -5,6 +5,7 @@ and cached in local storage.
 -}
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
@@ -66,6 +67,10 @@ type alias NCDMeasurement value =
 
 type alias ChildScoreboardMeasurement value =
     Measurement ChildScoreboardEncounterId value
+
+
+type alias TuberculosisMeasurement value =
+    Measurement TuberculosisEncounterId value
 
 
 
@@ -229,10 +234,10 @@ type alias ContributingFactors =
 
 
 type alias FollowUp =
-    GroupMeasurement FollowUpValue
+    GroupMeasurement NutritionFollowUpValue
 
 
-type alias FollowUpValue =
+type alias NutritionFollowUpValue =
     { options : EverySet FollowUpOption
     , assesment : EverySet NutritionAssessment
     , resolutionDate : Maybe NominalDate
@@ -368,7 +373,7 @@ type alias NutritionContributingFactors =
 
 
 type alias NutritionFollowUp =
-    NutritionMeasurement FollowUpValue
+    NutritionMeasurement NutritionFollowUpValue
 
 
 
@@ -1039,6 +1044,7 @@ type alias PrenatalMalariaTest =
 type alias MalariaTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , bloodSmearResult : BloodSmearResult
     }
@@ -1054,6 +1060,7 @@ type TestExecutionNote
     | TestNoteNotIndicated
     | TestNoteKnownAsPositive
     | TestNoteToBeDoneAtHospital
+    | TestNoteRunConfirmedByLabTech
 
 
 type TestResult
@@ -1068,6 +1075,9 @@ type BloodSmearResult
     | BloodSmearPlusPlus
     | BloodSmearPlusPlusPlus
     | BloodSmearNotTaken
+      -- Set on initial phase, when Malaria test is not
+      -- taken, and blood smear is ordered at lab.
+    | BloodSmearPendingInput
 
 
 type alias PrenatalHIVTest =
@@ -1077,6 +1087,7 @@ type alias PrenatalHIVTest =
 type alias HIVTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
@@ -1087,6 +1098,11 @@ type PrenatalHIVSign
     | PartnerHIVPositive
     | PartnerTakingARV
     | PartnerSurpressedViralLoad
+      -- This option is an indicator.
+      -- When Lab tech fills the result, they do not
+      -- answer follow up quesrtion. We use this optin to indicate
+      -- that nurse will have to complete the results follow up.
+    | PrenatalHIVSignPendingInput
     | NoPrenatalHIVSign
 
 
@@ -1102,6 +1118,7 @@ type HIVPCRResult
 type alias HIVPCRTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hivViralLoadStatus : Maybe ViralLoadStatus
     , hivViralLoad : Maybe Float
     }
@@ -1119,6 +1136,7 @@ type alias PrenatalHepatitisBTest =
 type alias HepatitisBTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , originatingEncounter : Maybe encounterId
     }
@@ -1131,6 +1149,7 @@ type alias PrenatalSyphilisTest =
 type alias SyphilisTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , symptoms : Maybe (EverySet IllnessSymptom)
     , originatingEncounter : Maybe encounterId
@@ -1143,6 +1162,11 @@ type IllnessSymptom
     | IllnessSymptomRash
     | IllnessSymptomPainlessUlcerMouth
     | IllnessSymptomPainlessUlcerGenitals
+      -- This option is an indicator.
+      -- When Lab tech fills the result, they do not
+      -- answer follow up quesrtion. We use this optin to indicate
+      -- that nurse will have to complete the results follow up.
+    | IllnessSymptomPendingInput
     | NoIllnessSymptoms
 
 
@@ -1153,6 +1177,7 @@ type alias PrenatalHemoglobinTest =
 type alias HemoglobinTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , hemoglobinCount : Maybe Float
     }
 
@@ -1183,6 +1208,7 @@ type alias PrenatalBloodGpRsTest =
 type alias BloodGpRsTestValue encounterId =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , bloodGroup : Maybe BloodGroup
     , rhesus : Maybe Rhesus
     , originatingEncounter : Maybe encounterId
@@ -1209,6 +1235,7 @@ type alias UrineDipstickTestValue =
     { testVariant : Maybe TestVariant
     , executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , protein : Maybe ProteinValue
     , ph : Maybe PHValue
     , glucose : Maybe GlucoseValue
@@ -1311,21 +1338,31 @@ type alias LabsResultsValue =
     , completedTests : EverySet LaboratoryTest
     , resolutionDate : NominalDate
     , patientNotified : Bool
+    , reviewState : Maybe LabsResultsReviewState
+    , testsWithFollowUp : Maybe (EverySet LaboratoryTest)
     }
 
 
 type LaboratoryTest
     = TestBloodGpRs
     | TestHemoglobin
+    | TestHIV
+    | TestPartnerHIV
+    | TestMalaria
+    | TestHIVPCR
     | TestHepatitisB
     | TestRandomBloodSugar
     | TestSyphilis
     | TestUrineDipstick
     | TestVitalsRecheck
-    | TestHIVPCR
     | TestCreatinine
     | TestLiverFunction
     | TestLipidPanel
+
+
+type LabsResultsReviewState
+    = LabsResultsReviewRequested
+    | LabsResultsReviewCompleted
 
 
 type alias PrenatalMedicationDistribution =
@@ -1628,6 +1665,7 @@ type alias PrenatalPartnerHIVTest =
 type alias PartnerHIVTestValue =
     { executionNote : TestExecutionNote
     , executionDate : Maybe NominalDate
+    , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     }
 
@@ -2092,6 +2130,7 @@ type alias AcuteIllnessFollowUp =
 
 type alias AcuteIllnessFollowUpValue =
     { options : EverySet FollowUpOption
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     , resolutionDate : Maybe NominalDate
     }
 
@@ -2206,7 +2245,7 @@ type alias WellChildContributingFactors =
 
 
 type alias WellChildFollowUp =
-    WellChildMeasurement FollowUpValue
+    WellChildMeasurement NutritionFollowUpValue
 
 
 type alias WellChildHeadCircumference =
@@ -2386,7 +2425,9 @@ type alias WellChildNextVisit =
 
 type alias NextVisitValue =
     { immunisationDate : Maybe NominalDate
+    , asapImmunisationDate : Maybe NominalDate
     , pediatricVisitDate : Maybe NominalDate
+    , resolutionDate : Maybe NominalDate
     }
 
 
@@ -2435,6 +2476,22 @@ type alias VaccinationValue =
 
 type alias WellChildNCDA =
     WellChildMeasurement NCDAValue
+
+
+type alias WellChildFeeding =
+    WellChildMeasurement NutritionFeedingValue
+
+
+type alias WellChildHygiene =
+    WellChildMeasurement NutritionHygieneValue
+
+
+type alias WellChildFoodSecurity =
+    WellChildMeasurement NutritionFoodSecurityValue
+
+
+type alias WellChildCaring =
+    WellChildMeasurement NutritionCaringValue
 
 
 
@@ -2812,6 +2869,105 @@ type alias ChildScoreboardRotarixImmunisation =
 
 
 
+-- Tuberculosis:
+
+
+type alias TuberculosisDiagnostics =
+    TuberculosisMeasurement TuberculosisDiagnosticsValue
+
+
+type alias TuberculosisDiagnosticsValue =
+    TuberculosisDiagnosis
+
+
+type TuberculosisDiagnosis
+    = TuberculosisPulmonary
+    | TuberculosisExtrapulmonary
+    | NoTuberculosis
+
+
+type alias TuberculosisDOT =
+    TuberculosisMeasurement TuberculosisDOTValue
+
+
+type alias TuberculosisDOTValue =
+    { sign : TuberculosisDOTSign
+    , medicationDistributionSign : TuberculosisDOTSign
+    }
+
+
+type TuberculosisDOTSign
+    = DOTPositive
+    | DOTNegativeTakenToday
+    | DOTNegativeUnavailable
+    | DOTNegativeSideEffects
+    | DOTNegativePatientRefused
+    | DOTNegativeNotIndicated
+
+
+type alias TuberculosisFollowUp =
+    TuberculosisMeasurement FollowUpValue
+
+
+type alias FollowUpValue =
+    { options : EverySet FollowUpOption
+    , resolutionDate : Maybe NominalDate
+    }
+
+
+type alias TuberculosisHealthEducation =
+    TuberculosisMeasurement TuberculosisHealthEducationValue
+
+
+type alias TuberculosisHealthEducationValue =
+    EverySet TuberculosisHealthEducationSign
+
+
+type TuberculosisHealthEducationSign
+    = EducationFollowUpTesting
+    | NoTuberculosisHealthEducationSigns
+
+
+type alias TuberculosisMedication =
+    TuberculosisMeasurement TuberculosisMedicationValue
+
+
+type alias TuberculosisMedicationValue =
+    EverySet TuberculosisPrescribedMedication
+
+
+type TuberculosisPrescribedMedication
+    = MedicationRHZE
+    | MedicationRH
+    | MedicationOther
+    | NoTuberculosisPrescribedMedications
+
+
+type alias TuberculosisReferral =
+    TuberculosisMeasurement SendToHCValue
+
+
+type alias TuberculosisSymptomReview =
+    TuberculosisMeasurement TuberculosisSymptomReviewValue
+
+
+type alias TuberculosisSymptomReviewValue =
+    EverySet TuberculosisSymptom
+
+
+type TuberculosisSymptom
+    = SymptomNightSweats
+    | SymptomBloodInSputum
+    | SymptomWeightLoss
+    | SymptomSevereFatigue
+    | NoTuberculosisSymptoms
+
+
+type alias TuberculosisTreatmentReview =
+    TuberculosisMeasurement TreatmentOngoingValue
+
+
+
 -- Stock Management:
 
 
@@ -3081,9 +3237,11 @@ type alias FollowUpMeasurements =
     , acuteIllness : Dict AcuteIllnessFollowUpId AcuteIllnessFollowUp
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
+    , tuberculosis : Dict TuberculosisFollowUpId TuberculosisFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
+    , nextVisit : Dict WellChildNextVisitId WellChildNextVisit
     }
 
 
@@ -3128,6 +3286,10 @@ type alias WellChildMeasurements =
     , pcv13Immunisation : Maybe ( WellChildPCV13ImmunisationId, WellChildPCV13Immunisation )
     , rotarixImmunisation : Maybe ( WellChildRotarixImmunisationId, WellChildRotarixImmunisation )
     , ncda : Maybe ( WellChildNCDAId, WellChildNCDA )
+    , feeding : Maybe ( WellChildFeedingId, WellChildFeeding )
+    , hygiene : Maybe ( WellChildHygieneId, WellChildHygiene )
+    , foodSecurity : Maybe ( WellChildFoodSecurityId, WellChildFoodSecurity )
+    , caring : Maybe ( WellChildCaringId, WellChildCaring )
     }
 
 
@@ -3169,6 +3331,18 @@ type alias ChildScoreboardMeasurements =
     , opvImmunisation : Maybe ( ChildScoreboardOPVImmunisationId, ChildScoreboardOPVImmunisation )
     , pcv13Immunisation : Maybe ( ChildScoreboardPCV13ImmunisationId, ChildScoreboardPCV13Immunisation )
     , rotarixImmunisation : Maybe ( ChildScoreboardRotarixImmunisationId, ChildScoreboardRotarixImmunisation )
+    }
+
+
+type alias TuberculosisMeasurements =
+    { diagnostics : Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics )
+    , dot : Maybe ( TuberculosisDOTId, TuberculosisDOT )
+    , followUp : Maybe ( TuberculosisFollowUpId, TuberculosisFollowUp )
+    , healthEducation : Maybe ( TuberculosisHealthEducationId, TuberculosisHealthEducation )
+    , medication : Maybe ( TuberculosisMedicationId, TuberculosisMedication )
+    , referral : Maybe ( TuberculosisReferralId, TuberculosisReferral )
+    , symptomReview : Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview )
+    , treatmentReview : Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )
     }
 
 

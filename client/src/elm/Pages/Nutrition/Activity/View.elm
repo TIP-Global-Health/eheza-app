@@ -49,9 +49,9 @@ import Measurement.View
     exposing
         ( viewColorAlertIndication
         , viewContributingFactorsForm
-        , viewFollowUpForm
         , viewHealthEducationForm
         , viewMeasurementFloatDiff
+        , viewNutritionFollowUpForm
         , viewSendToHealthCenterForm
         , zScoreForHeightOrLength
         )
@@ -63,6 +63,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewCheckBoxMultipleSelectInput
@@ -781,7 +782,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
             allNextStepsTasks
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
@@ -867,8 +868,8 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 Just NextStepFollowUp ->
                     measurements.followUp
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate SetFollowUpOption
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
+                        |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 
                 Nothing ->
                     emptyNode

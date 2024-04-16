@@ -22,6 +22,13 @@ class HedleyRestfulPrenatalPartnerHIVTest extends HedleyRestfulPrenatalActivityB
   /**
    * {@inheritdoc}
    */
+  protected $multiFields = [
+    'field_test_prerequisites',
+  ];
+
+  /**
+   * {@inheritdoc}
+   */
   protected $dateFields = [
     'field_execution_date',
   ];

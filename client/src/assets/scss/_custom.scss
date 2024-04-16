@@ -447,7 +447,8 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
-.icon-task-laboratory {
+.icon-task-laboratory,
+.icon-task-laboratory-follow-ups {
   background-image: url(#{$img-path}icon-laboratory-white.svg);
   background-size: 78px 78px;
 }
@@ -571,6 +572,16 @@ h3.ui.header {
 .icon-task-stock-management {
   background-image: url(#{$img-path}icon-fbf-white.svg);
   background-size: 128px 128px;
+}
+
+.icon-task-home-visit {
+  background-image: url(#{$img-path}icon-house-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-diagnostics {
+  background-image: url(#{$img-path}icon-medication-distribution-white.svg);
+  background-size: 86px 86px;
 }
 
 // Tasks horizontal scroll
@@ -1778,6 +1789,62 @@ input::placeholder {
 
 }
 
+.icon-feeding {
+  .active &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-feeding-gray.svg);
+  }
+}
+
+.icon-caring {
+  .active &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-caring-gray.svg);
+  }
+}
+
+.icon-hygiene {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hygiene-gray.svg);
+  }
+}
+
+.icon-food-security {
+  .active &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-food-security-gray.svg);
+  }
+}
+
 .icon-height {
   .active &:after {
     background-image: url(#{$img-path}icon-height-white.svg);
@@ -2919,6 +2986,20 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-infrastructure-gray.svg);
+  }
+}
+
+.icon-dot {
+  .active &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-dot-gray.svg);
   }
 }
 

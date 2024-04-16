@@ -1,19 +1,21 @@
 module Pages.AcuteIllness.Encounter.Utils exposing (..)
 
 import AssocList as Dict
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..), AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.AcuteIllness.Activity.Utils exposing (resolveAcuteIllnessDiagnosis)
 import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.Report.Utils exposing (compareAcuteIllnessEncounters, getAcuteIllnessDiagnosisForEncounters, getAcuteIllnessEncountersForParticipant)
 import RemoteData exposing (RemoteData(..), WebData)
+import SyncManager.Model exposing (SiteFeature)
 
 
-generateAssembledData : NominalDate -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> WebData AssembledData
-generateAssembledData currentDate id isChw db =
+generateAssembledData : NominalDate -> EverySet SiteFeature -> AcuteIllnessEncounterId -> Bool -> ModelIndexedDb -> WebData AssembledData
+generateAssembledData currentDate features id isChw db =
     let
         encounter =
             Dict.get id db.acuteIllnessEncounters
@@ -87,7 +89,7 @@ generateAssembledData currentDate id isChw db =
                         getAcuteIllnessDiagnosisByPreviousEncounters id db data.encounter.participant
 
                 diagnosisByCurrentEncounterMeasurements =
-                    resolveAcuteIllnessDiagnosis currentDate isChw data
+                    resolveAcuteIllnessDiagnosis currentDate features isChw data
                         |> Maybe.map (\diagnosis -> ( currentDate, diagnosis ))
 
                 ( firstInitialWithSubsequent, secondInitialWithSubsequent ) =

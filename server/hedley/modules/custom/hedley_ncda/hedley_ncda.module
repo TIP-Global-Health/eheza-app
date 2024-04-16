@@ -22,7 +22,7 @@ function hedley_ncda_menu() {
     'title' => 'Aggregated NCDA scoreboard',
     'description' => 'View Aggregated NCDA scoreboard',
     'page callback' => 'hedley_ncda_aggregated_callback_menu',
-    'access callback' => 'hedley_admin_administrators_access',
+    'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%'] = array(
@@ -30,7 +30,7 @@ function hedley_ncda_menu() {
     'description' => 'View Aggregated NCDA scoreboard for district',
     'page callback' => 'hedley_ncda_aggregated_callback_district',
     'page arguments' => [3, 4],
-    'access callback' => 'hedley_admin_administrators_access',
+    'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%'] = array(
@@ -38,7 +38,7 @@ function hedley_ncda_menu() {
     'description' => 'View Aggregated NCDA scoreboard for sector',
     'page callback' => 'hedley_ncda_aggregated_callback_sector',
     'page arguments' => [3, 4, 5],
-    'access callback' => 'hedley_admin_administrators_access',
+    'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%'] = array(
@@ -46,7 +46,7 @@ function hedley_ncda_menu() {
     'description' => 'View Aggregated NCDA scoreboard for cell',
     'page callback' => 'hedley_ncda_aggregated_callback_cell',
     'page arguments' => [3, 4, 5, 6],
-    'access callback' => 'hedley_admin_administrators_access',
+    'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
 
   $items['admin/reports/aggregated-ncda/%/%/%/%/%'] = array(
@@ -54,10 +54,22 @@ function hedley_ncda_menu() {
     'description' => 'View Aggregated NCDA scoreboard for village',
     'page callback' => 'hedley_ncda_aggregated_callback_village',
     'page arguments' => [3, 4, 5, 6, 7],
-    'access callback' => 'hedley_admin_administrators_access',
+    'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
 
   return $items;
+}
+
+/**
+ * Grants access to Aggregated NCDA viewers, superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_ncda_aggregated_ncda_report_access() {
+  $data_mananger_role = user_role_load_by_name('Data Manager');
+
+  return user_has_role($data_mananger_role->rid) || hedley_admin_administrators_access();
 }
 
 /**
@@ -66,6 +78,13 @@ function hedley_ncda_menu() {
 function hedley_ncda_node_insert($node) {
   $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
   if (!$ncda_enabled) {
+    return;
+  }
+
+  // Generate initial NCDA data for newly created person.
+  // We need this to properly count 'children under 2'.
+  if ($node->type == 'person') {
+    hedley_ncda_trigger_recalculation_for_created_person($node);
     return;
   }
 
@@ -292,12 +311,22 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  *   The HTML markup for the Elm application.
  */
 function hedley_ncda_build_elm_app($page, array $data) {
+  $path_hedley_ncda = drupal_get_path('module', 'hedley_ncda');
   // Add application.
-  drupal_add_js(drupal_get_path('module', 'hedley_ncda') . '/js/elm-main.js');
-  drupal_add_js(drupal_get_path('module', 'hedley_ncda') . '/js/elm.js');
-
+  drupal_add_js($path_hedley_ncda . '/js/elm-main.js');
+  drupal_add_js($path_hedley_ncda . '/js/elm.js');
   // Add CSS.
-  drupal_add_css(drupal_get_path('module', 'hedley_ncda') . '/css/aggregated-ncda.css', 'file');
+  drupal_add_css($path_hedley_ncda . '/css/aggregated-ncda.css', 'file');
+  if ($page == 'results') {
+    $path_system = drupal_get_path('module', 'system');
+    drupal_add_css($path_system . '/system.base.css', 'file');
+    drupal_add_css($path_system . '/system.menus.css', 'file');
+    $default_theme = variable_get('theme_default', 'bartik');
+    $path_theme = drupal_get_path('theme', $default_theme);
+    drupal_add_css($path_theme . '/css/style.css', 'file');
+    drupal_add_css($path_theme . '/css/layout.css', 'file');
+    drupal_add_css($path_theme . '/css/colors.css', 'file');
+  }
 
   // Getting a unique ID for the app.
   $app_id = drupal_html_id('elm-app');
@@ -335,36 +364,42 @@ function hedley_ncda_build_elm_app($page, array $data) {
  *   An array of generated data.
  */
 function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
-  $query = new EntityFieldQuery();
-  $query
+  $three_years_ago = date('Y-m-d', strtotime('-3 years'));
+  $base_query = new EntityFieldQuery();
+  $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
     ->propertyCondition('status', NODE_PUBLISHED)
+      // Since we show data starting Nov 23, it's enough to select only those
+      // born during the past 3 years.
+      // Position the condition as first field condition, as placing it bellow
+      // caused incorrect query results on live environment.
+    ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
     ->fieldCondition('field_province', 'value', $province)
     ->fieldCondition('field_district', 'value', $district)
     ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL')
     ->addTag('exclude_deleted');
 
   if (!empty($sector)) {
-    $query->fieldCondition('field_sector', 'value', $sector);
+    $base_query->fieldCondition('field_sector', 'value', $sector);
   }
 
   if (!empty($cell)) {
-    $query->fieldCondition('field_cell', 'value', $cell);
+    $base_query->fieldCondition('field_cell', 'value', $cell);
   }
 
   if (!empty($village)) {
-    $query->fieldCondition('field_village', 'value', $village);
+    $base_query->fieldCondition('field_village', 'value', $village);
   }
 
   $data = [];
   $nid = 0;
-  $batch = 500;
+  $batch = 400;
   while (TRUE) {
     // Free up memory.
     drupal_static_reset();
 
-    $query = clone $query;
+    $query = clone $base_query;
     if ($nid) {
       $query->propertyCondition('nid', $nid, '>');
     }
@@ -386,7 +421,10 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
         continue;
       }
 
-      $data[] = json_decode($json_data);
+      $decoded = json_decode($json_data);
+      $decoded->created = date("Y-m-d", $node->created);
+
+      $data[] = $decoded;
     }
 
     $nid = end($ids);
@@ -400,23 +438,24 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
  *
  * @param object $person
  *   Person node for which NCDA data is generated.
+ * @param string $birth_date_from
+ *   Minimal child birthdate, from which we perform calculations.
+ *   Our first records are from Jan 2018, so we default to
+ *   Jan 2016 to make sure we cover all children.
  *
  * @return bool
  *   True, if data was calculated for person.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_ncda_calculate_aggregated_data_for_person($person) {
+function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_from = '2016-01-01') {
   $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
   if (empty($birth_date)) {
     // We must know the birthdate to be able to present NCDA data.
     return FALSE;
   }
 
-  if ($birth_date < strtotime("-9 year")) {
-    // We generate data for children only.
-    // Our first records are from Jan 2018, so going back
-    // 9 years to make sure we cover all children.
+  if ($birth_date < strtotime($birth_date_from)) {
     return FALSE;
   }
 
@@ -473,7 +512,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
         continue;
       }
 
-      if (in_array($node->type, HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES)) {
+      if (in_array($node->type, hedley_ncda_resolve_immunization_bundles())) {
         $immunisations[] = $node;
         continue;
       }
@@ -633,7 +672,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
       'row1' => [],
       'row2' => [],
       'row3' => [],
-      'row4' => FALSE,
+      'row4' => [],
       'row5' => [],
     ],
   ];
@@ -764,7 +803,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person) {
           break;
 
         case 'insecticide-treated-bednets':
-          $data['ncda']['pane5']['row4'] = TRUE;
+          $data['ncda']['pane5']['row4'][] = $date_measured;
           break;
 
         case 'has-kitchen-garden':
@@ -1001,10 +1040,38 @@ function hedley_ncda_trigger_recalculation_for_new_village($node) {
 }
 
 /**
+ * Triggers calculation of NCDA data, for newly created person.
+ *
+ * @param object $node
+ *   The node object of a village.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_ncda_trigger_recalculation_for_created_person($node) {
+  $birth_date = strtotime($node->field_birth_date[LANGUAGE_NONE][0]['value']);
+  if (empty($birth_date)) {
+    // We must know the birthdate to decide if to generate NCDA data.
+    return;
+  }
+
+  if ($birth_date < strtotime("2016-01-01")) {
+    // Our first records are from 01 Jan 2018. NCDA is for children
+    // under 2y. Therefore, recalculation is needed only for those
+    // born starting 01 Jan 2016.
+    return FALSE;
+  }
+
+  // If we got this far, schedule generating NCDA data using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_NCDA_CALCULATE_AGGREGATED_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
+
+/**
  * Triggers recalculation of person's NCDA data, when edited.
  *
  * Recalculation is required only when birth date is edited.
- * Note: currently, editing geo fields of person is not allowed.
+ * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
  *   The node object of a village.
@@ -1019,6 +1086,13 @@ function hedley_ncda_trigger_recalculation_by_edited_person($node) {
   $birth_date_orig = $wrapper_orig->field_birth_date->value();
 
   if ($birth_date == $birth_date_orig) {
+    return;
+  }
+
+  if ($birth_date < strtotime("2016-01-01")) {
+    // Our first records are from 01 Jan 2018. NCDA is for children
+    // under 2y. Therefore, recalculation is needed only for those
+    // born starting 01 Jan 2016.
     return;
   }
 
@@ -1106,6 +1180,29 @@ function hedley_ncda_get_triggering_measurement_types() {
     HEDLEY_ACTIVITY_MUAC_BUNDLES,
     HEDLEY_ACTIVITY_NUTRITION_BUNDLES,
     HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES,
-    HEDLEY_ACTIVITY_IMMUNISATION_BUNDLES
+    hedley_ncda_resolve_immunization_bundles()
   );
+}
+
+/**
+ * Generates a list of immunization bundles relevant for NCDA.
+ *
+ * @return string[]
+ *   List of immunization bundles.
+ */
+function hedley_ncda_resolve_immunization_bundles() {
+  return array_merge(
+    HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES,
+    HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES
+  );
+}
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Adds a condition to select entities that don't have field_ncda_data set.
+ */
+function hedley_ncda_query_exclude_set_alter(QueryAlterableInterface $query) {
+  $query->leftJoin('field_data_field_ncda_data', 'fnd', 'node.nid = fnd.entity_id');
+  $query->isNull('fnd.field_ncda_data_value');
 }

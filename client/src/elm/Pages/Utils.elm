@@ -1,7 +1,7 @@
 module Pages.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (HealthCenterId, PersonId)
 import Backend.Measurement.Model
     exposing
@@ -18,7 +18,7 @@ import Backend.Utils exposing (reportToWhatsAppEnabled)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -254,19 +254,16 @@ matchMotherAndHerChildren filter offlineSession motherId mother =
     motherContainsFilter || childrenContainsFilter ()
 
 
-normalizeFilter : String -> String
-normalizeFilter filterInput =
-    filterInput
-        |> String.toLower
-        |> String.trim
-
-
 viewNameFilter : Language -> String -> (String -> msg) -> Html msg
 viewNameFilter language filterInput setFilterMsg =
-    div
-        [ class "ui action input small" ]
+    viewCustomNameFilter language filterInput setFilterMsg Translate.FilterByName
+
+
+viewCustomNameFilter : Language -> String -> (String -> msg) -> TranslationId -> Html msg
+viewCustomNameFilter language filterInput setFilterMsg placeholderTransId =
+    div [ class "ui action input small" ]
         [ input
-            [ placeholder <| translate language Translate.FilterByName
+            [ placeholder <| translate language placeholderTransId
             , type_ "text"
             , onInput setFilterMsg
             , value filterInput
@@ -281,6 +278,11 @@ viewNameFilter language filterInput setFilterMsg =
             ]
             [ text <| translate language Translate.Clear ]
         ]
+
+
+normalizeFilter : String -> String
+normalizeFilter =
+    String.toLower >> String.trim
 
 
 viewLabel : Language -> TranslationId -> Html any
@@ -423,9 +425,17 @@ viewMonthSelector language selectedDate monthGap maxGap changeMonthGapMsg =
         ]
 
 
+{-| If current month is selected, returns current date.
+If any of previous months is selected, returns last day of selected months.
+-}
 resolveSelectedDateForMonthSelector : NominalDate -> Int -> NominalDate
 resolveSelectedDateForMonthSelector currentDate monthGap =
-    Date.add Date.Months (-1 * monthGap) currentDate
+    if monthGap == 0 then
+        currentDate
+
+    else
+        Date.add Date.Months (-1 * monthGap) currentDate
+            |> toLastDayOfMonth
 
 
 
@@ -472,7 +482,7 @@ viewBoolInput :
 viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
     let
         ( yesTransId, noTransId ) =
-            optionsTranslationIds |> Maybe.withDefault ( Translate.Yes, Translate.No )
+            Maybe.withDefault ( Translate.Yes, Translate.No ) optionsTranslationIds
 
         inputWidth =
             if isJust optionsTranslationIds then
@@ -1327,3 +1337,17 @@ setMuacValueForSite site s =
 
         _ ->
             String.toFloat s
+
+
+resolveActiveTask : List t -> Maybe t -> Maybe t
+resolveActiveTask options selected =
+    Maybe.map
+        (\task ->
+            if List.member task options then
+                Just task
+
+            else
+                List.head options
+        )
+        selected
+        |> Maybe.withDefault (List.head options)

@@ -31,6 +31,9 @@ individualEncounterTypeToString encounterType =
         NutritionEncounter ->
             "nutrition"
 
+        TuberculosisEncounter ->
+            "tuberculosis"
+
         WellChildEncounter ->
             "well-child"
 
@@ -58,6 +61,9 @@ individualEncounterTypeFromString string =
 
         "nutrition" ->
             Just NutritionEncounter
+
+        "tuberculosis" ->
+            Just TuberculosisEncounter
 
         "well-child" ->
             Just WellChildEncounter
@@ -114,3 +120,131 @@ initiatorFromUrlFragment s =
 
             else
                 Nothing
+
+
+pregnancyOutcomeToString : PregnancyOutcome -> String
+pregnancyOutcomeToString outcome =
+    case outcome of
+        OutcomeLiveAtTerm ->
+            "live-at-term"
+
+        OutcomeLivePreTerm ->
+            "live-pre-term"
+
+        OutcomeStillAtTerm ->
+            "still-at-term"
+
+        OutcomeStillPreTerm ->
+            "still-pre-term"
+
+        OutcomeAbortions ->
+            "abortions"
+
+
+pregnancyOutcomeFromString : String -> Maybe PregnancyOutcome
+pregnancyOutcomeFromString outcome =
+    case outcome of
+        "live-at-term" ->
+            Just OutcomeLiveAtTerm
+
+        "live-pre-term" ->
+            Just OutcomeLivePreTerm
+
+        "still-at-term" ->
+            Just OutcomeStillAtTerm
+
+        "still-pre-term" ->
+            Just OutcomeStillPreTerm
+
+        "abortions" ->
+            Just OutcomeAbortions
+
+        _ ->
+            Nothing
+
+
+acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
+acuteIllnessOutcomeToString outcome =
+    case outcome of
+        OutcomeIllnessResolved ->
+            "illness-resolved"
+
+        OutcomeLostToFollowUp ->
+            "lost-to-follow-up"
+
+        OutcomeMovedOutsideCA ->
+            "moved-out-of-ca"
+
+        OutcomePatientDied ->
+            "patient-died"
+
+        OutcomeReferredToHC ->
+            "referred-to-hc"
+
+        OutcomeOther ->
+            "other"
+
+
+acuteIllnessOutcomeFromString : String -> Maybe AcuteIllnessOutcome
+acuteIllnessOutcomeFromString outcome =
+    case outcome of
+        "illness-resolved" ->
+            Just OutcomeIllnessResolved
+
+        "lost-to-follow-up" ->
+            Just OutcomeLostToFollowUp
+
+        "moved-out-of-ca" ->
+            Just OutcomeMovedOutsideCA
+
+        "patient-died" ->
+            Just OutcomePatientDied
+
+        "referred-to-hc" ->
+            Just OutcomeReferredToHC
+
+        "other" ->
+            Just OutcomeOther
+
+        _ ->
+            Nothing
+
+
+deliveryLocationToString : DeliveryLocation -> String
+deliveryLocationToString location =
+    case location of
+        FacilityDelivery ->
+            "facility"
+
+        HomeDelivery ->
+            "home"
+
+
+deliveryLocationFromString : String -> Maybe DeliveryLocation
+deliveryLocationFromString location =
+    case location of
+        "facility" ->
+            Just FacilityDelivery
+
+        "home" ->
+            Just HomeDelivery
+
+        _ ->
+            Nothing
+
+
+tuberculosisOutcomeToString : TuberculosisOutcome -> String
+tuberculosisOutcomeToString outcome =
+    case outcome of
+        OutcomeNotDiagnosed ->
+            "not-dignosed"
+
+
+tuberculosisOutcomeFromString : String -> Maybe TuberculosisOutcome
+tuberculosisOutcomeFromString outcome =
+    case outcome of
+        "not-dignosed" ->
+            Just OutcomeNotDiagnosed
+
+        _ ->
+            Nothing

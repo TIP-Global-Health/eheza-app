@@ -1,6 +1,6 @@
 module Pages.Report.View exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessProgressReportInitiator)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (labExpirationPeriod)
@@ -12,7 +12,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Measurement.Utils exposing (testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Report.Model exposing (..)
 import Pages.Report.Utils exposing (..)
@@ -40,8 +40,8 @@ viewItemHeading language label color =
         [ text <| translate language label ]
 
 
-viewLabResultsEntry : Language -> NominalDate -> (Maybe LabResultsMode -> msg) -> LabResultsHistoryMode -> Html msg
-viewLabResultsEntry language currentDate setLabResultsModeMsg results =
+viewLabResultsEntry : Language -> NominalDate -> Bool -> (Maybe LabResultsMode -> msg) -> LabResultsHistoryMode -> Html msg
+viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg results =
     let
         config =
             case results of
@@ -492,51 +492,56 @@ viewLabResultsEntry language currentDate setLabResultsModeMsg results =
                         Maybe.map triglyceridesResultNormal recentResultValue
                             |> Maybe.withDefault True
                     }
-
-        dateCell =
-            Maybe.map (formatDDMMYYYY >> text) config.recentResultDate
-                |> Maybe.withDefault (text "")
-
-        resultCell =
-            if config.totalResults == 0 then
-                text ""
-
-            else if config.knownAsPositive then
-                viewKnownAsPositiveResult language
-
-            else
-                Maybe.map text config.recentResult
-                    |> Maybe.withDefault (viewUncompetedResult language currentDate config.recentResultDate)
-
-        historyResultsIcon =
-            if config.totalResults > 1 then
-                div
-                    [ class "icon-forward"
-                    , onClick <| setLabResultsModeMsg <| Just (LabResultsHistory results)
-                    ]
-                    []
-
-            else
-                emptyNode
-
-        normalRange =
-            case results of
-                LabResultsHistoryRandomBloodSugar assembled ->
-                    List.head assembled
-                        |> Maybe.andThen Tuple.second
-                        |> Maybe.map Translate.RandomBloodSugarResultNormalRange
-                        |> Maybe.withDefault Translate.EmptyString
-
-                _ ->
-                    Translate.LabResultsNormalRange results
     in
-    div [ classList [ ( "entry", True ), ( "warning", not config.recentResultNormal ) ] ]
-        [ div [ class "name" ] [ translateText language config.label ]
-        , div [ class "date" ] [ dateCell ]
-        , div [ class "result" ] [ resultCell ]
-        , div [ class "normal-range" ] [ text <| translate language normalRange ]
-        , historyResultsIcon
-        ]
+    if isResultsReviewer && config.totalResults == 0 then
+        emptyNode
+
+    else
+        let
+            dateCell =
+                Maybe.map (formatDDMMYYYY >> text) config.recentResultDate
+                    |> Maybe.withDefault (text "")
+
+            resultCell =
+                if config.totalResults == 0 then
+                    text ""
+
+                else if config.knownAsPositive then
+                    viewKnownAsPositiveResult language
+
+                else
+                    Maybe.map text config.recentResult
+                        |> Maybe.withDefault (viewUncompetedResult language currentDate config.recentResultDate)
+
+            historyResultsIcon =
+                if not isResultsReviewer && config.totalResults > 1 then
+                    div
+                        [ class "icon-forward"
+                        , onClick <| setLabResultsModeMsg <| Just (LabResultsHistory results)
+                        ]
+                        []
+
+                else
+                    emptyNode
+
+            normalRange =
+                case results of
+                    LabResultsHistoryRandomBloodSugar assembled ->
+                        List.head assembled
+                            |> Maybe.andThen Tuple.second
+                            |> Maybe.map Translate.RandomBloodSugarResultNormalRange
+                            |> Maybe.withDefault Translate.EmptyString
+
+                    _ ->
+                        Translate.LabResultsNormalRange results
+        in
+        div [ classList [ ( "entry", True ), ( "warning", not config.recentResultNormal ) ] ]
+            [ div [ class "name" ] [ translateText language config.label ]
+            , div [ class "date" ] [ dateCell ]
+            , div [ class "result" ] [ resultCell ]
+            , div [ class "normal-range" ] [ text <| translate language normalRange ]
+            , historyResultsIcon
+            ]
 
 
 translateTestReport : Language -> TestReport -> String
@@ -579,12 +584,13 @@ viewUncompetedResult language currentDate resultDate =
 viewLabResultsPane :
     Language
     -> NominalDate
+    -> Bool
     -> LabResultsCurrentMode
     -> (Maybe LabResultsMode -> msg)
     -> LabsResultsDisplayConfig
     -> LabsResultsValues encounterId
     -> Html msg
-viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig data =
+viewLabResultsPane language currentDate isResultsReviewer mode setLabResultsModeMsg displayConfig data =
     let
         heading =
             div [ class "heading" ]
@@ -644,7 +650,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     (\value ->
                         if
                             (not <| testPerformedByExecutionNote value.executionNote)
-                                && (value.bloodSmearResult /= BloodSmearNotTaken)
+                                && bloodSmearResultNotSet value.bloodSmearResult
                         then
                             Maybe.map (\executionDate -> ( executionDate, Just value.bloodSmearResult ))
                                 value.executionDate
@@ -800,38 +806,38 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                         hba1cResults =
                             getTestResults .hba1c .hba1cResult
                     in
-                    [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
+                    [ viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
                         |> showIf displayConfig.hepatitisB
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
                         |> showIf displayConfig.malaria
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBloodSmear bloodSmearTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBloodSmear bloodSmearTestResults)
                         |> showIf ((not <| List.isEmpty bloodSmearTestResults) && displayConfig.malaria)
                     , dipstickShortEntry
                     , dipstickLongEntry
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHemoglobin hemoglobinResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHemoglobin hemoglobinResults)
                         |> showIf displayConfig.hemoglobin
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBloodGroup bloodGroupResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBloodGroup bloodGroupResults)
                         |> showIf displayConfig.bloodGpRs
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
                         |> showIf displayConfig.bloodGpRs
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryCreatinine creatinineResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryCreatinine creatinineResults)
                         |> showIf displayConfig.creatinine
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBUN bunResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBUN bunResults)
                         |> showIf displayConfig.creatinine
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryALT altResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryALT altResults)
                         |> showIf displayConfig.liverFunction
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryAST astResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryAST astResults)
                         |> showIf displayConfig.liverFunction
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
                         |> showIf displayConfig.pregnancy
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
                         |> showIf displayConfig.hba1c
                     , lipidPanelEntry
                         |> showIf displayConfig.lipidPanel
@@ -847,31 +853,39 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                     [ proteinEntry
                     , phEntry
                     , glucoseEntry
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryLeukocytes leukocytesResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryNitrite nitriteResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryUrobilinogen urobilinogenResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryLeukocytes leukocytesResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryNitrite nitriteResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryUrobilinogen urobilinogenResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
                     ]
 
                 LabResultsCurrentLipidPanel ->
-                    [ viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryTotalCholesterol totalCholesterolResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryLDLCholesterol ldlCholesterolResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryHDLCholesterol hdlCholesterolResults)
-                    , viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryTriglycerides triglyceridesResults)
+                    [ viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryTotalCholesterol totalCholesterolResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryLDLCholesterol ldlCholesterolResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHDLCholesterol hdlCholesterolResults)
+                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryTriglycerides triglyceridesResults)
                     ]
 
         proteinEntry =
-            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryProtein proteinResults)
+            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryProtein proteinResults)
 
         phEntry =
-            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryPH phResults)
+            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPH phResults)
 
         glucoseEntry =
-            viewLabResultsEntry language currentDate setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
+            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
 
         dipstickShortEntry =
+            let
+                emptyEntry =
+                    if isResultsReviewer then
+                        emptyNode
+
+                    else
+                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest)
+            in
             List.head proteinResults
                 |> Maybe.map
                     (\( date, proteinResult ) ->
@@ -910,9 +924,17 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickShort)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantShortTest))
+                |> Maybe.withDefault emptyEntry
 
         dipstickLongEntry =
+            let
+                emptyEntry =
+                    if isResultsReviewer then
+                        emptyNode
+
+                    else
+                        emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest)
+            in
             List.head leukocytesResults
                 |> Maybe.map
                     (\( date, leukocytesResult ) ->
@@ -976,7 +998,7 @@ viewLabResultsPane language currentDate mode setLabResultsModeMsg displayConfig 
                             (Just <| setLabResultsModeMsg <| Just <| LabResultsCurrent LabResultsCurrentDipstickLong)
                             resultsNormal
                     )
-                |> Maybe.withDefault (emptyConsolidatedEntry (Translate.UrineDipstickTestLabel VariantLongTest))
+                |> Maybe.withDefault emptyEntry
 
         lipidPanelEntry =
             List.head totalCholesterolResults

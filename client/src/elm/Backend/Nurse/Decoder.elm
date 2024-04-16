@@ -60,6 +60,9 @@ decodeRole =
                     "chw" ->
                         succeed RoleCHW
 
+                    "lab-tech" ->
+                        succeed RoleLabTech
+
                     _ ->
                         fail <|
                             s

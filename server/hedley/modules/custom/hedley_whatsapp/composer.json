@@ -1,5 +1,5 @@
 {
   "require": {
-    "cmdotcom/text-sdk-php": "^2.2.1"
+    "twilio/sdk": "^7.16.1"
   }
 }

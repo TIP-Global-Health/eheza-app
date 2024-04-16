@@ -6,7 +6,7 @@ module Pages.GlobalCaseManagement.View exposing
     )
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model
@@ -14,22 +14,29 @@ import Backend.Measurement.Model
         ( AcuteIllnessTraceContact
         , FollowUpMeasurements
         , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
         , NCDLabsResults
         , NutritionAssessment(..)
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.NutritionEncounter.Utils exposing (getHomeVisitEncountersForParticipant)
+import Backend.NutritionEncounter.Utils
+    exposing
+        ( getHomeVisitEncountersForParticipant
+        , getTuberculosisEncountersForParticipant
+        , getWellChildEncountersForParticipant
+        )
 import Backend.Person.Utils exposing (generateFullName)
+import Backend.PrenatalActivity.Model exposing (PrenatalRecurrentActivity(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
-import Backend.Utils exposing (resolveIndividualParticipantForPerson)
-import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (getVillageById)
+import Backend.Utils exposing (resolveIndividualParticipantForPerson, tuberculosisManagementEnabled)
+import Backend.Village.Utils exposing (resolveVillageResidents)
+import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -42,15 +49,25 @@ import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticip
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
-import SyncManager.Model
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewModal)
 import Utils.NominalDate exposing (sortEncounterTuplesDesc)
 import Utils.WebData exposing (viewWebData)
 
 
-view : Language -> NominalDate -> HealthCenterId -> Maybe VillageId -> SyncManager.Model.Model -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate healthCenterId villageId syncManager db model =
+view :
+    Language
+    -> NominalDate
+    -> EverySet SiteFeature
+    -> HealthCenterId
+    -> Maybe VillageId
+    -> Bool
+    -> SyncManager.Model.Model
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate features healthCenterId mVillageId isLabTech syncManager db model =
     let
         header =
             div
@@ -69,15 +86,12 @@ view language currentDate healthCenterId villageId syncManager db model =
                 |> Maybe.withDefault NotAsked
 
         content =
-            Maybe.andThen
-                (getVillageById db
-                    >> Maybe.map
-                        (\village ->
-                            viewWebData language (viewContentForChw language currentDate village model db) identity followUps
-                        )
+            Maybe.map
+                (\villageId ->
+                    viewWebData language (viewContentForChw language currentDate features villageId model db) identity followUps
                 )
-                villageId
-                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate model db) identity followUps)
+                mVillageId
+                |> Maybe.withDefault (viewWebData language (viewContentForNurse language currentDate isLabTech model db) identity followUps)
                 |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div [ class "wrap wrap-alt-2 page-case-management" ]
@@ -90,39 +104,77 @@ view language currentDate healthCenterId villageId syncManager db model =
         ]
 
 
-viewContentForChw : Language -> NominalDate -> Village -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForChw language currentDate village model db followUps =
+viewContentForChw : Language -> NominalDate -> EverySet SiteFeature -> VillageId -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForChw language currentDate features villageId model db allFollowUps =
     let
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps currentDate followUps
-                |> generateFollowUpsForResidents currentDate village db followUps
+        villageResidents =
+            resolveVillageResidents villageId db
+
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         nutritionFollowUps =
-            generateNutritionFollowUps currentDate followUpsForResidents
+            generateNutritionFollowUps currentDate followUps
                 |> fillPersonName identity db
 
         nutritionFollowUpsPane =
             viewNutritionPane language currentDate nutritionFollowUps db model
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps currentDate db followUpsForResidents
+            generateAcuteIllnessFollowUps currentDate db followUps
                 |> fillPersonName Tuple.second db
 
+        ( tbSuspectAcuteIllnessFollowUps, nonTBSuspectAcuteIllnessFollowUps ) =
+            Dict.partition
+                (\_ item ->
+                    item.value.diagnosis == Just DiagnosisTuberculosisSuspect
+                )
+                acuteIllnessFollowUps
+
         acuteIllnessFollowUpsPane =
-            viewAcuteIllnessPane language currentDate acuteIllnessFollowUps db model
+            viewAcuteIllnessPane language currentDate nonTBSuspectAcuteIllnessFollowUps db model
 
         prenatalFollowUps =
-            generatePrenatalFollowUps currentDate db followUpsForResidents
+            generatePrenatalFollowUps currentDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalFollowUpsPane =
             viewPrenatalPane language currentDate prenatalFollowUps db model
 
+        immunizationFollowUps =
+            generateImmunizationFollowUps currentDate followUps
+                |> fillPersonName identity db
+
+        immunizationFollowUpsPane =
+            viewImmunizationPane language currentDate immunizationFollowUps db model
+
+        tuberculosisPane =
+            if tuberculosisManagementEnabled features then
+                let
+                    ( tuberculosisFollowUpsForExisitingParticipants, tuberculosisFollowUpsForNewParticipants ) =
+                        generateTuberculosisFollowUps currentDate db followUps tbSuspectAcuteIllnessFollowUps
+
+                    tuberculosisFollowUpsForExisting =
+                        fillPersonName Tuple.second db tuberculosisFollowUpsForExisitingParticipants
+
+                    tuberculosisFollowUpsForNew =
+                        fillPersonName identity db tuberculosisFollowUpsForNewParticipants
+                in
+                [ ( FilterTuberculosis
+                  , viewTuberculosisPane language currentDate tuberculosisFollowUpsForExisting tuberculosisFollowUpsForNew db model
+                  )
+                ]
+
+            else
+                []
+
         panes =
             [ ( FilterAcuteIllness, acuteIllnessFollowUpsPane )
             , ( FilterAntenatal, prenatalFollowUpsPane )
             , ( FilterNutrition, nutritionFollowUpsPane )
+            , ( FilterImmunization, immunizationFollowUpsPane )
             ]
+                ++ tuberculosisPane
                 |> List.filterMap
                     (\( type_, pane ) ->
                         if isNothing model.filter || model.filter == Just type_ then
@@ -133,53 +185,65 @@ viewContentForChw language currentDate village model db followUps =
                     )
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language chwFilters model
+        viewFilters language (chwFilters features) model
             :: panes
 
 
-viewContentForNurse : Language -> NominalDate -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
-viewContentForNurse language currentDate model db followUps =
+viewContentForNurse : Language -> NominalDate -> Bool -> Model -> ModelIndexedDb -> FollowUpMeasurements -> Html Msg
+viewContentForNurse language currentDate isLabTech model db followUps =
     let
-        contactsTracingPane =
-            viewContactsTracingPane language currentDate followUps.traceContacts db model
+        ( panes, filters ) =
+            let
+                prenatalLabsPane =
+                    viewPrenatalLabsPane language currentDate isLabTech followUps.prenatalLabs db model
+            in
+            if isLabTech then
+                ( [ ( FilterPrenatalLabs, prenatalLabsPane ) ]
+                , labTechFilters
+                )
 
-        prenatalLabsPane =
-            viewPrenatalLabsPane language currentDate followUps.prenatalLabs db model
+            else
+                let
+                    contactsTracingPane =
+                        viewContactsTracingPane language currentDate followUps.traceContacts db model
 
-        ncdLabsPane =
-            viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                    ncdLabsPane =
+                        viewNCDLabsPane language currentDate followUps.ncdLabs db model
+                in
+                ( [ ( FilterContactsTrace, contactsTracingPane )
+                  , ( FilterPrenatalLabs, prenatalLabsPane )
+                  , ( FilterNCDLabs, ncdLabsPane )
+                  ]
+                , nurseFilters
+                )
 
-        panes =
-            [ ( FilterContactsTrace, contactsTracingPane )
-            , ( FilterPrenatalLabs, prenatalLabsPane )
-            , ( FilterNCDLabs, ncdLabsPane )
-            ]
-                |> List.filterMap
-                    (\( type_, pane ) ->
-                        if isNothing model.filter || model.filter == Just type_ then
-                            Just pane
+        panesForView =
+            List.filterMap
+                (\( type_, pane ) ->
+                    if isNothing model.filter || model.filter == Just type_ then
+                        Just pane
 
-                        else
-                            Nothing
-                    )
+                    else
+                        Nothing
+                )
+                panes
     in
     div [ class "ui unstackable items" ] <|
-        viewFilters language nurseFilters model
-            :: panes
+        viewFilters language filters model
+            :: panesForView
 
 
 viewEntryPopUp : Language -> NominalDate -> Maybe FollowUpEncounterDataType -> Maybe (Html Msg)
-viewEntryPopUp language currentDate dialogState =
-    dialogState
-        |> Maybe.map
-            (\dataType ->
-                case dataType of
-                    FollowUpPrenatal data ->
-                        viewStartFollowUpPrenatalEncounterDialog language currentDate data
+viewEntryPopUp language currentDate =
+    Maybe.map
+        (\dataType ->
+            case dataType of
+                FollowUpPrenatal data ->
+                    viewStartFollowUpPrenatalEncounterDialog language currentDate data
 
-                    _ ->
-                        viewStartFollowUpEncounterDialog language dataType
-            )
+                _ ->
+                    viewStartFollowUpEncounterDialog language dataType
+        )
 
 
 viewStartFollowUpEncounterDialog : Language -> FollowUpEncounterDataType -> Html Msg
@@ -215,6 +279,12 @@ viewStartFollowUpEncounterDialog language dataType =
 
         FollowUpAcuteIllness data ->
             startFollowUpDialog AcuteIllnessEncounter data.personName
+
+        FollowUpImmunization data ->
+            startFollowUpDialog WellChildEncounter data.personName
+
+        FollowUpTuberculosis data ->
+            startFollowUpDialog TuberculosisEncounter data.personName
 
         -- We should never get here, since Prenatal got
         -- it's own dialog.
@@ -366,14 +436,14 @@ generateNutritionFollowUpEntryData language limitDate db personId item =
     lastHomeVisitEncounter
         |> Maybe.map
             (\encounter ->
-                -- Last Home Visitit encounter occurred before follow up was scheduled.
+                -- Last Home Visit encounter occurred before follow up was scheduled.
                 if Date.compare encounter.startDate item.dateMeasured == LT then
                     Just <| NutritionFollowUpEntry personId item
 
                 else
                     Nothing
             )
-        |> -- No Home Visitit encounter found.
+        |> -- No Home Visit encounter found.
            Maybe.withDefault
             (Just <| NutritionFollowUpEntry personId item)
 
@@ -516,13 +586,21 @@ generateAcuteIllnessFollowUpEntryData language currentDate limitDate db ( partic
                                 List.map Tuple.second allEncountersWithIds
 
                             diagnosis =
-                                allEncounters
-                                    |> List.filter
+                                -- At TB management feature, we started recording the
+                                -- diagnosis on follow up.
+                                -- Therefore, we try to resolve it from follow up,
+                                -- and fallback to more heavy resolving by running through
+                                -- all encounters.
+                                Maybe.Extra.or
+                                    item.value.diagnosis
+                                    (List.filter
                                         -- We filters out encounters that got no diagnosis set,
                                         -- to get most recent diagnosis made for the illness.
                                         (.diagnosis >> (/=) NoAcuteIllnessDiagnosis)
-                                    |> List.head
-                                    |> Maybe.map .diagnosis
+                                        allEncounters
+                                        |> List.head
+                                        |> Maybe.map .diagnosis
+                                    )
 
                             encounterSequenceNumber =
                                 allEncounters
@@ -552,7 +630,7 @@ viewAcuteIllnessFollowUpEntry language currentDate entry =
             entry.item
 
         dueOption =
-            followUpDueOptionByDate currentDate item.dateMeasured item.value
+            followUpDueOptionByDate currentDate item.dateMeasured item.value.options
 
         assessment =
             [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis entry.diagnosis ] ]
@@ -691,6 +769,148 @@ viewPrenatalFollowUpEntry language currentDate entry =
                     item.dateMeasured
     in
     viewFollowUpEntry language dueOption item.personName popupData assessment
+
+
+viewTuberculosisPane :
+    Language
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+    -> Dict PersonId TuberculosisFollowUpItem
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewTuberculosisPane language currentDate itemsDictForExisting itemsDictForNew db model =
+    let
+        limitDate =
+            -- Set limit date for tomorrow, so that we
+            -- load all available follow ups.
+            Date.add Days 1 currentDate
+
+        entries =
+            generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewTuberculosisFollowUpEntry language currentDate) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language FilterTuberculosis
+        , div [ class "pane-content" ]
+            content
+        ]
+
+
+generateTuberculosisFollowUpEntries :
+    Language
+    -> NominalDate
+    -> NominalDate
+    -> Dict ( IndividualEncounterParticipantId, PersonId ) TuberculosisFollowUpItem
+    -> Dict PersonId TuberculosisFollowUpItem
+    -> ModelIndexedDb
+    -> List TuberculosisFollowUpEntry
+generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForExisting itemsDictForNew db =
+    let
+        entriesForExisting =
+            Dict.map (generateTuberculosisFollowUpEntryData language currentDate limitDate db) itemsDictForExisting
+                |> Dict.values
+                |> Maybe.Extra.values
+
+        entriesForNew =
+            Dict.toList itemsDictForNew
+                |> List.filterMap
+                    (\( personId, item ) ->
+                        if Date.compare item.dateMeasured limitDate == LT then
+                            TuberculosisFollowUpEntry
+                                Nothing
+                                personId
+                                item
+                                |> Just
+
+                        else
+                            Nothing
+                    )
+    in
+    entriesForExisting ++ entriesForNew
+
+
+generateTuberculosisFollowUpEntryData :
+    Language
+    -> NominalDate
+    -> NominalDate
+    -> ModelIndexedDb
+    -> ( IndividualEncounterParticipantId, PersonId )
+    -> TuberculosisFollowUpItem
+    -> Maybe TuberculosisFollowUpEntry
+generateTuberculosisFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
+    if item.dateMeasured == currentDate then
+        -- We do not display follow ups that were scheduled today,
+        -- since we should not allow starting an encounter, if there
+        -- was already an encounter completed today (where follow up
+        -- was scheduled).
+        Nothing
+
+    else
+        let
+            dateConcludedCriteria =
+                Dict.get participantId db.individualParticipants
+                    |> Maybe.andThen RemoteData.toMaybe
+                    |> Maybe.andThen .dateConcluded
+                    |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+        in
+        if dateConcludedCriteria == Just LT then
+            -- Illness was concluded before limit date, so we do not need to follow up on it.
+            Nothing
+
+        else
+            let
+                allEncountersWithIds =
+                    getTuberculosisEncountersForParticipant db participantId
+                        |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                        -- Sort DESC
+                        |> List.sortWith sortEncounterTuplesDesc
+            in
+            List.head allEncountersWithIds
+                |> Maybe.andThen
+                    (\( encounterId, encounter ) ->
+                        -- Follow up belongs to last encounter, which indicates that
+                        -- there was no other encounter that has resolved this follow up.
+                        if item.encounterId == Just encounterId then
+                            TuberculosisFollowUpEntry
+                                (Just participantId)
+                                personId
+                                item
+                                |> Just
+
+                        else
+                            -- Last encounter has not originated the follow up.
+                            -- Therefore, we know that follow up is resolved.
+                            Nothing
+                    )
+
+
+viewTuberculosisFollowUpEntry : Language -> NominalDate -> TuberculosisFollowUpEntry -> Html Msg
+viewTuberculosisFollowUpEntry language currentDate entry =
+    let
+        item =
+            entry.item
+
+        dueOption =
+            followUpDueOptionByDate currentDate item.dateMeasured item.value.options
+
+        label =
+            [ p [] [ text <| translate language Translate.TuberculosisFollowUpLabel ] ]
+
+        popupData =
+            FollowUpTuberculosis <|
+                FollowUpTuberculosisData
+                    entry.personId
+                    item.personName
+                    entry.participantId
+    in
+    viewFollowUpEntry language dueOption item.personName popupData label
 
 
 viewFollowUpEntry :
@@ -847,30 +1067,55 @@ viewTraceContactEntry language currentDate db entry =
 viewPrenatalLabsPane :
     Language
     -> NominalDate
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-viewPrenatalLabsPane language currentDate itemsDict db model =
+viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
     let
         filteredItemsDict =
             Dict.filter
                 (\_ item ->
-                    -- We know that item is not resolved, if resolution
-                    -- date is a future date.
-                    Date.compare currentDate item.value.resolutionDate == LT
+                    let
+                        resolutionDateCondition =
+                            -- We know that item is not resolved, if resolution
+                            -- date is a future date.
+                            Date.compare currentDate item.value.resolutionDate == LT
+
+                        roleDependantCondition =
+                            if isLabTech then
+                                -- If review was requested (by lab technician), or completed
+                                -- (by nurse) we do not display entry for lab technician.
+                                isNothing item.value.reviewState
+                                    && -- If all tests were completed, or only one that was not is
+                                       -- vitals recheck, we do not display entry for lab technician.
+                                       -- For nurse,all tests were completed condition des not apply,
+                                       -- since there maybe follow up quesitons to fill.
+                                       (case EverySet.toList item.value.performedTests of
+                                            [ TestVitalsRecheck ] ->
+                                                False
+
+                                            _ ->
+                                                True
+                                       )
+
+                            else
+                                True
+                    in
+                    resolutionDateCondition && roleDependantCondition
                 )
                 itemsDict
 
         entries =
-            generatePrenatalLabsEntries language currentDate filteredItemsDict db
+            generatePrenatalLabsEntries language currentDate isLabTech filteredItemsDict db
 
         content =
             if List.isEmpty entries then
                 [ translateText language Translate.NoMatchesFound ]
 
             else
-                List.map (viewPrenatalLabsEntry language) entries
+                List.map (viewPrenatalLabsEntry language isLabTech) entries
     in
     div [ class "pane" ]
         [ viewItemHeading language FilterPrenatalLabs
@@ -882,22 +1127,24 @@ viewPrenatalLabsPane language currentDate itemsDict db model =
 generatePrenatalLabsEntries :
     Language
     -> NominalDate
+    -> Bool
     -> Dict PrenatalLabsResultsId PrenatalLabsResults
     -> ModelIndexedDb
     -> List PrenatalLabsEntryData
-generatePrenatalLabsEntries language currentDate itemsDict db =
+generatePrenatalLabsEntries language currentDate isLabTech itemsDict db =
     Dict.values itemsDict
-        |> List.map (generatePrenatalLabsEntryData language currentDate db)
+        |> List.map (generatePrenatalLabsEntryData language currentDate isLabTech db)
         |> Maybe.Extra.values
 
 
 generatePrenatalLabsEntryData :
     Language
     -> NominalDate
+    -> Bool
     -> ModelIndexedDb
     -> PrenatalLabsResults
     -> Maybe PrenatalLabsEntryData
-generatePrenatalLabsEntryData language currentDate db item =
+generatePrenatalLabsEntryData language currentDate isLabTech db item =
     Maybe.map
         (\encounterId ->
             let
@@ -911,16 +1158,22 @@ generatePrenatalLabsEntryData language currentDate db item =
                     if Date.diff Days currentDate item.value.resolutionDate < 8 then
                         LabsEntryClosingSoon
 
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewRequested) then
+                        LabsEntryReadyForReview
+
+                    else if not isLabTech && (item.value.reviewState == Just LabsResultsReviewCompleted) then
+                        LabsEntryReviewed
+
                     else
                         LabsEntryPending
 
                 ( performedTests, completedTests ) =
-                    prenatalLabsResultsTestData currentDate item
+                    labsResultsTestData currentDate item
 
                 label =
                     if
-                        List.member TestVitalsRecheck performedTests
-                            && (not <| List.member TestVitalsRecheck completedTests)
+                        EverySet.member TestVitalsRecheck performedTests
+                            && (not <| EverySet.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
                         Translate.PrenatalLabsCaseManagementEntryTypeVitals
@@ -936,24 +1189,38 @@ generatePrenatalLabsEntryData language currentDate db item =
 
 viewPrenatalLabsEntry :
     Language
+    -> Bool
     -> PrenatalLabsEntryData
     -> Html Msg
-viewPrenatalLabsEntry language data =
+viewPrenatalLabsEntry language isLabTech data =
+    let
+        targetPage =
+            if isLabTech then
+                PrenatalRecurrentActivityPage data.encounterId LabResults
+
+            else if data.state == LabsEntryReadyForReview then
+                ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorCaseManagement data.encounterId) data.encounterId
+
+            else
+                PrenatalRecurrentEncounterPage data.encounterId
+    in
     viewLabsEntry language
+        isLabTech
         data.personName
         data.state
         data.label
-        (PrenatalRecurrentEncounterPage data.encounterId)
+        targetPage
 
 
 viewLabsEntry :
     Language
+    -> Bool
     -> String
     -> LabsEntryState
     -> String
     -> UserPage
     -> Html Msg
-viewLabsEntry language personName state label targetPage =
+viewLabsEntry language isLabTech personName state label targetPage =
     let
         entryStateClass =
             "due "
@@ -963,11 +1230,19 @@ viewLabsEntry language personName state label targetPage =
 
                         LabsEntryPending ->
                             "this-week"
+
+                        LabsEntryReadyForReview ->
+                            -- @todo: needs styling?
+                            "this-week"
+
+                        LabsEntryReviewed ->
+                            -- @todo: needs styling?
+                            "this-week"
                    )
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text personName ]
-        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState state ]
+        , div [ class entryStateClass ] [ translateText language <| Translate.LabsEntryState isLabTech state ]
         , div [ class "assesment center" ] [ text label ]
         , div
             [ class "icon-forward"
@@ -1059,7 +1334,91 @@ viewNCDLabsEntry :
     -> Html Msg
 viewNCDLabsEntry language data =
     viewLabsEntry language
+        False
         data.personName
         data.state
         data.label
         (NCDRecurrentEncounterPage data.encounterId)
+
+
+viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Model -> Html Msg
+viewImmunizationPane language currentDate itemsDict db model =
+    let
+        entries =
+            generateImmunizationFollowUpEntries language currentDate itemsDict db
+
+        content =
+            if List.isEmpty entries then
+                [ translateText language Translate.NoMatchesFound ]
+
+            else
+                List.map (viewImmunizationFollowUpEntry language currentDate) entries
+    in
+    div [ class "pane" ]
+        [ viewItemHeading language FilterImmunization
+        , div [ class "pane-content" ] content
+        ]
+
+
+generateImmunizationFollowUpEntries : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> List ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntries language limitDate itemsDict db =
+    Dict.map (generateImmunizationFollowUpEntryData language limitDate db) itemsDict
+        |> Dict.values
+        |> Maybe.Extra.values
+
+
+generateImmunizationFollowUpEntryData : Language -> NominalDate -> ModelIndexedDb -> PersonId -> ImmunizationFollowUpItem -> Maybe ImmunizationFollowUpEntry
+generateImmunizationFollowUpEntryData language limitDate db personId item =
+    let
+        lastWellChildEncounter =
+            resolveIndividualParticipantForPerson personId WellChildEncounter db
+                |> Maybe.map
+                    (getWellChildEncountersForParticipant db
+                        >> List.map Tuple.second
+                        >> List.filter
+                            (\encounter ->
+                                (encounter.encounterType /= NewbornExam)
+                                    && (Date.compare encounter.startDate limitDate == LT)
+                            )
+                    )
+                |> Maybe.withDefault []
+                -- Sort DESC
+                |> List.sortWith (\e1 e2 -> Date.compare e2.startDate e1.startDate)
+                |> List.head
+    in
+    Maybe.map
+        (\encounter ->
+            -- Last Well Child encounter occurred before follow up was scheduled.
+            if Date.compare encounter.startDate item.dateMeasured == LT then
+                Just <| ImmunizationFollowUpEntry personId item
+
+            else
+                Nothing
+        )
+        lastWellChildEncounter
+        |> -- No Home Visit encounter found.
+           Maybe.withDefault
+            (Just <| ImmunizationFollowUpEntry personId item)
+
+
+viewImmunizationFollowUpEntry : Language -> NominalDate -> ImmunizationFollowUpEntry -> Html Msg
+viewImmunizationFollowUpEntry language currentDate entry =
+    let
+        item =
+            entry.item
+
+        dueOption =
+            if diffDays item.dueDate currentDate <= 30 then
+                DueThisMonth
+
+            else
+                OverDue
+
+        popupData =
+            FollowUpImmunization <| FollowUpImmunizationData entry.personId item.personName
+    in
+    viewFollowUpEntry language
+        dueOption
+        item.personName
+        popupData
+        [ p [] [ text <| translate language Translate.ImmunizationFollowUpInstructions ] ]

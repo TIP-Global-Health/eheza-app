@@ -285,14 +285,14 @@ translationSet transId =
                     }
 
                 DiverseDiet ->
-                    { english = "Does the child have a diverse diet?"
-                    , kinyarwanda = Just "Umwana afata indyo yuzuye"
+                    { english = "Diverse diet"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 MealsADay ->
-                    { english = "Number of times a child eats a day"
-                    , kinyarwanda = Just "Inshuro umwana afata ifunguro ku munsi"
+                    { english = "Appropriate frequency of meals"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 

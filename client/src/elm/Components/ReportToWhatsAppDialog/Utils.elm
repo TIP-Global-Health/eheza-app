@@ -130,3 +130,15 @@ showComponent components component =
     -- or, if viewing not for sharing via WhatsApp.
     Maybe.map (EverySet.member component) components
         |> Maybe.withDefault True
+
+
+allCountryCodes : List CountryCode
+allCountryCodes =
+    [ CountryCodeRwanda
+    , CountryCodeUganda
+    , CountryCodeCongo
+    , CountryCodeKenya
+    , CountryCodeTanzania
+    , CountryCodeBurundi
+    , CountryCodeUSACanada
+    ]

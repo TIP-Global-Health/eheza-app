@@ -586,13 +586,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage WellChildEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom =
-                                if isChw then
-                                    Date.add Months -2 today
-                                        |> Date.add Days 1
-
-                                else
-                                    Date.add Years -13 today
+                            , birthDateSelectorFrom = Date.add Years -13 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -628,6 +622,15 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -2 today
                             , birthDateSelectorTo = Date.add Days -1 today
+                            , title = Translate.People
+                            }
+
+                        TuberculosisEncounter ->
+                            { goBackPage = UserPage (IndividualEncounterParticipantsPage TuberculosisEncounter)
+                            , expectedAge = ExpectAdultOrChild
+                            , expectedGender = ExpectMaleOrFemale
+                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorTo = today
                             , title = Translate.People
                             }
 

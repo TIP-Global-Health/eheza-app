@@ -1388,6 +1388,9 @@ prenatalHIVSignToString sign =
         PartnerSurpressedViralLoad ->
             "partner-surpressed-viral-load"
 
+        PrenatalHIVSignPendingInput ->
+            "pending-input"
+
         NoPrenatalHIVSign ->
             "none"
 
@@ -1406,6 +1409,9 @@ prenatalHIVSignFromString sign =
 
         "partner-surpressed-viral-load" ->
             Just PartnerSurpressedViralLoad
+
+        "pending-input" ->
+            Just PrenatalHIVSignPendingInput
 
         "none" ->
             Just NoPrenatalHIVSign
@@ -1754,6 +1760,9 @@ illnessSymptomToString symptom =
         IllnessSymptomPainlessUlcerGenitals ->
             "painless-ulcer-genitals"
 
+        IllnessSymptomPendingInput ->
+            "pending-input"
+
         NoIllnessSymptoms ->
             "none"
 
@@ -1775,6 +1784,9 @@ illnessSymptomFromString symptom =
 
         "painless-ulcer-genitals" ->
             Just IllnessSymptomPainlessUlcerGenitals
+
+        "pending-input" ->
+            Just IllnessSymptomPendingInput
 
         "none" ->
             Just NoIllnessSymptoms
@@ -3306,6 +3318,18 @@ laboratoryTestToString value =
         TestHepatitisB ->
             "hepatitis-b"
 
+        TestHIV ->
+            "hiv"
+
+        TestPartnerHIV ->
+            "partner-hiv"
+
+        TestHIVPCR ->
+            "hiv-pcr"
+
+        TestMalaria ->
+            "malaria"
+
         TestRandomBloodSugar ->
             "random-blood-sugar"
 
@@ -3317,9 +3341,6 @@ laboratoryTestToString value =
 
         TestVitalsRecheck ->
             "vitals-recheck"
-
-        TestHIVPCR ->
-            "hiv-pcr"
 
         TestCreatinine ->
             "creatinine"
@@ -3343,6 +3364,18 @@ laboratoryTestFromString value =
         "hepatitis-b" ->
             Just TestHepatitisB
 
+        "hiv" ->
+            Just TestHIV
+
+        "partner-hiv" ->
+            Just TestPartnerHIV
+
+        "hiv-pcr" ->
+            Just TestHIVPCR
+
+        "malaria" ->
+            Just TestMalaria
+
         "random-blood-sugar" ->
             Just TestRandomBloodSugar
 
@@ -3355,9 +3388,6 @@ laboratoryTestFromString value =
         "vitals-recheck" ->
             Just TestVitalsRecheck
 
-        "hiv-pcr" ->
-            Just TestHIVPCR
-
         "creatinine" ->
             Just TestCreatinine
 
@@ -3366,6 +3396,29 @@ laboratoryTestFromString value =
 
         "lipid-panel" ->
             Just TestLipidPanel
+
+        _ ->
+            Nothing
+
+
+reviewStateToString : LabsResultsReviewState -> String
+reviewStateToString state =
+    case state of
+        LabsResultsReviewRequested ->
+            "requested"
+
+        LabsResultsReviewCompleted ->
+            "completed"
+
+
+reviewStateFromString : String -> Maybe LabsResultsReviewState
+reviewStateFromString state =
+    case state of
+        "requested" ->
+            Just LabsResultsReviewRequested
+
+        "completed" ->
+            Just LabsResultsReviewCompleted
 
         _ ->
             Nothing
@@ -3831,6 +3884,9 @@ bloodSmearResultToString value =
         BloodSmearNotTaken ->
             "not-taken"
 
+        BloodSmearPendingInput ->
+            "pending-input"
+
 
 bloodSmearResultFromString : String -> Maybe BloodSmearResult
 bloodSmearResultFromString value =
@@ -3849,6 +3905,184 @@ bloodSmearResultFromString value =
 
         "not-taken" ->
             Just BloodSmearNotTaken
+
+        "pending-input" ->
+            Just BloodSmearPendingInput
+
+        _ ->
+            Nothing
+
+
+tuberculosisDiagnosisToString : TuberculosisDiagnosis -> String
+tuberculosisDiagnosisToString diagnosis =
+    case diagnosis of
+        TuberculosisPulmonary ->
+            "pulmonary"
+
+        TuberculosisExtrapulmonary ->
+            "extrapulmonary"
+
+        NoTuberculosis ->
+            "none"
+
+
+tuberculosisDiagnosisFromString : String -> Maybe TuberculosisDiagnosis
+tuberculosisDiagnosisFromString diagnosis =
+    case diagnosis of
+        "pulmonary" ->
+            Just TuberculosisPulmonary
+
+        "extrapulmonary" ->
+            Just TuberculosisExtrapulmonary
+
+        "none" ->
+            Just NoTuberculosis
+
+        _ ->
+            Nothing
+
+
+tuberculosisSymptomToString : TuberculosisSymptom -> String
+tuberculosisSymptomToString symptom =
+    case symptom of
+        SymptomNightSweats ->
+            "night-sweats"
+
+        SymptomBloodInSputum ->
+            "blood-in-sputum"
+
+        SymptomWeightLoss ->
+            "wight-loss"
+
+        SymptomSevereFatigue ->
+            "severe-fatigue"
+
+        NoTuberculosisSymptoms ->
+            "none"
+
+
+tuberculosisSymptomFromString : String -> Maybe TuberculosisSymptom
+tuberculosisSymptomFromString symptom =
+    case symptom of
+        "night-sweats" ->
+            Just SymptomNightSweats
+
+        "blood-in-sputum" ->
+            Just SymptomBloodInSputum
+
+        "wight-loss" ->
+            Just SymptomWeightLoss
+
+        "severe-fatigue" ->
+            Just SymptomSevereFatigue
+
+        "none" ->
+            Just NoTuberculosisSymptoms
+
+        _ ->
+            Nothing
+
+
+tuberculosisHealthEducationSignToString : TuberculosisHealthEducationSign -> String
+tuberculosisHealthEducationSignToString sign =
+    case sign of
+        EducationFollowUpTesting ->
+            "followup-testing"
+
+        NoTuberculosisHealthEducationSigns ->
+            "none"
+
+
+tuberculosisHealthEducationSignFromString : String -> Maybe TuberculosisHealthEducationSign
+tuberculosisHealthEducationSignFromString sign =
+    case sign of
+        "followup-testing" ->
+            Just EducationFollowUpTesting
+
+        "none" ->
+            Just NoTuberculosisHealthEducationSigns
+
+        _ ->
+            Nothing
+
+
+tuberculosisDOTSignToString : TuberculosisDOTSign -> String
+tuberculosisDOTSignToString sign =
+    case sign of
+        DOTPositive ->
+            "positive"
+
+        DOTNegativeTakenToday ->
+            "negative-taken-today"
+
+        DOTNegativeUnavailable ->
+            "negative-unavailable"
+
+        DOTNegativeSideEffects ->
+            "negative-side-effects"
+
+        DOTNegativePatientRefused ->
+            "negative-patient-refused"
+
+        DOTNegativeNotIndicated ->
+            "negative-not-indicated"
+
+
+tuberculosisDOTSignFromString : String -> Maybe TuberculosisDOTSign
+tuberculosisDOTSignFromString sign =
+    case sign of
+        "positive" ->
+            Just DOTPositive
+
+        "negative-taken-today" ->
+            Just DOTNegativeTakenToday
+
+        "negative-unavailable" ->
+            Just DOTNegativeUnavailable
+
+        "negative-side-effects" ->
+            Just DOTNegativeSideEffects
+
+        "negative-patient-refused" ->
+            Just DOTNegativePatientRefused
+
+        "negative-not-indicated" ->
+            Just DOTNegativeNotIndicated
+
+        _ ->
+            Nothing
+
+
+tuberculosisPrescribedMedicationToString : TuberculosisPrescribedMedication -> String
+tuberculosisPrescribedMedicationToString sign =
+    case sign of
+        MedicationRHZE ->
+            "rhze"
+
+        MedicationRH ->
+            "rh"
+
+        MedicationOther ->
+            "other"
+
+        NoTuberculosisPrescribedMedications ->
+            "none"
+
+
+tuberculosisPrescribedMedicationFromString : String -> Maybe TuberculosisPrescribedMedication
+tuberculosisPrescribedMedicationFromString sign =
+    case sign of
+        "rhze" ->
+            Just MedicationRHZE
+
+        "rh" ->
+            Just MedicationRH
+
+        "other" ->
+            Just MedicationOther
+
+        "none" ->
+            Just NoTuberculosisPrescribedMedications
 
         _ ->
             Nothing

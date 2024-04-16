@@ -6,8 +6,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounte
 import Backend.Measurement.Model exposing (FollowUpMeasurements)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
-import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (getVillageById)
+import Backend.Village.Utils exposing (resolveVillageResidents)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Utils exposing (..)
@@ -16,18 +15,18 @@ import RemoteData
 
 
 fetch : NominalDate -> HealthCenterId -> Maybe VillageId -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate healthCenterId villageId db =
+fetch currentDate healthCenterId mVillageId db =
     let
         fetchForAuthorityMsgs =
             Dict.get healthCenterId db.followUpMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map
                     (\followUps ->
-                        Maybe.andThen
-                            (getVillageById db
-                                >> Maybe.map (\village -> fetchForCHWAtVillage currentDate village db followUps)
+                        Maybe.map
+                            (\villageId ->
+                                fetchForCHWAtVillage currentDate villageId db followUps
                             )
-                            villageId
+                            mVillageId
                             |> Maybe.withDefault (fetchForNurseAtHealthCenter currentDate db followUps)
                     )
                 |> Maybe.withDefault []
@@ -39,44 +38,48 @@ fetch currentDate healthCenterId villageId db =
         ++ fetchForAuthorityMsgs
 
 
-fetchForCHWAtVillage : NominalDate -> Village -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
-fetchForCHWAtVillage currentDate village db followUps =
+fetchForCHWAtVillage : NominalDate -> VillageId -> ModelIndexedDb -> FollowUpMeasurements -> List MsgIndexedDb
+fetchForCHWAtVillage currentDate villageId db allFollowUps =
     let
-        ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal ) =
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
+
+        villageResidents =
+            resolveVillageResidents villageId db
+
+        followUpPatients =
             resolveUniquePatientsFromFollowUps currentDate followUps
 
-        -- We need to fetch all people in follow ups, to determine if person
-        -- is resident of village or not.
-        -- Then, we'll fetch participants and encounters data only for
-        -- those that are residents.
-        peopleForFetch =
-            peopleForNutrition
-                ++ peopleForAccuteIllness
-                ++ peopleForPrenatal
-                |> Pages.Utils.unique
-
         residentsForNutrition =
-            filterResidents db village peopleForNutrition
+            followUpPatients.nutrition
 
-        followUpsForResidents =
-            generateFollowUpsForResidents currentDate village db followUps ( peopleForNutrition, peopleForAccuteIllness, peopleForPrenatal )
+        residentsForImmunization =
+            followUpPatients.immunization
+
+        fetchIndividualParticipantsMsg =
+            FetchIndividualEncounterParticipantsForPeople (residentsForNutrition ++ residentsForImmunization)
 
         --
         --  Nutrition follows ups calculations.
         --
-        fetchIndividualParticipantsMsg =
-            FetchIndividualEncounterParticipantsForPeople residentsForNutrition
-
         fetchHomeVisitEncountersMsg =
             List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId HomeVisitEncounter db)
                 residentsForNutrition
                 |> FetchHomeVisitEncountersForParticipants
 
         --
+        --  Immunization follows ups calculations.
+        --
+        fetchWellChildEncountersMsg =
+            List.concatMap (\personId -> resolveIndividualParticipantsForPerson personId WellChildEncounter db)
+                residentsForImmunization
+                |> FetchWellChildEncountersForParticipants
+
+        --
         --  Acute illness follows ups calculations.
         --
         acuteIllnessEncounters =
-            generateAcuteIllnessEncounters followUpsForResidents
+            generateAcuteIllnessEncounters followUps
 
         acuteIllnessParticipants =
             generateAcuteIllnessParticipants acuteIllnessEncounters db
@@ -97,7 +100,7 @@ fetchForCHWAtVillage currentDate village db followUps =
         --  Prenatal follows ups calculations.
         --
         prenatalEncounters =
-            generatePrenatalEncounters followUpsForResidents
+            generatePrenatalEncounters followUps
 
         prenatalParticipants =
             generatePrenatalParticipants prenatalEncounters db
@@ -113,15 +116,40 @@ fetchForCHWAtVillage currentDate village db followUps =
         fetchPrenatalEncountersForParticipantMsg =
             EverySet.toList prenatalParticipants
                 |> FetchPrenatalEncountersForParticipants
+
+        --
+        --  Tuberculosis follows ups calculations.
+        --
+        tuberculosisEncounters =
+            generateTuberculosisEncounters followUps
+
+        tuberculosisParticipants =
+            generateTuberculosisParticipants tuberculosisEncounters db
+
+        fetchTuberculosisEncountersMsg =
+            EverySet.toList tuberculosisEncounters
+                |> FetchTuberculosisEncounters
+
+        fetchTuberculosisParticipantsMsg =
+            EverySet.toList tuberculosisParticipants
+                |> FetchIndividualEncounterParticipants
+
+        fetchTuberculosisEncountersForParticipantMsg =
+            EverySet.toList tuberculosisParticipants
+                |> FetchTuberculosisEncountersForParticipants
     in
-    [ FetchFollowUpParticipants peopleForFetch
+    [ FetchPeopleInVillage villageId
     , fetchAcuteIllnessEncountersMsg
     , fetchPrenatalEncountersMsg
+    , fetchTuberculosisEncountersMsg
+    , fetchWellChildEncountersMsg
     , fetchAcuteIllnessParticipantsMsg
     , fetchPrenatalParticipantsMsg
+    , fetchTuberculosisParticipantsMsg
     , fetchHomeVisitEncountersMsg
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
+    , fetchTuberculosisEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
     ]
 

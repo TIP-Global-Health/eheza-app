@@ -5,7 +5,7 @@ import Backend.StockUpdate.Utils exposing (..)
 import Gizra.NominalDate
 import Json.Encode exposing (..)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfExists)
+import Utils.Json exposing (encodeNullable)
 
 
 encodeStockUpdate : StockUpdate -> List ( String, Value )
@@ -25,11 +25,11 @@ encodeStockUpdate stockUpdate =
     , ( "deleted", bool False )
     , ( "type", string "stock_update" )
     ]
-        ++ encodeIfExists "expiration_date" stockUpdate.dateExpires Gizra.NominalDate.encodeYYYYMMDD
-        ++ encodeIfExists "batch_number" stockUpdate.batchNumber string
-        ++ encodeIfExists "stock_supplier" stockUpdate.supplier encodeStockSupplier
-        ++ encodeIfExists "notes" stockUpdate.notes string
-        ++ encodeIfExists "stock_correction_reason" stockUpdate.correctionReason encodeStockCorrectionReason
+        ++ encodeNullable "expiration_date" stockUpdate.dateExpires Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "batch_number" stockUpdate.batchNumber string
+        ++ encodeNullable "stock_supplier" stockUpdate.supplier encodeStockSupplier
+        ++ encodeNullable "notes" stockUpdate.notes string
+        ++ encodeNullable "stock_correction_reason" stockUpdate.correctionReason encodeStockCorrectionReason
 
 
 encodeStockUpdateType : StockUpdateType -> Value

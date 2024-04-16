@@ -1,8 +1,8 @@
 module Pages.Prenatal.Outcome.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Encoder exposing (pregnancyOutcomeToString)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation(..), IndividualEncounterParticipantOutcome(..), IndividualParticipantInitiator(..), allPregnancyOutcome)
+import Backend.IndividualEncounterParticipant.Utils exposing (pregnancyOutcomeToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Backend.PrenatalEncounter.Model exposing (RecordPreganancyInitiator(..))

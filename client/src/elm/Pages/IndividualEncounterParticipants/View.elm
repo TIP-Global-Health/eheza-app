@@ -95,16 +95,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                         |> Maybe.withDefault False
 
                 WellChildEncounter ->
-                    if isChw then
-                        -- CHW can run only Newborn exam, which is
-                        -- performed for children up to 2 months old.
-                        isNewborn currentDate person
-                            |> Maybe.withDefault False
-
-                    else
-                        isPersonAnAdult currentDate person
-                            |> Maybe.map not
-                            |> Maybe.withDefault False
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
 
                 HomeVisitEncounter ->
                     -- We do not have direct access to Home Visit encounter.
@@ -122,6 +115,9 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
 
                 ChildScoreboardEncounter ->
                     isChw && isChildUnderAgeOf2 currentDate person
+
+                TuberculosisEncounter ->
+                    isChw
 
         -- For CHW nurse, we present people only from the village that was selected.
         chwCondition person =
@@ -237,6 +233,9 @@ viewParticipant language currentDate encounterType db id person =
 
                 ChildScoreboardEncounter ->
                     [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
+
+                TuberculosisEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| TuberculosisParticipantPage id ]
 
         viewAction =
             div [ class "action" ]

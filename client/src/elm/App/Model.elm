@@ -25,6 +25,7 @@ import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionActivity.Model exposing (NutritionActivity)
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity, PrenatalRecurrentActivity)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
@@ -43,6 +44,7 @@ import Pages.ChildScoreboard.ProgressReport.Model
 import Pages.Clinics.Model
 import Pages.Dashboard.Model
 import Pages.Device.Model
+import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Encounter.Model
@@ -72,6 +74,8 @@ import Pages.Relationship.Model
 import Pages.Session.Model
 import Pages.StockManagement.Model
 import Pages.TraceContact.Model
+import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Encounter.Model
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Encounter.Model
 import Pages.WellChild.ProgressReport.Model
@@ -302,6 +306,9 @@ type alias LoggedInModel =
     , childScoreboardEncounterPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Model
     , childScoreboardActivityPages : Dict ( ChildScoreboardEncounterId, ChildScoreboardActivity ) Pages.ChildScoreboard.Activity.Model.Model
     , childScoreboardReportPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.ProgressReport.Model.Model
+    , tuberculosisEncounterPages : Dict TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Model
+    , tuberculosisActivityPages : Dict ( TuberculosisEncounterId, TuberculosisActivity ) Pages.Tuberculosis.Activity.Model.Model
+    , educationSessionPages : Dict EducationSessionId Pages.EducationSession.Model.Model
     , traceContactPages : Dict AcuteIllnessTraceContactId Pages.TraceContact.Model.Model
     , clinicalProgressReportPages : Dict PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Model
     , patientRecordPages : Dict PersonId Pages.PatientRecord.Model.Model
@@ -350,6 +357,9 @@ emptyLoggedInModel site villageId nurse =
     , childScoreboardEncounterPages = Dict.empty
     , childScoreboardActivityPages = Dict.empty
     , childScoreboardReportPages = Dict.empty
+    , tuberculosisEncounterPages = Dict.empty
+    , tuberculosisActivityPages = Dict.empty
+    , educationSessionPages = Dict.empty
     , traceContactPages = Dict.empty
     , clinicalProgressReportPages = Dict.empty
     , patientRecordPages = Dict.empty
@@ -358,9 +368,10 @@ emptyLoggedInModel site villageId nurse =
 
 
 type Msg
-    = -- Manage data we get from IndexedDb, and communication with the service
+    = NoOp
+      -- Manage data we get from IndexedDb, and communication with the service
       -- worker
-      MsgIndexedDb Backend.Model.MsgIndexedDb
+    | MsgIndexedDb Backend.Model.MsgIndexedDb
     | MsgServiceWorker ServiceWorker.Model.Msg
     | MsgSyncManager SyncManager.Model.Msg
       -- Messages that require login, or manage the login process
@@ -413,6 +424,8 @@ type MsgLoggedIn
     | MsgPageNCDEncounter NCDEncounterId Pages.NCD.Encounter.Model.Msg
     | MsgPageNCDRecurrentEncounter NCDEncounterId Pages.NCD.RecurrentEncounter.Model.Msg
     | MsgPageChildScoreboardEncounter ChildScoreboardEncounterId Pages.ChildScoreboard.Encounter.Model.Msg
+    | MsgPageTuberculosisEncounter TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Msg
+    | MsgPageEducationSession EducationSessionId Pages.EducationSession.Model.Msg
     | MsgPagePrenatalActivity PrenatalEncounterId PrenatalActivity Pages.Prenatal.Activity.Model.Msg
     | MsgPagePrenatalRecurrentActivity PrenatalEncounterId PrenatalRecurrentActivity Pages.Prenatal.RecurrentActivity.Model.Msg
     | MsgPagePrenatalLabsHistory PrenatalEncounterId PrenatalEncounterId LaboratoryTest Pages.Prenatal.RecurrentActivity.Model.Msg
@@ -423,6 +436,7 @@ type MsgLoggedIn
     | MsgPageNCDActivity NCDEncounterId NCDActivity Pages.NCD.Activity.Model.Msg
     | MsgPageNCDRecurrentActivity NCDEncounterId NCDRecurrentActivity Pages.NCD.RecurrentActivity.Model.Msg
     | MsgPageChildScoreboardActivity ChildScoreboardEncounterId ChildScoreboardActivity Pages.ChildScoreboard.Activity.Model.Msg
+    | MsgPageTuberculosisActivity TuberculosisEncounterId TuberculosisActivity Pages.Tuberculosis.Activity.Model.Msg
     | MsgPagePregnancyOutcome IndividualEncounterParticipantId Pages.Prenatal.Outcome.Model.Msg
     | MsgPageAcuteIllnessProgressReport AcuteIllnessEncounterId Pages.AcuteIllness.ProgressReport.Model.Msg
     | MsgPageNutritionProgressReport NutritionEncounterId Pages.Nutrition.ProgressReport.Model.Msg

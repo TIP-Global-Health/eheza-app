@@ -1,7 +1,9 @@
 module Pages.PatientRecord.View exposing (view)
 
-import AssocList as Dict
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model
+import Backend.AcuteIllnessEncounter.Types
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant, IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender(..))
@@ -12,6 +14,7 @@ import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Utils exposing (groupEducationEnabled)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -37,7 +40,7 @@ import RemoteData
 import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (spinner, thumbnailImage)
-import Utils.NominalDate exposing (sortByDate, sortTuplesByDateDesc)
+import Utils.NominalDate exposing (sortByDate, sortByDateDesc, sortTuplesByDateDesc)
 import ZScore.Model
 
 
@@ -80,7 +83,7 @@ view language currentDate zscores site features id isChw initiator db model =
                             viewContentForChild language currentDate zscores site features id person isChw initiator db model
 
                         else
-                            viewContentForOther language currentDate site isChw id person patientType initiator db model
+                            viewContentForOther language currentDate site features isChw id person patientType initiator db model
             )
         |> Maybe.withDefault spinner
 
@@ -198,21 +201,26 @@ viewContentForChild language currentDate zscores site features childId child isC
         ( childId, child )
 
 
-viewContentForOther : Language -> NominalDate -> Site -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForOther language currentDate site isChw personId person patientType initiator db model =
+viewContentForOther :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> PersonId
+    -> Person
+    -> PatientType
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContentForOther language currentDate site features isChw personId person patientType initiator db model =
     let
         individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
                 |> Maybe.andThen RemoteData.toMaybe
                 |> Maybe.map Dict.toList
                 |> Maybe.withDefault []
-
-        acuteIllnesses =
-            List.filter
-                (\( _, participant ) ->
-                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
-                )
-                individualParticipants
 
         pregnancies =
             List.filter
@@ -224,6 +232,14 @@ viewContentForOther language currentDate site isChw personId person patientType 
         selectedPane =
             case model.filter of
                 FilterAcuteIllness ->
+                    let
+                        acuteIllnesses =
+                            List.filter
+                                (\( _, participant ) ->
+                                    participant.encounterType == Backend.IndividualEncounterParticipant.Model.AcuteIllnessEncounter
+                                )
+                                individualParticipants
+                    in
                     viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db
 
                 FilterAntenatal ->
@@ -231,6 +247,13 @@ viewContentForOther language currentDate site isChw personId person patientType 
 
                 FilterFamilyPlanning ->
                     viewFamilyPlanningPane language currentDate personId (List.map Tuple.first pregnancies) db
+
+                FilterGroupEducation ->
+                    Dict.get personId db.educationSessionsByPerson
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
+                        |> viewGroupEducationPane language currentDate
 
                 FilterDemographics ->
                     -- Demographics report got dedicated page.
@@ -250,7 +273,7 @@ viewContentForOther language currentDate site isChw personId person patientType 
             , div [ class "pane progress-reports" ]
                 [ div [ class "pane-heading" ]
                     [ text <| translate language Translate.ProgressReports ]
-                , viewFilters language person patientType model
+                , viewFilters language features person patientType model
                 ]
             , selectedPane
             , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
@@ -376,8 +399,8 @@ thumbnailDimensions =
     }
 
 
-viewFilters : Language -> Person -> PatientType -> Model -> Html Msg
-viewFilters language person patientType model =
+viewFilters : Language -> EverySet SiteFeature -> Person -> PatientType -> Model -> Html Msg
+viewFilters language features person patientType model =
     let
         renderButton filter =
             button
@@ -395,18 +418,30 @@ viewFilters language person patientType model =
                     []
 
                 PatientAdult ->
+                    let
+                        filterGroupEducation =
+                            if groupEducationEnabled features then
+                                Just FilterGroupEducation
+
+                            else
+                                Nothing
+                    in
                     case person.gender of
                         Male ->
-                            [ FilterAcuteIllness
-                            , FilterDemographics
+                            [ Just FilterAcuteIllness
+                            , filterGroupEducation
+                            , Just FilterDemographics
                             ]
+                                |> Maybe.Extra.values
 
                         Female ->
-                            [ FilterAcuteIllness
-                            , FilterAntenatal
-                            , FilterFamilyPlanning
-                            , FilterDemographics
+                            [ Just FilterAcuteIllness
+                            , Just FilterAntenatal
+                            , Just FilterFamilyPlanning
+                            , filterGroupEducation
+                            , Just FilterDemographics
                             ]
+                                |> Maybe.Extra.values
 
                 PatientUnknown ->
                     [ FilterAcuteIllness
@@ -447,7 +482,7 @@ viewAcuteIllnessPane language currentDate personId initiator acuteIllnesses db =
                 (\( data, _ ) ->
                     viewAcuteIllnessDiagnosisEntry
                         language
-                        (Backend.AcuteIllnessEncounter.Model.InitiatorPatientRecord initiator personId)
+                        (Backend.AcuteIllnessEncounter.Types.InitiatorPatientRecord initiator personId)
                         db
                         SetActivePage
                         data
@@ -567,7 +602,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
                 , div [ class "signs" ] [ text <| translate language Translate.SelectedFamilyPlanningMethod ]
                 ]
 
-        content =
+        entries =
             groupFamilyPlannings
                 ++ prenatalFamilyPlannings
                 |> List.sortWith sortTuplesByDateDesc
@@ -603,7 +638,7 @@ viewFamilyPlanningPane language currentDate personId prenatalParticipantsIds db 
         [ viewPaneHeading language <| Translate.PatientRecordFilter FilterFamilyPlanning
         , div [ class "pane-content" ] <|
             entriesHeading
-                :: content
+                :: viewEntries language entries
         ]
 
 
@@ -617,4 +652,39 @@ viewFamilyPlanningEntry language ( date, signs ) =
                 |> String.join ", "
                 |> text
             ]
+        ]
+
+
+viewGroupEducationPane : Language -> NominalDate -> List EducationSession -> Html Msg
+viewGroupEducationPane language currentDate sessions =
+    let
+        entriesHeading =
+            div [ class "heading group-education" ]
+                [ div [ class "topics" ] [ text <| translate language Translate.Topics ]
+                , div [ class "date" ] [ text <| translate language Translate.Date ]
+                ]
+
+        entries =
+            List.sortWith (sortByDateDesc .startDate) sessions
+                |> List.map (viewGroupEducationEntry language)
+    in
+    div [ class "pane group-education" ]
+        [ viewPaneHeading language <| Translate.PatientRecordFilter FilterGroupEducation
+        , div [ class "pane-content" ] <|
+            entriesHeading
+                :: viewEntries language entries
+        ]
+
+
+viewGroupEducationEntry : Language -> EducationSession -> Html Msg
+viewGroupEducationEntry language session =
+    let
+        topics =
+            EverySet.toList session.topics
+                |> List.map (\topic -> li [] [ text <| translate language <| Translate.EducationTopic topic ])
+                |> ul [ class "topics" ]
+    in
+    div [ class "entry group-education" ]
+        [ topics
+        , div [ class "date" ] [ text <| formatDDMMYYYY session.startDate ]
         ]

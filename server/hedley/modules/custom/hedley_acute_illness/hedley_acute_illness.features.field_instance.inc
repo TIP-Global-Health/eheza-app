@@ -1385,6 +1385,44 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_follow_up-field_acute_illness_diagnosis'.
+  $field_instances['node-acute_illness_follow_up-field_acute_illness_diagnosis'] = array(
+    'bundle' => 'acute_illness_follow_up',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_acute_illness_diagnosis',
+    'label' => 'Acute Illness Diagnosis',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_follow_up-field_acute_illness_encounter'.
   $field_instances['node-acute_illness_follow_up-field_acute_illness_encounter'] = array(
     'bundle' => 'acute_illness_follow_up',
@@ -10067,6 +10105,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Acute Findings Signs General');
   t('Acute Findings Signs Respiratory');
   t('Acute Illness Danger Signs');
+  t('Acute Illness Diagnosis');
   t('Acute Illness Encounter');
   t('Administration Note');
   t('Adverse Events');
