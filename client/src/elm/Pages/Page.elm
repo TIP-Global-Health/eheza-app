@@ -214,6 +214,7 @@ type DashboardPage
     | PagePrenatal
     | PageNCD NCDSubPage
     | PageChildWellness ChildWellnessSubPage
+    | PageGroupEducation
 
 
 type NutritionSubPage

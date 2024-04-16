@@ -84,6 +84,10 @@ decodeIndexDbQueryTypeResult =
                         field "data" decodeInt
                             |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
 
+                    "IndexDbQueryGetShardsEntityByUuidResult" ->
+                        field "data" string
+                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
+
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )

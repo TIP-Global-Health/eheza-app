@@ -292,6 +292,7 @@ type Dashboard
     | NumberOfCephaly
     | NumberOfChildrenSeen
     | NumberOfDiagnosedMalnourished
+    | NumberOfGroupSessions
     | NumberOfStunting
     | PatientsManagedAtHome
     | PatientCurrentlyUnderCare
@@ -310,11 +311,13 @@ type Dashboard
     | TotalMalnourished
     | TotalEncountersLabel
     | TotalAssessment
+    | TotalAttendees
     | TotalCases
     | TotalDiabeticCases
     | UncomplicatedMalariaByChws
     | UncomplicatedMalariaInPregnancyReferredToHc
     | UncomplicatedGIInfectionByCHWS
+    | UniquePatients
     | UseFamilyPlanning
     | Within4MonthsOfDueDate
     | WithDangerSigns
@@ -700,6 +703,7 @@ type TranslationId
     | GroupAssessment
     | Grams
     | Gravida
+    | GroupEducation
     | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
@@ -1699,6 +1703,7 @@ type TranslationId
     | ThisGroupHasNoMothers
     | Time
     | To
+    | Topics
     | TotalHighRiskPregnancies
     | ToThePatient
     | TransportationPlanQuestion
@@ -5467,6 +5472,9 @@ translationSet trans =
                         PageChildWellnessNutrition ->
                             translationSet Nutrition
 
+                PageGroupEducation ->
+                    translationSet GroupEducation
+
         EncounterWarningForDiagnosisPane warning suffix ->
             let
                 suffix_ =
@@ -6265,6 +6273,12 @@ translationSet trans =
             { english = "Gravida"
             , kinyarwanda = Just "Inda zose watwise"
             , kirundi = Just "Inday ya"
+            }
+
+        GroupEducation ->
+            { english = "Group Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         GroupEncounterType encounterType ->
@@ -13063,6 +13077,9 @@ translationSet trans =
                     , kinyarwanda = Just "Kuboneza Urubyaro"
                     , kirundi = Just "Kuvyara k'urugero"
                     }
+
+                FilterGroupEducation ->
+                    translationSet GroupEducation
 
         PauseEncounter ->
             { english = "Pause Encounter"
@@ -20956,6 +20973,12 @@ translationSet trans =
             , kirundi = Just "kuri"
             }
 
+        Topics ->
+            { english = "Topics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TotalHighRiskPregnancies ->
             { english = "Total Number of High Risk Pregnancies"
             , kinyarwanda = Just "Umubare w'abagore batwite bafite ibimenyetso mpuruza"
@@ -23288,10 +23311,7 @@ translateActivePage page =
                     }
 
                 EducationSessionPage _ ->
-                    { english = "Group Education"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet GroupEducation
 
                 HIVParticipantPage _ ->
                     { english = "HIV Encounter"
@@ -23879,6 +23899,12 @@ translateDashboard trans =
             , kirundi = Nothing
             }
 
+        NumberOfGroupSessions ->
+            { english = "Number of Group Sessions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NumberOfStunting ->
             { english = "# of Stunting"
             , kinyarwanda = Just "Umubare w'abana bagaragaweho igwingira"
@@ -24041,6 +24067,12 @@ translateDashboard trans =
             , kirundi = Just "igitigiri cy'Ivyasuzumwe vyose hamwe"
             }
 
+        TotalAttendees ->
+            { english = "Total Attendees"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TotalCases ->
             { english = "Total Cases"
             , kinyarwanda = Just "Umubare w'abakiriwe bose"
@@ -24069,6 +24101,12 @@ translateDashboard trans =
             { english = "Uncomplicated GI Infections Managed by CHWs"
             , kinyarwanda = Just "Uburwayi bwo mu nda bworoheje bwavuwe n'abajyanama w'ubuzima"
             , kirundi = Just "Ingwara zo mu nda zoroshe zirashobora gucungegwa n'abaremeshakiyago"
+            }
+
+        UniquePatients ->
+            { english = "Unique Patients"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         UseFamilyPlanning ->

@@ -1051,6 +1051,22 @@
                   }
                 }
 
+                // For education_session endpoint, check participant param and
+                // only return those sessions were participant has participated.
+                if (type === 'education_session') {
+                  var personId = params.get('participant');
+                  if (personId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.participating_patients = personId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
                 return modifyQuery.then(function () {
                     return countQuery.count().catch(databaseError).then(function (count) {
 

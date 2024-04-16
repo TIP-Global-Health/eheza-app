@@ -144,6 +144,7 @@ class HedleyWebTestBase extends DrupalWebTestCase {
     $wrapper->field_clinic->set($clinic_id);
     $wrapper->field_ubudehe->set(1);
     $wrapper->field_education_level->set(2);
+    $wrapper->field_gender->set('female');
     $wrapper->save();
 
     return $node->nid;

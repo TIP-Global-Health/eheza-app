@@ -1,5 +1,6 @@
 module Utils.WebData exposing
-    ( isNetworkError
+    ( decodeDrupalError
+    , isNetworkError
     , resetError
     , resetSuccess
     , sendWithHandler
