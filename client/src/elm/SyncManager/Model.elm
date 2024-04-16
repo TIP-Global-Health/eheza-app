@@ -575,6 +575,9 @@ type IndexDbQueryType
     | IndexDbQueryRemoveUploadPhotos (List Int)
       -- Reports the number of entries at shardChanges table.
     | IndexDbQueryGetTotalEntriesToUpload
+      -- Pulls Entity from Shards table by UUID. We use so we can reslove
+      -- `Could not find UUID` error without performing remote debug on device.
+    | IndexDbQueryGetShardsEntityByUuid String
 
 
 type IndexDbQueryTypeResult
@@ -588,6 +591,8 @@ type IndexDbQueryTypeResult
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | IndexDbQueryGetTotalEntriesToUploadResult Int
+      -- JSON.stringify representation of pulled entity.
+    | IndexDbQueryGetShardsEntityByUuidResult String
 
 
 type UploadFileError
@@ -759,6 +764,7 @@ type Msg
     | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
+    | BackendReportIncidentDetails String
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value

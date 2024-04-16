@@ -1438,10 +1438,21 @@ tuberculosisTreatmentReviewEndpoint =
         |> withValueEncoder (object << encodeTuberculosisTreatmentReview)
 
 
-educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession ()
+educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession (Maybe PersonId)
 educationSessionEndpoint =
     swEndpoint "nodes/education_session" decodeEducationSession
         |> withValueEncoder (object << encodeEducationSession)
+        |> withParamsEncoder encodeEducationSessionParams
+
+
+encodeEducationSessionParams : Maybe PersonId -> List ( String, String )
+encodeEducationSessionParams mPersonId =
+    case mPersonId of
+        Just id ->
+            [ ( "participant", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
 
 
 hivEncounterEndpoint : ReadWriteEndPoint Error HIVEncounterId HIVEncounter HIVEncounter (List IndividualEncounterParticipantId)

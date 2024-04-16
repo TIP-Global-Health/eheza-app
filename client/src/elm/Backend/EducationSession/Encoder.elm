@@ -1,4 +1,4 @@
-module Backend.EducationSession.Encoder exposing (encodeEducationSession)
+module Backend.EducationSession.Encoder exposing (encodeEducationSession, encodeEducationTopic)
 
 import Backend.EducationSession.Model exposing (..)
 import Backend.EducationSession.Utils exposing (..)
