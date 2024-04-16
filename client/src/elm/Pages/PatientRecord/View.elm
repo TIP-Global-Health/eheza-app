@@ -14,6 +14,7 @@ import Backend.Person.Utils exposing (ageInYears, isPersonAnAdult)
 import Backend.PrenatalEncounter.Model
 import Backend.PrenatalEncounter.Utils exposing (eddToLmpDate)
 import Backend.Relationship.Model exposing (MyRelatedBy(..))
+import Backend.Utils exposing (groupEducationEnabled)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
@@ -82,7 +83,7 @@ view language currentDate zscores site features id isChw initiator db model =
                             viewContentForChild language currentDate zscores site features id person isChw initiator db model
 
                         else
-                            viewContentForOther language currentDate site isChw id person patientType initiator db model
+                            viewContentForOther language currentDate site features isChw id person patientType initiator db model
             )
         |> Maybe.withDefault spinner
 
@@ -200,8 +201,20 @@ viewContentForChild language currentDate zscores site features childId child isC
         ( childId, child )
 
 
-viewContentForOther : Language -> NominalDate -> Site -> Bool -> PersonId -> Person -> PatientType -> PatientRecordInitiator -> ModelIndexedDb -> Model -> Html Msg
-viewContentForOther language currentDate site isChw personId person patientType initiator db model =
+viewContentForOther :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> PersonId
+    -> Person
+    -> PatientType
+    -> PatientRecordInitiator
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+viewContentForOther language currentDate site features isChw personId person patientType initiator db model =
     let
         individualParticipants =
             Dict.get personId db.individualParticipantsByPerson
@@ -260,7 +273,7 @@ viewContentForOther language currentDate site isChw personId person patientType 
             , div [ class "pane progress-reports" ]
                 [ div [ class "pane-heading" ]
                     [ text <| translate language Translate.ProgressReports ]
-                , viewFilters language person patientType model
+                , viewFilters language features person patientType model
                 ]
             , selectedPane
             , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
@@ -386,8 +399,8 @@ thumbnailDimensions =
     }
 
 
-viewFilters : Language -> Person -> PatientType -> Model -> Html Msg
-viewFilters language person patientType model =
+viewFilters : Language -> EverySet SiteFeature -> Person -> PatientType -> Model -> Html Msg
+viewFilters language features person patientType model =
     let
         renderButton filter =
             button
@@ -405,20 +418,30 @@ viewFilters language person patientType model =
                     []
 
                 PatientAdult ->
+                    let
+                        filterGroupEducation =
+                            if groupEducationEnabled features then
+                                Just FilterGroupEducation
+
+                            else
+                                Nothing
+                    in
                     case person.gender of
                         Male ->
-                            [ FilterAcuteIllness
-                            , FilterGroupEducation
-                            , FilterDemographics
+                            [ Just FilterAcuteIllness
+                            , filterGroupEducation
+                            , Just FilterDemographics
                             ]
+                                |> Maybe.Extra.values
 
                         Female ->
-                            [ FilterAcuteIllness
-                            , FilterAntenatal
-                            , FilterFamilyPlanning
-                            , FilterGroupEducation
-                            , FilterDemographics
+                            [ Just FilterAcuteIllness
+                            , Just FilterAntenatal
+                            , Just FilterFamilyPlanning
+                            , filterGroupEducation
+                            , Just FilterDemographics
                             ]
+                                |> Maybe.Extra.values
 
                 PatientUnknown ->
                     [ FilterAcuteIllness

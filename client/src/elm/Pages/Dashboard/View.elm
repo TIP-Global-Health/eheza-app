@@ -35,11 +35,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
+import Backend.Utils exposing (groupEducationEnabled)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Color exposing (Color)
 import Date exposing (Month, Unit(..), numberToMonth)
 import Debug exposing (toString)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, isDiffTruthy, toLastDayOfMonth)
 import Html exposing (..)
@@ -78,7 +79,7 @@ import Scale
 import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
-import SyncManager.Model exposing (Site)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate, translateText, translationSet)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
@@ -88,8 +89,19 @@ import Utils.Html exposing (spinner, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc)
 
 
-view : Language -> DashboardPage -> NominalDate -> Site -> HealthCenterId -> Bool -> Nurse -> Model -> ModelIndexedDb -> Html Msg
-view language page currentDate site healthCenterId isChw nurse model db =
+view :
+    Language
+    -> DashboardPage
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> HealthCenterId
+    -> Bool
+    -> Nurse
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+view language page currentDate site features healthCenterId isChw nurse model db =
     let
         header =
             case page of
@@ -158,7 +170,7 @@ view language page currentDate site healthCenterId isChw nurse model db =
                             ( pageContent, pageClass ) =
                                 case page of
                                     PageMain ->
-                                        ( viewPageMain language currentDate healthCenterId isChw assembled db model
+                                        ( viewPageMain language currentDate features healthCenterId isChw assembled db model
                                         , "main"
                                         )
 
@@ -226,22 +238,22 @@ viewHeader language label goBackAction =
         ]
 
 
-viewPageMain : Language -> NominalDate -> HealthCenterId -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewPageMain language currentDate healthCenterId isChw assembled db model =
+viewPageMain : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> Bool -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMain language currentDate features healthCenterId isChw assembled db model =
     if isChw then
-        viewPageMainForChw language currentDate healthCenterId assembled db model
+        viewPageMainForChw language currentDate features healthCenterId assembled db model
 
     else
-        viewPageMainForNurse language currentDate healthCenterId assembled db model
+        viewPageMainForNurse language currentDate features healthCenterId assembled db model
 
 
-viewPageMainForNurse : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewPageMainForNurse language currentDate healthCenterId assembled db model =
-    [ viewMenuForNurse language ]
+viewPageMainForNurse : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForNurse language currentDate features healthCenterId assembled db model =
+    [ viewMenuForNurse language features ]
 
 
-viewPageMainForChw : Language -> NominalDate -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewPageMainForChw language currentDate healthCenterId assembled db model =
+viewPageMainForChw : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewPageMainForChw language currentDate features healthCenterId assembled db model =
     let
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
@@ -274,7 +286,7 @@ viewPageMainForChw language currentDate healthCenterId assembled db model =
                 followUps
                 |> Maybe.withDefault ( 0, 0, 0 )
     in
-    [ viewMenuForChw language
+    [ viewMenuForChw language features
     , monthSelector language dateLastDayOfSelectedMonth model
     , div [ class "ui grid" ]
         [ div [ class "three column row" ]
@@ -671,8 +683,16 @@ viewFiltersPane language page db model =
         filters
 
 
-viewMenuForNurse : Language -> Html Msg
-viewMenuForNurse language =
+viewMenuForNurse : Language -> EverySet SiteFeature -> Html Msg
+viewMenuForNurse language features =
+    let
+        groupEducationButton =
+            if groupEducationEnabled features then
+                viewMenuButton language PageGroupEducation Nothing
+
+            else
+                emptyNode
+    in
     div []
         [ div [ class "ui segment page-filters top-row" ]
             [ viewMenuButton language PagePrenatal Nothing
@@ -682,21 +702,29 @@ viewMenuForNurse language =
         , div [ class "ui segment page-filters center" ]
             [ viewMenuButton language (PageNCD PageHypertension) Nothing
             , viewMenuButton language (PageChildWellness PageChildWellnessOverview) Nothing
-            , viewMenuButton language PageGroupEducation Nothing
+            , groupEducationButton
             ]
         ]
 
 
-viewMenuForChw : Language -> Html Msg
-viewMenuForChw language =
+viewMenuForChw : Language -> EverySet SiteFeature -> Html Msg
+viewMenuForChw language features =
+    let
+        secondRow =
+            if groupEducationEnabled features then
+                div [ class "ui segment page-filters center" ]
+                    [ viewMenuButton language PageGroupEducation Nothing ]
+
+            else
+                emptyNode
+    in
     div []
         [ div [ class "ui segment page-filters top-row" ]
             [ viewMenuButton language PagePrenatal Nothing
             , viewMenuButton language (PageNutrition PageCharts) Nothing
             , viewMenuButton language (PageAcuteIllness PageAcuteIllnessOverview) Nothing
             ]
-        , div [ class "ui segment page-filters center" ]
-            [ viewMenuButton language PageGroupEducation Nothing ]
+        , secondRow
         ]
 
 

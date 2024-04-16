@@ -424,6 +424,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             subPage
                             currentDate
                             site
+                            features
                             healthCenterId
                             isChw
                             (Tuple.second loggedInModel.nurse)
