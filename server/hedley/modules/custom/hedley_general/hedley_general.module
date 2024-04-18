@@ -426,13 +426,27 @@ function hedley_general_shards_by_person($nid) {
  *
  * If file is saved directly into 'private', sets it's uri and
  * destination to storage sub folder (storage-MM-YYYY).
+ * Exception are whatsapp screenshots that should remain at public, since
+ * they get deleted after few hours anyway.
  * We need this, so that photos that are fetched from client get correct
  * uri for image style into 'deferredPhotos' table, which is used to
  * download deferred photos during device sync.
  * The file itself will be moved to storage folder at hook_file_insert().
  */
 function hedley_general_file_presave($file) {
-  if ($file->uri !== 'private://' . $file->filename) {
+  $valid = FALSE;
+  $valid_prefixes = [
+    'image-',
+    'signature-',
+  ];
+  foreach ($valid_prefixes as $prefix) {
+    if (strpos($file->filename, $prefix) === 0) {
+      $valid = TRUE;
+      break;
+    }
+  }
+
+  if (!$valid || $file->uri !== 'private://' . $file->filename) {
     return;
   }
 
