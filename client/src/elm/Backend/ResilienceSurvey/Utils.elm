@@ -111,6 +111,24 @@ resilienceSurveyQuestionFromString value =
         "q10" ->
             Just ResilienceSurveyQuestion10
 
+        "q11" ->
+            Just ResilienceSurveyQuestion11
+
+        "q12" ->
+            Just ResilienceSurveyQuestion12
+
+        "q13" ->
+            Just ResilienceSurveyQuestion13
+
+        "q14" ->
+            Just ResilienceSurveyQuestion14
+
+        "q15" ->
+            Just ResilienceSurveyQuestion15
+
+        "q16" ->
+            Just ResilienceSurveyQuestion16
+
         _ ->
             Nothing
 

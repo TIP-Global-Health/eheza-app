@@ -183,6 +183,7 @@ function hedley_resilience_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'quarterly' => 'Quarterly',
+        'adoption' => 'Adoption',
       ),
       'allowed_values_function' => '',
     ),
