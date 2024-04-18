@@ -84,19 +84,23 @@ while (TRUE) {
   }
 
   $count = count($successful);
-  drush_print("Successfully relocated $count files. Resaving nodes that use them...");
+  drush_print("Successfully relocated $count files.");
 
-  $usage_nodes_ids = db_select('file_usage', 'fu')
-    ->fields('fu', ['id'])
-    ->condition('fu.type', 'node')
-    ->condition('fu.fid', $successful, 'IN')
-    ->execute()
-    ->fetchCol();
+  if ($count > 0) {
+    drush_print("Resaving nodes that use them...");
 
-  if (!empty($usage_nodes_ids)) {
-    $usage_nodes = node_load_multiple($usage_nodes_ids);
-    foreach ($usage_nodes as $node) {
-      node_save($node);
+    $usage_nodes_ids = db_select('file_usage', 'fu')
+      ->fields('fu', ['id'])
+      ->condition('fu.type', 'node')
+      ->condition('fu.fid', $successful, 'IN')
+      ->execute()
+      ->fetchCol();
+
+    if (!empty($usage_nodes_ids)) {
+      $usage_nodes = node_load_multiple($usage_nodes_ids);
+      foreach ($usage_nodes as $node) {
+        node_save($node);
+      }
     }
   }
 

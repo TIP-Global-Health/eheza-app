@@ -359,7 +359,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 25;
+const dbVersion = 26;
 
 /**
  * Return saved info for General sync.
