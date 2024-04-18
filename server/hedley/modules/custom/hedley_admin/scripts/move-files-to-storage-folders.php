@@ -26,8 +26,11 @@ $memory_limit = drush_get_option('memory_limit', 200);
 
 $base_query = db_select('file_managed', 'fm')
   ->fields('fm', ['fid', 'timestamp'])
-  ->condition('fm.uri', 'private://storage-%', 'NOT LIKE')
   ->orderBy('fm.fid');
+$or = db_or();
+$or->condition('fm.uri', 'private://image-%', 'LIKE');
+$or->condition('fm.uri', 'private://signature-%', 'LIKE');
+$base_query->condition($or);
 
 $count_query = clone $base_query;
 $count = $count_query->execute()->rowCount();
@@ -58,7 +61,7 @@ while (TRUE) {
     return;
   }
 
-  $count = 0;
+  $successful = [];
   $files = file_load_multiple($ids);
   foreach ($files as $file) {
     if (!file_exists($file->uri)) {
@@ -77,11 +80,27 @@ while (TRUE) {
       continue;
     }
 
-    $count++;
+    $successful[] = $file->fid;
+  }
+
+  $count = count($successful);
+  drush_print("Successfully relocated $count files. Resaving nodes that use them...");
+
+  $usage_nodes_ids = db_select('file_usage', 'fu')
+    ->fields('fu', ['id'])
+    ->condition('fu.type', 'node')
+    ->condition('fu.fid', $successful, 'IN')
+    ->execute()
+    ->fetchCol();
+
+  if (!empty($usage_nodes_ids)) {
+    $usage_nodes = node_load_multiple($usage_nodes_ids);
+    foreach ($usage_nodes as $node) {
+      node_save($node);
+    }
   }
 
   $fid = end($ids);
-  drush_print("Successfully relocated $count files.");
 
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
     drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@fid' => $fid]));
