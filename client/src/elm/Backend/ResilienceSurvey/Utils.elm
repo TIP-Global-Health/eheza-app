@@ -9,12 +9,18 @@ resilienceSurveyTypeToString surveyType =
         ResilienceSurveyQuarterly ->
             "quarterly"
 
+        ResilienceAdoptionSurvey ->
+            "adoption"
+
 
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
         "quarterly" ->
             Just ResilienceSurveyQuarterly
+
+        "adoption" ->
+            Just ResilienceAdoptionSurvey
 
         _ ->
             Nothing
@@ -52,6 +58,24 @@ resilienceSurveyQuestionToString value =
 
         ResilienceSurveyQuestion10 ->
             "q10"
+
+        ResilienceSurveyQuestion11 ->
+            "q11"
+
+        ResilienceSurveyQuestion12 ->
+            "q12"
+
+        ResilienceSurveyQuestion13 ->
+            "q13"
+
+        ResilienceSurveyQuestion14 ->
+            "q14"
+
+        ResilienceSurveyQuestion15 ->
+            "q15"
+
+        ResilienceSurveyQuestion16 ->
+            "q16"
 
 
 resilienceSurveyQuestionFromString : String -> Maybe ResilienceSurveyQuestion
@@ -109,6 +133,21 @@ resilienceSurveyQuestionOptionToString value =
         ResilienceSurveyQuestionOption4 ->
             "4"
 
+        ResilienceSurveyQuestionOption5 ->
+            "5"
+
+        ResilienceSurveyQuestionOption6 ->
+            "6"
+
+        ResilienceSurveyQuestionOption7 ->
+            "7"
+
+        ResilienceSurveyQuestionOption8 ->
+            "8"
+
+        ResilienceSurveyQuestionOption9 ->
+            "9"
+
 
 resilienceSurveyQuestionOptionFromString : String -> Maybe ResilienceSurveyQuestionOption
 resilienceSurveyQuestionOptionFromString value =
@@ -127,6 +166,21 @@ resilienceSurveyQuestionOptionFromString value =
 
         "4" ->
             Just ResilienceSurveyQuestionOption4
+
+        "5" ->
+            Just ResilienceSurveyQuestionOption5
+
+        "6" ->
+            Just ResilienceSurveyQuestionOption6
+
+        "7" ->
+            Just ResilienceSurveyQuestionOption7
+
+        "8" ->
+            Just ResilienceSurveyQuestionOption8
+
+        "9" ->
+            Just ResilienceSurveyQuestionOption9
 
         _ ->
             Nothing

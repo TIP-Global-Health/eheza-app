@@ -104,6 +104,7 @@ type Msg
     | SaveKickOffSurvey NurseId Nurse
     | SetQuarterlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
     | SaveQuarterlySurvey NurseId
+    | SaveAdoptionSurvey NurseId
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int

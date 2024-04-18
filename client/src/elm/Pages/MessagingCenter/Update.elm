@@ -199,6 +199,9 @@ update currentTime currentDate msg model =
 
                                                 ResilienceSurveyQuestionOption4 ->
                                                     5
+
+                                                _ ->
+                                                    0
                                         )
                                     |> List.sum
                         in
@@ -217,6 +220,13 @@ update currentTime currentDate msg model =
             , msgs
             )
                 |> sequenceExtra (update currentTime currentDate) extraMsgs
+
+        SaveAdoptionSurvey nurseId ->
+            --Todo
+            ( model
+            , Cmd.none
+            , []
+            )
 
         SetSurveyScoreDialogState state ->
             ( { model | surveyScoreDialogState = state }

@@ -19000,6 +19000,10 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                _ ->
+                    -- Not in use.
+                    translationSet EmptyString
+
         ResolveMonth short month ->
             translateMonth month short
 
