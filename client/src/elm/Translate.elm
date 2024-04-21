@@ -6749,7 +6749,7 @@ translationSet trans =
             }
 
         HIVPositiveTestDateQuestion ->
-            { english = "What was the positive test date"
+            { english = "When was the positive test date"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
