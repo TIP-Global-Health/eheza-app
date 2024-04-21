@@ -5640,7 +5640,8 @@ decodeHIVMedication =
 
 decodeHIVMedicationValue : Decoder HIVMedicationValue
 decodeHIVMedicationValue =
-    field "prescribed_hiv_medications" decodeHIVPrescribedMedication
+    decodeEverySet decodeHIVPrescribedMedication
+        |> field "prescribed_hiv_medications"
 
 
 decodeHIVPrescribedMedication : Decoder HIVPrescribedMedication

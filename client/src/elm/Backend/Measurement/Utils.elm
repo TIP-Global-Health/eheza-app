@@ -4153,14 +4153,77 @@ hivDiagnosisSignFromString diagnosis =
 hivPrescribedMedicationToString : HIVPrescribedMedication -> String
 hivPrescribedMedicationToString sign =
     case sign of
-        HIVMedicationOption1 ->
-            "option1"
+        HIVMedicationDolutegravirLamivudineTenofovir ->
+            "dtg-3tc-tdf"
 
-        HIVMedicationOption2 ->
-            "option2"
+        HIVMedicationAtazanavirRitonavir ->
+            "atz-r"
 
-        HIVMedicationOption3 ->
-            "option3"
+        HIVMedicationDolutegravir ->
+            "dtg"
+
+        HIVMedicationAbacavirLamivudine ->
+            "abc-3tc"
+
+        HIVMedicationLamivudineTenofovir ->
+            "3tc-tdf"
+
+        HIVMedicationZidovudine ->
+            "azt"
+
+        HIVMedicationLamivudineZidovudineNevirapine ->
+            "3tc-azt-nvp"
+
+        HIVMedicationEfavirenzLamivudineTenofovir ->
+            "efv-3tc-tdf"
+
+        HIVMedicationLamivudineZidovudine ->
+            "3tc-azt"
+
+        HIVMedicationLopinavirRitonavir ->
+            "lvp-r"
+
+        HIVMedicationDarunavirRitonavir ->
+            "drv-r"
+
+        HIVMedicationDarunavirCobicistat ->
+            "drv-c"
+
+        HIVMedicationRaltegravir ->
+            "ral"
+
+        HIVMedicationEfavirenz ->
+            "efv"
+
+        HIVMedicationNevirapine ->
+            "nvp"
+
+        HIVMedicationEtravirine ->
+            "etr"
+
+        HIVMedicationTenofovir ->
+            "tdf"
+
+        HIVMedicationLamivudine ->
+            "3tc"
+
+        HIVMedicationAbacavir ->
+            "abc"
+
+        HIVMedicationBactrim ->
+            "bactrim"
+
+        HIVMedicationDapsone ->
+            "dapsone"
+
+        HIVMedicationIsoniazid ->
+            "isoniazid"
+
+        HIVMedicationFluconazole ->
+            "fluconazole"
+
+        HIVMedicationAzithromycin ->
+            "azithromycin"
 
         NoHIVPrescribedMedications ->
             "none"
@@ -4169,14 +4232,77 @@ hivPrescribedMedicationToString sign =
 hivPrescribedMedicationFromString : String -> Maybe HIVPrescribedMedication
 hivPrescribedMedicationFromString sign =
     case sign of
-        "option1" ->
-            Just HIVMedicationOption1
+        "dtg-3tc-tdf" ->
+            Just HIVMedicationDolutegravirLamivudineTenofovir
 
-        "option2" ->
-            Just HIVMedicationOption2
+        "atz-r" ->
+            Just HIVMedicationAtazanavirRitonavir
 
-        "option3" ->
-            Just HIVMedicationOption3
+        "dtg" ->
+            Just HIVMedicationDolutegravir
+
+        "abc-3tc" ->
+            Just HIVMedicationAbacavirLamivudine
+
+        "3tc-tdf" ->
+            Just HIVMedicationLamivudineTenofovir
+
+        "azt" ->
+            Just HIVMedicationZidovudine
+
+        "3tc-azt-nvp" ->
+            Just HIVMedicationLamivudineZidovudineNevirapine
+
+        "efv-3tc-tdf" ->
+            Just HIVMedicationEfavirenzLamivudineTenofovir
+
+        "3tc-azt" ->
+            Just HIVMedicationLamivudineZidovudine
+
+        "lvp-r" ->
+            Just HIVMedicationLopinavirRitonavir
+
+        "drv-r" ->
+            Just HIVMedicationDarunavirRitonavir
+
+        "drv-c" ->
+            Just HIVMedicationDarunavirCobicistat
+
+        "ral" ->
+            Just HIVMedicationRaltegravir
+
+        "efv" ->
+            Just HIVMedicationEfavirenz
+
+        "nvp" ->
+            Just HIVMedicationNevirapine
+
+        "etr" ->
+            Just HIVMedicationEtravirine
+
+        "tdf" ->
+            Just HIVMedicationTenofovir
+
+        "3tc" ->
+            Just HIVMedicationLamivudine
+
+        "abc" ->
+            Just HIVMedicationAbacavir
+
+        "bactrim" ->
+            Just HIVMedicationBactrim
+
+        "dapsone" ->
+            Just HIVMedicationDapsone
+
+        "isoniazid" ->
+            Just HIVMedicationIsoniazid
+
+        "fluconazole" ->
+            Just HIVMedicationFluconazole
+
+        "azithromycin" ->
+            Just HIVMedicationAzithromycin
 
         "none" ->
             Just NoHIVPrescribedMedications

@@ -897,6 +897,7 @@ type TranslationId
     | LegRight
     | Legs
     | LegsCPESign LegsCPESign
+    | LessCommonAntiRetroviralMedications
     | LevelOfEducationLabel
     | LevelOfEducation EducationLevel
     | LevelOfEducationForResilience EducationLevel
@@ -993,6 +994,7 @@ type TranslationId
     | MonthlySurveyScoreInterpretation Int
     | MonthSinglePlural Int
     | MonthsOfStock
+    | MostCommonAntiRetroviralMedications
     | MotherId
     | MotherName String
     | MotherNameLabel
@@ -1269,6 +1271,7 @@ type TranslationId
     | ProgressReports
     | ProgressTimeline
     | ProgressTrends
+    | ProphylaxisMedications
     | ProvideHealthEducationAndInstructToIsolate
     | PreTermPregnancy
     | PriorDiagnosis
@@ -6756,20 +6759,146 @@ translationSet trans =
 
         HIVPrescribedMedication medication ->
             case medication of
-                HIVMedicationOption1 ->
-                    { english = "TDF 300mg / 3TC 300mg / DTG 50mg (TLD) - 1 tablet per day"
+                HIVMedicationDolutegravirLamivudineTenofovir ->
+                    { english = "Dolutegravir + Lamivudine + Tenofovir (DTG-3TC-TDF)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationOption2 ->
-                    { english = "AZT 300mg / 3TC 150mg + DTG 50mg - 1 tablet per day"
+                HIVMedicationAtazanavirRitonavir ->
+                    { english = "Atazanavir + Ritonavir (ATZ/r)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationOption3 ->
-                    { english = "TDF 300mg / 3TC 300mg / EFV (600 or 400 mg) - 1 tablet per day bedtime"
+                HIVMedicationDolutegravir ->
+                    { english = "Dolutegravir (DTG)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationAbacavirLamivudine ->
+                    { english = "Abacavir + Lamivudine (ABC-3TC)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationLamivudineTenofovir ->
+                    { english = "Lamivudine + Tenofovir (3TC-TDF)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationZidovudine ->
+                    { english = "Zidovudine (liquid) (AZT)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationLamivudineZidovudineNevirapine ->
+                    { english = "Lamivudine + Zidovudine + Nevirapine (3TC-AZT-NVP)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationEfavirenzLamivudineTenofovir ->
+                    { english = "Efavirenz + Lamivudine + Tenofovir (EFV-3TC-TDF)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationLamivudineZidovudine ->
+                    { english = "Lamivudine + Zidovudine (3TC-AZT)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationLopinavirRitonavir ->
+                    { english = "Lopinavir + Ritonavir (LPV/r)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationDarunavirRitonavir ->
+                    { english = "Darunavir + Ritonavir (DRV/r)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationDarunavirCobicistat ->
+                    { english = "Darunavir + Cobicistat (DRV/c)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationRaltegravir ->
+                    { english = "Raltegravir (RAL)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationEfavirenz ->
+                    { english = "Efavirenz (EFV)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationNevirapine ->
+                    { english = "Nevirapine (tablet or liquid) (NVP)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationEtravirine ->
+                    { english = "Etravirine (ETR)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationTenofovir ->
+                    { english = "Tenofovir (TDF)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationLamivudine ->
+                    { english = "Lamivudine (3TC)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationAbacavir ->
+                    { english = "Abacavir (ABC)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationBactrim ->
+                    { english = "Bactrim"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationDapsone ->
+                    { english = "Dapsone"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationIsoniazid ->
+                    { english = "Isoniazid"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationFluconazole ->
+                    { english = "Fluconazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                HIVMedicationAzithromycin ->
+                    { english = "Azithromycin"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -9278,6 +9407,12 @@ translationSet trans =
                 NormalLegs ->
                     translationSet Normal
 
+        LessCommonAntiRetroviralMedications ->
+            { english = "Less Common Anti-Retroviral Medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         LevelOfEducationLabel ->
             { english = "Level of Education"
             , kinyarwanda = Just <| "Amashuri wize"
@@ -10627,6 +10762,12 @@ translationSet trans =
 
         MonthsOfStock ->
             { english = "Months of Stock"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MostCommonAntiRetroviralMedications ->
+            { english = "Most Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -16703,6 +16844,12 @@ translationSet trans =
             { english = "Progress Trends"
             , kinyarwanda = Just "Uko ibipimo bigenda bizamuka"
             , kirundi = Just "Amayira y'iterambere"
+            }
+
+        ProphylaxisMedications ->
+            { english = "Prophylaxis Medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         ProvideHealthEducationAndInstructToIsolate ->

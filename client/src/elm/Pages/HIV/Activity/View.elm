@@ -47,7 +47,7 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
+        , viewCheckBoxMultipleSelectSectionsInput
         , viewCustomBoolInput
         , viewLabel
         , viewPersonDetailsExtended
@@ -455,13 +455,12 @@ viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationFo
 viewPrescribedMedicationForm language currentDate form =
     div [ class "ui form prescribed-medication" ]
         [ viewQuestionLabel language Translate.HIVPrescribedMedicationsQuestion
-        , viewCheckBoxSelectInput language
-            [ HIVMedicationOption1
-            , HIVMedicationOption2
-            , HIVMedicationOption3
+        , viewCheckBoxMultipleSelectSectionsInput language
+            [ ( Translate.MostCommonAntiRetroviralMedications, mostCommonAntiRetroviralMedications )
+            , ( Translate.LessCommonAntiRetroviralMedications, lessCommonAntiRetroviralMedications )
+            , ( Translate.ProphylaxisMedications, prophylaxisMedications )
             ]
-            []
-            form.medications
+            (Maybe.withDefault [] form.medications)
             SetPrescribedMedication
             Translate.HIVPrescribedMedication
         ]
