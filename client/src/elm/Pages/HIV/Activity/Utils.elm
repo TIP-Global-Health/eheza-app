@@ -129,8 +129,24 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     getMeasurementValueFunc assembled.measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+
+                isCompleted =
+                    let
+                        mandatoryGroup =
+                            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
+                    in
+                    Maybe.map
+                        (\medications ->
+                            if List.any (\medication -> List.member medication medications) mandatoryGroup then
+                                1
+
+                            else
+                                0
+                        )
+                        form.medications
+                        |> Maybe.withDefault 0
             in
-            ( taskCompleted form.medications
+            ( isCompleted
             , 1
             )
 
