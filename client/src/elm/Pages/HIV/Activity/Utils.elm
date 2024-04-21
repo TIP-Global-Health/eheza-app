@@ -129,8 +129,24 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                 form =
                     getMeasurementValueFunc assembled.measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
+
+                isCompleted =
+                    let
+                        mandatoryGroup =
+                            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
+                    in
+                    Maybe.map
+                        (\medications ->
+                            if List.any (\medication -> List.member medication medications) mandatoryGroup then
+                                1
+
+                            else
+                                0
+                        )
+                        form.medications
+                        |> Maybe.withDefault 0
             in
-            ( taskCompleted form.medications
+            ( isCompleted
             , 1
             )
 
@@ -382,13 +398,13 @@ prescribedMedicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medications = or form.medications (Just value) }
+                { medications = or form.medications (Just <| EverySet.toList value) }
             )
 
 
 toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe HIVMedicationValue
 toPrescribedMedicationValue form =
-    form.medications
+    Maybe.map EverySet.fromList form.medications
 
 
 toSymptomReviewValueWithDefault : Maybe HIVSymptomReviewValue -> SymptomReviewForm -> Maybe HIVSymptomReviewValue
@@ -449,3 +465,42 @@ toHealthEducationValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoHIVHealthEducationSigns)
+
+
+mostCommonAntiRetroviralMedications : List HIVPrescribedMedication
+mostCommonAntiRetroviralMedications =
+    [ HIVMedicationDolutegravirLamivudineTenofovir
+    , HIVMedicationAtazanavirRitonavir
+    , HIVMedicationDolutegravir
+    , HIVMedicationAbacavirLamivudine
+    , HIVMedicationLamivudineTenofovir
+    , HIVMedicationZidovudine
+    ]
+
+
+lessCommonAntiRetroviralMedications : List HIVPrescribedMedication
+lessCommonAntiRetroviralMedications =
+    [ HIVMedicationLamivudineZidovudineNevirapine
+    , HIVMedicationEfavirenzLamivudineTenofovir
+    , HIVMedicationLamivudineZidovudine
+    , HIVMedicationLopinavirRitonavir
+    , HIVMedicationDarunavirRitonavir
+    , HIVMedicationDarunavirCobicistat
+    , HIVMedicationRaltegravir
+    , HIVMedicationEfavirenz
+    , HIVMedicationNevirapine
+    , HIVMedicationEtravirine
+    , HIVMedicationTenofovir
+    , HIVMedicationLamivudine
+    , HIVMedicationAbacavir
+    ]
+
+
+prophylaxisMedications : List HIVPrescribedMedication
+prophylaxisMedications =
+    [ HIVMedicationBactrim
+    , HIVMedicationDapsone
+    , HIVMedicationIsoniazid
+    , HIVMedicationFluconazole
+    , HIVMedicationAzithromycin
+    ]

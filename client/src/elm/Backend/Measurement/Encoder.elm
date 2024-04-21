@@ -4574,7 +4574,7 @@ encodeHIVMedication =
 
 encodeHIVMedicationValue : HIVMedicationValue -> List ( String, Value )
 encodeHIVMedicationValue value =
-    [ ( "prescribed_hiv_medications", encodeHIVPrescribedMedication value )
+    [ ( "prescribed_hiv_medications", encodeEverySet encodeHIVPrescribedMedication value )
     , ( "deleted", bool False )
     , ( "type", string "hiv_medication" )
     ]

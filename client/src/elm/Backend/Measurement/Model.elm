@@ -3017,13 +3017,34 @@ type alias HIVMedication =
 
 
 type alias HIVMedicationValue =
-    HIVPrescribedMedication
+    EverySet HIVPrescribedMedication
 
 
 type HIVPrescribedMedication
-    = HIVMedicationOption1
-    | HIVMedicationOption2
-    | HIVMedicationOption3
+    = HIVMedicationDolutegravirLamivudineTenofovir
+    | HIVMedicationAtazanavirRitonavir
+    | HIVMedicationDolutegravir
+    | HIVMedicationAbacavirLamivudine
+    | HIVMedicationLamivudineTenofovir
+    | HIVMedicationZidovudine
+    | HIVMedicationLamivudineZidovudineNevirapine
+    | HIVMedicationEfavirenzLamivudineTenofovir
+    | HIVMedicationLamivudineZidovudine
+    | HIVMedicationLopinavirRitonavir
+    | HIVMedicationDarunavirRitonavir
+    | HIVMedicationDarunavirCobicistat
+    | HIVMedicationRaltegravir
+    | HIVMedicationEfavirenz
+    | HIVMedicationNevirapine
+    | HIVMedicationEtravirine
+    | HIVMedicationTenofovir
+    | HIVMedicationLamivudine
+    | HIVMedicationAbacavir
+    | HIVMedicationBactrim
+    | HIVMedicationDapsone
+    | HIVMedicationIsoniazid
+    | HIVMedicationFluconazole
+    | HIVMedicationAzithromycin
     | NoHIVPrescribedMedications
 
 

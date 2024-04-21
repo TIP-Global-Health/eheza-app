@@ -88,7 +88,7 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe HIVPrescribedMedication
+    { medications : Maybe (List HIVPrescribedMedication)
     }
 
 

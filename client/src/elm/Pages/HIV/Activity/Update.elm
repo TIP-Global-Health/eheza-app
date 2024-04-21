@@ -199,7 +199,11 @@ update currentDate id db msg model =
                     medicationForm
 
                 updatedForm =
-                    { form | medications = Just medication }
+                    setMultiSelectInputValue .medications
+                        (\medications -> { form | medications = medications })
+                        NoHIVPrescribedMedications
+                        medication
+                        form
 
                 updatedData =
                     model.medicationData
