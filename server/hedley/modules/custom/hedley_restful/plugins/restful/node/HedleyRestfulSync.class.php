@@ -179,6 +179,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'stock_management',
       'tuberculosis_management',
       'group_education',
+      'hiv_management',
     ];
     $enabled_features = array_filter(
       $available_features,
@@ -390,6 +391,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       'execution_date',
       'resilience_start_date',
       'expiration_date',
+      'positive_result_date',
     ];
     $multiDateFields = [
       'administration_dates',

@@ -19,6 +19,33 @@ import SyncManager.Model exposing (SiteFeature)
 import Utils.NominalDate exposing (sortTuplesByDateDesc)
 
 
+generatePreviousMeasurements :
+    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
+    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
+    -> Maybe encounterId
+    -> IndividualEncounterParticipantId
+    -> ModelIndexedDb
+    -> List ( NominalDate, ( encounterId, measurements ) )
+generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
+    encountersByParticipantFunc db participantId
+        |> List.filterMap
+            (\( encounterId, encounter ) ->
+                -- We do not want to get data of current encounter.
+                if currentEncounterId == Just encounterId then
+                    Nothing
+
+                else
+                    case Dict.get encounterId (measurementsByEncouterFunc db) of
+                        Just (Success data) ->
+                            Just ( encounter.startDate, ( encounterId, data ) )
+
+                        _ ->
+                            Nothing
+            )
+        -- Most recent date to least recent date.
+        |> List.sortWith sortTuplesByDateDesc
+
+
 {-| Given a MUAC in cm, classify according to the measurement tool shown
 at <https://github.com/Gizra/ihangane/issues/282>
 -}
@@ -3945,16 +3972,16 @@ tuberculosisDiagnosisFromString diagnosis =
 tuberculosisSymptomToString : TuberculosisSymptom -> String
 tuberculosisSymptomToString symptom =
     case symptom of
-        SymptomNightSweats ->
+        TuberculosisSymptomNightSweats ->
             "night-sweats"
 
-        SymptomBloodInSputum ->
+        TuberculosisSymptomBloodInSputum ->
             "blood-in-sputum"
 
-        SymptomWeightLoss ->
+        TuberculosisSymptomWeightLoss ->
             "wight-loss"
 
-        SymptomSevereFatigue ->
+        TuberculosisSymptomSevereFatigue ->
             "severe-fatigue"
 
         NoTuberculosisSymptoms ->
@@ -3965,16 +3992,16 @@ tuberculosisSymptomFromString : String -> Maybe TuberculosisSymptom
 tuberculosisSymptomFromString symptom =
     case symptom of
         "night-sweats" ->
-            Just SymptomNightSweats
+            Just TuberculosisSymptomNightSweats
 
         "blood-in-sputum" ->
-            Just SymptomBloodInSputum
+            Just TuberculosisSymptomBloodInSputum
 
         "wight-loss" ->
-            Just SymptomWeightLoss
+            Just TuberculosisSymptomWeightLoss
 
         "severe-fatigue" ->
-            Just SymptomSevereFatigue
+            Just TuberculosisSymptomSevereFatigue
 
         "none" ->
             Just NoTuberculosisSymptoms
@@ -4088,28 +4115,351 @@ tuberculosisPrescribedMedicationFromString sign =
             Nothing
 
 
-generatePreviousMeasurements :
-    (ModelIndexedDb -> IndividualEncounterParticipantId -> List ( encounterId, { encounter | startDate : NominalDate } ))
-    -> (ModelIndexedDb -> Dict encounterId (WebData measurements))
-    -> Maybe encounterId
-    -> IndividualEncounterParticipantId
-    -> ModelIndexedDb
-    -> List ( NominalDate, ( encounterId, measurements ) )
-generatePreviousMeasurements encountersByParticipantFunc measurementsByEncouterFunc currentEncounterId participantId db =
-    encountersByParticipantFunc db participantId
-        |> List.filterMap
-            (\( encounterId, encounter ) ->
-                -- We do not want to get data of current encounter.
-                if currentEncounterId == Just encounterId then
-                    Nothing
+hivDiagnosisSignToString : HIVDiagnosisSign -> String
+hivDiagnosisSignToString diagnosis =
+    case diagnosis of
+        HIVResultPositiveReported ->
+            "result-positive-reported"
 
-                else
-                    case Dict.get encounterId (measurementsByEncouterFunc db) of
-                        Just (Success data) ->
-                            Just ( encounter.startDate, ( encounterId, data ) )
+        HIVResultPositiveKnown ->
+            "result-positive-known"
 
-                        _ ->
-                            Nothing
-            )
-        -- Most recent date to least recent date.
-        |> List.sortWith sortTuplesByDateDesc
+        HIVResultDateEstimated ->
+            "result-date-estimated"
+
+        NoHIVDiagnosisSigns ->
+            "none"
+
+
+hivDiagnosisSignFromString : String -> Maybe HIVDiagnosisSign
+hivDiagnosisSignFromString diagnosis =
+    case diagnosis of
+        "result-positive-reported" ->
+            Just HIVResultPositiveReported
+
+        "result-positive-known" ->
+            Just HIVResultPositiveKnown
+
+        "result-date-estimated" ->
+            Just HIVResultDateEstimated
+
+        "none" ->
+            Just NoHIVDiagnosisSigns
+
+        _ ->
+            Nothing
+
+
+hivPrescribedMedicationToString : HIVPrescribedMedication -> String
+hivPrescribedMedicationToString sign =
+    case sign of
+        HIVMedicationDolutegravirLamivudineTenofovir ->
+            "dtg-3tc-tdf"
+
+        HIVMedicationAtazanavirRitonavir ->
+            "atz-r"
+
+        HIVMedicationDolutegravir ->
+            "dtg"
+
+        HIVMedicationAbacavirLamivudine ->
+            "abc-3tc"
+
+        HIVMedicationLamivudineTenofovir ->
+            "3tc-tdf"
+
+        HIVMedicationZidovudine ->
+            "azt"
+
+        HIVMedicationLamivudineZidovudineNevirapine ->
+            "3tc-azt-nvp"
+
+        HIVMedicationEfavirenzLamivudineTenofovir ->
+            "efv-3tc-tdf"
+
+        HIVMedicationLamivudineZidovudine ->
+            "3tc-azt"
+
+        HIVMedicationLopinavirRitonavir ->
+            "lvp-r"
+
+        HIVMedicationDarunavirRitonavir ->
+            "drv-r"
+
+        HIVMedicationDarunavirCobicistat ->
+            "drv-c"
+
+        HIVMedicationRaltegravir ->
+            "ral"
+
+        HIVMedicationEfavirenz ->
+            "efv"
+
+        HIVMedicationNevirapine ->
+            "nvp"
+
+        HIVMedicationEtravirine ->
+            "etr"
+
+        HIVMedicationTenofovir ->
+            "tdf"
+
+        HIVMedicationLamivudine ->
+            "3tc"
+
+        HIVMedicationAbacavir ->
+            "abc"
+
+        HIVMedicationBactrim ->
+            "bactrim"
+
+        HIVMedicationDapsone ->
+            "dapsone"
+
+        HIVMedicationIsoniazid ->
+            "isoniazid"
+
+        HIVMedicationFluconazole ->
+            "fluconazole"
+
+        HIVMedicationAzithromycin ->
+            "azithromycin"
+
+        NoHIVPrescribedMedications ->
+            "none"
+
+
+hivPrescribedMedicationFromString : String -> Maybe HIVPrescribedMedication
+hivPrescribedMedicationFromString sign =
+    case sign of
+        "dtg-3tc-tdf" ->
+            Just HIVMedicationDolutegravirLamivudineTenofovir
+
+        "atz-r" ->
+            Just HIVMedicationAtazanavirRitonavir
+
+        "dtg" ->
+            Just HIVMedicationDolutegravir
+
+        "abc-3tc" ->
+            Just HIVMedicationAbacavirLamivudine
+
+        "3tc-tdf" ->
+            Just HIVMedicationLamivudineTenofovir
+
+        "azt" ->
+            Just HIVMedicationZidovudine
+
+        "3tc-azt-nvp" ->
+            Just HIVMedicationLamivudineZidovudineNevirapine
+
+        "efv-3tc-tdf" ->
+            Just HIVMedicationEfavirenzLamivudineTenofovir
+
+        "3tc-azt" ->
+            Just HIVMedicationLamivudineZidovudine
+
+        "lvp-r" ->
+            Just HIVMedicationLopinavirRitonavir
+
+        "drv-r" ->
+            Just HIVMedicationDarunavirRitonavir
+
+        "drv-c" ->
+            Just HIVMedicationDarunavirCobicistat
+
+        "ral" ->
+            Just HIVMedicationRaltegravir
+
+        "efv" ->
+            Just HIVMedicationEfavirenz
+
+        "nvp" ->
+            Just HIVMedicationNevirapine
+
+        "etr" ->
+            Just HIVMedicationEtravirine
+
+        "tdf" ->
+            Just HIVMedicationTenofovir
+
+        "3tc" ->
+            Just HIVMedicationLamivudine
+
+        "abc" ->
+            Just HIVMedicationAbacavir
+
+        "bactrim" ->
+            Just HIVMedicationBactrim
+
+        "dapsone" ->
+            Just HIVMedicationDapsone
+
+        "isoniazid" ->
+            Just HIVMedicationIsoniazid
+
+        "fluconazole" ->
+            Just HIVMedicationFluconazole
+
+        "azithromycin" ->
+            Just HIVMedicationAzithromycin
+
+        "none" ->
+            Just NoHIVPrescribedMedications
+
+        _ ->
+            Nothing
+
+
+hivSymptomToString : HIVSymptom -> String
+hivSymptomToString symptom =
+    case symptom of
+        HIVSymptomFever ->
+            "fever"
+
+        HIVSymptomFatigue ->
+            "fatigue"
+
+        HIVSymptomSwollenLymphNodes ->
+            "swollen-lymph-nodes"
+
+        HIVSymptomSoreThroat ->
+            "sore-throat"
+
+        HIVSymptomRash ->
+            "rash"
+
+        HIVSymptomMuscleJointPain ->
+            "muscle-joint-pain"
+
+        HIVSymptomHeadache ->
+            "headache"
+
+        HIVSymptomSevereAbdominalPain ->
+            "severe-abdominal-pain"
+
+        HIVSymptomNightSweats ->
+            "night-sweats"
+
+        HIVSymptomDiarrhea ->
+            "diarrhea"
+
+        HIVSymptomWeightLoss ->
+            "wight-loss"
+
+        HIVSymptomCoughingUpBlood ->
+            "coughing-up-blood"
+
+        HIVSymptomHairLoss ->
+            "hair-loss"
+
+        HIVSymptomMouthUlcers ->
+            "mouth-ulcers"
+
+        HIVSymptomDifficultyBreathing ->
+            "difficulty-breathing"
+
+        HIVSymptomVomiting ->
+            "vomiting"
+
+        NoHIVSymptoms ->
+            "none"
+
+
+hivSymptomFromString : String -> Maybe HIVSymptom
+hivSymptomFromString symptom =
+    case symptom of
+        "fever" ->
+            Just HIVSymptomFever
+
+        "fatigue" ->
+            Just HIVSymptomFatigue
+
+        "swollen-lymph-nodes" ->
+            Just HIVSymptomSwollenLymphNodes
+
+        "sore-throat" ->
+            Just HIVSymptomSoreThroat
+
+        "rash" ->
+            Just HIVSymptomRash
+
+        "muscle-joint-pain" ->
+            Just HIVSymptomMuscleJointPain
+
+        "headache" ->
+            Just HIVSymptomHeadache
+
+        "severe-abdominal-pain" ->
+            Just HIVSymptomSevereAbdominalPain
+
+        "night-sweats" ->
+            Just HIVSymptomNightSweats
+
+        "diarrhea" ->
+            Just HIVSymptomDiarrhea
+
+        "wight-loss" ->
+            Just HIVSymptomWeightLoss
+
+        "coughing-up-blood" ->
+            Just HIVSymptomCoughingUpBlood
+
+        "hair-loss" ->
+            Just HIVSymptomHairLoss
+
+        "mouth-ulcers" ->
+            Just HIVSymptomMouthUlcers
+
+        "difficulty-breathing" ->
+            Just HIVSymptomDifficultyBreathing
+
+        "vomiting" ->
+            Just HIVSymptomVomiting
+
+        "none" ->
+            Just NoHIVSymptoms
+
+        _ ->
+            Nothing
+
+
+hivHealthEducationSignToString : HIVHealthEducationSign -> String
+hivHealthEducationSignToString diagnosis =
+    case diagnosis of
+        EducationPositiveResult ->
+            "positive-result"
+
+        EducationSaferSexPractices ->
+            "safer-sex-practices"
+
+        EducationEncouragedPartnerTesting ->
+            "encouraged-partner-testing"
+
+        EducationFamilyPlanningOptions ->
+            "family-planning-options"
+
+        NoHIVHealthEducationSigns ->
+            "none"
+
+
+hivHealthEducationSignFromString : String -> Maybe HIVHealthEducationSign
+hivHealthEducationSignFromString diagnosis =
+    case diagnosis of
+        "positive-result" ->
+            Just EducationPositiveResult
+
+        "safer-sex-practices" ->
+            Just EducationSaferSexPractices
+
+        "encouraged-partner-testing" ->
+            Just EducationEncouragedPartnerTesting
+
+        "family-planning-options" ->
+            Just EducationFamilyPlanningOptions
+
+        "none" ->
+            Just NoHIVHealthEducationSigns
+
+        _ ->
+            Nothing

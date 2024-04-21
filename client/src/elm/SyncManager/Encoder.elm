@@ -1,6 +1,7 @@
 module SyncManager.Encoder exposing
     ( encodeDataForDeferredPhotos
     , encodeDeviceStateReport
+    , encodeIncidentDetails
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
     , encodeIndexDbQueryUploadWhatsAppResultRecord
@@ -218,3 +219,8 @@ encodeUploadMethod uploadMethod =
 
         UploadMethodUpdate ->
             string "PATCH"
+
+
+encodeIncidentDetails : String -> List ( String, Value )
+encodeIncidentDetails details =
+    [ ( "incident_details", string details ) ]

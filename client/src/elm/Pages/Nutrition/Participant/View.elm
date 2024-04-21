@@ -28,7 +28,7 @@ view language currentDate selectedHealthCenter id isChw initiator db =
                 |> Maybe.withDefault NotAsked
     in
     div
-        [ class "wrap wrap-alt-2 page-participant nutrition" ]
+        [ class "wrap wrap-alt-2 page-participant individual nutrition" ]
         [ viewHeader language isChw initiator
         , div
             [ class "ui full segment" ]

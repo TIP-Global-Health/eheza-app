@@ -45,6 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
+import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
@@ -193,9 +194,12 @@ type UserPage
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
     | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
     | TuberculosisParticipantPage PersonId
-    | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
-    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
+    | TuberculosisEncounterPage TuberculosisEncounterId -- Tuberculosis activities index.
+    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Tuberculosis activity.
     | EducationSessionPage EducationSessionId -- Education Session page.
+    | HIVParticipantPage PersonId
+    | HIVEncounterPage HIVEncounterId -- HIV activities index.
+    | HIVActivityPage HIVEncounterId HIVActivity -- record HIV activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
@@ -210,6 +214,7 @@ type DashboardPage
     | PagePrenatal
     | PageNCD NCDSubPage
     | PageChildWellness ChildWellnessSubPage
+    | PageGroupEducation
 
 
 type NutritionSubPage

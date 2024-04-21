@@ -936,6 +936,11 @@ encodeTuberculosisMeasurement =
     encodeMeasurement "tuberculosis_encounter"
 
 
+encodeHIVMeasurement : (value -> List ( String, Value )) -> HIVMeasurement value -> List ( String, Value )
+encodeHIVMeasurement =
+    encodeMeasurement "hiv_encounter"
+
+
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
 encodeMeasurement encounterTag encoder measurement =
     List.concat
@@ -4518,3 +4523,91 @@ encodeTuberculosisSymptom =
 encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
 encodeTuberculosisTreatmentReview =
     encodeTuberculosisMeasurement (encodeTreatmentOngoingValueWithType "tuberculosis_treatment_review")
+
+
+encodeHIVDiagnostics : HIVDiagnostics -> List ( String, Value )
+encodeHIVDiagnostics =
+    encodeHIVMeasurement encodeHIVDiagnosticsValue
+
+
+encodeHIVDiagnosticsValue : HIVDiagnosticsValue -> List ( String, Value )
+encodeHIVDiagnosticsValue value =
+    [ ( "hiv_diagnosis_signs", encodeEverySet encodeHIVDiagnosisSign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_diagnostics" )
+    ]
+        ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
+
+
+encodeHIVDiagnosisSign : HIVDiagnosisSign -> Value
+encodeHIVDiagnosisSign =
+    hivDiagnosisSignToString >> string
+
+
+encodeHIVFollowUp : HIVFollowUp -> List ( String, Value )
+encodeHIVFollowUp =
+    encodeHIVMeasurement (encodeFollowUpValueWithType "hiv_follow_up")
+
+
+encodeHIVHealthEducation : HIVHealthEducation -> List ( String, Value )
+encodeHIVHealthEducation =
+    encodeHIVMeasurement encodeHIVHealthEducationValue
+
+
+encodeHIVHealthEducationValue : HIVHealthEducationValue -> List ( String, Value )
+encodeHIVHealthEducationValue value =
+    [ ( "hiv_health_education_signs", encodeEverySet encodeHIVHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_health_education" )
+    ]
+
+
+encodeHIVHealthEducationSign : HIVHealthEducationSign -> Value
+encodeHIVHealthEducationSign =
+    hivHealthEducationSignToString >> string
+
+
+encodeHIVMedication : HIVMedication -> List ( String, Value )
+encodeHIVMedication =
+    encodeHIVMeasurement encodeHIVMedicationValue
+
+
+encodeHIVMedicationValue : HIVMedicationValue -> List ( String, Value )
+encodeHIVMedicationValue value =
+    [ ( "prescribed_hiv_medications", encodeEverySet encodeHIVPrescribedMedication value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_medication" )
+    ]
+
+
+encodeHIVPrescribedMedication : HIVPrescribedMedication -> Value
+encodeHIVPrescribedMedication =
+    hivPrescribedMedicationToString >> string
+
+
+encodeHIVReferral : HIVReferral -> List ( String, Value )
+encodeHIVReferral =
+    encodeHIVMeasurement (encodeSendToHCValueWithType "hiv_referral")
+
+
+encodeHIVSymptomReview : HIVSymptomReview -> List ( String, Value )
+encodeHIVSymptomReview =
+    encodeHIVMeasurement encodeHIVSymptomReviewValue
+
+
+encodeHIVSymptomReviewValue : HIVSymptomReviewValue -> List ( String, Value )
+encodeHIVSymptomReviewValue value =
+    [ ( "hiv_symptoms", encodeEverySet encodeHIVSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_symptom_review" )
+    ]
+
+
+encodeHIVSymptom : HIVSymptom -> Value
+encodeHIVSymptom =
+    hivSymptomToString >> string
+
+
+encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
+encodeHIVTreatmentReview =
+    encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")

@@ -18,6 +18,9 @@ import Backend.EducationSession.Decoder exposing (decodeEducationSession)
 import Backend.EducationSession.Encoder exposing (encodeEducationSession)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
+import Backend.HIVEncounter.Encoder exposing (encodeHIVEncounter)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeHealthCenter)
 import Backend.HealthCenter.Model exposing (HealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
@@ -1435,7 +1438,72 @@ tuberculosisTreatmentReviewEndpoint =
         |> withValueEncoder (object << encodeTuberculosisTreatmentReview)
 
 
-educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession ()
+educationSessionEndpoint : ReadWriteEndPoint Error EducationSessionId EducationSession EducationSession (Maybe PersonId)
 educationSessionEndpoint =
     swEndpoint "nodes/education_session" decodeEducationSession
         |> withValueEncoder (object << encodeEducationSession)
+        |> withParamsEncoder encodeEducationSessionParams
+
+
+encodeEducationSessionParams : Maybe PersonId -> List ( String, String )
+encodeEducationSessionParams mPersonId =
+    case mPersonId of
+        Just id ->
+            [ ( "participant", fromEntityUuid id ) ]
+
+        Nothing ->
+            []
+
+
+hivEncounterEndpoint : ReadWriteEndPoint Error HIVEncounterId HIVEncounter HIVEncounter (List IndividualEncounterParticipantId)
+hivEncounterEndpoint =
+    swEndpoint "nodes/hiv_encounter" decodeHIVEncounter
+        |> withValueEncoder (object << encodeHIVEncounter)
+        |> withParamsEncoder encodeIndividualEncounterParams
+
+
+hivMeasurementsEndpoint : ReadOnlyEndPoint Error HIVEncounterId HIVMeasurements ()
+hivMeasurementsEndpoint =
+    swEndpoint "nodes/hiv-measurements" decodeHIVMeasurements
+
+
+hivDiagnosticsEndpoint : ReadWriteEndPoint Error HIVDiagnosticsId HIVDiagnostics HIVDiagnostics ()
+hivDiagnosticsEndpoint =
+    swEndpoint "nodes/hiv_diagnostics" decodeHIVDiagnostics
+        |> withValueEncoder (object << encodeHIVDiagnostics)
+
+
+hivFollowUpEndpoint : ReadWriteEndPoint Error HIVFollowUpId HIVFollowUp HIVFollowUp ()
+hivFollowUpEndpoint =
+    swEndpoint "nodes/hiv_follow_up" decodeHIVFollowUp
+        |> withValueEncoder (object << encodeHIVFollowUp)
+
+
+hivHealthEducationEndpoint : ReadWriteEndPoint Error HIVHealthEducationId HIVHealthEducation HIVHealthEducation ()
+hivHealthEducationEndpoint =
+    swEndpoint "nodes/hiv_health_education" decodeHIVHealthEducation
+        |> withValueEncoder (object << encodeHIVHealthEducation)
+
+
+hivMedicationEndpoint : ReadWriteEndPoint Error HIVMedicationId HIVMedication HIVMedication ()
+hivMedicationEndpoint =
+    swEndpoint "nodes/hiv_medication" decodeHIVMedication
+        |> withValueEncoder (object << encodeHIVMedication)
+
+
+hivReferralEndpoint : ReadWriteEndPoint Error HIVReferralId HIVReferral HIVReferral ()
+hivReferralEndpoint =
+    swEndpoint "nodes/hiv_referral" decodeHIVReferral
+        |> withValueEncoder (object << encodeHIVReferral)
+
+
+hivSymptomReviewEndpoint : ReadWriteEndPoint Error HIVSymptomReviewId HIVSymptomReview HIVSymptomReview ()
+hivSymptomReviewEndpoint =
+    swEndpoint "nodes/hiv_symptom_review" decodeHIVSymptomReview
+        |> withValueEncoder (object << encodeHIVSymptomReview)
+
+
+hivTreatmentReviewEndpoint : ReadWriteEndPoint Error HIVTreatmentReviewId HIVTreatmentReview HIVTreatmentReview ()
+hivTreatmentReviewEndpoint =
+    swEndpoint "nodes/hiv_treatment_review" decodeHIVTreatmentReview
+        |> withValueEncoder (object << encodeHIVTreatmentReview)

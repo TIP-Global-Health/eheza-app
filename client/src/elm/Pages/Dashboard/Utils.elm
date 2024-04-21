@@ -15,6 +15,7 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , EducationSessionData
         , NCDDataItem
         , NCDEncounterDataItem
         , Nutrition
@@ -22,6 +23,7 @@ import Backend.Dashboard.Model
         , NutritionStatus
         , NutritionValue
         , PMTCTDataItem
+        , PatientDetails
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
@@ -146,7 +148,22 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
     , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
+    , groupEducationData = generateGroupEducationData stats selectedVillageFilter
+    , healthCenterVillages = Dict.keys stats.villagesWithResidents
+    , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
     }
+
+
+generateGroupEducationData : DashboardStatsRaw -> Maybe VillageId -> List EducationSessionData
+generateGroupEducationData stats selectedVillageFilter =
+    case selectedVillageFilter of
+        Just villageId ->
+            Dict.get villageId stats.groupEducationData
+                |> Maybe.withDefault []
+
+        Nothing ->
+            Dict.values stats.groupEducationData
+                |> List.concat
 
 
 generateFilteredDashboardStats : DashboardStatsRaw -> FilterProgramType -> Maybe VillageId -> DashboardStats
@@ -166,14 +183,27 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
                 stats.caseManagement.lastYear
                 |> caseManagementMergeDuplicates
         }
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents programTypeFilter selectedVillageFilter stats.childrenBeneficiaries
+    , childrenBeneficiaries =
+        applyProgramTypeAndResidentsFilters stats.villagesWithResidents
+            programTypeFilter
+            selectedVillageFilter
+            stats.childrenBeneficiaries
     , completedPrograms = stats.completedPrograms
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
-    , villagesWithResidents = stats.villagesWithResidents
     , timestamp = stats.timestamp
     }
+
+
+generateFilteredPatientsDetails :
+    DashboardStatsRaw
+    -> Maybe VillageId
+    -> Dict PersonIdentifier PatientDetails
+generateFilteredPatientsDetails stats selectedVillageFilter =
+    Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
+        |> Maybe.map (\residents -> Dict.filter (\key _ -> List.member key residents) stats.patientsDetails)
+        |> Maybe.withDefault stats.patientsDetails
 
 
 generateFilteredData :

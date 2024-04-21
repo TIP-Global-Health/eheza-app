@@ -7,6 +7,7 @@ import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
 import Backend.EducationSession.Encoder
+import Backend.HIVEncounter.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
@@ -30,6 +31,8 @@ import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import Http
+import Json.Decode
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
@@ -584,6 +587,30 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
 
+        BackendAuthorityHIVDiagnostics identifier ->
+            getIdentifier identifier "hiv_diagnostics"
+
+        BackendAuthorityHIVEncounter identifier ->
+            getIdentifier identifier "hiv_encounter"
+
+        BackendAuthorityHIVFollowUp identifier ->
+            getIdentifier identifier "hiv_follow_up"
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            getIdentifier identifier "hiv_health_education"
+
+        BackendAuthorityHIVMedication identifier ->
+            getIdentifier identifier "hiv_medication"
+
+        BackendAuthorityHIVReferral identifier ->
+            getIdentifier identifier "hiv_referral"
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            getIdentifier identifier "hiv_symptom_review"
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            getIdentifier identifier "hiv_treatment_review"
+
         BackendAuthorityHomeVisitEncounter identifier ->
             getIdentifier identifier "home_visit_encounter"
 
@@ -1084,6 +1111,9 @@ getSyncSpeedForSubscriptions model =
         SyncUploadGeneral record ->
             checkWebData record.backendRemoteData
 
+        SyncUploadWhatsApp record ->
+            checkWebData record.backendRemoteData
+
         SyncUploadAuthority record ->
             checkWebData record.backendRemoteData
 
@@ -1324,6 +1354,30 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
+
+        BackendAuthorityHIVDiagnostics identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVDiagnostics identifier
+
+        BackendAuthorityHIVEncounter identifier ->
+            encode Backend.HIVEncounter.Encoder.encodeHIVEncounter identifier
+
+        BackendAuthorityHIVFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVFollowUp identifier
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVHealthEducation identifier
+
+        BackendAuthorityHIVMedication identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVMedication identifier
+
+        BackendAuthorityHIVReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVReferral identifier
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVSymptomReview identifier
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVTreatmentReview identifier
 
         BackendAuthorityHomeVisitEncounter identifier ->
             encode Backend.HomeVisitEncounter.Encoder.encodeHomeVisitEncounter identifier
@@ -1870,6 +1924,9 @@ siteFeatureFromString str =
         "group_education" ->
             Just FeatureGroupEducation
 
+        "hiv_management" ->
+            Just FeatureHIVManagement
+
         _ ->
             Nothing
 
@@ -1891,6 +1948,9 @@ siteFeatureToString feature =
 
         FeatureGroupEducation ->
             "group_education"
+
+        FeatureHIVManagement ->
+            "hiv_management"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -2122,6 +2182,30 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             HeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVDiagnostics identifier ->
+            HIVDiagnosticsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVEncounter identifier ->
+            HIVEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVFollowUp identifier ->
+            HIVFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            HIVHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVMedication identifier ->
+            HIVMedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVReferral identifier ->
+            HIVReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            HIVSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            HIVTreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHomeVisitEncounter identifier ->
             HomeVisitEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2542,6 +2626,29 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+resolveIncidentDetailsMsg : Http.Error -> List Msg
+resolveIncidentDetailsMsg error =
+    case error of
+        Http.BadStatus response ->
+            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
+                Ok decoded ->
+                    if String.startsWith "Could not find UUID" decoded.title then
+                        let
+                            uuidAsString =
+                                String.dropLeft 21 decoded.title
+                        in
+                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
+
+                    else
+                        []
+
+                Err _ ->
+                    []
+
+        _ ->
+            []
 
 
 fileUploadFailureThreshold : Int

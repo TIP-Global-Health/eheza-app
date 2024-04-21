@@ -8,6 +8,7 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -103,6 +104,14 @@ type BackendAuthorityEntity
     | BackendAuthorityHealthEducation (BackendEntity HealthEducation)
     | BackendAuthorityHCContact (BackendEntity HCContact)
     | BackendAuthorityHeight (BackendEntity Height)
+    | BackendAuthorityHIVDiagnostics (BackendEntity HIVDiagnostics)
+    | BackendAuthorityHIVEncounter (BackendEntity HIVEncounter)
+    | BackendAuthorityHIVFollowUp (BackendEntity HIVFollowUp)
+    | BackendAuthorityHIVHealthEducation (BackendEntity HIVHealthEducation)
+    | BackendAuthorityHIVMedication (BackendEntity HIVMedication)
+    | BackendAuthorityHIVReferral (BackendEntity HIVReferral)
+    | BackendAuthorityHIVSymptomReview (BackendEntity HIVSymptomReview)
+    | BackendAuthorityHIVTreatmentReview (BackendEntity HIVTreatmentReview)
     | BackendAuthorityHomeVisitEncounter (BackendEntity HomeVisitEncounter)
     | BackendAuthorityIndividualParticipant (BackendEntity IndividualEncounterParticipant)
     | BackendAuthorityIsolation (BackendEntity Isolation)
@@ -566,6 +575,9 @@ type IndexDbQueryType
     | IndexDbQueryRemoveUploadPhotos (List Int)
       -- Reports the number of entries at shardChanges table.
     | IndexDbQueryGetTotalEntriesToUpload
+      -- Pulls Entity from Shards table by UUID. We use so we can reslove
+      -- `Could not find UUID` error without performing remote debug on device.
+    | IndexDbQueryGetShardsEntityByUuid String
 
 
 type IndexDbQueryTypeResult
@@ -579,6 +591,8 @@ type IndexDbQueryTypeResult
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | IndexDbQueryGetTotalEntriesToUploadResult Int
+      -- JSON.stringify representation of pulled entity.
+    | IndexDbQueryGetShardsEntityByUuidResult String
 
 
 type UploadFileError
@@ -706,11 +720,12 @@ type Site
 
 
 type SiteFeature
-    = FeatureNCDA
+    = FeatureGroupEducation
+    | FeatureHIVManagement
+    | FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
-    | FeatureGroupEducation
 
 
 type Msg
@@ -749,6 +764,7 @@ type Msg
     | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
     | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
+    | BackendReportIncidentDetails String
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value

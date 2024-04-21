@@ -42,6 +42,11 @@ import Pages.EducationSession.Model
 import Pages.EducationSession.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
+import Pages.HIV.Activity.Model
+import Pages.HIV.Activity.View
+import Pages.HIV.Encounter.Model
+import Pages.HIV.Encounter.View
+import Pages.HIV.Participant.View
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.View
 import Pages.HomeVisit.Encounter.Model
@@ -419,6 +424,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             subPage
                             currentDate
                             site
+                            features
                             healthCenterId
                             isChw
                             (Tuple.second loggedInModel.nurse)
@@ -525,6 +531,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
 
                     TuberculosisParticipantPage id ->
                         Pages.Tuberculosis.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
+                            |> flexPageWrapper configured.config model
+
+                    HIVParticipantPage id ->
+                        Pages.HIV.Participant.View.view model.language currentDate healthCenterId id model.indexedDb
                             |> flexPageWrapper configured.config model
 
                     IndividualEncounterParticipantsPage encounterType ->
@@ -984,6 +994,26 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.EducationSession.View.view model.language currentDate model.villageId id model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageEducationSession id)
+                            |> flexPageWrapper configured.config model
+
+                    HIVEncounterPage id ->
+                        let
+                            page_ =
+                                Dict.get id loggedInModel.hivEncounterPages
+                                    |> Maybe.withDefault Pages.HIV.Encounter.Model.emptyModel
+                        in
+                        Pages.HIV.Encounter.View.view model.language currentDate site id model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHIVEncounter id)
+                            |> flexPageWrapper configured.config model
+
+                    HIVActivityPage id activity ->
+                        let
+                            page_ =
+                                Dict.get ( id, activity ) loggedInModel.hivActivityPages
+                                    |> Maybe.withDefault Pages.HIV.Activity.Model.emptyModel
+                        in
+                        Pages.HIV.Activity.View.view model.language currentDate id activity model.indexedDb page_
+                            |> Html.map (MsgLoggedIn << MsgPageHIVActivity id activity)
                             |> flexPageWrapper configured.config model
 
                     TraceContactPage traceContactId ->
