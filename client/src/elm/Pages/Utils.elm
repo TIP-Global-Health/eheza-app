@@ -578,8 +578,7 @@ viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Mayb
 viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
     let
         viewOptionFunc option =
-            label []
-                [ translateFunc option |> translate language |> text ]
+            label [] [ translateFunc option |> translate language |> text ]
     in
     viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
 
@@ -616,6 +615,26 @@ viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedO
             , rightOptionsSection
             ]
             :: noneSection
+
+
+viewCheckBoxMultipleSelectSectionsInput : Language -> List ( TranslationId, List a ) -> List a -> (a -> msg) -> (a -> TranslationId) -> Html msg
+viewCheckBoxMultipleSelectSectionsInput language sections checkedOptions setMsg translateFunc =
+    let
+        viewSection ( labelTransId, options ) =
+            let
+                viewOptionFunc option =
+                    label [] [ translateFunc option |> translate language |> text ]
+            in
+            div [ class "section" ] <|
+                viewLabel language labelTransId
+                    :: List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc) options
+    in
+    div [ class "checkbox-select-input" ]
+        [ div [ class "ui grid" ]
+            [ List.map viewSection sections
+                |> div [ class "sixteen wide column" ]
+            ]
+        ]
 
 
 viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg

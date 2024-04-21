@@ -8,6 +8,8 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportI
 import Backend.AcuteIllnessEncounter.Utils
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.ChildScoreboardActivity.Utils
+import Backend.HIVActivity.Model exposing (HIVActivity)
+import Backend.HIVActivity.Utils
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.HomeVisitActivity.Utils
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
@@ -199,6 +201,9 @@ pageToFragment current =
                 TuberculosisParticipantPage id ->
                     Just <| "tuberculosis-participant/" ++ fromEntityUuid id
 
+                HIVParticipantPage id ->
+                    Just <| "hiv-participant/" ++ fromEntityUuid id
+
                 IndividualEncounterParticipantsPage encounterType ->
                     Just <| "individual-participants/" ++ individualEncounterTypeToString encounterType
 
@@ -352,6 +357,12 @@ pageToFragment current =
                 EducationSessionPage id ->
                     Just <| "education-session/" ++ fromEntityUuid id
 
+                HIVEncounterPage id ->
+                    Just <| "hiv-encounter/" ++ fromEntityUuid id
+
+                HIVActivityPage id activity ->
+                    Just <| "hiv-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HIVActivity.Utils.activityToString activity
+
                 TraceContactPage id ->
                     Just <| "trace-contact/" ++ fromEntityUuid id
 
@@ -396,6 +407,7 @@ parser =
         , map (\id initiator -> UserPage <| WellChildParticipantPage initiator id) (s "well-child-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id initiator -> UserPage <| NCDParticipantPage initiator id) (s "ncd-participant" </> parseUuid </> parseIndividualParticipantInitiator)
         , map (\id -> UserPage <| ChildScoreboardParticipantPage id) (s "child-scoreboard-participant" </> parseUuid)
+        , map (\id -> UserPage <| HIVParticipantPage id) (s "hiv-participant" </> parseUuid)
         , map (\id -> UserPage <| TuberculosisParticipantPage id) (s "tuberculosis-participant" </> parseUuid)
         , map (\id1 id2 origin -> UserPage <| RelationshipPage id1 id2 origin) (s "relationship" </> parseUuid </> parseUuid </> parseOrigin)
         , map (\id -> UserPage <| PrenatalEncounterPage id) (s "prenatal-encounter" </> parseUuid)
@@ -432,6 +444,8 @@ parser =
         , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
         , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
+        , map (\id -> UserPage <| HIVEncounterPage id) (s "hiv-encounter" </> parseUuid)
+        , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)
         , map (\id -> UserPage <| TraceContactPage id) (s "trace-contact" </> parseUuid)
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
@@ -541,6 +555,11 @@ parseChildScoreboardActivity =
 parseTuberculosisActivity : Parser (TuberculosisActivity -> c) c
 parseTuberculosisActivity =
     custom "TuberculosisActivity" Backend.TuberculosisActivity.Utils.activityFromString
+
+
+parseHIVActivity : Parser (HIVActivity -> c) c
+parseHIVActivity =
+    custom "HIVActivity" Backend.HIVActivity.Utils.activityFromString
 
 
 parseIndividualEncounterType : Parser (IndividualEncounterType -> c) c
