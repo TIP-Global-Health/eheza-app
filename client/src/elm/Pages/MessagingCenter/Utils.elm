@@ -21,6 +21,23 @@ quarterlySurveyQuestions =
     ]
 
 
+adoptionSurveyQuestions : List ResilienceSurveyQuestion
+adoptionSurveyQuestions =
+    [ ResilienceSurveyQuestion5
+    , ResilienceSurveyQuestion6
+    , ResilienceSurveyQuestion7
+    , ResilienceSurveyQuestion8
+    , ResilienceSurveyQuestion9
+    , ResilienceSurveyQuestion10
+    , ResilienceSurveyQuestion11
+    , ResilienceSurveyQuestion12
+    , ResilienceSurveyQuestion13
+    , ResilienceSurveyQuestion14
+    , ResilienceSurveyQuestion15
+    , ResilienceSurveyQuestion16
+    ]
+
+
 resolveNumberOfUnreadMessages : Time.Posix -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Int
 resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db =
     resolveUnreadMessages currentTime currentDate nurseId nurse db

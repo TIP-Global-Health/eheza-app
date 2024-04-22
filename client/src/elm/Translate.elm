@@ -1505,7 +1505,8 @@ type TranslationId
     | ResilienceNotificationNumberOfUnread Int
     | ResilienceNotificationReadNowQuestion
     | ResilienceQuarterlySurveyQuestion ResilienceSurveyQuestion
-    | ResilienceQuarterlySurveyOptionsForQuestion ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | ResilienceAdoptionSurveyQuestion ResilienceSurveyQuestion
+    | ResilienceAdoptionSurveyOptionsForQuestion ResilienceSurveyQuestion ResilienceSurveyQuestionOption
     | ResilienceReminderHeader String ResilienceReminderType
     | ResilienceReminderParagraph1 ResilienceReminderType
     | ResilienceReminderParagraph2 ResilienceReminderType
@@ -19099,6 +19100,11 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                _ ->
+                    translationSet EmptyString
+
+        ResilienceAdoptionSurveyQuestion question ->
+            case question of
                 ResilienceSurveyQuestion5 ->
                     { english = "On average, how many times this week did you do recreational activities after work? (for example reading books, listening to the radio, physical exercising, dancing, creative activities…)"
                     , kinyarwanda = Just "Ugereranyije, ni inshuro zingahe muri iki cyumweru wakoze ibikorwa bikuruhura nyuma y’akazi? (urugero gusoma ibitabo, kumva radio, gukora imyitozo ngororamubiri, kubyina, creative activities, ... )"
@@ -19171,7 +19177,10 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-        ResilienceQuarterlySurveyOptionsForQuestion question option ->
+                _ ->
+                    translationSet EmptyString
+
+        ResilienceAdoptionSurveyOptionsForQuestion question option ->
             case question of
                 ResilienceSurveyQuestion5 ->
                     case option of

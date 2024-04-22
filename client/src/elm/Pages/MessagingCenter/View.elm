@@ -80,21 +80,31 @@ view language currentTime nurseId nurse db model =
                                         Dict.values surveys
                                             |> List.sortWith (sortByDateDesc .dateMeasured)
 
-                                    runQuarterlySurvey =
-                                        List.filter (.surveyType >> (==) ResilienceSurveyQuarterly) surveysSorted
+                                    runSurvey surveyType =
+                                        let
+                                            filterCondition survey =
+                                                -- Run a 3 months survey if 3 month has passed since
+                                                -- last survey was completed.
+                                                Date.diff Months survey.dateMeasured currentDate >= 3
+                                        in
+                                        List.filter (.surveyType >> (==) surveyType) surveysSorted
                                             |> List.head
-                                            |> Maybe.map
-                                                (\survey ->
-                                                    -- Run a 3 months survey if 3 month has passed since
-                                                    -- last survey was completed.
-                                                    Date.diff Months survey.dateMeasured currentDate >= 3
-                                                )
+                                            |> Maybe.map filterCondition
                                             -- We need to run the survey if
                                             -- it is the first time to use the program.
                                             |> Maybe.withDefault True
+
+                                    runAdoptionSurvey =
+                                        runSurvey ResilienceAdoptionSurvey
+
+                                    runQuarterlySurvey =
+                                        runSurvey ResilienceSurveyQuarterly
                                 in
                                 if runQuarterlySurvey then
                                     viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
+
+                                else if runAdoptionSurvey then
+                                    viewAdoptionSurvey language currentDate nurseId model.quarterlySurveyForm
 
                                 else
                                     messagingCenterView
@@ -282,6 +292,49 @@ viewQuarterlySurvey language currentDate nurseId form =
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                         , onClick <| SaveQuarterlySurvey nurseId
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewAdoptionSurvey : Language -> NominalDate -> NurseId -> QuarterlySurveyForm -> Html Msg
+viewAdoptionSurvey language currentDate nurseId form =
+    let
+        questionInput question =
+            [ viewCustomLabel language (Translate.ResilienceAdoptionSurveyQuestion question) "." "label"
+            , viewCustomLabel language Translate.ChooseOne ":" "instructions"
+            , viewCheckBoxSelectInput language
+                [ ResilienceSurveyQuestionOption5
+                , ResilienceSurveyQuestionOption6
+                , ResilienceSurveyQuestionOption7
+                , ResilienceSurveyQuestionOption8
+                , ResilienceSurveyQuestionOption9
+                ]
+                []
+                (Dict.get question form)
+                (SetQuarterlySurveyAnswer question)
+                (Translate.ResilienceAdoptionSurveyOptionsForQuestion question)
+            ]
+
+        tasksCompleted =
+            Dict.size form
+
+        totalTasks =
+            List.length adoptionSurveyQuestions
+    in
+    div [ class "ui unstackable items" ]
+        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form monthly-survey" ] <|
+                    List.concatMap questionInput adoptionSurveyQuestions
+                , div [ class "actions" ]
+                    [ button
+                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                        , onClick <| SaveAdoptionSurvey nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]

@@ -19,7 +19,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (quarterlySurveyQuestions)
+import Pages.MessagingCenter.Utils exposing (adoptionSurveyQuestions, quarterlySurveyQuestions)
 import Time
 import Time.Extra
 
@@ -222,11 +222,59 @@ update currentTime currentDate msg model =
                 |> sequenceExtra (update currentTime currentDate) extraMsgs
 
         SaveAdoptionSurvey nurseId ->
-            --Todo
+            let
+                ( msgs, extraMsgs ) =
+                    if Dict.size model.quarterlySurveyForm == List.length adoptionSurveyQuestions then
+                        -- We need all questions to have answers, to proceed with
+                        -- save operations.
+                        let
+                            survey =
+                                { nurse = nurseId
+                                , dateMeasured = currentDate
+                                , surveyType = ResilienceAdoptionSurvey
+                                , signs = model.quarterlySurveyForm
+                                }
+
+                            surveyScore =
+                                Dict.values model.quarterlySurveyForm
+                                    |> List.map
+                                        (\answer ->
+                                            case answer of
+                                                ResilienceSurveyQuestionOption5 ->
+                                                    1
+
+                                                ResilienceSurveyQuestionOption6 ->
+                                                    2
+
+                                                ResilienceSurveyQuestionOption7 ->
+                                                    3
+
+                                                ResilienceSurveyQuestionOption8 ->
+                                                    4
+
+                                                ResilienceSurveyQuestionOption9 ->
+                                                    5
+
+                                                _ ->
+                                                    0
+                                        )
+                                    |> List.sum
+                        in
+                        ( [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey
+                                |> Backend.Model.MsgResilienceSurvey nurseId
+                                |> App.Model.MsgIndexedDb
+                          ]
+                        , [ QuarterlySurveyScore surveyScore |> Just |> SetSurveyScoreDialogState ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
             ( model
             , Cmd.none
-            , []
+            , msgs
             )
+                |> sequenceExtra (update currentTime currentDate) extraMsgs
 
         SetSurveyScoreDialogState state ->
             ( { model | surveyScoreDialogState = state }
