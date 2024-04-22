@@ -90,8 +90,8 @@ view language currentTime nurseId nurse db model =
                                                     Date.diff Months survey.dateMeasured currentDate >= 3
                                                 )
                                             -- We need to run the survey if
-                                            -- it is the beginning of the Program(Baseline).
-                                            |> Maybe.withDefault (Date.diff Days programStartDate currentDate == 0)
+                                            -- it is the first time to use the program.
+                                            |> Maybe.withDefault True
                                 in
                                 if runQuarterlySurvey then
                                     viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
@@ -351,6 +351,9 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                         |> List.map viewMessage
             in
             case model.activeTab of
+                TabGuide ->
+                    viewGuideMessage language nurse
+
                 TabUnread ->
                     List.map viewMessage unread
 
@@ -388,7 +391,8 @@ viewTabs : Language -> Model -> Html Msg
 viewTabs language model =
     let
         allTabs =
-            [ TabUnread
+            [ TabGuide
+            , TabUnread
             , TabFavorites
             , TabGrowth
             , TabConnecting
@@ -447,6 +451,11 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =
             case message.category of
+                ResilienceCategoryGuide ->
+                    ( "guide"
+                    , ( [], viewGuideMessage language nurse )
+                    )
+
                 ResilienceCategoryIntroduction ->
                     ( "introduction"
                     , viewIntroductionMessage language nurse message.order
@@ -486,7 +495,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             not <| EverySet.member messageId model.expandedMessages
 
         updateTimeRead =
-            model.activeTab == TabUnread
+            model.activeTab == TabGuide
 
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
@@ -551,6 +560,92 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ]
             body
         ]
+
+
+viewGuideMessage : Language -> Nurse -> List (Html Msg)
+viewGuideMessage language nurse =
+    [ div [ class "guide-message" ]
+        [ p [ class "title" ]
+            --
+            [ text <| translate language Translate.ResilienceMessageGuideTitle1
+            ]
+        , ul []
+            [ li []
+                [ text <| translate language Translate.ResilienceMessageGuide1Bullet1
+                ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide1Bullet2
+                ]
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle2
+            ]
+        , ul []
+            [ li []
+                [ text <| translate language Translate.ResilienceMessageGuide2Bullet1 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide2Bullet2 ]
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle3
+            ]
+        , ul []
+            [ li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet1 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet2 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet3 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet4 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet5 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet6 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide3Bullet7 ]
+            ]
+        , p [ class "title note" ]
+            [ text <| translate language Translate.ResilienceMessageGuide3Note ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle4
+            ]
+        , p []
+            [ text <| translate language Translate.ResilienceMessageGuide4Text ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle5
+            ]
+        , ul []
+            [ li []
+                [ text <| translate language Translate.ResilienceMessageGuide5Bullet1 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide5Bullet2 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide5Bullet3 ]
+            ]
+        , p [ class "title" ]
+            [ text <| translate language Translate.ResilienceMessageGuideTitle6
+            ]
+        , ul []
+            [ li []
+                [ text <| translate language Translate.ResilienceMessageGuide6Bullet1 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide6Bullet2 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide6Bullet3 ]
+            , li []
+                [ text <| translate language Translate.ResilienceMessageGuide6Bullet4
+                , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet5 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet6 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet7 ]
+                    ]
+                ]
+            ]
+        , p [ class "title note" ]
+            [ text <| translate language Translate.ResilienceMessageGuide6Note ]
+        ]
+    ]
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
