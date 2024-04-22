@@ -264,7 +264,7 @@ update currentTime currentDate msg model =
                                 |> Backend.Model.MsgResilienceSurvey nurseId
                                 |> App.Model.MsgIndexedDb
                           ]
-                        , [ QuarterlySurveyScore surveyScore |> Just |> SetSurveyScoreDialogState ]
+                        , [ AdoptionSurveyScore surveyScore |> Just |> SetSurveyScoreDialogState ]
                         )
 
                     else

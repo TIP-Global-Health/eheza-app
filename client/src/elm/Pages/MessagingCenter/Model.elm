@@ -91,6 +91,7 @@ emptyQuarterlySurveyForm =
 
 type SurveyScoreDialogState
     = QuarterlySurveyScore Int
+    | AdoptionSurveyScore Int
 
 
 type Msg

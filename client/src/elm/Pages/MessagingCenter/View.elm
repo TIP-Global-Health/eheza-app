@@ -350,16 +350,26 @@ surveyScoreDialog :
 surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
-            case dialogState of
-                QuarterlySurveyScore score ->
-                    let
-                        data =
-                            ( p [ class "score" ] [ text <| String.fromInt score ++ "/20" ]
-                            , p [ class "interpretation" ] [ text <| translate language <| Translate.QuarterlySurveyScoreInterpretation score ]
-                            , SetSurveyScoreDialogState Nothing
+            let
+                ( scoreText, interpretationFunction ) =
+                    case dialogState of
+                        QuarterlySurveyScore score ->
+                            ( String.fromInt score ++ "/20"
+                            , Translate.QuarterlySurveyScoreInterpretation score
                             )
-                    in
-                    customPopup language False Translate.Continue "survey-score-popup blue" data
+
+                        AdoptionSurveyScore score ->
+                            ( String.fromInt score ++ "/60"
+                            , Translate.AdoptionSurveyScoreInterpretation score
+                            )
+
+                data =
+                    ( p [ class "score" ] [ text scoreText ]
+                    , p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    , SetSurveyScoreDialogState Nothing
+                    )
+            in
+            customPopup language False Translate.Continue "survey-score-popup blue" data
         )
 
 

@@ -379,6 +379,7 @@ type TranslationId
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
+    | AdoptionSurveyScoreInterpretation Int
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
     | AgeWord
@@ -2942,6 +2943,25 @@ translationSet trans =
 
                 AcuteIllnessDangerSigns ->
                     translationSet DangerSigns
+
+        AdoptionSurveyScoreInterpretation score ->
+            if score < 36 then
+                { english = "Law effort to adopt resilience activities: Please, learn and integrate resilience activities in your daily life"
+                , kinyarwanda = Just "Ugira imbaraga nke mu gushyira mu ngiro ibikorwa bigufasha kumererwa neza. Gerageza kwiga no kongera mu bikorwa byawe bya buri munsi ibikorwa bigufasha kumererwa neza."
+                , kirundi = Nothing
+                }
+
+            else if score < 48 then
+                { english = "Medium efforts to adopt resilience activities."
+                , kinyarwanda = Just "Uragerageza mu gushyira mu ngiro ibikorwa bigufasha kumererwa neza."
+                , kirundi = Nothing
+                }
+
+            else
+                { english = "Good resilience behaviors. Congratulations"
+                , kinyarwanda = Just "Ufite umuco wo gukora ibikorwa bigufasha kumererwa neza. Komereza aho."
+                , kirundi = Nothing
+                }
 
         AdverseEventSinglePlural val ->
             if val == 1 then
