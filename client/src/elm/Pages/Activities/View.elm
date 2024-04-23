@@ -20,8 +20,8 @@ import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
 
-view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language nurse ( sessionId, session ) model =
+view : Language -> Bool -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language isChw ( sessionId, session ) model =
     let
         summary =
             session.summaryByActivity
@@ -134,8 +134,8 @@ view language nurse ( sessionId, session ) model =
                     ( completedActivities, translate language Trans.NoActivitiesCompleted )
 
         goBackPage =
-            if isCommunityHealthWorker nurse then
-                UserPage ClinicalPage
+            if isChw then
+                UserPage GroupEncounterTypesPage
 
             else
                 UserPage ClinicsPage

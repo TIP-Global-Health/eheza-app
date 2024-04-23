@@ -31,6 +31,10 @@ class HedleyRestfulWhatsAppRecord extends HedleyRestfulSyncBase {
       ],
     ];
 
+    $public_fields['language'] = [
+      'property' => 'field_language',
+    ];
+
     $public_fields['report_type'] = [
       'property' => 'field_report_type',
     ];

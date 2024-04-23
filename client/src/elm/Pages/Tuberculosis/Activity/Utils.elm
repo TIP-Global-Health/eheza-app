@@ -367,10 +367,10 @@ symptomReviewFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { nightSweats = or form.nightSweats (EverySet.member SymptomNightSweats value |> Just)
-                , bloodInSputum = or form.bloodInSputum (EverySet.member SymptomBloodInSputum value |> Just)
-                , weightLoss = or form.weightLoss (EverySet.member SymptomWeightLoss value |> Just)
-                , severeFatigue = or form.severeFatigue (EverySet.member SymptomSevereFatigue value |> Just)
+                { nightSweats = or form.nightSweats (EverySet.member TuberculosisSymptomNightSweats value |> Just)
+                , bloodInSputum = or form.bloodInSputum (EverySet.member TuberculosisSymptomBloodInSputum value |> Just)
+                , weightLoss = or form.weightLoss (EverySet.member TuberculosisSymptomWeightLoss value |> Just)
+                , severeFatigue = or form.severeFatigue (EverySet.member TuberculosisSymptomSevereFatigue value |> Just)
                 }
             )
 
@@ -383,10 +383,10 @@ toSymptomReviewValueWithDefault saved form =
 
 toSymptomReviewValue : SymptomReviewForm -> Maybe TuberculosisSymptomReviewValue
 toSymptomReviewValue form =
-    [ ifNullableTrue SymptomNightSweats form.nightSweats
-    , ifNullableTrue SymptomBloodInSputum form.bloodInSputum
-    , ifNullableTrue SymptomWeightLoss form.weightLoss
-    , ifNullableTrue SymptomSevereFatigue form.severeFatigue
+    [ ifNullableTrue TuberculosisSymptomNightSweats form.nightSweats
+    , ifNullableTrue TuberculosisSymptomBloodInSputum form.bloodInSputum
+    , ifNullableTrue TuberculosisSymptomWeightLoss form.weightLoss
+    , ifNullableTrue TuberculosisSymptomSevereFatigue form.severeFatigue
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoTuberculosisSymptoms)

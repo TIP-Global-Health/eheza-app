@@ -48,7 +48,13 @@ import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.EducationSession.Model
+import Pages.EducationSession.Update
 import Pages.GlobalCaseManagement.Update
+import Pages.HIV.Activity.Model
+import Pages.HIV.Activity.Update
+import Pages.HIV.Encounter.Model
+import Pages.HIV.Encounter.Update
 import Pages.HomeVisit.Activity.Model
 import Pages.HomeVisit.Activity.Update
 import Pages.HomeVisit.Encounter.Model
@@ -254,6 +260,9 @@ update msg model =
             model.syncManager.reverseGeoInfo
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         MsgIndexedDb subMsg ->
             let
                 nurseId =
@@ -575,6 +584,32 @@ update msg model =
                             , extraMsgs
                             )
 
+                        MsgPageEducationSession id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.educationSessionPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
+                                        |> Pages.EducationSession.Update.update currentDate id subMsg
+                            in
+                            ( { data | educationSessionPages = Dict.insert id subModel data.educationSessionPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageEducationSession id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageHIVEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.hivEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.HIV.Encounter.Model.emptyModel
+                                        |> Pages.HIV.Encounter.Update.update subMsg
+                            in
+                            ( { data | hivEncounterPages = Dict.insert id subModel data.hivEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHIVEncounter id) subCmd
+                            , extraMsgs
+                            )
+
                         MsgPagePrenatalActivity id activity subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
@@ -726,6 +761,19 @@ update msg model =
                             in
                             ( { data | tuberculosisActivityPages = Dict.insert ( id, activity ) subModel data.tuberculosisActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageHIVActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.hivActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.HIV.Activity.Model.emptyModel
+                                        |> Pages.HIV.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | hivActivityPages = Dict.insert ( id, activity ) subModel data.hivActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHIVActivity id activity) subCmd
                             , extraMsgs
                             )
 
