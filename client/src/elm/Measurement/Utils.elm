@@ -1444,8 +1444,8 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
                     if missedDoses then
                         let
                             options =
-                                List.repeat 22 ""
-                                    |> List.indexedMap (\index _ -> index)
+                                List.repeat 21 ""
+                                    |> List.indexedMap (\index _ -> index + 1)
 
                             missedDosesInput =
                                 viewCustomSelectListInput form.totalMissedDoses

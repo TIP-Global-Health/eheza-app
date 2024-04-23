@@ -4,6 +4,7 @@ import App.Model
 import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType(..))
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Model exposing (emptyHIVEncounter)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
@@ -55,6 +56,9 @@ update currentDate healthCenterId msg db model =
 
                                     FollowUpTuberculosis data ->
                                         startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data
+
+                                    FollowUpHIV data ->
+                                        startFollowUpEncounterHIV currentDate selectedHealthCenter data
 
                                     -- We should never get here, as Prenatal Encounter got it's own action.
                                     FollowUpPrenatal _ ->
@@ -148,6 +152,26 @@ startFollowUpEncounterTuberculosis currentDate selectedHealthCenter data =
            -- also creates encounter for newly created participant).
            Maybe.withDefault
             [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.TuberculosisEncounter selectedHealthCenter
+                |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
+                |> App.Model.MsgIndexedDb
+            ]
+
+
+startFollowUpEncounterHIV : NominalDate -> HealthCenterId -> FollowUpHIVData -> List App.Model.Msg
+startFollowUpEncounterHIV currentDate selectedHealthCenter data =
+    -- If participant was provided, we create new encounter for existing participant.
+    Maybe.map
+        (\participantId ->
+            [ emptyHIVEncounter participantId currentDate (Just selectedHealthCenter)
+                |> Backend.Model.PostHIVEncounter
+                |> App.Model.MsgIndexedDb
+            ]
+        )
+        data.participantId
+        |> -- Participant was not provided, so we create new participant (which
+           -- also creates encounter for newly created participant).
+           Maybe.withDefault
+            [ emptyIndividualEncounterParticipant currentDate data.personId Backend.IndividualEncounterParticipant.Model.HIVEncounter selectedHealthCenter
                 |> Backend.Model.PostIndividualEncounterParticipant Backend.IndividualEncounterParticipant.Model.NoIndividualParticipantExtraData
                 |> App.Model.MsgIndexedDb
             ]

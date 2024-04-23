@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         , ChildMeasurementList
         , ChildScoreboardMeasurements
         , FollowUpMeasurements
+        , HIVMeasurements
         , HomeVisitMeasurements
         , MotherMeasurementList
         , NCDMeasurements
@@ -163,6 +164,16 @@ mapTuberculosisMeasurements id func model =
             model
 
 
+mapHIVMeasurements : Maybe HIVEncounterId -> (HIVMeasurements -> HIVMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapHIVMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | hivMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.hivMeasurements }
+
+        Nothing ->
+            model
+
+
 mapStockManagementMeasurements : Maybe HealthCenterId -> (StockManagementMeasurements -> StockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
 mapStockManagementMeasurements id func model =
     case id of
@@ -283,3 +294,8 @@ tuberculosisManagementEnabled =
 groupEducationEnabled : EverySet SiteFeature -> Bool
 groupEducationEnabled =
     EverySet.member FeatureGroupEducation
+
+
+hivManagementEnabled : EverySet SiteFeature -> Bool
+hivManagementEnabled =
+    EverySet.member FeatureHIVManagement

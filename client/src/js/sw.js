@@ -31,7 +31,7 @@ var screenshotsUploadUrlRegex = /\/cache-upload\/screenshots/;
  *
  * @type {number}
  */
-var dbVerno = 26;
+var dbVerno = 27;
 
 // All those entities are the entities we're going to get from the backend.
 // They should also be mapped in SyncManager.Model.BackendGeneralEntity (for
@@ -84,6 +84,15 @@ var tableForType = {
     health_center: 'nodes',
     health_education: 'shards',
     height: 'shards',
+    hiv_diagnostics: 'shards',
+    hiv_dot: 'shards',
+    hiv_encounter: 'shards',
+    hiv_follow_up: 'shards',
+    hiv_health_education: 'shards',
+    hiv_medication: 'shards',
+    hiv_referral: 'shards',
+    hiv_symptom_review: 'shards',
+    hiv_treatment_review: 'shards',
     home_visit_encounter: 'shards',
     individual_participant: 'shards',
     isolation: 'shards',

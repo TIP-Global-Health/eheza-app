@@ -297,7 +297,11 @@ dbSync.version(25).stores({
     shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],newborn,*participating_patients',
 });
 
-dbSync.version(26).upgrade(function (tx) {
+dbSync.version(26).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients',
+});
+
+dbSync.version(27).upgrade(function (tx) {
   return tx.deferredPhotos.clear();
 });
 
@@ -359,7 +363,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 26;
+const dbVersion = 27;
 
 /**
  * Return saved info for General sync.

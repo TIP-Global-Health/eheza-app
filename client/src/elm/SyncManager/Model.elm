@@ -8,6 +8,7 @@ import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
@@ -103,6 +104,14 @@ type BackendAuthorityEntity
     | BackendAuthorityHealthEducation (BackendEntity HealthEducation)
     | BackendAuthorityHCContact (BackendEntity HCContact)
     | BackendAuthorityHeight (BackendEntity Height)
+    | BackendAuthorityHIVDiagnostics (BackendEntity HIVDiagnostics)
+    | BackendAuthorityHIVEncounter (BackendEntity HIVEncounter)
+    | BackendAuthorityHIVFollowUp (BackendEntity HIVFollowUp)
+    | BackendAuthorityHIVHealthEducation (BackendEntity HIVHealthEducation)
+    | BackendAuthorityHIVMedication (BackendEntity HIVMedication)
+    | BackendAuthorityHIVReferral (BackendEntity HIVReferral)
+    | BackendAuthorityHIVSymptomReview (BackendEntity HIVSymptomReview)
+    | BackendAuthorityHIVTreatmentReview (BackendEntity HIVTreatmentReview)
     | BackendAuthorityHomeVisitEncounter (BackendEntity HomeVisitEncounter)
     | BackendAuthorityIndividualParticipant (BackendEntity IndividualEncounterParticipant)
     | BackendAuthorityIsolation (BackendEntity Isolation)
@@ -711,11 +720,12 @@ type Site
 
 
 type SiteFeature
-    = FeatureNCDA
+    = FeatureGroupEducation
+    | FeatureHIVManagement
+    | FeatureNCDA
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
-    | FeatureGroupEducation
 
 
 type Msg

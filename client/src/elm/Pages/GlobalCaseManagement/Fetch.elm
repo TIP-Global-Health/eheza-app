@@ -12,6 +12,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Utils
 import RemoteData
+import Restful.Endpoint exposing (fromEntityUuid)
 
 
 fetch : NominalDate -> HealthCenterId -> Maybe VillageId -> ModelIndexedDb -> List MsgIndexedDb
@@ -57,7 +58,11 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
             followUpPatients.immunization
 
         fetchIndividualParticipantsMsg =
-            FetchIndividualEncounterParticipantsForPeople (residentsForNutrition ++ residentsForImmunization)
+            peopleFromPositiveResultHIVFollowUps
+                ++ residentsForNutrition
+                ++ residentsForImmunization
+                |> Pages.Utils.unique
+                |> FetchIndividualEncounterParticipantsForPeople
 
         --
         --  Nutrition follows ups calculations.
@@ -137,20 +142,77 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
         fetchTuberculosisEncountersForParticipantMsg =
             EverySet.toList tuberculosisParticipants
                 |> FetchTuberculosisEncountersForParticipants
+
+        --
+        --  HIV follows ups calculations.
+        --
+        -- There are regular HIV follow ups, and 'dummy' HIV
+        -- follow ups created for positive HIV test results.
+        ( positiveResultHIVFollowUps, hivFollowUps ) =
+            Dict.values followUps.hiv
+                |> List.partition
+                    (\followUp ->
+                        Maybe.map
+                            (\encounterId ->
+                                fromEntityUuid encounterId == "dummy"
+                            )
+                            followUp.encounterId
+                            |> Maybe.withDefault False
+                    )
+
+        hivEncounters =
+            List.filterMap .encounterId hivFollowUps
+                |> EverySet.fromList
+
+        hivParticipants =
+            generateHIVParticipants hivEncounters db
+
+        fetchHIVEncountersMsg =
+            EverySet.toList hivEncounters
+                |> FetchHIVEncounters
+
+        fetchHIVParticipantsMsg =
+            EverySet.toList hivParticipants
+                |> FetchIndividualEncounterParticipants
+
+        fetchHIVEncountersForParticipantMsg =
+            EverySet.toList hivParticipants
+                |> FetchHIVEncountersForParticipants
+
+        -- Used to fetch HIV patrticipants for patients (above),
+        -- and their HIV encounters.
+        -- We need the HIV encounters to determine if to show follow up
+        -- entry or not (positive result entry is shown unless there was
+        -- HIV encounter after result was recorded).
+        peopleFromPositiveResultHIVFollowUps =
+            List.map .participantId positiveResultHIVFollowUps
+
+        fetchHIVEncountersForPositiveResultFollowUpsParticipantMsg =
+            List.map
+                (\personId ->
+                    resolveIndividualParticipantsForPerson personId HIVEncounter db
+                )
+                peopleFromPositiveResultHIVFollowUps
+                |> List.concat
+                |> FetchHIVEncountersForParticipants
     in
     [ FetchPeopleInVillage villageId
     , fetchAcuteIllnessEncountersMsg
     , fetchPrenatalEncountersMsg
     , fetchTuberculosisEncountersMsg
     , fetchWellChildEncountersMsg
+    , fetchHIVEncountersMsg
     , fetchAcuteIllnessParticipantsMsg
     , fetchPrenatalParticipantsMsg
     , fetchTuberculosisParticipantsMsg
     , fetchHomeVisitEncountersMsg
+    , fetchHIVParticipantsMsg
     , fetchAcuteIllnessEncountersForParticipantMsg
     , fetchPrenatalEncountersForParticipantMsg
     , fetchTuberculosisEncountersForParticipantMsg
+    , fetchHIVEncountersForParticipantMsg
     , fetchIndividualParticipantsMsg
+    , fetchHIVEncountersForPositiveResultFollowUpsParticipantMsg
     ]
 
 
