@@ -13,6 +13,7 @@ import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
 import Backend.EducationSession.Decoder
+import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
@@ -640,6 +641,46 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
+
+                    "hiv_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVDiagnostics
+                            BackendAuthorityHIVDiagnostics
+
+                    "hiv_encounter" ->
+                        doDecode
+                            Backend.HIVEncounter.Decoder.decodeHIVEncounter
+                            BackendAuthorityHIVEncounter
+
+                    "hiv_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVFollowUp
+                            BackendAuthorityHIVFollowUp
+
+                    "hiv_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVHealthEducation
+                            BackendAuthorityHIVHealthEducation
+
+                    "hiv_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVMedication
+                            BackendAuthorityHIVMedication
+
+                    "hiv_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVReferral
+                            BackendAuthorityHIVReferral
+
+                    "hiv_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVSymptomReview
+                            BackendAuthorityHIVSymptomReview
+
+                    "hiv_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVTreatmentReview
+                            BackendAuthorityHIVTreatmentReview
 
                     "home_visit_encounter" ->
                         doDecode

@@ -11,9 +11,9 @@ fetch id db =
     let
         fetchNCDEncounters =
             resolveIndividualParticipantsForPerson id NCDEncounter db
-                |> List.map FetchNCDEncountersForParticipant
+                |> FetchNCDEncountersForParticipants
     in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
+    , fetchNCDEncounters
     ]
-        ++ fetchNCDEncounters

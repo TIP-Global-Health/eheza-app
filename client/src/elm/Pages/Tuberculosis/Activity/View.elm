@@ -381,7 +381,7 @@ viewSymptomReviewContent language currentDate assembled data =
                 |> symptomReviewFormWithDefault data.form
 
         ( inputs, tasksCompleted, totalTasks ) =
-            ( [ viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomNightSweats
+            ( [ viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion TuberculosisSymptomNightSweats
               , viewBoolInput
                     language
                     form.nightSweats
@@ -392,7 +392,7 @@ viewSymptomReviewContent language currentDate assembled data =
                     )
                     "night-sweats"
                     Nothing
-              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomBloodInSputum
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion TuberculosisSymptomBloodInSputum
               , viewBoolInput
                     language
                     form.bloodInSputum
@@ -403,7 +403,7 @@ viewSymptomReviewContent language currentDate assembled data =
                     )
                     "blood-in-Sputum"
                     Nothing
-              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomWeightLoss
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion TuberculosisSymptomWeightLoss
               , viewBoolInput
                     language
                     form.weightLoss
@@ -414,7 +414,7 @@ viewSymptomReviewContent language currentDate assembled data =
                     )
                     "weight-loss"
                     Nothing
-              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion SymptomSevereFatigue
+              , viewQuestionLabel language <| Translate.TuberculosisSymptomQuestion TuberculosisSymptomSevereFatigue
               , viewBoolInput
                     language
                     form.severeFatigue
@@ -436,7 +436,7 @@ viewSymptomReviewContent language currentDate assembled data =
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ] inputs
+            [ div [ class "ui form symptom-review" ] inputs
             ]
         , div [ class "actions" ]
             [ saveButton language

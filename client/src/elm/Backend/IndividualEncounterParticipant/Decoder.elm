@@ -50,9 +50,14 @@ decodeIndividualEncounterParticipantOutcome =
                                 succeed (Tuberculosis tuberculosisOutcome)
 
                             Nothing ->
-                                acuteIllnessOutcomeFromString s
-                                    |> Maybe.map (AcuteIllness >> succeed)
-                                    |> Maybe.withDefault (s ++ " is not a recognized IndividualEncounterParticipantOutcome" |> fail)
+                                case hivOutcomeFromString s of
+                                    Just hivOutcome ->
+                                        succeed (HIV hivOutcome)
+
+                                    Nothing ->
+                                        acuteIllnessOutcomeFromString s
+                                            |> Maybe.map (AcuteIllness >> succeed)
+                                            |> Maybe.withDefault (s ++ " is not a recognized IndividualEncounterParticipantOutcome" |> fail)
             )
 
 

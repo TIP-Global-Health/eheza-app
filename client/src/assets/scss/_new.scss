@@ -2333,7 +2333,8 @@ div.page-activity.prenatal {
 
 div.page-activity.ncd,
 div.page-activity.well-child,
-div.page-activity.tuberculosis {
+div.page-activity.tuberculosis,
+div.page-activity.hiv {
 
   .ui.full.segment .full.content {
 
@@ -3557,12 +3558,7 @@ div.page-participant.group {
   }
 }
 
-div.page-participant.acute-illness,
-div.page-participant.nutrition,
-div.page-participant.home-visit,
-div.page-participant.well-child,
-div.page-participant.prenatal,
-div.page-participant.ncd {
+div.page-participant.individual {
     padding-bottom: 35px;
 
   p {
@@ -3885,7 +3881,11 @@ div.page-encounter.child-scoreboard,
 div.page-activity.child-scoreboard,
 div.page-report.child-scoreboard,
 div.page-encounter.tuberculosis,
-div.page-activity.tuberculosis {
+div.page-activity.tuberculosis,
+div.page-report.tuberculosis,
+div.page-encounter.hiv,
+div.page-activity.hiv,
+div.page-report.hiv {
 
   .details {
     padding-left: 25px;
@@ -4849,6 +4849,7 @@ div.page-activity.ncd {
     }
   }
 }
+
 div.page-activity.wellbeing {
 
   .ui.button .counter {
@@ -5514,4 +5515,50 @@ div.page-activity.stock-management {
     padding-bottom: 40px;
   }
 
+}
+
+div.page-activity.hiv {
+
+  .ui.full.segment {
+
+    .form.danger-signs {
+
+      .label {
+        font-weight: 500;
+      }
+
+      .label.header {
+        font-size: 24px;
+        font-weight: 700;
+      }
+
+      .form-input.date {
+        border: 2px solid $color-light-gray;
+        color: $color-text;
+        height: 2em;
+        padding: 5px;
+        text-align: center;
+        width: 80%;
+      }
+
+      input.checkbox,
+      input.checkbox:focus {
+        height: 3rem;
+        width: 100%;
+      }
+    }
+
+    .form.prescribed-medication {
+
+      .checkbox-select-input .section {
+        margin-bottom: 30px;
+        margin-top: 40px;
+
+        .label {
+          margin-left: 20px;
+        }
+      }
+    }
+
+  }
 }
