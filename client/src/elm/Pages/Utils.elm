@@ -254,19 +254,16 @@ matchMotherAndHerChildren filter offlineSession motherId mother =
     motherContainsFilter || childrenContainsFilter ()
 
 
-normalizeFilter : String -> String
-normalizeFilter filterInput =
-    filterInput
-        |> String.toLower
-        |> String.trim
-
-
 viewNameFilter : Language -> String -> (String -> msg) -> Html msg
 viewNameFilter language filterInput setFilterMsg =
-    div
-        [ class "ui action input small" ]
+    viewCustomNameFilter language filterInput setFilterMsg Translate.FilterByName
+
+
+viewCustomNameFilter : Language -> String -> (String -> msg) -> TranslationId -> Html msg
+viewCustomNameFilter language filterInput setFilterMsg placeholderTransId =
+    div [ class "ui action input small" ]
         [ input
-            [ placeholder <| translate language Translate.FilterByName
+            [ placeholder <| translate language placeholderTransId
             , type_ "text"
             , onInput setFilterMsg
             , value filterInput
@@ -281,6 +278,11 @@ viewNameFilter language filterInput setFilterMsg =
             ]
             [ text <| translate language Translate.Clear ]
         ]
+
+
+normalizeFilter : String -> String
+normalizeFilter =
+    String.toLower >> String.trim
 
 
 viewLabel : Language -> TranslationId -> Html any
@@ -576,8 +578,7 @@ viewCheckBoxMultipleSelectInput : Language -> List a -> List a -> List a -> Mayb
 viewCheckBoxMultipleSelectInput language leftOptions rightOptions checkedOptions noneOption setMsg translateFunc =
     let
         viewOptionFunc option =
-            label []
-                [ translateFunc option |> translate language |> text ]
+            label [] [ translateFunc option |> translate language |> text ]
     in
     viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedOptions noneOption setMsg viewOptionFunc
 
@@ -614,6 +615,26 @@ viewCheckBoxMultipleSelectCustomInput language leftOptions rightOptions checkedO
             , rightOptionsSection
             ]
             :: noneSection
+
+
+viewCheckBoxMultipleSelectSectionsInput : Language -> List ( TranslationId, List a ) -> List a -> (a -> msg) -> (a -> TranslationId) -> Html msg
+viewCheckBoxMultipleSelectSectionsInput language sections checkedOptions setMsg translateFunc =
+    let
+        viewSection ( labelTransId, options ) =
+            let
+                viewOptionFunc option =
+                    label [] [ translateFunc option |> translate language |> text ]
+            in
+            div [ class "section" ] <|
+                viewLabel language labelTransId
+                    :: List.map (viewCheckBoxSelectInputItem language checkedOptions setMsg viewOptionFunc) options
+    in
+    div [ class "checkbox-select-input" ]
+        [ div [ class "ui grid" ]
+            [ List.map viewSection sections
+                |> div [ class "sixteen wide column" ]
+            ]
+        ]
 
 
 viewCheckBoxSelectInputItem : Language -> List a -> (a -> msg) -> (a -> Html msg) -> a -> Html msg

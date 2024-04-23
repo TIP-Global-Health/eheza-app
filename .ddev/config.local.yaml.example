@@ -57,4 +57,7 @@ hooks:
     - exec: drush vset hedley_admin_feature_ncda_enabled 1
     - exec: drush vset hedley_admin_feature_stock_management_enabled 1
     - exec: drush vset hedley_admin_feature_tuberculosis_management_enabled 1
+    - exec: drush vset hedley_admin_feature_group_education_enabled 1
+    - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
+    - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
     - exec: drush uli

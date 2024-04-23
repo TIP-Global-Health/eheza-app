@@ -70,6 +70,7 @@ while (TRUE) {
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_CHILD_SCOREBOARD);
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_NUTRITION_INDIVIDUAL);
     hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_NUTRITION_GROUP);
+    hedley_stats_clear_caches_for_health_center($id, HEDLEY_STATS_GROUP_EDUCATION);
 
     // Add AQ item to re-calculate all the stats offline.
     hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_STATS_CALCULATE_STATS, $id, [

@@ -133,6 +133,9 @@
                 else if (type === 'tuberculosis-measurements') {
                   return viewMeasurements('tuberculosis_encounter', uuid);
                 }
+                else if (type === 'hiv-measurements') {
+                    return viewMeasurements('hiv_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
                 }
@@ -522,6 +525,9 @@
                     else if (key === 'tuberculosis_encounter') {
                         target = node.tuberculosis_encounter;
                     }
+                    else if (key === 'hiv_encounter') {
+                        target = node.hiv_encounter;
+                    }
                     else if (key === 'newborn') {
                         target = node.newborn;
                     }
@@ -574,52 +580,71 @@
       'prenatal_follow_up',
       'well_child_follow_up',
       'tuberculosis_follow_up',
+      'hiv_follow_up',
       'acute_illness_trace_contact',
       'prenatal_labs_results',
       'ncd_labs_results',
       'well_child_next_visit'
     ];
 
-    // These are types of follow ups that need to be loaded, even if they
+    // These are types of follow-ups that need to be loaded, even if they
     // were resolved during period of past 6 months.
     // This is required to present data at Dashboard statistics.
-    var resolvedFollowUpMeasurementsTypes = [
-      'acute_illness_trace_contact',
-      'prenatal_labs_results',
-      'ncd_labs_results'
+    var followUpMeasurementsTypesUsedByDashboard = [
+      'acute_illness_follow_up',
+      'follow_up',
+      'nutrition_follow_up',
+      'prenatal_follow_up',
+      'well_child_follow_up',
     ];
 
+    // These are HIV tests, where HIV positive patient can be diagnosed.
+    // We need them since HIV followup at case management should appear
+    // when patient was diagniosed with HIV when taking a test, and did not
+    // have HIV encounter after.
+    var hivTestTypes = [
+      'ncd_hiv_test',
+      'prenatal_hiv_test',
+    ]
+
     function viewFollowUpMeasurements (shard) {
-        // Load all types of follow up measurements that belong to provided healh center.
-        var query = dbSync.shards.where('type').anyOf(followUpMeasurementsTypes).and(function (item) {
+        // Load all types of follow up measurements, and HIV test results
+        // that belong to provided healh center.
+        var typesToLoad = followUpMeasurementsTypes.concat(hivTestTypes);
+        var query = dbSync.shards.where('type').anyOf(typesToLoad).and(function (item) {
           return item.shard === shard;
         });
 
         // Build an empty list of measurements, so we return some value, even
         // if no measurements were ever taken.
         var data = {};
-        data = {};
         // Decoder is expecting to have the health center UUID.
         data.uuid = shard;
 
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
                 var today = new Date();
-                var sixMonthsFromToday = new Date();
-                sixMonthsFromToday.setMonth(today.getMonth() + 6);
-
+                var patientsWithHIVFollowUps = [];
                 nodes.forEach(function (node) {
-                    if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
-                        var targetDate = sixMonthsFromToday;
+                    // Do not process nodes that are not follow ups.
+                    if (hivTestTypes.includes(node.type)) {
+                      return;
+                    }
 
-                        if (resolvedFollowUpMeasurementsTypes.includes(node.type)) {
-                          var targetDate = today;
+                    // Record IDs of patients that have any HIV follow up.
+                    if (node.type == 'hiv_follow_up') {
+                      if (patientsWithHIVFollowUps.indexOf(node.person) === -1) {
+                        patientsWithHIVFollowUps.push(node.person);
+                      }
+                    }
+
+                    if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
+                        var resolutionDate = new Date(node.date_concluded);
+                        if (followUpMeasurementsTypesUsedByDashboard.includes(node.type)) {
+                          resolutionDate.setMonth(today.getMonth() + 6);
                         }
 
-                        // Do not load resolved items.
-                        var resolutionDate = new Date(node.date_concluded);
-
-                        if (resolutionDate < targetDate) {
+                        if (resolutionDate < today) {
                           return;
                         }
                     }
@@ -629,6 +654,77 @@
                     } else {
                         data[node.type] = [node];
                     }
+                });
+
+                // Recording all patients that had posiitve HIV test result.
+                // In case of multiple posiitve results for a patient, we
+                // record most recent test date.
+                var positiveHIVMap = {};
+                nodes.forEach(function (node) {
+                  // Do not process follow ups nodes.
+                  if (!hivTestTypes.includes(node.type)) {
+                    return;
+                  }
+
+                  // Do not process, if test result is not positive.
+                  if (node.test_result !== 'positive') {
+                    return;
+                  }
+
+                  // First time positive result for patient is found - recorded.
+                  if (!positiveHIVMap[node.person]) {
+                    positiveHIVMap[node.person] = {id: node.person, date: node.date_measured, uuid: node.uuid};
+                    return;
+                  }
+
+                  // Another positive result for patient is found - record the
+                  // most recent one.
+                  var current = new Date(positiveHIVMap[node.person].date);
+                  var candidate = new Date(node.date_measured);
+                  if (current < candidate) {
+                    positiveHIVMap[node.person] = {id: node.person, date: node.date_measured, uuid: node.uuid};
+                  }
+                });
+
+                // Creating 'dummy' HIV follow ups for patients that have positive HIV
+                // result, and never had HIV follow up (which means that they were)
+                // never diagnosed HIV posiitve during HIV encounter.
+                Object.values(positiveHIVMap).forEach((item) => {
+                  if (patientsWithHIVFollowUps.indexOf(item.id) !== -1) {
+                    // Patinet has HIV follow up - skip to next one.
+                    return;
+                  }
+
+                  // Create 'dummy' HIV follow up.
+                  var hivFollowUp = {
+                    date_concluded: null,
+                    // Positive HIV test result date.
+                    date_measured: item.date,
+                    deleted: false,
+                    // Per requirements, positive HIV test result follow up is
+                    // to be scheduled to 1 week.
+                    follow_up_options: ['1-w'],
+                    health_center: null,
+                    // This will be uesd as an indicator for front-end, to understand
+                    // that this follow up represents positive HIV test.
+                    hiv_encounter: 'dummy',
+                    nurse: 'dummy',
+                    person: item.id,
+                    shard: 'dummy',
+                    type: 'hiv_follow_up',
+                    // We only need to have the UUID unique, so we use
+                    // the UUID pf positive HIV test node.
+                    // We don't perform any editing on fornt-end, so it's
+                    // sufficient.
+                    uuid: item.uuid
+                  };
+
+                  // Add 'dummy' HIV follow up to the data.
+                  if (data['hiv_follow_up']) {
+                      data['hiv_follow_up'].push(hivFollowUp);
+                  } else {
+                      data['hiv_follow_up'] = [hivFollowUp];
+                  }
                 });
 
                 var body = JSON.stringify({
@@ -763,7 +859,6 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
-
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
@@ -806,6 +901,24 @@
 
                             return Promise.resolve();
                         });
+                    }
+                    else {
+                        var geoFields = params.get('geo_fields');
+                        if (geoFields) {
+                            var fields = geoFields.split('|');
+                            modifyQuery = modifyQuery.then(function () {
+                                criteria.province = fields[0];
+                                criteria.district = fields[1];
+                                criteria.sector = fields[2];
+                                criteria.cell = fields[3];
+                                criteria.village = fields[4];
+                                query = table.where(criteria);
+
+                                countQuery = query.clone();
+
+                                return Promise.resolve();
+                            });
+                        }
                     }
                 }
 
@@ -865,6 +978,7 @@
                 var encounterTypes = [
                   'acute_illness_encounter',
                   'child_scoreboard_encounter',
+                  'hiv_encounter',
                   'home_visit_encounter',
                   'ncd_encounter',
                   'nutrition_encounter',
@@ -928,6 +1042,22 @@
                   if (nurseId) {
                     modifyQuery = modifyQuery.then(function () {
                         criteria.nurse = nurseId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
+                // For education_session endpoint, check participant param and
+                // only return those sessions were participant has participated.
+                if (type === 'education_session') {
+                  var personId = params.get('participant');
+                  if (personId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.participating_patients = personId;
                         query = table.where(criteria);
 
                         countQuery = query.clone();

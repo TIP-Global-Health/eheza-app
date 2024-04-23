@@ -507,6 +507,40 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'user-user-field_incident_details'.
+  $field_instances['user-user-field_incident_details'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 9,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_incident_details',
+    'label' => 'Incident details',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => 0,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 17,
+    ),
+  );
+
   // Exported field_instance: 'user-user-field_phone'.
   $field_instances['user-user-field_phone'] = array(
     'bundle' => 'user',
@@ -686,6 +720,7 @@ function hedley_user_field_default_field_instances() {
   t('Email');
   t('Groups');
   t('Health centers');
+  t('Incident details');
   t('PIN code');
   t('Phone');
   t('Profile photo');

@@ -11,9 +11,9 @@ fetch id db =
     let
         fetchTuberculosisEncounters =
             resolveIndividualParticipantsForPerson id TuberculosisEncounter db
-                |> List.map FetchTuberculosisEncountersForParticipant
+                |> FetchTuberculosisEncountersForParticipants
     in
     [ FetchPerson id
     , FetchIndividualEncounterParticipantsForPerson id
+    , fetchTuberculosisEncounters
     ]
-        ++ fetchTuberculosisEncounters
