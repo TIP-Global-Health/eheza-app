@@ -53,6 +53,7 @@ type Msg
     = ClosePrenatalSession NominalDate PregnancyOutcome DeliveryLocation
     | CloseAcuteIllnessSession AcuteIllnessOutcome
     | CloseTuberculosisSession TuberculosisOutcome
+    | CloseHIVSession HIVOutcome
     | SetEddDate NominalDate
     | SetNewborn PersonId
     | HandleUpdatedIndividualEncounterParticipant (WebData ())
@@ -68,13 +69,14 @@ type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
     | ChildScoreboardEncounter
+    | HIVEncounter
     | HomeVisitEncounter
-      -- @todo : can be removed?
-    | InmmunizationEncounter
     | NCDEncounter
     | NutritionEncounter
     | TuberculosisEncounter
     | WellChildEncounter
+      -- @todo : can be removed?
+    | InmmunizationEncounter
 
 
 type DeliveryLocation
@@ -86,6 +88,7 @@ type IndividualEncounterParticipantOutcome
     = AcuteIllness AcuteIllnessOutcome
     | Pregnancy PregnancyOutcome
     | Tuberculosis TuberculosisOutcome
+    | HIV HIVOutcome
 
 
 type AcuteIllnessOutcome
@@ -97,16 +100,23 @@ type AcuteIllnessOutcome
     | OutcomeOther
 
 
+allAcuteIllnessOutcome : List AcuteIllnessOutcome
+allAcuteIllnessOutcome =
+    [ OutcomeIllnessResolved
+    , OutcomeLostToFollowUp
+    , OutcomeMovedOutsideCA
+    , OutcomePatientDied
+    , OutcomeReferredToHC
+    , OutcomeOther
+    ]
+
+
 type PregnancyOutcome
     = OutcomeLiveAtTerm
     | OutcomeLivePreTerm
     | OutcomeStillAtTerm
     | OutcomeStillPreTerm
     | OutcomeAbortions
-
-
-type TuberculosisOutcome
-    = OutcomeNotDiagnosed
 
 
 allPregnancyOutcome : List PregnancyOutcome
@@ -119,12 +129,9 @@ allPregnancyOutcome =
     ]
 
 
-allAcuteIllnessOutcome : List AcuteIllnessOutcome
-allAcuteIllnessOutcome =
-    [ OutcomeIllnessResolved
-    , OutcomeLostToFollowUp
-    , OutcomeMovedOutsideCA
-    , OutcomePatientDied
-    , OutcomeReferredToHC
-    , OutcomeOther
-    ]
+type TuberculosisOutcome
+    = TuberculosisOutcomeNotDiagnosed
+
+
+type HIVOutcome
+    = HIVOutcomeNotDiagnosed

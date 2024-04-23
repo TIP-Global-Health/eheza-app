@@ -15,6 +15,7 @@ import Backend.Dashboard.Model
         , ChildrenBeneficiariesStats
         , DashboardStats
         , DashboardStatsRaw
+        , EducationSessionData
         , NCDDataItem
         , NCDEncounterDataItem
         , Nutrition
@@ -22,6 +23,7 @@ import Backend.Dashboard.Model
         , NutritionStatus
         , NutritionValue
         , PMTCTDataItem
+        , PatientDetails
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
@@ -55,7 +57,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDEncounter.Types exposing (NCDDiagnosis(..))
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
-import Backend.Village.Model exposing (Village)
+import Backend.Village.Utils exposing (resolveVillageResidents)
 import Date exposing (Unit(..), isBetween)
 import EverySet
 import Gizra.NominalDate exposing (NominalDate, toLastDayOfMonth)
@@ -67,11 +69,10 @@ import Pages.Dashboard.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils
     exposing
         ( fillPersonName
+        , filterFollowUpsOfResidents
         , generateAcuteIllnessFollowUps
-        , generateFollowUpsForResidents
         , generateNutritionFollowUps
         , generatePrenatalFollowUps
-        , resolveUniquePatientsFromFollowUps
         )
 import Pages.GlobalCaseManagement.View
     exposing
@@ -147,7 +148,22 @@ generateAssembledData currentDate healthCenterId stats db programTypeFilter sele
     , nutritionIndividualData = generateFilteredData .nutritionIndividualData stats selectedVillageFilter
     , nutritionGroupData = generateFilteredData .nutritionGroupData stats selectedVillageFilter
     , nutritionPageData = generateNutritionPageData currentDate filteredStats db programTypeFilter selectedVillageFilter
+    , groupEducationData = generateGroupEducationData stats selectedVillageFilter
+    , healthCenterVillages = Dict.keys stats.villagesWithResidents
+    , patientsDetails = generateFilteredPatientsDetails stats selectedVillageFilter
     }
+
+
+generateGroupEducationData : DashboardStatsRaw -> Maybe VillageId -> List EducationSessionData
+generateGroupEducationData stats selectedVillageFilter =
+    case selectedVillageFilter of
+        Just villageId ->
+            Dict.get villageId stats.groupEducationData
+                |> Maybe.withDefault []
+
+        Nothing ->
+            Dict.values stats.groupEducationData
+                |> List.concat
 
 
 generateFilteredDashboardStats : DashboardStatsRaw -> FilterProgramType -> Maybe VillageId -> DashboardStats
@@ -167,14 +183,27 @@ generateFilteredDashboardStats stats programTypeFilter selectedVillageFilter =
                 stats.caseManagement.lastYear
                 |> caseManagementMergeDuplicates
         }
-    , childrenBeneficiaries = applyProgramTypeAndResidentsFilters stats.villagesWithResidents programTypeFilter selectedVillageFilter stats.childrenBeneficiaries
+    , childrenBeneficiaries =
+        applyProgramTypeAndResidentsFilters stats.villagesWithResidents
+            programTypeFilter
+            selectedVillageFilter
+            stats.childrenBeneficiaries
     , completedPrograms = stats.completedPrograms
     , familyPlanning = stats.familyPlanning
     , missedSessions = stats.missedSessions
     , totalEncounters = stats.totalEncounters
-    , villagesWithResidents = stats.villagesWithResidents
     , timestamp = stats.timestamp
     }
+
+
+generateFilteredPatientsDetails :
+    DashboardStatsRaw
+    -> Maybe VillageId
+    -> Dict PersonIdentifier PatientDetails
+generateFilteredPatientsDetails stats selectedVillageFilter =
+    Maybe.andThen (\villageId -> Dict.get villageId stats.villagesWithResidents) selectedVillageFilter
+        |> Maybe.map (\residents -> Dict.filter (\key _ -> List.member key residents) stats.patientsDetails)
+        |> Maybe.withDefault stats.patientsDetails
 
 
 generateFilteredData :
@@ -1078,32 +1107,31 @@ countDeliveriesAtLocationForSelectedMonth dateLastDayOfSelectedMonth location =
 --
 
 
-getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> Village -> FollowUpMeasurements -> ( Int, Int, Int )
-getFollowUpsTotals language currentDate limitDate db village followUps =
+getFollowUpsTotals : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> VillageId -> FollowUpMeasurements -> ( Int, Int, Int )
+getFollowUpsTotals language currentDate limitDate db villageId allFollowUps =
     let
-        followUpsToLimitDate =
-            filterFollowUpMeasurementsByLimitDate limitDate followUps
+        villageResidents =
+            resolveVillageResidents villageId db
 
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps limitDate followUpsToLimitDate
-                |> generateFollowUpsForResidents limitDate village db followUpsToLimitDate
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         nutritionFollowUps =
-            generateNutritionFollowUps limitDate followUpsForResidents
+            generateNutritionFollowUps limitDate followUps
                 |> fillPersonName identity db
 
         nutritionEntries =
             generateNutritionFollowUpEntries language limitDate nutritionFollowUps db
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps limitDate db followUpsForResidents
+            generateAcuteIllnessFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =
             generateAcuteIllnessFollowUpEntries language currentDate limitDate acuteIllnessFollowUps db
 
         prenatalFollowUps =
-            generatePrenatalFollowUps limitDate db followUpsForResidents
+            generatePrenatalFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         prenatalEntries =
@@ -1115,18 +1143,24 @@ getFollowUpsTotals language currentDate limitDate db village followUps =
     )
 
 
-getAcuteIllnessFollowUpsBreakdownByDiagnosis : Language -> NominalDate -> NominalDate -> ModelIndexedDb -> Village -> FollowUpMeasurements -> ( Int, Int, Int )
-getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db village followUps =
+getAcuteIllnessFollowUpsBreakdownByDiagnosis :
+    Language
+    -> NominalDate
+    -> NominalDate
+    -> ModelIndexedDb
+    -> VillageId
+    -> FollowUpMeasurements
+    -> ( Int, Int, Int )
+getAcuteIllnessFollowUpsBreakdownByDiagnosis language currentDate limitDate db villageId allFollowUps =
     let
-        followUpsToLimitDate =
-            filterFollowUpMeasurementsByLimitDate limitDate followUps
+        villageResidents =
+            resolveVillageResidents villageId db
 
-        followUpsForResidents =
-            resolveUniquePatientsFromFollowUps limitDate followUpsToLimitDate
-                |> generateFollowUpsForResidents limitDate village db followUpsToLimitDate
+        followUps =
+            filterFollowUpsOfResidents villageResidents allFollowUps
 
         acuteIllnessFollowUps =
-            generateAcuteIllnessFollowUps limitDate db followUpsForResidents
+            generateAcuteIllnessFollowUps limitDate db followUps
                 |> fillPersonName Tuple.second db
 
         acuteIllnessEntries =

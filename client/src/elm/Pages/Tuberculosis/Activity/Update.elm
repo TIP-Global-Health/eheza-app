@@ -97,7 +97,7 @@ update currentDate id db msg model =
 
                                     additionalMsgs =
                                         if diagnosticsForm.diagnosed == Just False then
-                                            [ Backend.IndividualEncounterParticipant.Model.CloseTuberculosisSession OutcomeNotDiagnosed
+                                            [ Backend.IndividualEncounterParticipant.Model.CloseTuberculosisSession TuberculosisOutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
                                                 |> App.Model.MsgIndexedDb
                                             , App.Model.SetActivePage PinCodePage

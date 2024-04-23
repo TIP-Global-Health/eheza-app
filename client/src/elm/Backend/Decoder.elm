@@ -5,6 +5,8 @@ import Backend.ChildScoreboardEncounter.Decoder exposing (decodeChildScoreboardE
 import Backend.Clinic.Decoder exposing (decodeClinic)
 import Backend.Counseling.Decoder exposing (decodeCounselingSchedule, decodeCounselingTopic)
 import Backend.Dashboard.Decoder exposing (decodeDashboardStatsRaw)
+import Backend.EducationSession.Decoder exposing (decodeEducationSession)
+import Backend.HIVEncounter.Decoder exposing (decodeHIVEncounter)
 import Backend.HealthCenter.Decoder exposing (decodeCatchmentArea, decodeHealthCenter)
 import Backend.HomeVisitEncounter.Decoder exposing (decodeHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Decoder exposing (decodeIndividualEncounterParticipant)
@@ -142,6 +144,9 @@ decodeRevision =
                     "danger_signs" ->
                         decodeWithUuid DangerSignsRevision decodeDangerSigns
 
+                    "education_session" ->
+                        decodeWithUuid EducationSessionRevision decodeEducationSession
+
                     "exposure" ->
                         decodeWithUuid ExposureRevision decodeExposure
 
@@ -171,6 +176,30 @@ decodeRevision =
 
                     "height" ->
                         decodeWithUuid HeightRevision decodeHeight
+
+                    "hiv_diagnostics" ->
+                        decodeWithUuid HIVDiagnosticsRevision decodeHIVDiagnostics
+
+                    "hiv_encounter" ->
+                        decodeWithUuid HIVEncounterRevision decodeHIVEncounter
+
+                    "hiv_follow_up" ->
+                        decodeWithUuid HIVFollowUpRevision decodeHIVFollowUp
+
+                    "hiv_health_education" ->
+                        decodeWithUuid HIVHealthEducationRevision decodeHIVHealthEducation
+
+                    "hiv_medication" ->
+                        decodeWithUuid HIVMedicationRevision decodeHIVMedication
+
+                    "hiv_referral" ->
+                        decodeWithUuid HIVReferralRevision decodeHIVReferral
+
+                    "hiv_symptom_review" ->
+                        decodeWithUuid HIVSymptomReviewRevision decodeHIVSymptomReview
+
+                    "hiv_treatment_review" ->
+                        decodeWithUuid HIVTreatmentReviewRevision decodeHIVTreatmentReview
 
                     "home_visit_encounter" ->
                         decodeWithUuid HomeVisitEncounterRevision decodeHomeVisitEncounter

@@ -26,8 +26,8 @@ thumbnailDimensions =
     }
 
 
-view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language nurse ( sessionId, session ) model =
+view : Language -> Bool -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language isChw ( sessionId, session ) model =
     let
         filter =
             normalizeFilter model.filter
@@ -124,8 +124,8 @@ view language nurse ( sessionId, session ) model =
                 Nothing
 
         goBackPage =
-            if isCommunityHealthWorker nurse then
-                UserPage ClinicalPage
+            if isChw then
+                UserPage GroupEncounterTypesPage
 
             else
                 UserPage ClinicsPage

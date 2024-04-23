@@ -68,6 +68,11 @@ decodeTuberculosisMeasurement =
     decodeMeasurement "tuberculosis_encounter"
 
 
+decodeHIVMeasurement : Decoder value -> Decoder (Measurement HIVEncounterId value)
+decodeHIVMeasurement =
+    decodeMeasurement "hiv_encounter"
+
+
 decodeMeasurement : String -> Decoder value -> Decoder (Measurement (EntityUuid a) value)
 decodeMeasurement encounterTag valueDecoder =
     succeed Measurement
@@ -210,6 +215,7 @@ decodeFollowUpMeasurements =
         |> optional "prenatal_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalFollowUp)) Dict.empty
         |> optional "well_child_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeWellChildFollowUp)) Dict.empty
         |> optional "tuberculosis_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeTuberculosisFollowUp)) Dict.empty
+        |> optional "hiv_follow_up" (map Dict.fromList <| list (decodeWithEntityUuid decodeHIVFollowUp)) Dict.empty
         |> optional "acute_illness_trace_contact" (map Dict.fromList <| list (decodeWithEntityUuid decodeAcuteIllnessTraceContact)) Dict.empty
         |> optional "prenatal_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodePrenatalLabsResults)) Dict.empty
         |> optional "ncd_labs_results" (map Dict.fromList <| list (decodeWithEntityUuid decodeNCDLabsResults)) Dict.empty
@@ -314,6 +320,18 @@ decodeTuberculosisMeasurements =
         |> optional "tuberculosis_referral" (decodeHead decodeTuberculosisReferral) Nothing
         |> optional "tuberculosis_symptom_review" (decodeHead decodeTuberculosisSymptomReview) Nothing
         |> optional "tuberculosis_treatment_review" (decodeHead decodeTuberculosisTreatmentReview) Nothing
+
+
+decodeHIVMeasurements : Decoder HIVMeasurements
+decodeHIVMeasurements =
+    succeed HIVMeasurements
+        |> optional "hiv_diagnostics" (decodeHead decodeHIVDiagnostics) Nothing
+        |> optional "hiv_follow_up" (decodeHead decodeHIVFollowUp) Nothing
+        |> optional "hiv_health_education" (decodeHead decodeHIVHealthEducation) Nothing
+        |> optional "hiv_medication" (decodeHead decodeHIVMedication) Nothing
+        |> optional "hiv_referral" (decodeHead decodeHIVReferral) Nothing
+        |> optional "hiv_symptom_review" (decodeHead decodeHIVSymptomReview) Nothing
+        |> optional "hiv_treatment_review" (decodeHead decodeHIVTreatmentReview) Nothing
 
 
 decodeStockManagementMeasurements : Decoder StockManagementMeasurements
@@ -5563,3 +5581,107 @@ decodeTuberculosisSymptom =
 decodeTuberculosisTreatmentReview : Decoder TuberculosisTreatmentReview
 decodeTuberculosisTreatmentReview =
     decodeTuberculosisMeasurement decodeTreatmentOngoingValue
+
+
+decodeHIVDiagnostics : Decoder HIVDiagnostics
+decodeHIVDiagnostics =
+    decodeHIVMeasurement decodeHIVDiagnosticsValue
+
+
+decodeHIVDiagnosticsValue : Decoder HIVDiagnosticsValue
+decodeHIVDiagnosticsValue =
+    succeed HIVDiagnosticsValue
+        |> required "hiv_diagnosis_signs" (decodeEverySet decodeHIVDiagnosisSign)
+        |> optional "positive_result_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+
+
+decodeHIVDiagnosisSign : Decoder HIVDiagnosisSign
+decodeHIVDiagnosisSign =
+    string
+        |> andThen
+            (\result ->
+                hivDiagnosisSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVDiagnosisSign" |> fail)
+            )
+
+
+decodeHIVFollowUp : Decoder HIVFollowUp
+decodeHIVFollowUp =
+    decodeHIVMeasurement decodeFollowUpValue
+
+
+decodeHIVHealthEducation : Decoder HIVHealthEducation
+decodeHIVHealthEducation =
+    decodeHIVMeasurement decodeHIVHealthEducationValue
+
+
+decodeHIVHealthEducationValue : Decoder HIVHealthEducationValue
+decodeHIVHealthEducationValue =
+    decodeEverySet decodeHIVHealthEducationSign
+        |> field "hiv_health_education_signs"
+
+
+decodeHIVHealthEducationSign : Decoder HIVHealthEducationSign
+decodeHIVHealthEducationSign =
+    string
+        |> andThen
+            (\result ->
+                hivHealthEducationSignFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVHealthEducationSign" |> fail)
+            )
+
+
+decodeHIVMedication : Decoder HIVMedication
+decodeHIVMedication =
+    decodeHIVMeasurement decodeHIVMedicationValue
+
+
+decodeHIVMedicationValue : Decoder HIVMedicationValue
+decodeHIVMedicationValue =
+    decodeEverySet decodeHIVPrescribedMedication
+        |> field "prescribed_hiv_medications"
+
+
+decodeHIVPrescribedMedication : Decoder HIVPrescribedMedication
+decodeHIVPrescribedMedication =
+    string
+        |> andThen
+            (\result ->
+                hivPrescribedMedicationFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVPrescribedMedication" |> fail)
+            )
+
+
+decodeHIVReferral : Decoder HIVReferral
+decodeHIVReferral =
+    decodeHIVMeasurement decodeSendToHCValue
+
+
+decodeHIVSymptomReview : Decoder HIVSymptomReview
+decodeHIVSymptomReview =
+    decodeHIVMeasurement decodeHIVSymptomReviewValue
+
+
+decodeHIVSymptomReviewValue : Decoder HIVSymptomReviewValue
+decodeHIVSymptomReviewValue =
+    decodeEverySet decodeHIVSymptom
+        |> field "hiv_symptoms"
+
+
+decodeHIVSymptom : Decoder HIVSymptom
+decodeHIVSymptom =
+    string
+        |> andThen
+            (\result ->
+                hivSymptomFromString result
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (result ++ " is not a recognized HIVSymptom" |> fail)
+            )
+
+
+decodeHIVTreatmentReview : Decoder HIVTreatmentReview
+decodeHIVTreatmentReview =
+    decodeHIVMeasurement decodeTreatmentOngoingValue

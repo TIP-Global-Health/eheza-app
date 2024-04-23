@@ -32,11 +32,12 @@ emptyModel =
 type CaseManagementFilter
     = FilterAcuteIllness
     | FilterAntenatal
-    | FilterNutrition
     | FilterContactsTrace
-    | FilterPrenatalLabs
-    | FilterNCDLabs
+    | FilterHIV
     | FilterImmunization
+    | FilterNCDLabs
+    | FilterNutrition
+    | FilterPrenatalLabs
     | FilterTuberculosis
 
 
@@ -128,12 +129,28 @@ type alias TuberculosisFollowUpEntry =
     }
 
 
+type alias HIVFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe HIVEncounterId
+    , value : FollowUpValue
+    }
+
+
+type alias HIVFollowUpEntry =
+    { participantId : Maybe IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : HIVFollowUpItem
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
     | FollowUpImmunization FollowUpImmunizationData
     | FollowUpTuberculosis FollowUpTuberculosisData
+    | FollowUpHIV FollowUpHIVData
     | CaseManagementContactsTracing
 
 
@@ -168,6 +185,13 @@ type alias FollowUpPrenatalData =
 
 
 type alias FollowUpTuberculosisData =
+    { personId : PersonId
+    , personName : String
+    , participantId : Maybe IndividualEncounterParticipantId
+    }
+
+
+type alias FollowUpHIVData =
     { personId : PersonId
     , personName : String
     , participantId : Maybe IndividualEncounterParticipantId
@@ -210,10 +234,7 @@ type alias NCDLabsEntryData =
 
 type alias FollowUpPatients =
     { nutrition : List PersonId
-    , acuteIllness : List PersonId
-    , prenatal : List PersonId
     , immunization : List PersonId
-    , tuberculosis : List PersonId
     }
 
 

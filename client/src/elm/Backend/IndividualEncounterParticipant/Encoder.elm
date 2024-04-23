@@ -47,6 +47,9 @@ encodeIndividualEncounterParticipantOutcome participantOutcome =
         Tuberculosis outcome ->
             encodeTuberculosisOutcome outcome
 
+        HIV outcome ->
+            encodeHIVOutcome outcome
+
 
 encodePregnancyOutcome : PregnancyOutcome -> Value
 encodePregnancyOutcome outcome =
@@ -66,3 +69,8 @@ encodeAcuteIllnessOutcome outcome =
 encodeTuberculosisOutcome : TuberculosisOutcome -> Value
 encodeTuberculosisOutcome outcome =
     tuberculosisOutcomeToString outcome |> string
+
+
+encodeHIVOutcome : HIVOutcome -> Value
+encodeHIVOutcome outcome =
+    hivOutcomeToString outcome |> string

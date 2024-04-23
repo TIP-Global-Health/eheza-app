@@ -24,8 +24,8 @@ import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language nurse ( sessionId, session ) model =
+view : Language -> Bool -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language isChw ( sessionId, session ) model =
     let
         mothers =
             if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
@@ -63,7 +63,11 @@ view language nurse ( sessionId, session ) model =
                         |> Dict.values
 
         goBackPage =
-            UserPage ClinicsPage
+            if isChw then
+                UserPage GroupEncounterTypesPage
+
+            else
+                UserPage ClinicsPage
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -75,9 +79,7 @@ view language nurse ( sessionId, session ) model =
                 [ class "link-back"
                 , onClick <| SetActivePage goBackPage
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+                [ span [ class "icon-back" ] [] ]
             , ul [ class "links-head" ]
                 [ li
                     [ class "active" ]

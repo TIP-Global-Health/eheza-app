@@ -19,6 +19,9 @@ individualEncounterTypeToString encounterType =
         ChildScoreboardEncounter ->
             "child-scoreboard"
 
+        HIVEncounter ->
+            "hiv"
+
         HomeVisitEncounter ->
             "home-visit"
 
@@ -49,6 +52,9 @@ individualEncounterTypeFromString string =
 
         "child-scoreboard" ->
             Just ChildScoreboardEncounter
+
+        "hiv" ->
+            Just HIVEncounter
 
         "home-visit" ->
             Just HomeVisitEncounter
@@ -236,7 +242,7 @@ deliveryLocationFromString location =
 tuberculosisOutcomeToString : TuberculosisOutcome -> String
 tuberculosisOutcomeToString outcome =
     case outcome of
-        OutcomeNotDiagnosed ->
+        TuberculosisOutcomeNotDiagnosed ->
             "not-dignosed"
 
 
@@ -244,7 +250,24 @@ tuberculosisOutcomeFromString : String -> Maybe TuberculosisOutcome
 tuberculosisOutcomeFromString outcome =
     case outcome of
         "not-dignosed" ->
-            Just OutcomeNotDiagnosed
+            Just TuberculosisOutcomeNotDiagnosed
+
+        _ ->
+            Nothing
+
+
+hivOutcomeToString : HIVOutcome -> String
+hivOutcomeToString outcome =
+    case outcome of
+        HIVOutcomeNotDiagnosed ->
+            "hiv-not-dignosed"
+
+
+hivOutcomeFromString : String -> Maybe HIVOutcome
+hivOutcomeFromString outcome =
+    case outcome of
+        "hiv-not-dignosed" ->
+            Just HIVOutcomeNotDiagnosed
 
         _ ->
             Nothing

@@ -1,6 +1,7 @@
 module Backend.Person.Decoder exposing
     ( decodeEducationLevel
     , decodeGender
+    , decodeGeoField
     , decodeHivStatus
     , decodeMaritalStatus
     , decodeModeOfDelivery

@@ -1605,3 +1605,75 @@ type alias TuberculosisTreatmentReviewId =
 
 type TuberculosisTreatmentReviewUuidType
     = TuberculosisTreatmentReviewUuidType
+
+
+type alias EducationSessionId =
+    EntityUuid EducationSessionUuidType
+
+
+type EducationSessionUuidType
+    = EducationSessionUuidType
+
+
+type alias HIVEncounterId =
+    EntityUuid HIVEncounterUuidType
+
+
+type HIVEncounterUuidType
+    = HIVEncounterUuidType
+
+
+type alias HIVDiagnosticsId =
+    EntityUuid HIVDiagnosticsUuidType
+
+
+type HIVDiagnosticsUuidType
+    = HIVDiagnosticsUuidType
+
+
+type alias HIVFollowUpId =
+    EntityUuid HIVFollowUpUuidType
+
+
+type HIVFollowUpUuidType
+    = HIVFollowUpUuidType
+
+
+type alias HIVHealthEducationId =
+    EntityUuid HIVHealthEducationUuidType
+
+
+type HIVHealthEducationUuidType
+    = HIVHealthEducationUuidType
+
+
+type alias HIVMedicationId =
+    EntityUuid HIVMedicationUuidType
+
+
+type HIVMedicationUuidType
+    = HIVMedicationUuidType
+
+
+type alias HIVReferralId =
+    EntityUuid HIVReferralUuidType
+
+
+type HIVReferralUuidType
+    = HIVReferralUuidType
+
+
+type alias HIVSymptomReviewId =
+    EntityUuid HIVSymptomReviewUuidType
+
+
+type HIVSymptomReviewUuidType
+    = HIVSymptomReviewUuidType
+
+
+type alias HIVTreatmentReviewId =
+    EntityUuid HIVTreatmentReviewUuidType
+
+
+type HIVTreatmentReviewUuidType
+    = HIVTreatmentReviewUuidType
