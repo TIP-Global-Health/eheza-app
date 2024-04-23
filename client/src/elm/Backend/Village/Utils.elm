@@ -78,3 +78,13 @@ getVillageIdByGeoFields db province district sector cell village_ =
                 >> List.head
                 >> Maybe.map Tuple.first
             )
+
+
+{-| Need to `FetchPeopleInVillage villageId` at Fetch, for this to work.
+-}
+resolveVillageResidents : VillageId -> ModelIndexedDb -> List PersonId
+resolveVillageResidents villageId db =
+    Dict.get villageId db.peopleInVillage
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.keys
+        |> Maybe.withDefault []

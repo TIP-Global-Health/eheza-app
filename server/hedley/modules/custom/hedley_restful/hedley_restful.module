@@ -5,7 +5,7 @@
  * Code for the RESTful integration.
  */
 
-define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 23);
+define('HEDLEY_RESTFUL_CLIENT_SIDE_INDEXEDDB_SCHEMA_VERSION', 26);
 define('HEDLEY_RESTFUL_INCIDENT_TYPE_CONTENT_UPLOAD', 'content-upload');
 
 /**
@@ -43,6 +43,8 @@ const HEDLEY_RESTFUL_SHARDED = [
   'acute_illness_encounter' => 'acute-illness-encounters',
   'child_scoreboard_encounter' => 'child-scoreboard-encounter',
   'clinic' => 'clinics',
+  'education_session' => 'education-session',
+  'hiv_encounter' => 'hiv-encounter',
   'home_visit_encounter' => 'home-visit-encounter',
   'individual_participant' => 'individual-participants',
   'ncd_encounter' => 'ncd-encounter',
@@ -93,6 +95,13 @@ const HEDLEY_RESTFUL_SHARDED = [
   'health_education' => 'health-education',
   'hc_contact' => 'hc-contacts',
   'height' => 'heights',
+  'hiv_diagnostics' => 'hiv-diagnostics',
+  'hiv_follow_up' => 'hiv-follow-up',
+  'hiv_health_education' => 'hiv-health-education',
+  'hiv_medication' => 'hiv-medication',
+  'hiv_referral' => 'hiv-referral',
+  'hiv_symptom_review' => 'hiv-symptom-review',
+  'hiv_treatment_review' => 'hiv-treatment-review',
   'isolation' => 'isolations',
   'lactation' => 'lactations',
   'last_menstrual_period' => 'last-menstrual-periods',

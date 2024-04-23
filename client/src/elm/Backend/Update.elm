@@ -15,8 +15,12 @@ import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model
+import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
+import Backend.HIVEncounter.Model
+import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
@@ -81,7 +85,7 @@ import Backend.TraceContact.Update
 import Backend.TuberculosisEncounter.Model
 import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
-import Backend.Village.Utils exposing (getVillageClinicId)
+import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -510,25 +514,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
-        FetchPeopleByName name ->
-            let
-                trimmed =
-                    String.trim name
-            in
-            -- We'll limit the search to 500 each for now ... basically,
-            -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
-            , []
-            )
-
-        HandleFetchedPeopleByName name data ->
-            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
-            , Cmd.none
-            , []
-            )
-
         FetchIndividualEncounterParticipant id ->
             ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
             , sw.get individualEncounterParticipantEndpoint id
@@ -882,6 +867,49 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
+        FetchNCDEncountersForParticipants ids ->
+            let
+                ncdEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.ncdEncountersByParticipant ids
+            in
+            ( { model | ncdEncountersByParticipant = ncdEncountersByParticipantUpdated }
+            , sw.select ncdEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedNCDEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | ncdEncountersByParticipant = Dict.union dictUpdated model.ncdEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchChildScoreboardEncountersForParticipant id ->
             ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
             , sw.select childScoreboardEncounterEndpoint [ id ]
@@ -947,6 +975,62 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             Dict.map (\_ v -> RemoteData.Success v) dict
                     in
                     ( { model | tuberculosisEncountersByParticipant = Dict.union dictUpdated model.tuberculosisEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchHIVEncountersForParticipant id ->
+            ( { model | hivEncountersByParticipant = Dict.insert id Loading model.hivEncountersByParticipant }
+            , sw.select hivEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHIVEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipant id data ->
+            ( { model | hivEncountersByParticipant = Dict.insert id data model.hivEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncountersForParticipants ids ->
+            let
+                hivEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncountersByParticipant ids
+            in
+            ( { model | hivEncountersByParticipant = hivEncountersByParticipantUpdated }
+            , sw.select hivEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHIVEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncountersByParticipant = Dict.union dictUpdated model.hivEncountersByParticipant }
                     , Cmd.none
                     , []
                     )
@@ -1106,6 +1190,19 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
         HandleFetchedTuberculosisMeasurements id data ->
             ( { model | tuberculosisMeasurements = Dict.insert id data model.tuberculosisMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVMeasurements id ->
+            ( { model | hivMeasurements = Dict.insert id Loading model.hivMeasurements }
+            , sw.get hivMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVMeasurements id)
+            , []
+            )
+
+        HandleFetchedHIVMeasurements id data ->
+            ( { model | hivMeasurements = Dict.insert id data model.hivMeasurements }
             , Cmd.none
             , []
             )
@@ -1307,11 +1404,11 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 in
                 ( { model | people = peopleUpdated }
                 , sw.getMany personEndpoint ids
-                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPeople)
                 , []
                 )
 
-        HandleFetchPeople webData ->
+        HandleFetchedPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
                     noChange
@@ -1325,6 +1422,69 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByName trimmed data ->
+            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleInVillage id ->
+            getVillageById model id
+                |> Maybe.map
+                    (\village ->
+                        let
+                            geoFields =
+                                String.join "|"
+                                    [ village.province
+                                    , village.district
+                                    , village.sector
+                                    , village.cell
+                                    , village.village
+                                    ]
+                        in
+                        ( { model | peopleInVillage = Dict.insert id Loading model.peopleInVillage }
+                        , sw.selectRange personEndpoint (ParamsGeoFields geoFields) 0 (Just 5000)
+                            |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        HandleFetchedPeopleInVillage id data ->
+            ( { model | peopleInVillage = Dict.insert id data model.peopleInVillage }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    [ HandleFetchedPeople data ]
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
@@ -1532,6 +1692,75 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , Cmd.none
                     , []
                     )
+
+        FetchHIVEncounter id ->
+            ( { model | hivEncounters = Dict.insert id Loading model.hivEncounters }
+            , sw.get hivEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVEncounter id)
+            , []
+            )
+
+        HandleFetchedHIVEncounter id data ->
+            ( { model | hivEncounters = Dict.insert id data model.hivEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    hivEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncounters ids
+                in
+                ( { model | hivEncounters = hivEncountersUpdated }
+                , sw.getMany hivEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedHIVEncounters)
+                , []
+                )
+
+        HandleFetchedHIVEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncounters = Dict.union dictUpdated model.hivEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchEducationSession id ->
+            ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
+            , sw.get educationSessionEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedEducationSession id)
+            , []
+            )
+
+        HandleFetchedEducationSession id data ->
+            ( { model | educationSessions = Dict.insert id data model.educationSessions }
+            , Cmd.none
+            , []
+            )
+
+        FetchEducationSessionsForPerson id ->
+            ( { model | educationSessionsByPerson = Dict.insert id Loading model.educationSessionsByPerson }
+            , sw.select educationSessionEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedEducationSessionsForPerson id)
+            , []
+            )
+
+        HandleFetchedEducationSessionsForPerson id data ->
+            ( { model | educationSessionsByPerson = Dict.insert id data model.educationSessionsByPerson }
+            , Cmd.none
+            , []
+            )
 
         FetchSession sessionId ->
             ( { model | sessions = Dict.insert sessionId Loading model.sessions }
@@ -3524,6 +3753,42 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , appMsgs
             )
 
+        MsgHIVEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.hivEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.hivEncounterRequests
+                        |> Maybe.withDefault Backend.HIVEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HIVEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | hivEncounterRequests = Dict.insert encounterId subModel model.hivEncounterRequests }
+            , Cmd.map (MsgHIVEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgEducationSession sessionId subMsg ->
+            let
+                encounter =
+                    Dict.get sessionId model.educationSessions
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get sessionId model.educationSessionRequests
+                        |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+            in
+            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            , Cmd.map (MsgEducationSession sessionId) subCmd
+            , appMsgs
+            )
+
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
@@ -3913,11 +4178,8 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                     ChildScoreboardEncounter ->
                                                         ChildScoreboardParticipantPage personId
 
-                                                    NutritionEncounter ->
-                                                        NutritionParticipantPage InitiatorParticipantsPage personId
-
-                                                    WellChildEncounter ->
-                                                        WellChildParticipantPage InitiatorParticipantsPage personId
+                                                    HIVEncounter ->
+                                                        HIVParticipantPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
@@ -3928,8 +4190,14 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                                     NCDEncounter ->
                                                         NCDParticipantPage InitiatorParticipantsPage personId
 
+                                                    NutritionEncounter ->
+                                                        NutritionParticipantPage InitiatorParticipantsPage personId
+
                                                     TuberculosisEncounter ->
                                                         TuberculosisParticipantPage personId
+
+                                                    WellChildEncounter ->
+                                                        WellChildParticipantPage InitiatorParticipantsPage personId
 
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
@@ -4138,6 +4406,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         |> App.Model.MsgIndexedDb
                                     ]
 
+                                HIVEncounter ->
+                                    [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostHIVEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                HomeVisitEncounter ->
+                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                NCDEncounter ->
+                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostNCDEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
                                 NutritionEncounter ->
                                     case extraData of
                                         NutritionData nutritionEncounterType ->
@@ -4149,9 +4435,9 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         _ ->
                                             []
 
-                                HomeVisitEncounter ->
-                                    [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostHomeVisitEncounter
+                                TuberculosisEncounter ->
+                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostTuberculosisEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -4165,18 +4451,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
 
                                         _ ->
                                             []
-
-                                NCDEncounter ->
-                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostNCDEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
-
-                                TuberculosisEncounter ->
-                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostTuberculosisEncounter
-                                        |> App.Model.MsgIndexedDb
-                                    ]
 
                                 InmmunizationEncounter ->
                                     []
@@ -4428,6 +4702,62 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         |> RemoteData.withDefault []
             in
             ( { model | postTuberculosisEncounter = Dict.insert participantId data model.postTuberculosisEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostHIVEncounter hivEncounter ->
+            ( { model | postHIVEncounter = Dict.insert hivEncounter.participant Loading model.postHIVEncounter }
+            , sw.post hivEncounterEndpoint hivEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHIVEncounter hivEncounter.participant)
+            , []
+            )
+
+        HandlePostedHIVEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( hivEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HIVEncounterPage hivEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postHIVEncounter = Dict.insert participantId data model.postHIVEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostEducationSession educationSession ->
+            ( { model | postEducationSession = Loading }
+            , sw.post educationSessionEndpoint educationSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
+            , []
+            )
+
+        HandlePostedEducationSession data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( educationSessionId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.EducationSessionPage educationSessionId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postEducationSession = data }
             , Cmd.none
             , rollbarOnFailure ++ appMsgs
             )
@@ -4789,6 +5119,36 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
+        EducationSessionRevision uuid data ->
+            let
+                educationSessions =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+
+                -- For every session participant, we check if it has data at
+                -- educationSessionsByPerson dict. If so, we add the session to
+                -- that data.
+                updatedEducationSessionsByPerson =
+                    EverySet.toList data.participants
+                        |> List.foldl
+                            (\personId accum ->
+                                Dict.get personId model.educationSessionsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (\sessionsDict ->
+                                            let
+                                                updatedSessionsDict =
+                                                    Dict.insert uuid data sessionsDict
+                                            in
+                                            Dict.insert personId (Success updatedSessionsDict) accum
+                                        )
+                                    |> Maybe.withDefault accum
+                            )
+                            model.educationSessionsByPerson
+            in
+            ( { model | educationSessions = educationSessions, educationSessionsByPerson = updatedEducationSessionsByPerson }
+            , recalc
+            )
+
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -4875,6 +5235,77 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
                 model
             , True
+            )
+
+        HIVDiagnosticsRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVEncounterRevision uuid data ->
+            let
+                hivEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+
+                hivEncountersByParticipant =
+                    Dict.remove data.participant model.hivEncountersByParticipant
+            in
+            ( { model
+                | hivEncounters = hivEncounters
+                , hivEncountersByParticipant = hivEncountersByParticipant
+              }
+            , recalc
+            )
+
+        HIVFollowUpRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVHealthEducationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVMedicationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVReferralRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVSymptomReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVTreatmentReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         HomeVisitEncounterRevision uuid data ->

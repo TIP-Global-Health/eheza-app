@@ -6,6 +6,8 @@ import Backend.ChildScoreboardEncounter.Encoder
 import Backend.Clinic.Encoder
 import Backend.Counseling.Encoder
 import Backend.Dashboard.Encoder
+import Backend.EducationSession.Encoder
+import Backend.HIVEncounter.Encoder
 import Backend.HealthCenter.Encoder
 import Backend.HomeVisitEncounter.Encoder
 import Backend.IndividualEncounterParticipant.Encoder
@@ -29,6 +31,8 @@ import Backend.Village.Encoder
 import Backend.WellChildEncounter.Encoder
 import Editable
 import EverySet exposing (EverySet)
+import Http
+import Json.Decode
 import Json.Encode exposing (Value, object)
 import List.Zipper as Zipper
 import Maybe.Extra
@@ -180,15 +184,6 @@ determineSyncStatus activePage model =
                         if record.indexDbRemoteData == RemoteData.Success Nothing then
                             -- We tried to fetch entities for upload from IndexDB,
                             -- but there we non matching the query.
-                            ( SyncUploadWhatsApp emptyUploadRec, syncInfoAuthorities )
-
-                        else
-                            noChange
-
-                    SyncUploadWhatsApp record ->
-                        if record.indexDbRemoteData == RemoteData.Success Nothing then
-                            -- We tried to fetch entities for upload from IndexDB,
-                            -- but there we non matching the query.
                             ( SyncUploadAuthority emptyUploadRec, syncInfoAuthorities )
 
                         else
@@ -198,7 +193,7 @@ determineSyncStatus activePage model =
                         case ( syncInfoAuthorities, record.indexDbRemoteData ) of
                             ( Nothing, _ ) ->
                                 -- There are no authorities, so we can set the next status.
-                                ( SyncDownloadGeneral RemoteData.NotAsked
+                                ( SyncUploadWhatsApp emptyUploadRec
                                 , syncInfoAuthorities
                                 )
 
@@ -216,13 +211,27 @@ determineSyncStatus activePage model =
                                         -- We've reached the last element,
                                         -- so reset authorities zipper to first element,
                                         -- and rotate to the next status.
-                                        ( SyncDownloadGeneral RemoteData.NotAsked
+                                        ( SyncUploadWhatsApp emptyUploadRec
                                         , Just (Zipper.first zipper)
                                         )
 
                             _ ->
                                 -- Still have data to upload.
                                 noChange
+
+                    -- It's important to have Whatsapp uploaded after Authority upload
+                    -- has completed, because Whatsapp record may refer to person
+                    -- that's pending upload at Authority.
+                    SyncUploadWhatsApp record ->
+                        if record.indexDbRemoteData == RemoteData.Success Nothing then
+                            -- We tried to fetch entities for upload from IndexDB,
+                            -- but there we non matching the query.
+                            ( SyncDownloadGeneral RemoteData.NotAsked
+                            , syncInfoAuthorities
+                            )
+
+                        else
+                            noChange
 
                     SyncDownloadGeneral webData ->
                         case webData of
@@ -548,6 +557,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityDashboardStats identifier ->
             getIdentifier identifier "statistics"
 
+        BackendAuthorityEducationSession identifier ->
+            getIdentifier identifier "education_session"
+
         BackendAuthorityExposure identifier ->
             getIdentifier identifier "exposure"
 
@@ -574,6 +586,30 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             getIdentifier identifier "height"
+
+        BackendAuthorityHIVDiagnostics identifier ->
+            getIdentifier identifier "hiv_diagnostics"
+
+        BackendAuthorityHIVEncounter identifier ->
+            getIdentifier identifier "hiv_encounter"
+
+        BackendAuthorityHIVFollowUp identifier ->
+            getIdentifier identifier "hiv_follow_up"
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            getIdentifier identifier "hiv_health_education"
+
+        BackendAuthorityHIVMedication identifier ->
+            getIdentifier identifier "hiv_medication"
+
+        BackendAuthorityHIVReferral identifier ->
+            getIdentifier identifier "hiv_referral"
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            getIdentifier identifier "hiv_symptom_review"
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            getIdentifier identifier "hiv_treatment_review"
 
         BackendAuthorityHomeVisitEncounter identifier ->
             getIdentifier identifier "home_visit_encounter"
@@ -1075,6 +1111,9 @@ getSyncSpeedForSubscriptions model =
         SyncUploadGeneral record ->
             checkWebData record.backendRemoteData
 
+        SyncUploadWhatsApp record ->
+            checkWebData record.backendRemoteData
+
         SyncUploadAuthority record ->
             checkWebData record.backendRemoteData
 
@@ -1286,6 +1325,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityDashboardStats identifier ->
             encode Backend.Dashboard.Encoder.encodeDashboardStatsRaw identifier
 
+        BackendAuthorityEducationSession identifier ->
+            encode Backend.EducationSession.Encoder.encodeEducationSession identifier
+
         BackendAuthorityExposure identifier ->
             encode Backend.Measurement.Encoder.encodeExposure identifier
 
@@ -1312,6 +1354,30 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityHeight identifier ->
             encode Backend.Measurement.Encoder.encodeHeight identifier
+
+        BackendAuthorityHIVDiagnostics identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVDiagnostics identifier
+
+        BackendAuthorityHIVEncounter identifier ->
+            encode Backend.HIVEncounter.Encoder.encodeHIVEncounter identifier
+
+        BackendAuthorityHIVFollowUp identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVFollowUp identifier
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVHealthEducation identifier
+
+        BackendAuthorityHIVMedication identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVMedication identifier
+
+        BackendAuthorityHIVReferral identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVReferral identifier
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVSymptomReview identifier
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            encode Backend.Measurement.Encoder.encodeHIVTreatmentReview identifier
 
         BackendAuthorityHomeVisitEncounter identifier ->
             encode Backend.HomeVisitEncounter.Encoder.encodeHomeVisitEncounter identifier
@@ -1855,6 +1921,12 @@ siteFeatureFromString str =
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
+        "group_education" ->
+            Just FeatureGroupEducation
+
+        "hiv_management" ->
+            Just FeatureHIVManagement
+
         _ ->
             Nothing
 
@@ -1873,6 +1945,12 @@ siteFeatureToString feature =
 
         FeatureTuberculosisManagement ->
             "tuberculosis_management"
+
+        FeatureGroupEducation ->
+            "group_education"
+
+        FeatureHIVManagement ->
+            "hiv_management"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature
@@ -2075,6 +2153,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityDashboardStats identifier ->
             DashboardStatsRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityEducationSession identifier ->
+            EducationSessionRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityExposure identifier ->
             ExposureRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -2101,6 +2182,30 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityHeight identifier ->
             HeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVDiagnostics identifier ->
+            HIVDiagnosticsRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVEncounter identifier ->
+            HIVEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVFollowUp identifier ->
+            HIVFollowUpRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVHealthEducation identifier ->
+            HIVHealthEducationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVMedication identifier ->
+            HIVMedicationRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVReferral identifier ->
+            HIVReferralRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVSymptomReview identifier ->
+            HIVSymptomReviewRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityHIVTreatmentReview identifier ->
+            HIVTreatmentReviewRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityHomeVisitEncounter identifier ->
             HomeVisitEncounterRevision (toEntityUuid identifier.uuid) identifier.entity
@@ -2521,6 +2626,29 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityWellChildWeight identifier ->
             WellChildWeightRevision (toEntityUuid identifier.uuid) identifier.entity
+
+
+resolveIncidentDetailsMsg : Http.Error -> List Msg
+resolveIncidentDetailsMsg error =
+    case error of
+        Http.BadStatus response ->
+            case Json.Decode.decodeString Utils.WebData.decodeDrupalError response.body of
+                Ok decoded ->
+                    if String.startsWith "Could not find UUID" decoded.title then
+                        let
+                            uuidAsString =
+                                String.dropLeft 21 decoded.title
+                        in
+                        [ QueryIndexDb <| IndexDbQueryGetShardsEntityByUuid uuidAsString ]
+
+                    else
+                        []
+
+                Err _ ->
+                    []
+
+        _ ->
+            []
 
 
 fileUploadFailureThreshold : Int

@@ -12,7 +12,8 @@ import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
-import HttpBuilder exposing (withExpectJson, withJsonBody, withQueryParams)
+import Http exposing (Error(..))
+import HttpBuilder exposing (..)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
 import List.Zipper as Zipper
@@ -29,6 +30,7 @@ import SyncManager.Utils
         , backendGeneralEntityToRevision
         , getDownloadPhotosSpeedForSubscriptions
         , getSyncSpeedForSubscriptions
+        , resolveIncidentDetailsMsg
         , syncInfoAuthorityForPort
         , syncInfoGeneralForPort
         )
@@ -895,6 +897,20 @@ update currentDate currentTime activePage dbVersion device msg model =
                 noError
                 []
 
+        BackendReportIncidentDetails details ->
+            let
+                cmd =
+                    HttpBuilder.post (device.backendUrl ++ "/api/report-incident-details")
+                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                        |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIncidentDetails details)
+                        |> HttpBuilder.send (always NoOp)
+            in
+            SubModelReturn
+                model
+                cmd
+                noError
+                []
+
         BackendReportSyncIncident incidentType ->
             let
                 cmd =
@@ -1250,12 +1266,20 @@ update currentDate currentTime activePage dbVersion device msg model =
                                                 ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
                                             )
                                         |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )
+
+                                incidentDetailsMsg =
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities })
+                                (SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = syncStatus, syncInfoAuthorities = syncInfoAuthorities }
+                                )
                                 setSyncInfoAurhoritiesCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadAuthorityHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -1321,8 +1345,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 subModelReturn
                                     |> sequenceSubModelReturn
                                         (update currentDate currentTime activePage dbVersion device)
-                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete
-                                        ]
+                                        [ QueryIndexDb <| IndexDbQueryRemoveUploadPhotos uploadPhotosToDelete ]
 
                         _ ->
                             -- Satisfy the compiler.
@@ -1421,12 +1444,18 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                                 setSyncInfoGeneralCmd =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
+
+                                incidentDetailsMsg =
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
                                 (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
                                 setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadGeneralHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -1566,12 +1595,20 @@ update currentDate currentTime activePage dbVersion device msg model =
 
                                 setSyncInfoGeneralCmd =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
+
+                                incidentDetailsMsg =
+                                    resolveIncidentDetailsMsg error
                             in
                             SubModelReturn
-                                (SyncManager.Utils.determineSyncStatus activePage { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral })
+                                (SyncManager.Utils.determineSyncStatus activePage
+                                    { model | syncStatus = syncStatus, syncInfoGeneral = syncInfoGeneral }
+                                )
                                 setSyncInfoGeneralCmd
                                 (maybeHttpError webData "Backend.SyncManager.Update" "BackendUploadWhatsAppHandle")
                                 []
+                                |> sequenceSubModelReturn
+                                    (update currentDate currentTime activePage dbVersion device)
+                                    incidentDetailsMsg
 
                         RemoteData.Success _ ->
                             let
@@ -1858,6 +1895,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                             { queryType = "IndexDbQueryGetTotalEntriesToUpload"
                             , data = Nothing
                             }
+
+                        IndexDbQueryGetShardsEntityByUuid uuidsAsString ->
+                            { queryType = "IndexDbQueryGetShardsEntityByUuid"
+                            , data = Just uuidsAsString
+                            }
             in
             SubModelReturn
                 model
@@ -1939,6 +1981,16 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 (BackendReportState result)
                                 model
 
+                        IndexDbQueryGetShardsEntityByUuidResult result ->
+                            update
+                                currentDate
+                                currentTime
+                                activePage
+                                dbVersion
+                                device
+                                (BackendReportIncidentDetails result)
+                                model
+
                 Err error ->
                     let
                         location =
@@ -2017,7 +2069,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                 syncSpeed =
                     Editable.value model.syncSpeed
 
-                -- Safe guard against to0 low values.
+                -- Safe guard against too low values.
                 syncSpeedUpdated =
                     { syncSpeed
                         | idle =

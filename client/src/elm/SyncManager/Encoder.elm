@@ -1,6 +1,7 @@
 module SyncManager.Encoder exposing
     ( encodeDataForDeferredPhotos
     , encodeDeviceStateReport
+    , encodeIncidentDetails
     , encodeIndexDbQueryUploadAuthorityResultRecord
     , encodeIndexDbQueryUploadGeneralResultRecord
     , encodeIndexDbQueryUploadWhatsAppResultRecord
@@ -28,6 +29,7 @@ import SyncManager.Model
         , UploadMethod(..)
         )
 import SyncManager.Utils
+import Translate.Utils exposing (encodeLanguage)
 
 
 encodeIndexDbQueryUploadGeneralResultRecord : Int -> IndexDbQueryUploadGeneralResultRecord -> List ( String, Value )
@@ -69,6 +71,7 @@ encodeBackendWhatsAppEntity : BackendWhatsAppEntity -> Value
 encodeBackendWhatsAppEntity entity =
     [ ( "person", string entity.personId )
     , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD entity.dateMeasured )
+    , ( "language", encodeLanguage entity.language )
     , ( "report_type", encodeReportType entity.reportType )
     , ( "phone_number", string entity.phoneNumber )
     , ( "screenshot", int entity.screenshot )
@@ -216,3 +219,8 @@ encodeUploadMethod uploadMethod =
 
         UploadMethodUpdate ->
             string "PATCH"
+
+
+encodeIncidentDetails : String -> List ( String, Value )
+encodeIncidentDetails details =
+    [ ( "incident_details", string details ) ]

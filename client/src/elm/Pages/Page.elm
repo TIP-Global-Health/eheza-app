@@ -45,6 +45,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity)
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessProgressReportInitiator)
 import Backend.ChildScoreboardActivity.Model exposing (ChildScoreboardActivity)
 import Backend.Entities exposing (..)
+import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType, IndividualParticipantInitiator)
 import Backend.Measurement.Model exposing (LaboratoryTest)
@@ -164,7 +165,8 @@ type UserPage
     | PrenatalRecurrentEncounterPage PrenatalEncounterId -- prenatal recurrent activities index
     | PrenatalRecurrentActivityPage PrenatalEncounterId PrenatalRecurrentActivity -- record prenatal recurrent activity
     | PrenatalLabsHistoryPage PrenatalEncounterId PrenatalEncounterId LaboratoryTest
-    | IndividualEncounterTypesPage -- this is where we select the type of encounter we're interested in.
+    | IndividualEncounterTypesPage -- this is where we select the type of individual encounter we're interested in.
+    | GroupEncounterTypesPage -- this is where we select the type of group encounter we're interested in.
     | PregnancyOutcomePage RecordPreganancyInitiator IndividualEncounterParticipantId -- this is where pregnancy outcome is recorded.
     | NutritionParticipantPage IndividualParticipantInitiator PersonId
     | NutritionEncounterPage NutritionEncounterId -- nutrition activities index.
@@ -192,8 +194,12 @@ type UserPage
     | ChildScoreboardActivityPage ChildScoreboardEncounterId ChildScoreboardActivity -- record Child Scoreboard activity.
     | ChildScoreboardProgressReportPage ChildScoreboardEncounterId -- Scorecard.
     | TuberculosisParticipantPage PersonId
-    | TuberculosisEncounterPage TuberculosisEncounterId -- Child Scoreboard activities index.
-    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Child Scoreboard activity.
+    | TuberculosisEncounterPage TuberculosisEncounterId -- Tuberculosis activities index.
+    | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Tuberculosis activity.
+    | EducationSessionPage EducationSessionId -- Education Session page.
+    | HIVParticipantPage PersonId
+    | HIVEncounterPage HIVEncounterId -- HIV activities index.
+    | HIVActivityPage HIVEncounterId HIVActivity -- record HIV activity.
     | TraceContactPage AcuteIllnessTraceContactId
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
@@ -208,6 +214,7 @@ type DashboardPage
     | PagePrenatal
     | PageNCD NCDSubPage
     | PageChildWellness ChildWellnessSubPage
+    | PageGroupEducation
 
 
 type NutritionSubPage
