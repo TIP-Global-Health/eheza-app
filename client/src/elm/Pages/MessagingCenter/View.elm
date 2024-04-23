@@ -9,11 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.ResilienceSurvey.Model
-    exposing
-        ( ResilienceSurveyQuestionOption(..)
-        , ResilienceSurveyType(..)
-        )
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -319,8 +315,28 @@ viewAdoptionSurvey language currentDate nurseId form =
                 (Translate.ResilienceAdoptionSurveyOptionsForQuestion question)
             ]
 
+        isCompleted : ResilienceSurveyQuestion -> Bool
+        isCompleted question =
+            case question of
+                ResilienceSurveyQuestion1 ->
+                    False
+
+                ResilienceSurveyQuestion2 ->
+                    False
+
+                ResilienceSurveyQuestion3 ->
+                    False
+
+                ResilienceSurveyQuestion4 ->
+                    False
+
+                _ ->
+                    True
+
         tasksCompleted =
-            Dict.size form
+            form
+                |> Dict.filter (\question _ -> isCompleted question)
+                |> Dict.size
 
         totalTasks =
             List.length adoptionSurveyQuestions
