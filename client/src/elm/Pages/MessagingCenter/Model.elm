@@ -10,6 +10,7 @@ import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
+        , ResilienceSurveyType(..)
         )
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -24,7 +25,7 @@ type alias Model =
     , expandedMessages : EverySet ResilienceMessageId
     , messageOptionsDialogState : Maybe MessageOptionsDialogState
     , kickOffForm : KickOffForm
-    , quarterlySurveyForm : QuarterlySurveyForm
+    , surveyForm : SurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
     }
 
@@ -36,7 +37,7 @@ emptyModel =
     , expandedMessages = EverySet.empty
     , messageOptionsDialogState = Nothing
     , kickOffForm = emptyKickOffForm
-    , quarterlySurveyForm = emptyQuarterlySurveyForm
+    , surveyForm = emptySurveyForm
     , surveyScoreDialogState = Nothing
     }
 
@@ -80,12 +81,12 @@ emptyKickOffForm =
     }
 
 
-type alias QuarterlySurveyForm =
+type alias SurveyForm =
     Dict ResilienceSurveyQuestion ResilienceSurveyQuestionOption
 
 
-emptyQuarterlySurveyForm : QuarterlySurveyForm
-emptyQuarterlySurveyForm =
+emptySurveyForm : SurveyForm
+emptySurveyForm =
     Dict.empty
 
 
@@ -104,9 +105,8 @@ type Msg
     | SetUbudehe String
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
-    | SetQuarterlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
-    | SaveQuarterlySurvey NurseId
-    | SaveAdoptionSurvey NurseId
+    | SetSurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | SaveSurvey ResilienceSurveyType NurseId
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int

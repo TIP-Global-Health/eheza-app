@@ -95,16 +95,16 @@ view language currentTime nurseId nurse db model =
                                             |> Maybe.withDefault True
 
                                     runAdoptionSurvey =
-                                        runSurvey ResilienceAdoptionSurvey
+                                        runSurvey ResilienceSurveyAdoption
 
                                     runQuarterlySurvey =
                                         runSurvey ResilienceSurveyQuarterly
                                 in
                                 if runQuarterlySurvey then
-                                    viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
+                                    viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
                                 else if runAdoptionSurvey then
-                                    viewAdoptionSurvey language currentDate nurseId model.quarterlySurveyForm
+                                    viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
                                 else
                                     messagingCenterView
@@ -257,7 +257,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewQuarterlySurvey : Language -> NominalDate -> NurseId -> QuarterlySurveyForm -> Html Msg
+viewQuarterlySurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
 viewQuarterlySurvey language currentDate nurseId form =
     let
         questionInput question =
@@ -272,7 +272,7 @@ viewQuarterlySurvey language currentDate nurseId form =
                 ]
                 []
                 (Dict.get question form)
-                (SetQuarterlySurveyAnswer question)
+                (SetSurveyAnswer question)
                 Translate.ResilienceSurveyQuestionOption
             ]
 
@@ -291,7 +291,7 @@ viewQuarterlySurvey language currentDate nurseId form =
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveQuarterlySurvey nurseId
+                        , onClick <| SaveSurvey ResilienceSurveyQuarterly nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
@@ -300,11 +300,11 @@ viewQuarterlySurvey language currentDate nurseId form =
         ]
 
 
-viewAdoptionSurvey : Language -> NominalDate -> NurseId -> QuarterlySurveyForm -> Html Msg
+viewAdoptionSurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
 viewAdoptionSurvey language currentDate nurseId form =
     let
         questionInput question =
-            [ viewCustomLabel language (Translate.ResilienceAdoptionSurveyQuestion question) "." "label"
+            [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
             , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
                 [ ResilienceSurveyQuestionOption5
@@ -315,8 +315,8 @@ viewAdoptionSurvey language currentDate nurseId form =
                 ]
                 []
                 (Dict.get question form)
-                (SetQuarterlySurveyAnswer question)
-                (Translate.ResilienceAdoptionSurveyOptionsForQuestion question)
+                (SetSurveyAnswer question)
+                (Translate.ResilienceSurveyAdoptionOptionsForQuestion question)
             ]
 
         tasksCompleted =
@@ -334,7 +334,7 @@ viewAdoptionSurvey language currentDate nurseId form =
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveAdoptionSurvey nurseId
+                        , onClick <| SaveSurvey ResilienceSurveyAdoption nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]

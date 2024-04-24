@@ -9,7 +9,7 @@ resilienceSurveyTypeToString surveyType =
         ResilienceSurveyQuarterly ->
             "quarterly"
 
-        ResilienceAdoptionSurvey ->
+        ResilienceSurveyAdoption ->
             "adoption"
 
 
@@ -20,7 +20,7 @@ resilienceSurveyTypeFromString value =
             Just ResilienceSurveyQuarterly
 
         "adoption" ->
-            Just ResilienceAdoptionSurvey
+            Just ResilienceSurveyAdoption
 
         _ ->
             Nothing

@@ -1548,8 +1548,8 @@ type TranslationId
     | ResilienceNotificationNumberOfUnread Int
     | ResilienceNotificationReadNowQuestion
     | ResilienceQuarterlySurveyQuestion ResilienceSurveyQuestion
-    | ResilienceAdoptionSurveyQuestion ResilienceSurveyQuestion
-    | ResilienceAdoptionSurveyOptionsForQuestion ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | ResilienceSurveyAdoptionQuestion ResilienceSurveyQuestion
+    | ResilienceSurveyAdoptionOptionsForQuestion ResilienceSurveyQuestion ResilienceSurveyQuestionOption
     | ResilienceReminderHeader String ResilienceReminderType
     | ResilienceReminderParagraph1 ResilienceReminderType
     | ResilienceReminderParagraph2 ResilienceReminderType
@@ -19620,7 +19620,7 @@ translationSet trans =
                 _ ->
                     translationSet EmptyString
 
-        ResilienceAdoptionSurveyQuestion question ->
+        ResilienceSurveyAdoptionQuestion question ->
             case question of
                 ResilienceSurveyQuestion5 ->
                     { english = "On average, how many times this week did you do recreational activities after work? (for example reading books, listening to the radio, physical exercising, dancing, creative activities…)"
@@ -19697,7 +19697,7 @@ translationSet trans =
                 _ ->
                     translationSet EmptyString
 
-        ResilienceAdoptionSurveyOptionsForQuestion question option ->
+        ResilienceSurveyAdoptionOptionsForQuestion question option ->
             case question of
                 ResilienceSurveyQuestion5 ->
                     case option of
