@@ -205,9 +205,6 @@ update currentTime currentDate msg model =
 
                                                 ResilienceSurveyQuestionOption4 ->
                                                     5
-
-                                                _ ->
-                                                    0
                                         )
                                     |> List.sum
                         in

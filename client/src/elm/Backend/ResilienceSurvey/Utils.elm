@@ -151,21 +151,6 @@ resilienceSurveyQuestionOptionToString value =
         ResilienceSurveyQuestionOption4 ->
             "4"
 
-        ResilienceSurveyQuestionOption5 ->
-            "5"
-
-        ResilienceSurveyQuestionOption6 ->
-            "6"
-
-        ResilienceSurveyQuestionOption7 ->
-            "7"
-
-        ResilienceSurveyQuestionOption8 ->
-            "8"
-
-        ResilienceSurveyQuestionOption9 ->
-            "9"
-
 
 resilienceSurveyQuestionOptionFromString : String -> Maybe ResilienceSurveyQuestionOption
 resilienceSurveyQuestionOptionFromString value =
@@ -184,21 +169,6 @@ resilienceSurveyQuestionOptionFromString value =
 
         "4" ->
             Just ResilienceSurveyQuestionOption4
-
-        "5" ->
-            Just ResilienceSurveyQuestionOption5
-
-        "6" ->
-            Just ResilienceSurveyQuestionOption6
-
-        "7" ->
-            Just ResilienceSurveyQuestionOption7
-
-        "8" ->
-            Just ResilienceSurveyQuestionOption8
-
-        "9" ->
-            Just ResilienceSurveyQuestionOption9
 
         _ ->
             Nothing

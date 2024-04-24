@@ -44,11 +44,6 @@ type ResilienceSurveyQuestionOption
     | ResilienceSurveyQuestionOption2
     | ResilienceSurveyQuestionOption3
     | ResilienceSurveyQuestionOption4
-    | ResilienceSurveyQuestionOption5
-    | ResilienceSurveyQuestionOption6
-    | ResilienceSurveyQuestionOption7
-    | ResilienceSurveyQuestionOption8
-    | ResilienceSurveyQuestionOption9
 
 
 type alias Model =

@@ -303,11 +303,11 @@ viewAdoptionSurvey language currentDate nurseId form =
             [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
             , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
-                [ ResilienceSurveyQuestionOption5
-                , ResilienceSurveyQuestionOption6
-                , ResilienceSurveyQuestionOption7
-                , ResilienceSurveyQuestionOption8
-                , ResilienceSurveyQuestionOption9
+                [ ResilienceSurveyQuestionOption0
+                , ResilienceSurveyQuestionOption1
+                , ResilienceSurveyQuestionOption2
+                , ResilienceSurveyQuestionOption3
+                , ResilienceSurveyQuestionOption4
                 ]
                 []
                 (Dict.get question form)

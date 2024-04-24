@@ -19701,391 +19701,383 @@ translationSet trans =
             case question of
                 ResilienceSurveyQuestion5 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "2 to 3 days a week"
                             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "4 to 5 days a week"
                             , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Every day (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion6 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "2 to 3 days a week"
                             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "4 to 5 days a week"
                             , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Every day (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion7 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once in last six months"
                             , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Once in last three months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Once every month"
                             , kinyarwanda = Just "Rimwe buri kwezi"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion8 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "2 to 3 days a week"
                             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "4 to 5 days a week"
                             , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Every day (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion9 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "2 to 3 days a week"
                             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "4 to 5 days a week"
                             , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Every day (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion10 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once in last six months"
                             , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Once in last three months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Once every month"
                             , kinyarwanda = Just "Rimwe buri kwezi"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion11 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once in last six months"
                             , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Once in last three months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
                             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Once every month"
                             , kinyarwanda = Just "Rimwe buri kwezi"
                             , kirundi = Nothing
                             }
 
-                        _ ->
-                            translationSet EmptyString
-
                 ResilienceSurveyQuestion12 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "2 to 3 days a week"
                             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "4 to 5 days a week"
                             , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "Every day (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
 
-                        _ ->
-                            translationSet EmptyString
-
                 ResilienceSurveyQuestion13 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a month"
                             , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Twice a month"
                             , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "2 and more days a week"
                             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion14 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a month"
                             , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Twice a month"
                             , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "2 and more days a week"
                             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion15 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a month"
                             , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Twice a month"
                             , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "2 and more days a week"
                             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
-
-                        _ ->
-                            translationSet EmptyString
 
                 ResilienceSurveyQuestion16 ->
                     case option of
-                        ResilienceSurveyQuestionOption5 ->
+                        ResilienceSurveyQuestionOption0 ->
                             translationSet Never
 
-                        ResilienceSurveyQuestionOption6 ->
+                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a month"
                             , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption7 ->
+                        ResilienceSurveyQuestionOption2 ->
                             { english = "Twice a month"
                             , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption8 ->
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption9 ->
+                        ResilienceSurveyQuestionOption4 ->
                             { english = "2 and more days a week"
                             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        _ ->
-                            translationSet EmptyString
-
                 _ ->
-                    -- Not in use.
-                    translationSet EmptyString
+                    case option of
+                        ResilienceSurveyQuestionOption0 ->
+                            { english = "Does not describe me at all"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption1 ->
+                            { english = "Does not describe me"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "Neutral"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
+                            { english = "Describes me"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption4 ->
+                            { english = "Describes me very well"
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
 
         ResilienceReminderHeader name reminderType ->
             case reminderType of
@@ -20206,10 +20198,6 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
-
-                _ ->
-                    -- Not in use.
-                    translationSet EmptyString
 
         ResolveMonth short month ->
             translateMonth month short
