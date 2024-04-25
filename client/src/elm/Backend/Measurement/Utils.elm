@@ -4213,17 +4213,14 @@ hivPrescribedMedicationToString sign =
         HIVMedicationBactrim ->
             "bactrim"
 
-        HIVMedicationDapsone ->
-            "dapsone"
+        HIVMedicationTrimethoprimSulfamethoxazole ->
+            "trimethoprim-sulfamethoxazole"
 
-        HIVMedicationIsoniazid ->
-            "isoniazid"
+        HIVMedicationCoTrimoxazoleTablets ->
+            "co-trimoxazole-tablets"
 
-        HIVMedicationFluconazole ->
-            "fluconazole"
-
-        HIVMedicationAzithromycin ->
-            "azithromycin"
+        HIVMedicationCoTrimoxazoleOralSuspension ->
+            "co-trimoxazole-oral-suspension"
 
         NoHIVPrescribedMedications ->
             "none"
@@ -4292,17 +4289,14 @@ hivPrescribedMedicationFromString sign =
         "bactrim" ->
             Just HIVMedicationBactrim
 
-        "dapsone" ->
-            Just HIVMedicationDapsone
+        "trimethoprim-sulfamethoxazole" ->
+            Just HIVMedicationTrimethoprimSulfamethoxazole
 
-        "isoniazid" ->
-            Just HIVMedicationIsoniazid
+        "co-trimoxazole-tablets" ->
+            Just HIVMedicationCoTrimoxazoleTablets
 
-        "fluconazole" ->
-            Just HIVMedicationFluconazole
-
-        "azithromycin" ->
-            Just HIVMedicationAzithromycin
+        "co-trimoxazole-oral-suspension" ->
+            Just HIVMedicationCoTrimoxazoleOralSuspension
 
         "none" ->
             Just NoHIVPrescribedMedications

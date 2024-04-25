@@ -2036,7 +2036,8 @@ type ReasonForNonReferral
 
 
 type TreatmentOngoingSign
-    = TakenAsPrescribed
+    = TakingDifferentMedications
+    | TakenAsPrescribed
     | MissedDoses
     | FeelingBetter
     | SideEffects
@@ -3041,10 +3042,9 @@ type HIVPrescribedMedication
     | HIVMedicationLamivudine
     | HIVMedicationAbacavir
     | HIVMedicationBactrim
-    | HIVMedicationDapsone
-    | HIVMedicationIsoniazid
-    | HIVMedicationFluconazole
-    | HIVMedicationAzithromycin
+    | HIVMedicationTrimethoprimSulfamethoxazole
+    | HIVMedicationCoTrimoxazoleTablets
+    | HIVMedicationCoTrimoxazoleOralSuspension
     | NoHIVPrescribedMedications
 
 

@@ -90,14 +90,19 @@ activityCompleted currentDate assembled activity =
                    )
 
 
-medicationTasks : List MedicationTask
-medicationTasks =
-    [ TaskPrescribedMedication, TaskTreatmentReview ]
+medicationTasks : Bool -> List MedicationTask
+medicationTasks initialEncounter =
+    if initialEncounter then
+        [ TaskPrescribedMedication, TaskTreatmentReview ]
+
+    else
+        [ TaskTreatmentReview, TaskPrescribedMedication ]
 
 
 resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
 resolveMedicationTasks currentDate assembled =
-    List.filter (expectMedicationTask currentDate assembled) medicationTasks
+    medicationTasks assembled.initialEncounter
+        |> List.filter (expectMedicationTask currentDate assembled)
 
 
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
@@ -105,6 +110,10 @@ expectMedicationTask currentDate assembled task =
     case task of
         TaskPrescribedMedication ->
             assembled.initialEncounter
+                || (getMeasurementValueFunc assembled.measurements.treatmentReview
+                        |> Maybe.map (.signs >> EverySet.member TakingDifferentMedications)
+                        |> Maybe.withDefault False
+                   )
 
         TaskTreatmentReview ->
             not assembled.initialEncounter
@@ -163,6 +172,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetReasonForNotTaking
                         SetTotalMissedDoses
                         SetAdverseEvent
+                        (not assembled.initialEncounter)
                         form
             in
             ( Maybe.Extra.values tasks
@@ -499,8 +509,7 @@ lessCommonAntiRetroviralMedications =
 prophylaxisMedications : List HIVPrescribedMedication
 prophylaxisMedications =
     [ HIVMedicationBactrim
-    , HIVMedicationDapsone
-    , HIVMedicationIsoniazid
-    , HIVMedicationFluconazole
-    , HIVMedicationAzithromycin
+    , HIVMedicationTrimethoprimSulfamethoxazole
+    , HIVMedicationCoTrimoxazoleTablets
+    , HIVMedicationCoTrimoxazoleOralSuspension
     ]

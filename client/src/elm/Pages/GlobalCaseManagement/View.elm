@@ -496,7 +496,9 @@ viewNutritionFollowUpEntry language currentDate entry =
                     text <| translate language <| Translate.NutritionAssessment assessment
 
         popupData =
-            FollowUpNutrition <| FollowUpNutritionData entry.personId item.personName
+            Just <|
+                FollowUpNutrition <|
+                    FollowUpNutritionData entry.personId item.personName
     in
     viewFollowUpEntry language dueOption item.personName popupData assessments
 
@@ -656,7 +658,9 @@ viewAcuteIllnessFollowUpEntry language currentDate entry =
             [ p [] [ text <| translate language <| Translate.AcuteIllnessDiagnosis entry.diagnosis ] ]
 
         popupData =
-            FollowUpAcuteIllness <| FollowUpAcuteIllnessData entry.personId item.personName entry.participantId entry.newEncounterSequenceNumber
+            Just <|
+                FollowUpAcuteIllness <|
+                    FollowUpAcuteIllnessData entry.personId item.personName entry.participantId entry.newEncounterSequenceNumber
     in
     viewFollowUpEntry language dueOption item.personName popupData assessment
 
@@ -779,14 +783,15 @@ viewPrenatalFollowUpEntry language currentDate entry =
             [ p [] [ text <| translate language <| Translate.PrenatalAssesment item.value.assesment ] ]
 
         popupData =
-            FollowUpPrenatal <|
-                FollowUpPrenatalData
-                    entry.personId
-                    item.personName
-                    entry.participantId
-                    entry.encounterType
-                    entry.hasNurseEncounter
-                    item.dateMeasured
+            Just <|
+                FollowUpPrenatal <|
+                    FollowUpPrenatalData
+                        entry.personId
+                        item.personName
+                        entry.participantId
+                        entry.encounterType
+                        entry.hasNurseEncounter
+                        item.dateMeasured
     in
     viewFollowUpEntry language dueOption item.personName popupData assessment
 
@@ -847,6 +852,7 @@ generateTuberculosisFollowUpEntries language currentDate limitDate itemsDictForE
                                 Nothing
                                 personId
                                 item
+                                True
                                 |> Just
 
                         else
@@ -865,50 +871,43 @@ generateTuberculosisFollowUpEntryData :
     -> TuberculosisFollowUpItem
     -> Maybe TuberculosisFollowUpEntry
 generateTuberculosisFollowUpEntryData language currentDate limitDate db ( participantId, personId ) item =
-    if item.dateMeasured == currentDate then
-        -- We do not display follow ups that were scheduled today,
-        -- since we should not allow starting an encounter, if there
-        -- was already an encounter completed today (where follow up
-        -- was scheduled).
+    let
+        dateConcludedCriteria =
+            Dict.get participantId db.individualParticipants
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.andThen .dateConcluded
+                |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+    in
+    if dateConcludedCriteria == Just LT then
+        -- Illness was concluded before limit date, so we do not need to follow up on it.
         Nothing
 
     else
         let
-            dateConcludedCriteria =
-                Dict.get participantId db.individualParticipants
-                    |> Maybe.andThen RemoteData.toMaybe
-                    |> Maybe.andThen .dateConcluded
-                    |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+            allEncountersWithIds =
+                getTuberculosisEncountersForParticipant db participantId
+                    |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                    -- Sort DESC
+                    |> List.sortWith sortEncounterTuplesDesc
         in
-        if dateConcludedCriteria == Just LT then
-            -- Illness was concluded before limit date, so we do not need to follow up on it.
-            Nothing
+        List.head allEncountersWithIds
+            |> Maybe.andThen
+                (\( encounterId, encounter ) ->
+                    -- Follow up belongs to last encounter, which indicates that
+                    -- there was no other encounter that has resolved this follow up.
+                    if item.encounterId == Just encounterId then
+                        TuberculosisFollowUpEntry
+                            (Just participantId)
+                            personId
+                            item
+                            (item.dateMeasured /= currentDate)
+                            |> Just
 
-        else
-            let
-                allEncountersWithIds =
-                    getTuberculosisEncountersForParticipant db participantId
-                        |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                        -- Sort DESC
-                        |> List.sortWith sortEncounterTuplesDesc
-            in
-            List.head allEncountersWithIds
-                |> Maybe.andThen
-                    (\( encounterId, encounter ) ->
-                        -- Follow up belongs to last encounter, which indicates that
-                        -- there was no other encounter that has resolved this follow up.
-                        if item.encounterId == Just encounterId then
-                            TuberculosisFollowUpEntry
-                                (Just participantId)
-                                personId
-                                item
-                                |> Just
-
-                        else
-                            -- Last encounter has not originated the follow up.
-                            -- Therefore, we know that follow up is resolved.
-                            Nothing
-                    )
+                    else
+                        -- Last encounter has not originated the follow up.
+                        -- Therefore, we know that follow up is resolved.
+                        Nothing
+                )
 
 
 viewTuberculosisFollowUpEntry : Language -> NominalDate -> TuberculosisFollowUpEntry -> Html Msg
@@ -924,11 +923,16 @@ viewTuberculosisFollowUpEntry language currentDate entry =
             [ p [] [ text <| translate language Translate.TuberculosisFollowUpLabel ] ]
 
         popupData =
-            FollowUpTuberculosis <|
-                FollowUpTuberculosisData
-                    entry.personId
-                    item.personName
-                    entry.participantId
+            if entry.allowStartEncounter then
+                Just <|
+                    FollowUpTuberculosis <|
+                        FollowUpTuberculosisData
+                            entry.personId
+                            item.personName
+                            entry.participantId
+
+            else
+                Nothing
     in
     viewFollowUpEntry language dueOption item.personName popupData label
 
@@ -986,84 +990,77 @@ generateHIVFollowUpEntryData :
     -> HIVFollowUpItem
     -> Maybe HIVFollowUpEntry
 generateHIVFollowUpEntryData language currentDate limitDate db ( mParticipantId, personId ) item =
-    if item.dateMeasured == currentDate then
-        -- We do not display follow ups that were scheduled today,
-        -- since we should not allow starting and encounter, if there
-        -- was already and encounter completed today (where follow up
-        -- was scheduled).
-        Nothing
+    Maybe.map
+        (\participantId ->
+            let
+                dateConcludedCriteria =
+                    Dict.get participantId db.individualParticipants
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.andThen .dateConcluded
+                        |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+            in
+            if dateConcludedCriteria == Just LT then
+                -- Illness was concluded before limit date, so we do not need to follow up on it.
+                Nothing
 
-    else
-        Maybe.map
-            (\participantId ->
+            else
                 let
-                    dateConcludedCriteria =
-                        Dict.get participantId db.individualParticipants
-                            |> Maybe.andThen RemoteData.toMaybe
-                            |> Maybe.andThen .dateConcluded
-                            |> Maybe.map (\dateConcluded -> Date.compare dateConcluded limitDate)
+                    allEncountersWithIds =
+                        getHIVEncountersForParticipant db participantId
+                            |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
+                            -- Sort DESC
+                            |> List.sortWith sortEncounterTuplesDesc
                 in
-                if dateConcludedCriteria == Just LT then
-                    -- Illness was concluded before limit date, so we do not need to follow up on it.
-                    Nothing
+                List.head allEncountersWithIds
+                    |> Maybe.andThen
+                        (\( encounterId, encounter ) ->
+                            -- Follow up belongs to last encounter, which indicates that
+                            -- there was no other encounter that has resolved this follow up.
+                            if item.encounterId == Just encounterId then
+                                HIVFollowUpEntry
+                                    (Just participantId)
+                                    personId
+                                    item
+                                    (item.dateMeasured /= currentDate)
+                                    |> Just
 
-                else
-                    let
-                        allEncountersWithIds =
-                            getHIVEncountersForParticipant db participantId
-                                |> List.filter (\( _, encounter ) -> Date.compare encounter.startDate limitDate == LT)
-                                -- Sort DESC
-                                |> List.sortWith sortEncounterTuplesDesc
-                    in
-                    List.head allEncountersWithIds
-                        |> Maybe.andThen
-                            (\( encounterId, encounter ) ->
-                                -- Follow up belongs to last encounter, which indicates that
-                                -- there was no other encounter that has resolved this follow up.
-                                if item.encounterId == Just encounterId then
-                                    HIVFollowUpEntry
-                                        (Just participantId)
-                                        personId
-                                        item
-                                        |> Just
+                            else
+                                -- Last encounter has not originated the follow up.
+                                -- Therefore, we know that follow up is resolved.
+                                Nothing
+                        )
+        )
+        mParticipantId
+        -- In case there's no individual participant for item, we know it's an
+        -- entry for 'dummy' follow up created for positive HIV test result.
+        |> Maybe.withDefault
+            (let
+                -- Resolve date of last HIV encounter.
+                mDateOfLastHIVEncounter =
+                    resolveIndividualParticipantsForPerson personId HIVEncounter db
+                        |> List.map (getHIVEncountersForParticipant db)
+                        |> List.concat
+                        |> List.map (Tuple.second >> .startDate)
+                        |> List.sortWith sortDatesDesc
+                        |> List.head
 
-                                else
-                                    -- Last encounter has not originated the follow up.
-                                    -- Therefore, we know that follow up is resolved.
-                                    Nothing
-                            )
-            )
-            mParticipantId
-            -- In case there's no individual participant for item, we know it's an
-            -- entry for 'dummy' follow up created for positive HIV test result.
-            |> Maybe.withDefault
-                (let
-                    -- Resolve date of last HIV encounter.
-                    mDateOfLastHIVEncounter =
-                        resolveIndividualParticipantsForPerson personId HIVEncounter db
-                            |> List.map (getHIVEncountersForParticipant db)
-                            |> List.concat
-                            |> List.map (Tuple.second >> .startDate)
-                            |> List.sortWith sortDatesDesc
-                            |> List.head
+                entry =
+                    HIVFollowUpEntry Nothing personId item True
+             in
+             Maybe.map
+                (\dateOfLastHIVEncounter ->
+                    -- Generate entry, if date of last HIV encounter was  prior to
+                    -- item date (which stores datye of positive HIV result).
+                    if Date.compare dateOfLastHIVEncounter item.dateMeasured == LT then
+                        Just entry
 
-                    entry =
-                        HIVFollowUpEntry Nothing personId item
-                 in
-                 Maybe.map
-                    (\dateOfLastHIVEncounter ->
-                        -- Generate entry, if date of last HIV encounter was  prior to
-                        -- item date (which stores datye of positive HIV result).
-                        if Date.compare dateOfLastHIVEncounter item.dateMeasured == LT then
-                            Just entry
-
-                        else
-                            Nothing
-                    )
-                    mDateOfLastHIVEncounter
-                    |> -- No HIV encounters - record entry.
-                       Maybe.withDefault (Just entry)
+                    else
+                        Nothing
                 )
+                mDateOfLastHIVEncounter
+                |> -- No HIV encounters - record entry.
+                   Maybe.withDefault (Just entry)
+            )
 
 
 viewHIVFollowUpEntry : Language -> NominalDate -> HIVFollowUpEntry -> Html Msg
@@ -1079,11 +1076,16 @@ viewHIVFollowUpEntry language currentDate entry =
             [ p [] [ text <| translate language Translate.HIVFollowUpLabel ] ]
 
         popupData =
-            FollowUpHIV <|
-                FollowUpHIVData
-                    entry.personId
-                    item.personName
-                    entry.participantId
+            if entry.allowStartEncounter then
+                Just <|
+                    FollowUpHIV <|
+                        FollowUpHIVData
+                            entry.personId
+                            item.personName
+                            entry.participantId
+
+            else
+                Nothing
     in
     viewFollowUpEntry language dueOption item.personName popupData label
 
@@ -1092,10 +1094,10 @@ viewFollowUpEntry :
     Language
     -> FollowUpDueOption
     -> String
-    -> FollowUpEncounterDataType
+    -> Maybe FollowUpEncounterDataType
     -> List (Html Msg)
     -> Html Msg
-viewFollowUpEntry language dueOption personName popupData assessment =
+viewFollowUpEntry language dueOption personName mPopupData assessment =
     let
         dueLabel =
             Translate.FollowUpDueOption dueOption
@@ -1103,16 +1105,24 @@ viewFollowUpEntry language dueOption personName popupData assessment =
 
         dueClass =
             viewDueClass dueOption
+
+        actionIcon =
+            Maybe.map
+                (\popupData ->
+                    div
+                        [ class "icon-forward"
+                        , onClick <| SetDialogState <| Just popupData
+                        ]
+                        []
+                )
+                mPopupData
+                |> Maybe.withDefault emptyNode
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text personName ]
         , div [ class dueClass ] [ dueLabel ]
         , div [ class "assesment" ] assessment
-        , div
-            [ class "icon-forward"
-            , onClick <| SetDialogState <| Just popupData
-            ]
-            []
+        , actionIcon
         ]
 
 
@@ -1588,7 +1598,9 @@ viewImmunizationFollowUpEntry language currentDate entry =
                 OverDue
 
         popupData =
-            FollowUpImmunization <| FollowUpImmunizationData entry.personId item.personName
+            Just <|
+                FollowUpImmunization <|
+                    FollowUpImmunizationData entry.personId item.personName
     in
     viewFollowUpEntry language
         dueOption

@@ -979,6 +979,7 @@ type TranslationId
     | MedicationHelpedQuestion
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
+    | MedicationTakingDifferentMedicationsQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
@@ -6879,26 +6880,20 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                HIVMedicationDapsone ->
-                    { english = "Dapsone"
+                HIVMedicationTrimethoprimSulfamethoxazole ->
+                    { english = "Trimethoprim and Sulfamethoxazole tablets (Adults)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationIsoniazid ->
-                    { english = "Isoniazid"
+                HIVMedicationCoTrimoxazoleTablets ->
+                    { english = "Dispersible Co-trimoxazole tablets (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationFluconazole ->
-                    { english = "Fluconazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                HIVMedicationAzithromycin ->
-                    { english = "Azithromycin"
+                HIVMedicationCoTrimoxazoleOralSuspension ->
+                    { english = "Co-trimoxazole Oral Suspension (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -10569,6 +10564,12 @@ translationSet trans =
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             , kirundi = Just "Mbega wafashe imiti uko bitegekanijwe m'urwandiko"
+            }
+
+        MedicationTakingDifferentMedicationsQuestion ->
+            { english = "Are you taking different medications from the ones prescribed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         MentalHealthHistory ->
