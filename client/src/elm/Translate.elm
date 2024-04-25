@@ -979,6 +979,7 @@ type TranslationId
     | MedicationHelpedQuestion
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
+    | MedicationTakingDifferentMedicationsQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
@@ -10563,6 +10564,12 @@ translationSet trans =
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             , kirundi = Just "Mbega wafashe imiti uko bitegekanijwe m'urwandiko"
+            }
+
+        MedicationTakingDifferentMedicationsQuestion ->
+            { english = "Are you taking different medications from the ones prescribed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         MentalHealthHistory ->

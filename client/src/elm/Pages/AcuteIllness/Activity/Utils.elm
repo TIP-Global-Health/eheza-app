@@ -796,6 +796,7 @@ ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data t
                         SetReasonForNotTaking
                         SetTotalMissedDoses
                         SetAdverseEvent
+                        False
                         form
             in
             ( Maybe.Extra.values tasks
