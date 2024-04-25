@@ -126,6 +126,7 @@ type alias TuberculosisFollowUpEntry =
     { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : TuberculosisFollowUpItem
+    , allowStartEncounter : Bool
     }
 
 
@@ -141,6 +142,7 @@ type alias HIVFollowUpEntry =
     { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : HIVFollowUpItem
+    , allowStartEncounter : Bool
     }
 
 

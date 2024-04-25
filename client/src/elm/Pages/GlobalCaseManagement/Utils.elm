@@ -381,7 +381,10 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                           Dict.remove personId acuteIllnessDict
                         )
                     )
-                |> Maybe.withDefault ( accum, acuteIllnessDict )
+                |> Maybe.withDefault
+                    ( Dict.insert ( participantId, personId ) item accum
+                    , acuteIllnessDict
+                    )
         )
         ( Dict.empty, acuteIllnessItemsByPerson )
         itemsFromTuberculosis
