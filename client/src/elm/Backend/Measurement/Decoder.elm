@@ -3931,6 +3931,9 @@ decodeTreatmentOngoingSign =
         |> andThen
             (\sign ->
                 case sign of
+                    "taking-different-medications" ->
+                        succeed TakingDifferentMedications
+
                     "taken-as-prescribed" ->
                         succeed TakenAsPrescribed
 
