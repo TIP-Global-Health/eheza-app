@@ -499,8 +499,7 @@ lessCommonAntiRetroviralMedications =
 prophylaxisMedications : List HIVPrescribedMedication
 prophylaxisMedications =
     [ HIVMedicationBactrim
-    , HIVMedicationDapsone
-    , HIVMedicationIsoniazid
-    , HIVMedicationFluconazole
-    , HIVMedicationAzithromycin
+    , HIVMedicationTrimethoprimSulfamethoxazole
+    , HIVMedicationCoTrimoxazoleTablets
+    , HIVMedicationCoTrimoxazoleOralSuspension
     ]
