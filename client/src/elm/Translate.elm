@@ -6879,26 +6879,20 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                HIVMedicationDapsone ->
-                    { english = "Dapsone"
+                HIVMedicationTrimethoprimSulfamethoxazole ->
+                    { english = "Trimethoprim and Sulfamethoxazole tablets (Adults)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationIsoniazid ->
-                    { english = "Isoniazid"
+                HIVMedicationCoTrimoxazoleTablets ->
+                    { english = "Dispersible Co-trimoxazole tablets (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationFluconazole ->
-                    { english = "Fluconazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                HIVMedicationAzithromycin ->
-                    { english = "Azithromycin"
+                HIVMedicationCoTrimoxazoleOralSuspension ->
+                    { english = "Co-trimoxazole Oral Suspension (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

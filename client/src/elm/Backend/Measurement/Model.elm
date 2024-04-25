@@ -3041,10 +3041,9 @@ type HIVPrescribedMedication
     | HIVMedicationLamivudine
     | HIVMedicationAbacavir
     | HIVMedicationBactrim
-    | HIVMedicationDapsone
-    | HIVMedicationIsoniazid
-    | HIVMedicationFluconazole
-    | HIVMedicationAzithromycin
+    | HIVMedicationTrimethoprimSulfamethoxazole
+    | HIVMedicationCoTrimoxazoleTablets
+    | HIVMedicationCoTrimoxazoleOralSuspension
     | NoHIVPrescribedMedications
 
 
