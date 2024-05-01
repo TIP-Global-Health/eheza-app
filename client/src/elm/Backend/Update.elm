@@ -33,6 +33,7 @@ import Backend.Measurement.Model
         , LaboratoryTest(..)
         , LabsResultsReviewState(..)
         , Measurements
+        , TestExecutionNote(..)
         , TestPrerequisite(..)
         , WellChildSymptom(..)
         )
@@ -96,7 +97,7 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
-import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultSet, testPerformedByExecutionNote)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -2961,14 +2962,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
+                            let
+                                executionNote =
+                                    if data.value.bloodSmearResult == BloodSmearPendingInput then
+                                        TestNoteRunToday
+
+                                    else
+                                        data.value.executionNote
+
+                                resultsAdded =
+                                    isJust data.value.testResult
+                                        || bloodSmearResultSet data.value.bloodSmearResult
+                            in
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestMalaria
-                                data.value.executionNote
-                                (isJust data.value.testResult
-                                    || bloodSmearResultNotSet data.value.bloodSmearResult
-                                )
+                                executionNote
+                                resultsAdded
                                 data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
