@@ -1858,6 +1858,9 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
+
+        diagnosedAtInitalPhase =
+            matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled
     in
     case diagnosis of
         DiagnosisChronicHypertensionImmediate ->
@@ -1967,49 +1970,49 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisHIVRecurrentPhase ->
             testedPositiveAt .hivTest
-                && (not <| diagnosed DiagnosisHIVInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisHIVInitialPhase)
 
         DiagnosisHIVDetectableViralLoadInitialPhase ->
             hivDetectableViralLoadDiagnosed && immediateResult .hivPCRTest
 
         DiagnosisHIVDetectableViralLoadRecurrentPhase ->
             hivDetectableViralLoadDiagnosed
-                && (not <| diagnosed DiagnosisHIVDetectableViralLoadInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisHIVDetectableViralLoadInitialPhase)
 
         DiagnosisDiscordantPartnershipInitialPhase ->
             discordantPartnershipDiagnosed && immediateResult .hivTest
 
         DiagnosisDiscordantPartnershipRecurrentPhase ->
             discordantPartnershipDiagnosed
-                && (not <| diagnosed DiagnosisDiscordantPartnershipInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisDiscordantPartnershipInitialPhase)
 
         DiagnosisSyphilisInitialPhase ->
             syphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisRecurrentPhase ->
             syphilisDiagnosed
-                && (not <| diagnosed DiagnosisSyphilisInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisSyphilisInitialPhase)
 
         DiagnosisSyphilisWithComplicationsInitialPhase ->
             syphilisWithComplicationDiagnosed && immediateResult .syphilisTest
 
         DiagnosisSyphilisWithComplicationsRecurrentPhase ->
             syphilisWithComplicationDiagnosed
-                && (not <| diagnosed DiagnosisSyphilisWithComplicationsInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisSyphilisWithComplicationsInitialPhase)
 
         DiagnosisNeurosyphilisInitialPhase ->
             neurosyphilisDiagnosed && immediateResult .syphilisTest
 
         DiagnosisNeurosyphilisRecurrentPhase ->
             neurosyphilisDiagnosed
-                && (not <| diagnosed DiagnosisNeurosyphilisInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisNeurosyphilisInitialPhase)
 
         DiagnosisHepatitisBInitialPhase ->
             testedPositiveAt .hepatitisBTest && immediateResult .hepatitisBTest
 
         DiagnosisHepatitisBRecurrentPhase ->
             testedPositiveAt .hepatitisBTest
-                && (not <| diagnosed DiagnosisHepatitisBInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisHepatitisBInitialPhase)
 
         DiagnosisMalariaInitialPhase ->
             malariaDiagnosed
@@ -2017,14 +2020,14 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaRecurrentPhase ->
             malariaDiagnosed
-                && (not <| diagnosed DiagnosisMalariaInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisMalariaInitialPhase)
 
         DiagnosisMalariaMedicatedContinuedInitialPhase ->
             malariaMedicatedContinuedDiagnosed && immediateResult .malariaTest
 
         DiagnosisMalariaMedicatedContinuedRecurrentPhase ->
             malariaMedicatedContinuedDiagnosed
-                && (not <| diagnosed DiagnosisMalariaMedicatedContinuedInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisMalariaMedicatedContinuedInitialPhase)
 
         DiagnosisMalariaWithAnemiaInitialPhase ->
             malariaWithAnemiaDiagnosed
@@ -2033,7 +2036,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithAnemiaRecurrentPhase ->
             malariaWithAnemiaDiagnosed
-                && (not <| diagnosed DiagnosisMalariaWithAnemiaInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithAnemiaInitialPhase)
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase ->
             malariaWithAnemiaMedicatedContinuedDiagnosed
@@ -2042,7 +2045,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase ->
             malariaWithAnemiaMedicatedContinuedDiagnosed
-                && (not <| diagnosed DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase)
 
         DiagnosisMalariaWithSevereAnemiaInitialPhase ->
             malariaWithSevereAnemiaDiagnosed
@@ -2051,21 +2054,21 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisMalariaWithSevereAnemiaRecurrentPhase ->
             malariaWithSevereAnemiaDiagnosed
-                && (not <| diagnosed DiagnosisMalariaWithSevereAnemiaInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisMalariaWithSevereAnemiaInitialPhase)
 
         DiagnosisModerateAnemiaInitialPhase ->
             moderateAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisModerateAnemiaRecurrentPhase ->
             moderateAnemiaDiagnosed
-                && (not <| diagnosed DiagnosisModerateAnemiaInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisModerateAnemiaInitialPhase)
 
         DiagnosisSevereAnemiaInitialPhase ->
             severeAnemiaDiagnosed && immediateResult .hemoglobinTest
 
         DiagnosisSevereAnemiaRecurrentPhase ->
             severeAnemiaDiagnosed
-                && (not <| diagnosed DiagnosisSevereAnemiaInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisSevereAnemiaInitialPhase)
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
             (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
@@ -2102,7 +2105,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisRhesusNegativeRecurrentPhase ->
             rhesusNegativeDiagnosed
-                && (not <| diagnosed DiagnosisRhesusNegativeInitialPhase assembled)
+                && (not <| diagnosedAtInitalPhase DiagnosisRhesusNegativeInitialPhase)
 
         -- If criterias for DiagnosisPostpartumMastitis also matches, this
         -- diagnosis will be filtered out when applying diagnoses hierarchy.
