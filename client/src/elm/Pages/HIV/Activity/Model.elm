@@ -88,13 +88,15 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe (List HIVPrescribedMedication)
+    { medicationsNotChanged : Maybe Bool
+    , medications : Maybe (List HIVPrescribedMedication)
     }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
-    { medications = Nothing
+    { medicationsNotChanged = Nothing
+    , medications = Nothing
     }
 
 
@@ -177,6 +179,7 @@ type Msg
     | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedicationsNotChanged Bool
     | SetPrescribedMedication HIVPrescribedMedication
     | SavePrescribedMedication PersonId (Maybe ( HIVMedicationId, HIVMedication )) (Maybe MedicationTask)
     | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool

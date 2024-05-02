@@ -3044,6 +3044,7 @@ type HIVPrescribedMedication
     | HIVMedicationTrimethoprimSulfamethoxazole
     | HIVMedicationCoTrimoxazoleTablets
     | HIVMedicationCoTrimoxazoleOralSuspension
+    | HIVMedicationsNotChanged
     | NoHIVPrescribedMedications
 
 

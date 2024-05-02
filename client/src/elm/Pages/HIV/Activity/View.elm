@@ -384,7 +384,7 @@ viewMedicationContent language currentDate assembled data =
                 Just TaskPrescribedMedication ->
                     getMeasurementValueFunc measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
-                        |> viewPrescribedMedicationForm language currentDate
+                        |> viewPrescribedMedicationForm language currentDate assembled
                         |> List.singleton
 
                 Just TaskTreatmentReview ->
@@ -451,19 +451,11 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
-viewPrescribedMedicationForm language currentDate form =
-    div [ class "ui form prescribed-medication" ]
-        [ viewQuestionLabel language Translate.HIVPrescribedMedicationsQuestion
-        , viewCheckBoxMultipleSelectSectionsInput language
-            [ ( Translate.MostCommonAntiRetroviralMedications, mostCommonAntiRetroviralMedications )
-            , ( Translate.LessCommonAntiRetroviralMedications, lessCommonAntiRetroviralMedications )
-            , ( Translate.ProphylaxisMedications, prophylaxisMedications )
-            ]
-            (Maybe.withDefault [] form.medications)
-            SetPrescribedMedication
-            Translate.HIVPrescribedMedication
-        ]
+viewPrescribedMedicationForm : Language -> NominalDate -> AssembledData -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language currentDate assembled form =
+    prescribedMedicationsInputsAndTasks language currentDate assembled form
+        |> Tuple.first
+        |> div [ class "ui form prescribed-medication" ]
 
 
 viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg

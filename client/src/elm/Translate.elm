@@ -759,7 +759,9 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsChangedQuestion
     | HIVPrescribedMedicationsQuestion
+    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVSymptom HIVSymptom
@@ -6897,12 +6899,30 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                HIVMedicationsNotChanged ->
+                    { english = "Medications not Changed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
+
+        HIVPrescribedMedicationsChangedQuestion ->
+            { english = "Please check above the medications that were prescribed. Is the patient still taking the medications listed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HIVPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 

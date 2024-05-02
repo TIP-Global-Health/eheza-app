@@ -4222,6 +4222,9 @@ hivPrescribedMedicationToString sign =
         HIVMedicationCoTrimoxazoleOralSuspension ->
             "co-trimoxazole-oral-suspension"
 
+        HIVMedicationsNotChanged ->
+            "not-changed"
+
         NoHIVPrescribedMedications ->
             "none"
 
@@ -4297,6 +4300,9 @@ hivPrescribedMedicationFromString sign =
 
         "co-trimoxazole-oral-suspension" ->
             Just HIVMedicationCoTrimoxazoleOralSuspension
+
+        "not-changed" ->
+            Just HIVMedicationsNotChanged
 
         "none" ->
             Just NoHIVPrescribedMedications

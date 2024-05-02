@@ -193,6 +193,20 @@ update currentDate id db msg model =
             , []
             )
 
+        SetPrescribedMedicationsNotChanged value ->
+            let
+                updatedForm =
+                    { medicationForm | medicationsNotChanged = Just value, medications = Nothing }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | prescribedMedicationForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPrescribedMedication medication ->
             let
                 form =
