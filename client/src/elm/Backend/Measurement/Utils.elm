@@ -4127,6 +4127,9 @@ hivDiagnosisSignToString diagnosis =
         HIVResultDateEstimated ->
             "result-date-estimated"
 
+        HIVTestRun ->
+            "test-run"
+
         NoHIVDiagnosisSigns ->
             "none"
 
@@ -4142,6 +4145,9 @@ hivDiagnosisSignFromString diagnosis =
 
         "result-date-estimated" ->
             Just HIVResultDateEstimated
+
+        "test-run" ->
+            Just HIVTestRun
 
         "none" ->
             Just NoHIVDiagnosisSigns
