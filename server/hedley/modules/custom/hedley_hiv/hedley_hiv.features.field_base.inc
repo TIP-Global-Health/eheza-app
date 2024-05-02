@@ -31,6 +31,7 @@ function hedley_hiv_field_default_field_bases() {
         'result-positive-reported' => 'Positive result reported',
         'result-positive-known' => 'Positive result known',
         'result-date-estimated' => 'Positive result date estimated',
+        'test-run' => 'HIV test run',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
