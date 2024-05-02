@@ -2036,8 +2036,7 @@ type ReasonForNonReferral
 
 
 type TreatmentOngoingSign
-    = TakingDifferentMedications
-    | TakenAsPrescribed
+    = TakenAsPrescribed
     | MissedDoses
     | FeelingBetter
     | SideEffects

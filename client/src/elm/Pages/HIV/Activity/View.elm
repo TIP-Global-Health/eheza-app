@@ -334,8 +334,7 @@ viewMedicationContent language currentDate assembled data =
             assembled.measurements
 
         tasks =
-            medicationTasks assembled.initialEncounter
-                |> List.filter (expectMedicationTask currentDate assembled)
+            List.filter (expectMedicationTask currentDate assembled) medicationTasks
 
         activeTask =
             resolveActiveTask tasks data.activeTask
@@ -380,10 +379,6 @@ viewMedicationContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        treatmentReviewForm =
-            getMeasurementValueFunc measurements.treatmentReview
-                |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-
         viewForm =
             case activeTask of
                 Just TaskPrescribedMedication ->
@@ -393,7 +388,9 @@ viewMedicationContent language currentDate assembled data =
                         |> List.singleton
 
                 Just TaskTreatmentReview ->
-                    viewTreatmentReviewForm language currentDate assembled.initialEncounter treatmentReviewForm
+                    getMeasurementValueFunc measurements.treatmentReview
+                        |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
+                        |> viewTreatmentReviewForm language currentDate
                         |> List.singleton
 
                 Nothing ->
@@ -402,30 +399,14 @@ viewMedicationContent language currentDate assembled data =
         nextTask =
             let
                 tasksAfterSave =
-                    if assembled.initialEncounter then
-                        case activeTask of
-                            Just TaskPrescribedMedication ->
-                                -- Treatment Review appear only after
-                                -- Prescribed Medication task is saved.
-                                [ TaskPrescribedMedication, TaskTreatmentReview ]
+                    case activeTask of
+                        Just TaskPrescribedMedication ->
+                            -- DOT and Treatment Review review appear only after
+                            -- Prescribed Medication task is saved.
+                            [ TaskPrescribedMedication, TaskTreatmentReview ]
 
-                            _ ->
-                                tasks
-
-                    else
-                        case activeTask of
-                            Just TaskTreatmentReview ->
-                                if treatmentReviewForm.takingDifferentMedications == Just True then
-                                    -- Prescribed Medication task should appear in case patient
-                                    -- inidicated that they were taking different medications from
-                                    -- the ones prescribed.
-                                    [ TaskTreatmentReview, TaskPrescribedMedication ]
-
-                                else
-                                    [ TaskTreatmentReview ]
-
-                            _ ->
-                                tasks
+                        _ ->
+                            tasks
             in
             List.filter
                 (\task ->
@@ -485,8 +466,8 @@ viewPrescribedMedicationForm language currentDate form =
         ]
 
 
-viewTreatmentReviewForm : Language -> NominalDate -> Bool -> OngoingTreatmentReviewForm -> Html Msg
-viewTreatmentReviewForm language currentDate initialEncounter form =
+viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate form =
     let
         ( inputs, _ ) =
             treatmentReviewInputsAndTasks language
@@ -495,7 +476,6 @@ viewTreatmentReviewForm language currentDate initialEncounter form =
                 SetReasonForNotTaking
                 SetTotalMissedDoses
                 SetAdverseEvent
-                (not initialEncounter)
                 form
     in
     div [ class "ui form treatment-review" ]

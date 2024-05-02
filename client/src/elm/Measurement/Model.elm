@@ -2028,8 +2028,7 @@ emptyNutritionCaringForm =
 
 
 type alias OngoingTreatmentReviewForm =
-    { takingDifferentMedications : Maybe Bool
-    , takenAsPrescribed : Maybe Bool
+    { takenAsPrescribed : Maybe Bool
     , missedDoses : Maybe Bool
     , feelingBetter : Maybe Bool
     , sideEffects : Maybe Bool
@@ -2044,8 +2043,7 @@ type alias OngoingTreatmentReviewForm =
 
 emptyOngoingTreatmentReviewForm : OngoingTreatmentReviewForm
 emptyOngoingTreatmentReviewForm =
-    { takingDifferentMedications = Nothing
-    , takenAsPrescribed = Nothing
+    { takenAsPrescribed = Nothing
     , missedDoses = Nothing
     , feelingBetter = Nothing
     , sideEffects = Nothing

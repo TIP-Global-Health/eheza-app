@@ -167,7 +167,6 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetReasonForNotTaking
                         SetTotalMissedDoses
                         SetAdverseEvent
-                        False
                         form
             in
             ( Maybe.Extra.values tasks
