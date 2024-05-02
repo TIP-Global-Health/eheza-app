@@ -15,6 +15,7 @@ class HedleyRestfulHIVDiagnostics extends HedleyRestfulHIVActivityBase {
    */
   protected $fields = [
     'field_positive_result_date',
+    'field_test_result',
   ];
 
   /**
