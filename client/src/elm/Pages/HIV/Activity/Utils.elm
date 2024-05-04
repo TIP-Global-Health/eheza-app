@@ -303,6 +303,9 @@ diagnosticsFormWithDefault form saved =
                 let
                     positiveResultDateEstimatedByValue =
                         EverySet.member HIVResultDateEstimated value.signs
+
+                    runHIVTestByValue =
+                        EverySet.member HIVTestRun value.signs
                 in
                 { resultPositive = or form.resultPositive (EverySet.member HIVResultPositiveReported value.signs |> Just)
                 , resultDateCorrect = or form.resultDateCorrect (EverySet.member HIVResultPositiveKnown value.signs |> Just)
@@ -317,6 +320,16 @@ diagnosticsFormWithDefault form saved =
                         (Just positiveResultDateEstimatedByValue)
                 , positiveResultDateEstimatedDirty = form.positiveResultDateEstimatedDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
+                , runHIVTest =
+                    maybeValueConsideringIsDirtyField form.runHIVTestDirty
+                        form.runHIVTest
+                        (Just runHIVTestByValue)
+                , runHIVTestDirty = form.runHIVTestDirty
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = False
                 }
             )
 
@@ -350,6 +363,7 @@ toDiagnosticsValue positiveResultRecorded form =
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
+                , testResult = form.testResult
                 }
             )
             form.resultDateCorrect
@@ -362,11 +376,15 @@ toDiagnosticsValue positiveResultRecorded form =
                         if resultPositive then
                             [ HIVResultPositiveReported ]
 
+                        else if form.runHIVTest == Just True then
+                            [ HIVTestRun ]
+
                         else
                             []
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
+                , testResult = form.testResult
                 }
             )
             form.resultPositive

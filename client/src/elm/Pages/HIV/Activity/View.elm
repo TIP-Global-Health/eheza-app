@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString, testResultToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
@@ -26,6 +26,7 @@ import Measurement.Utils
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
+        , viewSelectInput
         )
 import Measurement.View
     exposing
@@ -240,7 +241,7 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
                         resolveInputsAndTasksForPositiveHIVDate language currentDate form
 
                     else
-                        ( [], 0, 0 )
+                        resolveInputsAndTasksForSuggestedHIVTest language currentDate form
                 )
                 form.resultPositive
                 |> Maybe.withDefault ( [], 0, 0 )
@@ -257,6 +258,10 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
                         , positiveResultDateDirty = True
                         , positiveResultDateEstimated = Nothing
                         , positiveResultDateEstimatedDirty = True
+                        , runHIVTest = Nothing
+                        , runHIVTestDirty = True
+                        , testResult = Nothing
+                        , testResultDirty = True
                     }
                 )
             )
@@ -324,6 +329,57 @@ resolveInputsAndTasksForPositiveHIVDate language currentDate form =
       ]
     , taskCompleted form.positiveResultDate
     , 1
+    )
+
+
+resolveInputsAndTasksForSuggestedHIVTest : Language -> NominalDate -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForSuggestedHIVTest language currentDate form =
+    let
+        ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
+            Maybe.map
+                (\runHIVTest ->
+                    if runHIVTest then
+                        ( viewSelectInput language
+                            Translate.Result
+                            form.testResult
+                            Translate.TestResult
+                            testResultToString
+                            [ TestPositive, TestNegative, TestIndeterminate ]
+                            SetHIVTestResult
+                        , taskCompleted form.testResult
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+                )
+                form.runHIVTest
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.HIVSuggestTakingTestQuestion
+      , viewBoolInput
+            language
+            form.runHIVTest
+            (SetDiagnosticsBoolInput
+                (\value form_ ->
+                    { form_
+                        | runHIVTest = Just value
+                        , runHIVTestDirty = True
+                        , testResult = Nothing
+                        , testResultDirty = True
+                        , positiveResultDate = Nothing
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+                )
+            )
+            "run-hiv-test"
+            Nothing
+      ]
+        ++ derivedInputs
+    , taskCompleted form.runHIVTest + derivedTasksCompleted
+    , 1 + derivedTotalTasks
     )
 
 
