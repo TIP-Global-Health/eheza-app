@@ -5533,13 +5533,13 @@ translationSet trans =
             }
 
         EndEncounterNoHIVDiagnosisPhrase ->
-            { english = "The patient does not have HIV diagnosis. Would you like to close this encounter?"
+            { english = "The patient does not have an HIV diagnosis. Would you like to close this encounter?"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         EndEncounterNoTuberculosisDiagnosisPhrase ->
-            { english = "The patient does not have Tuberculosis diagnosis. Would you like to close this encounter?"
+            { english = "The patient does not have a Tuberculosis diagnosis. Would you like to close this encounter?"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
