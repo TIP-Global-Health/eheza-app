@@ -36,12 +36,14 @@ emptyModel =
 
 type alias DiagnosticsData =
     { form : DiagnosticsForm
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
+    , showEndEncounterDialog = False
     }
 
 
@@ -186,6 +188,7 @@ type Msg
     | ConfirmPositiveResultDate Date Bool
     | SetPositiveResultDate Date
     | SetHIVTestResult String
+    | SetEndEncounterDialogState Bool (Maybe (DiagnosticsForm -> DiagnosticsForm))
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
       -- MEDICATION

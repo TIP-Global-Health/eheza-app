@@ -165,6 +165,21 @@ update currentDate id db msg model =
             , []
             )
 
+        SetEndEncounterDialogState showDialog mRevertAnswerFunc ->
+            let
+                updatedForm =
+                    Maybe.map (\revertAnswerFunc -> revertAnswerFunc diagnosticsForm) mRevertAnswerFunc
+                        |> Maybe.withDefault diagnosticsForm
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm, showEndEncounterDialog = showDialog })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetDateSelectorState state ->
             let
                 updatedForm =

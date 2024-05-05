@@ -50,6 +50,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxMultipleSelectSectionsInput
         , viewCustomBoolInput
+        , viewEndEncounterDialog
         , viewLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -183,6 +184,57 @@ viewDiagnosticsContent language currentDate assembled db data =
         ( inputs, tasksCompleted, totalTasks ) =
             Maybe.map (resolveInputsAndTasksForExistingPositiveHIVResult language currentDate form) mPositiveHIVResultDate
                 |> Maybe.withDefault (resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form)
+
+        endEncounterDialog =
+            if data.showEndEncounterDialog then
+                let
+                    revertAnswerFunc =
+                        if form.runHIVTest == Just False then
+                            -- Case where patient does not want to run HIV test.
+                            \form_ ->
+                                { form_
+                                    | runHIVTest = Nothing
+                                    , runHIVTestDirty = True
+                                }
+
+                        else
+                            -- Case where patient has run HIV test and did not
+                            -- get positive diagnosis.
+                            \form_ ->
+                                { form_
+                                    | testResult = Nothing
+                                    , testResultDirty = True
+                                }
+                in
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.EndEncounterNoHIVDiagnosisPhrase
+                        saveDiagnosticsMsg
+                        (SetEndEncounterDialogState False (Just revertAnswerFunc))
+
+            else
+                Nothing
+
+        saveAction =
+            if endEncounterDialogRequired then
+                SetEndEncounterDialogState True Nothing
+
+            else
+                saveDiagnosticsMsg
+
+        -- Double check that patient does not have (or unable to resolve)
+        -- HIV diagnosis before closing the encounter.
+        endEncounterDialogRequired =
+            (form.runHIVTest == Just False)
+                || (form.testResult == Just TestNegative)
+                || (form.testResult == Just TestIndeterminate)
+
+        saveDiagnosticsMsg =
+            SaveDiagnostics assembled.participant.person
+                assembled.encounter.participant
+                (isJust mPositiveHIVResultDate)
+                assembled.measurements.diagnostics
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -192,13 +244,10 @@ viewDiagnosticsContent language currentDate assembled db data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person
-                    assembled.encounter.participant
-                    (isJust mPositiveHIVResultDate)
-                    assembled.measurements.diagnostics
-                )
+                saveAction
             ]
         ]
+    , viewModal endEncounterDialog
     ]
 
 
