@@ -6909,7 +6909,7 @@ translationSet trans =
                     translationSet EmptyString
 
         HIVPrescribedMedicationsChangedQuestion ->
-            { english = "Please check above the medications that were prescribed. Is the patient still taking the medications listed"
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
