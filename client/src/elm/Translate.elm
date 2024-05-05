@@ -3483,7 +3483,7 @@ translationSet trans =
                     translationSet EmptyString
 
         BloodSmearTestResult ->
-            { english = "Malaria Blood Test Result"
+            { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
