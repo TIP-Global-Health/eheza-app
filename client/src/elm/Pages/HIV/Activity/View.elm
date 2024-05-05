@@ -25,7 +25,7 @@ import Measurement.Utils
         ( followUpFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
-        , treatmentReviewInputsAndTasks
+        , treatmentReviewCustomReasonsForNotTakingInputsAndTasks
         , viewSelectInput
         )
 import Measurement.View
@@ -518,8 +518,11 @@ viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm 
 viewTreatmentReviewForm language currentDate form =
     let
         ( inputs, _ ) =
-            treatmentReviewInputsAndTasks language
+            treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
                 currentDate
+                ( [ NotTakingAdverseEvent, NotTakingNoMoney, NotTakingTreatmentNotStarted ]
+                , [ NotTakingMemoryProblems, NotTakingOther ]
+                )
                 SetTreatmentReviewBoolInput
                 SetReasonForNotTaking
                 SetTotalMissedDoses
