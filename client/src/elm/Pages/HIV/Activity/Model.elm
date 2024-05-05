@@ -57,6 +57,12 @@ type alias DiagnosticsForm =
     , positiveResultDateEstimated : Maybe Bool
     , positiveResultDateEstimatedDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+
+    -- Used in case patient reports of not being Diagnosed with HIV.
+    , runHIVTest : Maybe Bool
+    , runHIVTestDirty : Bool
+    , testResult : Maybe TestResult
+    , testResultDirty : Bool
     }
 
 
@@ -69,6 +75,10 @@ emptyDiagnosticsForm =
     , positiveResultDateEstimated = Nothing
     , positiveResultDateEstimatedDirty = False
     , dateSelectorPopupState = Nothing
+    , runHIVTest = Nothing
+    , runHIVTestDirty = False
+    , testResult = Nothing
+    , testResultDirty = False
     }
 
 
@@ -175,6 +185,7 @@ type Msg
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
     | ConfirmPositiveResultDate Date Bool
     | SetPositiveResultDate Date
+    | SetHIVTestResult String
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
       -- MEDICATION

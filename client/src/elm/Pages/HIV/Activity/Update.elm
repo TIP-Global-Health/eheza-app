@@ -6,8 +6,8 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.HIVEncounter.Model
 import Backend.IndividualEncounterParticipant.Model exposing (HIVOutcome(..))
-import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..), HIVSymptom(..))
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..), HIVSymptom(..), TestResult(..))
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
 import Date
 import EverySet
@@ -129,6 +129,42 @@ update currentDate id db msg model =
             , []
             )
 
+        SetHIVTestResult value ->
+            let
+                updatedForm =
+                    let
+                        testResult =
+                            testResultFromString value
+                    in
+                    if testResult == Just TestPositive then
+                        { diagnosticsForm
+                            | testResult = testResult
+                            , testResultDirty = True
+                            , positiveResultDate = Just currentDate
+                            , positiveResultDateDirty = True
+                            , positiveResultDateEstimated = Just False
+                            , positiveResultDateEstimatedDirty = True
+                        }
+
+                    else
+                        { diagnosticsForm
+                            | testResult = testResult
+                            , testResultDirty = True
+                            , positiveResultDate = Nothing
+                            , positiveResultDateDirty = True
+                            , positiveResultDateEstimated = Nothing
+                            , positiveResultDateEstimatedDirty = True
+                        }
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetDateSelectorState state ->
             let
                 updatedForm =
@@ -164,7 +200,11 @@ update currentDate id db msg model =
                                             |> App.Model.MsgIndexedDb
 
                                     additionalMsgs =
-                                        if not positiveResultRecorded && diagnosticsForm.resultPositive == Just False then
+                                        if
+                                            not positiveResultRecorded
+                                                && (diagnosticsForm.resultPositive == Just False)
+                                                && (diagnosticsForm.testResult /= Just TestPositive)
+                                        then
                                             [ Backend.IndividualEncounterParticipant.Model.CloseHIVSession HIVOutcomeNotDiagnosed
                                                 |> Backend.Model.MsgIndividualEncounterParticipant particpantId
                                                 |> App.Model.MsgIndexedDb

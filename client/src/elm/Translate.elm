@@ -764,6 +764,7 @@ type TranslationId
     | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVSuggestTakingTestQuestion
     | HIVSymptom HIVSymptom
     | HIVSymptomReviewQuestion
     | HIVTreatmentSign HIVTreatmentSign
@@ -6959,6 +6960,12 @@ translationSet trans =
             { english = "HIV Status"
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             , kirundi = Just "Ivyerekeye umugera wa SIDA"
+            }
+
+        HIVSuggestTakingTestQuestion ->
+            { english = "Would you like to perform an HIV test today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         HIVSymptom symptom ->

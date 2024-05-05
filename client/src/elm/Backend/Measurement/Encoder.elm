@@ -4537,6 +4537,7 @@ encodeHIVDiagnosticsValue value =
     , ( "type", string "hiv_diagnostics" )
     ]
         ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
 
 
 encodeHIVDiagnosisSign : HIVDiagnosisSign -> Value

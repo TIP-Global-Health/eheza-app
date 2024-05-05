@@ -5593,6 +5593,7 @@ decodeHIVDiagnosticsValue =
     succeed HIVDiagnosticsValue
         |> required "hiv_diagnosis_signs" (decodeEverySet decodeHIVDiagnosisSign)
         |> optional "positive_result_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodeHIVDiagnosisSign : Decoder HIVDiagnosisSign
