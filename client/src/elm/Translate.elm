@@ -633,6 +633,8 @@ type TranslationId
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
+    | EndEncounterNoHIVDiagnosisPhrase
+    | EndEncounterNoTuberculosisDiagnosisPhrase
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
@@ -5528,6 +5530,18 @@ translationSet trans =
             { english = "End Encounter?"
             , kinyarwanda = Just "Gusoza igikorwa?"
             , kirundi = Just "Guheza kubonana?"
+            }
+
+        EndEncounterNoHIVDiagnosisPhrase ->
+            { english = "The patient does not have an HIV diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EndEncounterNoTuberculosisDiagnosisPhrase ->
+            { english = "The patient does not have a Tuberculosis diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         EndGroupEncounter ->
