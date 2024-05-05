@@ -2047,6 +2047,7 @@ type ReasonForNotTaking
     = NotTakingAdverseEvent
     | NotTakingNoMoney
     | NotTakingMemoryProblems
+    | NotTakingTreatmentNotStarted
     | NotTakingOther
     | NoReasonForNotTakingSign
 

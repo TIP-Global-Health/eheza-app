@@ -1380,6 +1380,27 @@ treatmentReviewInputsAndTasks :
     -> OngoingTreatmentReviewForm
     -> ( List (Html msg), List (Maybe Bool) )
 treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
+    treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
+        currentDate
+        ( [ NotTakingAdverseEvent, NotTakingNoMoney ], [ NotTakingMemoryProblems, NotTakingOther ] )
+        setTreatmentReviewBoolInputMsg
+        setReasonForNotTakingMsg
+        setMissedDosesMsg
+        setAdverseEventMsg
+        form
+
+
+treatmentReviewCustomReasonsForNotTakingInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ( List ReasonForNotTaking, List ReasonForNotTaking )
+    -> ((Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) -> Bool -> msg)
+    -> (ReasonForNotTaking -> msg)
+    -> (String -> msg)
+    -> (AdverseEvent -> msg)
+    -> OngoingTreatmentReviewForm
+    -> ( List (Html msg), List (Maybe Bool) )
+treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( reasonForNotTakingLeft, reasonForNotTakingRight ) setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
     let
         ( takenAsPrescribedInputs, takenAsPrescribedTasks ) =
             let
@@ -1402,8 +1423,8 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
                                     [ viewQuestionLabel language Translate.WhyNot ]
                                 ]
                           , viewCheckBoxSelectInput language
-                                [ NotTakingAdverseEvent, NotTakingNoMoney ]
-                                [ NotTakingMemoryProblems, NotTakingOther ]
+                                reasonForNotTakingLeft
+                                reasonForNotTakingRight
                                 form.reasonForNotTaking
                                 setReasonForNotTakingMsg
                                 Translate.ReasonForNotTaking

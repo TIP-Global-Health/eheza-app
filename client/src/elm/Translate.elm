@@ -17185,6 +17185,12 @@ translationSet trans =
                     , kirundi = Just "Ingorane zo kwibuka"
                     }
 
+                NotTakingTreatmentNotStarted ->
+                    { english = "Treatment not started"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NotTakingOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
