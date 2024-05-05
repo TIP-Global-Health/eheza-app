@@ -3166,6 +3166,9 @@ encodeReasonForNotTakingSign reason =
             NotTakingMemoryProblems ->
                 "memory-problems"
 
+            NotTakingTreatmentNotStarted ->
+                "treatment-not-started"
+
             NotTakingOther ->
                 "other"
 

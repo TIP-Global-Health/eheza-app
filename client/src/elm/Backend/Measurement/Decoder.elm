@@ -3968,6 +3968,9 @@ decodeReasonForNotTaking =
                     "memory-problems" ->
                         succeed NotTakingMemoryProblems
 
+                    "treatment-not-started" ->
+                        succeed NotTakingTreatmentNotStarted
+
                     "other" ->
                         succeed NotTakingOther
 
