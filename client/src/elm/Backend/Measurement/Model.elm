@@ -2036,8 +2036,7 @@ type ReasonForNonReferral
 
 
 type TreatmentOngoingSign
-    = TakingDifferentMedications
-    | TakenAsPrescribed
+    = TakenAsPrescribed
     | MissedDoses
     | FeelingBetter
     | SideEffects
@@ -3045,6 +3044,7 @@ type HIVPrescribedMedication
     | HIVMedicationTrimethoprimSulfamethoxazole
     | HIVMedicationCoTrimoxazoleTablets
     | HIVMedicationCoTrimoxazoleOralSuspension
+    | HIVMedicationsNotChanged
     | NoHIVPrescribedMedications
 
 

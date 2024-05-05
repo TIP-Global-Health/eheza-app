@@ -759,7 +759,9 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsChangedQuestion
     | HIVPrescribedMedicationsQuestion
+    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVSymptom HIVSymptom
@@ -979,7 +981,6 @@ type TranslationId
     | MedicationHelpedQuestion
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
-    | MedicationTakingDifferentMedicationsQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
@@ -6898,12 +6899,30 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                HIVMedicationsNotChanged ->
+                    { english = "Medications not Changed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
+
+        HIVPrescribedMedicationsChangedQuestion ->
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HIVPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -10564,12 +10583,6 @@ translationSet trans =
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             , kirundi = Just "Mbega wafashe imiti uko bitegekanijwe m'urwandiko"
-            }
-
-        MedicationTakingDifferentMedicationsQuestion ->
-            { english = "Are you taking different medications from the ones prescribed"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
             }
 
         MentalHealthHistory ->

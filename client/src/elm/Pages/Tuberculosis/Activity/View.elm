@@ -276,7 +276,7 @@ viewMedicationContent language currentDate assembled data =
                 tasksAfterSave =
                     case activeTask of
                         Just TaskPrescribedMedication ->
-                            -- DOT and Treatment Review appear only after
+                            -- DOT and Treatment Review review appear only after
                             -- Prescribed Medication task is saved.
                             [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
 
@@ -366,7 +366,6 @@ viewTreatmentReviewForm language currentDate form =
                 SetReasonForNotTaking
                 SetTotalMissedDoses
                 SetAdverseEvent
-                False
                 form
     in
     div [ class "ui form treatment-review" ]

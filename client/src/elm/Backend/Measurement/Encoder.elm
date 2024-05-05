@@ -3137,9 +3137,6 @@ encodeTreatmentOngoingSign : TreatmentOngoingSign -> Value
 encodeTreatmentOngoingSign sign =
     string <|
         case sign of
-            TakingDifferentMedications ->
-                "taking-different-medications"
-
             TakenAsPrescribed ->
                 "taken-as-prescribed"
 

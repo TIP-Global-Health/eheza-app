@@ -217,6 +217,7 @@ function hedley_hiv_field_default_field_bases() {
         'trimethoprim-sulfamethoxazole' => 'Trimethoprim Sulfamethoxazole',
         'co-trimoxazole-tablets' => 'Co-Trimoxazole Tablets',
         'co-trimoxazole-oral-suspension' => 'Co-Trimoxazole Oral Suspension',
+        'not-changed' => 'Medications Not Changed',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
