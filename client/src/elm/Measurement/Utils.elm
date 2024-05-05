@@ -1377,31 +1377,31 @@ treatmentReviewInputsAndTasks :
     -> (ReasonForNotTaking -> msg)
     -> (String -> msg)
     -> (AdverseEvent -> msg)
-    -> Bool
     -> OngoingTreatmentReviewForm
     -> ( List (Html msg), List (Maybe Bool) )
-treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg askIfTakingDifferentMedications form =
+treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
+    treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
+        currentDate
+        ( [ NotTakingAdverseEvent, NotTakingNoMoney ], [ NotTakingMemoryProblems, NotTakingOther ] )
+        setTreatmentReviewBoolInputMsg
+        setReasonForNotTakingMsg
+        setMissedDosesMsg
+        setAdverseEventMsg
+        form
+
+
+treatmentReviewCustomReasonsForNotTakingInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ( List ReasonForNotTaking, List ReasonForNotTaking )
+    -> ((Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) -> Bool -> msg)
+    -> (ReasonForNotTaking -> msg)
+    -> (String -> msg)
+    -> (AdverseEvent -> msg)
+    -> OngoingTreatmentReviewForm
+    -> ( List (Html msg), List (Maybe Bool) )
+treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( reasonForNotTakingLeft, reasonForNotTakingRight ) setTreatmentReviewBoolInputMsg setReasonForNotTakingMsg setMissedDosesMsg setAdverseEventMsg form =
     let
-        ( takingDifferentMedicationsInputs, takingDifferentMedicationsTasks ) =
-            let
-                takingDifferentMedicationsUpdateFunc value form_ =
-                    { form_ | takingDifferentMedications = Just value }
-            in
-            if askIfTakingDifferentMedications then
-                ( [ viewQuestionLabel language Translate.MedicationTakingDifferentMedicationsQuestion
-                  , viewBoolInput
-                        language
-                        form.takingDifferentMedications
-                        (setTreatmentReviewBoolInputMsg takingDifferentMedicationsUpdateFunc)
-                        "taking-different-medications"
-                        Nothing
-                  ]
-                , [ form.takingDifferentMedications ]
-                )
-
-            else
-                ( [], [] )
-
         ( takenAsPrescribedInputs, takenAsPrescribedTasks ) =
             let
                 takenAsPrescribedUpdateFunc value form_ =
@@ -1423,8 +1423,8 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
                                     [ viewQuestionLabel language Translate.WhyNot ]
                                 ]
                           , viewCheckBoxSelectInput language
-                                [ NotTakingAdverseEvent, NotTakingNoMoney ]
-                                [ NotTakingMemoryProblems, NotTakingOther ]
+                                reasonForNotTakingLeft
+                                reasonForNotTakingRight
                                 form.reasonForNotTaking
                                 setReasonForNotTakingMsg
                                 Translate.ReasonForNotTaking
@@ -1558,8 +1558,7 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
         feelingBetterUpdateFunc value form_ =
             { form_ | feelingBetter = Just value }
     in
-    ( takingDifferentMedicationsInputs
-        ++ takenAsPrescribedInputs
+    ( takenAsPrescribedInputs
         ++ missedDosesInputs
         ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
            , viewBoolInput
@@ -1570,11 +1569,7 @@ treatmentReviewInputsAndTasks language currentDate setTreatmentReviewBoolInputMs
                 Nothing
            ]
         ++ sideEffectsInputs
-    , takingDifferentMedicationsTasks
-        ++ takenAsPrescribedTasks
-        ++ missedDosesTasks
-        ++ [ form.feelingBetter ]
-        ++ sideEffectsTasks
+    , takenAsPrescribedTasks ++ missedDosesTasks ++ [ form.feelingBetter ] ++ sideEffectsTasks
     )
 
 
@@ -9796,8 +9791,7 @@ ongoingTreatmentReviewFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { takingDifferentMedications = or form.takingDifferentMedications (EverySet.member TakingDifferentMedications value.signs |> Just)
-                , takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
+                { takenAsPrescribed = or form.takenAsPrescribed (EverySet.member TakenAsPrescribed value.signs |> Just)
                 , missedDoses = or form.missedDoses (EverySet.member MissedDoses value.signs |> Just)
                 , feelingBetter = or form.feelingBetter (EverySet.member FeelingBetter value.signs |> Just)
                 , sideEffects = or form.sideEffects (EverySet.member SideEffects value.signs |> Just)
@@ -9821,8 +9815,7 @@ toOngoingTreatmentReviewValue : OngoingTreatmentReviewForm -> Maybe TreatmentOng
 toOngoingTreatmentReviewValue form =
     let
         signs =
-            [ ifNullableTrue TakingDifferentMedications form.takingDifferentMedications
-            , Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
+            [ Maybe.map (ifTrue TakenAsPrescribed) form.takenAsPrescribed
             , Maybe.map (ifTrue MissedDoses) form.missedDoses
             , Maybe.map (ifTrue FeelingBetter) form.feelingBetter
             , Maybe.map (ifTrue SideEffects) form.sideEffects

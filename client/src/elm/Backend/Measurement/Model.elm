@@ -2036,8 +2036,7 @@ type ReasonForNonReferral
 
 
 type TreatmentOngoingSign
-    = TakingDifferentMedications
-    | TakenAsPrescribed
+    = TakenAsPrescribed
     | MissedDoses
     | FeelingBetter
     | SideEffects
@@ -2048,6 +2047,7 @@ type ReasonForNotTaking
     = NotTakingAdverseEvent
     | NotTakingNoMoney
     | NotTakingMemoryProblems
+    | NotTakingTreatmentNotStarted
     | NotTakingOther
     | NoReasonForNotTakingSign
 
@@ -2983,6 +2983,7 @@ type alias HIVDiagnostics =
 type alias HIVDiagnosticsValue =
     { signs : EverySet HIVDiagnosisSign
     , positiveResultDate : Maybe NominalDate
+    , testResult : Maybe TestResult
     }
 
 
@@ -2990,6 +2991,7 @@ type HIVDiagnosisSign
     = HIVResultPositiveReported
     | HIVResultPositiveKnown
     | HIVResultDateEstimated
+    | HIVTestRun
     | NoHIVDiagnosisSigns
 
 
@@ -3045,6 +3047,7 @@ type HIVPrescribedMedication
     | HIVMedicationTrimethoprimSulfamethoxazole
     | HIVMedicationCoTrimoxazoleTablets
     | HIVMedicationCoTrimoxazoleOralSuspension
+    | HIVMedicationsNotChanged
     | NoHIVPrescribedMedications
 
 

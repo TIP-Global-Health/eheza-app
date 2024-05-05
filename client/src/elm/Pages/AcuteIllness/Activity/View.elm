@@ -2666,7 +2666,6 @@ viewOngoingTreatmentReviewForm language currentDate form =
                 SetReasonForNotTaking
                 SetTotalMissedDoses
                 SetAdverseEvent
-                False
                 form
     in
     div [ class "ui form ongoing-treatment-review" ]

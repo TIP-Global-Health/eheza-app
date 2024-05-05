@@ -4127,6 +4127,9 @@ hivDiagnosisSignToString diagnosis =
         HIVResultDateEstimated ->
             "result-date-estimated"
 
+        HIVTestRun ->
+            "test-run"
+
         NoHIVDiagnosisSigns ->
             "none"
 
@@ -4142,6 +4145,9 @@ hivDiagnosisSignFromString diagnosis =
 
         "result-date-estimated" ->
             Just HIVResultDateEstimated
+
+        "test-run" ->
+            Just HIVTestRun
 
         "none" ->
             Just NoHIVDiagnosisSigns
@@ -4222,6 +4228,9 @@ hivPrescribedMedicationToString sign =
         HIVMedicationCoTrimoxazoleOralSuspension ->
             "co-trimoxazole-oral-suspension"
 
+        HIVMedicationsNotChanged ->
+            "not-changed"
+
         NoHIVPrescribedMedications ->
             "none"
 
@@ -4297,6 +4306,9 @@ hivPrescribedMedicationFromString sign =
 
         "co-trimoxazole-oral-suspension" ->
             Just HIVMedicationCoTrimoxazoleOralSuspension
+
+        "not-changed" ->
+            Just HIVMedicationsNotChanged
 
         "none" ->
             Just NoHIVPrescribedMedications

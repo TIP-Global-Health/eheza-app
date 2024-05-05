@@ -633,6 +633,8 @@ type TranslationId
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
+    | EndEncounterNoHIVDiagnosisPhrase
+    | EndEncounterNoTuberculosisDiagnosisPhrase
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
@@ -759,9 +761,12 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsChangedQuestion
     | HIVPrescribedMedicationsQuestion
+    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVSuggestTakingTestQuestion
     | HIVSymptom HIVSymptom
     | HIVSymptomReviewQuestion
     | HIVTreatmentSign HIVTreatmentSign
@@ -979,7 +984,6 @@ type TranslationId
     | MedicationHelpedQuestion
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
-    | MedicationTakingDifferentMedicationsQuestion
     | MentalHealthHistory
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
@@ -3483,7 +3487,7 @@ translationSet trans =
                     translationSet EmptyString
 
         BloodSmearTestResult ->
-            { english = "Malaria Blood Test Result"
+            { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -5528,6 +5532,18 @@ translationSet trans =
             , kirundi = Just "Guheza kubonana?"
             }
 
+        EndEncounterNoHIVDiagnosisPhrase ->
+            { english = "The patient does not have an HIV diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EndEncounterNoTuberculosisDiagnosisPhrase ->
+            { english = "The patient does not have a Tuberculosis diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
@@ -6898,12 +6914,30 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                HIVMedicationsNotChanged ->
+                    { english = "Medications not Changed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
+
+        HIVPrescribedMedicationsChangedQuestion ->
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HIVPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -6940,6 +6974,12 @@ translationSet trans =
             { english = "HIV Status"
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             , kirundi = Just "Ivyerekeye umugera wa SIDA"
+            }
+
+        HIVSuggestTakingTestQuestion ->
+            { english = "Would you like to perform an HIV test today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         HIVSymptom symptom ->
@@ -10564,12 +10604,6 @@ translationSet trans =
             { english = "Did you take the medication as prescribed"
             , kinyarwanda = Just "Wafashe imiti neza uko wayandikiwe na muganga"
             , kirundi = Just "Mbega wafashe imiti uko bitegekanijwe m'urwandiko"
-            }
-
-        MedicationTakingDifferentMedicationsQuestion ->
-            { english = "Are you taking different medications from the ones prescribed"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
             }
 
         MentalHealthHistory ->
@@ -17163,6 +17197,12 @@ translationSet trans =
                     { english = "Memory problems"
                     , kinyarwanda = Just "Ibibazo byo kwibagirwa"
                     , kirundi = Just "Ingorane zo kwibuka"
+                    }
+
+                NotTakingTreatmentNotStarted ->
+                    { english = "Treatment not started"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 NotTakingOther ->

@@ -2533,6 +2533,10 @@ div.page-activity.tuberculosis {
     }
   }
 
+  .overlay .ui.tiny.active.modal {
+    color: $color-text;
+  }
+
 }
 
 div.page-activity.education-session {
@@ -5561,4 +5565,8 @@ div.page-activity.hiv {
     }
 
   }
+
+  .overlay .ui.tiny.active.modal {
+    color: $color-text;
+  }  
 }

@@ -45,12 +45,14 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
+        , viewEndEncounterDialog
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -178,6 +180,18 @@ viewDiagnosticsContent language currentDate assembled data =
             , taskCompleted form.diagnosed + derivedTasksCompleted
             , 1 + derivedTotalTasks
             )
+
+        endEncounterDialog =
+            if data.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.EndEncounterNoTuberculosisDiagnosisPhrase
+                        (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -187,9 +201,10 @@ viewDiagnosticsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+                (SetEndEncounterDialogState True)
             ]
         ]
+    , viewModal endEncounterDialog
     ]
 
 
@@ -276,7 +291,7 @@ viewMedicationContent language currentDate assembled data =
                 tasksAfterSave =
                     case activeTask of
                         Just TaskPrescribedMedication ->
-                            -- DOT and Treatment Review appear only after
+                            -- DOT and Treatment Review review appear only after
                             -- Prescribed Medication task is saved.
                             [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
 
@@ -366,7 +381,6 @@ viewTreatmentReviewForm language currentDate form =
                 SetReasonForNotTaking
                 SetTotalMissedDoses
                 SetAdverseEvent
-                False
                 form
     in
     div [ class "ui form treatment-review" ]

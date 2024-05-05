@@ -6,6 +6,7 @@ import Backend.Model
 import Backend.Person.Model exposing (PatchPersonInitator(..))
 import Components.ReportToWhatsAppDialog.Model exposing (..)
 import Components.ReportToWhatsAppDialog.Utils exposing (..)
+import Maybe.Extra exposing (isJust)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Translate.Utils exposing (languageToCode)
 
@@ -23,11 +24,15 @@ update msg model =
         SetPhoneNumber value ->
             case model.state of
                 Just (PhoneInput data) ->
-                    let
-                        updatedState =
-                            PhoneInput { data | phone = value }
-                    in
-                    update (SetState <| Just updatedState) model
+                    if isJust (String.toInt value) then
+                        let
+                            updatedState =
+                                PhoneInput { data | phone = value }
+                        in
+                        update (SetState <| Just updatedState) model
+
+                    else
+                        noChange
 
                 _ ->
                     noChange

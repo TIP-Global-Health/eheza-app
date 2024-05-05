@@ -1021,7 +1021,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       // assigned to participant.
       // This is anomaly that should not happen, since participant
       // is mandatory field.
-      // However, there was one case where it happened on live,
+      // However, there were cases where it happened on live,
       // so adding this check for certainty, since this failure causes
       // health center sync to get stuck, making HC devices not usable.
       continue;
@@ -1168,6 +1168,17 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1310,6 +1321,17 @@ function hedley_stats_get_ncd_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1582,6 +1604,17 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1742,6 +1775,17 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
     ];
@@ -1978,6 +2022,17 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),

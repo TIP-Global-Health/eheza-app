@@ -3931,9 +3931,6 @@ decodeTreatmentOngoingSign =
         |> andThen
             (\sign ->
                 case sign of
-                    "taking-different-medications" ->
-                        succeed TakingDifferentMedications
-
                     "taken-as-prescribed" ->
                         succeed TakenAsPrescribed
 
@@ -3970,6 +3967,9 @@ decodeReasonForNotTaking =
 
                     "memory-problems" ->
                         succeed NotTakingMemoryProblems
+
+                    "treatment-not-started" ->
+                        succeed NotTakingTreatmentNotStarted
 
                     "other" ->
                         succeed NotTakingOther
@@ -5596,6 +5596,7 @@ decodeHIVDiagnosticsValue =
     succeed HIVDiagnosticsValue
         |> required "hiv_diagnosis_signs" (decodeEverySet decodeHIVDiagnosisSign)
         |> optional "positive_result_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodeHIVDiagnosisSign : Decoder HIVDiagnosisSign

@@ -3137,9 +3137,6 @@ encodeTreatmentOngoingSign : TreatmentOngoingSign -> Value
 encodeTreatmentOngoingSign sign =
     string <|
         case sign of
-            TakingDifferentMedications ->
-                "taking-different-medications"
-
             TakenAsPrescribed ->
                 "taken-as-prescribed"
 
@@ -3168,6 +3165,9 @@ encodeReasonForNotTakingSign reason =
 
             NotTakingMemoryProblems ->
                 "memory-problems"
+
+            NotTakingTreatmentNotStarted ->
+                "treatment-not-started"
 
             NotTakingOther ->
                 "other"
@@ -4540,6 +4540,7 @@ encodeHIVDiagnosticsValue value =
     , ( "type", string "hiv_diagnostics" )
     ]
         ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
 
 
 encodeHIVDiagnosisSign : HIVDiagnosisSign -> Value

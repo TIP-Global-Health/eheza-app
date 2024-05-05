@@ -1045,6 +1045,7 @@ function hedley_acute_illness_field_default_field_bases() {
         'adverse-event' => 'Adverse event',
         'no-money' => 'No money for medication',
         'memory-problems' => 'Memory problems',
+        'treatment-not-started' => 'Treatment not started',
         'other' => 'Other',
         'none' => 'None',
       ),
@@ -1521,7 +1522,6 @@ function hedley_acute_illness_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'taking-different-medications' => 'Taking different medications',
         'taken-as-prescribed' => 'Taken medication as prescribed',
         'missed-doses' => 'Missed any doses of medications',
         'feel-better' => 'Feel better after taking medications',
