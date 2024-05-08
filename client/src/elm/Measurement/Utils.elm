@@ -1559,7 +1559,6 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
             { form_ | feelingBetter = Just value }
     in
     ( takenAsPrescribedInputs
-        ++ missedDosesInputs
         ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
            , viewBoolInput
                 language
@@ -1568,8 +1567,9 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                 "feeling-better"
                 Nothing
            ]
+        ++ missedDosesInputs
         ++ sideEffectsInputs
-    , takenAsPrescribedTasks ++ missedDosesTasks ++ [ form.feelingBetter ] ++ sideEffectsTasks
+    , takenAsPrescribedTasks ++ [ form.feelingBetter ] ++ missedDosesTasks ++ sideEffectsTasks
     )
 
 
