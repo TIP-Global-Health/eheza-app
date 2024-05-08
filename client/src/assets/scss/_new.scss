@@ -4538,10 +4538,14 @@ div.page-case-management {
         .icon-forward {
           align-self: center;
           background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
-          background-size: 45px 50px;
-          height: 50px;
-          width: 45px;
+          height: 54px;
+          width: 54px;
         }
+
+        .icon-forward.disabled {
+          background: url(#{$img-path}icon-forward-gray.svg) center center no-repeat;
+        }
+
       }
 
       .follow-up-entry {
@@ -5568,5 +5572,5 @@ div.page-activity.hiv {
 
   .overlay .ui.tiny.active.modal {
     color: $color-text;
-  }  
+  }
 }
