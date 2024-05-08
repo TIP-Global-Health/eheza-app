@@ -46,6 +46,7 @@ import Pages.Utils
         , taskCompletedWithException
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewBoolInputReverted
         , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -1492,7 +1493,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                         ( [], [] )
             in
             ( [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
-              , viewBoolInput
+              , viewBoolInputReverted
                     language
                     form.missedDoses
                     (setTreatmentReviewBoolInputMsg missedDosesUpdateFunc)
@@ -1544,7 +1545,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                         ( [], [] )
             in
             ( [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
-              , viewBoolInput
+              , viewBoolInputReverted
                     language
                     form.sideEffects
                     (setTreatmentReviewBoolInputMsg sideEffectsUpdateFunc)

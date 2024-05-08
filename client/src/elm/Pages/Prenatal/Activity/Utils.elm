@@ -4937,6 +4937,7 @@ prenatalSymptomQuestionInputAndState language form question =
                     "symptom-question"
                     ( Translate.Left, Translate.Right )
                     "four"
+                    False
               ]
             , taskCompleted form.problemLeftLeg
             )
