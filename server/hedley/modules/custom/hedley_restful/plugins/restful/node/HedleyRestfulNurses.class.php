@@ -26,6 +26,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_marital_status',
       'field_ubudehe',
       'field_next_reminder',
+      'field_resilience_messages',
     ];
 
     foreach ($standard_fields_names as $field_name) {
