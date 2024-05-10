@@ -113,3 +113,8 @@ resilienceMessageOrderFromString value =
 
         _ ->
             Nothing
+
+
+resolveResilienceMessageId : ResilienceMessage -> String
+resolveResilienceMessageId message =
+    resilienceCategoryToString message.category ++ "-" ++ resilienceMessageOrderToString message.order

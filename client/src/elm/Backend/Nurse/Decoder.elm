@@ -1,5 +1,6 @@
 module Backend.Nurse.Decoder exposing (decodeNurse)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Nurse.Model exposing (..)
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Decoder
@@ -9,8 +10,7 @@ import Backend.Person.Decoder
         , decodeMaritalStatus
         , decodeUbudehe
         )
-import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
-import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
@@ -37,7 +37,7 @@ decodeNurse =
         |> optional "ubudehe" (nullable decodeUbudehe) Nothing
         |> optional "marital_status" (nullable decodeMaritalStatus) Nothing
         |> optional "next_reminder" (nullable decodeSecondsAsPosix) Nothing
-        |> optional "resilience_messages" (list decodeResilienceMessage) []
+        |> optional "resilience_messages" decodeResilienceMessages Dict.empty
 
 
 decodeRoles : Decoder (EverySet Role)
@@ -86,9 +86,3 @@ decodeResilienceRole =
                                 ++ " is not a recognized ResilienceRole."
                         )
             )
-
-
-decodeResilienceMessages : Decoder (List ResilienceMessage)
-decodeResilienceMessages =
-    string
-        |> andThen (\s -> succeed [])

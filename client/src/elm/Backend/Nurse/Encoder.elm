@@ -1,5 +1,6 @@
 module Backend.Nurse.Encoder exposing (encodeNurse)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Nurse.Model exposing (..)
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
@@ -17,11 +18,15 @@ encodeNurse : Nurse -> List ( String, Value )
 encodeNurse nurse =
     let
         resilienceMessages =
-            if List.isEmpty nurse.resilienceMessages then
+            let
+                messages =
+                    Dict.values nurse.resilienceMessages
+            in
+            if List.isEmpty messages then
                 []
 
             else
-                [ ( "resilience_messages", list (encodeResilienceMessage >> Json.Encode.object) nurse.resilienceMessages ) ]
+                [ ( "resilience_messages", list (encodeResilienceMessage >> Json.Encode.object) messages ) ]
     in
     [ ( "label", string nurse.name )
     , ( "health_centers", list encodeEntityUuid (EverySet.toList nurse.healthCenters) )

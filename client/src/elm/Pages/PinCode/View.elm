@@ -7,6 +7,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.Utils exposing (stockManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -346,6 +347,10 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
 resilienceReminderDialog : Language -> Time.Posix -> NominalDate -> NurseId -> Nurse -> Maybe (Html Msg)
 resilienceReminderDialog language currentTime currentDate nurseId nurse =
+    let
+        _ =
+            Debug.log "" nurse
+    in
     Maybe.andThen
         (\programStartDate ->
             resolveResilienceReminderType currentDate programStartDate
