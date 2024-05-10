@@ -6,9 +6,12 @@ import Time
 
 
 type alias ResilienceMessage =
-    { nurse : NurseId
+    { -- @todo: Remove
+      nurse : NurseId
     , category : ResilienceCategory
     , order : ResilienceMessageOrder
+
+    -- @todo: Remove
     , displayDay : Int
     , timeRead : Maybe Time.Posix
     , nextReminder : Maybe Time.Posix
