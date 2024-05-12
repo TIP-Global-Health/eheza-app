@@ -9,6 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Utils exposing (..)
 import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestionOption(..)
@@ -48,8 +49,18 @@ view language currentTime nurseId nurse db model =
         currentDate =
             fromLocalDateTime currentTime
 
+        emptyMessages =
+            generateEmptyMessages nurseId
+
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+            Maybe.map
+                (\programStartDate ->
+                    generateInboxMessages nurseId currentDate programStartDate nurse.resilienceMessages
+                        |> Dict.filter (\_ message -> isMessageUnread currentTime message)
+                )
+                nurse.resilienceProgramStartDate
+                |> Maybe.withDefault (Dict.filter (\_ message -> message.displayDay == 0) emptyMessages)
+                |> Dict.size
 
         header =
             div [ class "ui basic head segment" ]
@@ -314,7 +325,7 @@ viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> Nu
 viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
     let
         messages =
-            resolveInboxMessages currentDate programStartDate nurseId db
+            generateInboxMessages nurseId currentDate programStartDate nurse.resilienceMessages
 
         ( unread, read ) =
             Dict.toList messages
@@ -442,7 +453,7 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( String, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =

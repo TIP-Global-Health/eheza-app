@@ -15,7 +15,7 @@ decodeResilienceMessages =
     list decodeResilienceMessage
         |> andThen
             (\messages ->
-                List.map (\message -> ( resolveResilienceMessageId message, message )) messages
+                List.map (\message -> ( generateResilienceMessageId message.category message.order, message )) messages
                     |> Dict.fromList
                     |> succeed
             )

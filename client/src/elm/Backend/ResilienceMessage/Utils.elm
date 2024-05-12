@@ -119,13 +119,17 @@ resilienceMessageOrderFromString value =
             Nothing
 
 
-resolveResilienceMessageId : ResilienceMessage -> String
-resolveResilienceMessageId message =
-    resilienceCategoryToString message.category ++ "-" ++ resilienceMessageOrderToString message.order
-
-
-generateEmptyMessagesByProgramStartDate : NurseId -> NominalDate -> NominalDate -> Dict ResilienceCategory ResilienceMessage
+generateEmptyMessagesByProgramStartDate : NurseId -> NominalDate -> NominalDate -> Dict String ResilienceMessage
 generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate =
+    generateEmptyMessages nurseId
+        |> Dict.filter
+            (\_ message ->
+                Date.compare currentDate (Date.add Days (message.displayDay - 1) programStartDate) == LT
+            )
+
+
+generateEmptyMessages : NurseId -> Dict String ResilienceMessage
+generateEmptyMessages nurseId =
     Dict.toList numberOfMessagesByCategory
         |> List.map
             (\( category, numberOfMessages ) ->
@@ -136,33 +140,29 @@ generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate =
                             >> Maybe.andThen
                                 (\order ->
                                     resolveDisplayDay category order
-                                        |> Maybe.andThen
+                                        |> Maybe.map
                                             (\displayDay ->
-                                                let
-                                                    shouldShow =
-                                                        Date.compare currentDate (Date.add Days (displayDay - 1) programStartDate) == LT
-                                                in
-                                                if shouldShow then
-                                                    Just
-                                                        ( category
-                                                        , { nurse = nurseId
-                                                          , category = category
-                                                          , order = order
-                                                          , displayDay = displayDay
-                                                          , timeRead = Nothing
-                                                          , nextReminder = Nothing
-                                                          , isFavorite = False
-                                                          }
-                                                        )
-
-                                                else
-                                                    Nothing
+                                                ( generateResilienceMessageId category order
+                                                , { nurse = nurseId
+                                                  , category = category
+                                                  , order = order
+                                                  , displayDay = displayDay
+                                                  , timeRead = Nothing
+                                                  , nextReminder = Nothing
+                                                  , isFavorite = False
+                                                  }
+                                                )
                                             )
                                 )
                         )
             )
         |> List.concat
         |> Dict.fromList
+
+
+generateResilienceMessageId : ResilienceCategory -> ResilienceMessageOrder -> String
+generateResilienceMessageId category order =
+    resilienceCategoryToString category ++ "-" ++ resilienceMessageOrderToString order
 
 
 numberOfMessagesByCategory : Dict ResilienceCategory Int
