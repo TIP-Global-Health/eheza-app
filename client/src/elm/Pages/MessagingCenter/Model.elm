@@ -21,7 +21,7 @@ import Pages.Page exposing (Page)
 type alias Model =
     { activeTab : MessagingTab
     , tabScrollPosition : Int
-    , expandedMessages : EverySet ResilienceMessageId
+    , expandedMessages : EverySet ResilienceMessageNEWId
     , messageOptionsDialogState : Maybe MessageOptionsDialogState
     , kickOffForm : KickOffForm
     , monthlySurveyForm : MonthlySurveyForm
@@ -52,8 +52,8 @@ type MessagingTab
 
 
 type MessageOptionsDialogState
-    = MessageOptionsStateMain ( ResilienceMessageId, ResilienceMessage )
-    | MessageOptionsStateReminder ( ResilienceMessageId, ResilienceMessage )
+    = MessageOptionsStateMain ( ResilienceMessageNEWId, ResilienceMessage )
+    | MessageOptionsStateReminder ( ResilienceMessageNEWId, ResilienceMessage )
 
 
 type alias KickOffForm =
@@ -107,8 +107,8 @@ type Msg
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int
-    | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool
+    | ResilienceMessageClicked NurseId ResilienceMessageNEWId ResilienceMessage Bool
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
-    | ToggleMessageRead NurseId ResilienceMessageId ResilienceMessage Bool
-    | ToggleMessageFavorite NurseId ResilienceMessageId ResilienceMessage
-    | ScheduleMessageReminder Int NurseId ResilienceMessageId ResilienceMessage
+    | ToggleMessageRead NurseId ResilienceMessageNEWId ResilienceMessage Bool
+    | ToggleMessageFavorite NurseId ResilienceMessageNEWId ResilienceMessage
+    | ScheduleMessageReminder Int NurseId ResilienceMessageNEWId ResilienceMessage

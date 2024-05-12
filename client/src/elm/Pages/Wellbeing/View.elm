@@ -21,7 +21,7 @@ view language currentTime nurseId nurse db model =
             fromLocalDateTime currentTime
 
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+            resolveNumberOfUnreadMessages currentTime nurseId currentDate nurse
 
         header =
             div [ class "ui basic head segment" ]

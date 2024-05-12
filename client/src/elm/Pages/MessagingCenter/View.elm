@@ -49,18 +49,8 @@ view language currentTime nurseId nurse db model =
         currentDate =
             fromLocalDateTime currentTime
 
-        emptyMessages =
-            generateEmptyMessages nurseId
-
         numberOfUnreadMessages =
-            Maybe.map
-                (\programStartDate ->
-                    generateInboxMessages nurseId currentDate programStartDate nurse.resilienceMessages
-                        |> Dict.filter (\_ message -> isMessageUnread currentTime message)
-                )
-                nurse.resilienceProgramStartDate
-                |> Maybe.withDefault (Dict.filter (\_ message -> message.displayDay == 0) emptyMessages)
-                |> Dict.size
+            resolveNumberOfUnreadMessages currentTime nurseId currentDate nurse
 
         header =
             div [ class "ui basic head segment" ]
@@ -453,7 +443,7 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( String, ResilienceMessage ) -> Html Msg
+viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageNEWId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =

@@ -10,8 +10,6 @@ type alias ResilienceMessage =
       nurse : NurseId
     , category : ResilienceCategory
     , order : ResilienceMessageOrder
-
-    -- @todo: Remove
     , displayDay : Int
     , timeRead : Maybe Time.Posix
     , nextReminder : Maybe Time.Posix

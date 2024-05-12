@@ -27,7 +27,7 @@ type alias Nurse =
     , resilienceUbudehe : Maybe Ubudehe
     , resilienceMaritalStatus : Maybe MaritalStatus
     , resilienceNextReminder : Maybe Time.Posix
-    , resilienceMessages : Dict String ResilienceMessage
+    , resilienceMessages : Dict ResilienceMessageNEWId ResilienceMessage
     }
 
 

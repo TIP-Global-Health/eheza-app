@@ -242,7 +242,9 @@ update currentTime currentDate msg model =
                     if EverySet.member messageId model.expandedMessages then
                         ( { model | expandedMessages = EverySet.remove messageId model.expandedMessages }
                         , if updateTimeRead then
-                            [ markMessageReadAction currentTime nurseId messageId message ]
+                            [-- @todo:
+                             -- markMessageReadAction currentTime nurseId messageId message
+                            ]
 
                           else
                             []
@@ -271,17 +273,20 @@ update currentTime currentDate msg model =
                         -- To mark message as unread, we set reminder to current time,
                         -- and message read time to one second before current time.
                         -- In essence, scheduling message reminder to right now.
-                        [ Backend.ResilienceMessage.Model.UpdateMessage messageId
-                            { message
-                                | nextReminder = Just currentTime
-                                , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
-                            }
-                            |> Backend.Model.MsgResilienceMessage nurseId
-                            |> App.Model.MsgIndexedDb
+                        [-- @todo:
+                         -- Backend.ResilienceMessage.Model.UpdateMessage messageId
+                         --     { message
+                         --         | nextReminder = Just currentTime
+                         --         , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
+                         --     }
+                         --     |> Backend.Model.MsgResilienceMessage nurseId
+                         --     |> App.Model.MsgIndexedDb
                         ]
 
                     else
-                        [ markMessageReadAction currentTime nurseId messageId message ]
+                        [-- @todo:
+                         -- markMessageReadAction currentTime nurseId messageId message
+                        ]
             in
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
@@ -297,9 +302,10 @@ update currentTime currentDate msg model =
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
-            , [ Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = not message.isFavorite }
-                    |> Backend.Model.MsgResilienceMessage nurseId
-                    |> App.Model.MsgIndexedDb
+            , [-- @todo:
+               -- Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = not message.isFavorite }
+               --        |> Backend.Model.MsgResilienceMessage nurseId
+               --        |> App.Model.MsgIndexedDb
               ]
             )
 
@@ -310,13 +316,14 @@ update currentTime currentDate msg model =
               }
             , Cmd.none
             , -- Marking message as read, and setting reminder time in X hours.
-              [ Backend.ResilienceMessage.Model.UpdateMessage messageId
-                    { message
-                        | nextReminder = Just <| Time.Extra.add Time.Extra.Hour hours Time.utc currentTime
-                        , timeRead = Just currentTime
-                    }
-                    |> Backend.Model.MsgResilienceMessage nurseId
-                    |> App.Model.MsgIndexedDb
+              [-- @todo:
+               -- Backend.ResilienceMessage.Model.UpdateMessage messageId
+               --       { message
+               --           | nextReminder = Just <| Time.Extra.add Time.Extra.Hour hours Time.utc currentTime
+               --           , timeRead = Just currentTime
+               --       }
+               --       |> Backend.Model.MsgResilienceMessage nurseId
+               --       |> App.Model.MsgIndexedDb
               ]
             )
 

@@ -1,7 +1,7 @@
 module Backend.ResilienceMessage.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NurseId)
+import Backend.Entities exposing (NurseId, ResilienceMessageNEWId)
 import Backend.ResilienceMessage.Model exposing (..)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -119,7 +119,7 @@ resilienceMessageOrderFromString value =
             Nothing
 
 
-generateEmptyMessagesByProgramStartDate : NurseId -> NominalDate -> NominalDate -> Dict String ResilienceMessage
+generateEmptyMessagesByProgramStartDate : NurseId -> NominalDate -> NominalDate -> Dict ResilienceMessageNEWId ResilienceMessage
 generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate =
     generateEmptyMessages nurseId
         |> Dict.filter
@@ -128,7 +128,7 @@ generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate =
             )
 
 
-generateEmptyMessages : NurseId -> Dict String ResilienceMessage
+generateEmptyMessages : NurseId -> Dict ResilienceMessageNEWId ResilienceMessage
 generateEmptyMessages nurseId =
     Dict.toList numberOfMessagesByCategory
         |> List.map
@@ -160,7 +160,7 @@ generateEmptyMessages nurseId =
         |> Dict.fromList
 
 
-generateResilienceMessageId : ResilienceCategory -> ResilienceMessageOrder -> String
+generateResilienceMessageId : ResilienceCategory -> ResilienceMessageOrder -> ResilienceMessageNEWId
 generateResilienceMessageId category order =
     resilienceCategoryToString category ++ "-" ++ resilienceMessageOrderToString order
 
