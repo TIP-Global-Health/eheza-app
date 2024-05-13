@@ -312,13 +312,18 @@ surveyScoreDialog language =
 
 
 viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ db model =
     let
-        messages =
-            generateInboxMessages nurseId currentDate programStartDate nurse.resilienceMessages
+        nurse =
+            -- Genrate full list of messages that are supposed to
+            -- appear at inbox on current date.
+            { nurse_
+                | resilienceMessages =
+                    generateInboxMessages nurseId currentDate programStartDate nurse_.resilienceMessages
+            }
 
         ( unread, read ) =
-            Dict.toList messages
+            Dict.toList nurse.resilienceMessages
                 |> List.partition
                     (\( _, message ) ->
                         case message.timeRead of
@@ -356,7 +361,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                     List.map viewMessage unread
 
                 TabFavorites ->
-                    Dict.toList messages
+                    Dict.toList nurse.resilienceMessages
                         |> List.filter (Tuple.second >> .isFavorite)
                         |> List.map viewMessage
 
@@ -380,7 +385,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId model.activeTab)
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId nurse model.activeTab)
                 model.messageOptionsDialogState
         ]
 
@@ -490,7 +495,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             model.activeTab == TabUnread
 
         messageClickedAction =
-            ResilienceMessageClicked nurseId messageId message updateTimeRead
+            ResilienceMessageClicked messageId nurseId nurse updateTimeRead
 
         sentDate =
             Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
@@ -932,10 +937,11 @@ messageOptionsDialog :
     -> Time.Posix
     -> NominalDate
     -> NurseId
+    -> Nurse
     -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId tab state =
+messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
             let
@@ -953,7 +959,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                     in
                     [ button
                         [ class "ui fluid button cyan"
-                        , onClick <| ToggleMessageRead nurseId messageId message isRead
+                        , onClick <| ToggleMessageRead messageId nurseId nurse isRead
                         ]
                         [ img [ src "assets/images/envelope.svg" ] []
                         , text <| translate language <| Translate.ReadToggle isRead
@@ -963,7 +969,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                 favoriteUnfavorite =
                     [ button
                         [ class "ui fluid button purple"
-                        , onClick <| ToggleMessageFavorite nurseId messageId message
+                        , onClick <| ToggleMessageFavorite messageId nurseId nurse
                         ]
                         [ img [ src "assets/images/star.svg" ] []
                         , text <| translate language <| Translate.FavoriteToggle message.isFavorite
@@ -998,7 +1004,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                 buttonForView hours =
                     button
                         [ class "ui fluid button primary"
-                        , onClick <| ScheduleMessageReminder hours nurseId messageId message
+                        , onClick <| ScheduleMessageReminder hours messageId nurseId nurse
                         ]
                         [ text <| translate language <| Translate.HoursSinglePlural hours
                         ]

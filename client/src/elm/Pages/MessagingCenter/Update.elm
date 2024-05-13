@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model
-import Backend.Nurse.Model
+import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Utils
     exposing
@@ -236,15 +236,13 @@ update currentTime currentDate msg model =
             , []
             )
 
-        ResilienceMessageClicked nurseId messageId message updateTimeRead ->
+        ResilienceMessageClicked messageId nurseId nurse updateTimeRead ->
             let
                 ( updatedModel, msgs ) =
                     if EverySet.member messageId model.expandedMessages then
                         ( { model | expandedMessages = EverySet.remove messageId model.expandedMessages }
                         , if updateTimeRead then
-                            [-- @todo:
-                             -- markMessageReadAction currentTime nurseId messageId message
-                            ]
+                            markMessageReadAction currentTime messageId nurseId nurse
 
                           else
                             []
@@ -266,27 +264,25 @@ update currentTime currentDate msg model =
             , []
             )
 
-        ToggleMessageRead nurseId messageId message isRead ->
+        ToggleMessageRead messageId nurseId nurse isRead ->
             let
                 action =
                     if isRead then
                         -- To mark message as unread, we set reminder to current time,
                         -- and message read time to one second before current time.
                         -- In essence, scheduling message reminder to right now.
-                        [-- @todo:
-                         -- Backend.ResilienceMessage.Model.UpdateMessage messageId
-                         --     { message
-                         --         | nextReminder = Just currentTime
-                         --         , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
-                         --     }
-                         --     |> Backend.Model.MsgResilienceMessage nurseId
-                         --     |> App.Model.MsgIndexedDb
-                        ]
+                        updateMessageAction messageId
+                            nurseId
+                            nurse
+                            (\message ->
+                                { message
+                                    | nextReminder = Just currentTime
+                                    , timeRead = Just <| Time.Extra.add Time.Extra.Second -1 Time.utc currentTime
+                                }
+                            )
 
                     else
-                        [-- @todo:
-                         -- markMessageReadAction currentTime nurseId messageId message
-                        ]
+                        markMessageReadAction currentTime messageId nurseId nurse
             in
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
@@ -296,40 +292,63 @@ update currentTime currentDate msg model =
             , action
             )
 
-        ToggleMessageFavorite nurseId messageId message ->
+        ToggleMessageFavorite messageId nurseId nurse ->
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
-            , [-- @todo:
-               -- Backend.ResilienceMessage.Model.UpdateMessage messageId { message | isFavorite = not message.isFavorite }
-               --        |> Backend.Model.MsgResilienceMessage nurseId
-               --        |> App.Model.MsgIndexedDb
-              ]
+            , updateMessageAction messageId
+                nurseId
+                nurse
+                (\message -> { message | isFavorite = not message.isFavorite })
             )
 
-        ScheduleMessageReminder hours nurseId messageId message ->
+        ScheduleMessageReminder hours messageId nurseId nurse ->
             ( { model
                 | expandedMessages = EverySet.remove messageId model.expandedMessages
                 , messageOptionsDialogState = Nothing
               }
             , Cmd.none
             , -- Marking message as read, and setting reminder time in X hours.
-              [-- @todo:
-               -- Backend.ResilienceMessage.Model.UpdateMessage messageId
-               --       { message
-               --           | nextReminder = Just <| Time.Extra.add Time.Extra.Hour hours Time.utc currentTime
-               --           , timeRead = Just currentTime
-               --       }
-               --       |> Backend.Model.MsgResilienceMessage nurseId
-               --       |> App.Model.MsgIndexedDb
-              ]
+              updateMessageAction messageId
+                nurseId
+                nurse
+                (\message ->
+                    { message
+                        | nextReminder = Just <| Time.Extra.add Time.Extra.Hour hours Time.utc currentTime
+                        , timeRead = Just currentTime
+                    }
+                )
             )
 
 
-markMessageReadAction : Time.Posix -> NurseId -> ResilienceMessageId -> ResilienceMessage -> App.Model.Msg
-markMessageReadAction currentTime nurseId messageId message =
-    Backend.ResilienceMessage.Model.UpdateMessage messageId { message | timeRead = Just currentTime }
-        |> Backend.Model.MsgResilienceMessage nurseId
-        |> App.Model.MsgIndexedDb
+updateMessageAction : ResilienceMessageNEWId -> NurseId -> Nurse -> (ResilienceMessage -> ResilienceMessage) -> List App.Model.Msg
+updateMessageAction messageId nurseId nurse updateFunc =
+    Dict.get messageId nurse.resilienceMessages
+        |> Maybe.map
+            (\message ->
+                let
+                    updatedNurse =
+                        { nurse
+                            | resilienceMessages =
+                                Dict.insert
+                                    messageId
+                                    (updateFunc message)
+                                    nurse.resilienceMessages
+                        }
+                in
+                [ Backend.Nurse.Model.UpdateNurse nurseId updatedNurse
+                    |> Backend.Model.MsgNurse nurseId
+                    |> App.Model.MsgIndexedDb
+                ]
+            )
+        |> Maybe.withDefault []
+
+
+markMessageReadAction : Time.Posix -> ResilienceMessageNEWId -> NurseId -> Nurse -> List App.Model.Msg
+markMessageReadAction currentTime messageId nurseId nurse =
+    updateMessageAction messageId
+        nurseId
+        nurse
+        (\message -> { message | timeRead = Just currentTime })

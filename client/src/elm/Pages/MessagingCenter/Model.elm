@@ -107,8 +107,8 @@ type Msg
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int
-    | ResilienceMessageClicked NurseId ResilienceMessageNEWId ResilienceMessage Bool
+    | ResilienceMessageClicked ResilienceMessageNEWId NurseId Nurse Bool
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
-    | ToggleMessageRead NurseId ResilienceMessageNEWId ResilienceMessage Bool
-    | ToggleMessageFavorite NurseId ResilienceMessageNEWId ResilienceMessage
-    | ScheduleMessageReminder Int NurseId ResilienceMessageNEWId ResilienceMessage
+    | ToggleMessageRead ResilienceMessageNEWId NurseId Nurse Bool
+    | ToggleMessageFavorite ResilienceMessageNEWId NurseId Nurse
+    | ScheduleMessageReminder Int ResilienceMessageNEWId NurseId Nurse
