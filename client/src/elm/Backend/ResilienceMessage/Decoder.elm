@@ -24,7 +24,6 @@ decodeResilienceMessages =
 decodeResilienceMessage : Decoder ResilienceMessage
 decodeResilienceMessage =
     succeed ResilienceMessage
-        |> required "nurse" decodeEntityUuid
         |> required "resilience_category" decodeResilienceCategory
         |> required "resilience_order" decodeResilienceMessageOrder
         |> required "display_day" decodeInt

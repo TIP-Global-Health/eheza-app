@@ -119,17 +119,17 @@ resilienceMessageOrderFromString value =
             Nothing
 
 
-generateEmptyMessagesByProgramStartDate : NurseId -> NominalDate -> NominalDate -> Dict ResilienceMessageNEWId ResilienceMessage
-generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate =
-    generateEmptyMessages nurseId
-        |> Dict.filter
-            (\_ message ->
-                Date.compare currentDate (Date.add Days (message.displayDay - 1) programStartDate) == LT
-            )
+generateEmptyMessagesByProgramStartDate : NominalDate -> NominalDate -> Dict ResilienceMessageNEWId ResilienceMessage
+generateEmptyMessagesByProgramStartDate currentDate programStartDate =
+    Dict.filter
+        (\_ message ->
+            Date.compare currentDate (Date.add Days (message.displayDay - 1) programStartDate) == LT
+        )
+        emptyMessagesDict
 
 
-generateEmptyMessages : NurseId -> Dict ResilienceMessageNEWId ResilienceMessage
-generateEmptyMessages nurseId =
+emptyMessagesDict : Dict ResilienceMessageNEWId ResilienceMessage
+emptyMessagesDict =
     Dict.toList numberOfMessagesByCategory
         |> List.map
             (\( category, numberOfMessages ) ->
@@ -143,8 +143,7 @@ generateEmptyMessages nurseId =
                                         |> Maybe.map
                                             (\displayDay ->
                                                 ( generateResilienceMessageId category order
-                                                , { nurse = nurseId
-                                                  , category = category
+                                                , { category = category
                                                   , order = order
                                                   , displayDay = displayDay
                                                   , timeRead = Nothing

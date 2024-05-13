@@ -6,9 +6,7 @@ import Time
 
 
 type alias ResilienceMessage =
-    { -- @todo: Remove
-      nurse : NurseId
-    , category : ResilienceCategory
+    { category : ResilienceCategory
     , order : ResilienceMessageOrder
     , displayDay : Int
     , timeRead : Maybe Time.Posix

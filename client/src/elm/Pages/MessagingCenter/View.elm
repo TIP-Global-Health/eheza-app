@@ -50,7 +50,7 @@ view language currentTime nurseId nurse db model =
             fromLocalDateTime currentTime
 
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentTime nurseId currentDate nurse
+            resolveNumberOfUnreadMessages currentTime currentDate nurse
 
         header =
             div [ class "ui basic head segment" ]
@@ -319,7 +319,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
             -- appear at inbox on current date.
             { nurse_
                 | resilienceMessages =
-                    generateInboxMessages nurseId currentDate programStartDate nurse_.resilienceMessages
+                    generateInboxMessages currentDate programStartDate nurse_.resilienceMessages
             }
 
         ( unread, read ) =

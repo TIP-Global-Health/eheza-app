@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
-import Backend.ResilienceMessage.Utils exposing (generateEmptyMessages, generateEmptyMessagesByProgramStartDate)
+import Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
@@ -22,9 +22,9 @@ monthlySurveyQuestions =
     ]
 
 
-generateInboxMessages : NurseId -> NominalDate -> NominalDate -> Dict String ResilienceMessage -> Dict String ResilienceMessage
-generateInboxMessages nurseId currentDate programStartDate recordedMessage =
-    generateEmptyMessagesByProgramStartDate nurseId currentDate programStartDate
+generateInboxMessages : NominalDate -> NominalDate -> Dict String ResilienceMessage -> Dict String ResilienceMessage
+generateInboxMessages currentDate programStartDate recordedMessage =
+    generateEmptyMessagesByProgramStartDate currentDate programStartDate
         |> Dict.foldl
             (\key value accum ->
                 Dict.get key recordedMessage
@@ -37,18 +37,16 @@ generateInboxMessages nurseId currentDate programStartDate recordedMessage =
             Dict.empty
 
 
-resolveNumberOfUnreadMessages : Time.Posix -> NurseId -> NominalDate -> Nurse -> Int
-resolveNumberOfUnreadMessages currentTime nurseId currentDate nurse =
+resolveNumberOfUnreadMessages : Time.Posix -> NominalDate -> Nurse -> Int
+resolveNumberOfUnreadMessages currentTime currentDate nurse =
     Maybe.map
         (\programStartDate ->
-            generateInboxMessages nurseId currentDate programStartDate nurse.resilienceMessages
+            generateInboxMessages currentDate programStartDate nurse.resilienceMessages
                 |> Dict.filter (\_ message -> isMessageUnread currentTime message)
         )
         nurse.resilienceProgramStartDate
         |> Maybe.withDefault
-            (generateEmptyMessages nurseId
-                |> Dict.filter (\_ message -> message.displayDay == 0)
-            )
+            (Dict.filter (\_ message -> message.displayDay == 0) emptyMessagesDict)
         |> Dict.size
 
 
