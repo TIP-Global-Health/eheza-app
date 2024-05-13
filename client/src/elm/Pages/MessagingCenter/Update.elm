@@ -323,7 +323,7 @@ update currentTime currentDate msg model =
             )
 
 
-updateMessageAction : ResilienceMessageId  -> NurseId -> Nurse -> (ResilienceMessage -> ResilienceMessage) -> List App.Model.Msg
+updateMessageAction : ResilienceMessageId -> NurseId -> Nurse -> (ResilienceMessage -> ResilienceMessage) -> List App.Model.Msg
 updateMessageAction messageId nurseId nurse updateFunc =
     Dict.get messageId nurse.resilienceMessages
         |> Maybe.map
@@ -346,7 +346,7 @@ updateMessageAction messageId nurseId nurse updateFunc =
         |> Maybe.withDefault []
 
 
-markMessageReadAction : Time.Posix -> ResilienceMessageId  -> NurseId -> Nurse -> List App.Model.Msg
+markMessageReadAction : Time.Posix -> ResilienceMessageId -> NurseId -> Nurse -> List App.Model.Msg
 markMessageReadAction currentTime messageId nurseId nurse =
     updateMessageAction messageId
         nurseId
