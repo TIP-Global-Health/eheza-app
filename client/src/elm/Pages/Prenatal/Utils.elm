@@ -333,21 +333,35 @@ emergencyReferralDiagnosesRecurrent =
 
 hierarchalBloodPressureDiagnoses : List PrenatalDiagnosis
 hierarchalBloodPressureDiagnoses =
+    hierarchalBloodPressureDiagnosesInitialPhase
+        ++ hierarchalBloodPressureDiagnosesRecurrentPhase
+
+
+hierarchalBloodPressureDiagnosesInitialPhase : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnosesInitialPhase =
     [ -- Emergency diagnoses.
       DiagnosisEclampsia
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
 
     -- Non emergency diagnoses.
     , DiagnosisSeverePreeclampsiaInitialPhase
-    , DiagnosisSeverePreeclampsiaRecurrentPhase
     , DiagnosisModeratePreeclampsiaInitialPhase
-    , DiagnosisModeratePreeclampsiaRecurrentPhase
     , DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionImmediate
+    ]
+
+
+hierarchalBloodPressureDiagnosesRecurrentPhase : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnosesRecurrentPhase =
+    [ -- Emergency diagnoses.
+      DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+    -- Non emergency diagnoses.
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionAfterRecheck
     ]
 
