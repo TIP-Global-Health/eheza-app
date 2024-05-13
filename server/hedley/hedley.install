@@ -713,3 +713,10 @@ function hedley_update_7042() {
 function hedley_update_7043() {
   module_enable(['hedley_hiv']);
 }
+
+/**
+ * Deletes Resilience Message content type.
+ */
+function hedley_update_7044() {
+  node_type_delete('resilience_message');
+}

@@ -45,8 +45,3 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { updateMessage = NotAsked }
-
-
-type Msg
-    = UpdateMessage ResilienceMessageId ResilienceMessage
-    | HandleUpdatedMessage (WebData ())
