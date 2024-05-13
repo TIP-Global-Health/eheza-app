@@ -448,7 +448,7 @@ viewTabs language model =
             ++ [ scrollRightButton ]
 
 
-viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageNEWId, ResilienceMessage ) -> Html Msg
+viewResilienceMessage : Language -> NurseId -> Nurse -> Model -> ( ResilienceMessageId, ResilienceMessage ) -> Html Msg
 viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =

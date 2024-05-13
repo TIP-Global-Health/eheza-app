@@ -1399,16 +1399,8 @@ type ResilienceSurveyUuidType
     = ResilienceSurveyUuidType
 
 
-type alias ResilienceMessageNEWId =
-    String
-
-
 type alias ResilienceMessageId =
-    EntityUuid ResilienceMessageUuidType
-
-
-type ResilienceMessageUuidType
-    = ResilienceMessageUuidType
+    String
 
 
 type alias PrenatalPartnerHIVTestId =
