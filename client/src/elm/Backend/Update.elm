@@ -7055,10 +7055,15 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                 value.testsWithFollowUp
 
                                         reviewState =
-                                            -- For lab technician, request review if all labs were
-                                            -- completed, and review state was not set previously.
                                             if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
                                                 Just LabsResultsReviewRequested
+
+                                            else if not isLabTech && allLabsCompleted then
+                                                -- For nurse, set review state to completed,
+                                                -- if all labs were completed.
+                                                Just LabsResultsReviewCompleted
 
                                             else
                                                 value.reviewState
