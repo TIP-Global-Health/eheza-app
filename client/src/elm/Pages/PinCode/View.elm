@@ -347,10 +347,6 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
 resilienceReminderDialog : Language -> Time.Posix -> NominalDate -> NurseId -> Nurse -> Maybe (Html Msg)
 resilienceReminderDialog language currentTime currentDate nurseId nurse =
-    let
-        _ =
-            Debug.log "" nurse
-    in
     Maybe.andThen
         (\programStartDate ->
             resolveResilienceReminderType currentDate programStartDate
