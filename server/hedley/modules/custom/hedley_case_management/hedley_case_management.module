@@ -61,6 +61,15 @@ function hedley_case_management_node_insert($node) {
   ];
   if (in_array($node->type, $tuberculosis_triggers)) {
     hedley_case_management_handle_tuberculosis_insert_trigger($node);
+    return;
+  }
+
+  $hiv_triggers = [
+    'hiv_follow_up',
+    'hiv_encounter',
+  ];
+  if (in_array($node->type, $hiv_triggers)) {
+    hedley_case_management_handle_hiv_insert_trigger($node);
   }
 }
 
@@ -422,6 +431,68 @@ function hedley_case_management_resolve_tuberculosis_follow_ups($person_id, $to_
 }
 
 /**
+ * Processes create events that trigger hiv follow-ups resolution.
+ *
+ * @param object $node
+ *   Created node.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_case_management_handle_hiv_insert_trigger($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  if ($node->type === 'hiv_encounter') {
+    // At encounter, person is resolved from the participant.
+    $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+  }
+  else {
+    // At follow-ups, person is on the node itself.
+    $person_id = $wrapper->field_person->getIdentifier();
+  }
+
+  if (empty($person_id)) {
+    // Failed to load required data.
+    return;
+  }
+
+  // Trigger follow-ups resolution.
+  hedley_case_management_resolve_hiv_follow_ups($person_id, $node->nid);
+}
+
+/**
+ * Marks hiv follow-ups belonging to person as resolved.
+ *
+ * @param int $person_id
+ *   Person ID.
+ * @param int $to_nid
+ *   Optional; IDs of loaded follow-ups should be below this node ID.
+ * @param int $limit
+ *   Maximal number of follow-ups to load. Defaults to 200.
+ */
+function hedley_case_management_resolve_hiv_follow_ups($person_id, $to_nid = NULL, $limit = 200) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'hiv_follow_up')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->addTag('exclude_resolved')
+    ->range(0, $limit);
+
+  if (!empty($to_nid)) {
+    $query->propertyCondition('nid', $to_nid, '<');
+  }
+
+  $result = $query->execute();
+  if (empty($result['node'])) {
+    return;
+  }
+
+  foreach (array_keys($result['node']) as $follow_up) {
+    hedley_case_management_resolve_follow_up($follow_up);
+  }
+}
+
+/**
  * Processes update that trigger acute illness / prenatal follow-ups resolution.
  *
  * @param object $node
@@ -433,7 +504,7 @@ function hedley_case_management_handle_update_trigger($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
 
   $type = $wrapper->field_encounter_type->value();
-  if (!in_array($type, ['acute-illness', 'antenatal', 'tuberculosis'])) {
+  if (!in_array($type, ['acute-illness', 'antenatal', 'tuberculosis', 'hiv'])) {
     // We only track resolution of illnesses and pregnancies.
     return;
   }
@@ -462,8 +533,14 @@ function hedley_case_management_handle_update_trigger($node) {
   }
 
   if ($type === 'tuberculosis') {
-    // Dealing with tuberculosis illness. Trigger follow ups resolution.
+    // Dealing with tuberculosis illness. Trigger follow-ups resolution.
     hedley_case_management_resolve_tuberculosis_follow_ups($person_id);
+    return;
+  }
+
+  if ($type === 'hiv') {
+    // Dealing with HIV illness. Trigger follow-ups resolution.
+    hedley_case_management_resolve_hiv_follow_ups($person_id);
     return;
   }
 

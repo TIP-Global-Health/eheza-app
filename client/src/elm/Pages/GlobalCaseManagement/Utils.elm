@@ -13,7 +13,7 @@ import Backend.Measurement.Model
         , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Utils exposing (tuberculosisManagementEnabled)
+import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabled)
 import Backend.Village.Model exposing (Village)
 import Backend.Village.Utils exposing (isVillageResident)
 import Date exposing (Unit(..))
@@ -22,6 +22,7 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Utils
 import RemoteData exposing (WebData)
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
 import SyncManager.Model exposing (SiteFeature)
 
 
@@ -34,6 +35,12 @@ chwFilters features =
     ]
         ++ (if tuberculosisManagementEnabled features then
                 [ FilterTuberculosis ]
+
+            else
+                []
+           )
+        ++ (if hivManagementEnabled features then
+                [ FilterHIV ]
 
             else
                 []
@@ -380,6 +387,73 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
         itemsFromTuberculosis
 
 
+generateHIVFollowUps :
+    NominalDate
+    -> ModelIndexedDb
+    -> FollowUpMeasurements
+    -> Dict ( Maybe IndividualEncounterParticipantId, PersonId ) HIVFollowUpItem
+generateHIVFollowUps limitDate db followUps =
+    let
+        encountersData =
+            generateHIVEncounters followUps
+                |> EverySet.toList
+                |> List.filterMap
+                    (\encounterId ->
+                        Dict.get encounterId db.hivEncounters
+                            |> Maybe.andThen RemoteData.toMaybe
+                            |> Maybe.map (\encounter -> ( encounterId, encounter.participant ))
+                    )
+                |> Dict.fromList
+    in
+    Dict.values followUps.hiv
+        |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+        |> List.foldl
+            (\item accum ->
+                let
+                    personId =
+                        item.participantId
+
+                    encounterIdAsString =
+                        Maybe.map fromEntityUuid item.encounterId
+                in
+                if encounterIdAsString == Just "dummy" then
+                    let
+                        newItem =
+                            HIVFollowUpItem item.dateMeasured "" Nothing item.value
+                    in
+                    Dict.insert ( Nothing, personId ) newItem accum
+
+                else
+                    let
+                        encounterData =
+                            Maybe.andThen
+                                (\encounterId -> Dict.get encounterId encountersData)
+                                item.encounterId
+                    in
+                    encounterData
+                        |> Maybe.map
+                            (\participantId ->
+                                let
+                                    newItem =
+                                        HIVFollowUpItem item.dateMeasured "" item.encounterId item.value
+                                in
+                                Dict.get ( Just participantId, personId ) accum
+                                    |> Maybe.map
+                                        (\member ->
+                                            if Date.compare newItem.dateMeasured member.dateMeasured == GT then
+                                                Dict.insert ( Just participantId, personId ) newItem accum
+
+                                            else
+                                                accum
+                                        )
+                                    |> Maybe.withDefault
+                                        (Dict.insert ( Just participantId, personId ) newItem accum)
+                            )
+                        |> Maybe.withDefault accum
+            )
+            Dict.empty
+
+
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
 filterResolvedFollowUps limitDate resolutionDate =
     Maybe.map
@@ -420,6 +494,11 @@ generateTuberculosisEncounters followUps =
     generateEncountersIdsFromMeasurements .tuberculosis followUps
 
 
+generateHIVEncounters : FollowUpMeasurements -> EverySet HIVEncounterId
+generateHIVEncounters followUps =
+    generateEncountersIdsFromMeasurements .hiv followUps
+
+
 generateEncountersIdsFromMeasurements :
     (FollowUpMeasurements -> Dict measurementId { a | encounterId : Maybe encounterId })
     -> FollowUpMeasurements
@@ -444,6 +523,11 @@ generatePrenatalParticipants encounters db =
 generateTuberculosisParticipants : EverySet TuberculosisEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
 generateTuberculosisParticipants encounters db =
     generateParticipantsIdsByEncounters .tuberculosisEncounters encounters db
+
+
+generateHIVParticipants : EverySet HIVEncounterId -> ModelIndexedDb -> EverySet IndividualEncounterParticipantId
+generateHIVParticipants encounters db =
+    generateParticipantsIdsByEncounters .hivEncounters encounters db
 
 
 generateParticipantsIdsByEncounters :
@@ -558,79 +642,6 @@ labsResultsTestData currentDate results =
         )
 
 
-generateFollowUpsForResidents :
-    NominalDate
-    -> Village
-    -> ModelIndexedDb
-    -> FollowUpMeasurements
-    -> FollowUpPatients
-    -> FollowUpMeasurements
-generateFollowUpsForResidents currentDate village db followUps followUpPatients =
-    let
-        residentsForNutrition =
-            filterResidents db village followUpPatients.nutrition
-
-        residentsForAccuteIllness =
-            filterResidents db village followUpPatients.acuteIllness
-
-        residentsForPrenatal =
-            filterResidents db village followUpPatients.prenatal
-
-        residentsForImmunization =
-            filterResidents db village followUpPatients.immunization
-
-        nutritionGroup =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.nutritionGroup
-
-        nutritionIndividual =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.nutritionIndividual
-
-        wellChild =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForNutrition
-                )
-                followUps.wellChild
-
-        acuteIllness =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForAccuteIllness
-                )
-                followUps.acuteIllness
-
-        prenatal =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForPrenatal
-                )
-                followUps.prenatal
-
-        nextVisit =
-            Dict.filter
-                (\_ followUp ->
-                    List.member followUp.participantId residentsForImmunization
-                )
-                followUps.nextVisit
-    in
-    { followUps
-        | nutritionGroup = nutritionGroup
-        , nutritionIndividual = nutritionIndividual
-        , wellChild = wellChild
-        , acuteIllness = acuteIllness
-        , prenatal = prenatal
-        , nextVisit = nextVisit
-    }
-
-
 resolveUniquePatientsFromFollowUps : NominalDate -> FollowUpMeasurements -> FollowUpPatients
 resolveUniquePatientsFromFollowUps limitDate followUps =
     let
@@ -655,22 +666,22 @@ resolveUniquePatientsFromFollowUps limitDate followUps =
             ++ peopleForNutritionIndividual
             ++ peopleForWellChild
             |> Pages.Utils.unique
-    , acuteIllness = uniquePatientsFromFollowUps .acuteIllness
-    , prenatal = uniquePatientsFromFollowUps .prenatal
     , immunization = uniquePatientsFromFollowUps .nextVisit
-    , tuberculosis = uniquePatientsFromFollowUps .tuberculosis
     }
 
 
-filterResidents : ModelIndexedDb -> Village -> List PersonId -> List PersonId
-filterResidents db village =
-    List.filter
-        (\personId ->
-            Dict.get personId db.people
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (\person ->
-                        isVillageResident person village
-                    )
-                |> Maybe.withDefault False
-        )
+filterFollowUpsOfResidents : List PersonId -> FollowUpMeasurements -> FollowUpMeasurements
+filterFollowUpsOfResidents residents followUps =
+    { followUps
+        | nutritionGroup = filterByParticipant residents followUps.nutritionGroup
+        , nutritionIndividual = filterByParticipant residents followUps.nutritionIndividual
+        , wellChild = filterByParticipant residents followUps.wellChild
+        , acuteIllness = filterByParticipant residents followUps.acuteIllness
+        , prenatal = filterByParticipant residents followUps.prenatal
+        , nextVisit = filterByParticipant residents followUps.nextVisit
+    }
+
+
+filterByParticipant : List PersonId -> Dict id { a | participantId : PersonId } -> Dict id { a | participantId : PersonId }
+filterByParticipant residents followUps =
+    Dict.filter (\_ followUp -> List.member followUp.participantId residents) followUps

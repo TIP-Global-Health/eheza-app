@@ -73,6 +73,10 @@ type alias TuberculosisMeasurement value =
     Measurement TuberculosisEncounterId value
 
 
+type alias HIVMeasurement value =
+    Measurement HIVEncounterId value
+
+
 
 -- GROUP MEASUREMENT TYPES
 
@@ -2956,15 +2960,128 @@ type alias TuberculosisSymptomReviewValue =
 
 
 type TuberculosisSymptom
-    = SymptomNightSweats
-    | SymptomBloodInSputum
-    | SymptomWeightLoss
-    | SymptomSevereFatigue
+    = TuberculosisSymptomNightSweats
+    | TuberculosisSymptomBloodInSputum
+    | TuberculosisSymptomWeightLoss
+    | TuberculosisSymptomSevereFatigue
     | NoTuberculosisSymptoms
 
 
 type alias TuberculosisTreatmentReview =
     TuberculosisMeasurement TreatmentOngoingValue
+
+
+
+-- HIV:
+
+
+type alias HIVDiagnostics =
+    HIVMeasurement HIVDiagnosticsValue
+
+
+type alias HIVDiagnosticsValue =
+    { signs : EverySet HIVDiagnosisSign
+    , positiveResultDate : Maybe NominalDate
+    }
+
+
+type HIVDiagnosisSign
+    = HIVResultPositiveReported
+    | HIVResultPositiveKnown
+    | HIVResultDateEstimated
+    | NoHIVDiagnosisSigns
+
+
+type alias HIVFollowUp =
+    HIVMeasurement FollowUpValue
+
+
+type alias HIVHealthEducation =
+    HIVMeasurement HIVHealthEducationValue
+
+
+type alias HIVHealthEducationValue =
+    EverySet HIVHealthEducationSign
+
+
+type HIVHealthEducationSign
+    = EducationPositiveResult
+    | EducationSaferSexPractices
+    | EducationEncouragedPartnerTesting
+    | EducationFamilyPlanningOptions
+    | NoHIVHealthEducationSigns
+
+
+type alias HIVMedication =
+    HIVMeasurement HIVMedicationValue
+
+
+type alias HIVMedicationValue =
+    EverySet HIVPrescribedMedication
+
+
+type HIVPrescribedMedication
+    = HIVMedicationDolutegravirLamivudineTenofovir
+    | HIVMedicationAtazanavirRitonavir
+    | HIVMedicationDolutegravir
+    | HIVMedicationAbacavirLamivudine
+    | HIVMedicationLamivudineTenofovir
+    | HIVMedicationZidovudine
+    | HIVMedicationLamivudineZidovudineNevirapine
+    | HIVMedicationEfavirenzLamivudineTenofovir
+    | HIVMedicationLamivudineZidovudine
+    | HIVMedicationLopinavirRitonavir
+    | HIVMedicationDarunavirRitonavir
+    | HIVMedicationDarunavirCobicistat
+    | HIVMedicationRaltegravir
+    | HIVMedicationEfavirenz
+    | HIVMedicationNevirapine
+    | HIVMedicationEtravirine
+    | HIVMedicationTenofovir
+    | HIVMedicationLamivudine
+    | HIVMedicationAbacavir
+    | HIVMedicationBactrim
+    | HIVMedicationDapsone
+    | HIVMedicationIsoniazid
+    | HIVMedicationFluconazole
+    | HIVMedicationAzithromycin
+    | NoHIVPrescribedMedications
+
+
+type alias HIVReferral =
+    HIVMeasurement SendToHCValue
+
+
+type alias HIVSymptomReview =
+    HIVMeasurement HIVSymptomReviewValue
+
+
+type alias HIVSymptomReviewValue =
+    EverySet HIVSymptom
+
+
+type HIVSymptom
+    = HIVSymptomFever
+    | HIVSymptomFatigue
+    | HIVSymptomSwollenLymphNodes
+    | HIVSymptomSoreThroat
+    | HIVSymptomRash
+    | HIVSymptomMuscleJointPain
+    | HIVSymptomHeadache
+    | HIVSymptomSevereAbdominalPain
+    | HIVSymptomNightSweats
+    | HIVSymptomDiarrhea
+    | HIVSymptomWeightLoss
+    | HIVSymptomCoughingUpBlood
+    | HIVSymptomHairLoss
+    | HIVSymptomMouthUlcers
+    | HIVSymptomDifficultyBreathing
+    | HIVSymptomVomiting
+    | NoHIVSymptoms
+
+
+type alias HIVTreatmentReview =
+    HIVMeasurement TreatmentOngoingValue
 
 
 
@@ -3238,6 +3355,7 @@ type alias FollowUpMeasurements =
     , prenatal : Dict PrenatalFollowUpId PrenatalFollowUp
     , wellChild : Dict WellChildFollowUpId WellChildFollowUp
     , tuberculosis : Dict TuberculosisFollowUpId TuberculosisFollowUp
+    , hiv : Dict HIVFollowUpId HIVFollowUp
     , traceContacts : Dict AcuteIllnessTraceContactId AcuteIllnessTraceContact
     , prenatalLabs : Dict PrenatalLabsResultsId PrenatalLabsResults
     , ncdLabs : Dict NCDLabsResultsId NCDLabsResults
@@ -3343,6 +3461,17 @@ type alias TuberculosisMeasurements =
     , referral : Maybe ( TuberculosisReferralId, TuberculosisReferral )
     , symptomReview : Maybe ( TuberculosisSymptomReviewId, TuberculosisSymptomReview )
     , treatmentReview : Maybe ( TuberculosisTreatmentReviewId, TuberculosisTreatmentReview )
+    }
+
+
+type alias HIVMeasurements =
+    { diagnostics : Maybe ( HIVDiagnosticsId, HIVDiagnostics )
+    , followUp : Maybe ( HIVFollowUpId, HIVFollowUp )
+    , healthEducation : Maybe ( HIVHealthEducationId, HIVHealthEducation )
+    , medication : Maybe ( HIVMedicationId, HIVMedication )
+    , referral : Maybe ( HIVReferralId, HIVReferral )
+    , symptomReview : Maybe ( HIVSymptomReviewId, HIVSymptomReview )
+    , treatmentReview : Maybe ( HIVTreatmentReviewId, HIVTreatmentReview )
     }
 
 

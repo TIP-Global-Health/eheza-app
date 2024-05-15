@@ -55,6 +55,19 @@ update currentDate participantId maybeParticipant msg model =
                 )
                 model
 
+        CloseHIVSession outcome ->
+            updateIndividualEncounterParticipant currentDate
+                participantId
+                maybeParticipant
+                (\participant ->
+                    { participant
+                        | endDate = Just currentDate
+                        , dateConcluded = Just currentDate
+                        , outcome = Just (HIV outcome)
+                    }
+                )
+                model
+
         SetEddDate eddDate ->
             updateIndividualEncounterParticipant currentDate
                 participantId

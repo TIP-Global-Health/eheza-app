@@ -2,25 +2,21 @@ module Pages.Clinical.View exposing (view)
 
 import App.Model exposing (Msg(..))
 import AssocList as Dict
-import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
-import Backend.Model exposing (MsgIndexedDb(..))
-import Backend.Village.Utils exposing (getVillageClinicId)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
-import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 
 
-view : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> App.Model.Model -> Html App.Model.Msg
-view language currentDate ( healthCenterId, maybeVillageId ) isChw model =
+view : Language -> NominalDate -> HealthCenterId -> Bool -> App.Model.Model -> Html App.Model.Msg
+view language currentDate healthCenterId isChw model =
     div [ class "ui basic segment page-clinical" ]
         [ viewHeader language
-        , viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw model
+        , viewContent language currentDate isChw model
             |> viewBySyncStatus language healthCenterId model.syncManager.syncInfoAuthorities
         ]
 
@@ -38,50 +34,15 @@ viewHeader language =
         ]
 
 
-viewContent : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) -> Bool -> App.Model.Model -> Html App.Model.Msg
-viewContent language currentDate ( healthCenterId, maybeVillageId ) isChw model =
+viewContent : Language -> NominalDate -> Bool -> App.Model.Model -> Html App.Model.Msg
+viewContent language currentDate isChw model =
     let
         groupAssessmentButtonAction =
-            Maybe.andThen
-                (\villageId ->
-                    -- There is one clinic for each village, so, if we got village ID,
-                    -- we should be able to find the ID of its clinic.
-                    getVillageClinicId villageId model.indexedDb
-                        |> Maybe.map
-                            (\clinicId ->
-                                let
-                                    clinicSessions =
-                                        Dict.get clinicId model.indexedDb.sessionsByClinic
-                                            |> Maybe.withDefault NotAsked
-                                            |> RemoteData.toMaybe
-                                            |> Maybe.map Dict.toList
-                                            |> Maybe.withDefault []
+            if isChw then
+                SetActivePage <| UserPage GroupEncounterTypesPage
 
-                                    currentDaySessionId =
-                                        List.filter (Tuple.second >> .startDate >> (==) currentDate) clinicSessions
-                                            |> List.head
-                                            |> Maybe.map Tuple.first
-                                in
-                                currentDaySessionId
-                                    |> Maybe.map
-                                        (\sessionId ->
-                                            SessionPage sessionId AttendancePage
-                                                |> UserPage
-                                                |> SetActivePage
-                                        )
-                                    |> Maybe.withDefault
-                                        ({ startDate = currentDate
-                                         , endDate = Nothing
-                                         , clinicId = clinicId
-                                         , clinicType = Chw
-                                         }
-                                            |> PostSession
-                                            |> MsgIndexedDb
-                                        )
-                            )
-                )
-                maybeVillageId
-                |> Maybe.withDefault (SetActivePage <| UserPage ClinicsPage)
+            else
+                SetActivePage <| UserPage ClinicsPage
 
         viewButton label class_ action =
             button

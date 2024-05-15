@@ -31,6 +31,7 @@ fetch currentDate personId db =
     in
     [ FetchPerson personId
     , FetchRelationshipsForPerson personId
+    , FetchEducationSessionsForPerson personId
     ]
         ++ msgsByAge
 

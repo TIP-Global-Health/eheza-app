@@ -158,6 +158,12 @@ update currentDate healthCenterId subPage db msg model =
             , [ App.Model.SetActivePage page ]
             )
 
+        SetEducationSessionDrillIn session ->
+            ( { model | educationSessionDrillIn = session }
+            , Cmd.none
+            , []
+            )
+
 
 getAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg
 getAssembledPermutationMsg healthCenterId model =

@@ -12,6 +12,8 @@ import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
+import Backend.EducationSession.Decoder
+import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
@@ -40,6 +42,7 @@ import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
 import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
+import Translate.Utils exposing (decodeLanguage)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -80,6 +83,10 @@ decodeIndexDbQueryTypeResult =
                     "IndexDbQueryGetTotalEntriesToUploadResult" ->
                         field "data" decodeInt
                             |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
+
+                    "IndexDbQueryGetShardsEntityByUuidResult" ->
+                        field "data" string
+                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
 
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
@@ -204,6 +211,7 @@ decodeBackendWhatsAppEntity =
         |> required "localId" decodeInt
         |> required "person" string
         |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "language" decodeLanguage
         |> required "report_type" decodeReportType
         |> required "phone_number" string
         |> required "fileId" decodeInt
@@ -584,6 +592,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeDangerSigns
                             BackendAuthorityDangerSigns
 
+                    "education_session" ->
+                        doDecode
+                            Backend.EducationSession.Decoder.decodeEducationSession
+                            BackendAuthorityEducationSession
+
                     "exposure" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeExposure
@@ -628,6 +641,46 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
+
+                    "hiv_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVDiagnostics
+                            BackendAuthorityHIVDiagnostics
+
+                    "hiv_encounter" ->
+                        doDecode
+                            Backend.HIVEncounter.Decoder.decodeHIVEncounter
+                            BackendAuthorityHIVEncounter
+
+                    "hiv_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVFollowUp
+                            BackendAuthorityHIVFollowUp
+
+                    "hiv_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVHealthEducation
+                            BackendAuthorityHIVHealthEducation
+
+                    "hiv_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVMedication
+                            BackendAuthorityHIVMedication
+
+                    "hiv_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVReferral
+                            BackendAuthorityHIVReferral
+
+                    "hiv_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVSymptomReview
+                            BackendAuthorityHIVSymptomReview
+
+                    "hiv_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVTreatmentReview
+                            BackendAuthorityHIVTreatmentReview
 
                     "home_visit_encounter" ->
                         doDecode
