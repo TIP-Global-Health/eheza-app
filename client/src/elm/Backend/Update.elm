@@ -7092,7 +7092,7 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
             (\assembled_ ->
                 let
                     -- Since diagnostics is performed at Backend.Update, and set using Msg,
-                    -- we don;t have it set at generated assembled data.
+                    -- we don't have it set at generated assembled data.
                     -- Therefore, we update diagnoses manually and set them into data.
                     encounterWithDiagnoses =
                         (\encounter ->
@@ -7142,7 +7142,7 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
                 (\assembled_ ->
                     let
                         -- Since diagnostics is performed at Backend.Update, and set using Msg,
-                        -- we don;t have it set at generated assembled data.
+                        -- we don't have it set at generated assembled data.
                         -- Therefore, we update diagnoses manually and set them into data.
                         encounterWithDiagnoses =
                             (\encounter ->
