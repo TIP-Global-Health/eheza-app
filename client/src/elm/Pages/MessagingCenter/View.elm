@@ -511,7 +511,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         title =
             let
                 messageCategory =
-                    div [] [span [ class "category-header" ] [ text <| translate language Translate.ResilienceCategoryGuide  ]
+                    div [] [span [ class "category-header" ] [ text <| translate language Translate.ResilienceMessageGuide  ]
                     , span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]]
 
                 titleWrapperClass =

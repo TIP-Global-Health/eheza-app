@@ -1299,7 +1299,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
     | ResilienceMessage
-    | ResilienceCategoryGuide
+    | ResilienceMessageGuide
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -17837,7 +17837,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceCategoryGuide ->
+        ResilienceMessageGuide ->
             { english = "Guide"
             , kinyarwanda = Nothing
             , kirundi = Nothing
