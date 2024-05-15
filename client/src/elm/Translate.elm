@@ -1299,6 +1299,7 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
     | ResilienceMessage
+    | ResilienceCategoryGuide
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -17787,11 +17788,6 @@ translationSet trans =
 
         ResilienceCategory category ->
             case category of
-                ResilienceCategoryGuide ->
-                    { english = "Guide"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
 
                 ResilienceCategoryIntroduction ->
                     { english = "Introduction"
@@ -17840,6 +17836,13 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        ResilienceCategoryGuide ->
+            { english = "Guide"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."

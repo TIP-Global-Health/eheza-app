@@ -451,10 +451,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
     let
         ( extraClass, ( head, body ) ) =
             case message.category of
-                ResilienceCategoryGuide ->
-                    ( "guide"
-                    , ( [], viewGuideMessage language nurse )
-                    )
 
                 ResilienceCategoryIntroduction ->
                     ( "introduction"
@@ -515,7 +511,8 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         title =
             let
                 messageCategory =
-                    span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
+                    div [] [span [ class "category-header" ] [ text <| translate language Translate.ResilienceCategoryGuide  ]
+                    , span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]]
 
                 titleWrapperClass =
                     case model.activeTab of

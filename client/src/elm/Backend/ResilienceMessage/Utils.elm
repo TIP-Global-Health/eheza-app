@@ -6,8 +6,6 @@ import Backend.ResilienceMessage.Model exposing (..)
 resilienceCategoryToString : ResilienceCategory -> String
 resilienceCategoryToString value =
     case value of
-        ResilienceCategoryGuide ->
-            "guide"
 
         ResilienceCategoryIntroduction ->
             "introduction"
@@ -34,8 +32,6 @@ resilienceCategoryToString value =
 resilienceCategoryFromString : String -> Maybe ResilienceCategory
 resilienceCategoryFromString value =
     case value of
-        "guide" ->
-            Just ResilienceCategoryGuide
 
         "introduction" ->
             Just ResilienceCategoryIntroduction
