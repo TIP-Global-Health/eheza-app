@@ -590,7 +590,7 @@ viewLabResultsPane :
     -> LabsResultsDisplayConfig
     -> LabsResultsValues encounterId
     -> Html msg
-viewLabResultsPane language currentDate isResultsReviewer mode setLabResultsModeMsg displayConfig data =
+viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsModeMsg displayConfig data =
     let
         heading =
             div [ class "heading" ]
@@ -806,42 +806,42 @@ viewLabResultsPane language currentDate isResultsReviewer mode setLabResultsMode
                         hba1cResults =
                             getTestResults .hba1c .hba1cResult
                     in
-                    [ viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
+                    [ viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIV hivTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHIVPCR hivPCRTestResults)
                         |> showIf displayConfig.hivPCR
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryPartnerHIV partnerHIVTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistorySyphilis syphilisTestResults)
                         |> showIf displayConfig.syphilis
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHepatitisB hepatitisBTestResults)
                         |> showIf displayConfig.hepatitisB
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryMalaria malariaTestResults)
                         |> showIf displayConfig.malaria
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBloodSmear bloodSmearTestResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryBloodSmear bloodSmearTestResults)
                         |> showIf ((not <| List.isEmpty bloodSmearTestResults) && displayConfig.malaria)
-                    , dipstickShortEntry
-                    , dipstickLongEntry
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHemoglobin hemoglobinResults)
-                        |> showIf displayConfig.hemoglobin
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBloodGroup bloodGroupResults)
-                        |> showIf displayConfig.bloodGpRs
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
-                        |> showIf displayConfig.bloodGpRs
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryCreatinine creatinineResults)
-                        |> showIf displayConfig.creatinine
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBUN bunResults)
-                        |> showIf displayConfig.creatinine
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryALT altResults)
-                        |> showIf displayConfig.liverFunction
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryAST astResults)
-                        |> showIf displayConfig.liverFunction
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
-                        |> showIf displayConfig.pregnancy
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
-                        |> showIf displayConfig.hba1c
-                    , lipidPanelEntry
-                        |> showIf displayConfig.lipidPanel
                     ]
+                        ++ dipstickEntries
+                        ++ [ viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryRandomBloodSugar randomBloodSugarResults)
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHemoglobin hemoglobinResults)
+                                |> showIf displayConfig.hemoglobin
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryBloodGroup bloodGroupResults)
+                                |> showIf displayConfig.bloodGpRs
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryRhesus rhesusResults)
+                                |> showIf displayConfig.bloodGpRs
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryCreatinine creatinineResults)
+                                |> showIf displayConfig.creatinine
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryBUN bunResults)
+                                |> showIf displayConfig.creatinine
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryALT altResults)
+                                |> showIf displayConfig.liverFunction
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryAST astResults)
+                                |> showIf displayConfig.liverFunction
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryPregnancy pregnancyTestResults)
+                                |> showIf displayConfig.pregnancy
+                           , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHbA1c hba1cResults)
+                                |> showIf displayConfig.hba1c
+                           , lipidPanelEntry
+                                |> showIf displayConfig.lipidPanel
+                           ]
 
                 LabResultsCurrentDipstickShort ->
                     [ proteinEntry
@@ -853,34 +853,47 @@ viewLabResultsPane language currentDate isResultsReviewer mode setLabResultsMode
                     [ proteinEntry
                     , phEntry
                     , glucoseEntry
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryLeukocytes leukocytesResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryNitrite nitriteResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryUrobilinogen urobilinogenResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryLeukocytes leukocytesResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryNitrite nitriteResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryUrobilinogen urobilinogenResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHaemoglobin haemoglobinResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryKetone ketoneResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryBilirubin bilirubinResults)
                     ]
 
                 LabResultsCurrentLipidPanel ->
-                    [ viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryTotalCholesterol totalCholesterolResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryLDLCholesterol ldlCholesterolResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryHDLCholesterol hdlCholesterolResults)
-                    , viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryTriglycerides triglyceridesResults)
+                    [ viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryTotalCholesterol totalCholesterolResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryLDLCholesterol ldlCholesterolResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryHDLCholesterol hdlCholesterolResults)
+                    , viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryTriglycerides triglyceridesResults)
                     ]
 
         proteinEntry =
-            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryProtein proteinResults)
+            viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryProtein proteinResults)
 
         phEntry =
-            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryPH phResults)
+            viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryPH phResults)
 
         glucoseEntry =
-            viewLabResultsEntry language currentDate isResultsReviewer setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
+            viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
+
+        dipstickEntries =
+            if viewForConfirmation then
+                -- Confirmation view shows results only of current encounter.
+                -- Therefore, we should show either short or long entry instead of both.
+                if List.isEmpty longUrineDipstickTestResults then
+                    [ dipstickShortEntry ]
+
+                else
+                    [ dipstickLongEntry ]
+
+            else
+                [ dipstickShortEntry, dipstickLongEntry ]
 
         dipstickShortEntry =
             let
                 emptyEntry =
-                    if isResultsReviewer then
+                    if viewForConfirmation then
                         emptyNode
 
                     else
@@ -929,7 +942,7 @@ viewLabResultsPane language currentDate isResultsReviewer mode setLabResultsMode
         dipstickLongEntry =
             let
                 emptyEntry =
-                    if isResultsReviewer then
+                    if viewForConfirmation then
                         emptyNode
 
                     else
