@@ -18285,7 +18285,6 @@ translationSet trans =
 
         ResilienceCategory category ->
             case category of
-
                 ResilienceCategoryIntroduction ->
                     { english = "Introduction"
                     , kinyarwanda = Nothing
@@ -18339,7 +18338,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
-
 
         ResilienceMessageIntroduction1Title ->
             { english = "Welcome to the work based resilience messaging program."
