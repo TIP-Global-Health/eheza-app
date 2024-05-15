@@ -1116,7 +1116,7 @@ viewFollowUpEntry language dueOption personName mPopupData assessment =
                         []
                 )
                 mPopupData
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault (div [ class "icon-forward disabled" ] [])
     in
     div [ class "follow-up-entry" ]
         [ div [ class "name" ] [ text personName ]
