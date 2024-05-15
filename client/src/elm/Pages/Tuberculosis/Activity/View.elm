@@ -149,6 +149,7 @@ viewDiagnosticsContent language currentDate assembled data =
                                         , Translate.TuberculosisDiagnosis TuberculosisExtrapulmonary
                                         )
                                         "sixteen"
+                                        False
                                   ]
                                 , taskCompleted form.isPulmonary
                                 , 1
