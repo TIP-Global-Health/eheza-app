@@ -3360,6 +3360,9 @@ decodeFollowUpOption =
                     "3-m" ->
                         succeed ThreeMonths
 
+                    "none" ->
+                        succeed FollowUpNotNeeded
+
                     _ ->
                         fail <|
                             sign

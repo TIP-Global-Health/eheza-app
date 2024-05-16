@@ -276,6 +276,7 @@ type FollowUpOption
     | OneMonth
     | TwoMonths
     | ThreeMonths
+    | FollowUpNotNeeded
 
 
 type alias GroupNCDA =
