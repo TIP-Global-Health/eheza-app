@@ -445,20 +445,26 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
                     getMeasurementValueFunc data.measurements.vitals
                         |> Maybe.andThen
                             (\value ->
-                                case ( value.sys, value.dia ) of
-                                    ( Just sys, Just dia ) ->
-                                        if sys > 180 || dia > 100 then
-                                            Just
-                                                ( trans Translate.High ++ " " ++ transAlert alert
-                                                , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
-                                                , formatDDMMYYYY data.startDate
-                                                )
+                                let
+                                    viewAlert sys_ dia_ =
+                                        case ( sys_, dia_ ) of
+                                            ( Just sys, Just dia ) ->
+                                                if sys > 180 || dia > 100 then
+                                                    Just
+                                                        ( trans Translate.High ++ " " ++ transAlert alert
+                                                        , String.fromFloat sys ++ "/" ++ String.fromFloat dia ++ trans Translate.MMHGUnit
+                                                        , formatDDMMYYYY data.startDate
+                                                        )
 
-                                        else
-                                            Nothing
+                                                else
+                                                    Nothing
 
-                                    _ ->
-                                        Nothing
+                                            _ ->
+                                                Nothing
+                                in
+                                Maybe.Extra.or
+                                    (viewAlert value.sysRepeated value.diaRepeated)
+                                    (viewAlert value.sys value.dia)
                             )
             in
             getAllNurseMeasurements currentDate isChw assembled
