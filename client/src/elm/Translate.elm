@@ -683,6 +683,7 @@ type TranslationId
     | FollowPostpartumProtocols
     | FollowUp
     | FollowUpWithPatientIn
+    | FollowUpWithPatientNotNeeded
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
     | FollowUpLabel
@@ -6038,7 +6039,13 @@ translationSet trans =
         FollowUpWithPatientIn ->
             { english = "Follow up with patient in"
             , kinyarwanda = Just "Kurikirana umurwayi uri mu bitaro"
-            , kirundi = Just "Kurikirana umugwayi wawe "
+            , kirundi = Just "Kurikirana umugwayi wawe"
+            }
+
+        FollowUpWithPatientNotNeeded ->
+            { english = "No need to ollow up with patient"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         FollowUpWithPatientOn ->
@@ -6107,6 +6114,12 @@ translationSet trans =
                     { english = "3 Months"
                     , kinyarwanda = Just "Amezi 3"
                     , kirundi = Just "Amezi 3"
+                    }
+
+                FollowUpNotNeeded ->
+                    { english = "No follow up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         FollowUpDueOption option ->

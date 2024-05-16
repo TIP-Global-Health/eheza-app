@@ -243,8 +243,8 @@ type alias FollowUp =
 
 type alias NutritionFollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : EverySet NutritionAssessment
     , resolutionDate : Maybe NominalDate
+    , assesment : EverySet NutritionAssessment
     }
 
 
@@ -971,8 +971,8 @@ type alias PrenatalFollowUp =
 
 type alias PrenatalFollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : PrenatalAssesment
     , resolutionDate : Maybe NominalDate
+    , assesment : PrenatalAssesment
     }
 
 
@@ -2136,8 +2136,8 @@ type alias AcuteIllnessFollowUp =
 
 type alias AcuteIllnessFollowUpValue =
     { options : EverySet FollowUpOption
-    , diagnosis : Maybe AcuteIllnessDiagnosis
     , resolutionDate : Maybe NominalDate
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     }
 
 

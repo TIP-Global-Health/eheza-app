@@ -4349,7 +4349,7 @@ toFollowUpValue : FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValue form =
     Maybe.map2
         (\options assesment ->
-            PrenatalFollowUpValue options assesment form.resolutionDate
+            PrenatalFollowUpValue options form.resolutionDate assesment
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
