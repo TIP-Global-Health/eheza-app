@@ -7089,8 +7089,23 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\assembled ->
+            (\assembled_ ->
                 let
+                    -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                    -- we don't have it set at generated assembled data.
+                    -- Therefore, we update diagnoses manually and set them into data.
+                    encounterWithDiagnoses =
+                        (\encounter ->
+                            { encounter
+                                | diagnoses =
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                            }
+                        )
+                            assembled_.encounter
+
+                    assembled =
+                        { assembled_ | encounter = encounterWithDiagnoses }
+
                     ( _, pendingActivities ) =
                         Pages.Prenatal.Encounter.Utils.getAllActivities assembled
                             |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
@@ -7124,10 +7139,25 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
         Pages.Prenatal.Encounter.Utils.generateAssembledData id after
             |> RemoteData.toMaybe
             |> Maybe.andThen
-                (\assembled ->
+                (\assembled_ ->
                     let
+                        -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                        -- we don't have it set at generated assembled data.
+                        -- Therefore, we update diagnoses manually and set them into data.
+                        encounterWithDiagnoses =
+                            (\encounter ->
+                                { encounter
+                                    | diagnoses =
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                }
+                            )
+                                assembled_.encounter
+
+                        assembled =
+                            { assembled_ | encounter = encounterWithDiagnoses }
+
                         ( _, pendingActivities ) =
-                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
                     in
