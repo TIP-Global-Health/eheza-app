@@ -188,11 +188,21 @@ viewDiagnosticsContent language currentDate assembled data =
                     viewEndEncounterDialog language
                         Translate.EndEncounterQuestion
                         Translate.EndEncounterNoTuberculosisDiagnosisPhrase
-                        (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+                        saveDiagnosticsMsg
                         (SetEndEncounterDialogState False)
 
             else
                 Nothing
+
+        saveAction =
+            if form.diagnosed == Just False then
+                SetEndEncounterDialogState True
+
+            else
+                saveDiagnosticsMsg
+
+        saveDiagnosticsMsg =
+            SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -202,7 +212,7 @@ viewDiagnosticsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SetEndEncounterDialogState True)
+                saveAction
             ]
         ]
     , viewModal endEncounterDialog
