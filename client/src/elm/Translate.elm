@@ -6043,7 +6043,7 @@ translationSet trans =
             }
 
         FollowUpWithPatientNotNeeded ->
-            { english = "No need to ollow up with patient"
+            { english = "No need to follow up with patient"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
