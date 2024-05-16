@@ -1395,6 +1395,9 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
+
+        diagnosedAtInitalPhase =
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled
     in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
@@ -1419,7 +1422,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
                     -- need to diagnose again.
-                    not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+                    not <| diagnosedAtInitalPhase DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
                    )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -1437,7 +1440,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             (-- If diagnosed Severe Preeclampsia at initial stage, we do not
              -- need to diagnose again.
-             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus assembled
+             not <| diagnosedAtInitalPhase DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
             )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -1547,11 +1550,11 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
             severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
-                && labTestWithImmediateResult .bloodGpRsTest assembled.measurements
+                && labTestWithImmediateResult .hemoglobinTest assembled.measurements
 
         DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
-            severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
-                && (not <| labTestWithImmediateResult .bloodGpRsTest assembled.measurements)
+            (not <| diagnosedAtInitalPhase DiagnosisSevereAnemiaWithComplicationsInitialPhase)
+                && severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
 
         -- Non Emergency Referral diagnoses.
         _ ->
