@@ -1270,23 +1270,22 @@ viewPrenatalLabsPane language currentDate isLabTech itemsDict db model =
 
                         roleDependantCondition =
                             if isLabTech then
+                                let
+                                    pendingTests =
+                                        EverySet.diff item.value.performedTests item.value.completedTests
+                                            |> EverySet.toList
+                                            |> -- Vitals recheck is not performed by lab tech
+                                               -- and therefore, filtered out.
+                                               List.filter ((/=) TestVitalsRecheck)
+                                in
                                 -- If review was requested (by lab technician), or completed
                                 -- (by nurse) we do not display entry for lab technician.
                                 isNothing item.value.reviewState
                                     && -- If all tests were completed, or only one that was not is
                                        -- vitals recheck, we do not display entry for lab technician.
-                                       -- For nurse,all tests were completed condition does not apply,
+                                       -- For nurse, all tests were completed condition does not apply,
                                        -- since there maybe follow up quesitons to fill.
-                                       (case EverySet.toList item.value.performedTests of
-                                            [] ->
-                                                False
-
-                                            [ TestVitalsRecheck ] ->
-                                                False
-
-                                            _ ->
-                                                True
-                                       )
+                                       (not <| List.isEmpty pendingTests)
 
                             else
                                 True
