@@ -490,7 +490,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             not <| EverySet.member messageId model.expandedMessages
 
         updateTimeRead =
-            model.activeTab == TabGuide
+            model.activeTab == TabUnread
 
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead

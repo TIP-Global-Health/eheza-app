@@ -707,6 +707,7 @@ type TranslationId
     | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
+    | Guide
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -1341,7 +1342,6 @@ type TranslationId
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
     | ResilienceMessage
-    | ResilienceMessageGuide
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
     | ResilienceMessageIntroduction1Paragraph2
@@ -6322,6 +6322,11 @@ translationSet trans =
 
                 GroupEncounterEducation ->
                     translationSet HealthEducation
+        Guide ->
+            { english = "Guide"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HalfOfDosage dosage ->
             { english = "half of " ++ dosage ++ " dosage"
@@ -10611,10 +10616,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabGuide ->
-                    { english = "Guide"
-                    , kinyarwanda = Just "Uko Bikorwa"
-                    , kirundi = Nothing
-                    }
+                    translationSet Guide
 
                 TabUnread ->
                     translationSet (ReadToggle True)
@@ -18329,12 +18331,6 @@ translationSet trans =
 
         ResilienceMessage ->
             { english = "Resilience Message"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        ResilienceMessageGuide ->
-            { english = "Guide"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
