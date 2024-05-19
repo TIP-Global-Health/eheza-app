@@ -6929,10 +6929,16 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                 UserPage (PrenatalActivityPage _ _) ->
                                     initialEncounterMsgs
 
+                                UserPage (ClinicalProgressReportPage (InitiatorEncounterPage _) _) ->
+                                    initialEncounterMsgs
+
                                 UserPage (PrenatalRecurrentEncounterPage _) ->
                                     recurrentEncounterMsgs
 
                                 UserPage (PrenatalRecurrentActivityPage _ _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (ClinicalProgressReportPage (InitiatorRecurrentEncounterPage _) _) ->
                                     recurrentEncounterMsgs
 
                                 _ ->
@@ -7055,10 +7061,15 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                 value.testsWithFollowUp
 
                                         reviewState =
-                                            -- For lab technician, request review if all labs were
-                                            -- completed, and review state was not set previously.
                                             if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
                                                 Just LabsResultsReviewRequested
+
+                                            else if not isLabTech && allLabsCompleted then
+                                                -- For nurse, set review state to completed,
+                                                -- if all labs were completed.
+                                                Just LabsResultsReviewCompleted
 
                                             else
                                                 value.reviewState
@@ -7089,8 +7100,23 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\assembled ->
+            (\assembled_ ->
                 let
+                    -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                    -- we don't have it set at generated assembled data.
+                    -- Therefore, we update diagnoses manually and set them into data.
+                    encounterWithDiagnoses =
+                        (\encounter ->
+                            { encounter
+                                | diagnoses =
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                            }
+                        )
+                            assembled_.encounter
+
+                    assembled =
+                        { assembled_ | encounter = encounterWithDiagnoses }
+
                     ( _, pendingActivities ) =
                         Pages.Prenatal.Encounter.Utils.getAllActivities assembled
                             |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
@@ -7124,10 +7150,25 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
         Pages.Prenatal.Encounter.Utils.generateAssembledData id after
             |> RemoteData.toMaybe
             |> Maybe.andThen
-                (\assembled ->
+                (\assembled_ ->
                     let
+                        -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                        -- we don't have it set at generated assembled data.
+                        -- Therefore, we update diagnoses manually and set them into data.
+                        encounterWithDiagnoses =
+                            (\encounter ->
+                                { encounter
+                                    | diagnoses =
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                }
+                            )
+                                assembled_.encounter
+
+                        assembled =
+                            { assembled_ | encounter = encounterWithDiagnoses }
+
                         ( _, pendingActivities ) =
-                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
                     in
