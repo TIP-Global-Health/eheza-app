@@ -6929,10 +6929,16 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                 UserPage (PrenatalActivityPage _ _) ->
                                     initialEncounterMsgs
 
+                                UserPage (ClinicalProgressReportPage (InitiatorEncounterPage _) _) ->
+                                    initialEncounterMsgs
+
                                 UserPage (PrenatalRecurrentEncounterPage _) ->
                                     recurrentEncounterMsgs
 
                                 UserPage (PrenatalRecurrentActivityPage _ _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (ClinicalProgressReportPage (InitiatorRecurrentEncounterPage _) _) ->
                                     recurrentEncounterMsgs
 
                                 _ ->
