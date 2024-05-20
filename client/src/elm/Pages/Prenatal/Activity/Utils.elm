@@ -2658,6 +2658,26 @@ immediateDeliveryDiagnoses =
     ]
 
 
+emergencyObstetricCareServicesDiagnoses : List PrenatalDiagnosis
+emergencyObstetricCareServicesDiagnoses =
+    [ DiagnosisEclampsia
+    , DiagnosisMiscarriage
+    , DiagnosisMolarPregnancy
+    , DiagnosisPlacentaPrevia
+    , DiagnosisPlacentalAbruption
+    , DiagnosisUterineRupture
+    , DiagnosisObstructedLabor
+    , DiagnosisPostAbortionSepsis
+    , DiagnosisEctopicPregnancy
+    , DiagnosisPPROM
+    , DiagnosisHyperemesisGravidum
+    , DiagnosisMaternalComplications
+
+    -- Infection diagnosis will be available at latter phase.
+    -- , DiagnosisInfection
+    ]
+
+
 labResultsAndExaminationDiagnoses : List PrenatalDiagnosis
 labResultsAndExaminationDiagnoses =
     [ DiagnosisChronicHypertensionImmediate

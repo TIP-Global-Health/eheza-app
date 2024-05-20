@@ -6872,8 +6872,17 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                                                           then
                                                             translate language Translate.EmergencyReferralHelperReferToMaternityWard
 
-                                                          else
+                                                          else if
+                                                            List.any
+                                                                (\emergencyObstetricCareServicesDiagnosis ->
+                                                                    List.member emergencyObstetricCareServicesDiagnosis urgentDiagnoses
+                                                                )
+                                                                Pages.Prenatal.Activity.Utils.emergencyObstetricCareServicesDiagnoses
+                                                          then
                                                             translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+
+                                                          else
+                                                            translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
                                                         )
                                                 in
                                                 -- View warning popup and navigate to Next Steps activity.
@@ -6903,7 +6912,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                                             else
                                                 let
                                                     signs =
-                                                        List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
+                                                        List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
                                                             |> String.join ", "
                                                 in
                                                 [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
@@ -7986,7 +7995,7 @@ generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterI
 generateWellChildDangerSignsAlertMsgs currentDate maybeId =
     Maybe.map
         (\id ->
-            [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
+            [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.
