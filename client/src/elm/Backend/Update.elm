@@ -1982,7 +1982,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -6659,13 +6659,14 @@ generatePrenatalAssessmentMsgs :
     -> Language
     -> Site
     -> Bool
+    -> Bool
     -> Page
     -> Bool
     -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -6840,7 +6841,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
@@ -6896,7 +6897,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
