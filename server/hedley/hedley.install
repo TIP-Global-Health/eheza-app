@@ -713,3 +713,11 @@ function hedley_update_7042() {
 function hedley_update_7043() {
   module_enable(['hedley_hiv']);
 }
+
+/**
+ * Enable the Hedley Reports module.
+ */
+function hedley_update_7044() {
+  module_enable(['hedley_reports']);
+}
+

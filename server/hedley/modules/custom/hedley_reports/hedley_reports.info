@@ -1,0 +1,5 @@
+name = Hedley Reports
+description = High level reports related code
+core = 7.x
+package = Hedley
+features[features_api][] = api:2
