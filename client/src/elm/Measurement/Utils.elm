@@ -536,7 +536,7 @@ toNutritionFollowUpValue : NutritionFollowUpForm -> Maybe NutritionFollowUpValue
 toNutritionFollowUpValue form =
     Maybe.map2
         (\options assesment ->
-            NutritionFollowUpValue options assesment form.resolutionDate
+            NutritionFollowUpValue options form.resolutionDate assesment
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
