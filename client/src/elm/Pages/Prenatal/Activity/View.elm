@@ -3745,6 +3745,7 @@ viewFollowUpForm language assembled currentDate form =
             , Backend.Measurement.Model.OneMonth
             , TwoMonths
             , Backend.Measurement.Model.ThreeMonths
+            , FollowUpNotNeeded
             ]
             []
             form.option

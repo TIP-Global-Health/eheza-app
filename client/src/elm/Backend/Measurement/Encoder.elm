@@ -2423,6 +2423,9 @@ encodeFollowUpOption option =
             ThreeMonths ->
                 "3-m"
 
+            FollowUpNotNeeded ->
+                "none"
+
 
 encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
 encodeNutritionFeeding =

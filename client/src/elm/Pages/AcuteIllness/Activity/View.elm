@@ -2913,7 +2913,7 @@ viewFollowUpForm language currentDate isChw form =
         headerHelper
             ++ [ viewLabel language label
                , viewCheckBoxSelectInput language
-                    [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+                    [ OneDay, ThreeDays, OneWeek, TwoWeeks, FollowUpNotNeeded ]
                     []
                     form.option
                     SetFollowUpOption
