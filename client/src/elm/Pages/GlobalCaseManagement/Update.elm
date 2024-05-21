@@ -8,13 +8,17 @@ import Backend.HIVEncounter.Model exposing (emptyHIVEncounter)
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), emptyIndividualEncounterParticipant)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PrenatalActivity.Model
 import Backend.PrenatalEncounter.Model exposing (emptyPrenatalEncounter)
 import Backend.TuberculosisEncounter.Model exposing (emptyTuberculosisEncounter)
 import Backend.Utils exposing (resolveIndividualParticipantForPerson)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..), emptyWellChildEncounter)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.GlobalCaseManagement.Model exposing (..)
+import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
 import Pages.Prenatal.Encounter.Utils exposing (generatePostCreateDestination)
+import Pages.Prenatal.RecurrentActivity.Model
 
 
 update : NominalDate -> Maybe HealthCenterId -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -91,6 +95,19 @@ update currentDate healthCenterId msg db model =
             ( { model | dialogState = Nothing }
             , Cmd.none
             , msgs
+            )
+
+        HandleUrgentPrenatalDiagnoses encounterId dialogState ->
+            ( model
+            , Cmd.none
+            , -- Navigate to next steps activity and view warning dialog.
+              [ PrenatalRecurrentActivityPage encounterId Backend.PrenatalActivity.Model.RecurrentNextSteps
+                    |> UserPage
+                    |> App.Model.SetActivePage
+              , Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just <| WarningPopupUrgent dialogState)
+                    |> App.Model.MsgPagePrenatalRecurrentActivity encounterId Backend.PrenatalActivity.Model.RecurrentNextSteps
+                    |> App.Model.MsgLoggedIn
+              ]
             )
 
 
