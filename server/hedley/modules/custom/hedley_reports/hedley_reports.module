@@ -2,5 +2,175 @@
 
 /**
  * @file
- * Drupal needs this blank file.
+ * Code for the Hedley Reports feature.
  */
+
+define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_reports_menu() {
+
+  $items['admin/reports/aggregated-reports'] = array(
+    'title' => 'Aggregated Reports menu',
+    'description' => 'View Aggregated Reports menu',
+    'page callback' => 'hedley_reports_aggregated_callback_menu',
+    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+  );
+
+//  $items['admin/reports/aggregated-reports/%/%'] = array(
+//    'title' => 'Aggregated Reports scoreboard for district',
+//    'description' => 'View Aggregated Reports scoreboard for district',
+//    'page callback' => 'hedley_reports_aggregated_callback_district',
+//    'page arguments' => [3, 4],
+//    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+//  );
+//
+//  $items['admin/reports/aggregated-reports/%/%/%'] = array(
+//    'title' => 'Aggregated Reports scoreboard for sector',
+//    'description' => 'View Aggregated Reports scoreboard for sector',
+//    'page callback' => 'hedley_reports_aggregated_callback_sector',
+//    'page arguments' => [3, 4, 5],
+//    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+//  );
+//
+//  $items['admin/reports/aggregated-reports/%/%/%/%'] = array(
+//    'title' => 'Aggregated Reports scoreboard for cell',
+//    'description' => 'View Aggregated Reports scoreboard for cell',
+//    'page callback' => 'hedley_reports_aggregated_callback_cell',
+//    'page arguments' => [3, 4, 5, 6],
+//    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+//  );
+//
+//  $items['admin/reports/aggregated-reports/%/%/%/%/%'] = array(
+//    'title' => 'Aggregated Reports scoreboard for village',
+//    'description' => 'View Aggregated Reports scoreboard for village',
+//    'page callback' => 'hedley_reports_aggregated_callback_village',
+//    'page arguments' => [3, 4, 5, 6, 7],
+//    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+//  );
+
+  return $items;
+}
+
+/**
+ * Grants access to Aggregated Reports viewers, superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_reports_aggregated_reports_report_access() {
+  // @todo: do we need new role?
+  $data_mananger_role = user_role_load_by_name('Data Manager');
+
+  return user_has_role($data_mananger_role->rid) || hedley_admin_administrators_access();
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+//function hedley_reports_node_insert($node) {
+//  $reports_enabled = variable_get('hedley_admin_feature_reports_enabled', FALSE);
+//  if (!$reports_enabled) {
+//    return;
+//  }
+//
+//  // Generate initial Reports data for newly created person.
+//  // We need this to properly count 'children under 2'.
+//  if ($node->type == 'person') {
+//    hedley_reports_trigger_recalculation_for_created_person($node);
+//    return;
+//  }
+//
+//  if ($node->type == 'village') {
+//    hedley_reports_trigger_recalculation_for_new_village($node);
+//    return;
+//  }
+//
+//  hedley_reports_trigger_recalculation_by_measurement($node);
+//}
+
+/**
+ * Implements hook_node_update().
+ */
+//function hedley_reports_node_update($node) {
+//  $reports_enabled = variable_get('hedley_admin_feature_reports_enabled', FALSE);
+//  if (!$reports_enabled) {
+//    return;
+//  }
+//
+//  if ($node->type == 'person') {
+//    hedley_reports_trigger_recalculation_by_edited_person($node);
+//    return;
+//  }
+//
+//  hedley_reports_trigger_recalculation_by_measurement($node);
+//}
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+//function hedley_reports_advanced_queue_info() {
+//  $items[HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA] = [
+//    'label' => t('Calculate Aggregated Reports data'),
+//    'worker callback' => 'hedley_reports_calculate_aggregated_data_worker',
+//    'groups' => [
+//      'hedley',
+//    ],
+//    // The number of seconds to retry after.
+//    'retry after' => 120,
+//    // The maximum number of attempts after a failure.
+//    'max attempts' => 3,
+//  ];
+//
+//  return $items;
+//}
+
+/**
+ * Advanced queue worker; Calculate aggregated Reports data for person.
+ *
+ * @param object $queue_item
+ *   The item object to process.
+ *
+ * @return array
+ *   Array indicating if the process succeeded, or an array with
+ *   "status" and "result" keys.
+ */
+//function hedley_reports_calculate_aggregated_data_worker($queue_item) {
+//  if (!$person_id = $queue_item->data['person_id']) {
+//    return [
+//      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+//      'result' => t('Does not have Person Node ID.'),
+//    ];
+//  }
+//
+//  try {
+//    $person = node_load($person_id);
+//    hedley_reports_calculate_aggregated_data_for_person($person);
+//  } catch (Exception $e) {
+//    return [
+//      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+//      'result' => $e->getMessage(),
+//    ];
+//  }
+//
+//  $params = [
+//    '@nid' => $person_id,
+//  ];
+//  return [
+//    'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+//    'result' => t('Aggregated Reports data has been calculated for person ID: @nid', $params),
+//  ];
+//}
+
+/**
+ * Callback for Elm application of administrative division selection.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_menu() {
+  $site = variable_get('hedley_general_site_name', '');
+  return hedley_general_build_elm_app('reports-menu', ['site' => $site]);
+}
