@@ -1,4 +1,4 @@
-module Pages.Menu.Model exposing (..)
+module Pages.ScoreboardMenu.Model exposing (..)
 
 import Utils.GeoLocation exposing (GeoLocationId)
 

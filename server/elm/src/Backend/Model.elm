@@ -5,21 +5,24 @@ on the backend. So, conceptually it is a kind of a local cache of some of the
 things on the backend.
 -}
 
-import Backend.Menu.Model exposing (MenuData)
+import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model exposing (ScoreboardData)
+import Backend.ScoreboardMenu.Model
 import Json.Decode
 
 
 type alias ModelBackend =
-    { menuData : Maybe (Result Json.Decode.Error MenuData)
+    { scoreboardMenuData : Maybe (Result Json.Decode.Error Backend.ScoreboardMenu.Model.MenuData)
     , scoreboardData : Maybe (Result Json.Decode.Error ScoreboardData)
+    , reportsMenuData : Maybe (Result Json.Decode.Error Backend.ReportsMenu.Model.MenuData)
     }
 
 
 emptyModelBackend : ModelBackend
 emptyModelBackend =
-    { menuData = Nothing
+    { scoreboardMenuData = Nothing
     , scoreboardData = Nothing
+    , reportsMenuData = Nothing
     }
 
 
@@ -27,5 +30,8 @@ emptyModelBackend =
 putting things back into the backend.
 -}
 type Msg
-    = MsgMenu Backend.Menu.Model.Msg
+    = MsgScoreboardMenu Backend.ScoreboardMenu.Model.Msg
     | MsgScoreboard Backend.Scoreboard.Model.Msg
+      -- @todo
+      -- | MsgReports Backend.Reports.Model.Msg
+    | MsgReportsMenu Backend.ReportsMenu.Model.Msg

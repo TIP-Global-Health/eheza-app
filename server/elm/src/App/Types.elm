@@ -6,8 +6,11 @@ module App.Types exposing
 
 
 type Page
-    = Menu
+    = ScoreboardMenu
     | Scoreboard
+    | ReportsMenu
+      -- @todo
+      -- | Reports
     | NotFound
 
 

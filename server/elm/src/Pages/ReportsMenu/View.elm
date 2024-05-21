@@ -1,16 +1,16 @@
-module Pages.Menu.View exposing (view)
+module Pages.ReportsMenu.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict
 import Backend.Entities exposing (fromEntityId, toEntityId)
-import Backend.Menu.Model exposing (MenuData)
 import Backend.Model exposing (ModelBackend)
+import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra exposing (isJust)
-import Pages.Menu.Model exposing (..)
+import Pages.ReportsMenu.Model exposing (..)
 import Pages.Utils exposing (emptySelectOption, viewLabel)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
@@ -18,7 +18,7 @@ import Utils.GeoLocation exposing (..)
 
 view : Language -> ModelBackend -> Model -> Html Msg
 view language modelBackend model =
-    case modelBackend.menuData of
+    case modelBackend.scoreboardMenuData of
         Just (Ok data) ->
             viewMenu language data model
 
@@ -213,7 +213,7 @@ viewMenu language data model =
                 |> Maybe.withDefault emptyNode
     in
     div [ class "page-content" ] <|
-        [ div [ class "header" ] [ text "Please select desired view mode:" ]
+        [ div [ class "header" ] [ text "Please select desired view mode for reports:" ]
         , div [ class "inputs" ]
             [ provinceInput
             , districtInput

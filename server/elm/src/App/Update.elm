@@ -8,13 +8,15 @@ import App.Fetch exposing (fetch)
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
-import Backend.Menu.Model
 import Backend.Model
+import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model
+import Backend.ScoreboardMenu.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
-import Pages.Menu.Update
+import Pages.ReportsMenu.Update
 import Pages.Scoreboard.Update
+import Pages.ScoreboardMenu.Update
 import Task
 import Time
 
@@ -30,10 +32,10 @@ init flags =
 
         modelWithAppData =
             case model.activePage of
-                Menu ->
+                ScoreboardMenu ->
                     update
-                        (Backend.Menu.Model.SetData flags.appData
-                            |> Backend.Model.MsgMenu
+                        (Backend.ScoreboardMenu.Model.SetData flags.appData
+                            |> Backend.Model.MsgScoreboardMenu
                             |> MsgBackend
                         )
                         model
@@ -48,6 +50,24 @@ init flags =
                         model
                         |> Tuple.first
 
+                ReportsMenu ->
+                    update
+                        (Backend.ReportsMenu.Model.SetData flags.appData
+                            |> Backend.Model.MsgReportsMenu
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
+                -- @todo
+                -- Reports ->
+                -- update
+                --     (Backend.Reports.Model.SetData flags.appData
+                --         |> Backend.Model.MsgReports
+                --         |> MsgBackend
+                --     )
+                --     model
+                --     |> Tuple.first
                 NotFound ->
                     model
 
@@ -66,12 +86,18 @@ init flags =
 resolveActivePage : String -> Page
 resolveActivePage page =
     case page of
-        "menu" ->
-            Menu
+        "ncda-menu" ->
+            ScoreboardMenu
 
-        "results" ->
+        "ncda-results" ->
             Scoreboard
 
+        "reports-menu" ->
+            ReportsMenu
+
+        -- @todo
+        -- "reports-results" ->
+        --     Reports
         _ ->
             NotFound
 
@@ -88,13 +114,13 @@ update msg model =
                 (\subCmds -> MsgBackend subCmds)
                 model
 
-        MsgMenuPage subMsg ->
+        MsgScoreboardMenuPage subMsg ->
             updateSubModel
                 subMsg
-                model.menuPage
-                (\subMsg_ subModel -> Pages.Menu.Update.update subMsg_ subModel)
-                (\subModel model_ -> { model_ | menuPage = subModel })
-                (\subCmds -> MsgMenuPage subCmds)
+                model.scoreboardMenuPage
+                (\subMsg_ subModel -> Pages.ScoreboardMenu.Update.update subMsg_ subModel)
+                (\subModel model_ -> { model_ | scoreboardMenuPage = subModel })
+                (\subCmds -> MsgScoreboardMenuPage subCmds)
                 model
 
         MsgScoreboardPage subMsg ->
@@ -108,6 +134,15 @@ update msg model =
                 )
                 (\subModel model_ -> { model_ | scoreboardPage = subModel })
                 (\subCmds -> MsgScoreboardPage subCmds)
+                model
+
+        MsgReportsMenuPage subMsg ->
+            updateSubModel
+                subMsg
+                model.reportsMenuPage
+                (\subMsg_ subModel -> Pages.ReportsMenu.Update.update subMsg_ subModel)
+                (\subModel model_ -> { model_ | reportsMenuPage = subModel })
+                (\subCmds -> MsgReportsMenuPage subCmds)
                 model
 
         SetCurrentTime date ->

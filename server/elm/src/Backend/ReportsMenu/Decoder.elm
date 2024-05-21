@@ -1,7 +1,7 @@
-module Backend.Menu.Decoder exposing (decodeMenuData)
+module Backend.ReportsMenu.Decoder exposing (decodeMenuData)
 
 import Backend.Decoder exposing (decodeSite)
-import Backend.Menu.Model exposing (..)
+import Backend.ReportsMenu.Model exposing (..)
 import Json.Decode exposing (Decoder, andThen, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 
