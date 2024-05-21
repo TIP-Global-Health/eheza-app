@@ -3820,5 +3820,9 @@ function hedley_stats_add_patient_details($node, array &$patients_details, $add_
  *   First value.
  */
 function hedley_stats_extract_first_value($values_string) {
+  if (empty($values_string)) {
+    return NULL;
+  }
+
   return explode(',', $values_string)[0];
 }
