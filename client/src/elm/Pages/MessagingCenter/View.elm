@@ -510,10 +510,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         title =
             let
                 messageCategory =
-                    div []
-                        [ span [ class "category-header" ] [ text <| translate language Translate.ResilienceMessageGuide ]
-                        , span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
-                        ]
+                    span [ class "category-header" ] [ text <| translate language <| Translate.ResilienceCategory message.category ]
 
                 titleWrapperClass =
                     case model.activeTab of
@@ -564,84 +561,83 @@ viewGuideMessage : Language -> Nurse -> List (Html Msg)
 viewGuideMessage language nurse =
     [ div [ class "guide-message" ]
         [ p [ class "title" ]
-            --
-            [ text <| translate language Translate.ResilienceMessageGuideTitle1
+            [ text <| translate language Translate.ResilienceGuideSection1Title
             ]
         , ul []
             [ li []
-                [ text <| translate language Translate.ResilienceMessageGuide1Bullet1
+                [ text <| translate language Translate.ResilienceGuideSection1Bullet1
                 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide1Bullet2
+                [ text <| translate language Translate.ResilienceGuideSection1Bullet2
                 ]
             ]
         , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceMessageGuideTitle2
+            [ text <| translate language Translate.ResilienceGuideSection2Title
             ]
         , ul []
             [ li []
-                [ text <| translate language Translate.ResilienceMessageGuide2Bullet1 ]
+                [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide2Bullet2 ]
+                [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
             ]
         , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceMessageGuideTitle3
+            [ text <| translate language Translate.ResilienceGuideSection3Title
             ]
         , ul []
             [ li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet1 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet2 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet3 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet4 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet5 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet6 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide3Bullet7 ]
+                [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
             ]
         , p [ class "title note" ]
-            [ text <| translate language Translate.ResilienceMessageGuide3Note ]
+            [ text <| translate language Translate.ResilienceGuideSection3Note ]
         , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceMessageGuideTitle4
+            [ text <| translate language Translate.ResilienceGuideSection4Title
             ]
         , p []
-            [ text <| translate language Translate.ResilienceMessageGuide4Text ]
+            [ text <| translate language Translate.ResilienceGuideSection4Text ]
         , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceMessageGuideTitle5
+            [ text <| translate language Translate.ResilienceGuideSection6Title
             ]
         , ul []
             [ li []
-                [ text <| translate language Translate.ResilienceMessageGuide5Bullet1 ]
+                [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide5Bullet2 ]
+                [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide5Bullet3 ]
+                [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
             ]
         , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceMessageGuideTitle6
+            [ text <| translate language Translate.ResilienceGuideSection6Title
             ]
         , ul []
             [ li []
-                [ text <| translate language Translate.ResilienceMessageGuide6Bullet1 ]
+                [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide6Bullet2 ]
+                [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide6Bullet3 ]
+                [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
             , li []
-                [ text <| translate language Translate.ResilienceMessageGuide6Bullet4
+                [ text <| translate language Translate.ResilienceGuideSection6Bullet4
                 , ul []
-                    [ li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet5 ]
-                    , li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet6 ]
-                    , li [] [ text <| translate language Translate.ResilienceMessageGuide6Bullet7 ]
+                    [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet5 ]
+                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet6 ]
+                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet7 ]
                     ]
                 ]
             ]
         , p [ class "title note" ]
-            [ text <| translate language Translate.ResilienceMessageGuide6Note ]
+            [ text <| translate language Translate.ResilienceGuideSection6Note ]
         ]
     ]
 
