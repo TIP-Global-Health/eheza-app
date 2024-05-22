@@ -11,7 +11,6 @@ define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_rep
  * Implements hook_menu().
  */
 function hedley_reports_menu() {
-
   $items['admin/reports/aggregated-reports'] = array(
     'title' => 'Aggregated Reports',
     'description' => 'View Aggregated Reports',
