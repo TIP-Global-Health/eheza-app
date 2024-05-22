@@ -399,7 +399,7 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
      }
      else {
        $data['entity_name'] = $health_center;
-       $data['entity_type'] = 'health_center';
+       $data['entity_type'] = 'health-center';
      }
   }
   else if (empty($district)) {
@@ -510,7 +510,7 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
         continue;
       }
 
-      $data[] = $json_data;
+      $data[] = json_decode($json_data);
     }
 
     $nid = end($ids);

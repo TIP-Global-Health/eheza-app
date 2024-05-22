@@ -44,6 +44,23 @@ view model =
                         model.reportsMenuPage
                 ]
 
+        Reports ->
+            let
+                _ =
+                    Debug.log "" <|
+                        case model.backend.reportsData of
+                            Just (Ok data) ->
+                                List.length data.records
+
+                            Just (Err err) ->
+                                0
+
+                            Nothing ->
+                                0
+            in
+            -- @todo
+            text "@todo"
+
         NotFound ->
             div []
                 [ text "Wrong page?"

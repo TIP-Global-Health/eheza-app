@@ -5422,11 +5422,16 @@ var $author$project$App$Fetch$fetch = function (model) {
 				A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
 		case 'ReportsMenu':
 			return _List_Nil;
+		case 'Reports':
+			return _List_Nil;
 		default:
 			return _List_Nil;
 	}
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Backend$Model$MsgReports = function (a) {
+	return {$: 'MsgReports', a: a};
+};
 var $author$project$Backend$Model$MsgReportsMenu = function (a) {
 	return {$: 'MsgReportsMenu', a: a};
 };
@@ -5438,6 +5443,9 @@ var $author$project$Backend$Model$MsgScoreboardMenu = function (a) {
 };
 var $author$project$App$Model$SetCurrentTime = function (a) {
 	return {$: 'SetCurrentTime', a: a};
+};
+var $author$project$Backend$Reports$Model$SetData = function (a) {
+	return {$: 'SetData', a: a};
 };
 var $author$project$Backend$ReportsMenu$Model$SetData = function (a) {
 	return {$: 'SetData', a: a};
@@ -5468,7 +5476,7 @@ var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection};
-var $author$project$Backend$Model$emptyModelBackend = {reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
+var $author$project$Backend$Model$emptyModelBackend = {reportsData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
@@ -5495,6 +5503,7 @@ var $elm$time$Time$Zone = F2(
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $author$project$App$Types$Reports = {$: 'Reports'};
 var $author$project$App$Types$ReportsMenu = {$: 'ReportsMenu'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
 var $author$project$App$Types$ScoreboardMenu = {$: 'ScoreboardMenu'};
@@ -5506,6 +5515,8 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$Scoreboard;
 		case 'reports-menu':
 			return $author$project$App$Types$ReportsMenu;
+		case 'reports-results':
+			return $author$project$App$Types$Reports;
 		default:
 			return $author$project$App$Types$NotFound;
 	}
@@ -5860,109 +5871,13 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
-	});
-var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
-	function (id, name) {
-		return {id: id, name: name};
-	});
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
-var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'name',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'id',
-		$author$project$Gizra$Json$decodeInt,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$HealthCenterData)));
-var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
-var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
-var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
-var $elm$core$String$toLower = _String_toLower;
-var $author$project$Backend$Decoder$siteFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'rwanda':
-			return $author$project$App$Types$SiteRwanda;
-		case 'burundi':
-			return $author$project$App$Types$SiteBurundi;
-		default:
-			return $author$project$App$Types$SiteUnknown;
-	}
-};
-var $author$project$Backend$Decoder$decodeSite = A2(
-	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData),
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Backend$ReportsMenu$Update$update = F3(
-	function (currentDate, msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				reportsMenuData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-	});
-var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
+var $author$project$Backend$Reports$Model$ReportsData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F6(
-	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
-	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
-	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
-		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
-	});
-var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
-	function (row1, row2) {
-		return {row1: row1, row2: row2};
+var $author$project$Backend$Reports$Model$PatientData = F2(
+	function (created, birthDate) {
+		return {birthDate: birthDate, created: created};
 	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6777,6 +6692,7 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
+var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6786,10 +6702,180 @@ var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 		return $elm$json$Json$Decode$fail(errorMessage);
 	}
 };
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodePatientData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'birth_date',
+	$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'created',
+		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)));
+var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
+var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
+var $author$project$Backend$Reports$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
+var $author$project$Backend$Reports$Model$EntityProvince = {$: 'EntityProvince'};
+var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Backend$Reports$Decoder$decodeSelectedEntity = A2(
+	$elm$json$Json$Decode$andThen,
+	function (entityType) {
+		switch (entityType) {
+			case 'global':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityGlobal);
+			case 'province':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityProvince);
+			case 'district':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityDistrict);
+			case 'sector':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntitySector);
+			case 'cell':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityCell);
+			case 'village':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityVillage);
+			case 'health-center':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityHealthCenter);
+			default:
+				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Backend$Decoder$siteFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'rwanda':
+			return $author$project$App$Types$SiteRwanda;
+		case 'burundi':
+			return $author$project$App$Types$SiteBurundi;
+		default:
+			return $author$project$App$Types$SiteUnknown;
+	}
+};
+var $author$project$Backend$Decoder$decodeSite = A2(
+	$elm$json$Json$Decode$andThen,
+	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'results',
+	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'entity_type',
+		$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'entity_name',
+			$elm$json$Json$Decode$string,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'site',
+				$author$project$Backend$Decoder$decodeSite,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))));
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Backend$Reports$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				reportsData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
+	function (site, healthCenters) {
+		return {healthCenters: healthCenters, site: site};
+	});
+var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
+	function (id, name) {
+		return {id: id, name: name};
+	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'name',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'id',
+		$author$project$Gizra$Json$decodeInt,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$HealthCenterData)));
+var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'health_centers',
+	$elm$json$Json$Decode$list($author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'site',
+		$author$project$Backend$Decoder$decodeSite,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
+var $author$project$Backend$ReportsMenu$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				reportsMenuData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
+	function (site, entityName, entityType, records) {
+		return {entityName: entityName, entityType: entityType, records: records, site: site};
+	});
+var $author$project$Backend$Scoreboard$Model$PatientData = F6(
+	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
+	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
+	});
+var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
+	function (row1, row2) {
+		return {row1: row1, row2: row2};
+	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -7670,7 +7756,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 						return $author$project$Backend$Model$MsgScoreboard(subCmds);
 					},
 					model);
-			default:
+			case 'MsgReportsMenu':
 				var subMsg = msg.a;
 				return A4(
 					$author$project$Backend$Utils$updateSubModel,
@@ -7681,6 +7767,19 @@ var $author$project$Backend$Update$updateBackend = F3(
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReportsMenu(subCmds);
+					},
+					model);
+			default:
+				var subMsg = msg.a;
+				return A4(
+					$author$project$Backend$Utils$updateSubModel,
+					subMsg,
+					F2(
+						function (subMsg_, model_) {
+							return A3($author$project$Backend$Reports$Update$update, currentDate, subMsg_, model_);
+						}),
+					function (subCmds) {
+						return $author$project$Backend$Model$MsgReports(subCmds);
 					},
 					model);
 		}
@@ -7855,6 +7954,13 @@ var $author$project$App$Update$init = function (flags) {
 						$author$project$Backend$Model$MsgReportsMenu(
 							$author$project$Backend$ReportsMenu$Model$SetData(flags.appData))),
 					model).a;
+			case 'Reports':
+				return A2(
+					$author$project$App$Update$update,
+					$author$project$App$Model$MsgBackend(
+						$author$project$Backend$Model$MsgReports(
+							$author$project$Backend$Reports$Model$SetData(flags.appData))),
+					model).a;
 			default:
 				return model;
 		}
@@ -7881,6 +7987,7 @@ var $author$project$App$Update$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$core$Debug$log = _Debug_log;
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -30736,6 +30843,25 @@ var $author$project$App$View$view = function (model) {
 						$author$project$App$Model$MsgReportsMenuPage,
 						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.reportsMenuPage))
 					]));
+		case 'Reports':
+			var _v1 = A2(
+				$elm$core$Debug$log,
+				'',
+				function () {
+					var _v2 = model.backend.reportsData;
+					if (_v2.$ === 'Just') {
+						if (_v2.a.$ === 'Ok') {
+							var data = _v2.a.a;
+							return $elm$core$List$length(data.records);
+						} else {
+							var err = _v2.a.a;
+							return 0;
+						}
+					} else {
+						return 0;
+					}
+				}());
+			return $elm$html$Html$text('@todo');
 		default:
 			return A2(
 				$elm$html$Html$div,

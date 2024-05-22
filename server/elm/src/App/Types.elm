@@ -9,8 +9,7 @@ type Page
     = ScoreboardMenu
     | Scoreboard
     | ReportsMenu
-      -- @todo
-      -- | Reports
+    | Reports
     | NotFound
 
 

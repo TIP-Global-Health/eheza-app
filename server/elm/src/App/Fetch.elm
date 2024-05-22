@@ -34,9 +34,11 @@ fetch model =
         ReportsMenu ->
             []
 
-        -- @todo
-        -- Reports ->
-        -- Pages.Reports.Fetch.fetch model.backend model.reportsPage
-        --     |> List.map (\subMsg -> MsgBackend subMsg)
+        Reports ->
+            --@todo
+            -- Pages.Reports.Fetch.fetch model.backend model.reportsPage
+            --     |> List.map (\subMsg -> MsgBackend subMsg)
+            []
+
         NotFound ->
             []

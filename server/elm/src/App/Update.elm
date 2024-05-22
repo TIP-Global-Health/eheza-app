@@ -4,11 +4,14 @@ module App.Update exposing
     , update
     )
 
+-- import Pages.Reports.Update
+
 import App.Fetch exposing (fetch)
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Model
+import Backend.Reports.Model
 import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model
 import Backend.ScoreboardMenu.Model
@@ -59,15 +62,15 @@ init flags =
                         model
                         |> Tuple.first
 
-                -- @todo
-                -- Reports ->
-                -- update
-                --     (Backend.Reports.Model.SetData flags.appData
-                --         |> Backend.Model.MsgReports
-                --         |> MsgBackend
-                --     )
-                --     model
-                --     |> Tuple.first
+                Reports ->
+                    update
+                        (Backend.Reports.Model.SetData flags.appData
+                            |> Backend.Model.MsgReports
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
                 NotFound ->
                     model
 
@@ -95,9 +98,9 @@ resolveActivePage page =
         "reports-menu" ->
             ReportsMenu
 
-        -- @todo
-        -- "reports-results" ->
-        --     Reports
+        "reports-results" ->
+            Reports
+
         _ ->
             NotFound
 
