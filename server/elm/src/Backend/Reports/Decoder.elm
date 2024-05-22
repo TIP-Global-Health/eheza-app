@@ -7,7 +7,7 @@ import Backend.Reports.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
-import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
 import Maybe.Extra exposing (isNothing)
 
@@ -58,3 +58,23 @@ decodePatientData =
     succeed PatientData
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
+        |> required "gender" decodeGenderWithFallback
+
+
+decodeGenderWithFallback : Decoder Gender
+decodeGenderWithFallback =
+    oneOf
+        [ decodeGender
+        , succeed Female
+        ]
+
+
+decodeGender : Decoder Gender
+decodeGender =
+    string
+        |> andThen
+            (\gender ->
+                genderFromString gender
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| gender ++ " is not a recognized Gender.")
+            )

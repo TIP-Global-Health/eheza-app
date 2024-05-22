@@ -28,7 +28,13 @@ type SelectedEntity
 type alias PatientData =
     { created : NominalDate
     , birthDate : NominalDate
+    , gender : Gender
     }
+
+
+type Gender
+    = Female
+    | Male
 
 
 type Msg

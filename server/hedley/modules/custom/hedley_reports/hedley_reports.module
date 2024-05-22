@@ -251,6 +251,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
   $data['created'] = date("Y-m-d", $person->created);
   $data['birth_date'] = date("Y-m-d", $birth_date);
+  $data['gender'] = $person->field_gender[LANGUAGE_NONE][0]['value'];
 
   $encoded_data = json_encode($data);
   $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
