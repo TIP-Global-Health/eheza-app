@@ -37,13 +37,9 @@ viewMenu : Language -> MenuData -> Model -> Html Msg
 viewMenu language data model =
     let
         populationSelectionInput =
-            let
-                options =
-                    [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
-            in
             viewSelectListInput language
                 model.populationSelection
-                options
+                [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
@@ -57,9 +53,9 @@ viewMenu language data model =
                             ( [], emptyNode )
 
                         SelectionOptionDemographics ->
-                            ( [ viewDemographicsSelection language data SetGeoLocation model.selectedDemographics ]
+                            ( [ viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics ]
                             , if isJust model.selectedDemographics.province then
-                                viewDemographicsSelectionActionButton language data SelectionMade model.selectedDemographics
+                                viewDemographicsSelectionActionButton language data.site SelectionMade model.selectedDemographics
 
                               else
                                 emptyNode

@@ -10,7 +10,7 @@ update msg model =
     case msg of
         SetGeoLocation updatedFunc value ->
             PagesReturn
-                (updatedFunc value model)
+                { model | selectedDemographics = updatedFunc value model.selectedDemographics }
                 Cmd.none
                 noError
                 []

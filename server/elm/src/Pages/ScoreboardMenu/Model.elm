@@ -1,29 +1,21 @@
 module Pages.ScoreboardMenu.Model exposing (..)
 
-import Utils.GeoLocation exposing (GeoLocationId)
+import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
 
 
 type alias Model =
-    { province : Maybe GeoLocationId
-    , district : Maybe GeoLocationId
-    , sector : Maybe GeoLocationId
-    , cell : Maybe GeoLocationId
-    , village : Maybe GeoLocationId
+    { selectedDemographics : DemographicsSelection
     , selected : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
+    { selectedDemographics = emptyDemographicsSelection
     , selected = False
     }
 
 
 type Msg
-    = SetGeoLocation (String -> Model -> Model) String
+    = SetGeoLocation (String -> DemographicsSelection -> DemographicsSelection) String
     | SelectionMade

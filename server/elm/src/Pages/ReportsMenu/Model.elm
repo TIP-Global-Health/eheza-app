@@ -3,7 +3,6 @@ module Pages.ReportsMenu.Model exposing (..)
 import Backend.ReportsMenu.Model exposing (HealthCenterId)
 import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
 import Pages.ReportsMenu.Types exposing (..)
-import Utils.GeoLocation exposing (GeoLocationId)
 
 
 type alias Model =

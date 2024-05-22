@@ -1,10 +1,9 @@
 module Pages.Components.View exposing (..)
 
-import App.Types exposing (Language)
+import App.Types exposing (Language, Site)
 import AssocList as Dict
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -21,14 +20,14 @@ import Utils.GeoLocation exposing (..)
 
 viewDemographicsSelection :
     Language
-    -> MenuData
+    -> Site
     -> ((String -> DemographicsSelection -> DemographicsSelection) -> String -> msg)
     -> DemographicsSelection
     -> Html msg
-viewDemographicsSelection language data setGeoLocationMsg selection =
+viewDemographicsSelection language site setGeoLocationMsg selection =
     let
         geoInfo =
-            getGeoInfo data.site
+            getGeoInfo site
 
         provinceInput =
             let
@@ -46,7 +45,7 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
                         }
                     )
                 )
-                (resolveGeoSructureLabelLevel1 data.site)
+                (resolveGeoSructureLabelLevel1 site)
                 (isJust selection.district)
 
         districtInput =
@@ -67,7 +66,7 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
                                 }
                             )
                         )
-                        (resolveGeoSructureLabelLevel2 data.site)
+                        (resolveGeoSructureLabelLevel2 site)
                         (isJust selection.sector)
                 )
                 selection.province
@@ -91,7 +90,7 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
                                 }
                             )
                         )
-                        (resolveGeoSructureLabelLevel3 data.site)
+                        (resolveGeoSructureLabelLevel3 site)
                         (isJust selection.cell)
                 )
                 selection.district
@@ -115,7 +114,7 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
                                 }
                             )
                         )
-                        (resolveGeoSructureLabelLevel4 data.site)
+                        (resolveGeoSructureLabelLevel4 site)
                         (isJust selection.village)
                 )
                 selection.sector
@@ -139,7 +138,7 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
                                 }
                             )
                         )
-                        (resolveGeoSructureLabelLevel5 data.site)
+                        (resolveGeoSructureLabelLevel5 site)
                         False
                 )
                 selection.cell
@@ -154,11 +153,11 @@ viewDemographicsSelection language data setGeoLocationMsg selection =
         ]
 
 
-viewDemographicsSelectionActionButton : Language -> MenuData -> msg -> DemographicsSelection -> Html msg
-viewDemographicsSelectionActionButton language data selectionMadeMsg selection =
+viewDemographicsSelectionActionButton : Language -> Site -> msg -> DemographicsSelection -> Html msg
+viewDemographicsSelectionActionButton language site selectionMadeMsg selection =
     let
         geoInfo =
-            getGeoInfo data.site
+            getGeoInfo site
 
         provincePart =
             Maybe.andThen

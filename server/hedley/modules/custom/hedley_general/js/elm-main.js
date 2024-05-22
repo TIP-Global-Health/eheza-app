@@ -5467,7 +5467,7 @@ var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
-var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, selected: false, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection};
 var $author$project$Backend$Model$emptyModelBackend = {reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
@@ -5837,7 +5837,11 @@ var $author$project$Pages$ScoreboardMenu$Update$update = F2(
 			var value = msg.b;
 			return A4(
 				$author$project$App$Model$PagesReturn,
-				A2(updatedFunc, value, model),
+				_Utils_update(
+					model,
+					{
+						selectedDemographics: A2(updatedFunc, value, model.selectedDemographics)
+					}),
 				$elm$core$Platform$Cmd$none,
 				$author$project$Error$Utils$noError,
 				_List_Nil);
@@ -27955,8 +27959,8 @@ var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 				]));
 	});
 var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
-	function (language, data, setGeoLocationMsg, selection) {
-		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
+	function (language, site, setGeoLocationMsg, selection) {
+		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(site);
 		var provinceInput = function () {
 			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(geoInfo.provinces);
 			return A6(
@@ -27976,7 +27980,7 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 										$elm$core$String$toInt(value))
 								});
 						})),
-				$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1(data.site),
+				$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1(site),
 				$elm_community$maybe_extra$Maybe$Extra$isJust(selection.district));
 		}();
 		var sectorInput = A2(
@@ -28007,7 +28011,7 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3(data.site),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3(site),
 						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.cell));
 				},
 				selection.district));
@@ -28039,7 +28043,7 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5(data.site),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5(site),
 						false);
 				},
 				selection.cell));
@@ -28071,7 +28075,7 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2(data.site),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2(site),
 						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.sector));
 				},
 				selection.province));
@@ -28103,7 +28107,7 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 												$elm$core$String$toInt(value))
 										});
 								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4(data.site),
+						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4(site),
 						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.village));
 				},
 				selection.sector));
@@ -28151,8 +28155,8 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F4(
-	function (language, data, selectionMadeMsg, selection) {
-		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
+	function (language, site, selectionMadeMsg, selection) {
+		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(site);
 		var provincePart = A2(
 			$elm$core$Maybe$withDefault,
 			'',
@@ -28269,11 +28273,16 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 	function (language, data, model) {
-		var populationSelectionInput = function () {
-			var options = _List_fromArray(
-				[$author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal, $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics, $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter]);
-			return A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString, $author$project$Pages$ReportsMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select');
-		}();
+		var populationSelectionInput = A7(
+			$author$project$Pages$Utils$viewSelectListInput,
+			language,
+			model.populationSelection,
+			_List_fromArray(
+				[$author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal, $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics, $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter]),
+			$author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString,
+			$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
+			$author$project$Translate$PopulationSelectionOption,
+			'select');
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
@@ -28287,9 +28296,9 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							return _Utils_Tuple2(
 								_List_fromArray(
 									[
-										A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics)
+										A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics)
 									]),
-								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 						default:
 							var options = A2(
 								$elm$core$List$map,
@@ -30589,296 +30598,33 @@ var $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation = F2(
 	function (a, b) {
 		return {$: 'SetGeoLocation', a: a, b: b};
 	});
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
 var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 	function (language, data, model) {
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
-		var provinceInput = function () {
-			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(geoInfo.provinces);
-			return A6(
-				$author$project$Pages$Utils$viewGeoLocationSelectListInput,
-				language,
-				model.province,
-				options,
-				$author$project$Pages$ScoreboardMenu$Model$SetGeoLocation(
-					F2(
-						function (value, form) {
-							return _Utils_update(
-								form,
-								{
-									province: A2(
-										$elm$core$Maybe$map,
-										$author$project$Backend$Entities$toEntityId,
-										$elm$core$String$toInt(value))
-								});
-						})),
-				$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1(data.site),
-				$elm_community$maybe_extra$Maybe$Extra$isJust(model.district));
-		}();
-		var sectorInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							geoInfo.sectors));
-					return A6(
-						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
-						language,
-						model.sector,
-						options,
-						$author$project$Pages$ScoreboardMenu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											sector: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.cell));
-				},
-				model.district));
-		var villageInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							geoInfo.villages));
-					return A6(
-						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
-						language,
-						model.village,
-						options,
-						$author$project$Pages$ScoreboardMenu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											village: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5(data.site),
-						false);
-				},
-				model.cell));
-		var districtInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							geoInfo.districts));
-					return A6(
-						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
-						language,
-						model.district,
-						options,
-						$author$project$Pages$ScoreboardMenu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											district: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.sector));
-				},
-				model.province));
-		var cellInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (parentId) {
-					var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(
-						A2(
-							$author$project$Utils$GeoLocation$filterGeoLocationDictByParent,
-							$author$project$Backend$Entities$fromEntityId(parentId),
-							geoInfo.cells));
-					return A6(
-						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
-						language,
-						model.cell,
-						options,
-						$author$project$Pages$ScoreboardMenu$Model$SetGeoLocation(
-							F2(
-								function (value, form) {
-									return _Utils_update(
-										form,
-										{
-											cell: A2(
-												$elm$core$Maybe$map,
-												$author$project$Backend$Entities$toEntityId,
-												$elm$core$String$toInt(value))
-										});
-								})),
-						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.village));
-				},
-				model.sector));
-		var actionButton = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A3(
-				$elm$core$Maybe$map2,
-				F2(
-					function (province, district) {
-						if (model.selected) {
-							return $elm$html$Html$text(
-								A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage));
-						} else {
-							var villagePart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.villages);
-										},
-										model.village)));
-							var sectorPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.sectors);
-										},
-										model.sector)));
-							var provincePart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function ($) {
-										return $.name;
-									},
-									A2($pzp1997$assoc_list$AssocList$get, province, geoInfo.provinces)));
-							var districtPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function ($) {
-										return $.name;
-									},
-									A2($pzp1997$assoc_list$AssocList$get, district, geoInfo.districts)));
-							var cellPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.cells);
-										},
-										model.cell)));
-							var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
-							return A2(
-								$elm$html$Html$a,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Events$onClick($author$project$Pages$ScoreboardMenu$Model$SelectionMade)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
-											]))
-									]));
-						}
-					}),
-				model.province,
-				model.district));
+		var _v0 = _Utils_Tuple2(
+			_List_fromArray(
+				[
+					A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation, model.selectedDemographics)
+				]),
+			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+		var inputs = _v0.a;
+		var actionButton_ = _v0.b;
+		var actionButton = model.selected ? _List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage))
+			]) : _List_fromArray(
+			[actionButton_]);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			_List_fromArray(
-				[
-					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('inputs')
-						]),
-					_List_fromArray(
-						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('actions')
-						]),
-					_List_fromArray(
-						[actionButton]))
-				]));
+			A2(
+				$elm$core$List$cons,
+				A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
+				_Utils_ap(inputs, actionButton)));
 	});
 var $author$project$Pages$ScoreboardMenu$View$view = F3(
 	function (language, modelBackend, model) {
