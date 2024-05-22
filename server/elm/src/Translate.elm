@@ -59,6 +59,7 @@ type TranslationId
     | Demographics
     | EmptyString
     | GenerateReport
+    | HealthCenter
     | HttpError StringIdHttpError
     | InfrastructureEnvironmentWash
     | Month Month
@@ -81,6 +82,7 @@ type TranslationId
     | Stunting
     | Status
     | TargetedInterventions
+    | ViewMode
     | Village
     | UniversalIntervention
     | Zone
@@ -151,6 +153,12 @@ translationSet transId =
 
         GenerateReport ->
             { english = "Generate Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HealthCenter ->
+            { english = "Health Center"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -453,6 +461,12 @@ translationSet transId =
 
         TargetedInterventions ->
             { english = "Targeted Interventions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ViewMode ->
+            { english = "View Mode"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

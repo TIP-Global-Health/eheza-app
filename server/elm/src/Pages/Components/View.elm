@@ -13,7 +13,14 @@ import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.ReportsMenu.Model exposing (..)
 import Pages.ReportsMenu.Types exposing (..)
 import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
-import Pages.Utils exposing (viewCustomLabel, viewCustomSelectListInput, viewGeoLocationSelectListInput, viewSelectListInput)
+import Pages.Utils
+    exposing
+        ( viewCustomLabel
+        , viewCustomSelectListInput
+        , viewGenerateReportButton
+        , viewGeoLocationSelectListInput
+        , viewSelectListInput
+        )
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
@@ -23,7 +30,7 @@ viewDemographicsSelection :
     -> Site
     -> ((String -> DemographicsSelection -> DemographicsSelection) -> String -> msg)
     -> DemographicsSelection
-    -> Html msg
+    -> List (Html msg)
 viewDemographicsSelection language site setGeoLocationMsg selection =
     let
         geoInfo =
@@ -144,17 +151,16 @@ viewDemographicsSelection language site setGeoLocationMsg selection =
                 selection.cell
                 |> Maybe.withDefault emptyNode
     in
-    div [ class "inputs" ]
-        [ provinceInput
-        , districtInput
-        , sectorInput
-        , cellInput
-        , villageInput
-        ]
+    [ provinceInput
+    , districtInput
+    , sectorInput
+    , cellInput
+    , villageInput
+    ]
 
 
-viewDemographicsSelectionActionButton : Language -> Site -> msg -> DemographicsSelection -> Html msg
-viewDemographicsSelectionActionButton language site selectionMadeMsg selection =
+viewDemographicsSelectionActionButton : Language -> Site -> String -> msg -> DemographicsSelection -> Html msg
+viewDemographicsSelectionActionButton language site pathPrefix selectionMadeMsg selection =
     let
         geoInfo =
             getGeoInfo site
@@ -204,14 +210,13 @@ viewDemographicsSelectionActionButton language site selectionMadeMsg selection =
                 |> Maybe.map (\geoLocation -> "/" ++ geoLocation.name)
                 |> Maybe.withDefault ""
 
-        suffix =
-            provincePart
+        path =
+            pathPrefix
+                ++ "/"
+                ++ provincePart
                 ++ districtPart
                 ++ sectorPart
                 ++ cellPart
                 ++ villagePart
     in
-    a [ href <| "/admin/reports/aggregated-ncda/" ++ suffix ]
-        [ button [ onClick selectionMadeMsg ]
-            [ text <| translate language Translate.GenerateReport ]
-        ]
+    viewGenerateReportButton language path selectionMadeMsg

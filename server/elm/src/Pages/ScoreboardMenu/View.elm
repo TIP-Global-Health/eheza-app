@@ -37,9 +37,13 @@ viewMenu language data model =
             getGeoInfo data.site
 
         ( inputs, actionButton_ ) =
-            ( [ viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics ]
+            ( viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics
             , if isJust model.selectedDemographics.province && isJust model.selectedDemographics.district then
-                viewDemographicsSelectionActionButton language data.site SelectionMade model.selectedDemographics
+                viewDemographicsSelectionActionButton language
+                    data.site
+                    "/admin/reports/aggregated-ncda"
+                    SelectionMade
+                    model.selectedDemographics
 
               else
                 emptyNode
@@ -47,11 +51,13 @@ viewMenu language data model =
 
         actionButton =
             if model.selected then
-                [ text <| translate language Translate.PleaseWaitMessage ]
+                text <| translate language Translate.PleaseWaitMessage
 
             else
-                [ actionButton_ ]
+                actionButton_
     in
-    div [ class "page-content" ] <|
-        viewCustomLabel language Translate.SelectViewMode ":" "header"
-            :: (inputs ++ actionButton)
+    div [ class "page-content" ]
+        [ viewCustomLabel language Translate.SelectViewMode ":" "header"
+        , div [ class "inputs" ] inputs
+        , div [ class "actions" ] [ actionButton ]
+        ]

@@ -13,8 +13,8 @@ define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_rep
 function hedley_reports_menu() {
 
   $items['admin/reports/aggregated-reports'] = array(
-    'title' => 'Aggregated Reports menu',
-    'description' => 'View Aggregated Reports menu',
+    'title' => 'Aggregated Reports',
+    'description' => 'View Aggregated Reports',
     'page callback' => 'hedley_reports_aggregated_callback_menu',
     'access callback' => 'hedley_reports_aggregated_reports_report_access',
   );

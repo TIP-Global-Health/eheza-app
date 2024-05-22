@@ -99,7 +99,7 @@ viewSelectListInput language currentValue options toStringFunc setMsg transId in
         optionsPairs
         toStringFunc
         setMsg
-        ("form-input " ++ inputClass)
+        inputClass
         True
 
 
@@ -171,6 +171,16 @@ viewGeoLocationSelectListInput language currentValue options setMsg labelTransId
         emptyOption =
             emptySelectOption (currentValue == Nothing)
     in
+    select
+        [ onInput setMsg
+        , class "select-input"
+        ]
+        selectOptions
+        |> wrapSelectListInput language labelTransId disabled
+
+
+wrapSelectListInput : Language -> TranslationId -> Bool -> Html msg -> Html msg
+wrapSelectListInput language labelTransId disabled selectList =
     div
         [ classList
             [ ( "select-input-wrapper", True )
@@ -178,11 +188,7 @@ viewGeoLocationSelectListInput language currentValue options setMsg labelTransId
             ]
         ]
         [ viewLabel language labelTransId
-        , select
-            [ onInput setMsg
-            , class "select-input"
-            ]
-            selectOptions
+        , selectList
         ]
 
 
@@ -214,4 +220,12 @@ viewActionButton language label allowAction action =
     div [ class "actions" ]
         [ button attributes
             [ text <| translate language label ]
+        ]
+
+
+viewGenerateReportButton : Language -> String -> msg -> Html msg
+viewGenerateReportButton language path selectionMadeMsg =
+    a [ href path ]
+        [ button [ onClick selectionMadeMsg ]
+            [ text <| translate language Translate.GenerateReport ]
         ]

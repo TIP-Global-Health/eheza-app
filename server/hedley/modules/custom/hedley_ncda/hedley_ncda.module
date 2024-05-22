@@ -19,8 +19,8 @@ function hedley_ncda_menu() {
   }
 
   $items['admin/reports/aggregated-ncda'] = array(
-    'title' => 'Aggregated NCDA menu',
-    'description' => 'View Aggregated NCDA menu',
+    'title' => 'Aggregated NCDA',
+    'description' => 'View Aggregated NCDA',
     'page callback' => 'hedley_ncda_aggregated_callback_menu',
     'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );

@@ -53,24 +53,23 @@ body.admin-menu #page-wrapper #header {
   min-height: 380px;
 }
 
-.page-content .inputs .select-input-wrapper {
+.page-content .select-input-wrapper {
   align-items: center;
   display: flex;
   margin-bottom: 20px;
 }
 
-.page-content .inputs .select-input-wrapper.disabled {
+.page-content .select-input-wrapper.disabled {
   opacity: 0.8;
   pointer-events: none;
 }
 
-.page-content .inputs .select-input-wrapper .label {
+.page-content .select-input-wrapper .label {
   font-size: 26px;
   width: 40%;
 }
 
-.page-content .form-input.select,
-.page-content .inputs .select-input-wrapper .select-input {
+.page-content .select-input-wrapper .select-input {
   background: none;
   border: 2px solid white;
   color: #3b3b3b;
@@ -82,13 +81,7 @@ body.admin-menu #page-wrapper #header {
   width: 60%;
 }
 
-.page-content .form-input.select {
-  margin-left: 20%;
-  margin-bottom: 50px;
-}
-
-.page-content .form-input.select:focus,
-.page-content .inputs .select-input-wrapper .select-input:focus {
+.page-content .select-input-wrapper .select-input:focus {
   outline-color: white;
 }
 

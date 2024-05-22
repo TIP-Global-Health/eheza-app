@@ -15,7 +15,15 @@ import Pages.Components.View exposing (viewDemographicsSelection, viewDemographi
 import Pages.ReportsMenu.Model exposing (..)
 import Pages.ReportsMenu.Types exposing (..)
 import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
-import Pages.Utils exposing (viewCustomLabel, viewCustomSelectListInput, viewGeoLocationSelectListInput, viewSelectListInput)
+import Pages.Utils
+    exposing
+        ( viewCustomLabel
+        , viewCustomSelectListInput
+        , viewGenerateReportButton
+        , viewGeoLocationSelectListInput
+        , viewSelectListInput
+        , wrapSelectListInput
+        )
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
@@ -43,19 +51,24 @@ viewMenu language data model =
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
-                "select"
+                "select-input"
+                |> wrapSelectListInput language Translate.ViewMode False
 
         ( derivedInputs, actionButton_ ) =
             Maybe.map
                 (\populationSelection ->
                     case populationSelection of
                         SelectionOptionGlobal ->
-                            ( [], emptyNode )
+                            ( [], viewGenerateReportButton language "/admin/reports/aggregated-reports/all" SelectionMade )
 
                         SelectionOptionDemographics ->
-                            ( [ viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics ]
+                            ( viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics
                             , if isJust model.selectedDemographics.province then
-                                viewDemographicsSelectionActionButton language data.site SelectionMade model.selectedDemographics
+                                viewDemographicsSelectionActionButton language
+                                    data.site
+                                    "/admin/reports/aggregated-reports/demographics"
+                                    SelectionMade
+                                    model.selectedDemographics
 
                               else
                                 emptyNode
@@ -72,10 +85,18 @@ viewMenu language data model =
                                     options
                                     String.fromInt
                                     SetHealthCenter
-                                    "form-input select"
+                                    "select-input"
                                     True
+                                    |> wrapSelectListInput language Translate.HealthCenter False
                               ]
-                            , emptyNode
+                            , Maybe.map
+                                (\selectedHealthCenter ->
+                                    viewGenerateReportButton language
+                                        ("/admin/reports/aggregated-reports/health-center/" ++ String.fromInt selectedHealthCenter)
+                                        SelectionMade
+                                )
+                                model.selectedHealthCenter
+                                |> Maybe.withDefault emptyNode
                             )
                 )
                 model.populationSelection
@@ -83,11 +104,15 @@ viewMenu language data model =
 
         actionButton =
             if model.selected then
-                [ text <| translate language Translate.PleaseWaitMessage ]
+                text <| translate language Translate.PleaseWaitMessage
 
             else
-                [ actionButton_ ]
+                actionButton_
     in
-    div [ class "page-content" ] <|
-        viewCustomLabel language Translate.SelectViewMode ":" "header"
-            :: ((populationSelectionInput :: derivedInputs) ++ actionButton)
+    div [ class "page-content" ]
+        [ viewCustomLabel language Translate.SelectViewMode ":" "header"
+        , div [ class "inputs" ] <|
+            populationSelectionInput
+                :: derivedInputs
+        , div [ class "actions" ] [ actionButton ]
+        ]

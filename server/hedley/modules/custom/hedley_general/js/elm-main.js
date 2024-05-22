@@ -8081,6 +8081,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
 				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'HealthCenter':
+				return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'HttpError':
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
@@ -8302,6 +8304,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ViewMode':
+				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
@@ -8449,6 +8453,7 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
 var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
 	return {$: 'PopulationSelectionOption', a: a};
@@ -8465,6 +8470,7 @@ var $author$project$Pages$ReportsMenu$Model$SetHealthCenter = function (a) {
 var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a) {
 	return {$: 'SetPopulationSelection', a: a};
 };
+var $author$project$Translate$ViewMode = {$: 'ViewMode'};
 var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	if (m.$ === 'Nothing') {
 		return false;
@@ -27899,6 +27905,25 @@ var $author$project$Pages$Utils$viewLabel = F2(
 	function (language, translationId) {
 		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
 	});
+var $author$project$Pages$Utils$wrapSelectListInput = F4(
+	function (language, labelTransId, disabled, selectList) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('select-input-wrapper', true),
+							_Utils_Tuple2('disabled', disabled)
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
+					selectList
+				]));
+	});
 var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 	function (language, currentValue, options, setMsg, labelTransId, disabled) {
 		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
@@ -27934,29 +27959,19 @@ var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 							]));
 				},
 				options));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('select-input-wrapper', true),
-							_Utils_Tuple2('disabled', disabled)
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
-					A2(
-					$elm$html$Html$select,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onInput(setMsg),
-							$elm$html$Html$Attributes$class('select-input')
-						]),
-					selectOptions)
-				]));
+		return A4(
+			$author$project$Pages$Utils$wrapSelectListInput,
+			language,
+			labelTransId,
+			disabled,
+			A2(
+				$elm$html$Html$select,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onInput(setMsg),
+						$elm$html$Html$Attributes$class('select-input')
+					]),
+				selectOptions));
 	});
 var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 	function (language, site, setGeoLocationMsg, selection) {
@@ -28111,17 +28126,9 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.village));
 				},
 				selection.sector));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('inputs')
-				]),
-			_List_fromArray(
-				[provinceInput, districtInput, sectorInput, cellInput, villageInput]));
+		return _List_fromArray(
+			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
 	});
-var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -28131,6 +28138,8 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
+var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
@@ -28154,8 +28163,31 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F4(
-	function (language, site, selectionMadeMsg, selection) {
+var $author$project$Pages$Utils$viewGenerateReportButton = F3(
+	function (language, path, selectionMadeMsg) {
+		return A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href(path)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(selectionMadeMsg)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
+						]))
+				]));
+	});
+var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F5(
+	function (language, site, pathPrefix, selectionMadeMsg, selection) {
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(site);
 		var provincePart = A2(
 			$elm$core$Maybe$withDefault,
@@ -28227,33 +28259,8 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.cells);
 					},
 					selection.cell)));
-		var suffix = _Utils_ap(
-			provincePart,
-			_Utils_ap(
-				districtPart,
-				_Utils_ap(
-					sectorPart,
-					_Utils_ap(cellPart, villagePart))));
-		return A2(
-			$elm$html$Html$a,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(selectionMadeMsg)
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
-						]))
-				]));
+		var path = pathPrefix + ('/' + (provincePart + (districtPart + (sectorPart + (cellPart + villagePart)))));
+		return A3($author$project$Pages$Utils$viewGenerateReportButton, language, path, selectionMadeMsg);
 	});
 var $author$project$Pages$Utils$viewSelectListInput = F7(
 	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
@@ -28269,20 +28276,25 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 					option);
 			},
 			options);
-		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, 'form-input ' + inputClass, true);
+		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 	function (language, data, model) {
-		var populationSelectionInput = A7(
-			$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = A4(
+			$author$project$Pages$Utils$wrapSelectListInput,
 			language,
-			model.populationSelection,
-			_List_fromArray(
-				[$author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal, $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics, $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter]),
-			$author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString,
-			$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
-			$author$project$Translate$PopulationSelectionOption,
-			'select');
+			$author$project$Translate$ViewMode,
+			false,
+			A7(
+				$author$project$Pages$Utils$viewSelectListInput,
+				language,
+				model.populationSelection,
+				_List_fromArray(
+					[$author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal, $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics, $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter]),
+				$author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString,
+				$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
+				$author$project$Translate$PopulationSelectionOption,
+				'select-input'));
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
@@ -28291,14 +28303,13 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 				function (populationSelection) {
 					switch (populationSelection.$) {
 						case 'SelectionOptionGlobal':
-							return _Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode);
+							return _Utils_Tuple2(
+								_List_Nil,
+								A3($author$project$Pages$Utils$viewGenerateReportButton, language, '/admin/reports/aggregated-reports/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
 						case 'SelectionOptionDemographics':
 							return _Utils_Tuple2(
-								_List_fromArray(
-									[
-										A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics)
-									]),
-								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+								A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics),
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A5($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-reports/demographics', $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 						default:
 							var options = A2(
 								$elm$core$List$map,
@@ -28309,32 +28320,58 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							return _Utils_Tuple2(
 								_List_fromArray(
 									[
-										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$ReportsMenu$Model$SetHealthCenter, 'form-input select', true)
+										A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$HealthCenter,
+										false,
+										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$ReportsMenu$Model$SetHealthCenter, 'select-input', true))
 									]),
-								$author$project$Gizra$Html$emptyNode);
+								A2(
+									$elm$core$Maybe$withDefault,
+									$author$project$Gizra$Html$emptyNode,
+									A2(
+										$elm$core$Maybe$map,
+										function (selectedHealthCenter) {
+											return A3(
+												$author$project$Pages$Utils$viewGenerateReportButton,
+												language,
+												'/admin/reports/aggregated-reports/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
+												$author$project$Pages$ReportsMenu$Model$SelectionMade);
+										},
+										model.selectedHealthCenter)));
 					}
 				},
 				model.populationSelection));
 		var derivedInputs = _v0.a;
 		var actionButton_ = _v0.b;
-		var actionButton = model.selected ? _List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage))
-			]) : _List_fromArray(
-			[actionButton_]);
+		var actionButton = model.selected ? $elm$html$Html$text(
+			A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage)) : actionButton_;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			A2(
-				$elm$core$List$cons,
-				A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
-				_Utils_ap(
-					A2($elm$core$List$cons, populationSelectionInput, derivedInputs),
-					actionButton)));
+			_List_fromArray(
+				[
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					A2($elm$core$List$cons, populationSelectionInput, derivedInputs)),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('actions')
+						]),
+					_List_fromArray(
+						[actionButton]))
+				]));
 	});
 var $author$project$Pages$ReportsMenu$View$view = F3(
 	function (language, modelBackend, model) {
@@ -30602,29 +30639,37 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 	function (language, data, model) {
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
 		var _v0 = _Utils_Tuple2(
-			_List_fromArray(
-				[
-					A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation, model.selectedDemographics)
-				]),
-			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+			A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation, model.selectedDemographics),
+			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A5($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-ncda', $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 		var inputs = _v0.a;
 		var actionButton_ = _v0.b;
-		var actionButton = model.selected ? _List_fromArray(
-			[
-				$elm$html$Html$text(
-				A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage))
-			]) : _List_fromArray(
-			[actionButton_]);
+		var actionButton = model.selected ? $elm$html$Html$text(
+			A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage)) : actionButton_;
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			A2(
-				$elm$core$List$cons,
-				A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
-				_Utils_ap(inputs, actionButton)));
+			_List_fromArray(
+				[
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					inputs),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('actions')
+						]),
+					_List_fromArray(
+						[actionButton]))
+				]));
 	});
 var $author$project$Pages$ScoreboardMenu$View$view = F3(
 	function (language, modelBackend, model) {
