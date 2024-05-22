@@ -478,7 +478,7 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
   }
 
   if (!empty($health_center)) {
-    $base_query->fieldCondition('field_health_center', 'value', $health_center);
+    $base_query->fieldCondition('field_shards', 'target_id', $health_center);
   }
 
   $data = [];
