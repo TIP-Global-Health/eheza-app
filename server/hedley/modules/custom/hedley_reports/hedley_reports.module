@@ -172,5 +172,19 @@ function hedley_reports_aggregated_reports_report_access() {
  */
 function hedley_reports_aggregated_callback_menu() {
   $site = variable_get('hedley_general_site_name', '');
-  return hedley_general_build_elm_app('reports-menu', ['site' => $site]);
+
+  $health_centers_data = [];
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+  $nodes = node_load_multiple($health_center_ids);
+  foreach ($nodes as $node) {
+    $health_centers_data[] = [
+      'id' => $node->nid,
+      'name' => $node->title,
+    ];
+  }
+
+  return hedley_general_build_elm_app('reports-menu', [
+    'site' => $site,
+    'health_centers' => $health_centers_data,
+  ]);
 }

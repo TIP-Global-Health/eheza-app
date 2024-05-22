@@ -1,6 +1,7 @@
 module Pages.Utils exposing (..)
 
 import App.Types exposing (Language)
+import Backend.Entities exposing (fromEntityId, toEntityId)
 import Date
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
@@ -10,6 +11,7 @@ import Html.Events exposing (..)
 import Icons
 import Svg.Attributes
 import Translate exposing (TranslationId, translate)
+import Utils.GeoLocation exposing (..)
 
 
 viewYearSelector : NominalDate -> Int -> (Int -> msg) -> Html msg
@@ -49,6 +51,10 @@ viewYearSelector currentDate gap changeGapMsg =
         ]
 
 
+
+-- Labels
+
+
 viewLabel : Language -> TranslationId -> Html any
 viewLabel language translationId =
     viewCustomLabel language translationId ":" "label"
@@ -78,25 +84,34 @@ viewSelectListInput :
     -> String
     -> Html msg
 viewSelectListInput language currentValue options toStringFunc setMsg transId inputClass =
+    let
+        transFunc =
+            transId >> translate language
+
+        optionsPairs =
+            List.map
+                (\option ->
+                    ( transFunc option, option )
+                )
+                options
+    in
     viewCustomSelectListInput currentValue
-        options
+        optionsPairs
         toStringFunc
         setMsg
-        (transId >> translate language)
         ("form-input " ++ inputClass)
         True
 
 
 viewCustomSelectListInput :
     Maybe a
-    -> List a
+    -> List ( String, a )
     -> (a -> String)
     -> (String -> msg)
-    -> (a -> String)
     -> String
     -> Bool
     -> Html msg
-viewCustomSelectListInput currentValue options toStringFunc setMsg transFunc inputClass withEmptyOption =
+viewCustomSelectListInput currentValue options toStringFunc setMsg inputClass withEmptyOption =
     let
         emptyOption =
             if withEmptyOption then
@@ -107,18 +122,68 @@ viewCustomSelectListInput currentValue options toStringFunc setMsg transFunc inp
     in
     emptyOption
         :: List.map
-            (\option_ ->
+            (\( label, value_ ) ->
                 option
-                    [ value (toStringFunc option_)
-                    , selected (currentValue == Just option_)
+                    [ value (toStringFunc value_)
+                    , selected (currentValue == Just value_)
                     ]
-                    [ text <| transFunc option_ ]
+                    [ text label ]
             )
             options
         |> select
             [ onInput setMsg
             , class inputClass
             ]
+
+
+viewGeoLocationSelectListInput :
+    Language
+    -> Maybe GeoLocationId
+    -> List ( String, String )
+    -> (String -> msg)
+    -> TranslationId
+    -> Bool
+    -> Html msg
+viewGeoLocationSelectListInput language currentValue options setMsg labelTransId disabled =
+    let
+        selectOptions =
+            emptyOption
+                :: List.map
+                    (\option_ ->
+                        let
+                            isSelected =
+                                Tuple.first option_
+                                    |> String.toInt
+                                    |> Maybe.map
+                                        (\id ->
+                                            currentValue == (Just <| toEntityId id)
+                                        )
+                                    |> Maybe.withDefault False
+                        in
+                        option
+                            [ value <| Tuple.first option_
+                            , selected isSelected
+                            ]
+                            [ text <| Tuple.second option_ ]
+                    )
+                    options
+
+        emptyOption =
+            emptySelectOption (currentValue == Nothing)
+    in
+    div
+        [ classList
+            [ ( "select-input-wrapper", True )
+            , ( "disabled", disabled )
+            ]
+        ]
+        [ viewLabel language labelTransId
+        , select
+            [ onInput setMsg
+            , class "select-input"
+            ]
+            selectOptions
+        ]
 
 
 emptySelectOption : Bool -> Html any
@@ -128,6 +193,10 @@ emptySelectOption isSelected =
         , selected isSelected
         ]
         [ text "" ]
+
+
+
+--Buttons
 
 
 viewActionButton : Language -> TranslationId -> Bool -> msg -> Html msg

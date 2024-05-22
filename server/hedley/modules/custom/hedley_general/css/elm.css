@@ -69,6 +69,7 @@ body.admin-menu #page-wrapper #header {
   width: 40%;
 }
 
+.page-content .form-input.select,
 .page-content .inputs .select-input-wrapper .select-input {
   background: none;
   border: 2px solid white;
@@ -81,6 +82,12 @@ body.admin-menu #page-wrapper #header {
   width: 60%;
 }
 
+.page-content .form-input.select {
+  margin-left: 20%;
+  margin-bottom: 50px;
+}
+
+.page-content .form-input.select:focus,
 .page-content .inputs .select-input-wrapper .select-input:focus {
   outline-color: white;
 }

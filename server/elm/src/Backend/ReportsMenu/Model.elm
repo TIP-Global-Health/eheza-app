@@ -6,8 +6,19 @@ import Json.Encode exposing (Value)
 
 type alias MenuData =
     { site : Site
+    , healthCenters : List HealthCenterData
     }
 
 
 type Msg
     = SetData Value
+
+
+type alias HealthCenterData =
+    { id : HealthCenterId
+    , name : String
+    }
+
+
+type alias HealthCenterId =
+    Int

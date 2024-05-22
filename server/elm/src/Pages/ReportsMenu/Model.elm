@@ -1,38 +1,30 @@
 module Pages.ReportsMenu.Model exposing (..)
 
+import Backend.ReportsMenu.Model exposing (HealthCenterId)
+import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
+import Pages.ReportsMenu.Types exposing (..)
 import Utils.GeoLocation exposing (GeoLocationId)
 
 
 type alias Model =
-    { province : Maybe GeoLocationId
-    , district : Maybe GeoLocationId
-    , sector : Maybe GeoLocationId
-    , cell : Maybe GeoLocationId
-    , village : Maybe GeoLocationId
+    { populationSelection : Maybe PopulationSelectionOption
+    , selectedDemographics : DemographicsSelection
+    , selectedHealthCenter : Maybe HealthCenterId
     , selected : Bool
     }
 
 
 emptyModel : Model
 emptyModel =
-    { province = Nothing
-    , district = Nothing
-    , sector = Nothing
-    , cell = Nothing
-    , village = Nothing
+    { populationSelection = Nothing
+    , selectedDemographics = emptyDemographicsSelection
+    , selectedHealthCenter = Nothing
     , selected = False
     }
 
 
-type alias ViewSelectionValue =
-    { province : GeoLocationId
-    , district : GeoLocationId
-    , sector : Maybe GeoLocationId
-    , cell : Maybe GeoLocationId
-    , village : Maybe GeoLocationId
-    }
-
-
 type Msg
-    = SetGeoLocation (String -> Model -> Model) String
+    = SetPopulationSelection String
+    | SetGeoLocation (String -> DemographicsSelection -> DemographicsSelection) String
+    | SetHealthCenter String
     | SelectionMade

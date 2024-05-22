@@ -15,7 +15,7 @@ update currentDate msg model =
         SetData value ->
             let
                 modelUpdated =
-                    { model | scoreboardMenuData = Just <| decodeValue decodeMenuData value }
+                    { model | reportsMenuData = Just <| decodeValue decodeMenuData value }
             in
             BackendReturn
                 modelUpdated

@@ -6,6 +6,7 @@ module Translate exposing
 
 import App.Types exposing (Language(..))
 import Backend.Scoreboard.Model exposing (SelectedEntity(..))
+import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
@@ -72,9 +73,11 @@ type TranslationId
     | NewSelection
     | NutritionBehavior
     | PleaseWaitMessage
+    | PopulationSelectionOption PopulationSelectionOption
     | Province
     | Sector
     | SelectedEntity SelectedEntity
+    | SelectViewMode
     | Stunting
     | Status
     | TargetedInterventions
@@ -384,6 +387,26 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PopulationSelectionOption selectionOption ->
+            case selectionOption of
+                SelectionOptionGlobal ->
+                    { english = "Gloabal"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SelectionOptionDemographics ->
+                    { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                SelectionOptionHealthCenter ->
+                    { english = "Health Center"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Nothing
@@ -409,6 +432,12 @@ translationSet transId =
 
                 EntityVillage ->
                     translationSet Village
+
+        SelectViewMode ->
+            { english = "Please select desired view mode"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Stunting ->
             { english = "Stunting"

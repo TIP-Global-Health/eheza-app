@@ -5463,7 +5463,8 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$ReportsMenu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, selected: false, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
+var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, selected: false, village: $elm$core$Maybe$Nothing};
@@ -5739,26 +5740,70 @@ var $author$project$App$Model$PagesReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
+var $author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal = {$: 'SelectionOptionGlobal'};
+var $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter = {$: 'SelectionOptionHealthCenter'};
+var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionFromString = function (selectionOption) {
+	switch (selectionOption) {
+		case 'all':
+			return $elm$core$Maybe$Just($author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal);
+		case 'demographics':
+			return $elm$core$Maybe$Just($author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics);
+		case 'hc':
+			return $elm$core$Maybe$Just($author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Pages$ReportsMenu$Update$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'SetGeoLocation') {
-			var updatedFunc = msg.a;
-			var value = msg.b;
-			return A4(
-				$author$project$App$Model$PagesReturn,
-				A2(updatedFunc, value, model),
-				$elm$core$Platform$Cmd$none,
-				$author$project$Error$Utils$noError,
-				_List_Nil);
-		} else {
-			return A4(
-				$author$project$App$Model$PagesReturn,
-				_Utils_update(
-					model,
-					{selected: true}),
-				$elm$core$Platform$Cmd$none,
-				$author$project$Error$Utils$noError,
-				_List_Nil);
+		switch (msg.$) {
+			case 'SetPopulationSelection':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							populationSelection: $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionFromString(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetGeoLocation':
+				var updatedFunc = msg.a;
+				var value = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							selectedDemographics: A2(updatedFunc, value, model.selectedDemographics)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetHealthCenter':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							selectedHealthCenter: $elm$core$String$toInt(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{selected: true}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
 		}
 	});
 var $author$project$Pages$Scoreboard$Update$update = F2(
@@ -5811,9 +5856,52 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = function (site) {
-	return {site: site};
-};
+var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
+	function (site, healthCenters) {
+		return {healthCenters: healthCenters, site: site};
+	});
+var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
+	function (id, name) {
+		return {id: id, name: name};
+	});
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'name',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'id',
+		$author$project$Gizra$Json$decodeInt,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$HealthCenterData)));
 var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
 var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
 var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
@@ -5829,24 +5917,20 @@ var $author$project$Backend$Decoder$siteFromString = function (str) {
 			return $author$project$App$Types$SiteUnknown;
 	}
 };
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
+var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'site',
-	$author$project$Backend$Decoder$decodeSite,
-	$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData));
+	'health_centers',
+	$elm$json$Json$Decode$list($author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'site',
+		$author$project$Backend$Decoder$decodeSite,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Backend$ReportsMenu$Update$update = F3(
 	function (currentDate, msg, model) {
@@ -5854,7 +5938,7 @@ var $author$project$Backend$ReportsMenu$Update$update = F3(
 		var modelUpdated = _Utils_update(
 			model,
 			{
-				scoreboardMenuData: $elm$core$Maybe$Just(
+				reportsMenuData: $elm$core$Maybe$Just(
 					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
@@ -6689,7 +6773,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6703,7 +6786,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -6892,7 +6974,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
 	function (pathDecoder, valDecoder, fallback) {
@@ -8175,6 +8256,16 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
 				return {english: 'Please wait. This action may take a couple of minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PopulationSelectionOption':
+				var selectionOption = transId.a;
+				switch (selectionOption.$) {
+					case 'SelectionOptionGlobal':
+						return {english: 'Gloabal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'SelectionOptionDemographics':
+						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Sector':
@@ -8199,6 +8290,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
+			case 'SelectViewMode':
+				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Stunting':
 				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Status':
@@ -8352,24 +8445,149 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
 var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
+var $author$project$Translate$PopulationSelectionOption = function (a) {
+	return {$: 'PopulationSelectionOption', a: a};
+};
+var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
 var $author$project$Pages$ReportsMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$ReportsMenu$Model$SetGeoLocation = F2(
 	function (a, b) {
 		return {$: 'SetGeoLocation', a: a, b: b};
 	});
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
+var $author$project$Pages$ReportsMenu$Model$SetHealthCenter = function (a) {
+	return {$: 'SetHealthCenter', a: a};
+};
+var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a) {
+	return {$: 'SetPopulationSelection', a: a};
+};
+var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
+	if (m.$ === 'Nothing') {
+		return false;
+	} else {
+		return true;
+	}
+};
+var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = function (selectionOption) {
+	switch (selectionOption.$) {
+		case 'SelectionOptionGlobal':
+			return 'all';
+		case 'SelectionOptionDemographics':
+			return 'demographics';
+		default:
+			return 'hc';
+	}
+};
+var $author$project$Pages$Utils$viewCustomLabel = F4(
+	function (language, translationId, suffix, class_) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(class_)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					_Utils_ap(
+						A2($author$project$Translate$translate, language, translationId),
+						suffix))
+				]));
 	});
-var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
+	return A2(
+		$elm$html$Html$option,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$value(''),
+				$elm$html$Html$Attributes$selected(isSelected)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('')
+			]));
+};
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
+	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
+		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
+			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onInput(setMsg),
+					$elm$html$Html$Attributes$class(inputClass)
+				]),
+			A2(
+				$elm$core$List$cons,
+				emptyOption,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var label = _v0.a;
+						var value_ = _v0.b;
+						return A2(
+							$elm$html$Html$option,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(
+									toStringFunc(value_)),
+									$elm$html$Html$Attributes$selected(
+									_Utils_eq(
+										currentValue,
+										$elm$core$Maybe$Just(value_)))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								]));
+					},
+					options)));
+	});
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -27614,51 +27832,6 @@ var $author$project$Utils$GeoLocation$getGeoInfo = function (site) {
 		villages: $author$project$Utils$GeoLocation$getGeoVillages(site)
 	};
 };
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
-	if (m.$ === 'Nothing') {
-		return false;
-	} else {
-		return true;
-	}
-};
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (site) {
 	return $author$project$Translate$Province;
@@ -27718,83 +27891,11 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				$elm$core$Tuple$first,
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
 };
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
-	return A2(
-		$elm$html$Html$option,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$value(''),
-				$elm$html$Html$Attributes$selected(isSelected)
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('')
-			]));
-};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Pages$Utils$viewCustomLabel = F4(
-	function (language, translationId, suffix, class_) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class(class_)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					_Utils_ap(
-						A2($author$project$Translate$translate, language, translationId),
-						suffix))
-				]));
-	});
 var $author$project$Pages$Utils$viewLabel = F2(
 	function (language, translationId) {
 		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
 	});
-var $author$project$Pages$ReportsMenu$View$viewSelectListInput = F6(
+var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 	function (language, currentValue, options, setMsg, labelTransId, disabled) {
 		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
 			_Utils_eq(currentValue, $elm$core$Maybe$Nothing));
@@ -27853,17 +27954,17 @@ var $author$project$Pages$ReportsMenu$View$viewSelectListInput = F6(
 					selectOptions)
 				]));
 	});
-var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
-	function (language, data, model) {
+var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
+	function (language, data, setGeoLocationMsg, selection) {
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
 		var provinceInput = function () {
 			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(geoInfo.provinces);
 			return A6(
-				$author$project$Pages$ReportsMenu$View$viewSelectListInput,
+				$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 				language,
-				model.province,
+				selection.province,
 				options,
-				$author$project$Pages$ReportsMenu$Model$SetGeoLocation(
+				setGeoLocationMsg(
 					F2(
 						function (value, form) {
 							return _Utils_update(
@@ -27876,7 +27977,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 								});
 						})),
 				$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1(data.site),
-				$elm_community$maybe_extra$Maybe$Extra$isJust(model.district));
+				$elm_community$maybe_extra$Maybe$Extra$isJust(selection.district));
 		}();
 		var sectorInput = A2(
 			$elm$core$Maybe$withDefault,
@@ -27890,11 +27991,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.sectors));
 					return A6(
-						$author$project$Pages$ReportsMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
-						model.sector,
+						selection.sector,
 						options,
-						$author$project$Pages$ReportsMenu$Model$SetGeoLocation(
+						setGeoLocationMsg(
 							F2(
 								function (value, form) {
 									return _Utils_update(
@@ -27907,9 +28008,9 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 										});
 								})),
 						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel3(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.cell));
+						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.cell));
 				},
-				model.district));
+				selection.district));
 		var villageInput = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Gizra$Html$emptyNode,
@@ -27922,11 +28023,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.villages));
 					return A6(
-						$author$project$Pages$ReportsMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
-						model.village,
+						selection.village,
 						options,
-						$author$project$Pages$ReportsMenu$Model$SetGeoLocation(
+						setGeoLocationMsg(
 							F2(
 								function (value, form) {
 									return _Utils_update(
@@ -27941,7 +28042,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5(data.site),
 						false);
 				},
-				model.cell));
+				selection.cell));
 		var districtInput = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Gizra$Html$emptyNode,
@@ -27954,11 +28055,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.districts));
 					return A6(
-						$author$project$Pages$ReportsMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
-						model.district,
+						selection.district,
 						options,
-						$author$project$Pages$ReportsMenu$Model$SetGeoLocation(
+						setGeoLocationMsg(
 							F2(
 								function (value, form) {
 									return _Utils_update(
@@ -27971,9 +28072,9 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 										});
 								})),
 						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.sector));
+						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.sector));
 				},
-				model.province));
+				selection.province));
 		var cellInput = A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Gizra$Html$emptyNode,
@@ -27986,11 +28087,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.cells));
 					return A6(
-						$author$project$Pages$ReportsMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
-						model.cell,
+						selection.cell,
 						options,
-						$author$project$Pages$ReportsMenu$Model$SetGeoLocation(
+						setGeoLocationMsg(
 							F2(
 								function (value, form) {
 									return _Utils_update(
@@ -28003,144 +28104,232 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 										});
 								})),
 						$author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel4(data.site),
-						$elm_community$maybe_extra$Maybe$Extra$isJust(model.village));
+						$elm_community$maybe_extra$Maybe$Extra$isJust(selection.village));
 				},
-				model.sector));
-		var actionButton = A2(
+				selection.sector));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('inputs')
+				]),
+			_List_fromArray(
+				[provinceInput, districtInput, sectorInput, cellInput, villageInput]));
+	});
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F4(
+	function (language, data, selectionMadeMsg, selection) {
+		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
+		var provincePart = A2(
 			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A3(
-				$elm$core$Maybe$map2,
-				F2(
-					function (province, district) {
-						if (model.selected) {
-							return $elm$html$Html$text(
-								A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage));
-						} else {
-							var villagePart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.villages);
-										},
-										model.village)));
-							var sectorPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.sectors);
-										},
-										model.sector)));
-							var provincePart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function ($) {
-										return $.name;
-									},
-									A2($pzp1997$assoc_list$AssocList$get, province, geoInfo.provinces)));
-							var districtPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function ($) {
-										return $.name;
-									},
-									A2($pzp1997$assoc_list$AssocList$get, district, geoInfo.districts)));
-							var cellPart = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2(
-									$elm$core$Maybe$map,
-									function (geoLocation) {
-										return '/' + geoLocation.name;
-									},
-									A2(
-										$elm$core$Maybe$andThen,
-										function (id) {
-											return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.cells);
-										},
-										model.cell)));
-							var suffix = provincePart + ('/' + (districtPart + (sectorPart + (cellPart + villagePart))));
-							return A2(
-								$elm$html$Html$a,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				function ($) {
+					return $.name;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					function (id) {
+						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.provinces);
+					},
+					selection.province)));
+		var sectorPart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				function (geoLocation) {
+					return '/' + geoLocation.name;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					function (id) {
+						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.sectors);
+					},
+					selection.sector)));
+		var villagePart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				function (geoLocation) {
+					return '/' + geoLocation.name;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					function (id) {
+						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.villages);
+					},
+					selection.village)));
+		var districtPart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				function (geoLocation) {
+					return '/' + geoLocation.name;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					function (id) {
+						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.districts);
+					},
+					selection.district)));
+		var cellPart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				function (geoLocation) {
+					return '/' + geoLocation.name;
+				},
+				A2(
+					$elm$core$Maybe$andThen,
+					function (id) {
+						return A2($pzp1997$assoc_list$AssocList$get, id, geoInfo.cells);
+					},
+					selection.cell)));
+		var suffix = _Utils_ap(
+			provincePart,
+			_Utils_ap(
+				districtPart,
+				_Utils_ap(
+					sectorPart,
+					_Utils_ap(cellPart, villagePart))));
+		return A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(selectionMadeMsg)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
+						]))
+				]));
+	});
+var $author$project$Pages$Utils$viewSelectListInput = F7(
+	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
+		var transFunc = A2(
+			$elm$core$Basics$composeR,
+			transId,
+			$author$project$Translate$translate(language));
+		var optionsPairs = A2(
+			$elm$core$List$map,
+			function (option) {
+				return _Utils_Tuple2(
+					transFunc(option),
+					option);
+			},
+			options);
+		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, 'form-input ' + inputClass, true);
+	});
+var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
+	function (language, data, model) {
+		var populationSelectionInput = function () {
+			var options = _List_fromArray(
+				[$author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal, $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics, $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter]);
+			return A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString, $author$project$Pages$ReportsMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select');
+		}();
+		var _v0 = A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
+			A2(
+				$elm$core$Maybe$map,
+				function (populationSelection) {
+					switch (populationSelection.$) {
+						case 'SelectionOptionGlobal':
+							return _Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode);
+						case 'SelectionOptionDemographics':
+							return _Utils_Tuple2(
 								_List_fromArray(
 									[
-										$elm$html$Html$Attributes$href('/admin/reports/aggregated-ncda/' + suffix)
+										A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics)
 									]),
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A4($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+						default:
+							var options = A2(
+								$elm$core$List$map,
+								function (healthCenter) {
+									return _Utils_Tuple2(healthCenter.name, healthCenter.id);
+								},
+								data.healthCenters);
+							return _Utils_Tuple2(
 								_List_fromArray(
 									[
-										A2(
-										$elm$html$Html$button,
-										_List_fromArray(
-											[
-												$elm$html$Html$Events$onClick($author$project$Pages$ReportsMenu$Model$SelectionMade)
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
-											]))
-									]));
-						}
-					}),
-				model.province,
-				model.district));
+										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$ReportsMenu$Model$SetHealthCenter, 'form-input select', true)
+									]),
+								$author$project$Gizra$Html$emptyNode);
+					}
+				},
+				model.populationSelection));
+		var derivedInputs = _v0.a;
+		var actionButton_ = _v0.b;
+		var actionButton = model.selected ? _List_fromArray(
+			[
+				$elm$html$Html$text(
+				A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage))
+			]) : _List_fromArray(
+			[actionButton_]);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('page-content')
 				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('header')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Please select desired view mode for reports:')
-						])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('inputs')
-						]),
-					_List_fromArray(
-						[provinceInput, districtInput, sectorInput, cellInput, villageInput])),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('actions')
-						]),
-					_List_fromArray(
-						[actionButton]))
-				]));
+			A2(
+				$elm$core$List$cons,
+				A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
+				_Utils_ap(
+					A2($elm$core$List$cons, populationSelectionInput, derivedInputs),
+					actionButton)));
 	});
 var $author$project$Pages$ReportsMenu$View$view = F3(
 	function (language, modelBackend, model) {
-		var _v0 = modelBackend.scoreboardMenuData;
+		var _v0 = modelBackend.reportsMenuData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
@@ -30400,64 +30589,20 @@ var $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation = F2(
 	function (a, b) {
 		return {$: 'SetGeoLocation', a: a, b: b};
 	});
-var $author$project$Pages$ScoreboardMenu$View$viewSelectListInput = F6(
-	function (language, currentValue, options, setMsg, labelTransId, disabled) {
-		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
-			_Utils_eq(currentValue, $elm$core$Maybe$Nothing));
-		var selectOptions = A2(
-			$elm$core$List$cons,
-			emptyOption,
-			A2(
-				$elm$core$List$map,
-				function (option_) {
-					var isSelected = A2(
-						$elm$core$Maybe$withDefault,
-						false,
-						A2(
-							$elm$core$Maybe$map,
-							function (id) {
-								return _Utils_eq(
-									currentValue,
-									$elm$core$Maybe$Just(
-										$author$project$Backend$Entities$toEntityId(id)));
-							},
-							$elm$core$String$toInt(option_.a)));
-					return A2(
-						$elm$html$Html$option,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$value(option_.a),
-								$elm$html$Html$Attributes$selected(isSelected)
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(option_.b)
-							]));
-				},
-				options));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('select-input-wrapper', true),
-							_Utils_Tuple2('disabled', disabled)
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
-					A2(
-					$elm$html$Html$select,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onInput(setMsg),
-							$elm$html$Html$Attributes$class('select-input')
-						]),
-					selectOptions)
-				]));
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
 	});
 var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 	function (language, data, model) {
@@ -30465,7 +30610,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 		var provinceInput = function () {
 			var options = $author$project$Utils$GeoLocation$geoLocationDictToOptions(geoInfo.provinces);
 			return A6(
-				$author$project$Pages$ScoreboardMenu$View$viewSelectListInput,
+				$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 				language,
 				model.province,
 				options,
@@ -30496,7 +30641,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.sectors));
 					return A6(
-						$author$project$Pages$ScoreboardMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
 						model.sector,
 						options,
@@ -30528,7 +30673,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.villages));
 					return A6(
-						$author$project$Pages$ScoreboardMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
 						model.village,
 						options,
@@ -30560,7 +30705,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.districts));
 					return A6(
-						$author$project$Pages$ScoreboardMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
 						model.district,
 						options,
@@ -30592,7 +30737,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 							$author$project$Backend$Entities$fromEntityId(parentId),
 							geoInfo.cells));
 					return A6(
-						$author$project$Pages$ScoreboardMenu$View$viewSelectListInput,
+						$author$project$Pages$Utils$viewGeoLocationSelectListInput,
 						language,
 						model.cell,
 						options,
@@ -30716,16 +30861,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 				]),
 			_List_fromArray(
 				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('header')
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text('Please select desired view mode:')
-						])),
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -30802,7 +30938,7 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgReportsMenuPage,
-						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.scoreboardMenuPage))
+						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.reportsMenuPage))
 					]));
 		default:
 			return A2(

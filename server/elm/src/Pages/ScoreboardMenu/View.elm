@@ -11,7 +11,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra exposing (isJust)
 import Pages.ScoreboardMenu.Model exposing (..)
-import Pages.Utils exposing (emptySelectOption, viewLabel)
+import Pages.Utils exposing (viewCustomLabel, viewGeoLocationSelectListInput)
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
@@ -40,7 +40,7 @@ viewMenu language data model =
                 options =
                     geoLocationDictToOptions geoInfo.provinces
             in
-            viewSelectListInput language
+            viewGeoLocationSelectListInput language
                 model.province
                 options
                 (SetGeoLocation
@@ -62,7 +62,7 @@ viewMenu language data model =
                             filterGeoLocationDictByParent (fromEntityId parentId) geoInfo.districts
                                 |> geoLocationDictToOptions
                     in
-                    viewSelectListInput language
+                    viewGeoLocationSelectListInput language
                         model.district
                         options
                         (SetGeoLocation
@@ -86,7 +86,7 @@ viewMenu language data model =
                             filterGeoLocationDictByParent (fromEntityId parentId) geoInfo.sectors
                                 |> geoLocationDictToOptions
                     in
-                    viewSelectListInput language
+                    viewGeoLocationSelectListInput language
                         model.sector
                         options
                         (SetGeoLocation
@@ -110,7 +110,7 @@ viewMenu language data model =
                             filterGeoLocationDictByParent (fromEntityId parentId) geoInfo.cells
                                 |> geoLocationDictToOptions
                     in
-                    viewSelectListInput language
+                    viewGeoLocationSelectListInput language
                         model.cell
                         options
                         (SetGeoLocation
@@ -134,7 +134,7 @@ viewMenu language data model =
                             filterGeoLocationDictByParent (fromEntityId parentId) geoInfo.villages
                                 |> geoLocationDictToOptions
                     in
-                    viewSelectListInput language
+                    viewGeoLocationSelectListInput language
                         model.village
                         options
                         (SetGeoLocation
@@ -213,7 +213,7 @@ viewMenu language data model =
                 |> Maybe.withDefault emptyNode
     in
     div [ class "page-content" ] <|
-        [ div [ class "header" ] [ text "Please select desired view mode:" ]
+        [ viewCustomLabel language Translate.SelectViewMode ":" "header"
         , div [ class "inputs" ]
             [ provinceInput
             , districtInput
@@ -222,54 +222,4 @@ viewMenu language data model =
             , villageInput
             ]
         , div [ class "actions" ] [ actionButton ]
-        ]
-
-
-viewSelectListInput :
-    Language
-    -> Maybe GeoLocationId
-    -> List ( String, String )
-    -> (String -> Msg)
-    -> TranslationId
-    -> Bool
-    -> Html Msg
-viewSelectListInput language currentValue options setMsg labelTransId disabled =
-    let
-        selectOptions =
-            emptyOption
-                :: List.map
-                    (\option_ ->
-                        let
-                            isSelected =
-                                Tuple.first option_
-                                    |> String.toInt
-                                    |> Maybe.map
-                                        (\id ->
-                                            currentValue == (Just <| toEntityId id)
-                                        )
-                                    |> Maybe.withDefault False
-                        in
-                        option
-                            [ value <| Tuple.first option_
-                            , selected isSelected
-                            ]
-                            [ text <| Tuple.second option_ ]
-                    )
-                    options
-
-        emptyOption =
-            emptySelectOption (currentValue == Nothing)
-    in
-    div
-        [ classList
-            [ ( "select-input-wrapper", True )
-            , ( "disabled", disabled )
-            ]
-        ]
-        [ viewLabel language labelTransId
-        , select
-            [ onInput setMsg
-            , class "select-input"
-            ]
-            selectOptions
         ]

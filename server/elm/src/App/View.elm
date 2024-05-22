@@ -41,7 +41,7 @@ view model =
                     Pages.ReportsMenu.View.view
                         model.language
                         model.backend
-                        model.scoreboardMenuPage
+                        model.reportsMenuPage
                 ]
 
         NotFound ->
