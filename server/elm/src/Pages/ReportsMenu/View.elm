@@ -77,8 +77,8 @@ viewMenu language data model =
                         SelectionOptionHealthCenter ->
                             let
                                 options =
-                                    List.map (\healthCenter -> ( healthCenter.name, healthCenter.id ))
-                                        data.healthCenters
+                                    List.sortBy .name data.healthCenters
+                                        |> List.map (\healthCenter -> ( healthCenter.name, healthCenter.id ))
                             in
                             ( [ viewCustomSelectListInput
                                     model.selectedHealthCenter

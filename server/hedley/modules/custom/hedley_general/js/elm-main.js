@@ -8488,6 +8488,7 @@ var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = 
 			return 'hc';
 	}
 };
+var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
 		return A2(
@@ -8629,7 +8630,6 @@ var $author$project$Backend$Entities$fromEntityId = function (_v0) {
 	var a = _v0.a;
 	return a;
 };
-var $elm$core$List$sortBy = _List_sortBy;
 var $author$project$Utils$GeoLocation$geoLocationDictToOptions = A2(
 	$elm$core$Basics$composeR,
 	$pzp1997$assoc_list$AssocList$toList,
@@ -28316,7 +28316,12 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 								function (healthCenter) {
 									return _Utils_Tuple2(healthCenter.name, healthCenter.id);
 								},
-								data.healthCenters);
+								A2(
+									$elm$core$List$sortBy,
+									function ($) {
+										return $.name;
+									},
+									data.healthCenters));
 							return _Utils_Tuple2(
 								_List_fromArray(
 									[
