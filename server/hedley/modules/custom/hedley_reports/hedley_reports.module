@@ -5,6 +5,13 @@
  * Code for the Hedley Reports feature.
  */
 
+include_once 'hedley_reports.features.inc';
+
+/**
+ * @file
+ * Code for the Hedley Reports feature.
+ */
+
 define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
 
 /**
@@ -425,7 +432,14 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-  $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
+
+  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
+    // For smaller data sets, we generate results on fly.
+    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
+  }
+  else {
+    $data['results'] = hedley_reports_load_results_data($data['entity_type'], $province, $district, $health_center);
+  }
 
   return hedley_general_build_elm_app('reports-results', $data);
 }
@@ -520,3 +534,159 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
   return $data;
 }
 
+function hedley_reports_load_results_data($variant, $province = NULL, $district = NULL, $health_center = NULL) {
+  $node_id = hedley_reports_load_results_data_node($variant, $province, $district, $health_center);
+  if (!$node_id) {
+    return [];
+  }
+
+  $node = node_load($node_id);
+  $file = file_load($node->field_data_file['und'][0]['fid']);
+  if (!$file) {
+    return [];
+  }
+
+  // Get the real path of the file.
+  $file_path = drupal_realpath($file->uri);
+  // Open the gzipped file and read its contents.
+  $gz_fp = gzopen($file_path, 'r');
+  if (!$gz_fp) {
+    return [];
+  }
+
+  $data = '';
+  while (!gzeof($gz_fp)) {
+    $data .= gzread($gz_fp, 4096);
+  }
+  gzclose($gz_fp);
+
+  return json_decode($data);
+}
+
+/**
+ * Generate aggregated Reports data which is stored on person nodes.
+ *
+ * @param int|null $province
+ *   The province ID.
+ * @param int|null $district
+ *   The district ID.
+ * @param int|null $health_center
+ * The health center ID.
+ */
+function hedley_reports_create_or_update_results_data_node($variant, $province = NULL, $district = NULL, $health_center = NULL) {
+  $timestamp = time();
+  $data = hedley_reports_generate_results_data($province, $district, NULL, NULL, NULL, $health_center);
+  $data_file_id = hedley_reports_create_data_file_gz($data, $variant, $timestamp);
+  $node_id = hedley_reports_load_results_data_node($variant, $province, $district, $health_center);
+  if (!$node_id) {
+    // Create the Report Data node.
+    $node = new stdClass();
+    $node->type = 'report_data';
+    node_object_prepare($node);
+    $node->title = "Report Data $timestamp";
+    $node->uid = 1;
+    $node->status = NODE_PUBLISHED;
+    $node->language = LANGUAGE_NONE;
+    $node->field_data_variant[LANGUAGE_NONE][0]['value'] = $variant;
+    // Attach the file to the node's file field.
+    $node->field_data_file[LANGUAGE_NONE][0] = array(
+      'fid' => $data_file_id,
+      'display' => 1,
+    );
+
+    if (!empty($province)) {
+      $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
+    }
+    if (!empty($district)) {
+      $node->field_district[LANGUAGE_NONE][0]['value'] = $district;
+    }
+    if (!empty($health_center)) {
+      $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center;
+    }
+    // Save the node.
+    node_save($node);
+  }
+  else {
+    // Update the Report Data node.
+    $node = node_load($node_id);
+    $old_file = file_load($node->field_data_file['und'][0]['fid']);
+    if ($old_file) {
+      // Delete the old file.
+      file_delete($old_file, TRUE);
+    }
+    // Attach new file.
+    $node->field_data_file[LANGUAGE_NONE][0] = array(
+      'fid' => $data_file_id,
+      'display' => 1,
+    );
+    // Save the node.
+    node_save($node);
+  }
+}
+
+function hedley_reports_load_results_data_node($variant, $province = NULL, $district = NULL, $health_center = NULL) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'report_data')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_data_variant', 'value', $variant)
+    // There can be only single node.
+    ->range(0, 1);
+
+  if (!empty($province)) {
+    $query->fieldCondition('field_province', 'value', $province);
+  }
+
+  if (!empty($district)) {
+    $query->fieldCondition('field_district', 'value', $district);
+  }
+
+  if (!empty($health_center)) {
+    $query->fieldCondition('field_health_center', 'target_id', $health_center);
+  }
+
+  $result = $query->execute();
+
+  return empty($result['node']) ? FALSE : key($result['node']);
+}
+
+function hedley_reports_create_data_file_gz($data, $variant, $timestamp) {
+  // Create a temporary file with the content.
+  $file_content = json_encode($data);
+  $file_path = 'private://report-data-' . $variant . '-' . $timestamp . '.txt.gz';
+  $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
+  // Compress the content and save it to a .gz file.
+  $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);
+  // Create the file object and save it.
+  $file = (object) array(
+    'uid' => 1,
+    'filename' => drupal_basename($file_uri),
+    'uri' => $gz_file_path,
+    'filemime' => 'application/gzip',
+    'status' => NODE_PUBLISHED,
+    'display' => 1,
+    'timestamp' => REQUEST_TIME,
+  );
+  file_save($file);
+
+  return $file->fid;
+}
+
+/**
+ * Helper function to compress file content using gzip.
+ *
+ * @param string $data
+ *   The data to be compressed.
+ * @param string $file_path
+ *   The file path where the compressed data will be saved.
+ *
+ * @return string
+ *   The path to the gzipped file.
+ */
+function hedley_reports_gz_compress_file($data, $file_path) {
+  $gz_fp = gzopen($file_path, 'w9'); // w9 for maximum compression
+  gzwrite($gz_fp, $data);
+  gzclose($gz_fp);
+  return $file_path;
+}
