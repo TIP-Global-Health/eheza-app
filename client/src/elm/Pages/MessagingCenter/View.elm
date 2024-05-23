@@ -76,21 +76,34 @@ view language currentTime nurseId nurse db model =
                         surveysSorted =
                             List.sortWith (sortByDateDesc .dateMeasured) surveys
 
-                        surveyCount =
-                            List.length surveys
+                        surveyCount surveyType =
+                            List.filter (.surveyType >> (==) surveyType) surveysSorted
+                                |> List.length
 
-                        diffLastSurveyProgramStart =
-                            case List.head surveysSorted of
-                                Just lastSurvey ->
-                                    Date.diff Months lastSurvey.dateMeasured programStartDate
-
-                                Nothing ->
-                                    0
-
-                        diffLastSurveyCurrent surveyType =
+                        runSurvey surveyType =
                             let
                                 filterCondition survey =
-                                    Date.diff Months survey.dateMeasured currentDate >= 3
+                                    let
+                                        diffLastSurveyCurrent =
+                                            Date.diff Months survey.dateMeasured currentDate
+
+                                        diffLastSurveyProgramStart =
+                                            Date.diff Months survey.dateMeasured programStartDate
+                                    in
+                                    if surveyCount surveyType == 0 then
+                                        True
+
+                                    else if diffLastSurveyCurrent >= 3 then
+                                        True
+
+                                    else if surveyCount surveyType == 3 then
+                                        False
+
+                                    else if diffLastSurveyProgramStart >= 6 then
+                                        False
+
+                                    else
+                                        False
                             in
                             List.filter (.surveyType >> (==) surveyType) surveysSorted
                                 |> List.head
@@ -98,25 +111,12 @@ view language currentTime nurseId nurse db model =
                                 |> Maybe.withDefault True
 
                         runAdoptionSurvey =
-                            diffLastSurveyCurrent ResilienceSurveyAdoption
+                            runSurvey ResilienceSurveyAdoption
 
                         runQuarterlySurvey =
-                            diffLastSurveyCurrent ResilienceSurveyQuarterly
+                            runSurvey ResilienceSurveyQuarterly
                     in
-                    if surveyCount == 0 then
-                        if runQuarterlySurvey then
-                            viewQuarterlySurvey language currentDate nurseId model.surveyForm
-
-                        else
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
-
-                    else if surveyCount == 3 then
-                        messagingCenterView
-
-                    else if diffLastSurveyProgramStart >= 6 then
-                        messagingCenterView
-
-                    else if runQuarterlySurvey then
+                    if runQuarterlySurvey then
                         viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
                     else if runAdoptionSurvey then
