@@ -35,14 +35,14 @@ function hedley_reports_field_default_field_bases() {
     'type' => 'file',
   );
 
-  // Exported field_base: 'field_data_variant'.
-  $field_bases['field_data_variant'] = array(
+  // Exported field_base: 'field_data_scope'.
+  $field_bases['field_data_scope'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_data_variant',
+    'field_name' => 'field_data_scope',
     'indexes' => array(
       'value' => array(
         0 => 'value',

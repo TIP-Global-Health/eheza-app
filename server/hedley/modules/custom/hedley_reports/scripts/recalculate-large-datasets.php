@@ -72,6 +72,23 @@ foreach ($health_center_ids as $health_center_id) {
 drush_print('');
 drush_print('All calculations completed!');
 
+/**
+ * Generates data in scope and creates/updates Report Data node.
+ *
+ * Calculates the time taken for the operation.
+ *
+ * @param string $scope
+ *   The scope of the report data.
+ * @param string $province
+ *   The province for the report data.
+ * @param string $district
+ *   The district for the report data.
+ * @param string $health_center
+ *   The health center for the report data.
+ *
+ * @return int
+ *   The time taken for the operation in seconds.
+ */
 function create_or_update_results_data_node($scope, $province, $district, $health_center) {
   $before = time();
   hedley_reports_create_or_update_results_data_node($scope, $province, $district, $health_center);
@@ -84,6 +101,15 @@ function create_or_update_results_data_node($scope, $province, $district, $healt
   return $after - $before;
 }
 
+/**
+ * Retrieves all unique districts for a given province.
+ *
+ * @param string $province
+ *   The province for which to retrieve the unique districts.
+ *
+ * @return array
+ *   An array of unique districts for the specified province.
+ */
 function get_unique_districts_by_province($province) {
   $query = db_select('field_data_field_district', 'fd')
     ->fields('fd', ['field_district_value'])

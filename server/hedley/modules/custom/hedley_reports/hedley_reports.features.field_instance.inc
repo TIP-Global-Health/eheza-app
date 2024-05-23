@@ -93,8 +93,8 @@ function hedley_reports_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-report_data-field_data_variant'.
-  $field_instances['node-report_data-field_data_variant'] = array(
+  // Exported field_instance: 'node-report_data-field_data_scope'.
+  $field_instances['node-report_data-field_data_scope'] = array(
     'bundle' => 'report_data',
     'default_value' => NULL,
     'deleted' => 0,
@@ -115,7 +115,7 @@ function hedley_reports_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_data_variant',
+    'field_name' => 'field_data_scope',
     'label' => 'Data Variant',
     'required' => 1,
     'settings' => array(
