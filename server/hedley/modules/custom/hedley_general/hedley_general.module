@@ -479,7 +479,6 @@ function hedley_general_file_insert($file) {
   file_move($file, $destination);
 }
 
-
 /**
  * Build Elm application for aggregated NCDA.
  *

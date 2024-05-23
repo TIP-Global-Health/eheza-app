@@ -91,5 +91,3 @@ function hedley_health_center_get_all_health_centers_ids() {
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
 }
-
-

@@ -1,0 +1,101 @@
+<?php
+
+/**
+ * @file
+ * Recalculates high level reports data for large datasets.
+ *
+ * Stores results at 'Report Data' nodes.
+ * Large datasets are:
+ *   - Global.
+ *   - Province.
+ *   - District.
+ *   - Health center.
+ *
+ * Execution: drush scr
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php.
+ */
+
+if (!drupal_is_cli()) {
+  // Prevent execution from browser.
+  return;
+}
+
+// Get allowed memory limit.
+$memory_limit = drush_get_option('memory_limit', 240);
+
+
+drush_print("Running calculation for Global scope.");
+$duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
+drush_print("Calculation completed within $duration seconds.");
+
+// Resolving unique provinces as they appear at DB.
+$query = db_select('field_data_field_province', 'fp')
+  ->fields('fp', array('field_province_value'))
+  ->distinct(TRUE);
+$result = $query->execute();
+$provinces = [];
+foreach ($result as $record) {
+  $provinces[] = $record->field_province_value;
+}
+
+foreach ($provinces as $province) {
+  $province = trim($province);
+  if (empty($province)) {
+    continue;
+  }
+
+  drush_print("Running calculation for Province scope. Province: $province.");
+  $duration = create_or_update_results_data_node('province', $province, NULL, NULL);
+  drush_print("Calculation completed within $duration seconds.");
+
+  // Resolving unique districts for the province, as they appear at DB.
+  $districts = get_unique_districts_by_province($province);
+  foreach ($districts as $district) {
+    $district = trim($district);
+    if (empty($district)) {
+      continue;
+    }
+    drush_print("Running calculation for District scope. Province: $province, District: $district.");
+    $duration = create_or_update_results_data_node('district', $district, NULL, NULL);
+    drush_print("Calculation completed within $duration seconds.");
+  }
+}
+
+// Resolving all health centers.
+$health_center_ids = hedley_health_center_get_all_health_centers_ids();
+foreach ($health_center_ids as $health_center_id) {
+  drush_print("Running calculation for Health center scope. Health center ID: $health_center_id.");
+  $duration = create_or_update_results_data_node('health-center', NULL, NULL, $health_center_id);
+  drush_print("Calculation completed within $duration seconds.");
+}
+
+drush_print('');
+drush_print('All calculations completed!');
+
+function create_or_update_results_data_node($scope, $province, $district, $health_center) {
+  $before = time();
+  hedley_reports_create_or_update_results_data_node($scope, $province, $district, $health_center);
+  $after = time();
+  // Free up memory.
+  drupal_static_reset();
+  // Wait a little to avoid having 2 calculations run at same second
+  // which creates naming conflicts.
+  sleep(2);
+  return $after - $before;
+}
+
+function get_unique_districts_by_province($province) {
+  $query = db_select('field_data_field_district', 'fd')
+    ->fields('fd', ['field_district_value'])
+    ->distinct(TRUE)
+    ->condition('fp.field_province_value', $province);
+  $query->join('field_data_field_province', 'fp', 'fd.entity_id = fp.entity_id');
+  $result = $query->execute();
+
+  $districts = [];
+  foreach ($result as $record) {
+    $districts[] = $record->field_district_value;
+  }
+
+  return $districts;
+}

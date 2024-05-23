@@ -156,7 +156,8 @@ function hedley_reports_calculate_aggregated_data_worker($queue_item) {
   try {
     $person = node_load($person_id);
     hedley_reports_calculate_aggregated_data_for_person($person);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     return [
       'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
       'result' => $e->getMessage(),
@@ -240,7 +241,7 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
 }
 
 /**
- * Generate aggregated Reports data for person, and store in field on person node.
+ * Generate raw data for reports, and store in field on person node.
  *
  * @param object $person
  *   Person node for which Reports data is generated.
@@ -401,20 +402,20 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
   $data = [];
 
   if (empty($province)) {
-     if (empty($health_center)) {
-       $data['entity_name'] = 'Global';
-       $data['entity_type'] = 'global';
-     }
-     else {
-       $data['entity_name'] = $health_center;
-       $data['entity_type'] = 'health-center';
-     }
+    if (empty($health_center)) {
+      $data['entity_name'] = 'Global';
+      $data['entity_type'] = 'global';
+    }
+    else {
+      $data['entity_name'] = $health_center;
+      $data['entity_type'] = 'health-center';
+    }
   }
-  else if (empty($district)) {
+  elseif (empty($district)) {
     $data['entity_name'] = $province;
     $data['entity_type'] = 'province';
   }
-  else if (empty($sector)) {
+  elseif (empty($sector)) {
     $data['entity_name'] = $district;
     $data['entity_type'] = 'district';
   }
@@ -458,7 +459,7 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
  * @param int|null $village
  *   The village ID.
  * @param int|null $health_center
- * The health center ID.
+ *   The health center ID.
  *
  * @return array
  *   An array of generated data.
@@ -541,7 +542,7 @@ function hedley_reports_load_results_data($variant, $province = NULL, $district 
   }
 
   $node = node_load($node_id);
-  $file = file_load($node->field_data_file['und'][0]['fid']);
+  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
   if (!$file) {
     return [];
   }
@@ -571,7 +572,7 @@ function hedley_reports_load_results_data($variant, $province = NULL, $district 
  * @param int|null $district
  *   The district ID.
  * @param int|null $health_center
- * The health center ID.
+ *   The health center ID.
  */
 function hedley_reports_create_or_update_results_data_node($variant, $province = NULL, $district = NULL, $health_center = NULL) {
   $timestamp = time();
@@ -609,7 +610,7 @@ function hedley_reports_create_or_update_results_data_node($variant, $province =
   else {
     // Update the Report Data node.
     $node = node_load($node_id);
-    $old_file = file_load($node->field_data_file['und'][0]['fid']);
+    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
     if ($old_file) {
       // Delete the old file.
       file_delete($old_file, TRUE);
@@ -685,7 +686,7 @@ function hedley_reports_create_data_file_gz($data, $variant, $timestamp) {
  *   The path to the gzipped file.
  */
 function hedley_reports_gz_compress_file($data, $file_path) {
-  $gz_fp = gzopen($file_path, 'w9'); // w9 for maximum compression
+  $gz_fp = gzopen($file_path, 'w9');
   gzwrite($gz_fp, $data);
   gzclose($gz_fp);
   return $file_path;
