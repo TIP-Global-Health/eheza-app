@@ -66,46 +66,64 @@ view language currentTime nurseId nurse db model =
                     let
                         messagingCenterView =
                             viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+
+                        surveys =
+                            Dict.get nurseId db.resilienceSurveysByNurse
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.map Dict.values
+                                |> Maybe.withDefault []
+
+                        surveysSorted =
+                            List.sortWith (sortByDateDesc .dateMeasured) surveys
+
+                        surveyCount =
+                            List.length surveys
+
+                        diffLastSurveyProgramStart =
+                            case List.head surveysSorted of
+                                Just lastSurvey ->
+                                    Date.diff Months lastSurvey.dateMeasured programStartDate
+
+                                Nothing ->
+                                    0
+
+                        diffLastSurveyCurrent surveyType =
+                            let
+                                filterCondition survey =
+                                    Date.diff Months survey.dateMeasured currentDate >= 3
+                            in
+                            List.filter (.surveyType >> (==) surveyType) surveysSorted
+                                |> List.head
+                                |> Maybe.map filterCondition
+                                |> Maybe.withDefault True
+
+                        runAdoptionSurvey =
+                            diffLastSurveyCurrent ResilienceSurveyAdoption
+
+                        runQuarterlySurvey =
+                            diffLastSurveyCurrent ResilienceSurveyQuarterly
                     in
-                    Dict.get nurseId db.resilienceSurveysByNurse
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\surveys ->
-                                let
-                                    surveysSorted =
-                                        Dict.values surveys
-                                            |> List.sortWith (sortByDateDesc .dateMeasured)
+                    if surveyCount == 0 then
+                        if runQuarterlySurvey then
+                            viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                                    runSurvey surveyType =
-                                        let
-                                            filterCondition survey =
-                                                -- Run a 3 months survey if 3 month has passed since
-                                                -- last survey was completed.
-                                                Date.diff Months survey.dateMeasured currentDate >= 3
-                                        in
-                                        List.filter (.surveyType >> (==) surveyType) surveysSorted
-                                            |> List.head
-                                            |> Maybe.map filterCondition
-                                            -- We need to run the survey if
-                                            -- it is the first time to use the program.
-                                            |> Maybe.withDefault True
+                        else
+                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
-                                    runAdoptionSurvey =
-                                        runSurvey ResilienceSurveyAdoption
+                    else if surveyCount == 3 then
+                        messagingCenterView
 
-                                    runQuarterlySurvey =
-                                        runSurvey ResilienceSurveyQuarterly
-                                in
-                                if runQuarterlySurvey then
-                                    viewQuarterlySurvey language currentDate nurseId model.surveyForm
+                    else if diffLastSurveyProgramStart >= 6 then
+                        messagingCenterView
 
-                                else if runAdoptionSurvey then
-                                    viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                    else if runQuarterlySurvey then
+                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                                else
-                                    messagingCenterView
-                            )
-                        |> Maybe.withDefault messagingCenterView
+                    else if runAdoptionSurvey then
+                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                    else
+                        messagingCenterView
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
