@@ -63,6 +63,7 @@ type TranslationId
     | HttpError StringIdHttpError
     | InfrastructureEnvironmentWash
     | Month Month
+    | MonthLabel
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -76,8 +77,12 @@ type TranslationId
     | PleaseWaitMessage
     | PopulationSelectionOption PopulationSelectionOption
     | Province
+    | ResolveMonth Bool Month
+    | Result
+    | Save
     | Sector
     | SelectedEntity SelectedEntity
+    | SelectLimitDate
     | SelectViewMode
     | Stunting
     | Status
@@ -85,6 +90,7 @@ type TranslationId
     | ViewMode
     | Village
     | UniversalIntervention
+    | Year
     | Zone
 
 
@@ -174,6 +180,12 @@ translationSet transId =
 
         Month month ->
             translateMonth month False
+
+        MonthLabel ->
+            { english = "Month"
+            , kinyarwanda = Just "Ukwezi"
+            , kirundi = Just "Ukwezi"
+            }
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -421,6 +433,21 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        ResolveMonth short month ->
+            translateMonth month short
+
+        Result ->
+            { english = "Result"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Save ->
+            { english = "Save"
+            , kinyarwanda = Just "Kubika"
+            , kirundi = Just "Emeza"
+            }
+
         Sector ->
             { english = "Sector"
             , kinyarwanda = Nothing
@@ -440,6 +467,12 @@ translationSet transId =
 
                 EntityVillage ->
                     translationSet Village
+
+        SelectLimitDate ->
+            { english = "Limit date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         SelectViewMode ->
             { english = "Please select desired view mode"
@@ -481,6 +514,12 @@ translationSet transId =
             { english = "Universal Intervention"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        Year ->
+            { english = "Year"
+            , kinyarwanda = Just "Umwaka"
+            , kirundi = Just "Umwaka"
             }
 
         Zone ->

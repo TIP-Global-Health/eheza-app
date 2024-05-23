@@ -8,16 +8,16 @@ import Pages.Reports.Model exposing (Model, Msg(..))
 update : Msg -> Model -> PagesReturn Model Msg
 update msg model =
     case msg of
-        ChaneYearGap step ->
+        SetLimitDate value ->
             PagesReturn
-                { model | yearSelectorGap = model.yearSelectorGap + step }
+                { model | limitDate = Just value }
                 Cmd.none
                 noError
                 []
 
-        SetViewMode mode ->
+        SetLimitDateSelectorState state ->
             PagesReturn
-                { model | viewMode = mode }
+                { model | dateSelectorPopupState = state }
                 Cmd.none
                 noError
                 []

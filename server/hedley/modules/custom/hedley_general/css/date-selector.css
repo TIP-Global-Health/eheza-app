@@ -1,3 +1,24 @@
+.form-input.date {
+	height: 100px;
+	width: 100px;
+}
+
+.overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	height: 100%;
+	width: 100%;
+	z-index: 35000;
+	background-color: rgba(0,0,0,0.5);
+}
+
+.ui.modal.calendar-popup {
+	width: 80%;
+	margin-left: 4%;
+	margin-top: 5%;
+}
+
 /* DateSelector */
  .date-selector-popup, .ui.form .date-selector-popup {
 	 background: #06b9ff;
