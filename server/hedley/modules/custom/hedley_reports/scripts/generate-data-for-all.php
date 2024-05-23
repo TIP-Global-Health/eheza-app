@@ -88,4 +88,4 @@ while (TRUE) {
   $nid = end($ids);
 }
 
-drush_print("Done! NCDA data calculated for $total children.");
+drush_print("Done! Reports data calculated for $total children.");
