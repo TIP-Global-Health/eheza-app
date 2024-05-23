@@ -5404,6 +5404,10 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$App$Model$MsgBackend = function (a) {
 	return {$: 'MsgBackend', a: a};
 };
+var $author$project$Pages$Reports$Fetch$fetch = F2(
+	function (modelBackend, model) {
+		return _List_Nil;
+	});
 var $author$project$Pages$Scoreboard$Fetch$fetch = F2(
 	function (modelBackend, model) {
 		return _List_Nil;
@@ -5423,7 +5427,12 @@ var $author$project$App$Fetch$fetch = function (model) {
 		case 'ReportsMenu':
 			return _List_Nil;
 		case 'Reports':
-			return _List_Nil;
+			return A2(
+				$elm$core$List$map,
+				function (subMsg) {
+					return $author$project$App$Model$MsgBackend(subMsg);
+				},
+				A2($author$project$Pages$Reports$Fetch$fetch, model.backend, model.reportsPage));
 		default:
 			return _List_Nil;
 	}
@@ -5471,6 +5480,8 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
+var $author$project$Pages$Reports$Model$ModeValues = {$: 'ModeValues'};
+var $author$project$Pages$Reports$Model$emptyModel = {viewMode: $author$project$Pages$Reports$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
@@ -5488,6 +5499,7 @@ var $author$project$App$Model$emptyModel = {
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
 	reportsMenuPage: $author$project$Pages$ReportsMenu$Model$emptyModel,
+	reportsPage: $author$project$Pages$Reports$Model$emptyModel,
 	scoreboardMenuPage: $author$project$Pages$ScoreboardMenu$Model$emptyModel,
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel
 };
@@ -5523,6 +5535,9 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 };
 var $author$project$App$Model$MsgReportsMenuPage = function (a) {
 	return {$: 'MsgReportsMenuPage', a: a};
+};
+var $author$project$App$Model$MsgReportsPage = function (a) {
+	return {$: 'MsgReportsPage', a: a};
 };
 var $author$project$App$Model$MsgScoreboardMenuPage = function (a) {
 	return {$: 'MsgScoreboardMenuPage', a: a};
@@ -5751,6 +5766,30 @@ var $author$project$App$Model$PagesReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $author$project$Pages$Reports$Update$update = F2(
+	function (msg, model) {
+		if (msg.$ === 'ChaneYearGap') {
+			var step = msg.a;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{yearSelectorGap: model.yearSelectorGap + step}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		} else {
+			var mode = msg.a;
+			return A4(
+				$author$project$App$Model$PagesReturn,
+				_Utils_update(
+					model,
+					{viewMode: mode}),
+				$elm$core$Platform$Cmd$none,
+				$author$project$Error$Utils$noError,
+				_List_Nil);
+		}
+	});
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal = {$: 'SelectionOptionGlobal'};
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter = {$: 'SelectionOptionHealthCenter'};
@@ -7950,6 +7989,26 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgReportsMenuPage(subCmds);
 					},
 					model);
+			case 'MsgReportsPage':
+				var subMsg = msg.a;
+				return A6(
+					$author$project$App$Utils$updateSubModel,
+					subMsg,
+					model.reportsPage,
+					F2(
+						function (subMsg_, subModel) {
+							return A2($author$project$Pages$Reports$Update$update, subMsg_, subModel);
+						}),
+					F2(
+						function (subModel, model_) {
+							return _Utils_update(
+								model_,
+								{reportsPage: subModel});
+						}),
+					function (subCmds) {
+						return $author$project$App$Model$MsgReportsPage(subCmds);
+					},
+					model);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(
@@ -8021,7 +8080,6 @@ var $author$project$App$Update$subscriptions = function (model) {
 	return $elm$core$Platform$Sub$none;
 };
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$core$Debug$log = _Debug_log;
 var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
@@ -8594,6 +8652,77 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $author$project$Pages$Reports$View$viewReportsData = F4(
+	function (language, currentDate, data, model) {
+		var topBar = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('top-bar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('new-selection')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+										]))
+								]))
+						]))
+				]));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content')
+				]),
+			_List_fromArray(
+				[topBar]));
+	});
+var $author$project$Pages$Reports$View$view = F4(
+	function (language, currentDate, modelBackend, model) {
+		var _v0 = modelBackend.reportsData;
+		if (_v0.$ === 'Just') {
+			if (_v0.a.$ === 'Ok') {
+				var data = _v0.a.a;
+				return A4($author$project$Pages$Reports$View$viewReportsData, language, currentDate, data, model);
+			} else {
+				var err = _v0.a.a;
+				return $elm$html$Html$text(
+					$elm$core$Debug$toString(err));
+			}
+		} else {
+			return $author$project$Gizra$Html$emptyNode;
+		}
+	});
 var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
 var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
@@ -28280,14 +28409,6 @@ var $elm$core$Maybe$andThen = F2(
 		}
 	});
 var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -28539,7 +28660,6 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$ModePercentages = {$: 'ModePercentages'};
-var $author$project$Translate$NewSelection = {$: 'NewSelection'};
 var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
 	return {$: 'SetViewMode', a: a};
 };
@@ -30878,24 +30998,22 @@ var $author$project$App$View$view = function (model) {
 						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.reportsMenuPage))
 					]));
 		case 'Reports':
-			var _v1 = A2(
-				$elm$core$Debug$log,
-				'',
-				function () {
-					var _v2 = model.backend.reportsData;
-					if (_v2.$ === 'Just') {
-						if (_v2.a.$ === 'Ok') {
-							var data = _v2.a.a;
-							return $elm$core$List$length(data.records);
-						} else {
-							var err = _v2.a.a;
-							return 0;
-						}
-					} else {
-						return 0;
-					}
-				}());
-			return $elm$html$Html$text('@todo');
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2($author$project$Error$View$view, model.language, model.errors),
+						A2(
+						$elm$html$Html$map,
+						$author$project$App$Model$MsgReportsPage,
+						A4(
+							$author$project$Pages$Reports$View$view,
+							model.language,
+							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+							model.backend,
+							model.reportsPage))
+					]));
 		default:
 			return A2(
 				$elm$html$Html$div,

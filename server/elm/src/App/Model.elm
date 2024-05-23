@@ -10,6 +10,7 @@ import App.Types exposing (Language(..), Page(..))
 import Backend.Model
 import Error.Model exposing (Error)
 import Json.Decode exposing (Value)
+import Pages.Reports.Model
 import Pages.ReportsMenu.Model
 import Pages.Scoreboard.Model
 import Pages.ScoreboardMenu.Model
@@ -29,6 +30,7 @@ type Msg
     | MsgScoreboardMenuPage Pages.ScoreboardMenu.Model.Msg
     | MsgScoreboardPage Pages.Scoreboard.Model.Msg
     | MsgReportsMenuPage Pages.ReportsMenu.Model.Msg
+    | MsgReportsPage Pages.Reports.Model.Msg
     | SetCurrentTime Time.Posix
 
 
@@ -48,6 +50,7 @@ type alias Model =
     , scoreboardMenuPage : Pages.ScoreboardMenu.Model.Model
     , scoreboardPage : Pages.Scoreboard.Model.Model
     , reportsMenuPage : Pages.ReportsMenu.Model.Model
+    , reportsPage : Pages.Reports.Model.Model
     }
 
 
@@ -61,4 +64,5 @@ emptyModel =
     , scoreboardMenuPage = Pages.ScoreboardMenu.Model.emptyModel
     , scoreboardPage = Pages.Scoreboard.Model.emptyModel
     , reportsMenuPage = Pages.ReportsMenu.Model.emptyModel
+    , reportsPage = Pages.Reports.Model.emptyModel
     }

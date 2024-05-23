@@ -4,8 +4,6 @@ module App.Update exposing
     , update
     )
 
--- import Pages.Reports.Update
-
 import App.Fetch exposing (fetch)
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
@@ -17,6 +15,7 @@ import Backend.Scoreboard.Model
 import Backend.ScoreboardMenu.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Reports.Update
 import Pages.ReportsMenu.Update
 import Pages.Scoreboard.Update
 import Pages.ScoreboardMenu.Update
@@ -146,6 +145,19 @@ update msg model =
                 (\subMsg_ subModel -> Pages.ReportsMenu.Update.update subMsg_ subModel)
                 (\subModel model_ -> { model_ | reportsMenuPage = subModel })
                 (\subCmds -> MsgReportsMenuPage subCmds)
+                model
+
+        MsgReportsPage subMsg ->
+            updateSubModel
+                subMsg
+                model.reportsPage
+                (\subMsg_ subModel ->
+                    Pages.Reports.Update.update
+                        subMsg_
+                        subModel
+                )
+                (\subModel model_ -> { model_ | reportsPage = subModel })
+                (\subCmds -> MsgReportsPage subCmds)
                 model
 
         SetCurrentTime date ->
