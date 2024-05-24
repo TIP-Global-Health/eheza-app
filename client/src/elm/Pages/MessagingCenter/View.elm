@@ -93,11 +93,11 @@ view language currentTime nurseId nurse db model =
                                     if surveyCount surveyType == 0 then
                                         True
 
-                                    else if diffLastSurveyCurrent >= 3 then
-                                        True
-
                                     else if surveyCount surveyType == 3 then
                                         False
+
+                                    else if diffLastSurveyCurrent >= 3 then
+                                        True
 
                                     else if diffLastSurveyProgramStart >= 6 then
                                         False
