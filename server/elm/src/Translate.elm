@@ -6,6 +6,7 @@ module Translate exposing
 
 import App.Types exposing (Language(..))
 import Backend.Scoreboard.Model exposing (SelectedEntity(..))
+import Pages.Reports.Model exposing (ReportType(..))
 import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
@@ -58,10 +59,12 @@ type TranslationId
     | District
     | Demographics
     | EmptyString
+    | Female
     | GenerateReport
     | HealthCenter
     | HttpError StringIdHttpError
     | InfrastructureEnvironmentWash
+    | Male
     | Month Month
     | MonthLabel
     | NCDADemographicsItemLabel NCDADemographicsItem
@@ -77,6 +80,9 @@ type TranslationId
     | PleaseWaitMessage
     | PopulationSelectionOption PopulationSelectionOption
     | Province
+    | Registered
+    | ReportType ReportType
+    | ReportTypeLabel
     | ResolveMonth Bool Month
     | Result
     | Save
@@ -87,6 +93,7 @@ type TranslationId
     | Stunting
     | Status
     | TargetedInterventions
+    | Total
     | ViewMode
     | Village
     | UniversalIntervention
@@ -157,6 +164,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Female ->
+            { english = "Female"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         GenerateReport ->
             { english = "Generate Report"
             , kinyarwanda = Nothing
@@ -174,6 +187,12 @@ translationSet transId =
 
         InfrastructureEnvironmentWash ->
             { english = "Infrastructure, Environment & Wash"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Male ->
+            { english = "Male"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -433,6 +452,26 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Registered ->
+            { english = "Province"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ReportType reportType ->
+            case reportType of
+                ReportDemographics ->
+                    { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        ReportTypeLabel ->
+            { english = "Report Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ResolveMonth short month ->
             translateMonth month short
 
@@ -494,6 +533,12 @@ translationSet transId =
 
         TargetedInterventions ->
             { english = "Targeted Interventions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Total ->
+            { english = "Total"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

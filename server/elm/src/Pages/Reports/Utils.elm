@@ -8,5 +8,18 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.Reports.Model exposing (..)
 
 
-aza =
-    5
+reportTypeToString : ReportType -> String
+reportTypeToString reportType =
+    case reportType of
+        ReportDemographics ->
+            "demographics"
+
+
+reportTypeFromString : String -> Maybe ReportType
+reportTypeFromString reportType =
+    case reportType of
+        "demographics" ->
+            Just ReportDemographics
+
+        _ ->
+            Nothing

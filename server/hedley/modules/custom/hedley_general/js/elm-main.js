@@ -5480,7 +5480,7 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
@@ -5765,30 +5765,51 @@ var $author$project$App$Model$PagesReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
+var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
+	if (reportType === 'demographics') {
+		return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Pages$Reports$Update$update = F2(
 	function (msg, model) {
-		if (msg.$ === 'SetLimitDate') {
-			var value = msg.a;
-			return A4(
-				$author$project$App$Model$PagesReturn,
-				_Utils_update(
-					model,
-					{
-						limitDate: $elm$core$Maybe$Just(value)
-					}),
-				$elm$core$Platform$Cmd$none,
-				$author$project$Error$Utils$noError,
-				_List_Nil);
-		} else {
-			var state = msg.a;
-			return A4(
-				$author$project$App$Model$PagesReturn,
-				_Utils_update(
-					model,
-					{dateSelectorPopupState: state}),
-				$elm$core$Platform$Cmd$none,
-				$author$project$Error$Utils$noError,
-				_List_Nil);
+		switch (msg.$) {
+			case 'SetReportType':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							reportType: $author$project$Pages$Reports$Utils$reportTypeFromString(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetLimitDate':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							limitDate: $elm$core$Maybe$Just(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var state = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{dateSelectorPopupState: state}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
 		}
 	});
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
@@ -8279,6 +8300,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Female':
+				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
 				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'HealthCenter':
@@ -8288,6 +8311,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return $author$project$Translate$translateHttpError(val);
 			case 'InfrastructureEnvironmentWash':
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Male':
+				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Month':
 				var month = transId.a;
 				return A2($author$project$Translate$translateMonth, month, false);
@@ -8480,6 +8505,13 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Registered':
+				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ReportType':
+				var reportType = transId.a;
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ReportTypeLabel':
+				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ResolveMonth':
 				var _short = transId.a;
 				var month = transId.b;
@@ -8524,6 +8556,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Total':
+				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ViewMode':
 				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
@@ -8679,15 +8713,20 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
-var $justinmimbs$date$Date$Days = {$: 'Days'};
 var $author$project$Translate$NewSelection = {$: 'NewSelection'};
-var $author$project$Translate$Result = {$: 'Result'};
+var $author$project$Translate$ReportType = function (a) {
+	return {$: 'ReportType', a: a};
+};
+var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
 var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
 var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
 	return {$: 'SetLimitDate', a: a};
 };
 var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a) {
 	return {$: 'SetLimitDateSelectorState', a: a};
+};
+var $author$project$Pages$Reports$Model$SetReportType = function (a) {
+	return {$: 'SetReportType', a: a};
 };
 var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -9361,6 +9400,28 @@ var $elm$html$Html$Attributes$href = function (url) {
 		'href',
 		_VirtualDom_noJavaScriptUri(url));
 };
+var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
+	if (m.$ === 'Nothing') {
+		return false;
+	} else {
+		return true;
+	}
+};
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -9378,24 +9439,9 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
+var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
+	return 'demographics';
+};
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
 var $author$project$Translate$Year = {$: 'Year'};
@@ -9599,6 +9645,7 @@ var $author$project$DateSelector$Selector$isSelectable = function (state) {
 	return _Utils_eq(state, $author$project$DateSelector$Selector$Normal) || _Utils_eq(state, $author$project$DateSelector$Selector$Dimmed);
 };
 var $justinmimbs$date$Date$Day = {$: 'Day'};
+var $justinmimbs$date$Date$Days = {$: 'Days'};
 var $justinmimbs$date$Date$Monday = {$: 'Monday'};
 var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
 	switch (wd.$) {
@@ -10284,7 +10331,7 @@ var $author$project$DateSelector$SelectorPopup$view = F6(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('ui button'),
+							$elm$html$Html$Attributes$class('ui button save'),
 							$elm$html$Html$Events$onClick(toClose)
 						]),
 					_List_fromArray(
@@ -10312,6 +10359,279 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			},
 			popupState);
 	});
+var $author$project$Translate$Female = {$: 'Female'};
+var $author$project$Translate$Male = {$: 'Male'};
+var $author$project$Translate$Registered = {$: 'Registered'};
+var $author$project$Translate$Total = {$: 'Total'};
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
+	function (language, currentDate, limitDate, data) {
+		var viewRow = F3(
+			function (label, valueMales, valueFemales) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item label')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(
+										$elm$core$List$length(valueMales)))
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(
+										$elm$core$List$length(valueFemales)))
+								]))
+						]));
+			});
+		var _v0 = A2(
+			$elm$core$List$partition,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.gender;
+				},
+				$elm$core$Basics$eq($author$project$Backend$Reports$Model$Male)),
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return _Utils_eq(
+						A2($justinmimbs$date$Date$compare, record.created, limitDate),
+						$elm$core$Basics$LT);
+				},
+				data.records));
+		var males = _v0.a;
+		var females = _v0.b;
+		var females10Years20Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
+			},
+			females);
+		var females1Month2Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
+			},
+			females);
+		var females1MonthAndLess = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
+			},
+			females);
+		var females20Years50Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
+			},
+			females);
+		var females2Years5Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
+			},
+			females);
+		var females50YearsOrMore = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
+			},
+			females);
+		var females5Years10Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
+			},
+			females);
+		var males10Years20Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
+			},
+			males);
+		var males1Month2Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
+			},
+			males);
+		var males1MonthAndLess = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
+			},
+			males);
+		var males20Years50Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
+			},
+			males);
+		var males2Years5Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
+			},
+			males);
+		var males50YearsOrMore = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
+			},
+			males);
+		var males5Years10Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
+			},
+			males);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report demographics')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table registered')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Registered))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Male))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Female))
+										]))
+								])),
+							A3(viewRow, '0 - 1M', males1MonthAndLess, females1MonthAndLess),
+							A3(viewRow, '1M - 2Y', males1Month2Years, females1Month2Years),
+							A3(viewRow, '2Y - 5Y', males2Years5Years, females2Years5Years),
+							A3(viewRow, '5Y - 10Y', males5Years10Years, females5Years10Years),
+							A3(viewRow, '10Y - 20Y', males10Years20Years, females10Years20Years),
+							A3(viewRow, '20Y - 50Y', males20Years50Years, females20Years50Years),
+							A3(viewRow, '50Y +', males50YearsOrMore, females50YearsOrMore),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row totals')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											$elm$core$String$fromInt(
+												$elm$core$List$length(
+													_Utils_ap(males, females))))
+										]))
+								]))
+						]))
+				]));
+	});
 var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
 var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 	var classes = A2(
@@ -10334,6 +10654,99 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
+	return A2(
+		$elm$html$Html$option,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$value(''),
+				$elm$html$Html$Attributes$selected(isSelected)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('')
+			]));
+};
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
+	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
+		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
+			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onInput(setMsg),
+					$elm$html$Html$Attributes$class(inputClass)
+				]),
+			A2(
+				$elm$core$List$cons,
+				emptyOption,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var label = _v0.a;
+						var value_ = _v0.b;
+						return A2(
+							$elm$html$Html$option,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(
+									toStringFunc(value_)),
+									$elm$html$Html$Attributes$selected(
+									_Utils_eq(
+										currentValue,
+										$elm$core$Maybe$Just(value_)))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								]));
+					},
+					options)));
+	});
+var $author$project$Pages$Utils$viewSelectListInput = F7(
+	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
+		var transFunc = A2(
+			$elm$core$Basics$composeR,
+			transId,
+			$author$project$Translate$translate(language));
+		var optionsPairs = A2(
+			$elm$core$List$map,
+			function (option) {
+				return _Utils_Tuple2(
+					transFunc(option),
+					option);
+			},
+			options);
+		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
+	});
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
@@ -10420,65 +10833,28 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								]))
 						]))
 				]));
-		var results = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (limitDate) {
-					var _v0 = A2(
-						$elm$core$List$partition,
-						A2(
-							$elm$core$Basics$composeR,
-							function ($) {
-								return $.gender;
-							},
-							$elm$core$Basics$eq($author$project$Backend$Reports$Model$Male)),
-						A2(
-							$elm$core$List$filter,
-							function (record) {
-								return _Utils_eq(
-									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$LT);
-							},
-							data.records));
-					var males = _v0.a;
-					var females = _v0.b;
-					var totalFemales = 'Females: ' + $elm$core$String$fromInt(
-						$elm$core$List$length(females));
-					var total = 'Total: ' + $elm$core$String$fromInt(
-						$elm$core$List$length(
-							_Utils_ap(males, females)));
-					var totalMales = 'Males: ' + $elm$core$String$fromInt(
-						$elm$core$List$length(males));
-					return A4(
-						$author$project$Pages$Utils$wrapSelectListInput,
-						language,
-						$author$project$Translate$Result,
-						false,
-						A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('label')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(totalMales + (', ' + (totalFemales + (', ' + total))))
-								])));
-				},
-				model.limitDate));
 		var limitDateForView = A2(
 			$elm$core$Maybe$withDefault,
 			'',
 			A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
 		var dateSelectorConfig = {
 			close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-			dateDefault: $elm$core$Maybe$Nothing,
+			dateDefault: $elm$core$Maybe$Just(currentDate),
 			dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-			dateTo: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -1, currentDate),
+			dateTo: currentDate,
 			select: $author$project$Pages$Reports$Model$SetLimitDate
 		};
+		var content = $elm_community$maybe_extra$Maybe$Extra$isJust(model.dateSelectorPopupState) ? $author$project$Gizra$Html$emptyNode : A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A3(
+				$elm$core$Maybe$map2,
+				F2(
+					function (reportType, limitDate) {
+						return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, currentDate, limitDate, data);
+					}),
+				model.reportType,
+				model.limitDate));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10499,6 +10875,21 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							A4(
 							$author$project$Pages$Utils$wrapSelectListInput,
 							language,
+							$author$project$Translate$ReportTypeLabel,
+							false,
+							A7(
+								$author$project$Pages$Utils$viewSelectListInput,
+								language,
+								model.reportType,
+								_List_fromArray(
+									[$author$project$Pages$Reports$Model$ReportDemographics]),
+								$author$project$Pages$Reports$Utils$reportTypeToString,
+								$author$project$Pages$Reports$Model$SetReportType,
+								$author$project$Translate$ReportType,
+								'select-input')),
+							A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
 							$author$project$Translate$SelectLimitDate,
 							false,
 							A2(
@@ -10514,7 +10905,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 									[
 										$elm$html$Html$text(limitDateForView)
 									]))),
-							results
+							content
 						])),
 					$author$project$Utils$Html$viewModal(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.dateSelectorPopupState, model.limitDate))
@@ -10554,13 +10945,6 @@ var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a
 	return {$: 'SetPopulationSelection', a: a};
 };
 var $author$project$Translate$ViewMode = {$: 'ViewMode'};
-var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
-	if (m.$ === 'Nothing') {
-		return false;
-	} else {
-		return true;
-	}
-};
 var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = function (selectionOption) {
 	switch (selectionOption.$) {
 		case 'SelectionOptionGlobal':
@@ -10572,83 +10956,6 @@ var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = 
 	}
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
-	return A2(
-		$elm$html$Html$option,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$value(''),
-				$elm$html$Html$Attributes$selected(isSelected)
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('')
-			]));
-};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
-	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
-		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
-			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
-		return A2(
-			$elm$html$Html$select,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onInput(setMsg),
-					$elm$html$Html$Attributes$class(inputClass)
-				]),
-			A2(
-				$elm$core$List$cons,
-				emptyOption,
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var label = _v0.a;
-						var value_ = _v0.b;
-						return A2(
-							$elm$html$Html$option,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$value(
-									toStringFunc(value_)),
-									$elm$html$Html$Attributes$selected(
-									_Utils_eq(
-										currentValue,
-										$elm$core$Maybe$Just(value_)))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(label)
-								]));
-					},
-					options)));
-	});
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -30254,22 +30561,6 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 					selection.cell)));
 		var path = pathPrefix + ('/' + (provincePart + (districtPart + (sectorPart + (cellPart + villagePart)))));
 		return A3($author$project$Pages$Utils$viewGenerateReportButton, language, path, selectionMadeMsg);
-	});
-var $author$project$Pages$Utils$viewSelectListInput = F7(
-	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
-		var transFunc = A2(
-			$elm$core$Basics$composeR,
-			transId,
-			$author$project$Translate$translate(language));
-		var optionsPairs = A2(
-			$elm$core$List$map,
-			function (option) {
-				return _Utils_Tuple2(
-					transFunc(option),
-					option);
-			},
-			options);
-		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 	function (language, data, model) {

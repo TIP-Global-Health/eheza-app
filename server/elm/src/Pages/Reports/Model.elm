@@ -5,18 +5,25 @@ import DateSelector.Model exposing (DateSelectorConfig)
 
 
 type alias Model =
-    { limitDate : Maybe Date
+    { reportType : Maybe ReportType
+    , limitDate : Maybe Date
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyModel : Model
 emptyModel =
-    { limitDate = Nothing
+    { reportType = Nothing
+    , limitDate = Nothing
     , dateSelectorPopupState = Nothing
     }
 
 
+type ReportType
+    = ReportDemographics
+
+
 type Msg
-    = SetLimitDate Date
+    = SetReportType String
+    | SetLimitDate Date
     | SetLimitDateSelectorState (Maybe (DateSelectorConfig Msg))
