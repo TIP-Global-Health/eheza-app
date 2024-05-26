@@ -244,11 +244,12 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .form-input.date {
-  border: 2px solid #b0bac9;
-  color: #808080;
-  height: 2em;
-  margin-bottom: 30px;
-  padding: 5px;
+  background: none;
+  border: 2px solid white;
+  color: #3b3b3b;
+  font-size: 2rem;
+  height: 50px;
   text-align: center;
-  width: 50%;
+  padding: 0 0.5em;
+  width: 60%;
 }
