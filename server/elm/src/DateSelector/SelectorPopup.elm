@@ -15,7 +15,7 @@ view language toSelect toClose minimum maximum selected =
     div [ class "date-selector-popup" ]
         [ DateSelector.Selector.viewPopup language minimum maximum selected |> Html.map toSelect
         , div
-            [ class "ui button"
+            [ class "ui button save"
             , onClick toClose
             ]
             [ text <| translate language Translate.Save ]
