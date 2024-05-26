@@ -453,7 +453,7 @@ translationSet transId =
             }
 
         Registered ->
-            { english = "Province"
+            { english = "Registered"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
