@@ -20,10 +20,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 240);
-
-
 drush_print("Running calculation for Global scope.");
 $duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
 drush_print("Calculation completed within $duration seconds.");

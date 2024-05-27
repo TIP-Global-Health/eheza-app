@@ -263,7 +263,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
   $encounters_data = [];
   $encounter_types_to_load = [
-    'acute_illness',
+    'acute-illness',
     'antenatal',
     'home-visit',
     'nutrition',
