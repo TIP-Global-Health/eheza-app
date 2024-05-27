@@ -3,7 +3,7 @@ module Pages.Reports.View exposing (view)
 import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
-import Backend.Reports.Model exposing (Gender(..), ReportsData)
+import Backend.Reports.Model exposing (AcuteIllnessEncounterType(..), Gender(..), PrenatalEncounterType(..), ReportsData)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
@@ -267,11 +267,123 @@ viewDemographicsReport language currentDate limitDate data =
                 ++ malesImpacted50YearsOrMore
                 ++ femalesImpacted50YearsOrMore
 
+        -- type alias PatientData =
+        --     { created : NominalDate
+        --     , birthDate : NominalDate
+        --     , gender : Gender
+        --     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
+        --     , prenatalData : Maybe (List (List PrenatalEncounterData))
+        --     , homeVistData : Maybe (List EncountersData)
+        --     , wellChildData : Maybe (List EncountersData)
+        --     , individualNutritionData : Maybe (List EncountersData)
+        --     , groupNutritionPmtctData : Maybe EncountersData
+        --     , groupNutritionFbfData : Maybe EncountersData
+        --     , groupNutritionSorwatheData : Maybe EncountersData
+        --     , groupNutritionChwData : Maybe EncountersData
+        --     , groupNutritionAchiData : Maybe EncountersData
+        --     }
+        prenatalDataNurseEncounters =
+            List.filterMap
+                (.prenatalData
+                    >> Maybe.map
+                        (List.concat
+                            >> List.filter
+                                (\encounter ->
+                                    List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
+                                )
+                        )
+                )
+                data.records
+
+        prenatalDataChwEncounters =
+            List.filterMap
+                (.prenatalData
+                    >> Maybe.map
+                        (List.concat
+                            >> List.filter
+                                (\encounter ->
+                                    not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
+                                )
+                        )
+                )
+                data.records
+
+        prenatalDataNurseEncountersTotal =
+            List.map List.length prenatalDataNurseEncounters
+                |> List.sum
+
+        prenatalDataNurseEncountersUnique =
+            List.filter (not << List.isEmpty) prenatalDataNurseEncounters
+                |> List.length
+
+        prenatalDataChwEncountersTotal =
+            List.map List.length prenatalDataChwEncounters
+                |> List.sum
+
+        prenatalDataChwEncountersUnique =
+            List.filter (not << List.isEmpty) prenatalDataChwEncounters
+                |> List.length
+
+        acuteIllnessDataNurseEncounters =
+            List.filterMap
+                (.acuteIllnessData
+                    >> Maybe.map
+                        (List.concat
+                            >> List.filter
+                                (\encounter ->
+                                    List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
+                                )
+                        )
+                )
+                data.records
+
+        acuteIllnessDataChwEncounters =
+            List.filterMap
+                (.acuteIllnessData
+                    >> Maybe.map
+                        (List.concat
+                            >> List.filter
+                                (\encounter ->
+                                    not <| List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
+                                )
+                        )
+                )
+                data.records
+
+        acuteIllnessDataNurseEncountersTotal =
+            List.map List.length acuteIllnessDataNurseEncounters
+                |> List.sum
+
+        acuteIllnessDataNurseEncountersUnique =
+            List.filter (not << List.isEmpty) acuteIllnessDataNurseEncounters
+                |> List.length
+
+        acuteIllnessDataChwEncountersTotal =
+            List.map List.length acuteIllnessDataChwEncounters
+                |> List.sum
+
+        acuteIllnessDataChwEncountersUnique =
+            List.filter (not << List.isEmpty) acuteIllnessDataChwEncounters
+                |> List.length
+
         viewRow label valueMales valueFemales =
             div [ class "row" ]
                 [ div [ class "item label" ] [ text label ]
                 , div [ class "item value" ] [ text <| String.fromInt <| List.length valueMales ]
                 , div [ class "item value" ] [ text <| String.fromInt <| List.length valueFemales ]
+                ]
+
+        viewValuesRow label all unique shiftLeft =
+            div [ class "row" ]
+                [ div
+                    [ classList
+                        [ ( "item label", True )
+                        , ( "ml-5", shiftLeft )
+                        ]
+                    ]
+                    [ text label ]
+                , div [ class "item value" ] [ text <| String.fromInt all ]
+                , div [ class "item value" ] [ text <| String.fromInt unique ]
                 ]
     in
     div [ class "report demographics" ]
@@ -310,5 +422,24 @@ viewDemographicsReport language currentDate limitDate data =
                 [ div [ class "item label" ] [ text <| translate language Translate.Total ]
                 , div [ class "item value" ] [ text <| String.fromInt <| List.length patientsImpacted ]
                 ]
+            ]
+        , div [ class "table encounters" ]
+            [ div [ class "row captions" ]
+                [ div [ class "item label" ] [ text <| translate language Translate.EncounterType ]
+                , div [ class "item value" ] [ text <| translate language Translate.All ]
+                , div [ class "item value" ] [ text <| translate language Translate.Unique ]
+                ]
+            , viewValuesRow "ANC (total)"
+                (prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal)
+                (prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique)
+                False
+            , viewValuesRow "Health Center" prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
+            , viewValuesRow "CHW" prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
+            , viewValuesRow "Acute Illness (total)"
+                (acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal)
+                (acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique)
+                False
+            , viewValuesRow "Health Center" acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
+            , viewValuesRow "CHW" acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
             ]
         ]

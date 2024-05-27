@@ -286,7 +286,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           'encounter_type' => $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'],
         ];
       }
-      elseif ($participant_type == 'prenatal') {
+      elseif ($participant_type == 'antenatal') {
         $encounter_data = [
           'start_date' => $encounter_date,
           'encounter_type' => $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'],

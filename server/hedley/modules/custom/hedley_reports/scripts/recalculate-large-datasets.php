@@ -27,7 +27,7 @@ drush_print("Calculation completed within $duration seconds.");
 // Resolving unique provinces as they appear at DB.
 $query = db_select('field_data_field_province', 'fp')
   ->fields('fp', array('field_province_value'))
-  ->distinct(TRUE);
+  ->distinct();
 $result = $query->execute();
 $provinces = [];
 foreach ($result as $record) {

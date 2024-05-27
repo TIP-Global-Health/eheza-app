@@ -51,6 +51,7 @@ type StringIdHttpError
 type TranslationId
     = AcuteMalnutrition
     | AggregatedChildScoreboard
+    | All
     | ANCNewborn
     | Cell
     | Colline
@@ -59,6 +60,7 @@ type TranslationId
     | District
     | Demographics
     | EmptyString
+    | EncounterType
     | Female
     | GenerateReport
     | HealthCenter
@@ -97,6 +99,7 @@ type TranslationId
     | Total
     | ViewMode
     | Village
+    | Unique
     | UniversalIntervention
     | Year
     | Zone
@@ -113,6 +116,12 @@ translationSet transId =
 
         AggregatedChildScoreboard ->
             { english = "Aggregated Child Scoreboard"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        All ->
+            { english = "All"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -161,6 +170,12 @@ translationSet transId =
 
         EmptyString ->
             { english = ""
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EncounterType ->
+            { english = "Encounter Type"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -558,6 +573,12 @@ translationSet transId =
 
         Village ->
             { english = "Village"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Unique ->
+            { english = "Unique"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

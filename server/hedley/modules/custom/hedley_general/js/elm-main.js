@@ -7018,7 +7018,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 								A4(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 									_List_fromArray(
-										['individual', 'prenatal']),
+										['individual', 'antenatal']),
 									$elm$json$Json$Decode$nullable(
 										$elm$json$Json$Decode$list(
 											$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData))),
@@ -8472,6 +8472,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
 				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'All':
+				return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ANCNewborn':
 				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Colline':
@@ -8488,6 +8490,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'EncounterType':
+				return {english: 'Encounter Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Female':
 				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
@@ -8752,6 +8756,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Unique':
+				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
 				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
@@ -10545,11 +10551,27 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			},
 			popupState);
 	});
+var $author$project$Translate$All = {$: 'All'};
+var $author$project$Translate$EncounterType = {$: 'EncounterType'};
 var $author$project$Translate$Female = {$: 'Female'};
 var $author$project$Translate$Impacted = {$: 'Impacted'};
 var $author$project$Translate$Male = {$: 'Male'};
 var $author$project$Translate$Registered = {$: 'Registered'};
 var $author$project$Translate$Total = {$: 'Total'};
+var $author$project$Translate$Unique = {$: 'Unique'};
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
 var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
@@ -10568,6 +10590,36 @@ var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
 		$elm$core$Maybe$withDefault(0));
 	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVistData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
 };
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -10588,6 +10640,55 @@ var $elm$core$List$partition = F2(
 	});
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, currentDate, limitDate, data) {
+		var viewValuesRow = F4(
+			function (label, all, unique, shiftLeft) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item label', true),
+											_Utils_Tuple2('ml-5', shiftLeft)
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(all))
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(unique))
+								]))
+						]));
+			});
 		var viewRow = F3(
 			function (label, valueMales, valueFemales) {
 				return A2(
@@ -10634,10 +10735,118 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 								]))
 						]));
 			});
+		var prenatalDataNurseEncounters = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.prenatalData;
+				},
+				$elm$core$Maybe$map(
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$concat,
+						$elm$core$List$filter(
+							function (encounter) {
+								return A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+							})))),
+			data.records);
+		var prenatalDataNurseEncountersTotal = $elm$core$List$sum(
+			A2($elm$core$List$map, $elm$core$List$length, prenatalDataNurseEncounters));
+		var prenatalDataNurseEncountersUnique = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+				prenatalDataNurseEncounters));
+		var prenatalDataChwEncounters = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.prenatalData;
+				},
+				$elm$core$Maybe$map(
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$concat,
+						$elm$core$List$filter(
+							function (encounter) {
+								return !A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+							})))),
+			data.records);
+		var prenatalDataChwEncountersTotal = $elm$core$List$sum(
+			A2($elm$core$List$map, $elm$core$List$length, prenatalDataChwEncounters));
+		var prenatalDataChwEncountersUnique = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+				prenatalDataChwEncounters));
 		var filterImpacted = $elm$core$List$filter(
 			function (patient) {
 				return $author$project$Pages$Reports$Utils$countTotalEncounetrs(patient) > 1;
 			});
+		var acuteIllnessDataNurseEncounters = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.acuteIllnessData;
+				},
+				$elm$core$Maybe$map(
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$concat,
+						$elm$core$List$filter(
+							function (encounter) {
+								return A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
+							})))),
+			data.records);
+		var acuteIllnessDataNurseEncountersTotal = $elm$core$List$sum(
+			A2($elm$core$List$map, $elm$core$List$length, acuteIllnessDataNurseEncounters));
+		var acuteIllnessDataNurseEncountersUnique = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+				acuteIllnessDataNurseEncounters));
+		var acuteIllnessDataChwEncounters = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.acuteIllnessData;
+				},
+				$elm$core$Maybe$map(
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$concat,
+						$elm$core$List$filter(
+							function (encounter) {
+								return !A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
+							})))),
+			data.records);
+		var acuteIllnessDataChwEncountersTotal = $elm$core$List$sum(
+			A2($elm$core$List$map, $elm$core$List$length, acuteIllnessDataChwEncounters));
+		var acuteIllnessDataChwEncountersUnique = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
+				acuteIllnessDataChwEncounters));
 		var _v0 = A2(
 			$elm$core$List$partition,
 			A2(
@@ -10967,6 +11176,63 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 												$elm$core$List$length(patientsImpacted)))
 										]))
 								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table encounters')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$EncounterType))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$All))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Unique))
+										]))
+								])),
+							A4(viewValuesRow, 'ANC (total)', prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
+							A4(viewValuesRow, 'Health Center', prenatalDataNurseEncountersTotal, prenatalDataNurseEncountersUnique, true),
+							A4(viewValuesRow, 'CHW', prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
+							A4(viewValuesRow, 'Acute Illness (total)', acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
+							A4(viewValuesRow, 'Health Center', acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
+							A4(viewValuesRow, 'CHW', acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true)
 						]))
 				]));
 	});
@@ -11085,16 +11351,6 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			options);
 		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
 	});
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
 		return A2(
@@ -31084,27 +31340,6 @@ var $author$project$Utils$NominalDate$equalByYearAndMonth = F2(
 			$justinmimbs$date$Date$year(second)) && _Utils_eq(
 			$justinmimbs$date$Date$month(first),
 			$justinmimbs$date$Date$month(second));
-	});
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
 	});
 var $myrho$elm_round$Round$addSign = F2(
 	function (signed, str) {
