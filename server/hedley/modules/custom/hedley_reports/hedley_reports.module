@@ -261,6 +261,74 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $data['birth_date'] = date("Y-m-d", $birth_date);
   $data['gender'] = $person->field_gender[LANGUAGE_NONE][0]['value'];
 
+  $encounters_data = [];
+  $encounter_types_to_load = [
+    'acute_illness',
+    'antenatal',
+    'home-visit',
+    'nutrition',
+    'well-child',
+  ];
+  $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
+  $individual_participants = node_load_multiple($individual_participants_ids);
+  foreach ($individual_participants as $individual_participant) {
+    $encounters_ids = hedley_person_encounters_for_individual_participant($individual_participant->nid);
+    if (empty($encounters_ids)) {
+      continue;
+    }
+    $participant_type = $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'];
+    $encounters = node_load_multiple($encounters_ids);
+    foreach ($encounters as $encounter) {
+      $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+
+      if (empty($encounters_data[$participant_type][$individual_participant->nid])) {
+        $encounters_data[$participant_type][$individual_participant->nid] = [$encounter_date];
+      }
+      else {
+        $encounters_data[$participant_type][$individual_participant->nid][] = $encounter_date;
+      }
+    }
+
+    foreach ($encounters_data as $key => $data_type) {
+      $encounters_data[$key] = array_values($data_type);
+    }
+  }
+  $data['individual'] = $encounters_data;
+
+  // Load group data:
+  $measurements_ids = hedley_general_get_person_measurements($person->nid, HEDLEY_ACTIVITY_GROUP_REPORTS_BUNDLES);
+  $measurements = node_load_multiple($measurements_ids);
+  $sessions_ids = [];
+  foreach ($measurements as $measurement) {
+    $sessions_ids[] = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+  }
+  $sessions_ids = array_unique($sessions_ids);
+  $sessions = node_load_multiple($sessions_ids);
+  $clinics_ids = [];
+  foreach ($sessions as $session) {
+    $clinics_ids[] = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+  }
+  $clinics_ids = array_unique($clinics_ids);
+  $clinics = node_load_multiple($clinics_ids);
+  $group_type_by_clinic = [];
+  foreach ($clinics as $clinic) {
+    $group_type_by_clinic[$clinic->nid] = $clinic->field_group_type[LANGUAGE_NONE][0]['value'];
+  }
+
+  $sessions_data = [];
+  foreach ($sessions as $session) {
+    $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+    $group_type = $group_type_by_clinic[$clinic_id];
+    $session_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+
+    if (empty($sessions_data[$group_type])) {
+      $sessions_data[$group_type] = [$session_date];
+    }
+    else {
+      $sessions_data[$group_type][] = $session_date;
+    }
+  }
+  $data['group_nutrition'] = $sessions_data;
   $encoded_data = json_encode($data);
   $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
@@ -527,9 +595,13 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
       }
 
       $data[] = json_decode($json_data);
+      // Explicitly unset large variables after use memory optimization.
+      unset($json_data);
     }
 
     $nid = end($ids);
+    // Explicitly unset large variables after use memory optimization.
+    unset($nodes);
   }
 
   return $data;
