@@ -76,12 +76,15 @@ view language currentTime nurseId nurse db model =
                         surveysSorted =
                             List.sortWith (sortByDateDesc .dateMeasured) surveys
 
-                        surveyCount surveyType =
-                            List.filter (.surveyType >> (==) surveyType) surveysSorted
-                                |> List.length
-
                         runSurvey surveyType =
                             let
+                                filteredSurveys =
+                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
+
+                                surveyCount =
+                                    filteredSurveys
+                                        |> List.length
+
                                 filterCondition survey =
                                     let
                                         diffLastSurveyCurrent =
@@ -90,22 +93,22 @@ view language currentTime nurseId nurse db model =
                                         diffLastSurveyProgramStart =
                                             Date.diff Months survey.dateMeasured programStartDate
                                     in
-                                    if surveyCount surveyType == 0 then
-                                        True
-
-                                    else if surveyCount surveyType == 3 then
-                                        False
-
-                                    else if diffLastSurveyCurrent >= 3 then
+                                    if surveyCount == 0 then
                                         True
 
                                     else if diffLastSurveyProgramStart >= 6 then
                                         False
 
+                                    else if surveyCount == 3 then
+                                        False
+
+                                    else if diffLastSurveyCurrent >= 3 then
+                                        True
+
                                     else
                                         False
                             in
-                            List.filter (.surveyType >> (==) surveyType) surveysSorted
+                            filteredSurveys
                                 |> List.head
                                 |> Maybe.map filterCondition
                                 |> Maybe.withDefault True
