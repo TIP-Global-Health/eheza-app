@@ -5936,62 +5936,33 @@ var $author$project$Backend$Reports$Model$ReportsData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
-var $author$project$Backend$Reports$Model$PatientData = F3(
-	function (created, birthDate, gender) {
-		return {birthDate: birthDate, created: created, gender: gender};
-	});
-var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
-var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
-	switch (s) {
-		case 'female':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Female);
-		case 'male':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Male);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
+var $author$project$Backend$Reports$Model$PatientData = function (created) {
+	return function (birthDate) {
+		return function (gender) {
+			return function (acuteIllnessData) {
+				return function (prenatalData) {
+					return function (homeVistData) {
+						return function (wellChildData) {
+							return function (individualNutritionData) {
+								return function (groupNutritionPmtctData) {
+									return function (groupNutritionFbfData) {
+										return function (groupNutritionSorwatheData) {
+											return function (groupNutritionChwData) {
+												return function (groupNutritionAchiData) {
+													return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, homeVistData: homeVistData, individualNutritionData: individualNutritionData, prenatalData: prenatalData, wellChildData: wellChildData};
+												};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
 };
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
-var $author$project$Backend$Reports$Decoder$decodeGender = A2(
-	$elm$json$Json$Decode$andThen,
-	function (gender) {
-		return A2(
-			$elm$core$Maybe$withDefault,
-			$elm$json$Json$Decode$fail(gender + ' is not a recognized Gender.'),
-			A2(
-				$elm$core$Maybe$map,
-				$elm$json$Json$Decode$succeed,
-				$author$project$Backend$Reports$Utils$genderFromString(gender)));
-	},
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $author$project$Backend$Reports$Decoder$decodeGenderWithFallback = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$author$project$Backend$Reports$Decoder$decodeGender,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$Female)
-		]));
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6157,6 +6128,16 @@ var $elm$parser$Parser$Advanced$keeper = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
 	});
 var $elm$parser$Parser$keeper = $elm$parser$Parser$Advanced$keeper;
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $elm$parser$Parser$Advanced$map = F2(
 	function (func, _v0) {
 		var parse = _v0.a;
@@ -6294,6 +6275,15 @@ var $elm$parser$Parser$Advanced$mapChompedString = F2(
 			});
 	});
 var $elm$parser$Parser$mapChompedString = $elm$parser$Parser$Advanced$mapChompedString;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $justinmimbs$date$Date$int1 = A2(
 	$elm$parser$Parser$mapChompedString,
 	F2(
@@ -6786,6 +6776,7 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
+var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6795,11 +6786,103 @@ var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 		return $elm$json$Json$Decode$fail(errorMessage);
 	}
 };
+var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Backend$Reports$Decoder$decodeEncountersData = $elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD);
+var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
+var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
+var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
+	switch (s) {
+		case 'female':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Female);
+		case 'male':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Male);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeGender = A2(
+	$elm$json$Json$Decode$andThen,
+	function (gender) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(gender + ' is not a recognized Gender.'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Utils$genderFromString(gender)));
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Backend$Reports$Decoder$decodeGenderWithFallback = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$author$project$Backend$Reports$Decoder$decodeGender,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$Female)
+		]));
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
+	function (path, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 	function (key, valDecoder, decoder) {
 		return A2(
@@ -6807,19 +6890,84 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
 			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
-var $author$project$Backend$Reports$Decoder$decodePatientData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'gender',
-	$author$project$Backend$Reports$Decoder$decodeGenderWithFallback,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'birth_date',
-		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'created',
-			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))));
+var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+	_List_fromArray(
+		['group_nutrition', 'achi']),
+	$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+		_List_fromArray(
+			['group_nutrition', 'chw']),
+		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+			_List_fromArray(
+				['group_nutrition', 'sorwathe']),
+			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+			$elm$core$Maybe$Nothing,
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+				_List_fromArray(
+					['group_nutrition', 'fbf']),
+				$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+					_List_fromArray(
+						['group_nutrition', 'pmtct']),
+					$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+					$elm$core$Maybe$Nothing,
+					A4(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+						_List_fromArray(
+							['individual', 'nutrition']),
+						$elm$json$Json$Decode$nullable(
+							$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+						$elm$core$Maybe$Nothing,
+						A4(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+							_List_fromArray(
+								['individual', 'well-chil']),
+							$elm$json$Json$Decode$nullable(
+								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+							$elm$core$Maybe$Nothing,
+							A4(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+								_List_fromArray(
+									['individual', 'home-visit']),
+								$elm$json$Json$Decode$nullable(
+									$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+								$elm$core$Maybe$Nothing,
+								A4(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+									_List_fromArray(
+										['individual', 'prenatal']),
+									$elm$json$Json$Decode$nullable(
+										$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+									$elm$core$Maybe$Nothing,
+									A4(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+										_List_fromArray(
+											['individual', 'acute-illness']),
+										$elm$json$Json$Decode$nullable(
+											$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+										$elm$core$Maybe$Nothing,
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'gender',
+											$author$project$Backend$Reports$Decoder$decodeGenderWithFallback,
+											A3(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+												'birth_date',
+												$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+												A3(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+													'created',
+													$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+													$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))));
 var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
@@ -6869,7 +7017,6 @@ var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Backend$Reports$Decoder$decodeReportsData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'results',
@@ -6887,7 +7034,6 @@ var $author$project$Backend$Reports$Decoder$decodeReportsData = A3(
 				'site',
 				$author$project$Backend$Decoder$decodeSite,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))));
-var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $author$project$Backend$Reports$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -7158,40 +7304,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth(currentDate),
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
 	function (key, valDecoder, fallback, decoder) {
 		return A2(
@@ -9457,10 +9569,6 @@ var $author$project$DateSelector$Selector$Dimmed = {$: 'Dimmed'};
 var $author$project$DateSelector$Selector$Disabled = {$: 'Disabled'};
 var $author$project$DateSelector$Selector$Normal = {$: 'Normal'};
 var $author$project$DateSelector$Selector$Selected = {$: 'Selected'};
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $author$project$DateSelector$Selector$classNameFromState = function (state) {
 	switch (state.$) {
 		case 'Normal':

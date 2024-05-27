@@ -29,12 +29,26 @@ type alias PatientData =
     { created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
+    , acuteIllnessData : Maybe (List EncountersData)
+    , prenatalData : Maybe (List EncountersData)
+    , homeVistData : Maybe (List EncountersData)
+    , wellChildData : Maybe (List EncountersData)
+    , individualNutritionData : Maybe (List EncountersData)
+    , groupNutritionPmtctData : Maybe EncountersData
+    , groupNutritionFbfData : Maybe EncountersData
+    , groupNutritionSorwatheData : Maybe EncountersData
+    , groupNutritionChwData : Maybe EncountersData
+    , groupNutritionAchiData : Maybe EncountersData
     }
 
 
 type Gender
     = Female
     | Male
+
+
+type alias EncountersData =
+    List NominalDate
 
 
 type Msg
