@@ -206,6 +206,67 @@ viewDemographicsReport language currentDate limitDate data =
                 (\patient -> Date.diff Years patient.birthDate limitDate >= 50)
                 females
 
+        malesImpacted1MonthAndLess =
+            filterImpacted males1MonthAndLess
+
+        femalesImpacted1MonthAndLess =
+            filterImpacted females1MonthAndLess
+
+        malesImpacted1Month2Years =
+            filterImpacted males1Month2Years
+
+        femalesImpacted1Month2Years =
+            filterImpacted females1Month2Years
+
+        malesImpacted2Years5Years =
+            filterImpacted males2Years5Years
+
+        femalesImpacted2Years5Years =
+            filterImpacted females2Years5Years
+
+        malesImpacted5Years10Years =
+            filterImpacted males5Years10Years
+
+        femalesImpacted5Years10Years =
+            filterImpacted females5Years10Years
+
+        malesImpacted10Years20Years =
+            filterImpacted males10Years20Years
+
+        femalesImpacted10Years20Years =
+            filterImpacted females10Years20Years
+
+        malesImpacted20Years50Years =
+            filterImpacted males20Years50Years
+
+        femalesImpacted20Years50Years =
+            filterImpacted females20Years50Years
+
+        malesImpacted50YearsOrMore =
+            filterImpacted males50YearsOrMore
+
+        femalesImpacted50YearsOrMore =
+            filterImpacted females50YearsOrMore
+
+        filterImpacted =
+            List.filter (\patient -> countTotalEncounetrs patient > 1)
+
+        patientsImpacted =
+            malesImpacted1MonthAndLess
+                ++ femalesImpacted1MonthAndLess
+                ++ malesImpacted1Month2Years
+                ++ femalesImpacted1Month2Years
+                ++ malesImpacted2Years5Years
+                ++ femalesImpacted2Years5Years
+                ++ malesImpacted5Years10Years
+                ++ femalesImpacted5Years10Years
+                ++ malesImpacted10Years20Years
+                ++ femalesImpacted10Years20Years
+                ++ malesImpacted20Years50Years
+                ++ femalesImpacted20Years50Years
+                ++ malesImpacted50YearsOrMore
+                ++ femalesImpacted50YearsOrMore
+
         viewRow label valueMales valueFemales =
             div [ class "row" ]
                 [ div [ class "item label" ] [ text label ]
@@ -230,6 +291,24 @@ viewDemographicsReport language currentDate limitDate data =
             , div [ class "row totals" ]
                 [ div [ class "item label" ] [ text <| translate language Translate.Total ]
                 , div [ class "item value" ] [ text <| String.fromInt <| List.length <| males ++ females ]
+                ]
+            ]
+        , div [ class "table impacted" ]
+            [ div [ class "row captions" ]
+                [ div [ class "item label" ] [ text <| translate language Translate.Impacted ]
+                , div [ class "item value" ] [ text <| translate language Translate.Male ]
+                , div [ class "item value" ] [ text <| translate language Translate.Female ]
+                ]
+            , viewRow "0 - 1M" malesImpacted1MonthAndLess femalesImpacted1MonthAndLess
+            , viewRow "1M - 2Y" malesImpacted1Month2Years femalesImpacted1Month2Years
+            , viewRow "2Y - 5Y" malesImpacted2Years5Years femalesImpacted2Years5Years
+            , viewRow "5Y - 10Y" malesImpacted5Years10Years femalesImpacted5Years10Years
+            , viewRow "10Y - 20Y" malesImpacted10Years20Years femalesImpacted10Years20Years
+            , viewRow "20Y - 50Y" malesImpacted20Years50Years femalesImpacted20Years50Years
+            , viewRow "50Y +" malesImpacted50YearsOrMore femalesImpacted50YearsOrMore
+            , div [ class "row totals" ]
+                [ div [ class "item label" ] [ text <| translate language Translate.Total ]
+                , div [ class "item value" ] [ text <| String.fromInt <| List.length patientsImpacted ]
                 ]
             ]
         ]

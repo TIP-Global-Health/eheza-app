@@ -8421,6 +8421,8 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'HttpError':
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
+			case 'Impacted':
+				return {english: 'Impacted', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Male':
@@ -10468,9 +10470,29 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			popupState);
 	});
 var $author$project$Translate$Female = {$: 'Female'};
+var $author$project$Translate$Impacted = {$: 'Impacted'};
 var $author$project$Translate$Male = {$: 'Male'};
 var $author$project$Translate$Registered = {$: 'Registered'};
 var $author$project$Translate$Total = {$: 'Total'};
+var $author$project$Pages$Reports$Utils$countEncountersDataVisits = $elm$core$List$length;
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
+	var countIndividualDataEncounters = A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$map($author$project$Pages$Reports$Utils$countEncountersDataVisits),
+				$elm$core$List$sum)),
+		$elm$core$Maybe$withDefault(0));
+	var countGroupDataEncounters = A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map($author$project$Pages$Reports$Utils$countEncountersDataVisits),
+		$elm$core$Maybe$withDefault(0));
+	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVistData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
+};
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -10537,6 +10559,10 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 								]))
 						]));
 			});
+		var filterImpacted = $elm$core$List$filter(
+			function (patient) {
+				return $author$project$Pages$Reports$Utils$countTotalEncounetrs(patient) > 1;
+			});
 		var _v0 = A2(
 			$elm$core$List$partition,
 			A2(
@@ -10561,84 +10587,123 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
 			},
 			females);
+		var femalesImpacted10Years20Years = filterImpacted(females10Years20Years);
 		var females1Month2Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
 			},
 			females);
+		var femalesImpacted1Month2Years = filterImpacted(females1Month2Years);
 		var females1MonthAndLess = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
 			},
 			females);
+		var femalesImpacted1MonthAndLess = filterImpacted(females1MonthAndLess);
 		var females20Years50Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
 			},
 			females);
+		var femalesImpacted20Years50Years = filterImpacted(females20Years50Years);
 		var females2Years5Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
 			},
 			females);
+		var femalesImpacted2Years5Years = filterImpacted(females2Years5Years);
 		var females50YearsOrMore = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
 			},
 			females);
+		var femalesImpacted50YearsOrMore = filterImpacted(females50YearsOrMore);
 		var females5Years10Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
 			},
 			females);
+		var femalesImpacted5Years10Years = filterImpacted(females5Years10Years);
 		var males10Years20Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
 			},
 			males);
+		var malesImpacted10Years20Years = filterImpacted(males10Years20Years);
 		var males1Month2Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
 			},
 			males);
+		var malesImpacted1Month2Years = filterImpacted(males1Month2Years);
 		var males1MonthAndLess = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
 			},
 			males);
+		var malesImpacted1MonthAndLess = filterImpacted(males1MonthAndLess);
 		var males20Years50Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
 			},
 			males);
+		var malesImpacted20Years50Years = filterImpacted(males20Years50Years);
 		var males2Years5Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
 			},
 			males);
+		var malesImpacted2Years5Years = filterImpacted(males2Years5Years);
 		var males50YearsOrMore = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
 			},
 			males);
+		var malesImpacted50YearsOrMore = filterImpacted(males50YearsOrMore);
 		var males5Years10Years = A2(
 			$elm$core$List$filter,
 			function (patient) {
 				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
 			},
 			males);
+		var malesImpacted5Years10Years = filterImpacted(males5Years10Years);
+		var patientsImpacted = _Utils_ap(
+			malesImpacted1MonthAndLess,
+			_Utils_ap(
+				femalesImpacted1MonthAndLess,
+				_Utils_ap(
+					malesImpacted1Month2Years,
+					_Utils_ap(
+						femalesImpacted1Month2Years,
+						_Utils_ap(
+							malesImpacted2Years5Years,
+							_Utils_ap(
+								femalesImpacted2Years5Years,
+								_Utils_ap(
+									malesImpacted5Years10Years,
+									_Utils_ap(
+										femalesImpacted5Years10Years,
+										_Utils_ap(
+											malesImpacted10Years20Years,
+											_Utils_ap(
+												femalesImpacted10Years20Years,
+												_Utils_ap(
+													malesImpacted20Years50Years,
+													_Utils_ap(
+														femalesImpacted20Years50Years,
+														_Utils_ap(malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore)))))))))))));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10735,6 +10800,96 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 											$elm$core$String$fromInt(
 												$elm$core$List$length(
 													_Utils_ap(males, females))))
+										]))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table impacted')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Impacted))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Male))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Female))
+										]))
+								])),
+							A3(viewRow, '0 - 1M', malesImpacted1MonthAndLess, femalesImpacted1MonthAndLess),
+							A3(viewRow, '1M - 2Y', malesImpacted1Month2Years, femalesImpacted1Month2Years),
+							A3(viewRow, '2Y - 5Y', malesImpacted2Years5Years, femalesImpacted2Years5Years),
+							A3(viewRow, '5Y - 10Y', malesImpacted5Years10Years, femalesImpacted5Years10Years),
+							A3(viewRow, '10Y - 20Y', malesImpacted10Years20Years, femalesImpacted10Years20Years),
+							A3(viewRow, '20Y - 50Y', malesImpacted20Years50Years, femalesImpacted20Years50Years),
+							A3(viewRow, '50Y +', malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row totals')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											$elm$core$String$fromInt(
+												$elm$core$List$length(patientsImpacted)))
 										]))
 								]))
 						]))

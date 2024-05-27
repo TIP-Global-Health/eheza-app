@@ -63,6 +63,7 @@ type TranslationId
     | GenerateReport
     | HealthCenter
     | HttpError StringIdHttpError
+    | Impacted
     | InfrastructureEnvironmentWash
     | Male
     | Month Month
@@ -184,6 +185,12 @@ translationSet transId =
 
         HttpError val ->
             translateHttpError val
+
+        Impacted ->
+            { english = "Impacted"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         InfrastructureEnvironmentWash ->
             { english = "Infrastructure, Environment & Wash"

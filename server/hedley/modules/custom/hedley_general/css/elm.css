@@ -256,6 +256,7 @@ body.admin-menu #page-wrapper #header {
 
 .page-content .inputs .report .table {
   border: 2px solid white;
+  margin-bottom: 20px;
   padding: 15px;
 }
 
