@@ -5936,6 +5936,7 @@ var $author$project$Backend$Reports$Model$ReportsData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
+var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$PatientData = function (created) {
 	return function (birthDate) {
 		return function (gender) {
@@ -5963,6 +5964,40 @@ var $author$project$Backend$Reports$Model$PatientData = function (created) {
 		};
 	};
 };
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW = {$: 'AcuteIllnessEncounterCHW'};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterData = F2(
+	function (startDate, encounterType) {
+		return {encounterType: encounterType, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse = {$: 'AcuteIllnessEncounterNurse'};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent = {$: 'AcuteIllnessEncounterNurseSubsequent'};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterType = A2(
+	$elm$json$Json$Decode$andThen,
+	function (encounterType) {
+		switch (encounterType) {
+			case 'nurse-encounter':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse);
+			case 'nurse-encounter-subsequent':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent);
+			case 'chw-encounter':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW);
+			default:
+				return $elm$json$Json$Decode$fail(encounterType + ' is not a recognized AcuteIllnessEncounterType');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Backend$Reports$Decoder$decodeWithFallback = F2(
+	function (fallback, decoder) {
+		return $elm$json$Json$Decode$oneOf(
+			_List_fromArray(
+				[
+					decoder,
+					$elm$json$Json$Decode$succeed(fallback)
+				]));
+	});
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6776,7 +6811,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 	if (result.$ === 'Ok') {
 		var successValue = result.a;
@@ -6786,14 +6820,29 @@ var $elm_community$json_extra$Json$Decode$Extra$fromResult = function (result) {
 		return $elm$json$Json$Decode$fail(errorMessage);
 	}
 };
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'encounter_type',
+	A2($author$project$Backend$Reports$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW, $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterType),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'start_date',
+		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$AcuteIllnessEncounterData)));
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Backend$Reports$Decoder$decodeEncountersData = $elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD);
-var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
 var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
 	switch (s) {
@@ -6817,13 +6866,46 @@ var $author$project$Backend$Reports$Decoder$decodeGender = A2(
 				$author$project$Backend$Reports$Utils$genderFromString(gender)));
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $author$project$Backend$Reports$Decoder$decodeGenderWithFallback = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$author$project$Backend$Reports$Decoder$decodeGender,
-			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$Female)
-		]));
+var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
+	function (startDate, encounterType) {
+		return {encounterType: encounterType, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
+var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
+var $author$project$Backend$Reports$Model$ChwSecondEncounter = {$: 'ChwSecondEncounter'};
+var $author$project$Backend$Reports$Model$ChwThirdPlusEncounter = {$: 'ChwThirdPlusEncounter'};
+var $author$project$Backend$Reports$Model$NursePostpartumEncounter = {$: 'NursePostpartumEncounter'};
+var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterType = A2(
+	$elm$json$Json$Decode$andThen,
+	function (encounterType) {
+		switch (encounterType) {
+			case 'nurse':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NurseEncounter);
+			case 'nurse-postpartum':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NursePostpartumEncounter);
+			case 'chw-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ChwFirstEncounter);
+			case 'chw-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ChwSecondEncounter);
+			case 'chw-3':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ChwThirdPlusEncounter);
+			case 'chw-postpartum':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ChwPostpartumEncounter);
+			default:
+				return $elm$json$Json$Decode$fail(encounterType + ' is not a recognized PrenatalEncounterType');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'encounter_type',
+	A2($author$project$Backend$Reports$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Decoder$decodePrenatalEncounterType),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'start_date',
+		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalEncounterData)));
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$nullable = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -6837,7 +6919,6 @@ var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
@@ -6881,13 +6962,6 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 				A2($elm$json$Json$Decode$at, path, $elm$json$Json$Decode$value),
 				valDecoder,
 				fallback),
-			decoder);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
 var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
@@ -6946,19 +7020,21 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 									_List_fromArray(
 										['individual', 'prenatal']),
 									$elm$json$Json$Decode$nullable(
-										$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+										$elm$json$Json$Decode$list(
+											$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData))),
 									$elm$core$Maybe$Nothing,
 									A4(
 										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 										_List_fromArray(
 											['individual', 'acute-illness']),
 										$elm$json$Json$Decode$nullable(
-											$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+											$elm$json$Json$Decode$list(
+												$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData))),
 										$elm$core$Maybe$Nothing,
 										A3(
 											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 											'gender',
-											$author$project$Backend$Reports$Decoder$decodeGenderWithFallback,
+											A2($author$project$Backend$Reports$Decoder$decodeWithFallback, $author$project$Backend$Reports$Model$Female, $author$project$Backend$Reports$Decoder$decodeGender),
 											A3(
 												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 												'birth_date',
@@ -10474,7 +10550,6 @@ var $author$project$Translate$Impacted = {$: 'Impacted'};
 var $author$project$Translate$Male = {$: 'Male'};
 var $author$project$Translate$Registered = {$: 'Registered'};
 var $author$project$Translate$Total = {$: 'Total'};
-var $author$project$Pages$Reports$Utils$countEncountersDataVisits = $elm$core$List$length;
 var $elm$core$List$sum = function (numbers) {
 	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
 };
@@ -10484,12 +10559,12 @@ var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
 		$elm$core$Maybe$map(
 			A2(
 				$elm$core$Basics$composeR,
-				$elm$core$List$map($author$project$Pages$Reports$Utils$countEncountersDataVisits),
+				$elm$core$List$map($elm$core$List$length),
 				$elm$core$List$sum)),
 		$elm$core$Maybe$withDefault(0));
 	var countGroupDataEncounters = A2(
 		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map($author$project$Pages$Reports$Utils$countEncountersDataVisits),
+		$elm$core$Maybe$map($elm$core$List$length),
 		$elm$core$Maybe$withDefault(0));
 	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVistData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
 };

@@ -29,11 +29,11 @@ countTotalEncounetrs : PatientData -> Int
 countTotalEncounetrs data =
     let
         countIndividualDataEncounters =
-            Maybe.map (List.map countEncountersDataVisits >> List.sum)
+            Maybe.map (List.map List.length >> List.sum)
                 >> Maybe.withDefault 0
 
         countGroupDataEncounters =
-            Maybe.map countEncountersDataVisits
+            Maybe.map List.length
                 >> Maybe.withDefault 0
     in
     countIndividualDataEncounters data.acuteIllnessData
@@ -46,8 +46,3 @@ countTotalEncounetrs data =
         + countGroupDataEncounters data.groupNutritionSorwatheData
         + countGroupDataEncounters data.groupNutritionChwData
         + countGroupDataEncounters data.groupNutritionAchiData
-
-
-countEncountersDataVisits : EncountersData -> Int
-countEncountersDataVisits =
-    List.length

@@ -58,9 +58,9 @@ decodePatientData =
     succeed PatientData
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
-        |> required "gender" decodeGenderWithFallback
-        |> optionalAt [ "individual", "acute-illness" ] (nullable (list decodeEncountersData)) Nothing
-        |> optionalAt [ "individual", "prenatal" ] (nullable (list decodeEncountersData)) Nothing
+        |> required "gender" (decodeWithFallback Female decodeGender)
+        |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
+        |> optionalAt [ "individual", "prenatal" ] (nullable (list (list decodePrenatalEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list decodeEncountersData)) Nothing
         |> optionalAt [ "individual", "well-chil" ] (nullable (list decodeEncountersData)) Nothing
         |> optionalAt [ "individual", "nutrition" ] (nullable (list decodeEncountersData)) Nothing
@@ -69,14 +69,6 @@ decodePatientData =
         |> optionalAt [ "group_nutrition", "sorwathe" ] (nullable decodeEncountersData) Nothing
         |> optionalAt [ "group_nutrition", "chw" ] (nullable decodeEncountersData) Nothing
         |> optionalAt [ "group_nutrition", "achi" ] (nullable decodeEncountersData) Nothing
-
-
-decodeGenderWithFallback : Decoder Gender
-decodeGenderWithFallback =
-    oneOf
-        [ decodeGender
-        , succeed Female
-        ]
 
 
 decodeGender : Decoder Gender
@@ -93,3 +85,75 @@ decodeGender =
 decodeEncountersData : Decoder EncountersData
 decodeEncountersData =
     list decodeYYYYMMDD
+
+
+decodeAcuteIllnessEncounterData : Decoder AcuteIllnessEncounterData
+decodeAcuteIllnessEncounterData =
+    succeed AcuteIllnessEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> required "encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType)
+
+
+decodeAcuteIllnessEncounterType : Decoder AcuteIllnessEncounterType
+decodeAcuteIllnessEncounterType =
+    string
+        |> andThen
+            (\encounterType ->
+                case encounterType of
+                    "nurse-encounter" ->
+                        succeed AcuteIllnessEncounterNurse
+
+                    "nurse-encounter-subsequent" ->
+                        succeed AcuteIllnessEncounterNurseSubsequent
+
+                    "chw-encounter" ->
+                        succeed AcuteIllnessEncounterCHW
+
+                    _ ->
+                        fail <|
+                            encounterType
+                                ++ " is not a recognized AcuteIllnessEncounterType"
+            )
+
+
+decodePrenatalEncounterData : Decoder PrenatalEncounterData
+decodePrenatalEncounterData =
+    succeed PrenatalEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> required "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
+
+
+decodePrenatalEncounterType : Decoder PrenatalEncounterType
+decodePrenatalEncounterType =
+    string
+        |> andThen
+            (\encounterType ->
+                case encounterType of
+                    "nurse" ->
+                        succeed NurseEncounter
+
+                    "nurse-postpartum" ->
+                        succeed NursePostpartumEncounter
+
+                    "chw-1" ->
+                        succeed ChwFirstEncounter
+
+                    "chw-2" ->
+                        succeed ChwSecondEncounter
+
+                    "chw-3" ->
+                        succeed ChwThirdPlusEncounter
+
+                    "chw-postpartum" ->
+                        succeed ChwPostpartumEncounter
+
+                    _ ->
+                        fail <|
+                            encounterType
+                                ++ " is not a recognized PrenatalEncounterType"
+            )
+
+
+decodeWithFallback : a -> Decoder a -> Decoder a
+decodeWithFallback fallback decoder =
+    oneOf [ decoder, succeed fallback ]

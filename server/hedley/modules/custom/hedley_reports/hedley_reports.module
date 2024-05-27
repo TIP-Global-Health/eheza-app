@@ -280,12 +280,27 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $encounters = node_load_multiple($encounters_ids);
     foreach ($encounters as $encounter) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-
-      if (empty($encounters_data[$participant_type][$individual_participant->nid])) {
-        $encounters_data[$participant_type][$individual_participant->nid] = [$encounter_date];
+      if ($participant_type == 'acute-illness') {
+        $encounter_data = [
+          'start_date' => $encounter_date,
+          'encounter_type' => $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'],
+        ];
+      }
+      elseif ($participant_type == 'prenatal') {
+        $encounter_data = [
+          'start_date' => $encounter_date,
+          'encounter_type' => $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'],
+        ];
       }
       else {
-        $encounters_data[$participant_type][$individual_participant->nid][] = $encounter_date;
+        $encounter_data = $encounter_date;
+      }
+
+      if (empty($encounters_data[$participant_type][$individual_participant->nid])) {
+        $encounters_data[$participant_type][$individual_participant->nid] = [$encounter_data];
+      }
+      else {
+        $encounters_data[$participant_type][$individual_participant->nid][] = $encounter_data;
       }
     }
 
