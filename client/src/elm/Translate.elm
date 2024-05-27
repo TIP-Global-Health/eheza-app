@@ -9791,7 +9791,7 @@ translationSet trans =
 
                 MenuWellbeing ->
                     { english = "Wellbeing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gubwa neza"
                     , kirundi = Just "Imibereho myiza"
                     }
 
@@ -18314,49 +18314,49 @@ translationSet trans =
 
                 ResilienceCategoryIntroduction ->
                     { english = "Introduction"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikaze"
                     , kirundi = Nothing
                     }
 
                 ResilienceCategoryGrowth ->
                     { english = "Growth"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Terimbere"
                     , kirundi = Just "Ugukura"
                     }
 
                 ResilienceCategoryStressManagement ->
                     { english = "Stress Management"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunanirwa"
                     , kirundi = Nothing
                     }
 
                 ResilienceCategoryMindfulness ->
                     { english = "Mindfulness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Zirikana ibi"
                     , kirundi = Nothing
                     }
 
                 ResilienceCategoryConnecting ->
                     { english = "Connecting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusabana"
                     , kirundi = Nothing
                     }
 
                 ResilienceCategorySelfCare ->
                     { english = "Self Care"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwiyitaho"
                     , kirundi = Nothing
                     }
 
                 ResilienceCategoryEndOfPeriod ->
                     { english = "End Of Month"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusoza ukwezi kwa mbere"
                     , kirundi = Nothing
                     }
 
         ResilienceMessage ->
             { english = "Resilience Message"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ubutumwa bwo Kwifasha kwiyitaho"
             , kirundi = Nothing
             }
 
@@ -18602,7 +18602,7 @@ translationSet trans =
 
         ResilienceMessageGrowth2Paragraph3 ->
             { english = "Remember: Good things take time."
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gukora neza, Gushimwa na buri wese bisaba umbwitange n'umwanya uhagije."
             , kirundi = Nothing
             }
 
@@ -18698,7 +18698,7 @@ translationSet trans =
 
         ResilienceMessageGuide3Bullet3 ->
             { english = "Growth"
-            , kinyarwanda = Just "Gutera imbere"
+            , kinyarwanda = Just "Terimbere"
             , kirundi = Nothing
             }
 
@@ -18716,7 +18716,7 @@ translationSet trans =
 
         ResilienceMessageGuide3Bullet6 ->
             { english = "Self-care"
-            , kinyarwanda = Just "Guhangana n’umunaniro"
+            , kinyarwanda = Just "Kunanirwa"
             , kirundi = Nothing
             }
 
@@ -18890,7 +18890,7 @@ translationSet trans =
 
         ResilienceMessageStressManagement2Bullet3 ->
             { english = "Be kind to others."
-            , kinyarwanda = Just " Kugirira neza abandi."
+            , kinyarwanda = Just "Kugirira neza abandi."
             , kirundi = Nothing
             }
 
@@ -19532,7 +19532,7 @@ translationSet trans =
 
         ResilienceKickOffBirthDateQuestion ->
             { english = "What is your birth date"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Itariki y'amavuko ni iyihe"
             , kirundi = Nothing
             }
 
@@ -19550,7 +19550,7 @@ translationSet trans =
 
         ResilienceKickOffMaritalStatusQuestion ->
             { english = "What is your marital status"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Irangamimerere ni irihe"
             , kirundi = Nothing
             }
 
@@ -19568,26 +19568,26 @@ translationSet trans =
 
         ResilienceNotificationHeader name ->
             { english = "Hello, " ++ name ++ "!"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Bite, " ++ name ++ "!"
             , kirundi = Nothing
             }
 
         ResilienceNotificationNumberOfUnread number ->
             if number == 1 then
                 { english = "You have " ++ String.fromInt number ++ " unread message."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just <| "Ufite ubutumwa " ++ String.fromInt number ++ " utasomye"
                 , kirundi = Nothing
                 }
 
             else
                 { english = "You have " ++ String.fromInt number ++ " unread messages."
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just <| "Ufite ubutumwa " ++ String.fromInt number ++ " utasomye."
                 , kirundi = Nothing
                 }
 
         ResilienceNotificationReadNowQuestion ->
             { english = "Would you like to read your messages now?"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Urashaka gusoma ubwo butumwa nonaha?"
             , kirundi = Nothing
             }
 
@@ -19595,25 +19595,25 @@ translationSet trans =
             case question of
                 ResilienceSurveyQuestion1 ->
                     { english = "I look for creative ways to alter difficult situations"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nshakisha uburyo butandukanye bwo guhangana n’ibihe bigoranye"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestion2 ->
                     { english = "Regardless of what happens to me, I believe I can control my reaction to it"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntitaye ku biri kumbaho, nizera ko nshobora kugenzura  uko mbyitwaramo"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestion3 ->
                     { english = "I believe I can grow in positive ways by dealing with difficult situations"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nizerako ko nshobora gutera imbere mu gihe nahanganye n’ibihe bigoranye"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestion4 ->
                     { english = "I actively look for ways to replace the losses I encounter in life"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Nshakisha inzira zose zishoboka zimfasha gusimbura ibyo natakaje mu buzima"
                     , kirundi = Nothing
                     }
 
@@ -20089,7 +20089,7 @@ translationSet trans =
 
                 ResilienceReminderTakeBreak ->
                     { english = "You deserve it! Break time."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubu ni akanya k'ikiruhuko gito."
                     , kirundi = Nothing
                     }
 
@@ -20103,7 +20103,7 @@ translationSet trans =
 
                 ResilienceReminderTakeBreak ->
                     { english = "A short break or time between work can boost your energy and help you do your job better."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikiruhuko gito cyangwa umwanya hagati mu kazi ushobora kukongerera imbaraga ukanagufasha gukora akazi kawe neza."
                     , kirundi = Nothing
                     }
 
@@ -20117,7 +20117,7 @@ translationSet trans =
 
                 ResilienceReminderTakeBreak ->
                     { english = "Try to take a break between tasks/short breaks. Do a breathing exercise, stretch your shoulders and arms. You will feel calm and ready to do well whatever comes next."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gerageza gufata akanya gato hagati mu kazi. Kora umwitozo wo guhumeka, nanura intugu n'ibiganza byawe. Uzumva utuje kandi witeguye gukora neza ibikurikiyeho."
                     , kirundi = Nothing
                     }
 
@@ -20171,31 +20171,31 @@ translationSet trans =
             case option of
                 ResilienceSurveyQuestionOption0 ->
                     { english = "Does not describe me at all"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo mbikora na namba"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestionOption1 ->
                     { english = "Does not describe me"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntabwo mbikora"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestionOption2 ->
                     { english = "Neutral"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntacyo mbitekerezaho"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestionOption3 ->
                     { english = "Describes me"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ndabikora"
                     , kirundi = Nothing
                     }
 
                 ResilienceSurveyQuestionOption4 ->
                     { english = "Describes me very well"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ndabikora cyane"
                     , kirundi = Nothing
                     }
 
@@ -22863,7 +22863,7 @@ translationSet trans =
 
         Wellbeing ->
             { english = "Wellbeing"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Gubwa neza"
             , kirundi = Just "Imibereho myiza"
             }
 
@@ -24110,7 +24110,7 @@ translateActivePage page =
 
                 WellbeingPage ->
                     { english = "Wellbeing"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gubwa neza"
                     , kirundi = Just "Imibereho myiza"
                     }
 
