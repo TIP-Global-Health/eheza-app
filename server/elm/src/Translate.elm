@@ -49,23 +49,32 @@ type StringIdHttpError
 
 
 type TranslationId
-    = AcuteMalnutrition
+    = ACHI
+    | AcuteIllnessTotal
+    | AcuteMalnutrition
     | AggregatedChildScoreboard
     | All
     | ANCNewborn
+    | ANCTotal
+    | CBNP
     | Cell
+    | CHW
     | Colline
     | CollineSub
     | Commune
     | District
     | Demographics
     | EmptyString
+    | Encounters
     | EncounterType
+    | FBF
     | Female
     | GenerateReport
     | HealthCenter
+    | HomeVisit
     | HttpError StringIdHttpError
     | Impacted
+    | Individual
     | InfrastructureEnvironmentWash
     | Male
     | Month Month
@@ -80,10 +89,13 @@ type TranslationId
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewSelection
     | NutritionBehavior
+    | NutritionTotal
     | PleaseWaitMessage
+    | PMTCT
     | PopulationSelectionOption PopulationSelectionOption
     | Province
     | Registered
+    | RegisteredPatients
     | ReportType ReportType
     | ReportTypeLabel
     | ResolveMonth Bool Month
@@ -93,6 +105,8 @@ type TranslationId
     | SelectedEntity SelectedEntity
     | SelectLimitDate
     | SelectViewMode
+    | Sorwathe
+    | StandardPediatricVisit
     | Stunting
     | Status
     | TargetedInterventions
@@ -108,6 +122,18 @@ type TranslationId
 translationSet : TranslationId -> TranslationSet
 translationSet transId =
     case transId of
+        ACHI ->
+            { english = "ACHI"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        AcuteIllnessTotal ->
+            { english = "Acute Illness (total)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         AcuteMalnutrition ->
             { english = "Acute Malnutrition"
             , kinyarwanda = Nothing
@@ -132,6 +158,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        ANCTotal ->
+            { english = "ANC (total)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Colline ->
             { english = "Colline"
             , kinyarwanda = Nothing
@@ -150,8 +182,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        CBNP ->
+            { english = "CBNP"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Cell ->
             { english = "Cell"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        CHW ->
+            { english = "CHW"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -174,8 +218,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Encounters ->
+            { english = "Encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         EncounterType ->
             { english = "Encounter Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FBF ->
+            { english = "FBF"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -198,11 +254,23 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        HomeVisit ->
+            { english = "Home Visit"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HttpError val ->
             translateHttpError val
 
         Impacted ->
-            { english = "Impacted"
+            { english = "Impacted (2+ visits)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Individual ->
+            { english = "Individual"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -442,8 +510,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        NutritionTotal ->
+            { english = "Nutrition (total)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PleaseWaitMessage ->
             { english = "Please wait. This action may take a couple of minutes to complete."
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PMTCT ->
+            { english = "PMTCT"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -476,6 +556,12 @@ translationSet transId =
 
         Registered ->
             { english = "Registered"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        RegisteredPatients ->
+            { english = "Registered Patients"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -537,6 +623,18 @@ translationSet transId =
 
         SelectViewMode ->
             { english = "Please select desired view mode"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Sorwathe ->
+            { english = "Sorwathe"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        StandardPediatricVisit ->
+            { english = "Standard Pediatric Visit"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

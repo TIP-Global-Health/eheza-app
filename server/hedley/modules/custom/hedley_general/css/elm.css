@@ -254,6 +254,14 @@ body.admin-menu #page-wrapper #header {
   width: 58%;
 }
 
+.page-content .inputs .report .section.heading {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 60px;
+  text-transform: uppercase;
+}
+
 .page-content .inputs .report .table {
   border: 2px solid white;
   margin-bottom: 20px;
@@ -275,6 +283,11 @@ body.admin-menu #page-wrapper #header {
   margin: auto;
   margin-top: 20px;
   width: 50%;
+}
+
+.page-content .inputs .report .table .row.encounters-totals {
+  font-weight: bold;
+  margin-top: 20px;
 }
 
 .page-content .inputs .report .table .row:last-child {
