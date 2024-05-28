@@ -11589,11 +11589,64 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 				F2(
 					function (reportType, limitDate) {
 						var recordsTillLimitDate = A2(
-							$elm$core$List$filter,
+							$elm$core$List$filterMap,
 							function (record) {
-								return _Utils_eq(
+								if (_Utils_eq(
 									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$LT);
+									$elm$core$Basics$LT)) {
+									var filterIndividualBy = function (resolveDateFunc) {
+										return $elm$core$Maybe$map(
+											$elm$core$List$map(
+												$elm$core$List$filter(
+													function (encounterData) {
+														return _Utils_eq(
+															A2(
+																$justinmimbs$date$Date$compare,
+																resolveDateFunc(encounterData),
+																limitDate),
+															$elm$core$Basics$LT);
+													})));
+									};
+									var filterGroupBy = function (resolveDateFunc) {
+										return $elm$core$Maybe$map(
+											$elm$core$List$filter(
+												function (encounterData) {
+													return _Utils_eq(
+														A2(
+															$justinmimbs$date$Date$compare,
+															resolveDateFunc(encounterData),
+															limitDate),
+														$elm$core$Basics$LT);
+												}));
+									};
+									return $elm$core$Maybe$Just(
+										_Utils_update(
+											record,
+											{
+												acuteIllnessData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.acuteIllnessData),
+												groupNutritionAchiData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionAchiData),
+												groupNutritionChwData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionChwData),
+												groupNutritionFbfData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionFbfData),
+												groupNutritionPmtctData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionPmtctData),
+												groupNutritionSorwatheData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionSorwatheData),
+												homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
+												individualNutritionData: A2(filterIndividualBy, $elm$core$Basics$identity, record.individualNutritionData),
+												prenatalData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.prenatalData),
+												wellChildData: A2(filterIndividualBy, $elm$core$Basics$identity, record.wellChildData)
+											}));
+								} else {
+									return $elm$core$Maybe$Nothing;
+								}
 							},
 							data.records);
 						return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);

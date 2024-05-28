@@ -75,9 +75,44 @@ viewReportsData language currentDate data model =
                     (\reportType limitDate ->
                         let
                             recordsTillLimitDate =
-                                List.filter
+                                List.filterMap
                                     (\record ->
-                                        Date.compare record.created limitDate == LT
+                                        if Date.compare record.created limitDate == LT then
+                                            let
+                                                filterIndividualBy resolveDateFunc =
+                                                    Maybe.map
+                                                        (List.map
+                                                            (List.filter
+                                                                (\encounterData ->
+                                                                    Date.compare (resolveDateFunc encounterData) limitDate == LT
+                                                                )
+                                                            )
+                                                        )
+
+                                                filterGroupBy resolveDateFunc =
+                                                    Maybe.map
+                                                        (List.filter
+                                                            (\encounterData ->
+                                                                Date.compare (resolveDateFunc encounterData) limitDate == LT
+                                                            )
+                                                        )
+                                            in
+                                            Just
+                                                { record
+                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                    , prenatalData = filterIndividualBy .startDate record.prenatalData
+                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
+                                                    , wellChildData = filterIndividualBy identity record.wellChildData
+                                                    , individualNutritionData = filterIndividualBy identity record.individualNutritionData
+                                                    , groupNutritionPmtctData = filterGroupBy identity record.groupNutritionPmtctData
+                                                    , groupNutritionFbfData = filterGroupBy identity record.groupNutritionFbfData
+                                                    , groupNutritionSorwatheData = filterGroupBy identity record.groupNutritionSorwatheData
+                                                    , groupNutritionChwData = filterGroupBy identity record.groupNutritionChwData
+                                                    , groupNutritionAchiData = filterGroupBy identity record.groupNutritionAchiData
+                                                }
+
+                                        else
+                                            Nothing
                                     )
                                     data.records
                         in
