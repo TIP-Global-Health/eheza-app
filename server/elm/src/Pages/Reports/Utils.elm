@@ -14,12 +14,18 @@ reportTypeToString reportType =
         ReportDemographics ->
             "demographics"
 
+        ReportNutrition ->
+            "nutrition"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
     case reportType of
         "demographics" ->
             Just ReportDemographics
+
+        "nutrition" ->
+            Just ReportNutrition
 
         _ ->
             Nothing

@@ -574,6 +574,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                ReportNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         ReportTypeLabel ->
             { english = "Report Type"
             , kinyarwanda = Nothing

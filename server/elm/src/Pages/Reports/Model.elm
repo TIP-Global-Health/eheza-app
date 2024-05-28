@@ -21,6 +21,7 @@ emptyModel =
 
 type ReportType
     = ReportDemographics
+    | ReportNutrition
 
 
 type Msg
