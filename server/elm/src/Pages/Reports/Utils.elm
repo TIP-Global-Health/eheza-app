@@ -38,7 +38,7 @@ countTotalEncounetrs data =
     in
     countIndividualDataEncounters data.acuteIllnessData
         + countIndividualDataEncounters data.prenatalData
-        + countIndividualDataEncounters data.homeVistData
+        + countIndividualDataEncounters data.homeVisitData
         + countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
         + countGroupDataEncounters data.groupNutritionPmtctData

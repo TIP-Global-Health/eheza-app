@@ -5942,7 +5942,7 @@ var $author$project$Backend$Reports$Model$PatientData = function (created) {
 		return function (gender) {
 			return function (acuteIllnessData) {
 				return function (prenatalData) {
-					return function (homeVistData) {
+					return function (homeVisitData) {
 						return function (wellChildData) {
 							return function (individualNutritionData) {
 								return function (groupNutritionPmtctData) {
@@ -5950,7 +5950,7 @@ var $author$project$Backend$Reports$Model$PatientData = function (created) {
 										return function (groupNutritionSorwatheData) {
 											return function (groupNutritionChwData) {
 												return function (groupNutritionAchiData) {
-													return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, homeVistData: homeVistData, individualNutritionData: individualNutritionData, prenatalData: prenatalData, wellChildData: wellChildData};
+													return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, homeVisitData: homeVisitData, individualNutritionData: individualNutritionData, prenatalData: prenatalData, wellChildData: wellChildData};
 												};
 											};
 										};
@@ -10588,7 +10588,7 @@ var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
 		$elm$core$Basics$composeR,
 		$elm$core$Maybe$map($elm$core$List$length),
 		$elm$core$Maybe$withDefault(0));
-	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVistData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
+	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVisitData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
 };
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
@@ -10640,6 +10640,15 @@ var $elm$core$List$partition = F2(
 	});
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, currentDate, limitDate, data) {
+		var wellChildEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.wellChildData;
+				},
+				$elm$core$Maybe$map($elm$core$List$concat)),
+			data.records);
 		var viewValuesRow = F4(
 			function (label, all, unique, shiftLeft) {
 				return A2(
@@ -10755,13 +10764,6 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
 							})))),
 			data.records);
-		var prenatalDataNurseEncountersTotal = $elm$core$List$sum(
-			A2($elm$core$List$map, $elm$core$List$length, prenatalDataNurseEncounters));
-		var prenatalDataNurseEncountersUnique = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
-				prenatalDataNurseEncounters));
 		var prenatalDataChwEncounters = A2(
 			$elm$core$List$filterMap,
 			A2(
@@ -10782,17 +10784,104 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
 							})))),
 			data.records);
-		var prenatalDataChwEncountersTotal = $elm$core$List$sum(
-			A2($elm$core$List$map, $elm$core$List$length, prenatalDataChwEncounters));
-		var prenatalDataChwEncountersUnique = $elm$core$List$length(
+		var nutritionIndividualEncountersData = A2(
+			$elm$core$List$filterMap,
 			A2(
-				$elm$core$List$filter,
-				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
-				prenatalDataChwEncounters));
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.individualNutritionData;
+				},
+				$elm$core$Maybe$map($elm$core$List$concat)),
+			data.records);
+		var nutritionGroupSorwatheEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.groupNutritionSorwatheData;
+				},
+				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			data.records);
+		var nutritionGroupPmtctEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.groupNutritionPmtctData;
+				},
+				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			data.records);
+		var nutritionGroupFbfEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.groupNutritionFbfData;
+				},
+				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			data.records);
+		var nutritionGroupChwEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.groupNutritionChwData;
+				},
+				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			data.records);
+		var nutritionGroupAchiEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.groupNutritionAchiData;
+				},
+				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			data.records);
+		var homeVisitEncountersData = A2(
+			$elm$core$List$filterMap,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.homeVisitData;
+				},
+				$elm$core$Maybe$map($elm$core$List$concat)),
+			data.records);
 		var filterImpacted = $elm$core$List$filter(
 			function (patient) {
 				return $author$project$Pages$Reports$Utils$countTotalEncounetrs(patient) > 1;
 			});
+		var countUnique = A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$filter(
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty)),
+			$elm$core$List$length);
+		var homeVisitDataEncountersUnique = countUnique(homeVisitEncountersData);
+		var nutritionGroupAchiEncountersUnique = countUnique(nutritionGroupAchiEncountersData);
+		var nutritionGroupChwEncountersUnique = countUnique(nutritionGroupChwEncountersData);
+		var nutritionGroupFbfEncountersUnique = countUnique(nutritionGroupFbfEncountersData);
+		var nutritionGroupPmtctEncountersUnique = countUnique(nutritionGroupPmtctEncountersData);
+		var nutritionGroupSorwatheEncountersUnique = countUnique(nutritionGroupSorwatheEncountersData);
+		var nutritionIndividualEncountersUnique = countUnique(nutritionIndividualEncountersData);
+		var overallNutritionUnique = ((((nutritionIndividualEncountersUnique + nutritionGroupPmtctEncountersUnique) + nutritionGroupFbfEncountersUnique) + nutritionGroupSorwatheEncountersUnique) + nutritionGroupChwEncountersUnique) + nutritionGroupAchiEncountersUnique;
+		var prenatalDataChwEncountersUnique = countUnique(prenatalDataChwEncounters);
+		var prenatalDataNurseEncountersUnique = countUnique(prenatalDataNurseEncounters);
+		var wellChildDataEncountersUnique = countUnique(wellChildEncountersData);
+		var countTotal = A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map($elm$core$List$length),
+			$elm$core$List$sum);
+		var homeVisitDataEncountersTotal = countTotal(homeVisitEncountersData);
+		var nutritionGroupAchiEncountersTotal = countTotal(nutritionGroupAchiEncountersData);
+		var nutritionGroupChwEncountersTotal = countTotal(nutritionGroupChwEncountersData);
+		var nutritionGroupFbfEncountersTotal = countTotal(nutritionGroupFbfEncountersData);
+		var nutritionGroupPmtctEncountersTotal = countTotal(nutritionGroupPmtctEncountersData);
+		var nutritionGroupSorwatheEncountersTotal = countTotal(nutritionGroupSorwatheEncountersData);
+		var nutritionIndividualEncountersTotal = countTotal(nutritionIndividualEncountersData);
+		var overallNutritionTotal = ((((nutritionIndividualEncountersTotal + nutritionGroupPmtctEncountersTotal) + nutritionGroupFbfEncountersTotal) + nutritionGroupSorwatheEncountersTotal) + nutritionGroupChwEncountersTotal) + nutritionGroupAchiEncountersTotal;
+		var prenatalDataChwEncountersTotal = countTotal(prenatalDataChwEncounters);
+		var prenatalDataNurseEncountersTotal = countTotal(prenatalDataNurseEncounters);
+		var wellChildDataEncountersTotal = countTotal(wellChildEncountersData);
 		var acuteIllnessDataNurseEncounters = A2(
 			$elm$core$List$filterMap,
 			A2(
@@ -10813,13 +10902,8 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
 							})))),
 			data.records);
-		var acuteIllnessDataNurseEncountersTotal = $elm$core$List$sum(
-			A2($elm$core$List$map, $elm$core$List$length, acuteIllnessDataNurseEncounters));
-		var acuteIllnessDataNurseEncountersUnique = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
-				acuteIllnessDataNurseEncounters));
+		var acuteIllnessDataNurseEncountersTotal = countTotal(acuteIllnessDataNurseEncounters);
+		var acuteIllnessDataNurseEncountersUnique = countUnique(acuteIllnessDataNurseEncounters);
 		var acuteIllnessDataChwEncounters = A2(
 			$elm$core$List$filterMap,
 			A2(
@@ -10840,13 +10924,10 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 										[$author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse, $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent]));
 							})))),
 			data.records);
-		var acuteIllnessDataChwEncountersTotal = $elm$core$List$sum(
-			A2($elm$core$List$map, $elm$core$List$length, acuteIllnessDataChwEncounters));
-		var acuteIllnessDataChwEncountersUnique = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$List$isEmpty),
-				acuteIllnessDataChwEncounters));
+		var acuteIllnessDataChwEncountersTotal = countTotal(acuteIllnessDataChwEncounters);
+		var overallTotal = (((((prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal) + acuteIllnessDataNurseEncountersTotal) + acuteIllnessDataChwEncountersTotal) + wellChildDataEncountersTotal) + homeVisitDataEncountersTotal) + overallNutritionTotal;
+		var acuteIllnessDataChwEncountersUnique = countUnique(acuteIllnessDataChwEncounters);
+		var overallUnique = (((((prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique) + acuteIllnessDataNurseEncountersUnique) + acuteIllnessDataChwEncountersUnique) + wellChildDataEncountersUnique) + homeVisitDataEncountersUnique) + overallNutritionUnique;
 		var _v0 = A2(
 			$elm$core$List$partition,
 			A2(
@@ -11232,7 +11313,17 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 							A4(viewValuesRow, 'CHW', prenatalDataChwEncountersTotal, prenatalDataChwEncountersUnique, true),
 							A4(viewValuesRow, 'Acute Illness (total)', acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal, acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique, false),
 							A4(viewValuesRow, 'Health Center', acuteIllnessDataNurseEncountersTotal, acuteIllnessDataNurseEncountersUnique, true),
-							A4(viewValuesRow, 'CHW', acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true)
+							A4(viewValuesRow, 'CHW', acuteIllnessDataChwEncountersTotal, acuteIllnessDataChwEncountersUnique, true),
+							A4(viewValuesRow, 'Standard Pediatric Visit', wellChildDataEncountersTotal, wellChildDataEncountersUnique, false),
+							A4(viewValuesRow, 'Home Visit', homeVisitDataEncountersTotal, homeVisitDataEncountersUnique, false),
+							A4(viewValuesRow, 'Nutrition (total)', overallNutritionTotal, overallNutritionUnique, false),
+							A4(viewValuesRow, 'PMTCT', nutritionGroupPmtctEncountersTotal, nutritionGroupPmtctEncountersUnique, true),
+							A4(viewValuesRow, 'FBF', nutritionGroupFbfEncountersTotal, nutritionGroupFbfEncountersUnique, true),
+							A4(viewValuesRow, 'Sorwathe', nutritionGroupSorwatheEncountersTotal, nutritionGroupSorwatheEncountersUnique, true),
+							A4(viewValuesRow, 'CBNP', nutritionGroupChwEncountersTotal, nutritionGroupChwEncountersUnique, true),
+							A4(viewValuesRow, 'ACHI', nutritionGroupAchiEncountersTotal, nutritionGroupAchiEncountersUnique, true),
+							A4(viewValuesRow, 'Individual', nutritionIndividualEncountersTotal, nutritionIndividualEncountersUnique, true),
+							A4(viewValuesRow, 'TOTAL', overallTotal, overallUnique, false)
 						]))
 				]));
 	});

@@ -267,21 +267,6 @@ viewDemographicsReport language currentDate limitDate data =
                 ++ malesImpacted50YearsOrMore
                 ++ femalesImpacted50YearsOrMore
 
-        -- type alias PatientData =
-        --     { created : NominalDate
-        --     , birthDate : NominalDate
-        --     , gender : Gender
-        --     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
-        --     , prenatalData : Maybe (List (List PrenatalEncounterData))
-        --     , homeVistData : Maybe (List EncountersData)
-        --     , wellChildData : Maybe (List EncountersData)
-        --     , individualNutritionData : Maybe (List EncountersData)
-        --     , groupNutritionPmtctData : Maybe EncountersData
-        --     , groupNutritionFbfData : Maybe EncountersData
-        --     , groupNutritionSorwatheData : Maybe EncountersData
-        --     , groupNutritionChwData : Maybe EncountersData
-        --     , groupNutritionAchiData : Maybe EncountersData
-        --     }
         prenatalDataNurseEncounters =
             List.filterMap
                 (.prenatalData
@@ -309,20 +294,16 @@ viewDemographicsReport language currentDate limitDate data =
                 data.records
 
         prenatalDataNurseEncountersTotal =
-            List.map List.length prenatalDataNurseEncounters
-                |> List.sum
+            countTotal prenatalDataNurseEncounters
 
         prenatalDataNurseEncountersUnique =
-            List.filter (not << List.isEmpty) prenatalDataNurseEncounters
-                |> List.length
+            countUnique prenatalDataNurseEncounters
 
         prenatalDataChwEncountersTotal =
-            List.map List.length prenatalDataChwEncounters
-                |> List.sum
+            countTotal prenatalDataChwEncounters
 
         prenatalDataChwEncountersUnique =
-            List.filter (not << List.isEmpty) prenatalDataChwEncounters
-                |> List.length
+            countUnique prenatalDataChwEncounters
 
         acuteIllnessDataNurseEncounters =
             List.filterMap
@@ -351,20 +332,144 @@ viewDemographicsReport language currentDate limitDate data =
                 data.records
 
         acuteIllnessDataNurseEncountersTotal =
-            List.map List.length acuteIllnessDataNurseEncounters
-                |> List.sum
+            countTotal acuteIllnessDataNurseEncounters
 
         acuteIllnessDataNurseEncountersUnique =
-            List.filter (not << List.isEmpty) acuteIllnessDataNurseEncounters
-                |> List.length
+            countUnique acuteIllnessDataNurseEncounters
 
         acuteIllnessDataChwEncountersTotal =
-            List.map List.length acuteIllnessDataChwEncounters
-                |> List.sum
+            countTotal acuteIllnessDataChwEncounters
 
         acuteIllnessDataChwEncountersUnique =
-            List.filter (not << List.isEmpty) acuteIllnessDataChwEncounters
-                |> List.length
+            countUnique acuteIllnessDataChwEncounters
+
+        wellChildEncountersData =
+            List.filterMap
+                (.wellChildData >> Maybe.map List.concat)
+                data.records
+
+        wellChildDataEncountersTotal =
+            countTotal wellChildEncountersData
+
+        wellChildDataEncountersUnique =
+            countUnique wellChildEncountersData
+
+        homeVisitEncountersData =
+            List.filterMap
+                (.homeVisitData >> Maybe.map List.concat)
+                data.records
+
+        homeVisitDataEncountersTotal =
+            countTotal homeVisitEncountersData
+
+        homeVisitDataEncountersUnique =
+            countUnique homeVisitEncountersData
+
+        nutritionIndividualEncountersData =
+            List.filterMap
+                (.individualNutritionData >> Maybe.map List.concat)
+                data.records
+
+        nutritionIndividualEncountersTotal =
+            countTotal nutritionIndividualEncountersData
+
+        nutritionIndividualEncountersUnique =
+            countUnique nutritionIndividualEncountersData
+
+        nutritionGroupPmtctEncountersData =
+            List.filterMap
+                (.groupNutritionPmtctData >> Maybe.map identity)
+                data.records
+
+        nutritionGroupPmtctEncountersTotal =
+            countTotal nutritionGroupPmtctEncountersData
+
+        nutritionGroupPmtctEncountersUnique =
+            countUnique nutritionGroupPmtctEncountersData
+
+        nutritionGroupFbfEncountersData =
+            List.filterMap
+                (.groupNutritionFbfData >> Maybe.map identity)
+                data.records
+
+        nutritionGroupFbfEncountersTotal =
+            countTotal nutritionGroupFbfEncountersData
+
+        nutritionGroupFbfEncountersUnique =
+            countUnique nutritionGroupFbfEncountersData
+
+        nutritionGroupSorwatheEncountersData =
+            List.filterMap
+                (.groupNutritionSorwatheData >> Maybe.map identity)
+                data.records
+
+        nutritionGroupSorwatheEncountersTotal =
+            countTotal nutritionGroupSorwatheEncountersData
+
+        nutritionGroupSorwatheEncountersUnique =
+            countUnique nutritionGroupSorwatheEncountersData
+
+        nutritionGroupChwEncountersData =
+            List.filterMap
+                (.groupNutritionChwData >> Maybe.map identity)
+                data.records
+
+        nutritionGroupChwEncountersTotal =
+            countTotal nutritionGroupChwEncountersData
+
+        nutritionGroupChwEncountersUnique =
+            countUnique nutritionGroupChwEncountersData
+
+        nutritionGroupAchiEncountersData =
+            List.filterMap
+                (.groupNutritionAchiData >> Maybe.map identity)
+                data.records
+
+        nutritionGroupAchiEncountersTotal =
+            countTotal nutritionGroupAchiEncountersData
+
+        nutritionGroupAchiEncountersUnique =
+            countUnique nutritionGroupAchiEncountersData
+
+        overallNutritionTotal =
+            nutritionIndividualEncountersTotal
+                + nutritionGroupPmtctEncountersTotal
+                + nutritionGroupFbfEncountersTotal
+                + nutritionGroupSorwatheEncountersTotal
+                + nutritionGroupChwEncountersTotal
+                + nutritionGroupAchiEncountersTotal
+
+        overallNutritionUnique =
+            nutritionIndividualEncountersUnique
+                + nutritionGroupPmtctEncountersUnique
+                + nutritionGroupFbfEncountersUnique
+                + nutritionGroupSorwatheEncountersUnique
+                + nutritionGroupChwEncountersUnique
+                + nutritionGroupAchiEncountersUnique
+
+        overallTotal =
+            prenatalDataNurseEncountersTotal
+                + prenatalDataChwEncountersTotal
+                + acuteIllnessDataNurseEncountersTotal
+                + acuteIllnessDataChwEncountersTotal
+                + wellChildDataEncountersTotal
+                + homeVisitDataEncountersTotal
+                + overallNutritionTotal
+
+        overallUnique =
+            prenatalDataNurseEncountersUnique
+                + prenatalDataChwEncountersUnique
+                + acuteIllnessDataNurseEncountersUnique
+                + acuteIllnessDataChwEncountersUnique
+                + wellChildDataEncountersUnique
+                + homeVisitDataEncountersUnique
+                + overallNutritionUnique
+
+        countTotal =
+            List.map List.length >> List.sum
+
+        countUnique =
+            List.filter (not << List.isEmpty) >> List.length
 
         viewRow label valueMales valueFemales =
             div [ class "row" ]
@@ -441,5 +546,15 @@ viewDemographicsReport language currentDate limitDate data =
                 False
             , viewValuesRow "Health Center" acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
             , viewValuesRow "CHW" acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
+            , viewValuesRow "Standard Pediatric Visit" wellChildDataEncountersTotal wellChildDataEncountersUnique False
+            , viewValuesRow "Home Visit" homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
+            , viewValuesRow "Nutrition (total)" overallNutritionTotal overallNutritionUnique False
+            , viewValuesRow "PMTCT" nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
+            , viewValuesRow "FBF" nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
+            , viewValuesRow "Sorwathe" nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
+            , viewValuesRow "CBNP" nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
+            , viewValuesRow "ACHI" nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
+            , viewValuesRow "Individual" nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
+            , viewValuesRow "TOTAL" overallTotal overallUnique False
             ]
         ]
