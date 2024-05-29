@@ -70,7 +70,6 @@ function hedley_resilience_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'guide' => 'Guide',
         'introduction' => 'Introduction',
         'growth' => 'Growth',
         'stress-management' => 'Stress Management',

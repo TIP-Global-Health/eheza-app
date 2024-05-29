@@ -17,8 +17,7 @@ type alias ResilienceMessage =
 
 
 type ResilienceCategory
-    = ResilienceCategoryGuide
-    | ResilienceCategoryIntroduction
+    = ResilienceCategoryIntroduction
     | ResilienceCategoryGrowth
     | ResilienceCategoryStressManagement
     | ResilienceCategoryMindfulness
