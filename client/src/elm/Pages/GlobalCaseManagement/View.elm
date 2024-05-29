@@ -1414,11 +1414,10 @@ viewPrenatalLabsEntry language isLabTech data =
             else
                 -- Since there's at least one urgent diagnosis, we need to
                 -- direct to Next Steps activity and view
-                HandleUrgentPrenatalDiagnoses data.encounterId
-                    ( List.map (Translate.PrenatalDiagnosis >> translate language) data.urgentDiagnoses
-                        |> String.join ", "
-                    , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                    )
+                Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                    language
+                    data.urgentDiagnoses
+                    |> HandleUrgentPrenatalDiagnoses data.encounterId
     in
     viewLabsEntry language
         isLabTech
