@@ -104,7 +104,10 @@ function hedley_reports_node_insert($node) {
   // We need this to properly count 'children under 2'.
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_created_person($node);
+    return;
   }
+
+  hedley_reports_trigger_recalculation_by_new_content($node);
 }
 
 /**
@@ -241,6 +244,55 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
 }
 
 /**
+ * Triggers recalculation of person's NCDA data based on it's measurement node.
+ *
+ * @param object $node
+ *   The node object of a measurement.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_by_new_content($node) {
+  $triggering_encounters = [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+  ];
+  $triggering_measurements =  HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES;
+
+  if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
+    // Not a triggering content.
+    return;
+  }
+
+  if (in_array($node->type, $triggering_encounters)) {
+    // For encounters, resolving person ID through individual participant.
+    $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    if (empty($participant_id)) {
+      // Can't resolve to which participant encounter belongs.
+      return;
+    }
+    $wrapper = entity_metadata_wrapper('node', $participant_id);
+  }
+  else {
+    // For measurements, resolving person ID directly from measurement.
+    $wrapper = entity_metadata_wrapper('node', $node);
+  }
+
+  if (!$wrapper->__isset('field_person')) {
+    // Can't resolve to which person measurement belongs.
+    return;
+  }
+
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  // Trigger recalculation using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+/**
  * Generate raw data for reports, and store in field on person node.
  *
  * @param object $person
@@ -311,7 +363,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $data['individual'] = $encounters_data;
 
   // Load group data:
-  $measurements_ids = hedley_general_get_person_measurements($person->nid, HEDLEY_ACTIVITY_GROUP_REPORTS_BUNDLES);
+  $measurements_ids = hedley_general_get_person_measurements($person->nid, HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES);
   $measurements = node_load_multiple($measurements_ids);
   $sessions_ids = [];
   foreach ($measurements as $measurement) {
