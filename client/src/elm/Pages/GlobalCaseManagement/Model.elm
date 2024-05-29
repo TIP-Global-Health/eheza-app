@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , PrenatalFollowUpValue
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -126,6 +127,7 @@ type alias TuberculosisFollowUpEntry =
     { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : TuberculosisFollowUpItem
+    , allowStartEncounter : Bool
     }
 
 
@@ -141,6 +143,7 @@ type alias HIVFollowUpEntry =
     { participantId : Maybe IndividualEncounterParticipantId
     , personId : PersonId
     , item : HIVFollowUpItem
+    , allowStartEncounter : Bool
     }
 
 
@@ -212,6 +215,7 @@ type alias PrenatalLabsEntryData =
     , personName : String
     , encounterId : PrenatalEncounterId
     , state : LabsEntryState
+    , urgentDiagnoses : List PrenatalDiagnosis
     , label : String
     }
 
@@ -244,3 +248,4 @@ type Msg
     | SetDialogState (Maybe FollowUpEncounterDataType)
     | StartFollowUpEncounter FollowUpEncounterDataType
     | StartPrenatalFollowUpEncounter IndividualEncounterParticipantId Bool PrenatalEncounterType
+    | HandleUrgentPrenatalDiagnoses PrenatalEncounterId ( String, String )

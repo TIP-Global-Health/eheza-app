@@ -181,6 +181,12 @@ initiatorFromUrlFragment s =
         "child-scoreboard" ->
             IndividualEncounterOrigin ChildScoreboardEncounter |> Just
 
+        "tuberculosis" ->
+            IndividualEncounterOrigin TuberculosisEncounter |> Just
+
+        "hiv" ->
+            IndividualEncounterOrigin HIVEncounter |> Just
+
         _ ->
             if String.startsWith "session-" s then
                 String.dropLeft 8 s

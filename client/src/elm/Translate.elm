@@ -634,6 +634,8 @@ type TranslationId
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
+    | EndEncounterNoHIVDiagnosisPhrase
+    | EndEncounterNoTuberculosisDiagnosisPhrase
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
@@ -682,6 +684,7 @@ type TranslationId
     | FollowPostpartumProtocols
     | FollowUp
     | FollowUpWithPatientIn
+    | FollowUpWithPatientNotNeeded
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
     | FollowUpLabel
@@ -761,9 +764,12 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsChangedQuestion
     | HIVPrescribedMedicationsQuestion
+    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVSuggestTakingTestQuestion
     | HIVSymptom HIVSymptom
     | HIVSymptomReviewQuestion
     | HIVTreatmentSign HIVTreatmentSign
@@ -3535,7 +3541,7 @@ translationSet trans =
                     translationSet EmptyString
 
         BloodSmearTestResult ->
-            { english = "Malaria Blood Test Result"
+            { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -5580,6 +5586,18 @@ translationSet trans =
             , kirundi = Just "Guheza kubonana?"
             }
 
+        EndEncounterNoHIVDiagnosisPhrase ->
+            { english = "The patient does not have an HIV diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EndEncounterNoTuberculosisDiagnosisPhrase ->
+            { english = "The patient does not have a Tuberculosis diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
@@ -6074,7 +6092,13 @@ translationSet trans =
         FollowUpWithPatientIn ->
             { english = "Follow up with patient in"
             , kinyarwanda = Just "Kurikirana umurwayi uri mu bitaro"
-            , kirundi = Just "Kurikirana umugwayi wawe "
+            , kirundi = Just "Kurikirana umugwayi wawe"
+            }
+
+        FollowUpWithPatientNotNeeded ->
+            { english = "No need to follow up with patient"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         FollowUpWithPatientOn ->
@@ -6143,6 +6167,12 @@ translationSet trans =
                     { english = "3 Months"
                     , kinyarwanda = Just "Amezi 3"
                     , kirundi = Just "Amezi 3"
+                    }
+
+                FollowUpNotNeeded ->
+                    { english = "No follow up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         FollowUpDueOption option ->
@@ -6938,26 +6968,26 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                HIVMedicationDapsone ->
-                    { english = "Dapsone"
+                HIVMedicationTrimethoprimSulfamethoxazole ->
+                    { english = "Trimethoprim and Sulfamethoxazole tablets (Adults)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationIsoniazid ->
-                    { english = "Isoniazid"
+                HIVMedicationCoTrimoxazoleTablets ->
+                    { english = "Dispersible Co-trimoxazole tablets (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationFluconazole ->
-                    { english = "Fluconazole"
+                HIVMedicationCoTrimoxazoleOralSuspension ->
+                    { english = "Co-trimoxazole Oral Suspension (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationAzithromycin ->
-                    { english = "Azithromycin"
+                HIVMedicationsNotChanged ->
+                    { english = "Medications not Changed"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -6965,9 +6995,21 @@ translationSet trans =
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
 
+        HIVPrescribedMedicationsChangedQuestion ->
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HIVPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -7004,6 +7046,12 @@ translationSet trans =
             { english = "HIV Status"
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             , kirundi = Just "Ivyerekeye umugera wa SIDA"
+            }
+
+        HIVSuggestTakingTestQuestion ->
+            { english = "Would you like to perform an HIV test today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         HIVSymptom symptom ->
@@ -17224,6 +17272,12 @@ translationSet trans =
                     { english = "Memory problems"
                     , kinyarwanda = Just "Ibibazo byo kwibagirwa"
                     , kirundi = Just "Ingorane zo kwibuka"
+                    }
+
+                NotTakingTreatmentNotStarted ->
+                    { english = "Treatment not started"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 NotTakingOther ->

@@ -959,7 +959,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             viewSelectInput language Translate.ModeOfDeliveryLabel modeOfDeliveryOptions Backend.Person.Form.modeOfDelivery "ten" "select-input" True personForm
 
         hivStatusInput =
-            viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" True personForm
+            viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
         numberOfChildrenUnder5Input =
             let
