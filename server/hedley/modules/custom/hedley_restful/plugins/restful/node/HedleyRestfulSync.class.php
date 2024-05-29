@@ -368,7 +368,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function handleChanges() {
-    watchdog('debug', 'Processing sync upload request');
+    watchdog('hedley_restful', 'Processing sync upload request');
     $stopper = time();
     $request = $this->getRequest();
     $this->validateDbVersion($request['db_version']);
@@ -529,7 +529,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       }
 
       $details = $main . PHP_EOL . PHP_EOL . $data;
-      watchdog('debug', $details, [], WATCHDOG_ERROR);
+      watchdog('hedley_restful', $details, [], WATCHDOG_ERROR);
 
       // Create sync incident, only when UUID can not be resolved.
       if (strpos($e->getMessage(), 'Could not find UUID:') === 0) {
@@ -543,7 +543,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $user = $account->name;
     $stopper = time() - $stopper;
     $total = count($request['changes']);
-    watchdog('debug', "[$stopper sec] Sync upload by $user with $total changes was successful");
+    watchdog('hedley_restful', "[$stopper sec] Sync upload by $user with $total changes was successful");
 
     return [];
   }
