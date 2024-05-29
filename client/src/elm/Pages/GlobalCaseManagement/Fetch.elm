@@ -248,5 +248,16 @@ fetchForNurseAtHealthCenter currentDate db followUps =
                 ++ peopleForPrenatalLabsResults
                 ++ peopleForNCDLabsResults
                 |> Pages.Utils.unique
+
+        -- Fetching data of Prenatal encounters (where diagnoses
+        -- are stored), since we need to know if entry action
+        -- should forward to next steps right away, as there's
+        -- an urgent diagnosis to handle.
+        fetchPrenatalEncountersMsg =
+            Dict.values followUps.prenatalLabs
+                |> List.filterMap .encounterId
+                |> FetchPrenatalEncounters
     in
-    [ FetchFollowUpParticipants people ]
+    [ FetchFollowUpParticipants people
+    , fetchPrenatalEncountersMsg
+    ]
