@@ -4127,6 +4127,9 @@ hivDiagnosisSignToString diagnosis =
         HIVResultDateEstimated ->
             "result-date-estimated"
 
+        HIVTestRun ->
+            "test-run"
+
         NoHIVDiagnosisSigns ->
             "none"
 
@@ -4142,6 +4145,9 @@ hivDiagnosisSignFromString diagnosis =
 
         "result-date-estimated" ->
             Just HIVResultDateEstimated
+
+        "test-run" ->
+            Just HIVTestRun
 
         "none" ->
             Just NoHIVDiagnosisSigns
@@ -4213,17 +4219,17 @@ hivPrescribedMedicationToString sign =
         HIVMedicationBactrim ->
             "bactrim"
 
-        HIVMedicationDapsone ->
-            "dapsone"
+        HIVMedicationTrimethoprimSulfamethoxazole ->
+            "trimethoprim-sulfamethoxazole"
 
-        HIVMedicationIsoniazid ->
-            "isoniazid"
+        HIVMedicationCoTrimoxazoleTablets ->
+            "co-trimoxazole-tablets"
 
-        HIVMedicationFluconazole ->
-            "fluconazole"
+        HIVMedicationCoTrimoxazoleOralSuspension ->
+            "co-trimoxazole-oral-suspension"
 
-        HIVMedicationAzithromycin ->
-            "azithromycin"
+        HIVMedicationsNotChanged ->
+            "not-changed"
 
         NoHIVPrescribedMedications ->
             "none"
@@ -4292,17 +4298,17 @@ hivPrescribedMedicationFromString sign =
         "bactrim" ->
             Just HIVMedicationBactrim
 
-        "dapsone" ->
-            Just HIVMedicationDapsone
+        "trimethoprim-sulfamethoxazole" ->
+            Just HIVMedicationTrimethoprimSulfamethoxazole
 
-        "isoniazid" ->
-            Just HIVMedicationIsoniazid
+        "co-trimoxazole-tablets" ->
+            Just HIVMedicationCoTrimoxazoleTablets
 
-        "fluconazole" ->
-            Just HIVMedicationFluconazole
+        "co-trimoxazole-oral-suspension" ->
+            Just HIVMedicationCoTrimoxazoleOralSuspension
 
-        "azithromycin" ->
-            Just HIVMedicationAzithromycin
+        "not-changed" ->
+            Just HIVMedicationsNotChanged
 
         "none" ->
             Just NoHIVPrescribedMedications

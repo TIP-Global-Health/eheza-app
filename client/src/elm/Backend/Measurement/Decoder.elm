@@ -475,8 +475,8 @@ decodePrenatalFollowUpValue : Decoder PrenatalFollowUpValue
 decodePrenatalFollowUpValue =
     succeed PrenatalFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> required "prenatal_assesment" decodePrenatalAssesment
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> required "prenatal_assesment" decodePrenatalAssesment
 
 
 decodePrenatalAssesment : Decoder PrenatalAssesment
@@ -2471,8 +2471,8 @@ decodeNutritionFollowUpValue : Decoder NutritionFollowUpValue
 decodeNutritionFollowUpValue =
     succeed NutritionFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> custom decodeNutritionAssessment
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> custom decodeNutritionAssessment
 
 
 decodeAcuteIllnessFollowUp : Decoder AcuteIllnessFollowUp
@@ -2484,8 +2484,8 @@ decodeAcuteIllnessFollowUpValue : Decoder AcuteIllnessFollowUpValue
 decodeAcuteIllnessFollowUpValue =
     succeed AcuteIllnessFollowUpValue
         |> required "follow_up_options" (decodeEverySet decodeFollowUpOption)
-        |> optional "acute_illness_diagnosis" (nullable decodeAcuteIllnessDiagnosis) Nothing
         |> optional "date_concluded" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "acute_illness_diagnosis" (nullable decodeAcuteIllnessDiagnosis) Nothing
 
 
 decodeNutritionFeeding : Decoder NutritionFeeding
@@ -3360,6 +3360,9 @@ decodeFollowUpOption =
                     "3-m" ->
                         succeed ThreeMonths
 
+                    "none" ->
+                        succeed FollowUpNotNeeded
+
                     _ ->
                         fail <|
                             sign
@@ -3967,6 +3970,9 @@ decodeReasonForNotTaking =
 
                     "memory-problems" ->
                         succeed NotTakingMemoryProblems
+
+                    "treatment-not-started" ->
+                        succeed NotTakingTreatmentNotStarted
 
                     "other" ->
                         succeed NotTakingOther
@@ -5593,6 +5599,7 @@ decodeHIVDiagnosticsValue =
     succeed HIVDiagnosticsValue
         |> required "hiv_diagnosis_signs" (decodeEverySet decodeHIVDiagnosisSign)
         |> optional "positive_result_date" (nullable Gizra.NominalDate.decodeYYYYMMDD) Nothing
+        |> optional "test_result" (nullable decodeTestResult) Nothing
 
 
 decodeHIVDiagnosisSign : Decoder HIVDiagnosisSign

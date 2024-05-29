@@ -1239,31 +1239,35 @@ viewNextStepsPane language currentDate assembled =
                 getMeasurementValueFunc assembled.measurements.followUp
                     |> Maybe.andThen (.options >> EverySet.toList >> List.head)
                     |> Maybe.map
-                        (\followUp ->
-                            let
-                                followUpDate =
-                                    calculateDueDate assembled.encounter.startDate followUp
-
-                                diff =
-                                    diffDays currentDate followUpDate
-                            in
-                            if diff > 0 then
-                                [ text <| translate language Translate.FollowUpWithPatientIn
-                                , text " "
-                                , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
-                                , text " "
-                                , text <| String.toLower <| translate language Translate.On
-                                , text " "
-                                , text <| formatDDMMYYYY followUpDate
-                                , text "."
-                                ]
+                        (\option ->
+                            if option == FollowUpNotNeeded then
+                                [ text <| translate language Translate.FollowUpWithPatientNotNeeded ]
 
                             else
-                                [ text <| translate language Translate.FollowUpWithPatientOn
-                                , text " "
-                                , text <| formatDDMMYYYY followUpDate
-                                , text "."
-                                ]
+                                let
+                                    followUpDate =
+                                        calculateDueDate assembled.encounter.startDate option
+
+                                    diff =
+                                        diffDays currentDate followUpDate
+                                in
+                                if diff > 0 then
+                                    [ text <| translate language Translate.FollowUpWithPatientIn
+                                    , text " "
+                                    , span [ class "in-days" ] [ text <| String.toLower <| translate language <| Translate.DaySinglePlural diff ]
+                                    , text " "
+                                    , text <| String.toLower <| translate language Translate.On
+                                    , text " "
+                                    , text <| formatDDMMYYYY followUpDate
+                                    , text "."
+                                    ]
+
+                                else
+                                    [ text <| translate language Translate.FollowUpWithPatientOn
+                                    , text " "
+                                    , text <| formatDDMMYYYY followUpDate
+                                    , text "."
+                                    ]
                         )
                     |> Maybe.withDefault []
         in

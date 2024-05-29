@@ -672,7 +672,7 @@ validateBirthDate expectedAge maybeCurrentDate =
 
 validateHivStatus : Validation ValidationError (Maybe HIVStatus)
 validateHivStatus =
-    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeHivStatus)
+    nullable <| fromDecoder DecoderError Nothing decodeHivStatus
 
 
 validateModeOfDelivery : ExpectedAge -> Validation ValidationError (Maybe ModeOfDelivery)

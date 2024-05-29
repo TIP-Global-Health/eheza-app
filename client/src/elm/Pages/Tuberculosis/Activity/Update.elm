@@ -75,6 +75,24 @@ update currentDate id db msg model =
             , []
             )
 
+        SetEndEncounterDialogState showDialog ->
+            let
+                updatedForm =
+                    if not showDialog then
+                        { diagnosticsForm | diagnosed = Nothing }
+
+                    else
+                        diagnosticsForm
+
+                updatedData =
+                    model.diagnosticsData
+                        |> (\data -> { data | form = updatedForm, showEndEncounterDialog = showDialog })
+            in
+            ( { model | diagnosticsData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SaveDiagnostics personId particpantId saved ->
             let
                 measurementId =

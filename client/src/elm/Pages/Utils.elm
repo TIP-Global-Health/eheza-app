@@ -491,7 +491,29 @@ viewBoolInput language currentValue setMsg inputClass optionsTranslationIds =
             else
                 "four"
     in
-    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth
+    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth False
+
+
+viewBoolInputReverted :
+    Language
+    -> Maybe Bool
+    -> (Bool -> msg)
+    -> String
+    -> Maybe ( TranslationId, TranslationId )
+    -> Html msg
+viewBoolInputReverted language currentValue setMsg inputClass optionsTranslationIds =
+    let
+        ( yesTransId, noTransId ) =
+            Maybe.withDefault ( Translate.Yes, Translate.No ) optionsTranslationIds
+
+        inputWidth =
+            if isJust optionsTranslationIds then
+                "eight"
+
+            else
+                "four"
+    in
+    viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth True
 
 
 viewCustomBoolInput :
@@ -501,9 +523,17 @@ viewCustomBoolInput :
     -> String
     -> ( TranslationId, TranslationId )
     -> String
+    -> Bool
     -> Html msg
-viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth =
+viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTransId ) inputWidth isReverted =
     let
+        inputs =
+            if isReverted then
+                [ viewInput False, viewInput True ]
+
+            else
+                [ viewInput True, viewInput False ]
+
         viewInput value =
             let
                 isChecked =
@@ -516,25 +546,20 @@ viewCustomBoolInput language currentValue setMsg inputClass ( yesTransId, noTran
                     else
                         noTransId
             in
-            [ input
-                [ type_ "radio"
-                , checked isChecked
-                , classList [ ( "checked", isChecked ) ]
-                , onCheck (always (setMsg value))
+            div [ class <| inputWidth ++ " wide column" ]
+                [ input
+                    [ type_ "radio"
+                    , checked isChecked
+                    , classList [ ( "checked", isChecked ) ]
+                    , onCheck (always (setMsg value))
+                    ]
+                    []
+                , label [ onClick <| setMsg value ]
+                    [ text <| translate language transId ]
                 ]
-                []
-            , label [ onClick <| setMsg value ]
-                [ text <| translate language transId ]
-            ]
     in
     div [ class <| "form-input yes-no " ++ inputClass ]
-        [ div [ class "ui grid" ]
-            [ div [ class <| inputWidth ++ " wide column" ] <|
-                viewInput True
-            , div [ class <| inputWidth ++ " wide column" ] <|
-                viewInput False
-            ]
-        ]
+        [ div [ class "ui grid" ] inputs ]
 
 
 viewCheckBoxSelectInput : Language -> List a -> List a -> Maybe a -> (a -> msg) -> (a -> TranslationId) -> Html msg
