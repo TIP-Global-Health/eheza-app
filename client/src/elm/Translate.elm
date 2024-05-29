@@ -7325,7 +7325,7 @@ translationSet trans =
 
         Ignore ->
             { english = "Ignore"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Bwirengagize"
             , kirundi = Nothing
             }
 
@@ -17055,13 +17055,13 @@ translationSet trans =
         ReadToggle isRead ->
             if isRead then
                 { english = "Unread"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ubutumwa utarasoma"
                 , kirundi = Just "Bitasomwe"
                 }
 
             else
                 { english = "Read"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Bwasomwe"
                 , kirundi = Just "Ivyasomwe"
                 }
 
@@ -17087,7 +17087,7 @@ translationSet trans =
 
         Read ->
             { english = "Read"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Busome"
             , kirundi = Just "Ivyasomwe"
             }
 
@@ -20051,31 +20051,31 @@ translationSet trans =
                     case option of
                         ResilienceSurveyQuestionOption0 ->
                             { english = "Does not describe me at all"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ntabwo mbikora na namba"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption1 ->
                             { english = "Does not describe me"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ntabwo mbikora"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption2 ->
                             { english = "Neutral"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ntacyo mbitekerezaho"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption3 ->
                             { english = "Describes me"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ndabikora"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption4 ->
                             { english = "Describes me very well"
-                            , kinyarwanda = Nothing
+                            , kinyarwanda = Just "Ndabikora cyane"
                             , kirundi = Nothing
                             }
 
@@ -20083,7 +20083,7 @@ translationSet trans =
             case reminderType of
                 ResilienceReminderDrinkWatter ->
                     { english = "Hello " ++ name ++ ", You should drink water!"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just <| name ++ ",  ibuka kunywa amazi"
                     , kirundi = Nothing
                     }
 
@@ -20097,7 +20097,7 @@ translationSet trans =
             case reminderType of
                 ResilienceReminderDrinkWatter ->
                     { english = "There are things that can help you manage extreme fatigue and stress. Feeling tired? Drink water! Drinking water helps every part of your body function properly. For example: your brain works better and you are more energized."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Hari ibintu byagufasha kurwanya umunaniro ukabije. Urumva unaniwe? Nywa mazi! Kunywa amazi bifasha buri gice cy'umubiri wawe gukora neza urugero: ubwonko bwawe bukora neza kandi unagira imbaraga nyinshi."
                     , kirundi = Nothing
                     }
 
@@ -20111,7 +20111,7 @@ translationSet trans =
             case reminderType of
                 ResilienceReminderDrinkWatter ->
                     { english = "Then, set a reminder in your phone and it will remind you to drink a glass of water every few hours."
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Noneho, shyiramo rapelle/ reminder muri telefone yawe ijye ikwibutsa kunywa ikirahuri cy' amazi buri masaha make."
                     , kirundi = Nothing
                     }
 
