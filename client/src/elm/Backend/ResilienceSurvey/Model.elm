@@ -32,10 +32,6 @@ type ResilienceSurveyQuestion
     | ResilienceSurveyQuestion10
     | ResilienceSurveyQuestion11
     | ResilienceSurveyQuestion12
-    | ResilienceSurveyQuestion13
-    | ResilienceSurveyQuestion14
-    | ResilienceSurveyQuestion15
-    | ResilienceSurveyQuestion16
 
 
 type ResilienceSurveyQuestionOption

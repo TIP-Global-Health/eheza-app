@@ -336,28 +336,8 @@ viewAdoptionSurvey language currentDate nurseId form =
                 (Translate.ResilienceSurveyAdoptionOptionsForQuestion question)
             ]
 
-        isCompleted : ResilienceSurveyQuestion -> Bool
-        isCompleted question =
-            case question of
-                ResilienceSurveyQuestion1 ->
-                    False
-
-                ResilienceSurveyQuestion2 ->
-                    False
-
-                ResilienceSurveyQuestion3 ->
-                    False
-
-                ResilienceSurveyQuestion4 ->
-                    False
-
-                _ ->
-                    True
-
         tasksCompleted =
-            form
-                |> Dict.filter (\question _ -> isCompleted question)
-                |> Dict.size
+            Dict.size form
 
         totalTasks =
             List.length adoptionSurveyQuestions

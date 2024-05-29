@@ -65,18 +65,6 @@ resilienceSurveyQuestionToString value =
         ResilienceSurveyQuestion12 ->
             "q12"
 
-        ResilienceSurveyQuestion13 ->
-            "q13"
-
-        ResilienceSurveyQuestion14 ->
-            "q14"
-
-        ResilienceSurveyQuestion15 ->
-            "q15"
-
-        ResilienceSurveyQuestion16 ->
-            "q16"
-
 
 resilienceSurveyQuestionFromString : String -> Maybe ResilienceSurveyQuestion
 resilienceSurveyQuestionFromString value =
@@ -116,18 +104,6 @@ resilienceSurveyQuestionFromString value =
 
         "q12" ->
             Just ResilienceSurveyQuestion12
-
-        "q13" ->
-            Just ResilienceSurveyQuestion13
-
-        "q14" ->
-            Just ResilienceSurveyQuestion14
-
-        "q15" ->
-            Just ResilienceSurveyQuestion15
-
-        "q16" ->
-            Just ResilienceSurveyQuestion16
 
         _ ->
             Nothing
