@@ -26,12 +26,14 @@ emptyModel =
 
 type alias DiagnosticsData =
     { form : DiagnosticsForm
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
+    , showEndEncounterDialog = False
     }
 
 
@@ -179,6 +181,7 @@ type Msg
     = SetActivePage Page
       -- DIAGNOSTICS
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
+    | SetEndEncounterDialogState Bool
     | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask

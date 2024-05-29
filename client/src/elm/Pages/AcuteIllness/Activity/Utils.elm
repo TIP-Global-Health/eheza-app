@@ -3067,7 +3067,7 @@ toFollowUpValue : FollowUpForm -> Maybe AcuteIllnessFollowUpValue
 toFollowUpValue form =
     Maybe.map
         (\options ->
-            AcuteIllnessFollowUpValue options form.diagnosis form.resolutionDate
+            AcuteIllnessFollowUpValue options form.resolutionDate form.diagnosis
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
 

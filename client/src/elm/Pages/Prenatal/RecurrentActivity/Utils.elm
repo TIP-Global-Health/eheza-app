@@ -472,9 +472,8 @@ diagnosisRequiresEmergencyReferal diagnosis =
 
 resolveExaminationTasks : NominalDate -> AssembledData -> List ExaminationTask
 resolveExaminationTasks currentDate assembled =
-    -- The order is important. Do not change.
-    [ ExaminationVitals ]
-        |> List.filter (expectExaminationTask currentDate assembled)
+    List.filter (expectExaminationTask currentDate assembled)
+        [ ExaminationVitals ]
 
 
 expectExaminationTask : NominalDate -> AssembledData -> ExaminationTask -> Bool
@@ -485,7 +484,7 @@ expectExaminationTask currentDate assembled task =
             -- of pregnancy. If diagnised, we do not need to recheck the BP.
             -- Measurement taken at initial phase of encounter is sufficient.
             (not <| diagnosedHypertensionPrevoiusly assembled)
-                && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnoses assembled)
+                && (not <| diagnosedAnyOf hierarchalBloodPressureDiagnosesInitialPhase assembled)
                 && (getMeasurementValueFunc assembled.measurements.vitals
                         |> Maybe.andThen
                             (\value ->

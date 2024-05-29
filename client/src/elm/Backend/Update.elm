@@ -33,6 +33,7 @@ import Backend.Measurement.Model
         , LaboratoryTest(..)
         , LabsResultsReviewState(..)
         , Measurements
+        , TestExecutionNote(..)
         , TestPrerequisite(..)
         , WellChildSymptom(..)
         )
@@ -96,7 +97,7 @@ import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model
-import Measurement.Utils exposing (bloodSmearResultNotSet, testPerformedByExecutionNote)
+import Measurement.Utils exposing (bloodSmearResultSet, testPerformedByExecutionNote)
 import Pages.AcuteIllness.Activity.Model
 import Pages.AcuteIllness.Activity.Types
 import Pages.AcuteIllness.Activity.Utils
@@ -1981,7 +1982,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -2961,14 +2962,24 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
+                            let
+                                executionNote =
+                                    if data.value.bloodSmearResult == BloodSmearPendingInput then
+                                        TestNoteRunToday
+
+                                    else
+                                        data.value.executionNote
+
+                                resultsAdded =
+                                    isJust data.value.testResult
+                                        || bloodSmearResultSet data.value.bloodSmearResult
+                            in
                             processRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 Backend.Measurement.Model.TestMalaria
-                                data.value.executionNote
-                                (isJust data.value.testResult
-                                    || bloodSmearResultNotSet data.value.bloodSmearResult
-                                )
+                                executionNote
+                                resultsAdded
                                 data.value.testPrerequisites
 
                         ( newModel, extraMsgsForAssessment ) =
@@ -5261,10 +5272,17 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         HIVFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
+                        model
+            in
             ( mapHIVMeasurements
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 
@@ -6641,13 +6659,14 @@ generatePrenatalAssessmentMsgs :
     -> Language
     -> Site
     -> Bool
+    -> Bool
     -> Page
     -> Bool
     -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -6822,7 +6841,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
@@ -6853,8 +6872,17 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                           then
                                                             translate language Translate.EmergencyReferralHelperReferToMaternityWard
 
-                                                          else
+                                                          else if
+                                                            List.any
+                                                                (\emergencyObstetricCareServicesDiagnosis ->
+                                                                    List.member emergencyObstetricCareServicesDiagnosis urgentDiagnoses
+                                                                )
+                                                                Pages.Prenatal.Activity.Utils.emergencyObstetricCareServicesDiagnoses
+                                                          then
                                                             translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+
+                                                          else
+                                                            translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
                                                         )
                                                 in
                                                 -- View warning popup and navigate to Next Steps activity.
@@ -6878,13 +6906,13 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
                                                 let
                                                     signs =
-                                                        List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
+                                                        List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
                                                             |> String.join ", "
                                                 in
                                                 [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
@@ -6911,10 +6939,16 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                 UserPage (PrenatalActivityPage _ _) ->
                                     initialEncounterMsgs
 
+                                UserPage (ClinicalProgressReportPage (InitiatorEncounterPage _) _) ->
+                                    initialEncounterMsgs
+
                                 UserPage (PrenatalRecurrentEncounterPage _) ->
                                     recurrentEncounterMsgs
 
                                 UserPage (PrenatalRecurrentActivityPage _ _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (ClinicalProgressReportPage (InitiatorRecurrentEncounterPage _) _) ->
                                     recurrentEncounterMsgs
 
                                 _ ->
@@ -7037,10 +7071,15 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                                 value.testsWithFollowUp
 
                                         reviewState =
-                                            -- For lab technician, request review if all labs were
-                                            -- completed, and review state was not set previously.
                                             if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
                                                 Just LabsResultsReviewRequested
+
+                                            else if not isLabTech && allLabsCompleted then
+                                                -- For nurse, set review state to completed,
+                                                -- if all labs were completed.
+                                                Just LabsResultsReviewCompleted
 
                                             else
                                                 value.reviewState
@@ -7071,8 +7110,23 @@ generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
     Pages.Prenatal.Encounter.Utils.generateAssembledData id after
         |> RemoteData.toMaybe
         |> Maybe.map
-            (\assembled ->
+            (\assembled_ ->
                 let
+                    -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                    -- we don't have it set at generated assembled data.
+                    -- Therefore, we update diagnoses manually and set them into data.
+                    encounterWithDiagnoses =
+                        (\encounter ->
+                            { encounter
+                                | diagnoses =
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                            }
+                        )
+                            assembled_.encounter
+
+                    assembled =
+                        { assembled_ | encounter = encounterWithDiagnoses }
+
                     ( _, pendingActivities ) =
                         Pages.Prenatal.Encounter.Utils.getAllActivities assembled
                             |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
@@ -7106,10 +7160,25 @@ generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
         Pages.Prenatal.Encounter.Utils.generateAssembledData id after
             |> RemoteData.toMaybe
             |> Maybe.andThen
-                (\assembled ->
+                (\assembled_ ->
                     let
+                        -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                        -- we don't have it set at generated assembled data.
+                        -- Therefore, we update diagnoses manually and set them into data.
+                        encounterWithDiagnoses =
+                            (\encounter ->
+                                { encounter
+                                    | diagnoses =
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                }
+                            )
+                                assembled_.encounter
+
+                        assembled =
+                            { assembled_ | encounter = encounterWithDiagnoses }
+
                         ( _, pendingActivities ) =
-                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities False
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
                                 |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
                                 |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
                     in
@@ -7926,7 +7995,7 @@ generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterI
 generateWellChildDangerSignsAlertMsgs currentDate maybeId =
     Maybe.map
         (\id ->
-            [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
+            [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.

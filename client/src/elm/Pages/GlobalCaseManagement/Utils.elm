@@ -63,42 +63,45 @@ generateNutritionFollowUps limitDate followUps =
         nutritionIndividual =
             Dict.values followUps.nutritionIndividual
                 |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+                |> filterListFollowUpsSetToNotNeeded
 
         nutritionGroup =
             Dict.values followUps.nutritionGroup
                 |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+                |> filterListFollowUpsSetToNotNeeded
 
         wellChild =
             Dict.values followUps.wellChild
                 |> List.filter (.value >> .resolutionDate >> filterResolvedFollowUps limitDate)
+                |> filterListFollowUpsSetToNotNeeded
 
         generateFollowUpItems followUpsList accumDict =
-            followUpsList
-                |> List.foldl
-                    (\candidate accum ->
-                        let
-                            candidateItem =
-                                NutritionFollowUpItem candidate.dateMeasured "" candidate.value
-                        in
-                        Dict.get candidate.participantId accum
-                            |> Maybe.map
-                                (\memberItem ->
-                                    let
-                                        candidateDueDate =
-                                            caclulateFollowUpDueDate candidateItem.dateMeasured candidateItem.value.options
+            List.foldl
+                (\candidate accum ->
+                    let
+                        candidateItem =
+                            NutritionFollowUpItem candidate.dateMeasured "" candidate.value
+                    in
+                    Dict.get candidate.participantId accum
+                        |> Maybe.map
+                            (\memberItem ->
+                                let
+                                    candidateDueDate =
+                                        caclulateFollowUpDueDate candidateItem.dateMeasured candidateItem.value.options
 
-                                        memberDueDate =
-                                            caclulateFollowUpDueDate memberItem.dateMeasured memberItem.value.options
-                                    in
-                                    if Date.compare candidateDueDate memberDueDate == LT then
-                                        Dict.insert candidate.participantId candidateItem accum
+                                    memberDueDate =
+                                        caclulateFollowUpDueDate memberItem.dateMeasured memberItem.value.options
+                                in
+                                if Date.compare candidateDueDate memberDueDate == LT then
+                                    Dict.insert candidate.participantId candidateItem accum
 
-                                    else
-                                        accum
-                                )
-                            |> Maybe.withDefault (Dict.insert candidate.participantId candidateItem accum)
-                    )
-                    accumDict
+                                else
+                                    accum
+                            )
+                        |> Maybe.withDefault (Dict.insert candidate.participantId candidateItem accum)
+                )
+                accumDict
+                followUpsList
     in
     generateFollowUpItems nutritionIndividual Dict.empty
         |> generateFollowUpItems nutritionGroup
@@ -158,6 +161,7 @@ generateAcuteIllnessFollowUps limitDate db followUps =
                     |> Maybe.withDefault accum
             )
             Dict.empty
+        |> filterDictFollowUpsSetToNotNeeded
 
 
 generatePrenatalFollowUps :
@@ -213,6 +217,7 @@ generatePrenatalFollowUps limitDate db followUps =
                     |> Maybe.withDefault accum
             )
             Dict.empty
+        |> filterDictFollowUpsSetToNotNeeded
 
 
 generateImmunizationFollowUps : NominalDate -> FollowUpMeasurements -> Dict PersonId ImmunizationFollowUpItem
@@ -381,10 +386,14 @@ generateTuberculosisFollowUps limitDate db followUps followUpsFromAcuteIllness =
                           Dict.remove personId acuteIllnessDict
                         )
                     )
-                |> Maybe.withDefault ( accum, acuteIllnessDict )
+                |> Maybe.withDefault
+                    ( Dict.insert ( participantId, personId ) item accum
+                    , acuteIllnessDict
+                    )
         )
         ( Dict.empty, acuteIllnessItemsByPerson )
         itemsFromTuberculosis
+        |> Tuple.mapBoth filterDictFollowUpsSetToNotNeeded filterDictFollowUpsSetToNotNeeded
 
 
 generateHIVFollowUps :
@@ -452,6 +461,7 @@ generateHIVFollowUps limitDate db followUps =
                         |> Maybe.withDefault accum
             )
             Dict.empty
+        |> filterDictFollowUpsSetToNotNeeded
 
 
 filterResolvedFollowUps : NominalDate -> Maybe NominalDate -> Bool
@@ -608,6 +618,11 @@ calculateDueDate dateMeasured option =
         ThreeMonths ->
             Date.add Months 3 dateMeasured
 
+        -- When this option is selected, follow up not required
+        -- so we set due date far into future.
+        FollowUpNotNeeded ->
+            Date.add Years 20 dateMeasured
+
 
 compareAcuteIllnessFollowUpItems : AcuteIllnessFollowUpItem -> AcuteIllnessFollowUpItem -> Order
 compareAcuteIllnessFollowUpItems item1 item2 =
@@ -683,5 +698,25 @@ filterFollowUpsOfResidents residents followUps =
 
 
 filterByParticipant : List PersonId -> Dict id { a | participantId : PersonId } -> Dict id { a | participantId : PersonId }
-filterByParticipant residents followUps =
-    Dict.filter (\_ followUp -> List.member followUp.participantId residents) followUps
+filterByParticipant residents =
+    Dict.filter (\_ followUp -> List.member followUp.participantId residents)
+
+
+filterDictFollowUpsSetToNotNeeded :
+    Dict a { c | value : { b | options : EverySet FollowUpOption } }
+    -> Dict a { c | value : { b | options : EverySet FollowUpOption } }
+filterDictFollowUpsSetToNotNeeded =
+    Dict.filter
+        (\_ item ->
+            not <| EverySet.member FollowUpNotNeeded item.value.options
+        )
+
+
+filterListFollowUpsSetToNotNeeded :
+    List { c | value : { b | options : EverySet FollowUpOption } }
+    -> List { c | value : { b | options : EverySet FollowUpOption } }
+filterListFollowUpsSetToNotNeeded =
+    List.filter
+        (\item ->
+            not <| EverySet.member FollowUpNotNeeded item.value.options
+        )

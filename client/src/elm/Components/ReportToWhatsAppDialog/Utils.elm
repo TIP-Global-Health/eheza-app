@@ -142,3 +142,8 @@ allCountryCodes =
     , CountryCodeBurundi
     , CountryCodeUSACanada
     ]
+
+
+minimalNumberLength : Int
+minimalNumberLength =
+    6

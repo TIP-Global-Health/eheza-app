@@ -278,8 +278,10 @@ viewContentForOther language currentDate site features isChw personId person pat
             , selectedPane
             , viewStartEncounterButton language (SetViewMode ViewStartEncounter)
                 |> -- Allow staritng encounter only if we can verify
-                   -- that patient is an adult.
-                   showIf (patientType == PatientAdult)
+                   -- that patient is an adult, and selected pane is not
+                   -- 'Group Education' (since we shouldn't open a group
+                   -- education from an individual progress report).
+                   showIf (patientType == PatientAdult && model.filter /= FilterGroupEducation)
             ]
         ]
 

@@ -45,12 +45,14 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomBoolInput
+        , viewEndEncounterDialog
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
+import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -147,6 +149,7 @@ viewDiagnosticsContent language currentDate assembled data =
                                         , Translate.TuberculosisDiagnosis TuberculosisExtrapulmonary
                                         )
                                         "sixteen"
+                                        False
                                   ]
                                 , taskCompleted form.isPulmonary
                                 , 1
@@ -178,6 +181,28 @@ viewDiagnosticsContent language currentDate assembled data =
             , taskCompleted form.diagnosed + derivedTasksCompleted
             , 1 + derivedTotalTasks
             )
+
+        endEncounterDialog =
+            if data.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.EndEncounterNoTuberculosisDiagnosisPhrase
+                        saveDiagnosticsMsg
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
+
+        saveAction =
+            if form.diagnosed == Just False then
+                SetEndEncounterDialogState True
+
+            else
+                saveDiagnosticsMsg
+
+        saveDiagnosticsMsg =
+            SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -187,9 +212,10 @@ viewDiagnosticsContent language currentDate assembled data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics)
+                saveAction
             ]
         ]
+    , viewModal endEncounterDialog
     ]
 
 
@@ -517,7 +543,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language
                             currentDate
-                            [ OneDay, OneWeek ]
+                            [ OneDay, OneWeek, FollowUpNotNeeded ]
                             SetFollowUpOption
                         |> List.singleton
 
