@@ -6845,48 +6845,12 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                                                 []
 
                                             else
-                                                let
-                                                    ( message, instructions ) =
-                                                        let
-                                                            signs =
-                                                                List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                                                    |> String.join ", "
-                                                        in
-                                                        -- Instructions for Emergency Referral.
-                                                        ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                                        , if
-                                                            List.any
-                                                                (\immediateDeliveryDiagnosis ->
-                                                                    List.member immediateDeliveryDiagnosis urgentDiagnoses
-                                                                )
-                                                                Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
-                                                          then
-                                                            translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
-
-                                                          else if
-                                                            List.any
-                                                                (\maternityWardDiagnosis ->
-                                                                    List.member maternityWardDiagnosis urgentDiagnoses
-                                                                )
-                                                                Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
-                                                          then
-                                                            translate language Translate.EmergencyReferralHelperReferToMaternityWard
-
-                                                          else if
-                                                            List.any
-                                                                (\emergencyObstetricCareServicesDiagnosis ->
-                                                                    List.member emergencyObstetricCareServicesDiagnosis urgentDiagnoses
-                                                                )
-                                                                Pages.Prenatal.Activity.Utils.emergencyObstetricCareServicesDiagnoses
-                                                          then
-                                                            translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
-
-                                                          else
-                                                            translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                                                        )
-                                                in
-                                                -- View warning popup and navigate to Next Steps activity.
-                                                [ initialEncounterWarningPopupMsg ( message, instructions )
+                                                -- View warning popup with instructions for Emergency
+                                                -- Referral and navigate to Next Steps activity.
+                                                [ Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> initialEncounterWarningPopupMsg
                                                 , initialEncounterNextStepsMsg
                                                 ]
                                     in
@@ -6910,18 +6874,13 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                                                 []
 
                                             else
-                                                let
-                                                    signs =
-                                                        List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                                            |> String.join ", "
-                                                in
                                                 [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                                     |> UserPage
                                                     |> App.Model.SetActivePage
-                                                , recurrentEncounterWarningPopupMsg
-                                                    ( signs
-                                                    , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                                                    )
+                                                , Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> recurrentEncounterWarningPopupMsg
                                                 ]
                                     in
                                     -- These messages are sent when diagnoses set has changed.
