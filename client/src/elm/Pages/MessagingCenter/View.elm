@@ -82,34 +82,41 @@ view language currentTime nurseId nurse db model =
                                     List.filter (.surveyType >> (==) surveyType) surveysSorted
 
                                 surveyCount =
-                                    filteredSurveys
-                                        |> List.length
+                                    List.length filteredSurveys
 
                                 filterCondition survey =
                                     let
-                                        diffLastSurveyCurrent =
+                                        diffMonthsLastSurveyCurrent =
                                             Date.diff Months survey.dateMeasured currentDate
 
-                                        diffLastSurveyProgramStart =
-                                            Date.diff Months survey.dateMeasured programStartDate
+                                        diffMonthsProgramStartLastSurvey =
+                                            Date.diff Months programStartDate survey.dateMeasured
                                     in
                                     if surveyCount == 0 then
+                                        -- We need to have at least one survey completed.
                                         True
 
-                                    else if diffLastSurveyProgramStart >= 6 then
+                                    else if surveyCount >= 3 then
+                                        -- There can be up to 3 surveys during program which lasts
+                                        -- 6 months. At the begining, after 3 months and at the end.
+                                        -- So, if we have 3 surveys already, there's no need to another one,
                                         False
 
-                                    else if surveyCount == 3 then
+                                    else if diffMonthsProgramStartLastSurvey >= 6 then
+                                        -- Last survey run after 6 months from programstart date.
+                                        -- It means that program has alreqady ended there.
+                                        -- No need to run another one.
                                         False
 
-                                    else if diffLastSurveyCurrent >= 3 then
+                                    else if diffMonthsLastSurveyCurrent >= 3 then
+                                        -- If we got so far, and interval from last survey
+                                        -- is 3 months or more, we should run the survey.
                                         True
 
                                     else
                                         False
                             in
-                            filteredSurveys
-                                |> List.head
+                            List.head filteredSurveys
                                 |> Maybe.map filterCondition
                                 |> Maybe.withDefault True
 
@@ -432,7 +439,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
             in
             case model.activeTab of
                 TabGuide ->
-                    viewGuideMessage language nurse
+                    viewGuide language nurse
 
                 TabUnread ->
                     List.map viewMessage unread
@@ -637,76 +644,43 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         ]
 
 
-viewGuideMessage : Language -> Nurse -> List (Html Msg)
-viewGuideMessage language nurse =
-    [ div [ class "guide-message" ]
-        [ p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection1Title
-            ]
+viewGuide : Language -> Nurse -> List (Html Msg)
+viewGuide language nurse =
+    [ div [ class "guide" ]
+        [ p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection1Title ]
         , ul []
-            [ li []
-                [ text <| translate language Translate.ResilienceGuideSection1Bullet1
-                ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection1Bullet2
-                ]
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet2 ]
             ]
-        , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection2Title
-            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection2Title ]
         , ul []
-            [ li []
-                [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
             ]
-        , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection3Title
-            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection3Title ]
         , ul []
-            [ li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
             ]
-        , p [ class "title note" ]
-            [ text <| translate language Translate.ResilienceGuideSection3Note ]
-        , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection4Title
-            ]
-        , p []
-            [ text <| translate language Translate.ResilienceGuideSection4Text ]
-        , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection6Title
-            ]
+        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection3Note ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection4Title ]
+        , p [] [ text <| translate language Translate.ResilienceGuideSection4Text ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
         , ul []
-            [ li []
-                [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
             ]
-        , p [ class "title" ]
-            [ text <| translate language Translate.ResilienceGuideSection6Title
-            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
         , ul []
-            [ li []
-                [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
             , li []
                 [ text <| translate language Translate.ResilienceGuideSection6Bullet4
                 , ul []
@@ -716,8 +690,7 @@ viewGuideMessage language nurse =
                     ]
                 ]
             ]
-        , p [ class "title note" ]
-            [ text <| translate language Translate.ResilienceGuideSection6Note ]
+        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection6Note ]
         ]
     ]
 
