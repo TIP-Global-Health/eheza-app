@@ -9,12 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.ResilienceMessage.Utils exposing (..)
-import Backend.ResilienceSurvey.Model
-    exposing
-        ( ResilienceSurveyQuestionOption(..)
-        , ResilienceSurveyType(..)
-        )
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -71,36 +66,74 @@ view language currentTime nurseId nurse db model =
                     let
                         messagingCenterView =
                             viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+
+                        surveys =
+                            Dict.get nurseId db.resilienceSurveysByNurse
+                                |> Maybe.andThen RemoteData.toMaybe
+                                |> Maybe.map Dict.values
+                                |> Maybe.withDefault []
+
+                        surveysSorted =
+                            List.sortWith (sortByDateDesc .dateMeasured) surveys
+
+                        runSurvey surveyType =
+                            let
+                                filteredSurveys =
+                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
+
+                                surveyCount =
+                                    List.length filteredSurveys
+
+                                filterCondition survey =
+                                    let
+                                        diffMonthsLastSurveyCurrent =
+                                            Date.diff Months survey.dateMeasured currentDate
+
+                                        diffMonthsProgramStartLastSurvey =
+                                            Date.diff Months programStartDate survey.dateMeasured
+                                    in
+                                    if surveyCount == 0 then
+                                        -- We need to have at least one survey completed.
+                                        True
+
+                                    else if surveyCount >= 3 then
+                                        -- There can be up to 3 surveys during program which lasts
+                                        -- 6 months. At the begining, after 3 months and at the end.
+                                        -- So, if we have 3 surveys already, there's no need to another one,
+                                        False
+
+                                    else if diffMonthsProgramStartLastSurvey >= 6 then
+                                        -- Last survey run after 6 months from programstart date.
+                                        -- It means that program has alreqady ended there.
+                                        -- No need to run another one.
+                                        False
+
+                                    else if diffMonthsLastSurveyCurrent >= 3 then
+                                        -- If we got so far, and interval from last survey
+                                        -- is 3 months or more, we should run the survey.
+                                        True
+
+                                    else
+                                        False
+                            in
+                            List.head filteredSurveys
+                                |> Maybe.map filterCondition
+                                |> Maybe.withDefault True
+
+                        runAdoptionSurvey =
+                            runSurvey ResilienceSurveyAdoption
+
+                        runQuarterlySurvey =
+                            runSurvey ResilienceSurveyQuarterly
                     in
-                    Dict.get nurseId db.resilienceSurveysByNurse
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map
-                            (\surveys ->
-                                let
-                                    surveysSorted =
-                                        Dict.values surveys
-                                            |> List.sortWith (sortByDateDesc .dateMeasured)
+                    if runQuarterlySurvey then
+                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                                    runMonthlySurvery =
-                                        List.filter (.surveyType >> (==) ResilienceSurveyMonthly) surveysSorted
-                                            |> List.head
-                                            |> Maybe.map
-                                                (\survey ->
-                                                    -- Run monthly survey if one month has passed since
-                                                    -- last monthly survey was completed.
-                                                    Date.diff Months survey.dateMeasured currentDate >= 1
-                                                )
-                                            -- No monthly survey were performed, so we need to run one if
-                                            -- one month has passed since program has started.
-                                            |> Maybe.withDefault (Date.diff Months programStartDate currentDate >= 1)
-                                in
-                                if runMonthlySurvery then
-                                    viewMonthlySurvey language currentDate nurseId model.monthlySurveyForm
+                    else if runAdoptionSurvey then
+                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
-                                else
-                                    messagingCenterView
-                            )
-                        |> Maybe.withDefault messagingCenterView
+                    else
+                        messagingCenterView
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -248,11 +281,11 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewMonthlySurvey : Language -> NominalDate -> NurseId -> MonthlySurveyForm -> Html Msg
-viewMonthlySurvey language currentDate nurseId form =
+viewQuarterlySurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
+viewQuarterlySurvey language currentDate nurseId form =
     let
         questionInput question =
-            [ viewCustomLabel language (Translate.ResilienceMonthlySurveyQuestion question) "." "label"
+            [ viewCustomLabel language (Translate.ResilienceQuarterlySurveyQuestion question) "." "label"
             , viewCustomLabel language Translate.ChooseOne ":" "instructions"
             , viewCheckBoxSelectInput language
                 [ ResilienceSurveyQuestionOption0
@@ -263,7 +296,7 @@ viewMonthlySurvey language currentDate nurseId form =
                 ]
                 []
                 (Dict.get question form)
-                (SetMonthlySurveyAnswer question)
+                (SetSurveyAnswer question)
                 Translate.ResilienceSurveyQuestionOption
             ]
 
@@ -271,18 +304,61 @@ viewMonthlySurvey language currentDate nurseId form =
             Dict.size form
 
         totalTasks =
-            List.length monthlySurveyQuestions
+            List.length quarterlySurveyQuestions
     in
     div [ class "ui unstackable items" ]
         [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
-                    List.concatMap questionInput monthlySurveyQuestions
+                    List.concatMap questionInput quarterlySurveyQuestions
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveMonthlySurvey nurseId
+                        , onClick <| SaveSurvey ResilienceSurveyQuarterly nurseId
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewAdoptionSurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
+viewAdoptionSurvey language currentDate nurseId form =
+    let
+        questionInput question =
+            [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
+            , viewCustomLabel language Translate.ChooseOne ":" "instructions"
+            , viewCheckBoxSelectInput language
+                [ ResilienceSurveyQuestionOption0
+                , ResilienceSurveyQuestionOption1
+                , ResilienceSurveyQuestionOption2
+                , ResilienceSurveyQuestionOption3
+                , ResilienceSurveyQuestionOption4
+                ]
+                []
+                (Dict.get question form)
+                (SetSurveyAnswer question)
+                (Translate.ResilienceSurveyAdoptionOptionsForQuestion question)
+            ]
+
+        tasksCompleted =
+            Dict.size form
+
+        totalTasks =
+            List.length adoptionSurveyQuestions
+    in
+    div [ class "ui unstackable items" ]
+        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form monthly-survey" ] <|
+                    List.concatMap questionInput adoptionSurveyQuestions
+                , div [ class "actions" ]
+                    [ button
+                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                        , onClick <| SaveSurvey ResilienceSurveyAdoption nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
@@ -298,16 +374,26 @@ surveyScoreDialog :
 surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
-            case dialogState of
-                MonthlySurveyScore score ->
-                    let
-                        data =
-                            ( p [ class "score" ] [ text <| String.fromInt score ++ "/20" ]
-                            , p [ class "interpretation" ] [ text <| translate language <| Translate.MonthlySurveyScoreInterpretation score ]
-                            , SetSurveyScoreDialogState Nothing
+            let
+                ( scoreText, interpretationFunction ) =
+                    case dialogState of
+                        QuarterlySurveyScore score ->
+                            ( String.fromInt score ++ "/20"
+                            , Translate.QuarterlySurveyScoreInterpretation score
                             )
-                    in
-                    customPopup language False Translate.Continue "survey-score-popup blue" data
+
+                        AdoptionSurveyScore score ->
+                            ( String.fromInt score ++ "/60"
+                            , Translate.AdoptionSurveyScoreInterpretation score
+                            )
+
+                data =
+                    ( p [ class "score" ] [ text scoreText ]
+                    , p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    , SetSurveyScoreDialogState Nothing
+                    )
+            in
+            customPopup language False Translate.Continue "survey-score-popup blue" data
         )
 
 
@@ -357,6 +443,9 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                         |> List.map viewMessage
             in
             case model.activeTab of
+                TabGuide ->
+                    viewGuide language nurse
+
                 TabUnread ->
                     List.map viewMessage unread
 
@@ -394,7 +483,8 @@ viewTabs : Language -> Model -> Html Msg
 viewTabs language model =
     let
         allTabs =
-            [ TabUnread
+            [ TabGuide
+            , TabUnread
             , TabFavorites
             , TabGrowth
             , TabConnecting
@@ -557,6 +647,57 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ]
             body
         ]
+
+
+viewGuide : Language -> Nurse -> List (Html Msg)
+viewGuide language nurse =
+    [ div [ class "guide" ]
+        [ p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection1Title ]
+        , ul []
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet2 ]
+            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection2Title ]
+        , ul []
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
+            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection3Title ]
+        , ul []
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
+            ]
+        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection3Note ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection4Title ]
+        , p [] [ text <| translate language Translate.ResilienceGuideSection4Text ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
+        , ul []
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
+            ]
+        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
+        , ul []
+            [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
+            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
+            , li []
+                [ text <| translate language Translate.ResilienceGuideSection6Bullet4
+                , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet5 ]
+                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet6 ]
+                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet7 ]
+                    ]
+                ]
+            ]
+        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection6Note ]
+        ]
+    ]
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )

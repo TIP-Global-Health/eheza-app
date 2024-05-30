@@ -1395,6 +1395,9 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
+
+        diagnosedAtInitalPhase =
+            matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled
     in
     case diagnosis of
         DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus ->
@@ -1419,7 +1422,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
             (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && (-- If diagnosed Moderate Preeclampsia at initial stage, we do not
                     -- need to diagnose again.
-                    not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus assembled
+                    not <| diagnosedAtInitalPhase DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
                    )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -1437,7 +1440,7 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
         DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus ->
             (-- If diagnosed Severe Preeclampsia at initial stage, we do not
              -- need to diagnose again.
-             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus assembled
+             not <| diagnosedAtInitalPhase DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
             )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -1547,11 +1550,11 @@ matchEmergencyReferalPrenatalDiagnosis egaInWeeks signs assembled diagnosis =
 
         DiagnosisSevereAnemiaWithComplicationsInitialPhase ->
             severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
-                && labTestWithImmediateResult .bloodGpRsTest assembled.measurements
+                && labTestWithImmediateResult .hemoglobinTest assembled.measurements
 
         DiagnosisSevereAnemiaWithComplicationsRecurrentPhase ->
-            severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
-                && (not <| labTestWithImmediateResult .bloodGpRsTest assembled.measurements)
+            (not <| diagnosedAtInitalPhase DiagnosisSevereAnemiaWithComplicationsInitialPhase)
+                && severeAnemiaWithComplicationsDiagnosed signs assembled.measurements
 
         -- Non Emergency Referral diagnoses.
         _ ->
@@ -2652,6 +2655,26 @@ immediateDeliveryDiagnoses =
     , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+emergencyObstetricCareServicesDiagnoses : List PrenatalDiagnosis
+emergencyObstetricCareServicesDiagnoses =
+    [ DiagnosisEclampsia
+    , DiagnosisMiscarriage
+    , DiagnosisMolarPregnancy
+    , DiagnosisPlacentaPrevia
+    , DiagnosisPlacentalAbruption
+    , DiagnosisUterineRupture
+    , DiagnosisObstructedLabor
+    , DiagnosisPostAbortionSepsis
+    , DiagnosisEctopicPregnancy
+    , DiagnosisPPROM
+    , DiagnosisHyperemesisGravidum
+    , DiagnosisMaternalComplications
+
+    -- Infection diagnosis will be available at latter phase.
+    -- , DiagnosisInfection
     ]
 
 
@@ -4346,7 +4369,7 @@ toFollowUpValue : FollowUpForm -> Maybe PrenatalFollowUpValue
 toFollowUpValue form =
     Maybe.map2
         (\options assesment ->
-            PrenatalFollowUpValue options assesment form.resolutionDate
+            PrenatalFollowUpValue options form.resolutionDate assesment
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
@@ -4937,6 +4960,7 @@ prenatalSymptomQuestionInputAndState language form question =
                     "symptom-question"
                     ( Translate.Left, Translate.Right )
                     "four"
+                    False
               ]
             , taskCompleted form.problemLeftLeg
             )
@@ -5917,3 +5941,43 @@ lmpRangeFromString s =
 
         _ ->
             Nothing
+
+
+resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )
+resolveWarningPopupContentForUrgentDiagnoses language urgentDiagnoses =
+    let
+        signs =
+            List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                |> String.join ", "
+    in
+    ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+    , if
+        List.any
+            (\immediateDeliveryDiagnosis ->
+                List.member immediateDeliveryDiagnosis urgentDiagnoses
+            )
+            immediateDeliveryDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
+
+      else if
+        List.any
+            (\maternityWardDiagnosis ->
+                List.member maternityWardDiagnosis urgentDiagnoses
+            )
+            maternityWardDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToMaternityWard
+
+      else if
+        List.any
+            (\emergencyObstetricCareServicesDiagnosis ->
+                List.member emergencyObstetricCareServicesDiagnosis urgentDiagnoses
+            )
+            emergencyObstetricCareServicesDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+
+      else
+        translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+    )

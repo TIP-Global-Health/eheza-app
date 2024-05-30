@@ -46,6 +46,7 @@ import Pages.Utils
         , taskCompletedWithException
         , valueConsideringIsDirtyField
         , viewBoolInput
+        , viewBoolInputReverted
         , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
@@ -535,7 +536,7 @@ toNutritionFollowUpValue : NutritionFollowUpForm -> Maybe NutritionFollowUpValue
 toNutritionFollowUpValue form =
     Maybe.map2
         (\options assesment ->
-            NutritionFollowUpValue options assesment form.resolutionDate
+            NutritionFollowUpValue options form.resolutionDate assesment
         )
         (Maybe.map (List.singleton >> EverySet.fromList) form.option)
         form.assesment
@@ -1492,7 +1493,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                         ( [], [] )
             in
             ( [ viewQuestionLabel language Translate.MedicationDosesMissedQuestion
-              , viewBoolInput
+              , viewBoolInputReverted
                     language
                     form.missedDoses
                     (setTreatmentReviewBoolInputMsg missedDosesUpdateFunc)
@@ -1544,7 +1545,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                         ( [], [] )
             in
             ( [ viewQuestionLabel language Translate.MedicationCausesSideEffectsQuestion
-              , viewBoolInput
+              , viewBoolInputReverted
                     language
                     form.sideEffects
                     (setTreatmentReviewBoolInputMsg sideEffectsUpdateFunc)
@@ -1559,7 +1560,6 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
             { form_ | feelingBetter = Just value }
     in
     ( takenAsPrescribedInputs
-        ++ missedDosesInputs
         ++ [ viewQuestionLabel language Translate.MedicationFeelBetterAfterTakingQuestion
            , viewBoolInput
                 language
@@ -1568,8 +1568,9 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                 "feeling-better"
                 Nothing
            ]
+        ++ missedDosesInputs
         ++ sideEffectsInputs
-    , takenAsPrescribedTasks ++ missedDosesTasks ++ [ form.feelingBetter ] ++ sideEffectsTasks
+    , takenAsPrescribedTasks ++ [ form.feelingBetter ] ++ missedDosesTasks ++ sideEffectsTasks
     )
 
 

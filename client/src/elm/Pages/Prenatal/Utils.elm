@@ -245,6 +245,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                     emergencyReferralDiagnosesInitial
                         ++ [ DiagnosisModeratePreeclampsiaInitialPhase
                            , DiagnosisSeverePreeclampsiaInitialPhase
+                           , DiagnosisHyperemesisGravidumBySymptoms
+                           , DiagnosisSevereVomitingBySymptoms
                            , DiagnosisHeartburnPersistent
                            , DiagnosisDeepVeinThrombosis
                            , DiagnosisPelvicPainIntense
@@ -333,21 +335,35 @@ emergencyReferralDiagnosesRecurrent =
 
 hierarchalBloodPressureDiagnoses : List PrenatalDiagnosis
 hierarchalBloodPressureDiagnoses =
+    hierarchalBloodPressureDiagnosesInitialPhase
+        ++ hierarchalBloodPressureDiagnosesRecurrentPhase
+
+
+hierarchalBloodPressureDiagnosesInitialPhase : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnosesInitialPhase =
     [ -- Emergency diagnoses.
       DiagnosisEclampsia
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
     , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
 
     -- Non emergency diagnoses.
     , DiagnosisSeverePreeclampsiaInitialPhase
-    , DiagnosisSeverePreeclampsiaRecurrentPhase
     , DiagnosisModeratePreeclampsiaInitialPhase
-    , DiagnosisModeratePreeclampsiaRecurrentPhase
     , DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionImmediate
+    ]
+
+
+hierarchalBloodPressureDiagnosesRecurrentPhase : List PrenatalDiagnosis
+hierarchalBloodPressureDiagnosesRecurrentPhase =
+    [ -- Emergency diagnoses.
+      DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+
+    -- Non emergency diagnoses.
+    , DiagnosisSeverePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisChronicHypertensionAfterRecheck
     , DiagnosisGestationalHypertensionAfterRecheck
     ]
 
@@ -3852,11 +3868,28 @@ healthEducationFormInputsAndTasksForNurse :
 healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembled form =
     let
         ( hivInputs, hivTasks ) =
-            if isJust assembled.measurements.hivTest then
-                healthEducationFormInputsAndTasksForHIV language phase setBoolInputMsg assembled form
+            getMeasurementValueFunc assembled.measurements.hivTest
+                |> Maybe.andThen .testPrerequisites
+                |> Maybe.map
+                    (\prerequisites ->
+                        case phase of
+                            PrenatalEncounterPhaseInitial ->
+                                if EverySet.member PrerequisiteImmediateResult prerequisites then
+                                    -- HIV test results entered durting initial phase.
+                                    healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form
 
-            else
-                ( [], [] )
+                                else
+                                    ( [], [] )
+
+                            PrenatalEncounterPhaseRecurrent ->
+                                if not <| EverySet.member PrerequisiteImmediateResult prerequisites then
+                                    -- HIV test results entered durting recurrent phase.
+                                    healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form
+
+                                else
+                                    ( [], [] )
+                    )
+                |> Maybe.withDefault ( [], [] )
 
         detectableViralLoad triggeringDiagnosis =
             if diagnosed triggeringDiagnosis assembled then
@@ -4221,12 +4254,11 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
 
 healthEducationFormInputsAndTasksForHIV :
     Language
-    -> PrenatalEncounterPhase
     -> ((Bool -> HealthEducationForm -> HealthEducationForm) -> Bool -> msg)
     -> AssembledData
     -> HealthEducationForm
     -> ( List (Html msg), List (Maybe Bool) )
-healthEducationFormInputsAndTasksForHIV language phase setBoolInputMsg assembled form =
+healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form =
     let
         translatePrenatalHealthEducationQuestion =
             Translate.PrenatalHealthEducationQuestion False
@@ -4278,16 +4310,11 @@ healthEducationFormInputsAndTasksForHIV language phase setBoolInputMsg assembled
             viewCustomLabel language Translate.HIV "" "label header"
 
         trigerringDiagnoses =
-            case phase of
-                PrenatalEncounterPhaseInitial ->
-                    [ DiagnosisHIVInitialPhase
-                    , DiagnosisDiscordantPartnershipInitialPhase
-                    ]
-
-                PrenatalEncounterPhaseRecurrent ->
-                    [ DiagnosisHIVRecurrentPhase
-                    , DiagnosisDiscordantPartnershipRecurrentPhase
-                    ]
+            [ DiagnosisHIVInitialPhase
+            , DiagnosisHIVRecurrentPhase
+            , DiagnosisDiscordantPartnershipInitialPhase
+            , DiagnosisDiscordantPartnershipRecurrentPhase
+            ]
     in
     if diagnosedAnyOf trigerringDiagnoses assembled then
         let

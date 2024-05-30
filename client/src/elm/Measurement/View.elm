@@ -968,7 +968,7 @@ viewNutritionFollowUpForm :
 viewNutritionFollowUpForm language currentDate setFollowUpOptionMsg form =
     viewFollowUpForm language
         currentDate
-        [ OneDay, ThreeDays, OneWeek, TwoWeeks ]
+        [ OneDay, ThreeDays, OneWeek, TwoWeeks, FollowUpNotNeeded ]
         setFollowUpOptionMsg
         form
 
