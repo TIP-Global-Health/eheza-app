@@ -6,21 +6,21 @@ import Backend.ResilienceSurvey.Model exposing (..)
 resilienceSurveyTypeToString : ResilienceSurveyType -> String
 resilienceSurveyTypeToString surveyType =
     case surveyType of
-        ResilienceSurveyMonthly ->
-            "monthly"
+        ResilienceSurveyQuarterly ->
+            "quarterly"
 
-        ResilienceSurveyQuaterly ->
-            "quaterly"
+        ResilienceSurveyAdoption ->
+            "adoption"
 
 
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
-        "monthly" ->
-            Just ResilienceSurveyMonthly
+        "quarterly" ->
+            Just ResilienceSurveyQuarterly
 
-        "quaterly" ->
-            Just ResilienceSurveyQuaterly
+        "adoption" ->
+            Just ResilienceSurveyAdoption
 
         _ ->
             Nothing
@@ -59,6 +59,12 @@ resilienceSurveyQuestionToString value =
         ResilienceSurveyQuestion10 ->
             "q10"
 
+        ResilienceSurveyQuestion11 ->
+            "q11"
+
+        ResilienceSurveyQuestion12 ->
+            "q12"
+
 
 resilienceSurveyQuestionFromString : String -> Maybe ResilienceSurveyQuestion
 resilienceSurveyQuestionFromString value =
@@ -92,6 +98,12 @@ resilienceSurveyQuestionFromString value =
 
         "q10" ->
             Just ResilienceSurveyQuestion10
+
+        "q11" ->
+            Just ResilienceSurveyQuestion11
+
+        "q12" ->
+            Just ResilienceSurveyQuestion12
 
         _ ->
             Nothing
