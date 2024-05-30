@@ -2423,6 +2423,9 @@ encodeFollowUpOption option =
             ThreeMonths ->
                 "3-m"
 
+            FollowUpNotNeeded ->
+                "none"
+
 
 encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
 encodeNutritionFeeding =
@@ -3165,6 +3168,9 @@ encodeReasonForNotTakingSign reason =
 
             NotTakingMemoryProblems ->
                 "memory-problems"
+
+            NotTakingTreatmentNotStarted ->
+                "treatment-not-started"
 
             NotTakingOther ->
                 "other"
@@ -4537,6 +4543,7 @@ encodeHIVDiagnosticsValue value =
     , ( "type", string "hiv_diagnostics" )
     ]
         ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
 
 
 encodeHIVDiagnosisSign : HIVDiagnosisSign -> Value

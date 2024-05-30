@@ -24,7 +24,11 @@ quarterlySurveyQuestions =
 
 adoptionSurveyQuestions : List ResilienceSurveyQuestion
 adoptionSurveyQuestions =
-    [ ResilienceSurveyQuestion5
+    [ ResilienceSurveyQuestion1
+    , ResilienceSurveyQuestion2
+    , ResilienceSurveyQuestion3
+    , ResilienceSurveyQuestion4
+    , ResilienceSurveyQuestion5
     , ResilienceSurveyQuestion6
     , ResilienceSurveyQuestion7
     , ResilienceSurveyQuestion8
@@ -32,10 +36,6 @@ adoptionSurveyQuestions =
     , ResilienceSurveyQuestion10
     , ResilienceSurveyQuestion11
     , ResilienceSurveyQuestion12
-    , ResilienceSurveyQuestion13
-    , ResilienceSurveyQuestion14
-    , ResilienceSurveyQuestion15
-    , ResilienceSurveyQuestion16
     ]
 
 

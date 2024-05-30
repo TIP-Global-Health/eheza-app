@@ -1021,7 +1021,7 @@ function hedley_stats_get_acute_illness_data($health_center_id) {
       // assigned to participant.
       // This is anomaly that should not happen, since participant
       // is mandatory field.
-      // However, there was one case where it happened on live,
+      // However, there were cases where it happened on live,
       // so adding this check for certainty, since this failure causes
       // health center sync to get stuck, making HC devices not usable.
       continue;
@@ -1168,6 +1168,17 @@ function hedley_stats_get_prenatal_data($health_center_id) {
   $result = hedley_stats_run_node_query_in_batches($query);
 
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1310,6 +1321,17 @@ function hedley_stats_get_ncd_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1582,6 +1604,17 @@ function hedley_stats_get_spv_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1592,10 +1625,10 @@ function hedley_stats_get_spv_data($health_center_id) {
       $item['encounter_type'] = $row->field_well_child_encounter_type;
     }
     if (!empty($row->muac)) {
-      $item['muac'] = $row->muac;
+      $item['muac'] = hedley_stats_extract_first_value($row->muac);
     }
     if (!empty($row->zscore_length)) {
-      $item['zscore_wasting'] = $row->zscore_length;
+      $item['zscore_wasting'] = hedley_stats_extract_first_value($row->zscore_length);
     }
     $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
   }
@@ -1742,6 +1775,17 @@ function hedley_stats_get_child_scorecard_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $items[$row->field_individual_participant]['encounters'][$row->nid] = [
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
     ];
@@ -1807,7 +1851,7 @@ function hedley_stats_add_zscore_age_for_bundle(SelectQuery $base_query, $encoun
     }
 
     $alias = ($bundle == HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE) ? 'zscore_underweight' : 'zscore_stunting';
-    $items[$row->field_individual_participant]['encounters'][$row->nid][$alias] = $row->zscore_age;
+    $items[$row->field_individual_participant]['encounters'][$row->nid][$alias] = hedley_stats_extract_first_value($row->zscore_age);
   }
 
   // Free up memory.
@@ -1978,6 +2022,17 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
 
   // Populate data of the encounters.
   foreach ($result as $row) {
+    if (empty($items[$row->field_individual_participant])) {
+      // If we got here, there's an encounter that is not
+      // assigned to participant.
+      // This is anomaly that should not happen, since participant
+      // is mandatory field.
+      // However, there were cases where it happened on live,
+      // so adding this check for certainty, since this failure causes
+      // health center sync to get stuck, making HC devices not usable.
+      continue;
+    }
+
     $item = [
       // Field for 'created' is added at hedley_stats_get_base_query().
       'start_date' => date_format(date_create($row->field_scheduled_date), 'Y-m-d'),
@@ -1987,10 +2042,10 @@ function hedley_stats_get_nutrition_individual_data($health_center_id) {
       $item['encounter_type'] = $row->field_nutrition_encounter_type;
     }
     if (!empty($row->muac)) {
-      $item['muac'] = $row->muac;
+      $item['muac'] = hedley_stats_extract_first_value($row->muac);
     }
     if (!empty($row->zscore_length)) {
-      $item['zscore_wasting'] = $row->zscore_length;
+      $item['zscore_wasting'] = hedley_stats_extract_first_value($row->zscore_length);
     }
     $items[$row->field_individual_participant]['encounters'][$row->nid] = $item;
   }
@@ -2094,40 +2149,47 @@ function hedley_stats_get_nutrition_group_data($health_center_id) {
   $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE);
   // Pull data of weight for height z-score for determining 'Wasting'.
   $query->leftJoin('field_data_field_zscore_length', 'zscore_length', 'zscore_length.entity_id = session.entity_id');
-  $query->addField('zscore_length', 'field_zscore_length_value', 'wasting');
+  $query->addField('zscore_length', 'field_zscore_length_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_length.field_zscore_length_value)", 'wasting');
   // Pull data of weight for age z-score for determining 'Underweight'.
   $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = session.entity_id');
-  $query->addField('zscore_age', 'field_zscore_age_value', 'underweight');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'underweight');
+  $query->groupBy('node.nid');
 
   $rows = hedley_stats_run_node_query_in_batches($query);
   foreach ($rows as $row) {
     $data[$row->clinic_type][$row->person_id][$row->session_id] = [
       'start_date' => date_format(date_create($row->field_date_measured), 'Y-m-d'),
-      'zscore_wasting' => $row->wasting,
-      'zscore_underweight' => $row->underweight,
+      'zscore_wasting' => hedley_stats_extract_first_value($row->wasting),
+      'zscore_underweight' => hedley_stats_extract_first_value($row->underweight),
     ];
   }
 
   $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE);
   // Pull data of height for age z-score for determining 'Stunting'.
   $query->leftJoin('field_data_field_zscore_age', 'zscore_age', 'zscore_age.entity_id = session.entity_id');
-  $query->addField('zscore_age', 'field_zscore_age_value', 'stunting');
+  $query->addField('zscore_age', 'field_zscore_age_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT zscore_age.field_zscore_age_value)", 'stunting');
+  $query->groupBy('node.nid');
 
   $rows = hedley_stats_run_node_query_in_batches($query);
   foreach ($rows as $row) {
     $data[$row->clinic_type][$row->person_id][$row->session_id]['start_date'] = date_format(date_create($row->field_date_measured), 'Y-m-d');
-    $data[$row->clinic_type][$row->person_id][$row->session_id]['zscore_stunting'] = $row->stunting;
+    $data[$row->clinic_type][$row->person_id][$row->session_id]['zscore_stunting'] = hedley_stats_extract_first_value($row->stunting);
   }
 
   $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE);
   // Pull data of MUAC that was recorded during session.
   $query->leftJoin('field_data_field_muac', 'muac', 'muac.entity_id = session.entity_id');
   $query->addField('muac', 'field_muac_value');
+  $query->addExpression("GROUP_CONCAT(DISTINCT muac.field_muac_value)", 'muac');
+  $query->groupBy('node.nid');
 
   $rows = hedley_stats_run_node_query_in_batches($query);
   foreach ($rows as $row) {
     $data[$row->clinic_type][$row->person_id][$row->session_id]['start_date'] = date_format(date_create($row->field_date_measured), 'Y-m-d');
-    $data[$row->clinic_type][$row->person_id][$row->session_id]['muac'] = $row->field_muac_value;
+    $data[$row->clinic_type][$row->person_id][$row->session_id]['muac'] = hedley_stats_extract_first_value($row->muac);
   }
 
   $query = hedley_stats_get_nutrition_group_query_for_bundle($health_center_id, $patients_ids, HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE);
@@ -3746,4 +3808,21 @@ function hedley_stats_add_patient_details($node, array &$patients_details, $add_
       $patients_details[$node->nid]['phone_number'] = $phone_number;
     }
   }
+}
+
+/**
+ * Extracts the first value from a comma-separated string of values.
+ *
+ * @param string $values_string
+ *   The values string.
+ *
+ * @return string
+ *   First value.
+ */
+function hedley_stats_extract_first_value($values_string) {
+  if (empty($values_string)) {
+    return NULL;
+  }
+
+  return explode(',', $values_string)[0];
 }

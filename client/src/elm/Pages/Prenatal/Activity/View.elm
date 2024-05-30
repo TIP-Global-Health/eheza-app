@@ -204,7 +204,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
                         WarningPopupRegular ->
                             let
                                 nonUrgentDiagnoses =
-                                    EverySet.toList encounterDiagnoses |> filterNonUrgentDiagnoses
+                                    EverySet.toList encounterDiagnoses
+                                        |> filterNonUrgentDiagnoses
                             in
                             if List.isEmpty nonUrgentDiagnoses then
                                 Nothing
@@ -212,7 +213,11 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
                             else
                                 let
                                     ( undetermined, determined ) =
-                                        List.partition (\diagnosis -> List.member diagnosis undeterminedPostpartumDiagnoses) nonUrgentDiagnoses
+                                        List.partition
+                                            (\diagnosis ->
+                                                List.member diagnosis undeterminedPostpartumDiagnoses
+                                            )
+                                            nonUrgentDiagnoses
 
                                     top =
                                         case determined of
@@ -3740,6 +3745,7 @@ viewFollowUpForm language assembled currentDate form =
             , Backend.Measurement.Model.OneMonth
             , TwoMonths
             , Backend.Measurement.Model.ThreeMonths
+            , FollowUpNotNeeded
             ]
             []
             form.option

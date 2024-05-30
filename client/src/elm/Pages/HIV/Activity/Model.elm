@@ -36,12 +36,14 @@ emptyModel =
 
 type alias DiagnosticsData =
     { form : DiagnosticsForm
+    , showEndEncounterDialog : Bool
     }
 
 
 emptyDiagnosticsData : DiagnosticsData
 emptyDiagnosticsData =
     { form = emptyDiagnosticsForm
+    , showEndEncounterDialog = False
     }
 
 
@@ -57,6 +59,12 @@ type alias DiagnosticsForm =
     , positiveResultDateEstimated : Maybe Bool
     , positiveResultDateEstimatedDirty : Bool
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+
+    -- Used in case patient reports of not being Diagnosed with HIV.
+    , runHIVTest : Maybe Bool
+    , runHIVTestDirty : Bool
+    , testResult : Maybe TestResult
+    , testResultDirty : Bool
     }
 
 
@@ -69,6 +77,10 @@ emptyDiagnosticsForm =
     , positiveResultDateEstimated = Nothing
     , positiveResultDateEstimatedDirty = False
     , dateSelectorPopupState = Nothing
+    , runHIVTest = Nothing
+    , runHIVTestDirty = False
+    , testResult = Nothing
+    , testResultDirty = False
     }
 
 
@@ -88,13 +100,15 @@ emptyMedicationData =
 
 
 type alias PrescribedMedicationForm =
-    { medications : Maybe (List HIVPrescribedMedication)
+    { medicationsNotChanged : Maybe Bool
+    , medications : Maybe (List HIVPrescribedMedication)
     }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
-    { medications = Nothing
+    { medicationsNotChanged = Nothing
+    , medications = Nothing
     }
 
 
@@ -173,10 +187,13 @@ type Msg
     | SetDiagnosticsBoolInput (Bool -> DiagnosticsForm -> DiagnosticsForm) Bool
     | ConfirmPositiveResultDate Date Bool
     | SetPositiveResultDate Date
+    | SetHIVTestResult String
+    | SetEndEncounterDialogState Bool (Maybe (DiagnosticsForm -> DiagnosticsForm))
     | SetDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SaveDiagnostics PersonId IndividualEncounterParticipantId Bool (Maybe ( HIVDiagnosticsId, HIVDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedicationsNotChanged Bool
     | SetPrescribedMedication HIVPrescribedMedication
     | SavePrescribedMedication PersonId (Maybe ( HIVMedicationId, HIVMedication )) (Maybe MedicationTask)
     | SetTreatmentReviewBoolInput (Bool -> OngoingTreatmentReviewForm -> OngoingTreatmentReviewForm) Bool

@@ -323,9 +323,15 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                     , lipidPanel = False
                     }
 
+                viewForConfirmation =
+                    -- Lab technician  and nurse results reviewer are
+                    -- presented data for confirmation purposes.
+                    -- Confirmed data is only of current encounter.
+                    isLabTech || isResultsReviewer
+
                 labResultsMode =
-                    if isLabTech || isResultsReviewer then
-                        -- Lab thechnician  and results reviewer go
+                    if viewForConfirmation then
+                        -- Lab technician  and nurse results reviewer go
                         -- straight to main page of lab results.
                         Maybe.Extra.or model.labResultsMode (Just <| LabResultsCurrent LabResultsCurrentMain)
 
@@ -338,10 +344,12 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         resultsPane =
                             case mode of
                                 LabResultsCurrent currentMode ->
-                                    generateLabsResultsPaneData currentDate assembled
+                                    -- Possibly view is for confirmation, therefore,
+                                    -- passing 'viewForConfirmation.'
+                                    generateLabsResultsPaneData currentDate viewForConfirmation assembled
                                         |> viewLabResultsPane language
                                             currentDate
-                                            (isLabTech || isResultsReviewer)
+                                            viewForConfirmation
                                             currentMode
                                             SetLabResultsMode
                                             labResultsConfig
@@ -409,10 +417,13 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         labsPane =
                             Maybe.map
                                 (\_ ->
-                                    generateLabsResultsPaneData currentDate assembled
+                                    -- This is for sure not view for confirmation, therefore
+                                    -- 'False' is passed to make sure we generated data for current
+                                    -- and previous encounters.
+                                    generateLabsResultsPaneData currentDate False assembled
                                         |> viewLabResultsPane language
                                             currentDate
-                                            (isLabTech || isResultsReviewer)
+                                            viewForConfirmation
                                             LabResultsCurrentMain
                                             SetLabResultsMode
                                             labResultsConfig
@@ -1593,13 +1604,21 @@ illustrativePurposes language =
 
 generateLabsResultsPaneData :
     NominalDate
+    -> Bool
     -> AssembledData
     -> LabsResultsValues PrenatalEncounterId
-generateLabsResultsPaneData currentDate assembled =
+generateLabsResultsPaneData currentDate viewForConfirmation assembled =
     let
         allMeasurements =
             assembled.measurements
-                :: List.map .measurements assembled.nursePreviousEncountersData
+                :: (if viewForConfirmation then
+                        -- Confirmation is for current encounter only, so there's
+                        -- no need to include data from previous encounters.
+                        []
+
+                    else
+                        List.map .measurements assembled.nursePreviousEncountersData
+                   )
 
         extractValues getMeasurementFunc =
             List.filterMap (getMeasurementFunc >> getMeasurementValueFunc)

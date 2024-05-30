@@ -31,12 +31,14 @@ import Pages.Utils
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxMultipleSelectSectionsInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewLabel
         , viewNumberInput
         , viewQuestionLabel
         )
-import Translate exposing (translate)
+import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language(..))
 
 
@@ -104,7 +106,7 @@ expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate assembled task =
     case task of
         TaskPrescribedMedication ->
-            assembled.initialEncounter
+            True
 
         TaskTreatmentReview ->
             not assembled.initialEncounter
@@ -130,24 +132,11 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                     getMeasurementValueFunc assembled.measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
 
-                isCompleted =
-                    let
-                        mandatoryGroup =
-                            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
-                    in
-                    Maybe.map
-                        (\medications ->
-                            if List.any (\medication -> List.member medication medications) mandatoryGroup then
-                                1
-
-                            else
-                                0
-                        )
-                        form.medications
-                        |> Maybe.withDefault 0
+                ( _, ( tasksCompleted, tasksTotal ) ) =
+                    prescribedMedicationsInputsAndTasks language currentDate assembled form
             in
-            ( isCompleted
-            , 1
+            ( tasksCompleted
+            , tasksTotal
             )
 
         TaskTreatmentReview ->
@@ -314,6 +303,9 @@ diagnosticsFormWithDefault form saved =
                 let
                     positiveResultDateEstimatedByValue =
                         EverySet.member HIVResultDateEstimated value.signs
+
+                    runHIVTestByValue =
+                        EverySet.member HIVTestRun value.signs
                 in
                 { resultPositive = or form.resultPositive (EverySet.member HIVResultPositiveReported value.signs |> Just)
                 , resultDateCorrect = or form.resultDateCorrect (EverySet.member HIVResultPositiveKnown value.signs |> Just)
@@ -328,6 +320,16 @@ diagnosticsFormWithDefault form saved =
                         (Just positiveResultDateEstimatedByValue)
                 , positiveResultDateEstimatedDirty = form.positiveResultDateEstimatedDirty
                 , dateSelectorPopupState = form.dateSelectorPopupState
+                , runHIVTest =
+                    maybeValueConsideringIsDirtyField form.runHIVTestDirty
+                        form.runHIVTest
+                        (Just runHIVTestByValue)
+                , runHIVTestDirty = form.runHIVTestDirty
+                , testResult =
+                    maybeValueConsideringIsDirtyField form.testResultDirty
+                        form.testResult
+                        value.testResult
+                , testResultDirty = False
                 }
             )
 
@@ -361,6 +363,7 @@ toDiagnosticsValue positiveResultRecorded form =
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
+                , testResult = form.testResult
                 }
             )
             form.resultDateCorrect
@@ -373,11 +376,15 @@ toDiagnosticsValue positiveResultRecorded form =
                         if resultPositive then
                             [ HIVResultPositiveReported ]
 
+                        else if form.runHIVTest == Just True then
+                            [ HIVTestRun ]
+
                         else
                             []
                 in
                 { signs = EverySet.fromList <| mainSign ++ esitmatedSign
                 , positiveResultDate = form.positiveResultDate
+                , testResult = form.testResult
                 }
             )
             form.resultPositive
@@ -398,13 +405,28 @@ prescribedMedicationFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { medications = or form.medications (Just <| EverySet.toList value) }
+                let
+                    ( medicationsNotChangedFromValue, medicationsFromValue ) =
+                        case EverySet.toList value of
+                            [ HIVMedicationsNotChanged ] ->
+                                ( Just True, Nothing )
+
+                            _ ->
+                                ( Just False, Just <| EverySet.toList value )
+                in
+                { medicationsNotChanged = or form.medicationsNotChanged medicationsNotChangedFromValue
+                , medications = or form.medications medicationsFromValue
+                }
             )
 
 
 toPrescribedMedicationValue : PrescribedMedicationForm -> Maybe HIVMedicationValue
 toPrescribedMedicationValue form =
-    Maybe.map EverySet.fromList form.medications
+    if form.medicationsNotChanged == Just True then
+        EverySet.singleton HIVMedicationsNotChanged |> Just
+
+    else
+        Maybe.map EverySet.fromList form.medications
 
 
 toSymptomReviewValueWithDefault : Maybe HIVSymptomReviewValue -> SymptomReviewForm -> Maybe HIVSymptomReviewValue
@@ -499,8 +521,110 @@ lessCommonAntiRetroviralMedications =
 prophylaxisMedications : List HIVPrescribedMedication
 prophylaxisMedications =
     [ HIVMedicationBactrim
-    , HIVMedicationDapsone
-    , HIVMedicationIsoniazid
-    , HIVMedicationFluconazole
-    , HIVMedicationAzithromycin
+    , HIVMedicationTrimethoprimSulfamethoxazole
+    , HIVMedicationCoTrimoxazoleTablets
+    , HIVMedicationCoTrimoxazoleOralSuspension
     ]
+
+
+prescribedMedicationsInputsAndTasks :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> PrescribedMedicationForm
+    -> ( List (Html Msg), ( Int, Int ) )
+prescribedMedicationsInputsAndTasks language currentDate assembled form =
+    let
+        mPrescribedMedications =
+            List.filterMap
+                (\data ->
+                    getMeasurementValueFunc data.measurements.medication
+                        |> Maybe.andThen
+                            (\value ->
+                                case EverySet.toList value of
+                                    [ HIVMedicationsNotChanged ] ->
+                                        Nothing
+
+                                    _ ->
+                                        Just value
+                            )
+                )
+                assembled.previousEncountersData
+                |> List.head
+
+        ( recordMedicationsInputs, recordMedicationsTasks ) =
+            recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsTakenQuestion form
+    in
+    Maybe.map
+        (\prescribedMedication ->
+            let
+                ( derivedInputs, ( derivedTasksCompleted, derivedTasksTotal ) ) =
+                    if form.medicationsNotChanged /= Just False then
+                        ( [], ( 0, 0 ) )
+
+                    else
+                        ( recordMedicationsInputs, recordMedicationsTasks )
+
+                prescribedMedicationForView =
+                    EverySet.toList prescribedMedication
+                        |> List.map
+                            (\medication ->
+                                li [] [ text <| translate language <| Translate.HIVPrescribedMedication medication ]
+                            )
+                        |> ul []
+            in
+            ( [ viewLabel language Translate.PrescribedMedication
+              , prescribedMedicationForView
+              , viewQuestionLabel language Translate.HIVPrescribedMedicationsChangedQuestion
+              , viewBoolInput
+                    language
+                    form.medicationsNotChanged
+                    SetPrescribedMedicationsNotChanged
+                    "medications-changed"
+                    Nothing
+              ]
+                ++ derivedInputs
+            , ( taskCompleted form.medicationsNotChanged + derivedTasksCompleted
+              , 1 + derivedTasksTotal
+              )
+            )
+        )
+        mPrescribedMedications
+        |> Maybe.withDefault (recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsQuestion form)
+
+
+recordMedicationsInputsAndTasks :
+    Language
+    -> TranslationId
+    -> PrescribedMedicationForm
+    -> ( List (Html Msg), ( Int, Int ) )
+recordMedicationsInputsAndTasks language questionTransId form =
+    let
+        mandatoryGroup =
+            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
+    in
+    ( [ div [ class "ui form prescribed-medication" ]
+            [ viewQuestionLabel language questionTransId
+            , viewCheckBoxMultipleSelectSectionsInput language
+                [ ( Translate.MostCommonAntiRetroviralMedications, mostCommonAntiRetroviralMedications )
+                , ( Translate.LessCommonAntiRetroviralMedications, lessCommonAntiRetroviralMedications )
+                , ( Translate.ProphylaxisMedications, prophylaxisMedications )
+                ]
+                (Maybe.withDefault [] form.medications)
+                SetPrescribedMedication
+                Translate.HIVPrescribedMedication
+            ]
+      ]
+    , ( Maybe.map
+            (\medications ->
+                if List.any (\medication -> List.member medication medications) mandatoryGroup then
+                    1
+
+                else
+                    0
+            )
+            form.medications
+            |> Maybe.withDefault 0
+      , 1
+      )
+    )

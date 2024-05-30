@@ -243,8 +243,8 @@ type alias FollowUp =
 
 type alias NutritionFollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : EverySet NutritionAssessment
     , resolutionDate : Maybe NominalDate
+    , assesment : EverySet NutritionAssessment
     }
 
 
@@ -276,6 +276,7 @@ type FollowUpOption
     | OneMonth
     | TwoMonths
     | ThreeMonths
+    | FollowUpNotNeeded
 
 
 type alias GroupNCDA =
@@ -970,8 +971,8 @@ type alias PrenatalFollowUp =
 
 type alias PrenatalFollowUpValue =
     { options : EverySet FollowUpOption
-    , assesment : PrenatalAssesment
     , resolutionDate : Maybe NominalDate
+    , assesment : PrenatalAssesment
     }
 
 
@@ -2047,6 +2048,7 @@ type ReasonForNotTaking
     = NotTakingAdverseEvent
     | NotTakingNoMoney
     | NotTakingMemoryProblems
+    | NotTakingTreatmentNotStarted
     | NotTakingOther
     | NoReasonForNotTakingSign
 
@@ -2134,8 +2136,8 @@ type alias AcuteIllnessFollowUp =
 
 type alias AcuteIllnessFollowUpValue =
     { options : EverySet FollowUpOption
-    , diagnosis : Maybe AcuteIllnessDiagnosis
     , resolutionDate : Maybe NominalDate
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -2982,6 +2984,7 @@ type alias HIVDiagnostics =
 type alias HIVDiagnosticsValue =
     { signs : EverySet HIVDiagnosisSign
     , positiveResultDate : Maybe NominalDate
+    , testResult : Maybe TestResult
     }
 
 
@@ -2989,6 +2992,7 @@ type HIVDiagnosisSign
     = HIVResultPositiveReported
     | HIVResultPositiveKnown
     | HIVResultDateEstimated
+    | HIVTestRun
     | NoHIVDiagnosisSigns
 
 
@@ -3041,10 +3045,10 @@ type HIVPrescribedMedication
     | HIVMedicationLamivudine
     | HIVMedicationAbacavir
     | HIVMedicationBactrim
-    | HIVMedicationDapsone
-    | HIVMedicationIsoniazid
-    | HIVMedicationFluconazole
-    | HIVMedicationAzithromycin
+    | HIVMedicationTrimethoprimSulfamethoxazole
+    | HIVMedicationCoTrimoxazoleTablets
+    | HIVMedicationCoTrimoxazoleOralSuspension
+    | HIVMedicationsNotChanged
     | NoHIVPrescribedMedications
 
 

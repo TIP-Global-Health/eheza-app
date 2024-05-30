@@ -634,6 +634,8 @@ type TranslationId
     | EncounterWarningForDiagnosisPane EncounterWarning String
     | EndEncounter
     | EndEncounterQuestion
+    | EndEncounterNoHIVDiagnosisPhrase
+    | EndEncounterNoTuberculosisDiagnosisPhrase
     | EndGroupEncounter
     | EnrolNewborn
     | EnrolNewbornHelper Bool
@@ -682,6 +684,7 @@ type TranslationId
     | FollowPostpartumProtocols
     | FollowUp
     | FollowUpWithPatientIn
+    | FollowUpWithPatientNotNeeded
     | FollowUpWithPatientOn
     | FollowUpByChwLabel
     | FollowUpLabel
@@ -708,6 +711,7 @@ type TranslationId
     | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
+    | Guide
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -760,9 +764,12 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
+    | HIVPrescribedMedicationsChangedQuestion
     | HIVPrescribedMedicationsQuestion
+    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
+    | HIVSuggestTakingTestQuestion
     | HIVSymptom HIVSymptom
     | HIVSymptomReviewQuestion
     | HIVTreatmentSign HIVTreatmentSign
@@ -1389,36 +1396,36 @@ type TranslationId
     | ResilienceMessageGrowth4Title
     | ResilienceMessageGrowth4Paragraph1
     | ResilienceMessageGrowth4Paragraph2
-    | ResilienceMessageGuideTitle1
-    | ResilienceMessageGuide1Bullet1
-    | ResilienceMessageGuide1Bullet2
-    | ResilienceMessageGuideTitle2
-    | ResilienceMessageGuide2Bullet1
-    | ResilienceMessageGuide2Bullet2
-    | ResilienceMessageGuideTitle3
-    | ResilienceMessageGuide3Bullet1
-    | ResilienceMessageGuide3Bullet2
-    | ResilienceMessageGuide3Bullet3
-    | ResilienceMessageGuide3Bullet4
-    | ResilienceMessageGuide3Bullet5
-    | ResilienceMessageGuide3Bullet6
-    | ResilienceMessageGuide3Bullet7
-    | ResilienceMessageGuide3Note
-    | ResilienceMessageGuideTitle4
-    | ResilienceMessageGuide4Text
-    | ResilienceMessageGuideTitle5
-    | ResilienceMessageGuide5Bullet1
-    | ResilienceMessageGuide5Bullet2
-    | ResilienceMessageGuide5Bullet3
-    | ResilienceMessageGuideTitle6
-    | ResilienceMessageGuide6Bullet1
-    | ResilienceMessageGuide6Bullet2
-    | ResilienceMessageGuide6Bullet3
-    | ResilienceMessageGuide6Bullet4
-    | ResilienceMessageGuide6Bullet5
-    | ResilienceMessageGuide6Bullet6
-    | ResilienceMessageGuide6Bullet7
-    | ResilienceMessageGuide6Note
+    | ResilienceGuideSection1Title
+    | ResilienceGuideSection1Bullet1
+    | ResilienceGuideSection1Bullet2
+    | ResilienceGuideSection2Title
+    | ResilienceGuideSection2Bullet1
+    | ResilienceGuideSection2Bullet2
+    | ResilienceGuideSection3Title
+    | ResilienceGuideSection3Bullet1
+    | ResilienceGuideSection3Bullet2
+    | ResilienceGuideSection3Bullet3
+    | ResilienceGuideSection3Bullet4
+    | ResilienceGuideSection3Bullet5
+    | ResilienceGuideSection3Bullet6
+    | ResilienceGuideSection3Bullet7
+    | ResilienceGuideSection3Note
+    | ResilienceGuideSection4Title
+    | ResilienceGuideSection4Text
+    | ResilienceGuideSection5Title
+    | ResilienceGuideSection5Bullet1
+    | ResilienceGuideSection5Bullet2
+    | ResilienceGuideSection5Bullet3
+    | ResilienceGuideSection6Title
+    | ResilienceGuideSection6Bullet1
+    | ResilienceGuideSection6Bullet2
+    | ResilienceGuideSection6Bullet3
+    | ResilienceGuideSection6Bullet4
+    | ResilienceGuideSection6Bullet5
+    | ResilienceGuideSection6Bullet6
+    | ResilienceGuideSection6Bullet7
+    | ResilienceGuideSection6Note
     | ResilienceMessageStressManagement1Title
     | ResilienceMessageStressManagement1Paragraph1
     | ResilienceMessageStressManagement1Paragraph2
@@ -3534,7 +3541,7 @@ translationSet trans =
                     translationSet EmptyString
 
         BloodSmearTestResult ->
-            { english = "Malaria Blood Test Result"
+            { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -5579,6 +5586,18 @@ translationSet trans =
             , kirundi = Just "Guheza kubonana?"
             }
 
+        EndEncounterNoHIVDiagnosisPhrase ->
+            { english = "The patient does not have an HIV diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        EndEncounterNoTuberculosisDiagnosisPhrase ->
+            { english = "The patient does not have a Tuberculosis diagnosis. Would you like to close this encounter?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         EndGroupEncounter ->
             { english = "End Group Encounter"
             , kinyarwanda = Just "Gusoza igikorwa"
@@ -6073,7 +6092,13 @@ translationSet trans =
         FollowUpWithPatientIn ->
             { english = "Follow up with patient in"
             , kinyarwanda = Just "Kurikirana umurwayi uri mu bitaro"
-            , kirundi = Just "Kurikirana umugwayi wawe "
+            , kirundi = Just "Kurikirana umugwayi wawe"
+            }
+
+        FollowUpWithPatientNotNeeded ->
+            { english = "No need to follow up with patient"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         FollowUpWithPatientOn ->
@@ -6142,6 +6167,12 @@ translationSet trans =
                     { english = "3 Months"
                     , kinyarwanda = Just "Amezi 3"
                     , kirundi = Just "Amezi 3"
+                    }
+
+                FollowUpNotNeeded ->
+                    { english = "No follow up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         FollowUpDueOption option ->
@@ -6343,6 +6374,12 @@ translationSet trans =
 
                 GroupEncounterEducation ->
                     translationSet HealthEducation
+
+        Guide ->
+            { english = "Guide"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         HalfOfDosage dosage ->
             { english = "half of " ++ dosage ++ " dosage"
@@ -6931,26 +6968,26 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                HIVMedicationDapsone ->
-                    { english = "Dapsone"
+                HIVMedicationTrimethoprimSulfamethoxazole ->
+                    { english = "Trimethoprim and Sulfamethoxazole tablets (Adults)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationIsoniazid ->
-                    { english = "Isoniazid"
+                HIVMedicationCoTrimoxazoleTablets ->
+                    { english = "Dispersible Co-trimoxazole tablets (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationFluconazole ->
-                    { english = "Fluconazole"
+                HIVMedicationCoTrimoxazoleOralSuspension ->
+                    { english = "Co-trimoxazole Oral Suspension (Pediatrics)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                HIVMedicationAzithromycin ->
-                    { english = "Azithromycin"
+                HIVMedicationsNotChanged ->
+                    { english = "Medications not Changed"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -6958,9 +6995,21 @@ translationSet trans =
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
 
+        HIVPrescribedMedicationsChangedQuestion ->
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HIVPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        HIVPrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -6997,6 +7046,12 @@ translationSet trans =
             { english = "HIV Status"
             , kinyarwanda = Just "Uko ahagaze ku bijyanye n'ubwandu bwa virusi ya SIDA"
             , kirundi = Just "Ivyerekeye umugera wa SIDA"
+            }
+
+        HIVSuggestTakingTestQuestion ->
+            { english = "Would you like to perform an HIV test today"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         HIVSymptom symptom ->
@@ -10632,10 +10687,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabGuide ->
-                    { english = "Guide"
-                    , kinyarwanda = Just "Uko Bikorwa"
-                    , kirundi = Nothing
-                    }
+                    translationSet Guide
 
                 TabUnread ->
                     translationSet (ReadToggle True)
@@ -17222,6 +17274,12 @@ translationSet trans =
                     , kirundi = Just "Ingorane zo kwibuka"
                     }
 
+                NotTakingTreatmentNotStarted ->
+                    { english = "Treatment not started"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NotTakingOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -18306,12 +18364,6 @@ translationSet trans =
 
         ResilienceCategory category ->
             case category of
-                ResilienceCategoryGuide ->
-                    { english = "Guide"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
                 ResilienceCategoryIntroduction ->
                     { english = "Introduction"
                     , kinyarwanda = Just "Ikaze"
@@ -18642,181 +18694,181 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle1 ->
+        ResilienceGuideSection1Title ->
             { english = "a. Entering e-Heza Digital Data Solution"
             , kinyarwanda = Just "a. Kwinjira muri e-Heza"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide1Bullet1 ->
+        ResilienceGuideSection1Bullet1 ->
             { english = "Input your pin code"
             , kinyarwanda = Just "Shyiramo kode (ariyo Pin)"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide1Bullet2 ->
+        ResilienceGuideSection1Bullet2 ->
             { english = "Proceed to the \"Well-being\" icon"
             , kinyarwanda = Just "Komeza kuri \"Gubwa neza\""
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle2 ->
+        ResilienceGuideSection2Title ->
             { english = "b. Upon entering, find the \"Resilience Messages\" window"
             , kinyarwanda = Just "b. Iyo winjiye, ukande ku idirishya ry’“Ubutumwa bwo Kwifasha kumererwa neza”"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide2Bullet1 ->
+        ResilienceGuideSection2Bullet1 ->
             { english = "Respond to the four questions presented."
             , kinyarwanda = Just "Subiza ibibazo 16 byatanzwe."
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide2Bullet2 ->
+        ResilienceGuideSection2Bullet2 ->
             { english = "Receive a score before progressing further."
             , kinyarwanda = Just "Akira amanota mbere yo gukomeza."
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle3 ->
+        ResilienceGuideSection3Title ->
             { english = "c. Program Overview"
             , kinyarwanda = Just "c. Ibice bigize iyi porogaramu"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet1 ->
+        ResilienceGuideSection3Bullet1 ->
             { english = "Unread"
             , kinyarwanda = Just "Ubutumwa utarasoma"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet2 ->
+        ResilienceGuideSection3Bullet2 ->
             { english = "Favourites"
             , kinyarwanda = Just "Ubutumwa wishimiye"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet3 ->
+        ResilienceGuideSection3Bullet3 ->
             { english = "Growth"
             , kinyarwanda = Just "Terimbere"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet4 ->
+        ResilienceGuideSection3Bullet4 ->
             { english = "Connecting"
             , kinyarwanda = Just "Gusabana"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet5 ->
+        ResilienceGuideSection3Bullet5 ->
             { english = "Stress Management"
             , kinyarwanda = Just "Kwiyitaho"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet6 ->
+        ResilienceGuideSection3Bullet6 ->
             { english = "Self-care"
             , kinyarwanda = Just "Kunanirwa"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Bullet7 ->
+        ResilienceGuideSection3Bullet7 ->
             { english = "Mindfulness"
             , kinyarwanda = Just "Zirikana ibi"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide3Note ->
+        ResilienceGuideSection3Note ->
             { english = "(Messages are appropriately categorized within each section once done reading)"
             , kinyarwanda = Just "(Iyo umaze gusoma ubutumwa, bwijyana muri buri cyiciro cyabwo)"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle4 ->
+        ResilienceGuideSection4Title ->
             { english = "d. Find Unread Section:  Click on \"Unread\" "
             , kinyarwanda = Just "d. Kubona Ubutumwa utarasoma: Kanda ahanditse \"Umutumwa utarasoma\""
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide4Text ->
+        ResilienceGuideSection4Text ->
             { english = "Locate unread messages in that section. Click twice on the message to increase its visibility, and after that it will be removed from unread messages"
             , kinyarwanda = Just "Shakira ubutumwa utarasoma muri icyo gice. Kanda inshuro ebyili ku butumwa uri gusoma kugirango ubusome neza. maze buhite buva ku rutonde rw'ubutumwa utarasoma"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle5 ->
+        ResilienceGuideSection5Title ->
             { english = "e. Saving your Favourite Messages: (If a message resonates positively with you, you can designate it as a favourite)"
             , kinyarwanda = Just "e. Kubika Ubutumwa wakunze: (Niba hari ubutumwa wasomye ukabwishimira/ukabukunda, ushobora kubushyira muri iki gice) Uko bikorwa"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide5Bullet1 ->
+        ResilienceGuideSection5Bullet1 ->
             { english = "After reading a message Click on the three buttons above a message"
             , kinyarwanda = Just "Umaze gusoma ubutumwa,  Kanda ku tudomo dutatu turi hejuru y’ubutumwa"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide5Bullet2 ->
+        ResilienceGuideSection5Bullet2 ->
             { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me.\""
             , kinyarwanda = Just "Amahitamo arimo \"Soma,\" \"Ubwo ukunda,\" na \"Unyibutse.\""
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide5Bullet3 ->
+        ResilienceGuideSection5Bullet3 ->
             { english = "Choose \"Favourite\" to mark the message"
             , kinyarwanda = Just " Hitamo \"Ubwo ukunda\" (burahita bujya mu gice cy’ubutumwa ukunda."
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuideTitle6 ->
+        ResilienceGuideSection6Title ->
             { english = "f. Scheduling Reminders: (if you lack time to read a message immediately, schedule a reminder)"
             , kinyarwanda = Just "f. Gusaba Kwibutswa gusoma ubutumwa: (Niba ubuze umwanya wo gusoma ubutumwa, ushobora kubuhitamo ukaba wabusoma igihe uboneye umwanya)"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet1 ->
+        ResilienceGuideSection6Bullet1 ->
             { english = "Click on the three buttons above a message."
             , kinyarwanda = Just "Kanda ku tudomo dutatu turi hejuru y’ubutumwa"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet2 ->
+        ResilienceGuideSection6Bullet2 ->
             { english = "Options include \"Read it,\" \"Favourites,\" and \"Remind me.\""
             , kinyarwanda = Just "Amahitamo arimo \"Soma,\" \"Ubwo ukunda,\" na \"Unyibutse\""
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet3 ->
+        ResilienceGuideSection6Bullet3 ->
             { english = "Click on \"Remind me\" for messages you cannot read immediately."
             , kinyarwanda = Just "Kanda kuri \"Unyibutse\" kubutumwa utagiye gusoma ako kanya."
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet4 ->
+        ResilienceGuideSection6Bullet4 ->
             { english = "Set a reminder to revisit the message in:"
             , kinyarwanda = Just "Hitamo igihe uraba waboneye umwanya waza gusoma ubutumwa. Urahabwa amahitamo yo kuba wabusoma mu gihe cy’:"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet5 ->
+        ResilienceGuideSection6Bullet5 ->
             { english = "One hour"
             , kinyarwanda = Just "Isaha imwe"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet6 ->
+        ResilienceGuideSection6Bullet6 ->
             { english = "Six hours"
             , kinyarwanda = Just "Amasaha atandatu"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Bullet7 ->
+        ResilienceGuideSection6Bullet7 ->
             { english = "Twelve hours"
             , kinyarwanda = Just "Amasaha cumi n'abiri"
             , kirundi = Nothing
             }
 
-        ResilienceMessageGuide6Note ->
+        ResilienceGuideSection6Note ->
             { english = "Note: It is important to note that reading the message requires clicking on it."
             , kinyarwanda = Just "Icyitonderwa: Ni ngombwa kumenya ko gusoma ubutumwa bisaba gukanda kuri ubwo butumwa."
             , kirundi = Nothing
@@ -19622,83 +19674,196 @@ translationSet trans =
 
         ResilienceSurveyAdoptionQuestion question ->
             case question of
-                ResilienceSurveyQuestion5 ->
+                ResilienceSurveyQuestion1 ->
                     { english = "On average, how many times this week did you do recreational activities after work? (for example reading books, listening to the radio, physical exercising, dancing, creative activities…)"
                     , kinyarwanda = Just "Ugereranyije, ni inshuro zingahe muri iki cyumweru wakoze ibikorwa bikuruhura nyuma y’akazi? (urugero gusoma ibitabo, kumva radio, gukora imyitozo ngororamubiri, kubyina, creative activities, ... )"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion6 ->
+                ResilienceSurveyQuestion2 ->
                     { english = "On average, how many times this week did you do the mindfulness excercises"
                     , kinyarwanda = Just "Ugereranyije ni ishuro zingahe muri iki cyumweru wakoze umwitozo wa mindfulness"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion7 ->
+                ResilienceSurveyQuestion3 ->
                     { english = "On average, how many times in the last past six months did you discussed your life with a trusted person or friend? (professional and personal life for example; (religious leaders - pastors,preachers,nuns,...)"
                     , kinyarwanda = Just "Ugereranyije ni inshuro zingahe mu mezi atandatu ashize waganirije ubuzima bwawe umuntu wizera cyangwa inshuti yawe? (ubuzima bw'umwuga n'ubw'umuntu busanzwe) urugero; waganirije abayobozi b'amadini wizera,  abapasitori, abapadiri ababikira, Umuntu w'inararibonye wubaha, ...)"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion8 ->
+                ResilienceSurveyQuestion4 ->
                     { english = "On average, how many times this week have you eaten a balanced meal"
                     , kinyarwanda = Just "Ni inshuro zingahe wariye indyo yuzuye muri iki cyumweru"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion9 ->
+                ResilienceSurveyQuestion5 ->
                     { english = "How many times this week did you try to take a short break between work (breaks every 20 minutes)"
                     , kinyarwanda = Just "Ese ni inshuro zingahe muri iki cyumeru wagerageje gufata akaruhuko gato hagati mu kazi (akaruhuko buri minota 20)"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion10 ->
+                ResilienceSurveyQuestion6 ->
                     { english = "How many times in the last six months did you talk to your leader about your work"
                     , kinyarwanda = Just "Ese ni kangahe mu mezi atandatu ashize waganirije umuyobozi wawe ibijyanye n’akazi ukora (Aha ntiharimo inama z'abakozi muri rusange)"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion11 ->
+                ResilienceSurveyQuestion7 ->
                     { english = "How many times in the last six months have you talked to a professional counselor about your personal or work-related problems"
                     , kinyarwanda = Just "Ese ni kangahe mu mezi atandatu ashize waganirije umujyanama wabigize umwuga ku bibazo byawe  bwite cyangwa ibyo mu kazi"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion12 ->
+                ResilienceSurveyQuestion8 ->
                     { english = "How many times this week have you given time to what you value in life? (work, family, friends, training...)"
                     , kinyarwanda = Just "Ese ni inshuro zingahe muri iki cyumweru wahaye umwanya ibyo uha agaciro mu buzima? ( akazi, umuryango, inshuti, kwihugura ….)"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion13 ->
+                ResilienceSurveyQuestion9 ->
                     { english = "How many times this month did you do activities that increase your feelings? (Example; walking with your family, walking in the garden or vegetable garden)."
                     , kinyarwanda = Just "Ese ni kangahe muri uku kwezi wakoze ibikorwa byo kuzamura amarangamutima yawe? (Urugero; gutembera n’umuryango wawe, gutembera mu ubusitani bw’indabo cyangwa umurima w' imboga)."
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion14 ->
+                ResilienceSurveyQuestion10 ->
                     { english = "How many times this month did you share with your colleagues new knowledge/skill"
                     , kinyarwanda = Just "Ni inshuro zingahe muri uku kwezi wasangije abo mukorana ubumenyi bushya"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion15 ->
+                ResilienceSurveyQuestion11 ->
                     { english = "How many times this month did you meet and talk with your colleagues? ( In a social context)"
                     , kinyarwanda = Just "Ni inshuri zingahe muri uku kwezi wahuye n’abo mukorana mukaganira/mugasabana"
                     , kirundi = Nothing
                     }
 
-                ResilienceSurveyQuestion16 ->
+                ResilienceSurveyQuestion12 ->
                     { english = "How many times this month did you take the time to learn something new"
                     , kinyarwanda = Just "Ni inshuro zingahe muri uku kwezi wafashe umwanya wo kwiga ikintu gishya"
                     , kirundi = Nothing
                     }
 
-                _ ->
-                    translationSet EmptyString
-
         ResilienceSurveyAdoptionOptionsForQuestion question option ->
             case question of
+                ResilienceSurveyQuestion1 ->
+                    case option of
+                        ResilienceSurveyQuestionOption0 ->
+                            translationSet Never
+
+                        ResilienceSurveyQuestionOption1 ->
+                            { english = "Once a week"
+                            , kinyarwanda = Just "Rimwe mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "2 to 3 days a week"
+                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
+                            { english = "4 to 5 days a week"
+                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption4 ->
+                            { english = "Every day (6-7 days)"
+                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+                            , kirundi = Nothing
+                            }
+
+                ResilienceSurveyQuestion2 ->
+                    case option of
+                        ResilienceSurveyQuestionOption0 ->
+                            translationSet Never
+
+                        ResilienceSurveyQuestionOption1 ->
+                            { english = "Once a week"
+                            , kinyarwanda = Just "Rimwe mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "2 to 3 days a week"
+                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
+                            { english = "4 to 5 days a week"
+                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption4 ->
+                            { english = "Every day (6-7 days)"
+                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+                            , kirundi = Nothing
+                            }
+
+                ResilienceSurveyQuestion3 ->
+                    case option of
+                        ResilienceSurveyQuestionOption0 ->
+                            translationSet Never
+
+                        ResilienceSurveyQuestionOption1 ->
+                            { english = "Once in last six months"
+                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "Once in last three months"
+                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
+                            { english = "Once in the last two months"
+                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption4 ->
+                            { english = "Once every month"
+                            , kinyarwanda = Just "Rimwe buri kwezi"
+                            , kirundi = Nothing
+                            }
+
+                ResilienceSurveyQuestion4 ->
+                    case option of
+                        ResilienceSurveyQuestionOption0 ->
+                            translationSet Never
+
+                        ResilienceSurveyQuestionOption1 ->
+                            { english = "Once a week"
+                            , kinyarwanda = Just "Rimwe mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "2 to 3 days a week"
+                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
+                            { english = "4 to 5 days a week"
+                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption4 ->
+                            { english = "Every day (6-7 days)"
+                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+                            , kirundi = Nothing
+                            }
+
                 ResilienceSurveyQuestion5 ->
                     case option of
                         ResilienceSurveyQuestionOption0 ->
@@ -19734,26 +19899,26 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
+                            { english = "Once in last six months"
+                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
+                            { english = "Once in last three months"
+                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
+                            { english = "Once in the last two months"
+                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+                            { english = "Once every month"
+                            , kinyarwanda = Just "Rimwe buri kwezi"
                             , kirundi = Nothing
                             }
 
@@ -19821,26 +19986,26 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
+                            { english = "Once a month"
+                            , kinyarwanda = Just "Rimwe mu kwezi"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption2 ->
+                            { english = "Twice a month"
+                            , kinyarwanda = Just "Kabiri mu kwezi"
+                            , kirundi = Nothing
+                            }
+
+                        ResilienceSurveyQuestionOption3 ->
                             { english = "Once a week"
                             , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+                            { english = "2 and more days a week"
+                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
 
@@ -19850,26 +20015,26 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once in last six months"
-                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
+                            { english = "Once a month"
+                            , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Once in last three months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            { english = "Twice a month"
+                            , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            { english = "Once a week"
+                            , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Once every month"
-                            , kinyarwanda = Just "Rimwe buri kwezi"
+                            { english = "2 and more days a week"
+                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
 
@@ -19879,26 +20044,26 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once in last six months"
-                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
+                            { english = "Once a month"
+                            , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Once in last three months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            { english = "Twice a month"
+                            , kinyarwanda = Just "Kabiri mu kwezi"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            { english = "Once a week"
+                            , kinyarwanda = Just "Rimwe mu cyumweru"
                             , kirundi = Nothing
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Once every month"
-                            , kinyarwanda = Just "Rimwe buri kwezi"
+                            { english = "2 and more days a week"
+                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
                             , kirundi = Nothing
                             }
 
@@ -19908,35 +20073,6 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
-
-                ResilienceSurveyQuestion13 ->
-                    case option of
-                        ResilienceSurveyQuestionOption0 ->
-                            translationSet Never
-
-                        ResilienceSurveyQuestionOption1 ->
                             { english = "Once a month"
                             , kinyarwanda = Just "Rimwe mu kwezi"
                             , kirundi = Nothing
@@ -19957,125 +20093,6 @@ translationSet trans =
                         ResilienceSurveyQuestionOption4 ->
                             { english = "2 and more days a week"
                             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                ResilienceSurveyQuestion14 ->
-                    case option of
-                        ResilienceSurveyQuestionOption0 ->
-                            translationSet Never
-
-                        ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                ResilienceSurveyQuestion15 ->
-                    case option of
-                        ResilienceSurveyQuestionOption0 ->
-                            translationSet Never
-
-                        ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                ResilienceSurveyQuestion16 ->
-                    case option of
-                        ResilienceSurveyQuestionOption0 ->
-                            translationSet Never
-
-                        ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
-
-                _ ->
-                    case option of
-                        ResilienceSurveyQuestionOption0 ->
-                            { english = "Does not describe me at all"
-                            , kinyarwanda = Just "Ntabwo mbikora na namba"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption1 ->
-                            { english = "Does not describe me"
-                            , kinyarwanda = Just "Ntabwo mbikora"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption2 ->
-                            { english = "Neutral"
-                            , kinyarwanda = Just "Ntacyo mbitekerezaho"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption3 ->
-                            { english = "Describes me"
-                            , kinyarwanda = Just "Ndabikora"
-                            , kirundi = Nothing
-                            }
-
-                        ResilienceSurveyQuestionOption4 ->
-                            { english = "Describes me very well"
-                            , kinyarwanda = Just "Ndabikora cyane"
                             , kirundi = Nothing
                             }
 

@@ -46,7 +46,6 @@ allHivStatuses : List HIVStatus
 allHivStatuses =
     [ HIVExposedInfant
     , Negative
-    , NegativeDiscordantCouple
     , Positive
     , Unknown
     ]

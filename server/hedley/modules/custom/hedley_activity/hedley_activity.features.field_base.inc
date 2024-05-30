@@ -762,6 +762,7 @@ function hedley_activity_field_default_field_bases() {
         '1-m' => '1 Month',
         '2-m' => '2 Months',
         '3-m' => '3 Months',
+        'none' => 'Follow Up not needed',
       ),
       'allowed_values_function' => '',
     ),

@@ -78,8 +78,12 @@ viewConsent language currentDate person =
         nextState =
             Maybe.map
                 (\number ->
-                    if not <| String.isEmpty number then
-                        PhoneVerification number
+                    let
+                        trimmed =
+                            String.trim number
+                    in
+                    if isJust (String.toInt trimmed) && String.length trimmed >= minimalNumberLength then
+                        PhoneVerification trimmed
 
                     else
                         PhoneInput emptyPhoneData
@@ -160,6 +164,15 @@ viewPhoneInput language currentDate site data =
 
             else
                 "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
+
+        continueButtonAttributes =
+            if String.length data.phone >= minimalNumberLength then
+                [ class "ui primary fluid button"
+                , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
+                ]
+
+            else
+                [ class "ui primary fluid button disabled" ]
     in
     [ div [ class "content" ]
         [ p [] [ text <| translate language Translate.ReportToWhatsAppPhoneInputHeader ]
@@ -184,9 +197,7 @@ viewPhoneInput language currentDate site data =
                 ]
                 [ text <| translate language Translate.Cancel ]
             , button
-                [ class "ui primary fluid button"
-                , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
-                ]
+                continueButtonAttributes
                 [ text <| translate language Translate.Continue ]
             ]
         ]

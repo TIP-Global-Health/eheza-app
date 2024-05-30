@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString, testResultToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
@@ -25,7 +25,8 @@ import Measurement.Utils
         ( followUpFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
         , sendToHCFormWithDefault
-        , treatmentReviewInputsAndTasks
+        , treatmentReviewCustomReasonsForNotTakingInputsAndTasks
+        , viewSelectInput
         )
 import Measurement.View
     exposing
@@ -48,7 +49,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxMultipleSelectSectionsInput
-        , viewCustomBoolInput
+        , viewEndEncounterDialog
         , viewLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -182,6 +183,57 @@ viewDiagnosticsContent language currentDate assembled db data =
         ( inputs, tasksCompleted, totalTasks ) =
             Maybe.map (resolveInputsAndTasksForExistingPositiveHIVResult language currentDate form) mPositiveHIVResultDate
                 |> Maybe.withDefault (resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form)
+
+        endEncounterDialog =
+            if data.showEndEncounterDialog then
+                let
+                    revertAnswerFunc =
+                        if form.runHIVTest == Just False then
+                            -- Case where patient does not want to run HIV test.
+                            \form_ ->
+                                { form_
+                                    | runHIVTest = Nothing
+                                    , runHIVTestDirty = True
+                                }
+
+                        else
+                            -- Case where patient has run HIV test and did not
+                            -- get positive diagnosis.
+                            \form_ ->
+                                { form_
+                                    | testResult = Nothing
+                                    , testResultDirty = True
+                                }
+                in
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.EndEncounterNoHIVDiagnosisPhrase
+                        saveDiagnosticsMsg
+                        (SetEndEncounterDialogState False (Just revertAnswerFunc))
+
+            else
+                Nothing
+
+        saveAction =
+            if endEncounterDialogRequired then
+                SetEndEncounterDialogState True Nothing
+
+            else
+                saveDiagnosticsMsg
+
+        -- Double check that patient does not have (or unable to resolve)
+        -- HIV diagnosis before closing the encounter.
+        endEncounterDialogRequired =
+            (form.runHIVTest == Just False)
+                || (form.testResult == Just TestNegative)
+                || (form.testResult == Just TestIndeterminate)
+
+        saveDiagnosticsMsg =
+            SaveDiagnostics assembled.participant.person
+                assembled.encounter.participant
+                (isJust mPositiveHIVResultDate)
+                assembled.measurements.diagnostics
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -191,13 +243,10 @@ viewDiagnosticsContent language currentDate assembled db data =
         , div [ class "actions" ]
             [ saveButton language
                 (tasksCompleted == totalTasks)
-                (SaveDiagnostics assembled.participant.person
-                    assembled.encounter.participant
-                    (isJust mPositiveHIVResultDate)
-                    assembled.measurements.diagnostics
-                )
+                saveAction
             ]
         ]
+    , viewModal endEncounterDialog
     ]
 
 
@@ -240,7 +289,7 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
                         resolveInputsAndTasksForPositiveHIVDate language currentDate form
 
                     else
-                        ( [], 0, 0 )
+                        resolveInputsAndTasksForSuggestedHIVTest language currentDate form
                 )
                 form.resultPositive
                 |> Maybe.withDefault ( [], 0, 0 )
@@ -257,6 +306,10 @@ resolveInputsAndTasksForNonExistingPositiveHIVResult language currentDate form =
                         , positiveResultDateDirty = True
                         , positiveResultDateEstimated = Nothing
                         , positiveResultDateEstimatedDirty = True
+                        , runHIVTest = Nothing
+                        , runHIVTestDirty = True
+                        , testResult = Nothing
+                        , testResultDirty = True
                     }
                 )
             )
@@ -327,6 +380,57 @@ resolveInputsAndTasksForPositiveHIVDate language currentDate form =
     )
 
 
+resolveInputsAndTasksForSuggestedHIVTest : Language -> NominalDate -> DiagnosticsForm -> ( List (Html Msg), Int, Int )
+resolveInputsAndTasksForSuggestedHIVTest language currentDate form =
+    let
+        ( derivedInputs, derivedTasksCompleted, derivedTotalTasks ) =
+            Maybe.map
+                (\runHIVTest ->
+                    if runHIVTest then
+                        ( viewSelectInput language
+                            Translate.Result
+                            form.testResult
+                            Translate.TestResult
+                            testResultToString
+                            [ TestPositive, TestNegative, TestIndeterminate ]
+                            SetHIVTestResult
+                        , taskCompleted form.testResult
+                        , 1
+                        )
+
+                    else
+                        ( [], 0, 0 )
+                )
+                form.runHIVTest
+                |> Maybe.withDefault ( [], 0, 0 )
+    in
+    ( [ viewQuestionLabel language Translate.HIVSuggestTakingTestQuestion
+      , viewBoolInput
+            language
+            form.runHIVTest
+            (SetDiagnosticsBoolInput
+                (\value form_ ->
+                    { form_
+                        | runHIVTest = Just value
+                        , runHIVTestDirty = True
+                        , testResult = Nothing
+                        , testResultDirty = True
+                        , positiveResultDate = Nothing
+                        , positiveResultDateDirty = True
+                        , positiveResultDateEstimated = Nothing
+                        , positiveResultDateEstimatedDirty = True
+                    }
+                )
+            )
+            "run-hiv-test"
+            Nothing
+      ]
+        ++ derivedInputs
+    , taskCompleted form.runHIVTest + derivedTasksCompleted
+    , 1 + derivedTotalTasks
+    )
+
+
 viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
@@ -384,7 +488,7 @@ viewMedicationContent language currentDate assembled data =
                 Just TaskPrescribedMedication ->
                     getMeasurementValueFunc measurements.medication
                         |> prescribedMedicationFormWithDefault data.prescribedMedicationForm
-                        |> viewPrescribedMedicationForm language currentDate
+                        |> viewPrescribedMedicationForm language currentDate assembled
                         |> List.singleton
 
                 Just TaskTreatmentReview ->
@@ -451,27 +555,22 @@ viewMedicationContent language currentDate assembled data =
     ]
 
 
-viewPrescribedMedicationForm : Language -> NominalDate -> PrescribedMedicationForm -> Html Msg
-viewPrescribedMedicationForm language currentDate form =
-    div [ class "ui form prescribed-medication" ]
-        [ viewQuestionLabel language Translate.HIVPrescribedMedicationsQuestion
-        , viewCheckBoxMultipleSelectSectionsInput language
-            [ ( Translate.MostCommonAntiRetroviralMedications, mostCommonAntiRetroviralMedications )
-            , ( Translate.LessCommonAntiRetroviralMedications, lessCommonAntiRetroviralMedications )
-            , ( Translate.ProphylaxisMedications, prophylaxisMedications )
-            ]
-            (Maybe.withDefault [] form.medications)
-            SetPrescribedMedication
-            Translate.HIVPrescribedMedication
-        ]
+viewPrescribedMedicationForm : Language -> NominalDate -> AssembledData -> PrescribedMedicationForm -> Html Msg
+viewPrescribedMedicationForm language currentDate assembled form =
+    prescribedMedicationsInputsAndTasks language currentDate assembled form
+        |> Tuple.first
+        |> div [ class "ui form prescribed-medication" ]
 
 
 viewTreatmentReviewForm : Language -> NominalDate -> OngoingTreatmentReviewForm -> Html Msg
 viewTreatmentReviewForm language currentDate form =
     let
         ( inputs, _ ) =
-            treatmentReviewInputsAndTasks language
+            treatmentReviewCustomReasonsForNotTakingInputsAndTasks language
                 currentDate
+                ( [ NotTakingAdverseEvent, NotTakingNoMoney, NotTakingTreatmentNotStarted ]
+                , [ NotTakingMemoryProblems, NotTakingOther ]
+                )
                 SetTreatmentReviewBoolInput
                 SetReasonForNotTaking
                 SetTotalMissedDoses
@@ -604,7 +703,7 @@ viewNextStepsContent language currentDate assembled data =
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language
                             currentDate
-                            [ OneDay, OneWeek, OneMonth ]
+                            [ OneDay, OneWeek, OneMonth, FollowUpNotNeeded ]
                             SetFollowUpOption
                         |> List.singleton
 
