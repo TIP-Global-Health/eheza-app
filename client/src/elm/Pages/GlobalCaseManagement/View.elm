@@ -46,6 +46,7 @@ import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
@@ -1360,7 +1361,9 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
 
                 label =
                     if
-                        EverySet.member TestVitalsRecheck performedTests
+                        -- Vitals can be taken only by nurse.
+                        not isLabTech
+                            && EverySet.member TestVitalsRecheck performedTests
                             && (not <| EverySet.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
@@ -1414,11 +1417,10 @@ viewPrenatalLabsEntry language isLabTech data =
             else
                 -- Since there's at least one urgent diagnosis, we need to
                 -- direct to Next Steps activity and view
-                HandleUrgentPrenatalDiagnoses data.encounterId
-                    ( List.map (Translate.PrenatalDiagnosis >> translate language) data.urgentDiagnoses
-                        |> String.join ", "
-                    , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                    )
+                Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                    language
+                    data.urgentDiagnoses
+                    |> HandleUrgentPrenatalDiagnoses data.encounterId
     in
     viewLabsEntry language
         isLabTech
