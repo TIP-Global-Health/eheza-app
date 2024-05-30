@@ -5941,3 +5941,43 @@ lmpRangeFromString s =
 
         _ ->
             Nothing
+
+
+resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )
+resolveWarningPopupContentForUrgentDiagnoses language urgentDiagnoses =
+    let
+        signs =
+            List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
+                |> String.join ", "
+    in
+    ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
+    , if
+        List.any
+            (\immediateDeliveryDiagnosis ->
+                List.member immediateDeliveryDiagnosis urgentDiagnoses
+            )
+            immediateDeliveryDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
+
+      else if
+        List.any
+            (\maternityWardDiagnosis ->
+                List.member maternityWardDiagnosis urgentDiagnoses
+            )
+            maternityWardDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToMaternityWard
+
+      else if
+        List.any
+            (\emergencyObstetricCareServicesDiagnosis ->
+                List.member emergencyObstetricCareServicesDiagnosis urgentDiagnoses
+            )
+            emergencyObstetricCareServicesDiagnoses
+      then
+        translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
+
+      else
+        translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
+    )
