@@ -29,7 +29,7 @@ $district = drush_get_option('district', NULL);
 
 // Get optional district option.
 $textual_date = drush_get_option('date', NULL);
-$day_of_reporting = strtotime($textual_date) ?? time();
+$day_of_reporting = !empty($textual_date) ? strtotime($textual_date) : time();
 
 $impacted = array_flip(db_query("SELECT entity_id FROM {person_impacted}")->fetchCol());
 if (empty($impacted)) {
