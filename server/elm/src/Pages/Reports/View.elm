@@ -102,13 +102,13 @@ viewReportsData language currentDate data model =
                                                     | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
                                                     , prenatalData = filterIndividualBy .startDate record.prenatalData
                                                     , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                    , wellChildData = filterIndividualBy identity record.wellChildData
-                                                    , individualNutritionData = filterIndividualBy identity record.individualNutritionData
-                                                    , groupNutritionPmtctData = filterGroupBy identity record.groupNutritionPmtctData
-                                                    , groupNutritionFbfData = filterGroupBy identity record.groupNutritionFbfData
-                                                    , groupNutritionSorwatheData = filterGroupBy identity record.groupNutritionSorwatheData
-                                                    , groupNutritionChwData = filterGroupBy identity record.groupNutritionChwData
-                                                    , groupNutritionAchiData = filterGroupBy identity record.groupNutritionAchiData
+                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
                                                 }
 
                                         else

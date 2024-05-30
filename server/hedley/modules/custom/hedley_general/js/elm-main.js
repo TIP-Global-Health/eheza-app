@@ -6845,8 +6845,6 @@ var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A3
 		'start_date',
 		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$AcuteIllnessEncounterData)));
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$Reports$Decoder$decodeEncountersData = $elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD);
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
 var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
 	switch (s) {
@@ -6870,6 +6868,114 @@ var $author$project$Backend$Reports$Decoder$decodeGender = A2(
 				$author$project$Backend$Reports$Utils$genderFromString(gender)));
 	},
 	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Decoder$decodeHomeVisitEncounterData = $author$project$Gizra$NominalDate$decodeYYYYMMDD;
+var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
+	function (startDate, nutritionData) {
+		return {nutritionData: nutritionData, startDate: startDate};
+	});
+var $author$project$Backend$Reports$Model$NutritionData = F3(
+	function (stunting, wasting, underweight) {
+		return {stunting: stunting, underweight: underweight, wasting: wasting};
+	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Gizra$Json$decodeFloat = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$float,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toFloat(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not a float');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $elm$json$Json$Decode$null = _Json_decodeNull;
+var $elm$json$Json$Decode$nullable = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
+			]));
+};
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodeNutritionData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'u',
+	$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeFloat),
+	$elm$core$Maybe$Nothing,
+	A4(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+		'w',
+		$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeFloat),
+		$elm$core$Maybe$Nothing,
+		A4(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+			's',
+			$elm$json$Json$Decode$nullable($author$project$Gizra$Json$decodeFloat),
+			$elm$core$Maybe$Nothing,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionData))));
+var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'nutrition',
+	$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeNutritionData),
+	$elm$core$Maybe$Nothing,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'start_date',
+		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionEncounterData)));
 var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
 var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
 	function (startDate, encounterType) {
@@ -6910,52 +7016,10 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A3(
 		'start_date',
 		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalEncounterData)));
-var $elm$json$Json$Decode$null = _Json_decodeNull;
-var $elm$json$Json$Decode$nullable = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				$elm$json$Json$Decode$null($elm$core$Maybe$Nothing),
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
-			]));
-};
+var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
 	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
@@ -6972,52 +7036,60 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 	_List_fromArray(
 		['group_nutrition', 'achi']),
-	$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+	$elm$json$Json$Decode$nullable(
+		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 	$elm$core$Maybe$Nothing,
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 		_List_fromArray(
 			['group_nutrition', 'chw']),
-		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+		$elm$json$Json$Decode$nullable(
+			$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 		$elm$core$Maybe$Nothing,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 			_List_fromArray(
 				['group_nutrition', 'sorwathe']),
-			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+			$elm$json$Json$Decode$nullable(
+				$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 			$elm$core$Maybe$Nothing,
 			A4(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 				_List_fromArray(
 					['group_nutrition', 'fbf']),
-				$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+				$elm$json$Json$Decode$nullable(
+					$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 				$elm$core$Maybe$Nothing,
 				A4(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 					_List_fromArray(
 						['group_nutrition', 'pmtct']),
-					$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeEncountersData),
+					$elm$json$Json$Decode$nullable(
+						$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData)),
 					$elm$core$Maybe$Nothing,
 					A4(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 						_List_fromArray(
 							['individual', 'nutrition']),
 						$elm$json$Json$Decode$nullable(
-							$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+							$elm$json$Json$Decode$list(
+								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
 						$elm$core$Maybe$Nothing,
 						A4(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 							_List_fromArray(
 								['individual', 'well-chil']),
 							$elm$json$Json$Decode$nullable(
-								$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+								$elm$json$Json$Decode$list(
+									$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
 							$elm$core$Maybe$Nothing,
 							A4(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 								_List_fromArray(
 									['individual', 'home-visit']),
 								$elm$json$Json$Decode$nullable(
-									$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeEncountersData)),
+									$elm$json$Json$Decode$list(
+										$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeHomeVisitEncounterData))),
 								$elm$core$Maybe$Nothing,
 								A4(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
@@ -7384,17 +7456,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeMonthlyValues = function (c
 		$author$project$Backend$Scoreboard$Decoder$sanitizeSingleValuePerMonth(currentDate),
 		$elm$json$Json$Decode$list($author$project$Gizra$NominalDate$decodeYYYYMMDD));
 };
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
 var $author$project$Backend$Scoreboard$Decoder$decodeANCNewbornData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -11641,20 +11702,55 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 														return $.startDate;
 													},
 													record.acuteIllnessData),
-												groupNutritionAchiData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionAchiData),
-												groupNutritionChwData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionChwData),
-												groupNutritionFbfData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionFbfData),
-												groupNutritionPmtctData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionPmtctData),
-												groupNutritionSorwatheData: A2(filterGroupBy, $elm$core$Basics$identity, record.groupNutritionSorwatheData),
+												groupNutritionAchiData: A2(
+													filterGroupBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.groupNutritionAchiData),
+												groupNutritionChwData: A2(
+													filterGroupBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.groupNutritionChwData),
+												groupNutritionFbfData: A2(
+													filterGroupBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.groupNutritionFbfData),
+												groupNutritionPmtctData: A2(
+													filterGroupBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.groupNutritionPmtctData),
+												groupNutritionSorwatheData: A2(
+													filterGroupBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.groupNutritionSorwatheData),
 												homeVisitData: A2(filterIndividualBy, $elm$core$Basics$identity, record.homeVisitData),
-												individualNutritionData: A2(filterIndividualBy, $elm$core$Basics$identity, record.individualNutritionData),
+												individualNutritionData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.individualNutritionData),
 												prenatalData: A2(
 													filterIndividualBy,
 													function ($) {
 														return $.startDate;
 													},
 													record.prenatalData),
-												wellChildData: A2(filterIndividualBy, $elm$core$Basics$identity, record.wellChildData)
+												wellChildData: A2(
+													filterIndividualBy,
+													function ($) {
+														return $.startDate;
+													},
+													record.wellChildData)
 											}));
 								} else {
 									return $elm$core$Maybe$Nothing;

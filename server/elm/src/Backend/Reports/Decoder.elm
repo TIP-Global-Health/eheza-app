@@ -6,6 +6,7 @@ import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeFloat)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
@@ -61,14 +62,14 @@ decodePatientData =
         |> required "gender" (decodeWithFallback Female decodeGender)
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list (list decodePrenatalEncounterData))) Nothing
-        |> optionalAt [ "individual", "home-visit" ] (nullable (list decodeEncountersData)) Nothing
-        |> optionalAt [ "individual", "well-chil" ] (nullable (list decodeEncountersData)) Nothing
-        |> optionalAt [ "individual", "nutrition" ] (nullable (list decodeEncountersData)) Nothing
-        |> optionalAt [ "group_nutrition", "pmtct" ] (nullable decodeEncountersData) Nothing
-        |> optionalAt [ "group_nutrition", "fbf" ] (nullable decodeEncountersData) Nothing
-        |> optionalAt [ "group_nutrition", "sorwathe" ] (nullable decodeEncountersData) Nothing
-        |> optionalAt [ "group_nutrition", "chw" ] (nullable decodeEncountersData) Nothing
-        |> optionalAt [ "group_nutrition", "achi" ] (nullable decodeEncountersData) Nothing
+        |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeHomeVisitEncounterData))) Nothing
+        |> optionalAt [ "individual", "well-chil" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "nutrition" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "group_nutrition", "pmtct" ] (nullable (list decodeNutritionEncounterData)) Nothing
+        |> optionalAt [ "group_nutrition", "fbf" ] (nullable (list decodeNutritionEncounterData)) Nothing
+        |> optionalAt [ "group_nutrition", "sorwathe" ] (nullable (list decodeNutritionEncounterData)) Nothing
+        |> optionalAt [ "group_nutrition", "chw" ] (nullable (list decodeNutritionEncounterData)) Nothing
+        |> optionalAt [ "group_nutrition", "achi" ] (nullable (list decodeNutritionEncounterData)) Nothing
 
 
 decodeGender : Decoder Gender
@@ -80,11 +81,6 @@ decodeGender =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| gender ++ " is not a recognized Gender.")
             )
-
-
-decodeEncountersData : Decoder EncountersData
-decodeEncountersData =
-    list decodeYYYYMMDD
 
 
 decodeAcuteIllnessEncounterData : Decoder AcuteIllnessEncounterData
@@ -152,6 +148,26 @@ decodePrenatalEncounterType =
                             encounterType
                                 ++ " is not a recognized PrenatalEncounterType"
             )
+
+
+decodeNutritionEncounterData : Decoder NutritionEncounterData
+decodeNutritionEncounterData =
+    succeed NutritionEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "nutrition" (nullable decodeNutritionData) Nothing
+
+
+decodeNutritionData : Decoder NutritionData
+decodeNutritionData =
+    succeed NutritionData
+        |> optional "s" (nullable decodeFloat) Nothing
+        |> optional "w" (nullable decodeFloat) Nothing
+        |> optional "u" (nullable decodeFloat) Nothing
+
+
+decodeHomeVisitEncounterData : Decoder HomeVisitEncounterData
+decodeHomeVisitEncounterData =
+    decodeYYYYMMDD
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a
