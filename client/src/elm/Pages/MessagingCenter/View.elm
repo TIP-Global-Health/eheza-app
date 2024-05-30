@@ -9,11 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.ResilienceSurvey.Model
-    exposing
-        ( ResilienceSurveyQuestionOption(..)
-        , ResilienceSurveyType(..)
-        )
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -80,10 +76,10 @@ view language currentTime nurseId nurse db model =
                         surveysSorted =
                             List.sortWith (sortByDateDesc .dateMeasured) surveys
 
-                        runSurvey =
+                        runSurvey surveyType =
                             let
                                 filteredSurveys =
-                                    List.filter (.surveyType >> (==) ResilienceSurveyQuarterly) surveysSorted
+                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
 
                                 surveyCount =
                                     filteredSurveys
@@ -117,11 +113,17 @@ view language currentTime nurseId nurse db model =
                                 |> Maybe.map filterCondition
                                 |> Maybe.withDefault True
 
+                        runAdoptionSurvey =
+                            runSurvey ResilienceSurveyAdoption
+
                         runQuarterlySurvey =
-                            runSurvey
+                            runSurvey ResilienceSurveyQuarterly
                     in
                     if runQuarterlySurvey then
-                        viewQuarterlySurvey language currentDate nurseId model.quarterlySurveyForm
+                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
+
+                    else if runAdoptionSurvey then
+                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
 
                     else
                         messagingCenterView
@@ -272,7 +274,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
         ]
 
 
-viewQuarterlySurvey : Language -> NominalDate -> NurseId -> QuarterlySurveyForm -> Html Msg
+viewQuarterlySurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
 viewQuarterlySurvey language currentDate nurseId form =
     let
         questionInput question =
@@ -287,7 +289,7 @@ viewQuarterlySurvey language currentDate nurseId form =
                 ]
                 []
                 (Dict.get question form)
-                (SetQuarterlySurveyAnswer question)
+                (SetSurveyAnswer question)
                 Translate.ResilienceSurveyQuestionOption
             ]
 
@@ -306,7 +308,50 @@ viewQuarterlySurvey language currentDate nurseId form =
                 , div [ class "actions" ]
                     [ button
                         [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveQuarterlySurvey nurseId
+                        , onClick <| SaveSurvey ResilienceSurveyQuarterly nurseId
+                        ]
+                        [ text <| translate language Translate.Save ]
+                    ]
+                ]
+            ]
+        ]
+
+
+viewAdoptionSurvey : Language -> NominalDate -> NurseId -> SurveyForm -> Html Msg
+viewAdoptionSurvey language currentDate nurseId form =
+    let
+        questionInput question =
+            [ viewCustomLabel language (Translate.ResilienceSurveyAdoptionQuestion question) "." "label"
+            , viewCustomLabel language Translate.ChooseOne ":" "instructions"
+            , viewCheckBoxSelectInput language
+                [ ResilienceSurveyQuestionOption0
+                , ResilienceSurveyQuestionOption1
+                , ResilienceSurveyQuestionOption2
+                , ResilienceSurveyQuestionOption3
+                , ResilienceSurveyQuestionOption4
+                ]
+                []
+                (Dict.get question form)
+                (SetSurveyAnswer question)
+                (Translate.ResilienceSurveyAdoptionOptionsForQuestion question)
+            ]
+
+        tasksCompleted =
+            Dict.size form
+
+        totalTasks =
+            List.length adoptionSurveyQuestions
+    in
+    div [ class "ui unstackable items" ]
+        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        , div [ class "ui full segment" ]
+            [ div [ class "full content" ]
+                [ div [ class "ui form monthly-survey" ] <|
+                    List.concatMap questionInput adoptionSurveyQuestions
+                , div [ class "actions" ]
+                    [ button
+                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                        , onClick <| SaveSurvey ResilienceSurveyAdoption nurseId
                         ]
                         [ text <| translate language Translate.Save ]
                     ]
@@ -322,16 +367,26 @@ surveyScoreDialog :
 surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
-            case dialogState of
-                QuarterlySurveyScore score ->
-                    let
-                        data =
-                            ( p [ class "score" ] [ text <| String.fromInt score ++ "/20" ]
-                            , p [ class "interpretation" ] [ text <| translate language <| Translate.QuarterlySurveyScoreInterpretation score ]
-                            , SetSurveyScoreDialogState Nothing
+            let
+                ( scoreText, interpretationFunction ) =
+                    case dialogState of
+                        QuarterlySurveyScore score ->
+                            ( String.fromInt score ++ "/20"
+                            , Translate.QuarterlySurveyScoreInterpretation score
                             )
-                    in
-                    customPopup language False Translate.Continue "survey-score-popup blue" data
+
+                        AdoptionSurveyScore score ->
+                            ( String.fromInt score ++ "/60"
+                            , Translate.AdoptionSurveyScoreInterpretation score
+                            )
+
+                data =
+                    ( p [ class "score" ] [ text scoreText ]
+                    , p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    , SetSurveyScoreDialogState Nothing
+                    )
+            in
+            customPopup language False Translate.Continue "survey-score-popup blue" data
         )
 
 

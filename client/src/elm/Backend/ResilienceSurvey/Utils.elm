@@ -9,12 +9,18 @@ resilienceSurveyTypeToString surveyType =
         ResilienceSurveyQuarterly ->
             "quarterly"
 
+        ResilienceSurveyAdoption ->
+            "adoption"
+
 
 resilienceSurveyTypeFromString : String -> Maybe ResilienceSurveyType
 resilienceSurveyTypeFromString value =
     case value of
         "quarterly" ->
             Just ResilienceSurveyQuarterly
+
+        "adoption" ->
+            Just ResilienceSurveyAdoption
 
         _ ->
             Nothing
@@ -53,6 +59,12 @@ resilienceSurveyQuestionToString value =
         ResilienceSurveyQuestion10 ->
             "q10"
 
+        ResilienceSurveyQuestion11 ->
+            "q11"
+
+        ResilienceSurveyQuestion12 ->
+            "q12"
+
 
 resilienceSurveyQuestionFromString : String -> Maybe ResilienceSurveyQuestion
 resilienceSurveyQuestionFromString value =
@@ -86,6 +98,12 @@ resilienceSurveyQuestionFromString value =
 
         "q10" ->
             Just ResilienceSurveyQuestion10
+
+        "q11" ->
+            Just ResilienceSurveyQuestion11
+
+        "q12" ->
+            Just ResilienceSurveyQuestion12
 
         _ ->
             Nothing

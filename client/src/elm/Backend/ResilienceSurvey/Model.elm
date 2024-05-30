@@ -16,6 +16,7 @@ type alias ResilienceSurvey =
 
 type ResilienceSurveyType
     = ResilienceSurveyQuarterly
+    | ResilienceSurveyAdoption
 
 
 type ResilienceSurveyQuestion
@@ -29,6 +30,8 @@ type ResilienceSurveyQuestion
     | ResilienceSurveyQuestion8
     | ResilienceSurveyQuestion9
     | ResilienceSurveyQuestion10
+    | ResilienceSurveyQuestion11
+    | ResilienceSurveyQuestion12
 
 
 type ResilienceSurveyQuestionOption
