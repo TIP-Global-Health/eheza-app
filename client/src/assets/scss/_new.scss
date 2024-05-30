@@ -5135,6 +5135,21 @@ div.page-activity.messaging-center {
       margin-bottom: 20px;
     }
   }
+  .ui.report.unstackable.items {
+    .guide-message {
+      background: $color-white;
+      padding: 30px 25px 30px 25px;
+      color: $color-text;
+
+      .title {
+        font-weight: bold;
+
+        &.note {
+          font-style: italic;
+        }
+      }
+    }
+  }
 }
 
 div.dashboard,
