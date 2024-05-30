@@ -245,6 +245,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                     emergencyReferralDiagnosesInitial
                         ++ [ DiagnosisModeratePreeclampsiaInitialPhase
                            , DiagnosisSeverePreeclampsiaInitialPhase
+                           , DiagnosisHyperemesisGravidumBySymptoms
+                           , DiagnosisSevereVomitingBySymptoms
                            , DiagnosisHeartburnPersistent
                            , DiagnosisDeepVeinThrombosis
                            , DiagnosisPelvicPainIntense
