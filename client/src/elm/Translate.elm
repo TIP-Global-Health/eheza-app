@@ -4876,7 +4876,7 @@ translationSet trans =
         Diagnostics ->
             { english = "Diagnostics"
             , kinyarwanda = Just "Gusuzuma uburwayi"
-            , kirundi = Nothing
+            , kirundi = Just "Gusuzuma uburwayi"
             }
 
         Diarrhea ->
@@ -5472,7 +5472,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Do you want to start a Tuberculosis Management encounter for"
                     , kinyarwanda = Just "Urashaka gutangira isura ryo gukurikirana umurwayi w'igituntu witwa"
-                    , kirundi = Nothing
+                    , kirundi = Just "Urashaka gutangura itunganywa ry'imibonano n'umurwayi w'igituntu kuri"
                     }
 
                 WellChildEncounter ->
@@ -7510,7 +7510,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "First Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura rya mbere ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano wa mbere werekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -7572,7 +7572,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano werekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -7641,7 +7641,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Select Tuberculosis Visit"
                     , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Hitamwo umubonano kuvyerekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -7710,7 +7710,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Subsequent Tuberculosis Visit"
                     , kinyarwanda = Just "Isura rilkurikira ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano ukurikira kuvyerekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -7757,7 +7757,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "TB Management"
                     , kinyarwanda = Just "Kwita ku murwayi w'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Itunganywa rijanye n'indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -15809,7 +15809,7 @@ translationSet trans =
         PrescribedMedication ->
             { english = "Prescribed Medication"
             , kinyarwanda = Just "Imiti yatanzwe"
-            , kirundi = Nothing
+            , kirundi = Just "Imiti yasabwe"
             }
 
         PrenatalRecurrentNextStepsTask task ->
@@ -22145,7 +22145,7 @@ translationSet trans =
         TuberculosisDiagnosedQuestion ->
             { english = "Was this person diagnosed with Tuberculosis"
             , kinyarwanda = Just "Uyu murwayi yaba yaragaragaweho uburwayi bw'igituntu"
-            , kirundi = Nothing
+            , kirundi = Just "Uyu muntu baramusanganye indwara y'igituntu"
             }
 
         TuberculosisDiagnosis sign ->
@@ -22153,13 +22153,13 @@ translationSet trans =
                 TuberculosisPulmonary ->
                     { english = "Pulmonary (in the lungs)"
                     , kinyarwanda = Just "Igituntu cyo mu bihaha"
-                    , kirundi = Nothing
+                    , kirundi = Just "Igituntu co mu mahaha"
                     }
 
                 TuberculosisExtrapulmonary ->
                     { english = "Extrapulmonary (outside the lungs)"
                     , kinyarwanda = Just "Igituntu gifata imyanya yo hanze y'ibihaha"
-                    , kirundi = Nothing
+                    , kirundi = Just "Igituntu gifatira inyuma y'amahaha"
                     }
 
                 NoTuberculosis ->
@@ -22169,13 +22169,13 @@ translationSet trans =
         TuberculosisDistributeMedicationsQuestion ->
             { english = "Did you distribute the following medications"
             , kinyarwanda = Just "Waba watanze iyi miti ikurikira"
-            , kirundi = Nothing
+            , kirundi = Just "Woba waratanze imiti ikurikira"
             }
 
         TuberculosisFollowUpLabel ->
             { english = "Tuberculosis Follow up"
             , kinyarwanda = Just "Gukurikirana umurwayi w'igituntu"
-            , kirundi = Nothing
+            , kirundi = Just "Gukurikirana umurwayi w'igituntu"
             }
 
         TuberculosisFollowUpTestingStageInstructions stage ->
@@ -22183,7 +22183,7 @@ translationSet trans =
                 FollowUpTestingMonth1 ->
                     { english = "Reassess treatment according to results, continue first-line treatment if drug susceptible."
                     , kinyarwanda = Just "Genzura imiti ugendeye ku bisubizo byabonetse, ukomeze imiti y'ikiciro cya mbere niba ari koroherwa."
-                    , kirundi = Nothing
+                    , kirundi = Just "Suzuma imiti ufatiye ku nyishu zabonetse, bandanya umurongo wa mbere w'imiti mugihe habaye akarusho"
                     }
 
                 FollowUpTestingMonth2 ->
@@ -22192,19 +22192,19 @@ translationSet trans =
                 FollowUpTestingEndMonth2 ->
                     { english = "If positive, Culture and DST - Continuation phase."
                     , kinyarwanda = Just "Niba akigaragaza igituntu, kilitire na DST ari negatifu, umurwayi akomeza imiti yo mu cyiciro gikurikiyeho(RH mu mezi ane)."
-                    , kirundi = Nothing
+                    , kirundi = Just "If positive, Culture and DST, and retest after 15 days."
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "If positive, Culture and DST, and retest after 15 days."
                     , kinyarwanda = Just "Niba akigaragaza igituntu, ikizamini cya Kilitire na DSt cyogera gukorwa mu minsi 15."
-                    , kirundi = Nothing
+                    , kirundi = Just "Niba akigaragaza igituntu,  igipimo ca culture na DST congera gukorwa mu misi 15"
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "If positive, Culture and DST, and retest after 15 days, if negative - cured."
                     , kinyarwanda = Just "Niba yarakigargaza igituntu ariko ikizamini cy akilitire na DST bikaba negatifu nyuma y'iminsi 15, uwo murwayi aba yarakize."
-                    , kirundi = Nothing
+                    , kirundi = Just "Niba akigaragaza igituntu ariko igipimo ca culture na DST congeye gukorwa bikaba bitacigaragaza inyuma y'imisi 15, uwo murwayi aba yarakize"
                     }
 
         TuberculosisFollowUpTestingStageLabel stage ->
@@ -22212,31 +22212,31 @@ translationSet trans =
                 FollowUpTestingMonth1 ->
                     { english = "Month 1"
                     , kinyarwanda = Just "Ukwezi kwa 1"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukwezi kwa 1"
                     }
 
                 FollowUpTestingMonth2 ->
                     { english = "Month 2"
                     , kinyarwanda = Just "Ukwezi kwa 2"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukwezi kwa 2"
                     }
 
                 FollowUpTestingEndMonth2 ->
                     { english = "End Month 2"
                     , kinyarwanda = Just "Arangije ukwezi kwa 2"
-                    , kirundi = Nothing
+                    , kirundi = Just "Arangije ukwezi kwa kabiri "
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "End Month 5"
                     , kinyarwanda = Just "Arangije ukwezi kwa 5"
-                    , kirundi = Nothing
+                    , kirundi = Just "Arangije ukwezi kwa gatanu"
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "End Month 6"
                     , kinyarwanda = Just "Arangije ukwezi kwa 6"
-                    , kirundi = Nothing
+                    , kirundi = Just "arangije ukwezi kwa gatandatu"
                     }
 
         TuberculosisFollowUpTestingStageTest stage ->
@@ -22244,7 +22244,7 @@ translationSet trans =
                 FollowUpTestingMonth1 ->
                     { english = "xPert, Culture, and DST"
                     , kinyarwanda = Just "Ikizamini cya Jenexpati, Kilitire na DST"
-                    , kirundi = Nothing
+                    , kirundi = Just "Igipimo ca GenexPert, Culture na DST"
                     }
 
                 FollowUpTestingMonth2 ->
@@ -22253,13 +22253,13 @@ translationSet trans =
                 FollowUpTestingEndMonth2 ->
                     { english = "Smear microposy at the end of the intensive phase"
                     , kinyarwanda = Just "Gupima igituntu hakoreshejwe mikorosikopi umurwayi arangije imiti y'ikiciro cya mbere"
-                    , kirundi = Nothing
+                    , kirundi = Just "Gupima igituntu hakoreshejwe mikorosikopi (rugagamisha) umurwayi arangije imiti y'igice gikomeye ca mbere"
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "Smear microposy"
                     , kinyarwanda = Just "Gupima hakoreshejwe mikorosikopi"
-                    , kirundi = Nothing
+                    , kirundi = Just "Gupima hakoreshejwe mikorosikopi"
                     }
 
                 FollowUpTestingEndMonth6 ->
@@ -22270,7 +22270,7 @@ translationSet trans =
                 EducationFollowUpTesting ->
                     { english = "Have you provided the guidance for follow up testing"
                     , kinyarwanda = Just "Waba watanze ubujyanama ku bijyanye no gukoresha ibizaminii"
-                    , kirundi = Nothing
+                    , kirundi = Just "Woba waratanze ubufasha kubijanye no gukoresha ibipimo"
                     }
 
                 NoTuberculosisHealthEducationSigns ->
@@ -22291,7 +22291,7 @@ translationSet trans =
         TuberculosisLocationQuestion ->
             { english = "Where is the Tuberculosis located"
             , kinyarwanda = Just "Ni uwuhe mwanaya w'umubiri wagaragawemo igituntu"
-            , kirundi = Nothing
+            , kirundi = Just "Indwara y'igituntu iherereye hehe"
             }
 
         TuberculosisMedicationTask task ->
@@ -22302,7 +22302,7 @@ translationSet trans =
                 Pages.Tuberculosis.Activity.Model.TaskDOT ->
                     { english = "DOT"
                     , kinyarwanda = Just "Umuti unywerwa imbere y'ugukurikirana"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umuti unywerwa imbere y'uwugukurikirana"
                     }
 
                 Pages.Tuberculosis.Activity.Model.TaskTreatmentReview ->
@@ -22330,19 +22330,19 @@ translationSet trans =
                 MedicationRHZE ->
                     { english = "RHZE x 2 months (Initiation phase)"
                     , kinyarwanda = Just "Atangira afata imiti ya RHZE mu gihe cy'amezi abiri"
-                    , kirundi = Nothing
+                    , kirundi = Just "Atangura afata RHZE mu kiringo c'amezi abiri"
                     }
 
                 MedicationRH ->
                     { english = "RH x 4 months (Continuation phase)"
                     , kinyarwanda = Just "Akomeza afata imiti ya RH mu gihe cy'amezi 4"
-                    , kirundi = Nothing
+                    , kirundi = Just "Akomeza afata imiti ya RH mu kiringo c'amezi ane"
                     }
 
                 MedicationOther ->
                     { english = "Other - include HIV dosing, Pediatric dosing, etc"
                     , kinyarwanda = Just "Indi miti - harimo Iya Virusi iteera SIDA, imiti y'abana,..."
-                    , kirundi = Nothing
+                    , kirundi = Just "Iyindi miti harimwo iyipfupfahaza umugera wa SIDA, iy'abana,..."
                     }
 
                 NoTuberculosisPrescribedMedications ->
@@ -22351,7 +22351,7 @@ translationSet trans =
         TuberculosisPrescribedMedicationsQuestion ->
             { english = "What are the medications that were prescribed"
             , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Nothing
+            , kirundi = Just "Ni iyihe miti yandikiwe"
             }
 
         TuberculosisPresent ->
@@ -22363,7 +22363,7 @@ translationSet trans =
         TuberculosisProvideDOTTodayQuestion ->
             { english = "Will you provide DOT/TDO today"
             , kinyarwanda = Just "Urakurikirana uko umurwayi afata imiti uyu munsi"
-            , kirundi = Nothing
+            , kirundi = Just "Uraza gukurikirana uko umurwayi afata umuti uyu munsi"
             }
 
         TuberculosisReasonNotProvidedToday reason ->
@@ -22375,19 +22375,19 @@ translationSet trans =
                 DOTNegativeTakenToday ->
                     { english = "Meds already taken today"
                     , kinyarwanda = Just "Imiti y'uyu munsi yafashwe"
-                    , kirundi = Nothing
+                    , kirundi = Just "Meds unavailable"
                     }
 
                 DOTNegativeUnavailable ->
                     { english = "Meds unavailable"
                     , kinyarwanda = Just "Nta miti ihari"
-                    , kirundi = Nothing
+                    , kirundi = Just "Nta miti ihari"
                     }
 
                 DOTNegativeSideEffects ->
                     { english = "Advised to hold b/c of side effects"
                     , kinyarwanda = Just "Yagiriwe inama yo kuba aretse gufata imiti kuko iri kumutera ingaruka"
-                    , kirundi = Nothing
+                    , kirundi = Just "Yagiriwe inama yo kuba arahagarika gufata imiti kuko iriko iramugirako ingaruka"
                     }
 
                 DOTNegativePatientRefused ->
@@ -23877,7 +23877,7 @@ translateActivePage page =
                         TuberculosisEncounter ->
                             { english = "Tuberculosis Participants"
                             , kinyarwanda = Just "Abitabiriye muri service y'indwara y'igituntu"
-                            , kirundi = Nothing
+                            , kirundi = Just "Abitabiriye serivisi z' igisata c'indwara y'igituntu"
                             }
 
                         WellChildEncounter ->
@@ -24161,19 +24161,19 @@ translateActivePage page =
                 TuberculosisParticipantPage _ ->
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano werekeye indwara y'igituntu"
                     }
 
                 TuberculosisEncounterPage _ ->
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano werekeye indwara y'igituntu"
                     }
 
                 TuberculosisActivityPage _ _ ->
                     { english = "Tuberculosis Activity"
                     , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Igikorwa ku ndwara y'igituntu"
                     }
 
                 EducationSessionPage _ ->
