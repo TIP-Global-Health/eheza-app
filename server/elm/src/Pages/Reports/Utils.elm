@@ -5,6 +5,7 @@ import AssocList as Dict
 import Backend.Reports.Model exposing (..)
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra
 import Pages.Reports.Model exposing (..)
 
 
@@ -52,3 +53,104 @@ countTotalEncounetrs data =
         + countGroupDataEncounters data.groupNutritionSorwatheData
         + countGroupDataEncounters data.groupNutritionChwData
         + countGroupDataEncounters data.groupNutritionAchiData
+
+
+calcualteNutritionMetricsForPatient : PatientData -> NutritionMetrics
+calcualteNutritionMetricsForPatient data =
+    [ Maybe.map
+        (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
+        data.wellChildData
+    , Maybe.map
+        (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
+        data.individualNutritionData
+    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionPmtctData
+    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionFbfData
+    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionSorwatheData
+    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionChwData
+    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionAchiData
+    ]
+        |> Maybe.Extra.values
+        |> sumNutritionMetrics
+
+
+calcualteNutritionMetricsForEncounters : List NutritionEncounterData -> NutritionMetrics
+calcualteNutritionMetricsForEncounters =
+    let
+        categorizeZScore =
+            Maybe.map
+                (\score ->
+                    if score <= -3 then
+                        ( 0, 0, 1 )
+
+                    else if score <= -2 then
+                        ( 0, 1, 0 )
+
+                    else
+                        ( 1, 0, 0 )
+                )
+                >> Maybe.withDefault ( 0, 0, 0 )
+    in
+    List.map nutritionEncounterDataToNutritionMetrics
+        >> sumNutritionMetrics
+
+
+sumNutritionMetrics : List NutritionMetrics -> NutritionMetrics
+sumNutritionMetrics =
+    List.foldl
+        (\metrics accum ->
+            { accum
+                | stuntingNormal = accum.stuntingNormal + metrics.stuntingNormal
+                , stuntingModerate = accum.stuntingModerate + metrics.stuntingModerate
+                , stuntingSevere = accum.stuntingSevere + metrics.stuntingSevere
+                , wastingNormal = accum.wastingNormal + metrics.wastingNormal
+                , wastingModerate = accum.wastingModerate + metrics.wastingModerate
+                , wastingSevere = accum.wastingSevere + metrics.wastingSevere
+                , underweightNormal = accum.underweightNormal + metrics.underweightNormal
+                , underweightModerate = accum.underweightModerate + metrics.underweightModerate
+                , underweightSevere = accum.underweightSevere + metrics.underweightSevere
+            }
+        )
+        emptyNutritionMetrics
+
+
+nutritionEncounterDataToNutritionMetrics : NutritionEncounterData -> NutritionMetrics
+nutritionEncounterDataToNutritionMetrics =
+    .nutritionData
+        >> Maybe.map
+            (\data ->
+                let
+                    categorizeZScore =
+                        Maybe.map
+                            (\score ->
+                                if score <= -3 then
+                                    ( 0, 0, 1 )
+
+                                else if score <= -2 then
+                                    ( 0, 1, 0 )
+
+                                else
+                                    ( 1, 0, 0 )
+                            )
+                            >> Maybe.withDefault ( 0, 0, 0 )
+
+                    ( stuntingNormal, stuntingModerate, stuntingSevere ) =
+                        categorizeZScore data.stunting
+
+                    ( wastingNormal, wastingModerate, wastingSevere ) =
+                        categorizeZScore data.wasting
+
+                    ( underweightNormal, underweightModerate, underweightSevere ) =
+                        categorizeZScore data.underweight
+                in
+                { stuntingNormal = stuntingNormal
+                , stuntingModerate = stuntingModerate
+                , stuntingSevere = stuntingSevere
+                , wastingNormal = wastingNormal
+                , wastingModerate = wastingModerate
+                , wastingSevere = wastingSevere
+                , underweightNormal = underweightNormal
+                , underweightModerate = underweightModerate
+                , underweightSevere = underweightSevere
+                }
+            )
+        >> Maybe.withDefault emptyNutritionMetrics

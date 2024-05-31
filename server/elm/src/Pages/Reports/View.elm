@@ -121,7 +121,7 @@ viewReportsData language currentDate data model =
                                 viewDemographicsReport language limitDate recordsTillLimitDate
 
                             ReportNutrition ->
-                                text "@todo"
+                                viewNutritionReport language limitDate recordsTillLimitDate
                     )
                     model.reportType
                     model.limitDate
@@ -623,3 +623,47 @@ viewDemographicsReportEncounters language records =
         , viewCustomRow "row encounters-totals" Translate.Total overallTotal overallUnique False
         ]
     ]
+
+
+viewNutritionReport : Language -> NominalDate -> List PatientData -> Html Msg
+viewNutritionReport language limitDate records =
+    let
+        recordsTillLimitDate =
+            List.map
+                (\record ->
+                    let
+                        filterIndividualBy resolveDateFunc =
+                            Maybe.map
+                                (List.map
+                                    (List.filter
+                                        (\encounterData ->
+                                            Date.year (resolveDateFunc encounterData) == 2021
+                                        )
+                                    )
+                                )
+
+                        filterGroupBy resolveDateFunc =
+                            Maybe.map
+                                (List.filter
+                                    (\encounterData ->
+                                        Date.year (resolveDateFunc encounterData) == 2021
+                                    )
+                                )
+                    in
+                    { record
+                        | wellChildData = filterIndividualBy .startDate record.wellChildData
+                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                    }
+                )
+                records
+                |> List.map calcualteNutritionMetricsForPatient
+                |> sumNutritionMetrics
+                |> Debug.log ""
+    in
+    div [ class "report nutrition" ]
+        [ text "" ]

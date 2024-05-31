@@ -11490,6 +11490,177 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: 0, stuntingNormal: 0, stuntingSevere: 0, underweightModerate: 0, underweightNormal: 0, underweightSevere: 0, wastingModerate: 0, wastingNormal: 0, wastingSevere: 0};
+var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = A2(
+	$elm$core$Basics$composeR,
+	function ($) {
+		return $.nutritionData;
+	},
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (data) {
+				var categorizeZScore = A2(
+					$elm$core$Basics$composeR,
+					$elm$core$Maybe$map(
+						function (score) {
+							return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(0, 0, 1) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(0, 1, 0) : _Utils_Tuple3(1, 0, 0));
+						}),
+					$elm$core$Maybe$withDefault(
+						_Utils_Tuple3(0, 0, 0)));
+				var _v0 = categorizeZScore(data.wasting);
+				var wastingNormal = _v0.a;
+				var wastingModerate = _v0.b;
+				var wastingSevere = _v0.c;
+				var _v1 = categorizeZScore(data.underweight);
+				var underweightNormal = _v1.a;
+				var underweightModerate = _v1.b;
+				var underweightSevere = _v1.c;
+				var _v2 = categorizeZScore(data.stunting);
+				var stuntingNormal = _v2.a;
+				var stuntingModerate = _v2.b;
+				var stuntingSevere = _v2.c;
+				return {stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, underweightModerate: underweightModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingNormal: wastingNormal, wastingSevere: wastingSevere};
+			}),
+		$elm$core$Maybe$withDefault($author$project$Pages$Reports$Model$emptyNutritionMetrics)));
+var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
+	$elm$core$List$foldl,
+	F2(
+		function (metrics, accum) {
+			return _Utils_update(
+				accum,
+				{stuntingModerate: accum.stuntingModerate + metrics.stuntingModerate, stuntingNormal: accum.stuntingNormal + metrics.stuntingNormal, stuntingSevere: accum.stuntingSevere + metrics.stuntingSevere, underweightModerate: accum.underweightModerate + metrics.underweightModerate, underweightNormal: accum.underweightNormal + metrics.underweightNormal, underweightSevere: accum.underweightSevere + metrics.underweightSevere, wastingModerate: accum.wastingModerate + metrics.wastingModerate, wastingNormal: accum.wastingNormal + metrics.wastingNormal, wastingSevere: accum.wastingSevere + metrics.wastingSevere});
+		}),
+	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
+var $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters = function () {
+	var categorizeZScore = A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			function (score) {
+				return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(0, 0, 1) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(0, 1, 0) : _Utils_Tuple3(1, 0, 0));
+			}),
+		$elm$core$Maybe$withDefault(
+			_Utils_Tuple3(0, 0, 0)));
+	return A2(
+		$elm$core$Basics$composeR,
+		$elm$core$List$map($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics),
+		$author$project$Pages$Reports$Utils$sumNutritionMetrics);
+}();
+var $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForPatient = function (data) {
+	return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+		$elm_community$maybe_extra$Maybe$Extra$values(
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Maybe$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$map($author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters),
+						$author$project$Pages$Reports$Utils$sumNutritionMetrics),
+					data.wellChildData),
+					A2(
+					$elm$core$Maybe$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$List$map($author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters),
+						$author$project$Pages$Reports$Utils$sumNutritionMetrics),
+					data.individualNutritionData),
+					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionPmtctData),
+					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionFbfData),
+					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionSorwatheData),
+					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionChwData),
+					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionAchiData)
+				])));
+};
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$Pages$Reports$View$viewNutritionReport = F3(
+	function (language, limitDate, records) {
+		var recordsTillLimitDate = A2(
+			$elm$core$Debug$log,
+			'',
+			$author$project$Pages$Reports$Utils$sumNutritionMetrics(
+				A2(
+					$elm$core$List$map,
+					$author$project$Pages$Reports$Utils$calcualteNutritionMetricsForPatient,
+					A2(
+						$elm$core$List$map,
+						function (record) {
+							var filterIndividualBy = function (resolveDateFunc) {
+								return $elm$core$Maybe$map(
+									$elm$core$List$map(
+										$elm$core$List$filter(
+											function (encounterData) {
+												return $justinmimbs$date$Date$year(
+													resolveDateFunc(encounterData)) === 2021;
+											})));
+							};
+							var filterGroupBy = function (resolveDateFunc) {
+								return $elm$core$Maybe$map(
+									$elm$core$List$filter(
+										function (encounterData) {
+											return $justinmimbs$date$Date$year(
+												resolveDateFunc(encounterData)) === 2021;
+										}));
+							};
+							return _Utils_update(
+								record,
+								{
+									groupNutritionAchiData: A2(
+										filterGroupBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.groupNutritionAchiData),
+									groupNutritionChwData: A2(
+										filterGroupBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.groupNutritionChwData),
+									groupNutritionFbfData: A2(
+										filterGroupBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.groupNutritionFbfData),
+									groupNutritionPmtctData: A2(
+										filterGroupBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.groupNutritionPmtctData),
+									groupNutritionSorwatheData: A2(
+										filterGroupBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.groupNutritionSorwatheData),
+									individualNutritionData: A2(
+										filterIndividualBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.individualNutritionData),
+									wellChildData: A2(
+										filterIndividualBy,
+										function ($) {
+											return $.startDate;
+										},
+										record.wellChildData)
+								});
+						},
+						records))));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report nutrition')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				]));
+	});
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
 	return A2(
 		$elm$html$Html$option,
@@ -11760,7 +11931,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 						if (reportType.$ === 'ReportDemographics') {
 							return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
 						} else {
-							return $elm$html$Html$text('@todo');
+							return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, recordsTillLimitDate);
 						}
 					}),
 				model.reportType,
