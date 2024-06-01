@@ -436,27 +436,19 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
       switch ($participant_type) {
         case 'acute-illness':
-          $encounter_data = [
-            'start_date' => $encounter_date,
-            'encounter_type' => $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'],
-          ];
+          $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_data ="$encounter_date $encounter_type";
           break;
 
         case 'antenatal':
-          $encounter_data = [
-            'start_date' => $encounter_date,
-            'encounter_type' => $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'],
-          ];
+          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_data = "$encounter_date $encounter_type";
           break;
 
         case 'nutrition':
         case 'well-child':
-          $encounter_data = [
-            'start_date' => $encounter_date,
-          ];
-          if (!empty($zscores_by_encounter[$encounter->nid])) {
-            $encounter_data['nutrition'] = $zscores_by_encounter[$encounter->nid];
-          }
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
+          $encounter_data = "$encounter_date $nutrition";
           break;
 
         // Remaining one is home-visit.
@@ -476,7 +468,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $encounters_data[$key] = array_values($data_type);
     }
   }
-  $data['individual'] = $encounters_data;
+  if (!empty($encounters_data)) {
+    $data['individual'] = $encounters_data;
+  }
 
   // Load group data.
   $sessions_ids = array_unique($sessions_ids);
@@ -496,12 +490,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   foreach ($sessions as $session) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
-    $session_data = [
-      'start_date' => date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value'])),
-    ];
-    if (!empty($zscores_by_encounter[$session->nid])) {
-      $session_data['nutrition'] = $zscores_by_encounter[$session->nid];
-    }
+    $encounter_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$session->nid]);
+    $session_data = "$encounter_date $nutrition";
 
     if (empty($sessions_data[$group_type])) {
       $sessions_data[$group_type] = [$session_data];
@@ -510,12 +501,46 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $sessions_data[$group_type][] = $session_data;
     }
   }
-  $data['group_nutrition'] = $sessions_data;
+  if (!empty($sessions_data)) {
+    $data['group_nutrition'] = $sessions_data;
+  }
+
   $encoded_data = json_encode($data);
   $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 
   return TRUE;
+}
+
+/**
+ * Converts nutrition metrics values to a comma-separated string.
+ *
+ * This function takes an associative array of nutrition metrics and
+ * converts it into a string where the values are separated by commas.
+ * The keys for the array should be 's' for stunting, 'w' for wasting,
+ * and 'u' for underweight. If a key is missing or its value is empty,
+ * an empty string is used in its place.
+ *
+ * @param array $values
+ *   An associative array of nutrition metrics with the following possible keys:
+ *   - 's': The stunting metric.
+ *   - 'w': The wasting metric.
+ *   - 'u': The underweight metric.
+ *
+ * @return string
+ *   A string with the stunting, wasting, and underweight metrics separated
+ *   by commas. If the input array is empty, returns ',,'.
+ */
+function hedley_reports_nutrition_metrics_to_string($values) {
+  if (empty($values)) {
+   return ',,';
+  }
+
+  $stunting = !empty($values['s']) ? $values['s'] : '';
+  $wasting = !empty($values['w']) ? $values['w'] : '';
+  $underweight = !empty($values['u']) ? $values['u'] : '';
+
+  return "$stunting,$wasting,$underweight";
 }
 
 /**

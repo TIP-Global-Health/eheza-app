@@ -85,84 +85,139 @@ decodeGender =
 
 decodeAcuteIllnessEncounterData : Decoder AcuteIllnessEncounterData
 decodeAcuteIllnessEncounterData =
-    succeed AcuteIllnessEncounterData
-        |> required "start_date" decodeYYYYMMDD
-        |> required "encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType)
-
-
-decodeAcuteIllnessEncounterType : Decoder AcuteIllnessEncounterType
-decodeAcuteIllnessEncounterType =
     string
         |> andThen
-            (\encounterType ->
-                case encounterType of
-                    "nurse-encounter" ->
-                        succeed AcuteIllnessEncounterNurse
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed (AcuteIllnessEncounterData startDate AcuteIllnessEncounterCHW)
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode AcuteIllnessEncounterData")
 
-                    "nurse-encounter-subsequent" ->
-                        succeed AcuteIllnessEncounterNurseSubsequent
-
-                    "chw-encounter" ->
-                        succeed AcuteIllnessEncounterCHW
+                    [ first, second ] ->
+                        Maybe.map2
+                            (\startDate encounterType ->
+                                succeed (AcuteIllnessEncounterData startDate encounterType)
+                            )
+                            (Date.fromIsoString first |> Result.toMaybe)
+                            (acuteIllnessEncounterTypeFromString second)
+                            |> Maybe.withDefault (fail "Failed to decode AcuteIllnessEncounterData")
 
                     _ ->
-                        fail <|
-                            encounterType
-                                ++ " is not a recognized AcuteIllnessEncounterType"
+                        fail "Failed to decode AcuteIllnessEncounterData"
             )
+
+
+acuteIllnessEncounterTypeFromString : String -> Maybe AcuteIllnessEncounterType
+acuteIllnessEncounterTypeFromString encounterType =
+    case encounterType of
+        "nurse-encounter" ->
+            Just AcuteIllnessEncounterNurse
+
+        "nurse-encounter-subsequent" ->
+            Just AcuteIllnessEncounterNurseSubsequent
+
+        "chw-encounter" ->
+            Just AcuteIllnessEncounterCHW
+
+        _ ->
+            Nothing
 
 
 decodePrenatalEncounterData : Decoder PrenatalEncounterData
 decodePrenatalEncounterData =
-    succeed PrenatalEncounterData
-        |> required "start_date" decodeYYYYMMDD
-        |> required "encounter_type" (decodeWithFallback NurseEncounter decodePrenatalEncounterType)
-
-
-decodePrenatalEncounterType : Decoder PrenatalEncounterType
-decodePrenatalEncounterType =
     string
         |> andThen
-            (\encounterType ->
-                case encounterType of
-                    "nurse" ->
-                        succeed NurseEncounter
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed (PrenatalEncounterData startDate NurseEncounter)
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
 
-                    "nurse-postpartum" ->
-                        succeed NursePostpartumEncounter
-
-                    "chw-1" ->
-                        succeed ChwFirstEncounter
-
-                    "chw-2" ->
-                        succeed ChwSecondEncounter
-
-                    "chw-3" ->
-                        succeed ChwThirdPlusEncounter
-
-                    "chw-postpartum" ->
-                        succeed ChwPostpartumEncounter
+                    [ first, second ] ->
+                        Maybe.map2
+                            (\startDate encounterType ->
+                                succeed (PrenatalEncounterData startDate encounterType)
+                            )
+                            (Date.fromIsoString first |> Result.toMaybe)
+                            (prenatalEncounterTypeFromString second)
+                            |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
 
                     _ ->
-                        fail <|
-                            encounterType
-                                ++ " is not a recognized PrenatalEncounterType"
+                        fail "Failed to decode PrenatalEncounterData"
             )
+
+
+prenatalEncounterTypeFromString : String -> Maybe PrenatalEncounterType
+prenatalEncounterTypeFromString encounterType =
+    case encounterType of
+        "nurse" ->
+            Just NurseEncounter
+
+        "nurse-postpartum" ->
+            Just NursePostpartumEncounter
+
+        "chw-1" ->
+            Just ChwFirstEncounter
+
+        "chw-2" ->
+            Just ChwSecondEncounter
+
+        "chw-3" ->
+            Just ChwThirdPlusEncounter
+
+        "chw-postpartum" ->
+            Just ChwPostpartumEncounter
+
+        _ ->
+            Nothing
 
 
 decodeNutritionEncounterData : Decoder NutritionEncounterData
 decodeNutritionEncounterData =
-    succeed NutritionEncounterData
-        |> required "start_date" decodeYYYYMMDD
-        |> optional "nutrition" (nullable decodeNutritionData) Nothing
+    string
+        |> andThen
+            (\s ->
+                case String.split " " (String.trim s) of
+                    [ first ] ->
+                        Date.fromIsoString first
+                            |> Result.toMaybe
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed (NutritionEncounterData startDate Nothing)
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
+
+                    [ first, second ] ->
+                        (Date.fromIsoString first |> Result.toMaybe)
+                            |> Maybe.map
+                                (\startDate ->
+                                    succeed (NutritionEncounterData startDate (nutritionDataFromString second))
+                                )
+                            |> Maybe.withDefault (fail "Failed to decode NutritionEncounterData")
+
+                    _ ->
+                        fail "Failed to decode NutritionEncounterData"
+            )
 
 
-decodeNutritionData : Decoder NutritionData
-decodeNutritionData =
-    succeed NutritionData
-        |> optional "s" (nullable decodeFloat) Nothing
-        |> optional "w" (nullable decodeFloat) Nothing
-        |> optional "u" (nullable decodeFloat) Nothing
+nutritionDataFromString : String -> Maybe NutritionData
+nutritionDataFromString s =
+    case String.split "," s of
+        [ stunting, wasting, underweight ] ->
+            Just <| NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight)
+
+        _ ->
+            Nothing
 
 
 decodeHomeVisitEncounterData : Decoder HomeVisitEncounterData

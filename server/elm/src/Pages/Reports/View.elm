@@ -628,7 +628,7 @@ viewDemographicsReportEncounters language records =
 viewNutritionReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewNutritionReport language limitDate records =
     let
-        recordsTillLimitDate =
+        metricsFor2021 =
             List.map
                 (\record ->
                     let
@@ -663,7 +663,13 @@ viewNutritionReport language limitDate records =
                 records
                 |> List.map calcualteNutritionMetricsForPatient
                 |> sumNutritionMetrics
-                |> Debug.log ""
+                |> Debug.log "all"
+
+        stuntungTotal =
+            metricsFor2021.stuntingNormal
+                + metricsFor2021.stuntingModerate
+                + metricsFor2021.stuntingSevere
+                |> Debug.log "stuntungTotal"
     in
     div [ class "report nutrition" ]
         [ text "" ]
