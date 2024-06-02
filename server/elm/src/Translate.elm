@@ -79,6 +79,7 @@ type TranslationId
     | Male
     | Month Month
     | MonthLabel
+    | MonthYear Month Int Bool
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -93,6 +94,8 @@ type TranslationId
     | PleaseWaitMessage
     | PMTCT
     | PopulationSelectionOption PopulationSelectionOption
+    | PrevalenceByMonthOneVisitOrMore
+    | PrevalenceByMonthTwoVisitsOrMore
     | Province
     | Registered
     | RegisteredPatients
@@ -295,6 +298,9 @@ translationSet transId =
             , kinyarwanda = Just "Ukwezi"
             , kirundi = Just "Ukwezi"
             }
+
+        MonthYear month year short ->
+            translateMonthYY month year short
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -548,6 +554,18 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+        PrevalenceByMonthOneVisitOrMore ->
+            { english = "Prevalence by month, one visit or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrevalenceByMonthTwoVisitsOrMore ->
+            { english = "Prevalence by month, two visits or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Province ->
             { english = "Province"
             , kinyarwanda = Nothing
@@ -740,6 +758,17 @@ translateHttpError transId =
             }
 
 
+translateMonthYY : Month -> Int -> Bool -> TranslationSet
+translateMonthYY month year short =
+    translateMonth month short
+        |> (\set ->
+                { english = String.fromInt year ++ " " ++ set.english
+                , kinyarwanda = Maybe.map (\kinyarwanda -> String.fromInt year ++ " " ++ kinyarwanda) set.kinyarwanda
+                , kirundi = Maybe.map (\kirundi -> String.fromInt year ++ " " ++ kirundi) set.kirundi
+                }
+           )
+
+
 translateMonth : Month -> Bool -> TranslationSet
 translateMonth month short =
     case month of
@@ -747,154 +776,154 @@ translateMonth month short =
             if short then
                 { english = "Jan"
                 , kinyarwanda = Just "Mut"
-                , kirundi = Nothing
+                , kirundi = Just "Nze"
                 }
 
             else
                 { english = "January"
                 , kinyarwanda = Just "Mutarama"
-                , kirundi = Nothing
+                , kirundi = Just "Nzero"
                 }
 
         Feb ->
             if short then
                 { english = "Feb"
                 , kinyarwanda = Just "Gas"
-                , kirundi = Nothing
+                , kirundi = Just "Ruh"
                 }
 
             else
                 { english = "February"
                 , kinyarwanda = Just "Gashyantare"
-                , kirundi = Nothing
+                , kirundi = Just "Ruhuhuma"
                 }
 
         Mar ->
             if short then
                 { english = "Mar"
                 , kinyarwanda = Just "Wer"
-                , kirundi = Nothing
+                , kirundi = Just "Ntw"
                 }
 
             else
                 { english = "March"
                 , kinyarwanda = Just "Werurwe"
-                , kirundi = Nothing
+                , kirundi = Just "Ntwarante"
                 }
 
         Apr ->
             if short then
                 { english = "Apr"
                 , kinyarwanda = Just "Mat"
-                , kirundi = Nothing
+                , kirundi = Just "Nda"
                 }
 
             else
                 { english = "April"
                 , kinyarwanda = Just "Mata"
-                , kirundi = Nothing
+                , kirundi = Just "Ndamukiza"
                 }
 
         May ->
             if short then
                 { english = "May"
                 , kinyarwanda = Just "Gic"
-                , kirundi = Nothing
+                , kirundi = Just "Rus"
                 }
 
             else
                 { english = "May"
                 , kinyarwanda = Just "Gicurasi"
-                , kirundi = Nothing
+                , kirundi = Just "Rusama"
                 }
 
         Jun ->
             if short then
                 { english = "Jun"
                 , kinyarwanda = Just "Kam"
-                , kirundi = Nothing
+                , kirundi = Just "Ruh"
                 }
 
             else
                 { english = "June"
                 , kinyarwanda = Just "Kamena"
-                , kirundi = Nothing
+                , kirundi = Just "Ruheshi"
                 }
 
         Jul ->
             if short then
                 { english = "Jul"
                 , kinyarwanda = Just "Nya"
-                , kirundi = Nothing
+                , kirundi = Just "Muk"
                 }
 
             else
                 { english = "July"
                 , kinyarwanda = Just "Nyakanga"
-                , kirundi = Nothing
+                , kirundi = Just "Mukakaro"
                 }
 
         Aug ->
             if short then
                 { english = "Aug"
                 , kinyarwanda = Just "Kan"
-                , kirundi = Nothing
+                , kirundi = Just "Mya"
                 }
 
             else
                 { english = "August"
                 , kinyarwanda = Just "Kanama"
-                , kirundi = Nothing
+                , kirundi = Just "Myandagaro"
                 }
 
         Sep ->
             if short then
                 { english = "Sep"
                 , kinyarwanda = Just "Nze"
-                , kirundi = Nothing
+                , kirundi = Just "Nya"
                 }
 
             else
                 { english = "September"
                 , kinyarwanda = Just "Nzeri"
-                , kirundi = Nothing
+                , kirundi = Just "Nyakanga"
                 }
 
         Oct ->
             if short then
                 { english = "Oct"
                 , kinyarwanda = Just "Ukw"
-                , kirundi = Nothing
+                , kirundi = Just "Git"
                 }
 
             else
                 { english = "October"
                 , kinyarwanda = Just "Ukwakira"
-                , kirundi = Nothing
+                , kirundi = Just "Gitugutu"
                 }
 
         Nov ->
             if short then
                 { english = "Nov"
-                , kinyarwanda = Just "Ugu"
-                , kirundi = Nothing
+                , kinyarwanda = Just "Ukw"
+                , kirundi = Just "Muny"
                 }
 
             else
                 { english = "November"
                 , kinyarwanda = Just "Ugushyingo"
-                , kirundi = Nothing
+                , kirundi = Just "Munyonyo"
                 }
 
         Dec ->
             if short then
                 { english = "Dec"
                 , kinyarwanda = Just "Uku"
-                , kirundi = Nothing
+                , kirundi = Just "Kig"
                 }
 
             else
                 { english = "December"
                 , kinyarwanda = Just "Ukuboza"
-                , kirundi = Nothing
+                , kirundi = Just "Kigarama"
                 }

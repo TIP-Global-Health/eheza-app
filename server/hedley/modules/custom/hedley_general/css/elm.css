@@ -314,3 +314,32 @@ body.admin-menu #page-wrapper #header {
 .page-content .inputs .report .table .row .item.value {
   width: 30%;
 }
+
+.page-content .inputs .report.nutrition .table.wide,
+.page-content .inputs .report.nutrition .section.heading {
+  font-size: 24px;
+  margin-left: -12%;
+  width: 120%;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.heading,
+.page-content .inputs .report.nutrition .table .row .item.row-label,
+.page-content .inputs .report.nutrition .table .row .item.value {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: auto;
+  margin-top: auto;
+  text-align: center;
+  width: 7%;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.heading,
+.page-content .inputs .report.nutrition .table .row .item.row-label {
+  font-weight: normal;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.row-label {
+  text-align: left;
+  width: 10%;
+}
+

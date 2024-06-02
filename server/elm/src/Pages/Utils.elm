@@ -3,6 +3,7 @@ module Pages.Utils exposing (..)
 import App.Types exposing (Language)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Date
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -202,7 +203,7 @@ emptySelectOption isSelected =
 
 
 
---Buttons
+-- Buttons
 
 
 viewActionButton : Language -> TranslationId -> Bool -> msg -> Html msg
@@ -229,3 +230,12 @@ viewGenerateReportButton language path selectionMadeMsg =
         [ button [ onClick selectionMadeMsg ]
             [ text <| translate language Translate.GenerateReport ]
         ]
+
+
+
+-- Helper functions
+
+
+unique : List a -> List a
+unique =
+    EverySet.fromList >> EverySet.toList

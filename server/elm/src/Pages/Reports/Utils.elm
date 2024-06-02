@@ -7,6 +7,7 @@ import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
 import Pages.Reports.Model exposing (..)
+import Pages.Utils exposing (unique)
 
 
 reportTypeToString : ReportType -> String
@@ -55,43 +56,44 @@ countTotalEncounetrs data =
         + countGroupDataEncounters data.groupNutritionAchiData
 
 
-calcualteNutritionMetricsForPatient : PatientData -> NutritionMetrics
-calcualteNutritionMetricsForPatient data =
-    [ Maybe.map
-        (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
-        data.wellChildData
-    , Maybe.map
-        (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
-        data.individualNutritionData
-    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionPmtctData
-    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionFbfData
-    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionSorwatheData
-    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionChwData
-    , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionAchiData
-    ]
-        |> Maybe.Extra.values
-        |> sumNutritionMetrics
 
-
-calcualteNutritionMetricsForEncounters : List NutritionEncounterData -> NutritionMetrics
-calcualteNutritionMetricsForEncounters =
-    let
-        categorizeZScore =
-            Maybe.map
-                (\score ->
-                    if score <= -3 then
-                        ( 0, 0, 1 )
-
-                    else if score <= -2 then
-                        ( 0, 1, 0 )
-
-                    else
-                        ( 1, 0, 0 )
-                )
-                >> Maybe.withDefault ( 0, 0, 0 )
-    in
-    List.map nutritionEncounterDataToNutritionMetrics
-        >> sumNutritionMetrics
+--
+--
+-- calcualteNutritionMetricsForPatient : PatientData -> NutritionMetrics
+-- calcualteNutritionMetricsForPatient data =
+--     [ Maybe.map
+--         (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
+--         data.wellChildData
+--     , Maybe.map
+--         (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
+--         data.individualNutritionData
+--     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionPmtctData
+--     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionFbfData
+--     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionSorwatheData
+--     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionChwData
+--     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionAchiData
+--     ]
+--         |> Maybe.Extra.values
+--         |> sumNutritionMetrics
+-- calcualteNutritionMetricsForEncounters : List NutritionEncounterData -> NutritionMetrics
+-- calcualteNutritionMetricsForEncounters =
+--     let
+--         categorizeZScore =
+--             Maybe.map
+--                 (\score ->
+--                     if score <= -3 then
+--                         ( 0, 0, 1 )
+--
+--                     else if score <= -2 then
+--                         ( 0, 1, 0 )
+--
+--                     else
+--                         ( 1, 0, 0 )
+--                 )
+--                 >> Maybe.withDefault ( 0, 0, 0 )
+--     in
+--     List.map nutritionEncounterDataToNutritionMetrics
+--         >> sumNutritionMetrics
 
 
 sumNutritionMetrics : List NutritionMetrics -> NutritionMetrics
@@ -99,22 +101,22 @@ sumNutritionMetrics =
     List.foldl
         (\metrics accum ->
             { accum
-                | stuntingNormal = accum.stuntingNormal + metrics.stuntingNormal
-                , stuntingModerate = accum.stuntingModerate + metrics.stuntingModerate
-                , stuntingSevere = accum.stuntingSevere + metrics.stuntingSevere
-                , wastingNormal = accum.wastingNormal + metrics.wastingNormal
-                , wastingModerate = accum.wastingModerate + metrics.wastingModerate
-                , wastingSevere = accum.wastingSevere + metrics.wastingSevere
-                , underweightNormal = accum.underweightNormal + metrics.underweightNormal
-                , underweightModerate = accum.underweightModerate + metrics.underweightModerate
-                , underweightSevere = accum.underweightSevere + metrics.underweightSevere
+                | stuntingNormal = accum.stuntingNormal ++ metrics.stuntingNormal
+                , stuntingModerate = accum.stuntingModerate ++ metrics.stuntingModerate
+                , stuntingSevere = accum.stuntingSevere ++ metrics.stuntingSevere
+                , wastingNormal = accum.wastingNormal ++ metrics.wastingNormal
+                , wastingModerate = accum.wastingModerate ++ metrics.wastingModerate
+                , wastingSevere = accum.wastingSevere ++ metrics.wastingSevere
+                , underweightNormal = accum.underweightNormal ++ metrics.underweightNormal
+                , underweightModerate = accum.underweightModerate ++ metrics.underweightModerate
+                , underweightSevere = accum.underweightSevere ++ metrics.underweightSevere
             }
         )
         emptyNutritionMetrics
 
 
-nutritionEncounterDataToNutritionMetrics : NutritionEncounterData -> NutritionMetrics
-nutritionEncounterDataToNutritionMetrics =
+nutritionEncounterDataToNutritionMetrics : PersonId -> NutritionEncounterData -> NutritionMetrics
+nutritionEncounterDataToNutritionMetrics personId =
     .nutritionData
         >> Maybe.map
             (\data ->
@@ -123,15 +125,15 @@ nutritionEncounterDataToNutritionMetrics =
                         Maybe.map
                             (\score ->
                                 if score <= -3 then
-                                    ( 0, 0, 1 )
+                                    ( [], [], [ personId ] )
 
                                 else if score <= -2 then
-                                    ( 0, 1, 0 )
+                                    ( [], [ personId ], [] )
 
                                 else
-                                    ( 1, 0, 0 )
+                                    ( [ personId ], [], [] )
                             )
-                            >> Maybe.withDefault ( 0, 0, 0 )
+                            >> Maybe.withDefault ( [], [], [] )
 
                     ( stuntingNormal, stuntingModerate, stuntingSevere ) =
                         categorizeZScore data.stunting
@@ -156,24 +158,33 @@ nutritionEncounterDataToNutritionMetrics =
         >> Maybe.withDefault emptyNutritionMetrics
 
 
-nutritionMetricsToNutritionIncidence : NutritionMetrics -> NutritionIncidence
-nutritionMetricsToNutritionIncidence metrics =
+nutritionMetricsToNutritionPrevalence : NutritionMetrics -> NutritionPrevalence
+nutritionMetricsToNutritionPrevalence metrics =
     let
         calcualtePercentage nominator total =
-            if total == 0 then
+            if List.isEmpty total then
                 0
 
             else
-                (toFloat nominator / toFloat total) * 100
+                (toFloat (List.length nominator) / toFloat (List.length total)) * 100
 
         stuntingTotal =
-            metrics.stuntingModerate + metrics.stuntingSevere + metrics.stuntingNormal
+            metrics.stuntingModerate
+                ++ metrics.stuntingSevere
+                ++ metrics.stuntingNormal
+                |> unique
 
         wastingTotal =
-            metrics.wastingModerate + metrics.wastingSevere + metrics.wastingNormal
+            metrics.wastingModerate
+                ++ metrics.wastingSevere
+                ++ metrics.wastingNormal
+                |> unique
 
         underweightTotal =
-            metrics.underweightModerate + metrics.underweightSevere + metrics.underweightNormal
+            metrics.underweightModerate
+                ++ metrics.underweightSevere
+                ++ metrics.underweightNormal
+                |> unique
     in
     { stuntingModerate = calcualtePercentage metrics.stuntingModerate stuntingTotal
     , stuntingSevere = calcualtePercentage metrics.stuntingSevere stuntingTotal

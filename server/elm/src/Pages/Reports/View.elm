@@ -22,6 +22,7 @@ import Maybe.Extra exposing (isJust)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import Round
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -666,13 +667,13 @@ viewNutritionReport language limitDate records =
         allEncounters =
             List.map
                 (\record ->
-                    [ Maybe.map List.concat record.wellChildData
-                    , Maybe.map List.concat record.individualNutritionData
-                    , record.groupNutritionPmtctData
-                    , record.groupNutritionFbfData
-                    , record.groupNutritionSorwatheData
-                    , record.groupNutritionChwData
-                    , record.groupNutritionAchiData
+                    [ Maybe.map (List.concat >> List.map (Tuple.pair record.id)) record.wellChildData
+                    , Maybe.map (List.concat >> List.map (Tuple.pair record.id)) record.individualNutritionData
+                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionPmtctData
+                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionFbfData
+                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionSorwatheData
+                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionChwData
+                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionAchiData
                     ]
                         |> Maybe.Extra.values
                         |> List.concat
@@ -680,9 +681,12 @@ viewNutritionReport language limitDate records =
                 recordsForChildrenBellow6
                 |> List.concat
 
+        _ =
+            Debug.log "allEncountersByMonth" allEncountersByMonth
+
         allEncountersByMonth =
             List.foldl
-                (\encounter accum ->
+                (\( personId, encounter ) accum ->
                     let
                         year =
                             Date.year encounter.startDate
@@ -691,7 +695,7 @@ viewNutritionReport language limitDate records =
                             Date.monthNumber encounter.startDate
 
                         encounterMetrics =
-                            nutritionEncounterDataToNutritionMetrics encounter
+                            nutritionEncounterDataToNutritionMetrics personId encounter
 
                         updatedMetrics =
                             Dict.get ( year, month ) accum
@@ -718,54 +722,56 @@ viewNutritionReport language limitDate records =
                 |> Dict.values
                 |> sumNutritionMetrics
 
-        _ =
-            Debug.log "2021" (nutritionMetricsToNutritionIncidence <| resolveMetricsForYear (currentYear - 3))
+        monthlyPrevalenceData =
+            List.range 31 42
+                |> List.map
+                    (\index ->
+                        let
+                            selectedDate =
+                                Date.add Months (-1 * index) limitDate
 
-        _ =
-            Debug.log "2020" (nutritionMetricsToNutritionIncidence <| resolveMetricsForYear (currentYear - 4))
+                            year =
+                                Date.year selectedDate
 
-        metricsFor2021 =
+                            month =
+                                Date.month selectedDate
+
+                            monthNumber =
+                                Date.monthNumber selectedDate
+                        in
+                        ( Translate.MonthYear month year True
+                        , Dict.get ( year, monthNumber ) allEncountersByMonth
+                            |> Maybe.map nutritionMetricsToNutritionPrevalence
+                            |> Maybe.withDefault emptyNutritionPrevalence
+                        )
+                    )
+
+        headerRow =
             List.map
-                (\record ->
-                    let
-                        filterIndividualBy resolveDateFunc =
-                            Maybe.map
-                                (List.map
-                                    (List.filter
-                                        (\encounterData ->
-                                            Date.year (resolveDateFunc encounterData) == 2021
-                                        )
-                                    )
-                                )
-
-                        filterGroupBy resolveDateFunc =
-                            Maybe.map
-                                (List.filter
-                                    (\encounterData ->
-                                        Date.year (resolveDateFunc encounterData) == 2021
-                                    )
-                                )
-                    in
-                    { record
-                        | wellChildData = filterIndividualBy .startDate record.wellChildData
-                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                    }
+                (\( label, _ ) ->
+                    div [ class "item heading" ] [ text <| translate language label ]
                 )
-                recordsForChildrenBellow6
-                |> List.map calcualteNutritionMetricsForPatient
-                |> sumNutritionMetrics
-                |> Debug.log "all"
+                monthlyPrevalenceData
+                |> List.append [ div [ class "item row-label" ] [ text "" ] ]
+                |> div [ class "row" ]
 
-        stuntungTotal =
-            metricsFor2021.stuntingNormal
-                + metricsFor2021.stuntingModerate
-                + metricsFor2021.stuntingSevere
-                |> Debug.log "stuntungTotal"
+        viewRow label =
+            List.map
+                (\value ->
+                    div [ class "item value" ] [ text <| Round.round 3 value ++ "%" ]
+                )
+                >> List.append [ div [ class "item row-label" ] [ text label ] ]
+                >> div [ class "row" ]
     in
     div [ class "report nutrition" ]
-        [ text "" ]
+        [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
+        , div [ class "table wide" ]
+            [ headerRow
+            , List.map (Tuple.second >> .stuntingModerate) monthlyPrevalenceData |> viewRow "Stunting Moderate"
+            , List.map (Tuple.second >> .stuntingSevere) monthlyPrevalenceData |> viewRow "Stunting Severe"
+            , List.map (Tuple.second >> .wastingModerate) monthlyPrevalenceData |> viewRow "Wasting Moderate"
+            , List.map (Tuple.second >> .wastingSevere) monthlyPrevalenceData |> viewRow "Wasting Severe"
+            , List.map (Tuple.second >> .underweightModerate) monthlyPrevalenceData |> viewRow "Underweight Moderate"
+            , List.map (Tuple.second >> .underweightSevere) monthlyPrevalenceData |> viewRow "Underweight Severe"
+            ]
+        ]

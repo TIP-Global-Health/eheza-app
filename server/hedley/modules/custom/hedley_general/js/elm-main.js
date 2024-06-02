@@ -8574,123 +8574,144 @@ var $author$project$Translate$translateMonth = F2(
 				return _short ? {
 					english: 'Jan',
 					kinyarwanda: $elm$core$Maybe$Just('Mut'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Nze')
 				} : {
 					english: 'January',
 					kinyarwanda: $elm$core$Maybe$Just('Mutarama'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Nzero')
 				};
 			case 'Feb':
 				return _short ? {
 					english: 'Feb',
 					kinyarwanda: $elm$core$Maybe$Just('Gas'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ruh')
 				} : {
 					english: 'February',
 					kinyarwanda: $elm$core$Maybe$Just('Gashyantare'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ruhuhuma')
 				};
 			case 'Mar':
 				return _short ? {
 					english: 'Mar',
 					kinyarwanda: $elm$core$Maybe$Just('Wer'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ntw')
 				} : {
 					english: 'March',
 					kinyarwanda: $elm$core$Maybe$Just('Werurwe'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ntwarante')
 				};
 			case 'Apr':
 				return _short ? {
 					english: 'Apr',
 					kinyarwanda: $elm$core$Maybe$Just('Mat'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Nda')
 				} : {
 					english: 'April',
 					kinyarwanda: $elm$core$Maybe$Just('Mata'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ndamukiza')
 				};
 			case 'May':
 				return _short ? {
 					english: 'May',
 					kinyarwanda: $elm$core$Maybe$Just('Gic'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Rus')
 				} : {
 					english: 'May',
 					kinyarwanda: $elm$core$Maybe$Just('Gicurasi'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Rusama')
 				};
 			case 'Jun':
 				return _short ? {
 					english: 'Jun',
 					kinyarwanda: $elm$core$Maybe$Just('Kam'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ruh')
 				} : {
 					english: 'June',
 					kinyarwanda: $elm$core$Maybe$Just('Kamena'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Ruheshi')
 				};
 			case 'Jul':
 				return _short ? {
 					english: 'Jul',
 					kinyarwanda: $elm$core$Maybe$Just('Nya'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Muk')
 				} : {
 					english: 'July',
 					kinyarwanda: $elm$core$Maybe$Just('Nyakanga'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Mukakaro')
 				};
 			case 'Aug':
 				return _short ? {
 					english: 'Aug',
 					kinyarwanda: $elm$core$Maybe$Just('Kan'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Mya')
 				} : {
 					english: 'August',
 					kinyarwanda: $elm$core$Maybe$Just('Kanama'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Myandagaro')
 				};
 			case 'Sep':
 				return _short ? {
 					english: 'Sep',
 					kinyarwanda: $elm$core$Maybe$Just('Nze'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Nya')
 				} : {
 					english: 'September',
 					kinyarwanda: $elm$core$Maybe$Just('Nzeri'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Nyakanga')
 				};
 			case 'Oct':
 				return _short ? {
 					english: 'Oct',
 					kinyarwanda: $elm$core$Maybe$Just('Ukw'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Git')
 				} : {
 					english: 'October',
 					kinyarwanda: $elm$core$Maybe$Just('Ukwakira'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Gitugutu')
 				};
 			case 'Nov':
 				return _short ? {
 					english: 'Nov',
-					kinyarwanda: $elm$core$Maybe$Just('Ugu'),
-					kirundi: $elm$core$Maybe$Nothing
+					kinyarwanda: $elm$core$Maybe$Just('Ukw'),
+					kirundi: $elm$core$Maybe$Just('Muny')
 				} : {
 					english: 'November',
 					kinyarwanda: $elm$core$Maybe$Just('Ugushyingo'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Munyonyo')
 				};
 			default:
 				return _short ? {
 					english: 'Dec',
 					kinyarwanda: $elm$core$Maybe$Just('Uku'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Kig')
 				} : {
 					english: 'December',
 					kinyarwanda: $elm$core$Maybe$Just('Ukuboza'),
-					kirundi: $elm$core$Maybe$Nothing
+					kirundi: $elm$core$Maybe$Just('Kigarama')
 				};
 		}
+	});
+var $author$project$Translate$translateMonthYY = F3(
+	function (month, year, _short) {
+		return function (set) {
+			return {
+				english: $elm$core$String$fromInt(year) + (' ' + set.english),
+				kinyarwanda: A2(
+					$elm$core$Maybe$map,
+					function (kinyarwanda) {
+						return $elm$core$String$fromInt(year) + (' ' + kinyarwanda);
+					},
+					set.kinyarwanda),
+				kirundi: A2(
+					$elm$core$Maybe$map,
+					function (kirundi) {
+						return $elm$core$String$fromInt(year) + (' ' + kirundi);
+					},
+					set.kirundi)
+			};
+		}(
+			A2($author$project$Translate$translateMonth, month, _short));
 	});
 var $author$project$Translate$translationSet = function (transId) {
 	translationSet:
@@ -8762,6 +8783,11 @@ var $author$project$Translate$translationSet = function (transId) {
 					kinyarwanda: $elm$core$Maybe$Just('Ukwezi'),
 					kirundi: $elm$core$Maybe$Just('Ukwezi')
 				};
+			case 'MonthYear':
+				var month = transId.a;
+				var year = transId.b;
+				var _short = transId.c;
+				return A3($author$project$Translate$translateMonthYY, month, year, _short);
 			case 'NCDADemographicsItemLabel':
 				var item = transId.a;
 				switch (item.$) {
@@ -8947,6 +8973,10 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
+			case 'PrevalenceByMonthOneVisitOrMore':
+				return {english: 'Prevalence by month, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PrevalenceByMonthTwoVisitsOrMore':
+				return {english: 'Prevalence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Registered':
@@ -11638,88 +11668,12 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
-var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: 0, stuntingNormal: 0, stuntingSevere: 0, underweightModerate: 0, underweightNormal: 0, underweightSevere: 0, wastingModerate: 0, wastingNormal: 0, wastingSevere: 0};
-var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = A2(
-	$elm$core$Basics$composeR,
-	function ($) {
-		return $.nutritionData;
-	},
-	A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			function (data) {
-				var categorizeZScore = A2(
-					$elm$core$Basics$composeR,
-					$elm$core$Maybe$map(
-						function (score) {
-							return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(0, 0, 1) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(0, 1, 0) : _Utils_Tuple3(1, 0, 0));
-						}),
-					$elm$core$Maybe$withDefault(
-						_Utils_Tuple3(0, 0, 0)));
-				var _v0 = categorizeZScore(data.wasting);
-				var wastingNormal = _v0.a;
-				var wastingModerate = _v0.b;
-				var wastingSevere = _v0.c;
-				var _v1 = categorizeZScore(data.underweight);
-				var underweightNormal = _v1.a;
-				var underweightModerate = _v1.b;
-				var underweightSevere = _v1.c;
-				var _v2 = categorizeZScore(data.stunting);
-				var stuntingNormal = _v2.a;
-				var stuntingModerate = _v2.b;
-				var stuntingSevere = _v2.c;
-				return {stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, underweightModerate: underweightModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingNormal: wastingNormal, wastingSevere: wastingSevere};
-			}),
-		$elm$core$Maybe$withDefault($author$project$Pages$Reports$Model$emptyNutritionMetrics)));
-var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
-	$elm$core$List$foldl,
-	F2(
-		function (metrics, accum) {
-			return _Utils_update(
-				accum,
-				{stuntingModerate: accum.stuntingModerate + metrics.stuntingModerate, stuntingNormal: accum.stuntingNormal + metrics.stuntingNormal, stuntingSevere: accum.stuntingSevere + metrics.stuntingSevere, underweightModerate: accum.underweightModerate + metrics.underweightModerate, underweightNormal: accum.underweightNormal + metrics.underweightNormal, underweightSevere: accum.underweightSevere + metrics.underweightSevere, wastingModerate: accum.wastingModerate + metrics.wastingModerate, wastingNormal: accum.wastingNormal + metrics.wastingNormal, wastingSevere: accum.wastingSevere + metrics.wastingSevere});
-		}),
-	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
-var $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters = function () {
-	var categorizeZScore = A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			function (score) {
-				return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(0, 0, 1) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(0, 1, 0) : _Utils_Tuple3(1, 0, 0));
-			}),
-		$elm$core$Maybe$withDefault(
-			_Utils_Tuple3(0, 0, 0)));
-	return A2(
-		$elm$core$Basics$composeR,
-		$elm$core$List$map($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics),
-		$author$project$Pages$Reports$Utils$sumNutritionMetrics);
-}();
-var $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForPatient = function (data) {
-	return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
-		$elm_community$maybe_extra$Maybe$Extra$values(
-			_List_fromArray(
-				[
-					A2(
-					$elm$core$Maybe$map,
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$map($author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters),
-						$author$project$Pages$Reports$Utils$sumNutritionMetrics),
-					data.wellChildData),
-					A2(
-					$elm$core$Maybe$map,
-					A2(
-						$elm$core$Basics$composeR,
-						$elm$core$List$map($author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters),
-						$author$project$Pages$Reports$Utils$sumNutritionMetrics),
-					data.individualNutritionData),
-					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionPmtctData),
-					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionFbfData),
-					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionSorwatheData),
-					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionChwData),
-					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionAchiData)
-				])));
-};
+var $author$project$Translate$MonthYear = F3(
+	function (a, b, c) {
+		return {$: 'MonthYear', a: a, b: b, c: c};
+	});
+var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
+var $author$project$Pages$Reports$Model$emptyNutritionPrevalence = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -11734,13 +11688,70 @@ var $pzp1997$assoc_list$AssocList$filter = F2(
 				alist));
 	});
 var $elm$core$Debug$log = _Debug_log;
-var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence = function (metrics) {
-	var wastingTotal = (metrics.wastingModerate + metrics.wastingSevere) + metrics.wastingNormal;
-	var underweightTotal = (metrics.underweightModerate + metrics.underweightSevere) + metrics.underweightNormal;
-	var stuntingTotal = (metrics.stuntingModerate + metrics.stuntingSevere) + metrics.stuntingNormal;
+var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, underweightModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, wastingModerate: _List_Nil, wastingNormal: _List_Nil, wastingSevere: _List_Nil};
+var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = function (personId) {
+	return A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.nutritionData;
+		},
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$Maybe$map(
+				function (data) {
+					var categorizeZScore = A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Maybe$map(
+							function (score) {
+								return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(
+									_List_Nil,
+									_List_Nil,
+									_List_fromArray(
+										[personId])) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(
+									_List_Nil,
+									_List_fromArray(
+										[personId]),
+									_List_Nil) : _Utils_Tuple3(
+									_List_fromArray(
+										[personId]),
+									_List_Nil,
+									_List_Nil));
+							}),
+						$elm$core$Maybe$withDefault(
+							_Utils_Tuple3(_List_Nil, _List_Nil, _List_Nil)));
+					var _v0 = categorizeZScore(data.wasting);
+					var wastingNormal = _v0.a;
+					var wastingModerate = _v0.b;
+					var wastingSevere = _v0.c;
+					var _v1 = categorizeZScore(data.underweight);
+					var underweightNormal = _v1.a;
+					var underweightModerate = _v1.b;
+					var underweightSevere = _v1.c;
+					var _v2 = categorizeZScore(data.stunting);
+					var stuntingNormal = _v2.a;
+					var stuntingModerate = _v2.b;
+					var stuntingSevere = _v2.c;
+					return {stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, underweightModerate: underweightModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingNormal: wastingNormal, wastingSevere: wastingSevere};
+				}),
+			$elm$core$Maybe$withDefault($author$project$Pages$Reports$Model$emptyNutritionMetrics)));
+};
+var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
+var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionPrevalence = function (metrics) {
+	var wastingTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.wastingModerate,
+			_Utils_ap(metrics.wastingSevere, metrics.wastingNormal)));
+	var underweightTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.underweightModerate,
+			_Utils_ap(metrics.underweightSevere, metrics.underweightNormal)));
+	var stuntingTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.stuntingModerate,
+			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
 	var calcualtePercentage = F2(
 		function (nominator, total) {
-			return (!total) ? 0 : ((nominator / total) * 100);
+			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
 		});
 	return {
 		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
@@ -11751,90 +11762,285 @@ var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence = f
 		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
 	};
 };
+var $myrho$elm_round$Round$addSign = F2(
+	function (signed, str) {
+		var isNotZero = A2(
+			$elm$core$List$any,
+			function (c) {
+				return (!_Utils_eq(
+					c,
+					_Utils_chr('0'))) && (!_Utils_eq(
+					c,
+					_Utils_chr('.')));
+			},
+			$elm$core$String$toList(str));
+		return _Utils_ap(
+			(signed && isNotZero) ? '-' : '',
+			str);
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $myrho$elm_round$Round$increaseNum = function (_v0) {
+	var head = _v0.a;
+	var tail = _v0.b;
+	if (_Utils_eq(
+		head,
+		_Utils_chr('9'))) {
+		var _v1 = $elm$core$String$uncons(tail);
+		if (_v1.$ === 'Nothing') {
+			return '01';
+		} else {
+			var headtail = _v1.a;
+			return A2(
+				$elm$core$String$cons,
+				_Utils_chr('0'),
+				$myrho$elm_round$Round$increaseNum(headtail));
+		}
+	} else {
+		var c = $elm$core$Char$toCode(head);
+		return ((c >= 48) && (c < 57)) ? A2(
+			$elm$core$String$cons,
+			$elm$core$Char$fromCode(c + 1),
+			tail) : '0';
+	}
+};
+var $elm$core$Basics$isInfinite = _Basics_isInfinite;
+var $elm$core$Basics$isNaN = _Basics_isNaN;
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
+var $elm$core$String$reverse = _String_reverse;
+var $myrho$elm_round$Round$splitComma = function (str) {
+	var _v0 = A2($elm$core$String$split, '.', str);
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var before = _v0.a;
+			var _v1 = _v0.b;
+			var after = _v1.a;
+			return _Utils_Tuple2(before, after);
+		} else {
+			var before = _v0.a;
+			return _Utils_Tuple2(before, '0');
+		}
+	} else {
+		return _Utils_Tuple2('0', '0');
+	}
+};
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $myrho$elm_round$Round$toDecimal = function (fl) {
+	var _v0 = A2(
+		$elm$core$String$split,
+		'e',
+		$elm$core$String$fromFloat(
+			$elm$core$Basics$abs(fl)));
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var num = _v0.a;
+			var _v1 = _v0.b;
+			var exp = _v1.a;
+			var e = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				$elm$core$String$toInt(
+					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
+			var _v2 = $myrho$elm_round$Round$splitComma(num);
+			var before = _v2.a;
+			var after = _v2.b;
+			var total = _Utils_ap(before, after);
+			var zeroed = (e < 0) ? A2(
+				$elm$core$Maybe$withDefault,
+				'0',
+				A2(
+					$elm$core$Maybe$map,
+					function (_v3) {
+						var a = _v3.a;
+						var b = _v3.b;
+						return a + ('.' + b);
+					},
+					A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
+						$elm$core$String$uncons(
+							_Utils_ap(
+								A2(
+									$elm$core$String$repeat,
+									$elm$core$Basics$abs(e),
+									'0'),
+								total))))) : A3(
+				$elm$core$String$padRight,
+				e + 1,
+				_Utils_chr('0'),
+				total);
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				zeroed);
+		} else {
+			var num = _v0.a;
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				num);
+		}
+	} else {
+		return '';
+	}
+};
+var $myrho$elm_round$Round$roundFun = F3(
+	function (functor, s, fl) {
+		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
+			return $elm$core$String$fromFloat(fl);
+		} else {
+			var signed = fl < 0;
+			var _v0 = $myrho$elm_round$Round$splitComma(
+				$myrho$elm_round$Round$toDecimal(
+					$elm$core$Basics$abs(fl)));
+			var before = _v0.a;
+			var after = _v0.b;
+			var r = $elm$core$String$length(before) + s;
+			var normalized = _Utils_ap(
+				A2($elm$core$String$repeat, (-r) + 1, '0'),
+				A3(
+					$elm$core$String$padRight,
+					r,
+					_Utils_chr('0'),
+					_Utils_ap(before, after)));
+			var totalLen = $elm$core$String$length(normalized);
+			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
+			var increase = A2(
+				functor,
+				signed,
+				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
+			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
+			var num = increase ? $elm$core$String$reverse(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'1',
+					A2(
+						$elm$core$Maybe$map,
+						$myrho$elm_round$Round$increaseNum,
+						$elm$core$String$uncons(
+							$elm$core$String$reverse(remains))))) : remains;
+			var numLen = $elm$core$String$length(num);
+			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
+				num,
+				A2(
+					$elm$core$String$repeat,
+					$elm$core$Basics$abs(s),
+					'0')) : ((_Utils_cmp(
+				s,
+				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
+				before + '.',
+				A3(
+					$elm$core$String$padRight,
+					s,
+					_Utils_chr('0'),
+					after))));
+			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
+		}
+	});
+var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
+	F2(
+		function (signed, str) {
+			var _v0 = $elm$core$String$uncons(str);
+			if (_v0.$ === 'Nothing') {
+				return false;
+			} else {
+				if ('5' === _v0.a.a.valueOf()) {
+					if (_v0.a.b === '') {
+						var _v1 = _v0.a;
+						return !signed;
+					} else {
+						var _v2 = _v0.a;
+						return true;
+					}
+				} else {
+					var _v3 = _v0.a;
+					var _int = _v3.a;
+					return function (i) {
+						return ((i > 53) && signed) || ((i >= 53) && (!signed));
+					}(
+						$elm$core$Char$toCode(_int));
+				}
+			}
+		}));
+var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
+	$elm$core$List$foldl,
+	F2(
+		function (metrics, accum) {
+			return _Utils_update(
+				accum,
+				{
+					stuntingModerate: _Utils_ap(accum.stuntingModerate, metrics.stuntingModerate),
+					stuntingNormal: _Utils_ap(accum.stuntingNormal, metrics.stuntingNormal),
+					stuntingSevere: _Utils_ap(accum.stuntingSevere, metrics.stuntingSevere),
+					underweightModerate: _Utils_ap(accum.underweightModerate, metrics.underweightModerate),
+					underweightNormal: _Utils_ap(accum.underweightNormal, metrics.underweightNormal),
+					underweightSevere: _Utils_ap(accum.underweightSevere, metrics.underweightSevere),
+					wastingModerate: _Utils_ap(accum.wastingModerate, metrics.wastingModerate),
+					wastingNormal: _Utils_ap(accum.wastingNormal, metrics.wastingNormal),
+					wastingSevere: _Utils_ap(accum.wastingSevere, metrics.wastingSevere)
+				});
+		}),
+	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, limitDate, records) {
+		var viewRow = function (label) {
+			return A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$map(
+					function (value) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($myrho$elm_round$Round$round, 3, value) + '%')
+								]));
+					}),
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$append(
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('item row-label')
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(label)
+									]))
+							])),
+					$elm$html$Html$div(
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('row')
+							]))));
+		};
 		var recordsForChildrenBellow6 = A2(
 			$elm$core$List$filter,
 			function (record) {
 				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
 			},
 			records);
-		var metricsFor2021 = A2(
-			$elm$core$Debug$log,
-			'all',
-			$author$project$Pages$Reports$Utils$sumNutritionMetrics(
-				A2(
-					$elm$core$List$map,
-					$author$project$Pages$Reports$Utils$calcualteNutritionMetricsForPatient,
-					A2(
-						$elm$core$List$map,
-						function (record) {
-							var filterIndividualBy = function (resolveDateFunc) {
-								return $elm$core$Maybe$map(
-									$elm$core$List$map(
-										$elm$core$List$filter(
-											function (encounterData) {
-												return $justinmimbs$date$Date$year(
-													resolveDateFunc(encounterData)) === 2021;
-											})));
-							};
-							var filterGroupBy = function (resolveDateFunc) {
-								return $elm$core$Maybe$map(
-									$elm$core$List$filter(
-										function (encounterData) {
-											return $justinmimbs$date$Date$year(
-												resolveDateFunc(encounterData)) === 2021;
-										}));
-							};
-							return _Utils_update(
-								record,
-								{
-									groupNutritionAchiData: A2(
-										filterGroupBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.groupNutritionAchiData),
-									groupNutritionChwData: A2(
-										filterGroupBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.groupNutritionChwData),
-									groupNutritionFbfData: A2(
-										filterGroupBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.groupNutritionFbfData),
-									groupNutritionPmtctData: A2(
-										filterGroupBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.groupNutritionPmtctData),
-									groupNutritionSorwatheData: A2(
-										filterGroupBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.groupNutritionSorwatheData),
-									individualNutritionData: A2(
-										filterIndividualBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.individualNutritionData),
-									wellChildData: A2(
-										filterIndividualBy,
-										function ($) {
-											return $.startDate;
-										},
-										record.wellChildData)
-								});
-						},
-						recordsForChildrenBellow6))));
-		var stuntungTotal = A2($elm$core$Debug$log, 'stuntungTotal', (metricsFor2021.stuntingNormal + metricsFor2021.stuntingModerate) + metricsFor2021.stuntingSevere);
 		var currentYear = $justinmimbs$date$Date$year(limitDate);
 		var allEncounters = $elm$core$List$concat(
 			A2(
@@ -11844,23 +12050,59 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 						$elm_community$maybe_extra$Maybe$Extra$values(
 							_List_fromArray(
 								[
-									A2($elm$core$Maybe$map, $elm$core$List$concat, record.wellChildData),
-									A2($elm$core$Maybe$map, $elm$core$List$concat, record.individualNutritionData),
-									record.groupNutritionPmtctData,
-									record.groupNutritionFbfData,
-									record.groupNutritionSorwatheData,
-									record.groupNutritionChwData,
-									record.groupNutritionAchiData
+									A2(
+									$elm$core$Maybe$map,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$List$concat,
+										$elm$core$List$map(
+											$elm$core$Tuple$pair(record.id))),
+									record.wellChildData),
+									A2(
+									$elm$core$Maybe$map,
+									A2(
+										$elm$core$Basics$composeR,
+										$elm$core$List$concat,
+										$elm$core$List$map(
+											$elm$core$Tuple$pair(record.id))),
+									record.individualNutritionData),
+									A2(
+									$elm$core$Maybe$map,
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id)),
+									record.groupNutritionPmtctData),
+									A2(
+									$elm$core$Maybe$map,
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id)),
+									record.groupNutritionFbfData),
+									A2(
+									$elm$core$Maybe$map,
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id)),
+									record.groupNutritionSorwatheData),
+									A2(
+									$elm$core$Maybe$map,
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id)),
+									record.groupNutritionChwData),
+									A2(
+									$elm$core$Maybe$map,
+									$elm$core$List$map(
+										$elm$core$Tuple$pair(record.id)),
+									record.groupNutritionAchiData)
 								])));
 				},
 				recordsForChildrenBellow6));
 		var allEncountersByMonth = A3(
 			$elm$core$List$foldl,
 			F2(
-				function (encounter, accum) {
+				function (_v4, accum) {
+					var personId = _v4.a;
+					var encounter = _v4.b;
 					var year = $justinmimbs$date$Date$year(encounter.startDate);
 					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
-					var encounterMetrics = $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics(encounter);
+					var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
 					var updatedMetrics = A2(
 						$elm$core$Maybe$withDefault,
 						encounterMetrics,
@@ -11883,28 +12125,78 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 				}),
 			$pzp1997$assoc_list$AssocList$empty,
 			allEncounters);
+		var monthlyPrevalenceData = A2(
+			$elm$core$List$map,
+			function (index) {
+				var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, limitDate);
+				var year = $justinmimbs$date$Date$year(selectedDate);
+				var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
+				var month = $justinmimbs$date$Date$month(selectedDate);
+				return _Utils_Tuple2(
+					A3($author$project$Translate$MonthYear, month, year, true),
+					A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Reports$Model$emptyNutritionPrevalence,
+						A2(
+							$elm$core$Maybe$map,
+							$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionPrevalence,
+							A2(
+								$pzp1997$assoc_list$AssocList$get,
+								_Utils_Tuple2(year, monthNumber),
+								allEncountersByMonth))));
+			},
+			A2($elm$core$List$range, 31, 42));
+		var headerRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
+			A2(
+				$elm$core$List$append,
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('item row-label')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('')
+							]))
+					]),
+				A2(
+					$elm$core$List$map,
+					function (_v3) {
+						var label = _v3.a;
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item heading')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2($author$project$Translate$translate, language, label))
+								]));
+					},
+					monthlyPrevalenceData)));
 		var resolveMetricsForYear = function (selectedYear) {
 			return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
 				$pzp1997$assoc_list$AssocList$values(
 					A2(
 						$pzp1997$assoc_list$AssocList$filter,
 						F2(
-							function (_v2, _v3) {
-								var year = _v2.a;
+							function (_v1, _v2) {
+								var year = _v1.a;
 								return _Utils_eq(year, selectedYear);
 							}),
 						allEncountersByMonth)));
 		};
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'2021',
-			$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence(
-				resolveMetricsForYear(currentYear - 3)));
-		var _v1 = A2(
-			$elm$core$Debug$log,
-			'2020',
-			$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence(
-				resolveMetricsForYear(currentYear - 4)));
+		var _v0 = A2($elm$core$Debug$log, 'allEncountersByMonth', allEncountersByMonth);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -11913,7 +12205,89 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text('')
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table wide')
+						]),
+					_List_fromArray(
+						[
+							headerRow,
+							A2(
+							viewRow,
+							'Stunting Moderate',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.stuntingModerate;
+									}),
+								monthlyPrevalenceData)),
+							A2(
+							viewRow,
+							'Stunting Severe',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.stuntingSevere;
+									}),
+								monthlyPrevalenceData)),
+							A2(
+							viewRow,
+							'Wasting Moderate',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.wastingModerate;
+									}),
+								monthlyPrevalenceData)),
+							A2(
+							viewRow,
+							'Wasting Severe',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.wastingSevere;
+									}),
+								monthlyPrevalenceData)),
+							A2(
+							viewRow,
+							'Underweight Moderate',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.underweightModerate;
+									}),
+								monthlyPrevalenceData)),
+							A2(
+							viewRow,
+							'Underweight Severe',
+							A2(
+								$elm$core$List$map,
+								A2(
+									$elm$core$Basics$composeR,
+									$elm$core$Tuple$second,
+									function ($) {
+										return $.underweightSevere;
+									}),
+								monthlyPrevalenceData))
+						]))
 				]));
 	});
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
@@ -32078,219 +32452,6 @@ var $author$project$Utils$NominalDate$equalByYearAndMonth = F2(
 			$justinmimbs$date$Date$month(first),
 			$justinmimbs$date$Date$month(second));
 	});
-var $myrho$elm_round$Round$addSign = F2(
-	function (signed, str) {
-		var isNotZero = A2(
-			$elm$core$List$any,
-			function (c) {
-				return (!_Utils_eq(
-					c,
-					_Utils_chr('0'))) && (!_Utils_eq(
-					c,
-					_Utils_chr('.')));
-			},
-			$elm$core$String$toList(str));
-		return _Utils_ap(
-			(signed && isNotZero) ? '-' : '',
-			str);
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $myrho$elm_round$Round$increaseNum = function (_v0) {
-	var head = _v0.a;
-	var tail = _v0.b;
-	if (_Utils_eq(
-		head,
-		_Utils_chr('9'))) {
-		var _v1 = $elm$core$String$uncons(tail);
-		if (_v1.$ === 'Nothing') {
-			return '01';
-		} else {
-			var headtail = _v1.a;
-			return A2(
-				$elm$core$String$cons,
-				_Utils_chr('0'),
-				$myrho$elm_round$Round$increaseNum(headtail));
-		}
-	} else {
-		var c = $elm$core$Char$toCode(head);
-		return ((c >= 48) && (c < 57)) ? A2(
-			$elm$core$String$cons,
-			$elm$core$Char$fromCode(c + 1),
-			tail) : '0';
-	}
-};
-var $elm$core$Basics$isInfinite = _Basics_isInfinite;
-var $elm$core$Basics$isNaN = _Basics_isNaN;
-var $elm$core$String$padRight = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			string,
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)));
-	});
-var $elm$core$String$reverse = _String_reverse;
-var $myrho$elm_round$Round$splitComma = function (str) {
-	var _v0 = A2($elm$core$String$split, '.', str);
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var before = _v0.a;
-			var _v1 = _v0.b;
-			var after = _v1.a;
-			return _Utils_Tuple2(before, after);
-		} else {
-			var before = _v0.a;
-			return _Utils_Tuple2(before, '0');
-		}
-	} else {
-		return _Utils_Tuple2('0', '0');
-	}
-};
-var $elm$core$Tuple$mapFirst = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var $myrho$elm_round$Round$toDecimal = function (fl) {
-	var _v0 = A2(
-		$elm$core$String$split,
-		'e',
-		$elm$core$String$fromFloat(
-			$elm$core$Basics$abs(fl)));
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var num = _v0.a;
-			var _v1 = _v0.b;
-			var exp = _v1.a;
-			var e = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				$elm$core$String$toInt(
-					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
-			var _v2 = $myrho$elm_round$Round$splitComma(num);
-			var before = _v2.a;
-			var after = _v2.b;
-			var total = _Utils_ap(before, after);
-			var zeroed = (e < 0) ? A2(
-				$elm$core$Maybe$withDefault,
-				'0',
-				A2(
-					$elm$core$Maybe$map,
-					function (_v3) {
-						var a = _v3.a;
-						var b = _v3.b;
-						return a + ('.' + b);
-					},
-					A2(
-						$elm$core$Maybe$map,
-						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
-						$elm$core$String$uncons(
-							_Utils_ap(
-								A2(
-									$elm$core$String$repeat,
-									$elm$core$Basics$abs(e),
-									'0'),
-								total))))) : A3(
-				$elm$core$String$padRight,
-				e + 1,
-				_Utils_chr('0'),
-				total);
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				zeroed);
-		} else {
-			var num = _v0.a;
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				num);
-		}
-	} else {
-		return '';
-	}
-};
-var $myrho$elm_round$Round$roundFun = F3(
-	function (functor, s, fl) {
-		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
-			return $elm$core$String$fromFloat(fl);
-		} else {
-			var signed = fl < 0;
-			var _v0 = $myrho$elm_round$Round$splitComma(
-				$myrho$elm_round$Round$toDecimal(
-					$elm$core$Basics$abs(fl)));
-			var before = _v0.a;
-			var after = _v0.b;
-			var r = $elm$core$String$length(before) + s;
-			var normalized = _Utils_ap(
-				A2($elm$core$String$repeat, (-r) + 1, '0'),
-				A3(
-					$elm$core$String$padRight,
-					r,
-					_Utils_chr('0'),
-					_Utils_ap(before, after)));
-			var totalLen = $elm$core$String$length(normalized);
-			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
-			var increase = A2(
-				functor,
-				signed,
-				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
-			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
-			var num = increase ? $elm$core$String$reverse(
-				A2(
-					$elm$core$Maybe$withDefault,
-					'1',
-					A2(
-						$elm$core$Maybe$map,
-						$myrho$elm_round$Round$increaseNum,
-						$elm$core$String$uncons(
-							$elm$core$String$reverse(remains))))) : remains;
-			var numLen = $elm$core$String$length(num);
-			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
-				num,
-				A2(
-					$elm$core$String$repeat,
-					$elm$core$Basics$abs(s),
-					'0')) : ((_Utils_cmp(
-				s,
-				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
-				before + '.',
-				A3(
-					$elm$core$String$padRight,
-					s,
-					_Utils_chr('0'),
-					after))));
-			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
-		}
-	});
-var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
-	F2(
-		function (signed, str) {
-			var _v0 = $elm$core$String$uncons(str);
-			if (_v0.$ === 'Nothing') {
-				return false;
-			} else {
-				if ('5' === _v0.a.a.valueOf()) {
-					if (_v0.a.b === '') {
-						var _v1 = _v0.a;
-						return !signed;
-					} else {
-						var _v2 = _v0.a;
-						return true;
-					}
-				} else {
-					var _v3 = _v0.a;
-					var _int = _v3.a;
-					return function (i) {
-						return ((i > 53) && signed) || ((i >= 53) && (!signed));
-					}(
-						$elm$core$Char$toCode(_int));
-				}
-			}
-		}));
 var $author$project$Pages$Scoreboard$Utils$viewPercentage = F2(
 	function (nominator, denominator) {
 		return (!denominator) ? '0.0%' : function (number) {
