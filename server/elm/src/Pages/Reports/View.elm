@@ -52,17 +52,46 @@ viewReportsData language currentDate data model =
                     ]
                 ]
 
-        dateSelectorConfig =
-            { select = SetLimitDate
-            , close = SetLimitDateSelectorState Nothing
-            , dateFrom = Date.add Years -6 currentDate
-            , dateTo = currentDate
-            , dateDefault = Just currentDate
-            }
+        limitDateInput =
+            Maybe.map
+                (\reportType ->
+                    -- Nutrition report does not allow selecting limit date, so
+                    -- we do not show limit date input when report is selected.
+                    if reportType /= ReportNutrition then
+                        let
+                            dateSelectorConfig =
+                                { select = SetLimitDate
+                                , close = SetLimitDateSelectorState Nothing
+                                , dateFrom = Date.add Years -6 currentDate
+                                , dateTo = currentDate
+                                , dateDefault = Just currentDate
+                                }
 
-        limitDateForView =
-            Maybe.map formatDDMMYYYY model.limitDate
-                |> Maybe.withDefault ""
+                            limitDateForView =
+                                Maybe.map formatDDMMYYYY model.limitDate
+                                    |> Maybe.withDefault ""
+                        in
+                        div
+                            [ class "form-input date"
+                            , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                            ]
+                            [ text limitDateForView ]
+                            |> wrapSelectListInput language Translate.SelectLimitDate False
+
+                    else
+                        emptyNode
+                )
+                model.reportType
+                |> Maybe.withDefault emptyNode
+
+        limitDateByReportType =
+            if model.reportType == Just ReportNutrition then
+                -- Nutrition report does not allow selecting limit date, so
+                -- we force it to be today.
+                Just currentDate
+
+            else
+                model.limitDate
 
         content =
             if isJust model.dateSelectorPopupState then
@@ -75,46 +104,50 @@ viewReportsData language currentDate data model =
                     (\reportType limitDate ->
                         let
                             recordsTillLimitDate =
-                                List.filterMap
-                                    (\record ->
-                                        if Date.compare record.created limitDate == LT then
-                                            let
-                                                filterIndividualBy resolveDateFunc =
-                                                    Maybe.map
-                                                        (List.map
+                                if Date.compare limitDate currentDate == EQ then
+                                    data.records
+
+                                else
+                                    List.filterMap
+                                        (\record ->
+                                            if Date.compare record.created limitDate == LT then
+                                                let
+                                                    filterIndividualBy resolveDateFunc =
+                                                        Maybe.map
+                                                            (List.map
+                                                                (List.filter
+                                                                    (\encounterData ->
+                                                                        Date.compare (resolveDateFunc encounterData) limitDate == LT
+                                                                    )
+                                                                )
+                                                            )
+
+                                                    filterGroupBy resolveDateFunc =
+                                                        Maybe.map
                                                             (List.filter
                                                                 (\encounterData ->
                                                                     Date.compare (resolveDateFunc encounterData) limitDate == LT
                                                                 )
                                                             )
-                                                        )
+                                                in
+                                                Just
+                                                    { record
+                                                        | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                        , prenatalData = filterIndividualBy .startDate record.prenatalData
+                                                        , homeVisitData = filterIndividualBy identity record.homeVisitData
+                                                        , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                                                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                                                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                                                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                                                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                                                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                                                    }
 
-                                                filterGroupBy resolveDateFunc =
-                                                    Maybe.map
-                                                        (List.filter
-                                                            (\encounterData ->
-                                                                Date.compare (resolveDateFunc encounterData) limitDate == LT
-                                                            )
-                                                        )
-                                            in
-                                            Just
-                                                { record
-                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                    , prenatalData = filterIndividualBy .startDate record.prenatalData
-                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                    , wellChildData = filterIndividualBy .startDate record.wellChildData
-                                                    , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                                                    , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                                                    , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                                                    , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                                                    , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                                                    , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                                                }
-
-                                        else
-                                            Nothing
-                                    )
-                                    data.records
+                                            else
+                                                Nothing
+                                        )
+                                        data.records
                         in
                         case reportType of
                             ReportDemographics ->
@@ -124,7 +157,7 @@ viewReportsData language currentDate data model =
                                 viewNutritionReport language limitDate recordsTillLimitDate
                     )
                     model.reportType
-                    model.limitDate
+                    limitDateByReportType
                     |> Maybe.withDefault emptyNode
     in
     div [ class "page-content" ]
@@ -138,12 +171,7 @@ viewReportsData language currentDate data model =
                 Translate.ReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
-            , div
-                [ class "form-input date"
-                , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                ]
-                [ text limitDateForView ]
-                |> wrapSelectListInput language Translate.SelectLimitDate False
+            , limitDateInput
             , content
             ]
         , viewModal <| viewCalendarPopup language model.dateSelectorPopupState model.limitDate

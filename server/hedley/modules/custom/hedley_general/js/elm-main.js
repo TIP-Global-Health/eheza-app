@@ -11962,17 +11962,50 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								]))
 						]))
 				]));
-		var limitDateForView = A2(
+		var limitDateInput = A2(
 			$elm$core$Maybe$withDefault,
-			'',
-			A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-		var dateSelectorConfig = {
-			close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-			dateDefault: $elm$core$Maybe$Just(currentDate),
-			dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-			dateTo: currentDate,
-			select: $author$project$Pages$Reports$Model$SetLimitDate
-		};
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (reportType) {
+					if (!_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
+						var limitDateForView = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+						var dateSelectorConfig = {
+							close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+							dateDefault: $elm$core$Maybe$Just(currentDate),
+							dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
+							dateTo: currentDate,
+							select: $author$project$Pages$Reports$Model$SetLimitDate
+						};
+						return A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
+							$author$project$Translate$SelectLimitDate,
+							false,
+							A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('form-input date'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+											$elm$core$Maybe$Just(dateSelectorConfig)))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(limitDateForView)
+									])));
+					} else {
+						return $author$project$Gizra$Html$emptyNode;
+					}
+				},
+				model.reportType));
+		var limitDateByReportType = _Utils_eq(
+			model.reportType,
+			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
 		var content = $elm_community$maybe_extra$Maybe$Extra$isJust(model.dateSelectorPopupState) ? $author$project$Gizra$Html$emptyNode : A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Gizra$Html$emptyNode,
@@ -11980,7 +12013,9 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 				$elm$core$Maybe$map2,
 				F2(
 					function (reportType, limitDate) {
-						var recordsTillLimitDate = A2(
+						var recordsTillLimitDate = _Utils_eq(
+							A2($justinmimbs$date$Date$compare, limitDate, currentDate),
+							$elm$core$Basics$EQ) ? data.records : A2(
 							$elm$core$List$filterMap,
 							function (record) {
 								if (_Utils_eq(
@@ -12083,7 +12118,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 						}
 					}),
 				model.reportType,
-				model.limitDate));
+				limitDateByReportType));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12116,24 +12151,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,
 								'select-input')),
-							A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$SelectLimitDate,
-							false,
-							A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('form-input date'),
-										$elm$html$Html$Events$onClick(
-										$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
-											$elm$core$Maybe$Just(dateSelectorConfig)))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(limitDateForView)
-									]))),
+							limitDateInput,
 							content
 						])),
 					$author$project$Utils$Html$viewModal(
