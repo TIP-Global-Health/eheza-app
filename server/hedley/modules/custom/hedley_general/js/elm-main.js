@@ -5764,7 +5764,24 @@ var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $elm_community$maybe_extra$Maybe$Extra$or = F2(
+	function (ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return mb;
+		} else {
+			return ma;
+		}
+	});
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
@@ -5806,11 +5823,20 @@ var $author$project$Pages$Reports$Update$update = F2(
 					_List_Nil);
 			default:
 				var state = msg.a;
+				var defaultSelection = A2(
+					$elm_community$maybe_extra$Maybe$Extra$or,
+					model.limitDate,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.dateDefault;
+						},
+						state));
 				return A4(
 					$author$project$App$Model$PagesReturn,
 					_Utils_update(
 						model,
-						{dateSelectorPopupState: state}),
+						{dateSelectorPopupState: state, limitDate: defaultSelection}),
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
 					_List_Nil);
@@ -31654,15 +31680,6 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 				selection.sector));
 		return _List_fromArray(
 			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
-	});
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
 	});
 var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
 var $author$project$Pages$Utils$viewGenerateReportButton = F3(

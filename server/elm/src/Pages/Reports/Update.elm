@@ -2,6 +2,7 @@ module Pages.Reports.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import Error.Utils exposing (noError)
+import Maybe.Extra
 import Pages.Reports.Model exposing (Model, Msg(..))
 import Pages.Reports.Utils exposing (reportTypeFromString)
 
@@ -24,8 +25,12 @@ update msg model =
                 []
 
         SetLimitDateSelectorState state ->
+            let
+                defaultSelection =
+                    Maybe.Extra.or model.limitDate (Maybe.andThen .dateDefault state)
+            in
             PagesReturn
-                { model | dateSelectorPopupState = state }
+                { model | dateSelectorPopupState = state, limitDate = defaultSelection }
                 Cmd.none
                 noError
                 []
