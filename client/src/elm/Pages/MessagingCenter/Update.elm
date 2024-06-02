@@ -19,7 +19,13 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (monthlySurveyQuestions)
+import Pages.MessagingCenter.Utils
+    exposing
+        ( adoptionSurveyQuestions
+        , quarterlySurveyQuestions
+        , resolveSurveyScoreDialogState
+        , surveyQuestionsAnswered
+        )
 import Time
 import Time.Extra
 
@@ -156,32 +162,32 @@ update currentTime currentDate msg model =
               ]
             )
 
-        SetMonthlySurveyAnswer question answer ->
+        SetSurveyAnswer question answer ->
             let
                 updatedForm =
-                    Dict.insert question answer model.monthlySurveyForm
+                    Dict.insert question answer model.surveyForm
             in
-            ( { model | monthlySurveyForm = updatedForm }
+            ( { model | surveyForm = updatedForm }
             , Cmd.none
             , []
             )
 
-        SaveMonthlySurvey nurseId ->
+        SaveSurvey surveyType nurseId ->
             let
                 ( msgs, extraMsgs ) =
-                    if Dict.size model.monthlySurveyForm == List.length monthlySurveyQuestions then
+                    if surveyQuestionsAnswered surveyType model.surveyForm then
                         -- We need all questions to have answers, to proceed with
                         -- save operations.
                         let
                             survey =
                                 { nurse = nurseId
                                 , dateMeasured = currentDate
-                                , surveyType = ResilienceSurveyMonthly
-                                , signs = model.monthlySurveyForm
+                                , surveyType = surveyType
+                                , signs = model.surveyForm
                                 }
 
                             surveyScore =
-                                Dict.values model.monthlySurveyForm
+                                Dict.values model.surveyForm
                                     |> List.map
                                         (\answer ->
                                             case answer of
@@ -206,13 +212,16 @@ update currentTime currentDate msg model =
                                 |> Backend.Model.MsgResilienceSurvey nurseId
                                 |> App.Model.MsgIndexedDb
                           ]
-                        , [ MonthlySurveyScore surveyScore |> Just |> SetSurveyScoreDialogState ]
+                        , [ resolveSurveyScoreDialogState surveyType surveyScore
+                                |> Just
+                                |> SetSurveyScoreDialogState
+                          ]
                         )
 
                     else
                         ( [], [] )
             in
-            ( model
+            ( { model | surveyForm = emptySurveyForm }
             , Cmd.none
             , msgs
             )

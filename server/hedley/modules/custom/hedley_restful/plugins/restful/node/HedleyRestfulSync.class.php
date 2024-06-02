@@ -368,7 +368,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
    * @throws \RestfulBadRequestException
    */
   public function handleChanges() {
-    watchdog('debug', 'Processing sync upload request');
+    watchdog('hedley_restful', 'Processing sync upload request');
     $stopper = time();
     $request = $this->getRequest();
     $this->validateDbVersion($request['db_version']);
@@ -515,24 +515,27 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     catch (Exception $e) {
       $transaction->rollback();
 
-      $m1 = '[MAIN] - ';
-      $m2 = '[DATA] - ';
+      $main = '[MAIN] -';
+      $data = '[DATA] -';
       foreach ($item as $k => $v) {
-        $m1 .= "  $k: $v  ||| ";
+        if ($k == 'data') {
+          continue;
+        }
+        $main .= "  $k: $v";
       }
-
       foreach ($item['data'] as $k => $v) {
         $value = is_array($v) ? implode(', ', $v) : $v;
-
-        $m2 .= "  $k: $value";
+        $data .= "  $k: $value";
       }
 
-      watchdog('debug', $m1, [], WATCHDOG_ERROR);
-      watchdog('debug', $m2, [], WATCHDOG_ERROR);
+      $details = $main . PHP_EOL . PHP_EOL . $data;
+      watchdog('hedley_restful', $details, [], WATCHDOG_ERROR);
 
-      $details = $m1 . PHP_EOL . PHP_EOL . $m2;
-      $uuid = !empty($item['uuid']) ? $item['uuid'] : 'no-uuid';
-      hedley_restful_report_sync_incident('content-upload', $uuid, $account->uid, $details);
+      // Create sync incident, only when UUID can not be resolved.
+      if (strpos($e->getMessage(), 'Could not find UUID:') === 0) {
+        $uuid = !empty($item['uuid']) ? $item['uuid'] : 'no-uuid';
+        hedley_restful_report_sync_incident('content-upload', $uuid, $account->uid, $details);
+      }
 
       throw $e;
     }
@@ -540,7 +543,7 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
     $user = $account->name;
     $stopper = time() - $stopper;
     $total = count($request['changes']);
-    watchdog('debug', "[$stopper sec] Sync upload by $user with $total changes was successful");
+    watchdog('hedley_restful', "[$stopper sec] Sync upload by $user with $total changes was successful");
 
     return [];
   }
