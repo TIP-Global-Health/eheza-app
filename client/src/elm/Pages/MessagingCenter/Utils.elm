@@ -5,19 +5,37 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
 import RemoteData
 import Time exposing (posixToMillis)
 
 
-monthlySurveyQuestions : List ResilienceSurveyQuestion
-monthlySurveyQuestions =
+quarterlySurveyQuestions : List ResilienceSurveyQuestion
+quarterlySurveyQuestions =
     [ ResilienceSurveyQuestion1
     , ResilienceSurveyQuestion2
     , ResilienceSurveyQuestion3
     , ResilienceSurveyQuestion4
+    ]
+
+
+adoptionSurveyQuestions : List ResilienceSurveyQuestion
+adoptionSurveyQuestions =
+    [ ResilienceSurveyQuestion1
+    , ResilienceSurveyQuestion2
+    , ResilienceSurveyQuestion3
+    , ResilienceSurveyQuestion4
+    , ResilienceSurveyQuestion5
+    , ResilienceSurveyQuestion6
+    , ResilienceSurveyQuestion7
+    , ResilienceSurveyQuestion8
+    , ResilienceSurveyQuestion9
+    , ResilienceSurveyQuestion10
+    , ResilienceSurveyQuestion11
+    , ResilienceSurveyQuestion12
     ]
 
 
@@ -83,3 +101,27 @@ resolveInboxMessagesProgramNotStarted currentDate nurseId db =
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map (Dict.filter (\_ message -> message.displayDay == 0))
         |> Maybe.withDefault Dict.empty
+
+
+surveyQuestionsAnswered : ResilienceSurveyType -> SurveyForm -> Bool
+surveyQuestionsAnswered surveyType surveyForm =
+    let
+        surveyQuestions =
+            case surveyType of
+                ResilienceSurveyQuarterly ->
+                    quarterlySurveyQuestions
+
+                ResilienceSurveyAdoption ->
+                    adoptionSurveyQuestions
+    in
+    Dict.size surveyForm == List.length surveyQuestions
+
+
+resolveSurveyScoreDialogState : ResilienceSurveyType -> Int -> SurveyScoreDialogState
+resolveSurveyScoreDialogState surveyType score =
+    case surveyType of
+        ResilienceSurveyQuarterly ->
+            QuarterlySurveyScore score
+
+        ResilienceSurveyAdoption ->
+            AdoptionSurveyScore score
