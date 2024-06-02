@@ -629,38 +629,42 @@ viewNutritionReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewNutritionReport language limitDate records =
     let
         metricsFor2021 =
-            List.map
+            List.filter
                 (\record ->
-                    let
-                        filterIndividualBy resolveDateFunc =
-                            Maybe.map
-                                (List.map
+                    Date.diff Years record.birthDate limitDate < 6
+                )
+                records
+                |> List.map
+                    (\record ->
+                        let
+                            filterIndividualBy resolveDateFunc =
+                                Maybe.map
+                                    (List.map
+                                        (List.filter
+                                            (\encounterData ->
+                                                Date.year (resolveDateFunc encounterData) == 2021
+                                            )
+                                        )
+                                    )
+
+                            filterGroupBy resolveDateFunc =
+                                Maybe.map
                                     (List.filter
                                         (\encounterData ->
                                             Date.year (resolveDateFunc encounterData) == 2021
                                         )
                                     )
-                                )
-
-                        filterGroupBy resolveDateFunc =
-                            Maybe.map
-                                (List.filter
-                                    (\encounterData ->
-                                        Date.year (resolveDateFunc encounterData) == 2021
-                                    )
-                                )
-                    in
-                    { record
-                        | wellChildData = filterIndividualBy .startDate record.wellChildData
-                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                    }
-                )
-                records
+                        in
+                        { record
+                            | wellChildData = filterIndividualBy .startDate record.wellChildData
+                            , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                            , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                            , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                            , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                            , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                            , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                        }
+                    )
                 |> List.map calcualteNutritionMetricsForPatient
                 |> sumNutritionMetrics
                 |> Debug.log "all"

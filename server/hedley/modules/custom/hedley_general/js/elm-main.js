@@ -11765,7 +11765,12 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 										record.wellChildData)
 								});
 						},
-						records))));
+						A2(
+							$elm$core$List$filter,
+							function (record) {
+								return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
+							},
+							records)))));
 		var stuntungTotal = A2($elm$core$Debug$log, 'stuntungTotal', (metricsFor2021.stuntingNormal + metricsFor2021.stuntingModerate) + metricsFor2021.stuntingSevere);
 		return A2(
 			$elm$html$Html$div,
