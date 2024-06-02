@@ -5967,20 +5967,22 @@ var $author$project$Backend$Reports$Model$ReportsData = F4(
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
 var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
-var $author$project$Backend$Reports$Model$PatientData = function (created) {
-	return function (birthDate) {
-		return function (gender) {
-			return function (acuteIllnessData) {
-				return function (prenatalData) {
-					return function (homeVisitData) {
-						return function (wellChildData) {
-							return function (individualNutritionData) {
-								return function (groupNutritionPmtctData) {
-									return function (groupNutritionFbfData) {
-										return function (groupNutritionSorwatheData) {
-											return function (groupNutritionChwData) {
-												return function (groupNutritionAchiData) {
-													return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, homeVisitData: homeVisitData, individualNutritionData: individualNutritionData, prenatalData: prenatalData, wellChildData: wellChildData};
+var $author$project$Backend$Reports$Model$PatientData = function (id) {
+	return function (created) {
+		return function (birthDate) {
+			return function (gender) {
+				return function (acuteIllnessData) {
+					return function (prenatalData) {
+						return function (homeVisitData) {
+							return function (wellChildData) {
+								return function (individualNutritionData) {
+									return function (groupNutritionPmtctData) {
+										return function (groupNutritionFbfData) {
+											return function (groupNutritionSorwatheData) {
+												return function (groupNutritionChwData) {
+													return function (groupNutritionAchiData) {
+														return {acuteIllnessData: acuteIllnessData, birthDate: birthDate, created: created, gender: gender, groupNutritionAchiData: groupNutritionAchiData, groupNutritionChwData: groupNutritionChwData, groupNutritionFbfData: groupNutritionFbfData, groupNutritionPmtctData: groupNutritionPmtctData, groupNutritionSorwatheData: groupNutritionSorwatheData, homeVisitData: homeVisitData, id: id, individualNutritionData: individualNutritionData, prenatalData: prenatalData, wellChildData: wellChildData};
+													};
 												};
 											};
 										};
@@ -6941,6 +6943,25 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Decoder$decodeHomeVisitEncounterData = $author$project$Gizra$NominalDate$decodeYYYYMMDD;
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
 var $author$project$Backend$Reports$Model$NutritionEncounterData = F2(
 	function (startDate, nutritionData) {
 		return {nutritionData: nutritionData, startDate: startDate};
@@ -7101,7 +7122,6 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 		return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$Backend$Reports$Decoder$decodeWithFallback = F2(
 	function (fallback, decoder) {
 		return $elm$json$Json$Decode$oneOf(
@@ -7265,7 +7285,11 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 													'created',
 													$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-													$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))))))))))))));
+													A3(
+														$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+														'id',
+														$author$project$Gizra$Json$decodeInt,
+														$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData)))))))))))))));
 var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
 var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
 var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
@@ -7351,24 +7375,6 @@ var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
 	function (id, name) {
 		return {id: id, name: name};
 	});
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
 var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'name',
@@ -11714,9 +11720,45 @@ var $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForPatient = fu
 					A2($elm$core$Maybe$map, $author$project$Pages$Reports$Utils$calcualteNutritionMetricsForEncounters, data.groupNutritionAchiData)
 				])));
 };
+var $pzp1997$assoc_list$AssocList$filter = F2(
+	function (isGood, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return A2(isGood, key, value);
+				},
+				alist));
+	});
 var $elm$core$Debug$log = _Debug_log;
+var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence = function (metrics) {
+	var wastingTotal = (metrics.wastingModerate + metrics.wastingSevere) + metrics.wastingNormal;
+	var underweightTotal = (metrics.underweightModerate + metrics.underweightSevere) + metrics.underweightNormal;
+	var stuntingTotal = (metrics.stuntingModerate + metrics.stuntingSevere) + metrics.stuntingNormal;
+	var calcualtePercentage = F2(
+		function (nominator, total) {
+			return (!total) ? 0 : ((nominator / total) * 100);
+		});
+	return {
+		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
+		stuntingSevere: A2(calcualtePercentage, metrics.stuntingSevere, stuntingTotal),
+		underweightModerate: A2(calcualtePercentage, metrics.underweightModerate, underweightTotal),
+		underweightSevere: A2(calcualtePercentage, metrics.underweightSevere, underweightTotal),
+		wastingModerate: A2(calcualtePercentage, metrics.wastingModerate, wastingTotal),
+		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
+	};
+};
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, limitDate, records) {
+		var recordsForChildrenBellow6 = A2(
+			$elm$core$List$filter,
+			function (record) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
+			},
+			records);
 		var metricsFor2021 = A2(
 			$elm$core$Debug$log,
 			'all',
@@ -11791,13 +11833,78 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 										record.wellChildData)
 								});
 						},
-						A2(
-							$elm$core$List$filter,
-							function (record) {
-								return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
-							},
-							records)))));
+						recordsForChildrenBellow6))));
 		var stuntungTotal = A2($elm$core$Debug$log, 'stuntungTotal', (metricsFor2021.stuntingNormal + metricsFor2021.stuntingModerate) + metricsFor2021.stuntingSevere);
+		var currentYear = $justinmimbs$date$Date$year(limitDate);
+		var allEncounters = $elm$core$List$concat(
+			A2(
+				$elm$core$List$map,
+				function (record) {
+					return $elm$core$List$concat(
+						$elm_community$maybe_extra$Maybe$Extra$values(
+							_List_fromArray(
+								[
+									A2($elm$core$Maybe$map, $elm$core$List$concat, record.wellChildData),
+									A2($elm$core$Maybe$map, $elm$core$List$concat, record.individualNutritionData),
+									record.groupNutritionPmtctData,
+									record.groupNutritionFbfData,
+									record.groupNutritionSorwatheData,
+									record.groupNutritionChwData,
+									record.groupNutritionAchiData
+								])));
+				},
+				recordsForChildrenBellow6));
+		var allEncountersByMonth = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (encounter, accum) {
+					var year = $justinmimbs$date$Date$year(encounter.startDate);
+					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
+					var encounterMetrics = $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics(encounter);
+					var updatedMetrics = A2(
+						$elm$core$Maybe$withDefault,
+						encounterMetrics,
+						A2(
+							$elm$core$Maybe$map,
+							function (metricsSoFar) {
+								return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+									_List_fromArray(
+										[metricsSoFar, encounterMetrics]));
+							},
+							A2(
+								$pzp1997$assoc_list$AssocList$get,
+								_Utils_Tuple2(year, month),
+								accum)));
+					return A3(
+						$pzp1997$assoc_list$AssocList$insert,
+						_Utils_Tuple2(year, month),
+						updatedMetrics,
+						accum);
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			allEncounters);
+		var resolveMetricsForYear = function (selectedYear) {
+			return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+				$pzp1997$assoc_list$AssocList$values(
+					A2(
+						$pzp1997$assoc_list$AssocList$filter,
+						F2(
+							function (_v2, _v3) {
+								var year = _v2.a;
+								return _Utils_eq(year, selectedYear);
+							}),
+						allEncountersByMonth)));
+		};
+		var _v0 = A2(
+			$elm$core$Debug$log,
+			'2021',
+			$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence(
+				resolveMetricsForYear(currentYear - 3)));
+		var _v1 = A2(
+			$elm$core$Debug$log,
+			'2020',
+			$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionIncidence(
+				resolveMetricsForYear(currentYear - 4)));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12202,19 +12309,6 @@ var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = 
 	}
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A2(isGood, key, value);
-				},
-				alist));
-	});
 var $author$project$Backend$Entities$EntityId = function (a) {
 	return {$: 'EntityId', a: a};
 };

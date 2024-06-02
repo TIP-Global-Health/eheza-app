@@ -26,7 +26,8 @@ type SelectedEntity
 
 
 type alias PatientData =
-    { created : NominalDate
+    { id : PersonId
+    , created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
@@ -40,6 +41,10 @@ type alias PatientData =
     , groupNutritionChwData : Maybe (List NutritionEncounterData)
     , groupNutritionAchiData : Maybe (List NutritionEncounterData)
     }
+
+
+type alias PersonId =
+    Int
 
 
 type Gender

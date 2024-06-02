@@ -154,3 +154,31 @@ nutritionEncounterDataToNutritionMetrics =
                 }
             )
         >> Maybe.withDefault emptyNutritionMetrics
+
+
+nutritionMetricsToNutritionIncidence : NutritionMetrics -> NutritionIncidence
+nutritionMetricsToNutritionIncidence metrics =
+    let
+        calcualtePercentage nominator total =
+            if total == 0 then
+                0
+
+            else
+                (toFloat nominator / toFloat total) * 100
+
+        stuntingTotal =
+            metrics.stuntingModerate + metrics.stuntingSevere + metrics.stuntingNormal
+
+        wastingTotal =
+            metrics.wastingModerate + metrics.wastingSevere + metrics.wastingNormal
+
+        underweightTotal =
+            metrics.underweightModerate + metrics.underweightSevere + metrics.underweightNormal
+    in
+    { stuntingModerate = calcualtePercentage metrics.stuntingModerate stuntingTotal
+    , stuntingSevere = calcualtePercentage metrics.stuntingSevere stuntingTotal
+    , wastingModerate = calcualtePercentage metrics.wastingModerate wastingTotal
+    , wastingSevere = calcualtePercentage metrics.wastingSevere wastingTotal
+    , underweightModerate = calcualtePercentage metrics.underweightModerate underweightTotal
+    , underweightSevere = calcualtePercentage metrics.underweightSevere underweightTotal
+    }

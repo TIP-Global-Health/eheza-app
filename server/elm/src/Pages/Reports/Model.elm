@@ -51,6 +51,16 @@ emptyNutritionMetrics =
     }
 
 
+type alias NutritionIncidence =
+    { stuntingModerate : Float
+    , stuntingSevere : Float
+    , wastingModerate : Float
+    , wastingSevere : Float
+    , underweightModerate : Float
+    , underweightSevere : Float
+    }
+
+
 type Msg
     = SetReportType String
     | SetLimitDate Date

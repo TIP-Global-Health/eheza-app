@@ -309,9 +309,12 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     // We must know the birthdate to be able to present reports data.
     return FALSE;
   }
-  $data['created'] = date("Y-m-d", $person->created);
-  $data['birth_date'] = date("Y-m-d", $birth_date);
-  $data['gender'] = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  $data = [
+    'id' => $person->nid,
+    'created' => date("Y-m-d", $person->created),
+    'birth_date' => date("Y-m-d", $birth_date),
+    'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
+  ];
 
   $sessions_ids = $zscores_by_encounter = [];
   $measurements_bundles = array_unique(array_merge(

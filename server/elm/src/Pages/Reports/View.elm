@@ -656,43 +656,107 @@ viewDemographicsReportEncounters language records =
 viewNutritionReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewNutritionReport language limitDate records =
     let
-        metricsFor2021 =
+        recordsForChildrenBellow6 =
             List.filter
                 (\record ->
                     Date.diff Years record.birthDate limitDate < 6
                 )
                 records
-                |> List.map
-                    (\record ->
-                        let
-                            filterIndividualBy resolveDateFunc =
-                                Maybe.map
-                                    (List.map
-                                        (List.filter
-                                            (\encounterData ->
-                                                Date.year (resolveDateFunc encounterData) == 2021
-                                            )
-                                        )
-                                    )
 
-                            filterGroupBy resolveDateFunc =
-                                Maybe.map
+        allEncounters =
+            List.map
+                (\record ->
+                    [ Maybe.map List.concat record.wellChildData
+                    , Maybe.map List.concat record.individualNutritionData
+                    , record.groupNutritionPmtctData
+                    , record.groupNutritionFbfData
+                    , record.groupNutritionSorwatheData
+                    , record.groupNutritionChwData
+                    , record.groupNutritionAchiData
+                    ]
+                        |> Maybe.Extra.values
+                        |> List.concat
+                )
+                recordsForChildrenBellow6
+                |> List.concat
+
+        allEncountersByMonth =
+            List.foldl
+                (\encounter accum ->
+                    let
+                        year =
+                            Date.year encounter.startDate
+
+                        month =
+                            Date.monthNumber encounter.startDate
+
+                        encounterMetrics =
+                            nutritionEncounterDataToNutritionMetrics encounter
+
+                        updatedMetrics =
+                            Dict.get ( year, month ) accum
+                                |> Maybe.map
+                                    (\metricsSoFar ->
+                                        sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
+                                    )
+                                |> Maybe.withDefault encounterMetrics
+                    in
+                    Dict.insert ( year, month ) updatedMetrics accum
+                )
+                Dict.empty
+                allEncounters
+
+        currentYear =
+            Date.year limitDate
+
+        resolveMetricsForYear selectedYear =
+            Dict.filter
+                (\( year, _ ) _ ->
+                    year == selectedYear
+                )
+                allEncountersByMonth
+                |> Dict.values
+                |> sumNutritionMetrics
+
+        _ =
+            Debug.log "2021" (nutritionMetricsToNutritionIncidence <| resolveMetricsForYear (currentYear - 3))
+
+        _ =
+            Debug.log "2020" (nutritionMetricsToNutritionIncidence <| resolveMetricsForYear (currentYear - 4))
+
+        metricsFor2021 =
+            List.map
+                (\record ->
+                    let
+                        filterIndividualBy resolveDateFunc =
+                            Maybe.map
+                                (List.map
                                     (List.filter
                                         (\encounterData ->
                                             Date.year (resolveDateFunc encounterData) == 2021
                                         )
                                     )
-                        in
-                        { record
-                            | wellChildData = filterIndividualBy .startDate record.wellChildData
-                            , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
-                            , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
-                            , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
-                            , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
-                            , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
-                            , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
-                        }
-                    )
+                                )
+
+                        filterGroupBy resolveDateFunc =
+                            Maybe.map
+                                (List.filter
+                                    (\encounterData ->
+                                        Date.year (resolveDateFunc encounterData) == 2021
+                                    )
+                                )
+                    in
+                    { record
+                        | wellChildData = filterIndividualBy .startDate record.wellChildData
+                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                    }
+                )
+                recordsForChildrenBellow6
                 |> List.map calcualteNutritionMetricsForPatient
                 |> sumNutritionMetrics
                 |> Debug.log "all"

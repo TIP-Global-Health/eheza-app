@@ -6,7 +6,7 @@ import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeFloat)
+import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
@@ -57,6 +57,7 @@ decodeSelectedEntity =
 decodePatientData : Decoder PatientData
 decodePatientData =
     succeed PatientData
+        |> required "id" decodeInt
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" (decodeWithFallback Female decodeGender)
