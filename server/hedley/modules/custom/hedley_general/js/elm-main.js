@@ -5480,7 +5480,8 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing};
+var $krisajenkins$remotedata$RemoteData$NotAsked = {$: 'NotAsked'};
+var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
@@ -5760,6 +5761,7 @@ var $justinmimbs$date$Date$fromPosix = F2(
 var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
 var $author$project$Gizra$NominalDate$fromLocalDateTime = $justinmimbs$date$Date$fromPosix($elm$time$Time$utc);
 var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $krisajenkins$remotedata$RemoteData$Loading = {$: 'Loading'};
 var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
@@ -5773,6 +5775,29 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $krisajenkins$remotedata$RemoteData$Failure = function (a) {
+	return {$: 'Failure', a: a};
+};
+var $krisajenkins$remotedata$RemoteData$Success = function (a) {
+	return {$: 'Success', a: a};
+};
+var $krisajenkins$remotedata$RemoteData$fromResult = function (result) {
+	if (result.$ === 'Err') {
+		var e = result.a;
+		return $krisajenkins$remotedata$RemoteData$Failure(e);
+	} else {
+		var x = result.a;
+		return $krisajenkins$remotedata$RemoteData$Success(x);
+	}
+};
+var $krisajenkins$remotedata$RemoteData$isSuccess = function (data) {
+	if (data.$ === 'Success') {
+		var x = data.a;
+		return true;
+	} else {
+		return false;
+	}
+};
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
 var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 	function (ma, mb) {
@@ -5781,6 +5806,518 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 		} else {
 			return ma;
 		}
+	});
+var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
+	return {$: 'NutritionReportDataCalculationCompleted', a: a};
+};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $justinmimbs$date$Date$Years = {$: 'Years'};
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$core$List$sum = function (numbers) {
+	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
+	var countIndividualDataEncounters = A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map(
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$map($elm$core$List$length),
+				$elm$core$List$sum)),
+		$elm$core$Maybe$withDefault(0));
+	var countGroupDataEncounters = A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Maybe$map($elm$core$List$length),
+		$elm$core$Maybe$withDefault(0));
+	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVisitData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
+};
+var $justinmimbs$date$Date$monthToNumber = function (m) {
+	switch (m.$) {
+		case 'Jan':
+			return 1;
+		case 'Feb':
+			return 2;
+		case 'Mar':
+			return 3;
+		case 'Apr':
+			return 4;
+		case 'May':
+			return 5;
+		case 'Jun':
+			return 6;
+		case 'Jul':
+			return 7;
+		case 'Aug':
+			return 8;
+		case 'Sep':
+			return 9;
+		case 'Oct':
+			return 10;
+		case 'Nov':
+			return 11;
+		default:
+			return 12;
+	}
+};
+var $justinmimbs$date$Date$numberToMonth = function (mn) {
+	var _v0 = A2($elm$core$Basics$max, 1, mn);
+	switch (_v0) {
+		case 1:
+			return $elm$time$Time$Jan;
+		case 2:
+			return $elm$time$Time$Feb;
+		case 3:
+			return $elm$time$Time$Mar;
+		case 4:
+			return $elm$time$Time$Apr;
+		case 5:
+			return $elm$time$Time$May;
+		case 6:
+			return $elm$time$Time$Jun;
+		case 7:
+			return $elm$time$Time$Jul;
+		case 8:
+			return $elm$time$Time$Aug;
+		case 9:
+			return $elm$time$Time$Sep;
+		case 10:
+			return $elm$time$Time$Oct;
+		case 11:
+			return $elm$time$Time$Nov;
+		default:
+			return $elm$time$Time$Dec;
+	}
+};
+var $justinmimbs$date$Date$toCalendarDateHelp = F3(
+	function (y, m, d) {
+		toCalendarDateHelp:
+		while (true) {
+			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
+			var mn = $justinmimbs$date$Date$monthToNumber(m);
+			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
+				var $temp$y = y,
+					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
+					$temp$d = d - monthDays;
+				y = $temp$y;
+				m = $temp$m;
+				d = $temp$d;
+				continue toCalendarDateHelp;
+			} else {
+				return {day: d, month: m, year: y};
+			}
+		}
+	});
+var $justinmimbs$date$Date$divWithRemainder = F2(
+	function (a, b) {
+		return _Utils_Tuple2(
+			A2($justinmimbs$date$Date$floorDiv, a, b),
+			A2($elm$core$Basics$modBy, b, a));
+	});
+var $justinmimbs$date$Date$year = function (_v0) {
+	var rd = _v0.a;
+	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
+	var n400 = _v1.a;
+	var r400 = _v1.b;
+	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
+	var n100 = _v2.a;
+	var r100 = _v2.b;
+	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
+	var n4 = _v3.a;
+	var r4 = _v3.b;
+	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
+	var n1 = _v4.a;
+	var r1 = _v4.b;
+	var n = (!r1) ? 0 : 1;
+	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
+};
+var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
+	var rd = _v0.a;
+	var y = $justinmimbs$date$Date$year(
+		$justinmimbs$date$Date$RD(rd));
+	return {
+		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
+		year: y
+	};
+};
+var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
+	var rd = _v0.a;
+	var date = $justinmimbs$date$Date$toOrdinalDate(
+		$justinmimbs$date$Date$RD(rd));
+	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
+};
+var $justinmimbs$date$Date$toMonths = function (rd) {
+	var date = $justinmimbs$date$Date$toCalendarDate(
+		$justinmimbs$date$Date$RD(rd));
+	var wholeMonths = (12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1);
+	return wholeMonths + (date.day / 100);
+};
+var $elm$core$Basics$truncate = _Basics_truncate;
+var $justinmimbs$date$Date$diff = F3(
+	function (unit, _v0, _v1) {
+		var rd1 = _v0.a;
+		var rd2 = _v1.a;
+		switch (unit.$) {
+			case 'Years':
+				return ((($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0) / 12) | 0;
+			case 'Months':
+				return ($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0;
+			case 'Weeks':
+				return ((rd2 - rd1) / 7) | 0;
+			default:
+				return rd2 - rd1;
+		}
+	});
+var $pzp1997$assoc_list$AssocList$D = function (a) {
+	return {$: 'D', a: a};
+};
+var $pzp1997$assoc_list$AssocList$empty = $pzp1997$assoc_list$AssocList$D(_List_Nil);
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (_v0.$ === 'Just') {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $pzp1997$assoc_list$AssocList$get = F2(
+	function (targetKey, _v0) {
+		get:
+		while (true) {
+			var alist = _v0.a;
+			if (!alist.b) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var _v2 = alist.a;
+				var key = _v2.a;
+				var value = _v2.b;
+				var rest = alist.b;
+				if (_Utils_eq(key, targetKey)) {
+					return $elm$core$Maybe$Just(value);
+				} else {
+					var $temp$targetKey = targetKey,
+						$temp$_v0 = $pzp1997$assoc_list$AssocList$D(rest);
+					targetKey = $temp$targetKey;
+					_v0 = $temp$_v0;
+					continue get;
+				}
+			}
+		}
+	});
+var $pzp1997$assoc_list$AssocList$remove = F2(
+	function (targetKey, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					return !_Utils_eq(key, targetKey);
+				},
+				alist));
+	});
+var $pzp1997$assoc_list$AssocList$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
+		var alteredAlist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$cons,
+				_Utils_Tuple2(key, value),
+				alteredAlist));
+	});
+var $justinmimbs$date$Date$month = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.month;
+	});
+var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
+var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, underweightModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, wastingModerate: _List_Nil, wastingNormal: _List_Nil, wastingSevere: _List_Nil};
+var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = function (personId) {
+	return A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.nutritionData;
+		},
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$Maybe$map(
+				function (data) {
+					var categorizeZScore = A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Maybe$map(
+							function (score) {
+								return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(
+									_List_Nil,
+									_List_Nil,
+									_List_fromArray(
+										[personId])) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(
+									_List_Nil,
+									_List_fromArray(
+										[personId]),
+									_List_Nil) : _Utils_Tuple3(
+									_List_fromArray(
+										[personId]),
+									_List_Nil,
+									_List_Nil));
+							}),
+						$elm$core$Maybe$withDefault(
+							_Utils_Tuple3(_List_Nil, _List_Nil, _List_Nil)));
+					var _v0 = categorizeZScore(data.wasting);
+					var wastingNormal = _v0.a;
+					var wastingModerate = _v0.b;
+					var wastingSevere = _v0.c;
+					var _v1 = categorizeZScore(data.underweight);
+					var underweightNormal = _v1.a;
+					var underweightModerate = _v1.b;
+					var underweightSevere = _v1.c;
+					var _v2 = categorizeZScore(data.stunting);
+					var stuntingNormal = _v2.a;
+					var stuntingModerate = _v2.b;
+					var stuntingSevere = _v2.c;
+					return {stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, underweightModerate: underweightModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingNormal: wastingNormal, wastingSevere: wastingSevere};
+				}),
+			$elm$core$Maybe$withDefault($author$project$Pages$Reports$Model$emptyNutritionMetrics)));
+};
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
+var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
+	$elm$core$List$foldl,
+	F2(
+		function (metrics, accum) {
+			return _Utils_update(
+				accum,
+				{
+					stuntingModerate: _Utils_ap(accum.stuntingModerate, metrics.stuntingModerate),
+					stuntingNormal: _Utils_ap(accum.stuntingNormal, metrics.stuntingNormal),
+					stuntingSevere: _Utils_ap(accum.stuntingSevere, metrics.stuntingSevere),
+					underweightModerate: _Utils_ap(accum.underweightModerate, metrics.underweightModerate),
+					underweightNormal: _Utils_ap(accum.underweightNormal, metrics.underweightNormal),
+					underweightSevere: _Utils_ap(accum.underweightSevere, metrics.underweightSevere),
+					wastingModerate: _Utils_ap(accum.wastingModerate, metrics.wastingModerate),
+					wastingNormal: _Utils_ap(accum.wastingNormal, metrics.wastingNormal),
+					wastingSevere: _Utils_ap(accum.wastingSevere, metrics.wastingSevere)
+				});
+		}),
+	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
+var $elm_community$maybe_extra$Maybe$Extra$foldrValues = F2(
+	function (item, list) {
+		if (item.$ === 'Nothing') {
+			return list;
+		} else {
+			var v = item.a;
+			return A2($elm$core$List$cons, v, list);
+		}
+	});
+var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$foldrValues, _List_Nil);
+var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
+	function (currentDate, data) {
+		return $elm$core$Task$succeed(
+			function () {
+				var records = A2(
+					$elm$core$List$filter,
+					function (record) {
+						return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, currentDate) < 6;
+					},
+					data);
+				var impacted = A2(
+					$elm$core$List$filterMap,
+					function (record) {
+						return ($author$project$Pages$Reports$Utils$countTotalEncounetrs(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
+					},
+					records);
+				var currentYear = $justinmimbs$date$Date$year(currentDate);
+				var allEncounters = function () {
+					var startingYear = currentYear - 3;
+					var filterByYear = function (encounter) {
+						return _Utils_cmp(
+							$justinmimbs$date$Date$year(encounter.startDate),
+							startingYear) > -1;
+					};
+					return $elm$core$List$concat(
+						A2(
+							$elm$core$List$map,
+							function (record) {
+								return $elm$core$List$concat(
+									$elm_community$maybe_extra$Maybe$Extra$values(
+										_List_fromArray(
+											[
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$concat,
+													A2(
+														$elm$core$Basics$composeR,
+														$elm$core$List$filter(filterByYear),
+														$elm$core$List$map(
+															$elm$core$Tuple$pair(record.id)))),
+												record.wellChildData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$concat,
+													A2(
+														$elm$core$Basics$composeR,
+														$elm$core$List$filter(filterByYear),
+														$elm$core$List$map(
+															$elm$core$Tuple$pair(record.id)))),
+												record.individualNutritionData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id))),
+												record.groupNutritionPmtctData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id))),
+												record.groupNutritionFbfData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id))),
+												record.groupNutritionSorwatheData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id))),
+												record.groupNutritionChwData),
+												A2(
+												$elm$core$Maybe$map,
+												A2(
+													$elm$core$Basics$composeR,
+													$elm$core$List$filter(filterByYear),
+													$elm$core$List$map(
+														$elm$core$Tuple$pair(record.id))),
+												record.groupNutritionAchiData)
+											])));
+							},
+							records));
+				}();
+				var encountersByMonth = A3(
+					$elm$core$List$foldl,
+					F2(
+						function (_v0, accum) {
+							var personId = _v0.a;
+							var encounter = _v0.b;
+							var year = $justinmimbs$date$Date$year(encounter.startDate);
+							var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
+							var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
+							var updatedMetrics = A2(
+								$elm$core$Maybe$withDefault,
+								encounterMetrics,
+								A2(
+									$elm$core$Maybe$map,
+									function (metricsSoFar) {
+										return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+											_List_fromArray(
+												[metricsSoFar, encounterMetrics]));
+									},
+									A2(
+										$pzp1997$assoc_list$AssocList$get,
+										_Utils_Tuple2(year, month),
+										accum)));
+							return A3(
+								$pzp1997$assoc_list$AssocList$insert,
+								_Utils_Tuple2(year, month),
+								updatedMetrics,
+								accum);
+						}),
+					$pzp1997$assoc_list$AssocList$empty,
+					allEncounters);
+				return {encountersByMonth: encountersByMonth, impacted: impacted};
+			}());
+	});
+var $elm$core$Result$mapError = F2(
+	function (f, result) {
+		if (result.$ === 'Ok') {
+			var v = result.a;
+			return $elm$core$Result$Ok(v);
+		} else {
+			var e = result.a;
+			return $elm$core$Result$Err(
+				f(e));
+		}
+	});
+var $elm$core$Task$onError = _Scheduler_onError;
+var $author$project$Pages$Reports$Update$wrapInResultTask = function (task) {
+	return A2(
+		$elm$core$Task$onError,
+		A2($elm$core$Basics$composeR, $elm$core$Result$Err, $elm$core$Task$succeed),
+		A2($elm$core$Task$map, $elm$core$Result$Ok, task));
+};
+var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation = F2(
+	function (currentDate, data) {
+		return A2(
+			$elm$core$Task$perform,
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$Result$mapError(
+					$elm$core$Basics$always('Calculations failed')),
+				$author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted),
+			$author$project$Pages$Reports$Update$wrapInResultTask(
+				A2($author$project$Pages$Reports$Update$calculateNutritionReportDataTask, currentDate, data)));
 	});
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
@@ -5794,21 +6331,34 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Pages$Reports$Update$update = F2(
-	function (msg, model) {
+var $author$project$Pages$Reports$Update$update = F4(
+	function (currentDate, modelBackend, msg, model) {
 		switch (msg.$) {
 			case 'SetReportType':
 				var value = msg.a;
-				return A4(
-					$author$project$App$Model$PagesReturn,
-					_Utils_update(
-						model,
-						{
-							reportType: $author$project$Pages$Reports$Utils$reportTypeFromString(value)
-						}),
-					$elm$core$Platform$Cmd$none,
-					$author$project$Error$Utils$noError,
-					_List_Nil);
+				var mReportType = $author$project$Pages$Reports$Utils$reportTypeFromString(value);
+				var _v1 = function () {
+					if ($krisajenkins$remotedata$RemoteData$isSuccess(model.nutritionReportData)) {
+						return _Utils_Tuple2(model.nutritionReportData, $elm$core$Platform$Cmd$none);
+					} else {
+						var _v2 = _Utils_Tuple2(modelBackend.reportsData, mReportType);
+						if ((((_v2.a.$ === 'Just') && (_v2.a.a.$ === 'Ok')) && (_v2.b.$ === 'Just')) && (_v2.b.a.$ === 'ReportNutrition')) {
+							var data = _v2.a.a.a;
+							var _v3 = _v2.b.a;
+							return _Utils_Tuple2(
+								$krisajenkins$remotedata$RemoteData$Loading,
+								A2($author$project$Pages$Reports$Update$performNutritionReportDataCalculation, currentDate, data.records));
+						} else {
+							return _Utils_Tuple2(model.nutritionReportData, $elm$core$Platform$Cmd$none);
+						}
+					}
+				}();
+				var nutritionReportData = _v1.a;
+				var cmd = _v1.b;
+				var modelUpdated = _Utils_update(
+					model,
+					{nutritionReportData: nutritionReportData, reportType: mReportType});
+				return A4($author$project$App$Model$PagesReturn, modelUpdated, cmd, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetLimitDate':
 				var value = msg.a;
 				return A4(
@@ -5821,7 +6371,7 @@ var $author$project$Pages$Reports$Update$update = F2(
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
 					_List_Nil);
-			default:
+			case 'SetLimitDateSelectorState':
 				var state = msg.a;
 				var defaultSelection = A2(
 					$elm_community$maybe_extra$Maybe$Extra$or,
@@ -5837,6 +6387,18 @@ var $author$project$Pages$Reports$Update$update = F2(
 					_Utils_update(
 						model,
 						{dateSelectorPopupState: state, limitDate: defaultSelection}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var result = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							nutritionReportData: $krisajenkins$remotedata$RemoteData$fromResult(result)
+						}),
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
 					_List_Nil);
@@ -6016,10 +6578,6 @@ var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString 
 	}
 };
 var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$core$Basics$always = F2(
-	function (a, _v0) {
-		return a;
-	});
 var $elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
 		return {$: 'Bad', a: a, b: b};
@@ -6176,16 +6734,6 @@ var $elm$parser$Parser$Advanced$keeper = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
 	});
 var $elm$parser$Parser$keeper = $elm$parser$Parser$Advanced$keeper;
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$parser$Parser$Advanced$map = F2(
 	function (func, _v0) {
 		var parse = _v0.a;
@@ -6209,17 +6757,6 @@ var $elm$parser$Parser$Advanced$map = F2(
 			});
 	});
 var $elm$parser$Parser$map = $elm$parser$Parser$Advanced$map;
-var $elm$core$Result$mapError = F2(
-	function (f, result) {
-		if (result.$ === 'Ok') {
-			var v = result.a;
-			return $elm$core$Result$Ok(v);
-		} else {
-			var e = result.a;
-			return $elm$core$Result$Err(
-				f(e));
-		}
-	});
 var $elm$parser$Parser$Advanced$Append = F2(
 	function (a, b) {
 		return {$: 'Append', a: a, b: b};
@@ -6323,15 +6860,6 @@ var $elm$parser$Parser$Advanced$mapChompedString = F2(
 			});
 	});
 var $elm$parser$Parser$mapChompedString = $elm$parser$Parser$Advanced$mapChompedString;
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $justinmimbs$date$Date$int1 = A2(
 	$elm$parser$Parser$mapChompedString,
 	F2(
@@ -6547,35 +7075,6 @@ var $justinmimbs$date$Date$monthToName = function (m) {
 			return 'December';
 	}
 };
-var $justinmimbs$date$Date$numberToMonth = function (mn) {
-	var _v0 = A2($elm$core$Basics$max, 1, mn);
-	switch (_v0) {
-		case 1:
-			return $elm$time$Time$Jan;
-		case 2:
-			return $elm$time$Time$Feb;
-		case 3:
-			return $elm$time$Time$Mar;
-		case 4:
-			return $elm$time$Time$Apr;
-		case 5:
-			return $elm$time$Time$May;
-		case 6:
-			return $elm$time$Time$Jun;
-		case 7:
-			return $elm$time$Time$Jul;
-		case 8:
-			return $elm$time$Time$Aug;
-		case 9:
-			return $elm$time$Time$Sep;
-		case 10:
-			return $elm$time$Time$Oct;
-		case 11:
-			return $elm$time$Time$Nov;
-		default:
-			return $elm$time$Time$Dec;
-	}
-};
 var $justinmimbs$date$Date$fromCalendarParts = F3(
 	function (y, mn, d) {
 		return (!A3($justinmimbs$date$Date$isBetweenInt, 1, 12, mn)) ? $elm$core$Result$Err(
@@ -6692,10 +7191,6 @@ var $justinmimbs$date$Date$int4 = A2(
 				$elm$parser$Parser$chompIf($elm$core$Char$isDigit)),
 			$elm$parser$Parser$chompIf($elm$core$Char$isDigit)),
 		$elm$parser$Parser$chompIf($elm$core$Char$isDigit)));
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
 var $elm$parser$Parser$Problem = function (a) {
 	return {$: 'Problem', a: a};
 };
@@ -7422,152 +7917,9 @@ var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
 		return {row1: row1, row2: row2};
 	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
-var $justinmimbs$date$Date$monthToNumber = function (m) {
-	switch (m.$) {
-		case 'Jan':
-			return 1;
-		case 'Feb':
-			return 2;
-		case 'Mar':
-			return 3;
-		case 'Apr':
-			return 4;
-		case 'May':
-			return 5;
-		case 'Jun':
-			return 6;
-		case 'Jul':
-			return 7;
-		case 'Aug':
-			return 8;
-		case 'Sep':
-			return 9;
-		case 'Oct':
-			return 10;
-		case 'Nov':
-			return 11;
-		default:
-			return 12;
-	}
-};
-var $justinmimbs$date$Date$toCalendarDateHelp = F3(
-	function (y, m, d) {
-		toCalendarDateHelp:
-		while (true) {
-			var monthDays = A2($justinmimbs$date$Date$daysInMonth, y, m);
-			var mn = $justinmimbs$date$Date$monthToNumber(m);
-			if ((mn < 12) && (_Utils_cmp(d, monthDays) > 0)) {
-				var $temp$y = y,
-					$temp$m = $justinmimbs$date$Date$numberToMonth(mn + 1),
-					$temp$d = d - monthDays;
-				y = $temp$y;
-				m = $temp$m;
-				d = $temp$d;
-				continue toCalendarDateHelp;
-			} else {
-				return {day: d, month: m, year: y};
-			}
-		}
-	});
-var $justinmimbs$date$Date$divWithRemainder = F2(
-	function (a, b) {
-		return _Utils_Tuple2(
-			A2($justinmimbs$date$Date$floorDiv, a, b),
-			A2($elm$core$Basics$modBy, b, a));
-	});
-var $justinmimbs$date$Date$year = function (_v0) {
-	var rd = _v0.a;
-	var _v1 = A2($justinmimbs$date$Date$divWithRemainder, rd, 146097);
-	var n400 = _v1.a;
-	var r400 = _v1.b;
-	var _v2 = A2($justinmimbs$date$Date$divWithRemainder, r400, 36524);
-	var n100 = _v2.a;
-	var r100 = _v2.b;
-	var _v3 = A2($justinmimbs$date$Date$divWithRemainder, r100, 1461);
-	var n4 = _v3.a;
-	var r4 = _v3.b;
-	var _v4 = A2($justinmimbs$date$Date$divWithRemainder, r4, 365);
-	var n1 = _v4.a;
-	var r1 = _v4.b;
-	var n = (!r1) ? 0 : 1;
-	return ((((n400 * 400) + (n100 * 100)) + (n4 * 4)) + n1) + n;
-};
-var $justinmimbs$date$Date$toOrdinalDate = function (_v0) {
-	var rd = _v0.a;
-	var y = $justinmimbs$date$Date$year(
-		$justinmimbs$date$Date$RD(rd));
-	return {
-		ordinalDay: rd - $justinmimbs$date$Date$daysBeforeYear(y),
-		year: y
-	};
-};
-var $justinmimbs$date$Date$toCalendarDate = function (_v0) {
-	var rd = _v0.a;
-	var date = $justinmimbs$date$Date$toOrdinalDate(
-		$justinmimbs$date$Date$RD(rd));
-	return A3($justinmimbs$date$Date$toCalendarDateHelp, date.year, $elm$time$Time$Jan, date.ordinalDay);
-};
-var $justinmimbs$date$Date$toMonths = function (rd) {
-	var date = $justinmimbs$date$Date$toCalendarDate(
-		$justinmimbs$date$Date$RD(rd));
-	var wholeMonths = (12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1);
-	return wholeMonths + (date.day / 100);
-};
-var $elm$core$Basics$truncate = _Basics_truncate;
-var $justinmimbs$date$Date$diff = F3(
-	function (unit, _v0, _v1) {
-		var rd1 = _v0.a;
-		var rd2 = _v1.a;
-		switch (unit.$) {
-			case 'Years':
-				return ((($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0) / 12) | 0;
-			case 'Months':
-				return ($justinmimbs$date$Date$toMonths(rd2) - $justinmimbs$date$Date$toMonths(rd1)) | 0;
-			case 'Weeks':
-				return ((rd2 - rd1) / 7) | 0;
-			default:
-				return rd2 - rd1;
-		}
-	});
 var $author$project$Gizra$NominalDate$diffMonths = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, low, high);
-	});
-var $pzp1997$assoc_list$AssocList$D = function (a) {
-	return {$: 'D', a: a};
-};
-var $elm$core$List$filter = F2(
-	function (isGood, list) {
-		return A3(
-			$elm$core$List$foldr,
-			F2(
-				function (x, xs) {
-					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
-				}),
-			_List_Nil,
-			list);
-	});
-var $pzp1997$assoc_list$AssocList$remove = F2(
-	function (targetKey, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					return !_Utils_eq(key, targetKey);
-				},
-				alist));
-	});
-var $pzp1997$assoc_list$AssocList$insert = F3(
-	function (key, value, dict) {
-		var _v0 = A2($pzp1997$assoc_list$AssocList$remove, key, dict);
-		var alteredAlist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$cons,
-				_Utils_Tuple2(key, value),
-				alteredAlist));
 	});
 var $pzp1997$assoc_list$AssocList$fromList = function (alist) {
 	return A3(
@@ -7739,7 +8091,6 @@ var $author$project$Backend$Scoreboard$Model$RawVaccinationData = F8(
 var $Gizra$elm_all_set$EverySet$EverySet = function (a) {
 	return {$: 'EverySet', a: a};
 };
-var $pzp1997$assoc_list$AssocList$empty = $pzp1997$assoc_list$AssocList$D(_List_Nil);
 var $Gizra$elm_all_set$EverySet$empty = $Gizra$elm_all_set$EverySet$EverySet($pzp1997$assoc_list$AssocList$empty);
 var $Gizra$elm_all_set$EverySet$insert = F2(
 	function (k, _v0) {
@@ -7799,16 +8150,6 @@ var $author$project$Backend$Scoreboard$Utils$vaccineDoseFromOrder = function (or
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm_community$maybe_extra$Maybe$Extra$foldrValues = F2(
-	function (item, list) {
-		if (item.$ === 'Nothing') {
-			return list;
-		} else {
-			var v = item.a;
-			return A2($elm$core$List$cons, v, list);
-		}
-	});
-var $elm_community$maybe_extra$Maybe$Extra$values = A2($elm$core$List$foldr, $elm_community$maybe_extra$Maybe$Extra$foldrValues, _List_Nil);
 var $author$project$Backend$Scoreboard$Decoder$rawVaccinationDataToVaccinationProgressDict = function (data) {
 	var generateVaccinationProgressForVaccine = function (dates) {
 		return $pzp1997$assoc_list$AssocList$fromList(
@@ -7962,48 +8303,6 @@ var $author$project$Backend$Scoreboard$Model$NutritionCriterionsData = F4(
 var $author$project$Backend$Scoreboard$Model$CriterionBySeverities = F3(
 	function (severe, moderate, normal) {
 		return {moderate: moderate, normal: normal, severe: severe};
-	});
-var $elm$core$List$maybeCons = F3(
-	function (f, mx, xs) {
-		var _v0 = f(mx);
-		if (_v0.$ === 'Just') {
-			var x = _v0.a;
-			return A2($elm$core$List$cons, x, xs);
-		} else {
-			return xs;
-		}
-	});
-var $elm$core$List$filterMap = F2(
-	function (f, xs) {
-		return A3(
-			$elm$core$List$foldr,
-			$elm$core$List$maybeCons(f),
-			_List_Nil,
-			xs);
-	});
-var $pzp1997$assoc_list$AssocList$get = F2(
-	function (targetKey, _v0) {
-		get:
-		while (true) {
-			var alist = _v0.a;
-			if (!alist.b) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var _v2 = alist.a;
-				var key = _v2.a;
-				var value = _v2.b;
-				var rest = alist.b;
-				if (_Utils_eq(key, targetKey)) {
-					return $elm$core$Maybe$Just(value);
-				} else {
-					var $temp$targetKey = targetKey,
-						$temp$_v0 = $pzp1997$assoc_list$AssocList$D(rest);
-					targetKey = $temp$targetKey;
-					_v0 = $temp$_v0;
-					continue get;
-				}
-			}
-		}
 	});
 var $elm_community$maybe_extra$Maybe$Extra$isNothing = function (m) {
 	if (m.$ === 'Nothing') {
@@ -8435,7 +8734,12 @@ var $author$project$App$Update$update = F2(
 					model.reportsPage,
 					F2(
 						function (subMsg_, subModel) {
-							return A2($author$project$Pages$Reports$Update$update, subMsg_, subModel);
+							return A4(
+								$author$project$Pages$Reports$Update$update,
+								$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+								model.backend,
+								subMsg_,
+								subModel);
 						}),
 					F2(
 						function (subModel, model_) {
@@ -9226,7 +9530,6 @@ var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a)
 var $author$project$Pages$Reports$Model$SetReportType = function (a) {
 	return {$: 'SetReportType', a: a};
 };
-var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$core$Basics$min = F2(
 	function (x, y) {
@@ -9267,13 +9570,6 @@ var $justinmimbs$date$Date$day = A2(
 	function ($) {
 		return $.day;
 	});
-var $justinmimbs$date$Date$month = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toCalendarDate,
-	function ($) {
-		return $.month;
-	});
-var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
 var $justinmimbs$date$Date$ordinalDay = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$toOrdinalDate,
@@ -10870,9 +11166,6 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				$elm$core$Tuple$first,
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
 };
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -10903,9 +11196,6 @@ var $elm$core$List$member = F2(
 			},
 			xs);
 	});
-var $elm$core$List$sum = function (numbers) {
-	return A3($elm$core$List$foldl, $elm$core$Basics$add, 0, numbers);
-};
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
 		return A2(
@@ -11241,21 +11531,6 @@ var $author$project$Translate$Impacted = {$: 'Impacted'};
 var $author$project$Translate$Male = {$: 'Male'};
 var $author$project$Translate$Registered = {$: 'Registered'};
 var $author$project$Translate$RegisteredPatients = {$: 'RegisteredPatients'};
-var $author$project$Pages$Reports$Utils$countTotalEncounetrs = function (data) {
-	var countIndividualDataEncounters = A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$List$map($elm$core$List$length),
-				$elm$core$List$sum)),
-		$elm$core$Maybe$withDefault(0));
-	var countGroupDataEncounters = A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map($elm$core$List$length),
-		$elm$core$Maybe$withDefault(0));
-	return ((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(data.prenatalData)) + countIndividualDataEncounters(data.homeVisitData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
-};
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
@@ -11682,6 +11957,21 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
+var $pzp1997$assoc_list$AssocList$map = F2(
+	function (alter, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return _Utils_Tuple2(
+						key,
+						A2(alter, key, value));
+				},
+				alist));
+	});
 var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
@@ -11693,53 +11983,6 @@ var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
 var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
 var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
 var $author$project$Pages$Reports$Model$emptyNutritionPrevalence = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
-var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, underweightModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, wastingModerate: _List_Nil, wastingNormal: _List_Nil, wastingSevere: _List_Nil};
-var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = function (personId) {
-	return A2(
-		$elm$core$Basics$composeR,
-		function ($) {
-			return $.nutritionData;
-		},
-		A2(
-			$elm$core$Basics$composeR,
-			$elm$core$Maybe$map(
-				function (data) {
-					var categorizeZScore = A2(
-						$elm$core$Basics$composeR,
-						$elm$core$Maybe$map(
-							function (score) {
-								return (_Utils_cmp(score, -3) < 1) ? _Utils_Tuple3(
-									_List_Nil,
-									_List_Nil,
-									_List_fromArray(
-										[personId])) : ((_Utils_cmp(score, -2) < 1) ? _Utils_Tuple3(
-									_List_Nil,
-									_List_fromArray(
-										[personId]),
-									_List_Nil) : _Utils_Tuple3(
-									_List_fromArray(
-										[personId]),
-									_List_Nil,
-									_List_Nil));
-							}),
-						$elm$core$Maybe$withDefault(
-							_Utils_Tuple3(_List_Nil, _List_Nil, _List_Nil)));
-					var _v0 = categorizeZScore(data.wasting);
-					var wastingNormal = _v0.a;
-					var wastingModerate = _v0.b;
-					var wastingSevere = _v0.c;
-					var _v1 = categorizeZScore(data.underweight);
-					var underweightNormal = _v1.a;
-					var underweightModerate = _v1.b;
-					var underweightSevere = _v1.c;
-					var _v2 = categorizeZScore(data.stunting);
-					var stuntingNormal = _v2.a;
-					var stuntingModerate = _v2.b;
-					var stuntingSevere = _v2.c;
-					return {stuntingModerate: stuntingModerate, stuntingNormal: stuntingNormal, stuntingSevere: stuntingSevere, underweightModerate: underweightModerate, underweightNormal: underweightNormal, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingNormal: wastingNormal, wastingSevere: wastingSevere};
-				}),
-			$elm$core$Maybe$withDefault($author$project$Pages$Reports$Model$emptyNutritionMetrics)));
-};
 var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
 var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionPrevalence = function (metrics) {
 	var wastingTotal = $author$project$Pages$Utils$unique(
@@ -11980,27 +12223,8 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
-	$elm$core$List$foldl,
-	F2(
-		function (metrics, accum) {
-			return _Utils_update(
-				accum,
-				{
-					stuntingModerate: _Utils_ap(accum.stuntingModerate, metrics.stuntingModerate),
-					stuntingNormal: _Utils_ap(accum.stuntingNormal, metrics.stuntingNormal),
-					stuntingSevere: _Utils_ap(accum.stuntingSevere, metrics.stuntingSevere),
-					underweightModerate: _Utils_ap(accum.underweightModerate, metrics.underweightModerate),
-					underweightNormal: _Utils_ap(accum.underweightNormal, metrics.underweightNormal),
-					underweightSevere: _Utils_ap(accum.underweightSevere, metrics.underweightSevere),
-					wastingModerate: _Utils_ap(accum.wastingModerate, metrics.wastingModerate),
-					wastingNormal: _Utils_ap(accum.wastingNormal, metrics.wastingNormal),
-					wastingSevere: _Utils_ap(accum.wastingSevere, metrics.wastingSevere)
-				});
-		}),
-	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
 var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
-	function (language, limitDate, records) {
+	function (language, currentDate, encountersByMonth) {
 		var viewRow = function (label) {
 			return A2(
 				$elm$core$Basics$composeR,
@@ -12041,93 +12265,10 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 								$elm$html$Html$Attributes$class('row')
 							]))));
 		};
-		var allEncounters = $elm$core$List$concat(
-			A2(
-				$elm$core$List$map,
-				function (record) {
-					return $elm$core$List$concat(
-						$elm_community$maybe_extra$Maybe$Extra$values(
-							_List_fromArray(
-								[
-									A2(
-									$elm$core$Maybe$map,
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$List$concat,
-										$elm$core$List$map(
-											$elm$core$Tuple$pair(record.id))),
-									record.wellChildData),
-									A2(
-									$elm$core$Maybe$map,
-									A2(
-										$elm$core$Basics$composeR,
-										$elm$core$List$concat,
-										$elm$core$List$map(
-											$elm$core$Tuple$pair(record.id))),
-									record.individualNutritionData),
-									A2(
-									$elm$core$Maybe$map,
-									$elm$core$List$map(
-										$elm$core$Tuple$pair(record.id)),
-									record.groupNutritionPmtctData),
-									A2(
-									$elm$core$Maybe$map,
-									$elm$core$List$map(
-										$elm$core$Tuple$pair(record.id)),
-									record.groupNutritionFbfData),
-									A2(
-									$elm$core$Maybe$map,
-									$elm$core$List$map(
-										$elm$core$Tuple$pair(record.id)),
-									record.groupNutritionSorwatheData),
-									A2(
-									$elm$core$Maybe$map,
-									$elm$core$List$map(
-										$elm$core$Tuple$pair(record.id)),
-									record.groupNutritionChwData),
-									A2(
-									$elm$core$Maybe$map,
-									$elm$core$List$map(
-										$elm$core$Tuple$pair(record.id)),
-									record.groupNutritionAchiData)
-								])));
-				},
-				records));
-		var allEncountersByMonth = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (_v1, accum) {
-					var personId = _v1.a;
-					var encounter = _v1.b;
-					var year = $justinmimbs$date$Date$year(encounter.startDate);
-					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
-					var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
-					var updatedMetrics = A2(
-						$elm$core$Maybe$withDefault,
-						encounterMetrics,
-						A2(
-							$elm$core$Maybe$map,
-							function (metricsSoFar) {
-								return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
-									_List_fromArray(
-										[metricsSoFar, encounterMetrics]));
-							},
-							A2(
-								$pzp1997$assoc_list$AssocList$get,
-								_Utils_Tuple2(year, month),
-								accum)));
-					return A3(
-						$pzp1997$assoc_list$AssocList$insert,
-						_Utils_Tuple2(year, month),
-						updatedMetrics,
-						accum);
-				}),
-			$pzp1997$assoc_list$AssocList$empty,
-			allEncounters);
 		var monthlyPrevalenceData = A2(
 			$elm$core$List$map,
 			function (index) {
-				var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, limitDate);
+				var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, currentDate);
 				var year = $justinmimbs$date$Date$year(selectedDate);
 				var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
 				var month = $justinmimbs$date$Date$month(selectedDate);
@@ -12142,7 +12283,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							A2(
 								$pzp1997$assoc_list$AssocList$get,
 								_Utils_Tuple2(year, monthNumber),
-								allEncountersByMonth))));
+								encountersByMonth))));
 			},
 			A2($elm$core$List$range, 1, 12));
 		var headerRow = A2(
@@ -12267,32 +12408,98 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 				]));
 	});
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
-	function (language, limitDate, records) {
-		var recordsForChildrenBellow6 = A2(
-			$elm$core$List$filter,
-			function (record) {
-				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
-			},
-			records);
-		var recordsForImpactedChildrenBellow6 = A2(
-			$elm$core$List$filter,
-			function (record) {
-				return $author$project$Pages$Reports$Utils$countTotalEncounetrs(record) > 1;
-			},
-			recordsForChildrenBellow6);
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('report nutrition')
-				]),
-			_List_fromArray(
-				[
-					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
-					A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, limitDate, recordsForChildrenBellow6),
-					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, ':', 'section heading'),
-					A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, limitDate, recordsForImpactedChildrenBellow6)
-				]));
+	function (language, currentDate, reportData) {
+		if (reportData.$ === 'Success') {
+			var data = reportData.a;
+			var encountersByMonthForImpacted = A2(
+				$pzp1997$assoc_list$AssocList$map,
+				F2(
+					function (_v1, encounter) {
+						return _Utils_update(
+							encounter,
+							{
+								stuntingModerate: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.stuntingModerate),
+								stuntingNormal: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.stuntingNormal),
+								stuntingSevere: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.stuntingSevere),
+								underweightModerate: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.underweightModerate),
+								underweightNormal: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.underweightNormal),
+								underweightSevere: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.underweightSevere),
+								wastingModerate: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.wastingModerate),
+								wastingNormal: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.wastingNormal),
+								wastingSevere: A2(
+									$elm$core$List$filter,
+									function (id) {
+										return A2($elm$core$List$member, id, data.impacted);
+									},
+									encounter.wastingSevere)
+							});
+					}),
+				data.encountersByMonth);
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('report nutrition')
+					]),
+				_List_fromArray(
+					[
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, data.encountersByMonth),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, encountersByMonthForImpacted)
+					]));
+		} else {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('report nutrition')
+					]),
+				_List_fromArray(
+					[
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading')
+					]));
+		}
 	});
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
 	return A2(
@@ -12599,7 +12806,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 						if (reportType.$ === 'ReportDemographics') {
 							return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
 						} else {
-							return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, recordsTillLimitDate);
+							return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
 						}
 					}),
 				model.reportType,
@@ -33761,21 +33968,6 @@ var $author$project$Pages$Scoreboard$Utils$generateFutureVaccinationsData = F3(
 				return _Utils_Tuple2(vaccineType, nextVaccinationData);
 			},
 			$author$project$Pages$Scoreboard$Utils$allVaccineTypes);
-	});
-var $pzp1997$assoc_list$AssocList$map = F2(
-	function (alter, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$map,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return _Utils_Tuple2(
-						key,
-						A2(alter, key, value));
-				},
-				alist));
 	});
 var $author$project$Pages$Scoreboard$View$viewUniversalInterventionPane = F8(
 	function (language, currentDate, site, yearSelectorGap, monthsGap, childrenUnder2, viewMode, data) {

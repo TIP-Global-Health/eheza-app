@@ -22,6 +22,7 @@ import Maybe.Extra exposing (isJust)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import RemoteData exposing (RemoteData(..))
 import Round
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -155,7 +156,7 @@ viewReportsData language currentDate data model =
                                 viewDemographicsReport language limitDate recordsTillLimitDate
 
                             ReportNutrition ->
-                                viewNutritionReport language limitDate recordsTillLimitDate
+                                viewNutritionReport language limitDate model.nutritionReportData
                     )
                     model.reportType
                     limitDateByReportType
@@ -654,84 +655,50 @@ viewDemographicsReportEncounters language records =
     ]
 
 
-viewNutritionReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewNutritionReport language limitDate records =
+viewNutritionReport : Language -> NominalDate -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate reportData =
+    case reportData of
+        Success data ->
+            let
+                encountersByMonthForImpacted =
+                    Dict.map
+                        (\_ encounter ->
+                            { encounter
+                                | stuntingNormal = List.filter (\id -> List.member id data.impacted) encounter.stuntingNormal
+                                , stuntingModerate = List.filter (\id -> List.member id data.impacted) encounter.stuntingModerate
+                                , stuntingSevere = List.filter (\id -> List.member id data.impacted) encounter.stuntingSevere
+                                , wastingNormal = List.filter (\id -> List.member id data.impacted) encounter.wastingNormal
+                                , wastingModerate = List.filter (\id -> List.member id data.impacted) encounter.wastingModerate
+                                , wastingSevere = List.filter (\id -> List.member id data.impacted) encounter.wastingSevere
+                                , underweightNormal = List.filter (\id -> List.member id data.impacted) encounter.underweightNormal
+                                , underweightModerate = List.filter (\id -> List.member id data.impacted) encounter.underweightModerate
+                                , underweightSevere = List.filter (\id -> List.member id data.impacted) encounter.underweightSevere
+                            }
+                        )
+                        data.encountersByMonth
+            in
+            div [ class "report nutrition" ]
+                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
+                , viewMonthlyPrevalenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.PrevalenceByMonthTwoVisitsOrMore ":" "section heading"
+                , viewMonthlyPrevalenceTable language currentDate encountersByMonthForImpacted
+                ]
+
+        _ ->
+            div [ class "report nutrition" ]
+                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading" ]
+
+
+viewMonthlyPrevalenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewMonthlyPrevalenceTable language currentDate encountersByMonth =
     let
-        recordsForChildrenBellow6 =
-            List.filter
-                (\record ->
-                    Date.diff Years record.birthDate limitDate < 6
-                )
-                records
-
-        recordsForImpactedChildrenBellow6 =
-            List.filter
-                (\record ->
-                    countTotalEncounetrs record > 1
-                )
-                recordsForChildrenBellow6
-    in
-    div [ class "report nutrition" ]
-        [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
-        , viewMonthlyPrevalenceTable language limitDate recordsForChildrenBellow6
-        , viewCustomLabel language Translate.PrevalenceByMonthTwoVisitsOrMore ":" "section heading"
-        , viewMonthlyPrevalenceTable language limitDate recordsForImpactedChildrenBellow6
-        ]
-
-
-viewMonthlyPrevalenceTable : Language -> NominalDate -> List PatientData -> Html Msg
-viewMonthlyPrevalenceTable language limitDate records =
-    let
-        allEncounters =
-            List.map
-                (\record ->
-                    [ Maybe.map (List.concat >> List.map (Tuple.pair record.id)) record.wellChildData
-                    , Maybe.map (List.concat >> List.map (Tuple.pair record.id)) record.individualNutritionData
-                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionPmtctData
-                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionFbfData
-                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionSorwatheData
-                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionChwData
-                    , Maybe.map (List.map (Tuple.pair record.id)) record.groupNutritionAchiData
-                    ]
-                        |> Maybe.Extra.values
-                        |> List.concat
-                )
-                records
-                |> List.concat
-
-        allEncountersByMonth =
-            List.foldl
-                (\( personId, encounter ) accum ->
-                    let
-                        year =
-                            Date.year encounter.startDate
-
-                        month =
-                            Date.monthNumber encounter.startDate
-
-                        encounterMetrics =
-                            nutritionEncounterDataToNutritionMetrics personId encounter
-
-                        updatedMetrics =
-                            Dict.get ( year, month ) accum
-                                |> Maybe.map
-                                    (\metricsSoFar ->
-                                        sumNutritionMetrics [ metricsSoFar, encounterMetrics ]
-                                    )
-                                |> Maybe.withDefault encounterMetrics
-                    in
-                    Dict.insert ( year, month ) updatedMetrics accum
-                )
-                Dict.empty
-                allEncounters
-
         monthlyPrevalenceData =
             List.range 1 12
                 |> List.map
                     (\index ->
                         let
                             selectedDate =
-                                Date.add Months (-1 * index) limitDate
+                                Date.add Months (-1 * index) currentDate
 
                             year =
                                 Date.year selectedDate
@@ -743,7 +710,7 @@ viewMonthlyPrevalenceTable language limitDate records =
                                 Date.monthNumber selectedDate
                         in
                         ( Translate.MonthYear month year True
-                        , Dict.get ( year, monthNumber ) allEncountersByMonth
+                        , Dict.get ( year, monthNumber ) encountersByMonth
                             |> Maybe.map nutritionMetricsToNutritionPrevalence
                             |> Maybe.withDefault emptyNutritionPrevalence
                         )
