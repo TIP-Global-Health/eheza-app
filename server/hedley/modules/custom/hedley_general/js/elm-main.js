@@ -9036,6 +9036,10 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Standard Pediatric Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Stunting':
 				return {english: 'Stunting', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'StuntingModerate':
+				return {english: 'Stunting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'StuntingSevere':
+				return {english: 'Stunting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Status':
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
@@ -9046,10 +9050,18 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UnderweightModerate':
+				return {english: 'Underweight Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'UnderweightSevere':
+				return {english: 'Underweight Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Unique':
 				return {english: 'Unique', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
 				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'WastingModerate':
+				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'WastingSevere':
+				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
 				return {
 					english: 'Year',
@@ -11668,26 +11680,19 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
+var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
 var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
 	});
-var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
+var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
+var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
+var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
+var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
+var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
+var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
 var $author$project$Pages$Reports$Model$emptyNutritionPrevalence = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A2(isGood, key, value);
-				},
-				alist));
-	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Pages$Reports$Model$emptyNutritionMetrics = {stuntingModerate: _List_Nil, stuntingNormal: _List_Nil, stuntingSevere: _List_Nil, underweightModerate: _List_Nil, underweightNormal: _List_Nil, underweightSevere: _List_Nil, wastingModerate: _List_Nil, wastingNormal: _List_Nil, wastingSevere: _List_Nil};
 var $author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics = function (personId) {
 	return A2(
@@ -11994,7 +11999,7 @@ var $author$project$Pages$Reports$Utils$sumNutritionMetrics = A2(
 				});
 		}),
 	$author$project$Pages$Reports$Model$emptyNutritionMetrics);
-var $author$project$Pages$Reports$View$viewNutritionReport = F3(
+var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 	function (language, limitDate, records) {
 		var viewRow = function (label) {
 			return A2(
@@ -12026,7 +12031,8 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 									]),
 								_List_fromArray(
 									[
-										$elm$html$Html$text(label)
+										$elm$html$Html$text(
+										A2($author$project$Translate$translate, language, label))
 									]))
 							])),
 					$elm$html$Html$div(
@@ -12035,13 +12041,6 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 								$elm$html$Html$Attributes$class('row')
 							]))));
 		};
-		var recordsForChildrenBellow6 = A2(
-			$elm$core$List$filter,
-			function (record) {
-				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
-			},
-			records);
-		var currentYear = $justinmimbs$date$Date$year(limitDate);
 		var allEncounters = $elm$core$List$concat(
 			A2(
 				$elm$core$List$map,
@@ -12093,13 +12092,13 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 									record.groupNutritionAchiData)
 								])));
 				},
-				recordsForChildrenBellow6));
+				records));
 		var allEncountersByMonth = A3(
 			$elm$core$List$foldl,
 			F2(
-				function (_v4, accum) {
-					var personId = _v4.a;
-					var encounter = _v4.b;
+				function (_v1, accum) {
+					var personId = _v1.a;
+					var encounter = _v1.b;
 					var year = $justinmimbs$date$Date$year(encounter.startDate);
 					var month = $justinmimbs$date$Date$monthNumber(encounter.startDate);
 					var encounterMetrics = A2($author$project$Pages$Reports$Utils$nutritionEncounterDataToNutritionMetrics, personId, encounter);
@@ -12145,7 +12144,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 								_Utils_Tuple2(year, monthNumber),
 								allEncountersByMonth))));
 			},
-			A2($elm$core$List$range, 31, 42));
+			A2($elm$core$List$range, 1, 12));
 		var headerRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12169,8 +12168,8 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 					]),
 				A2(
 					$elm$core$List$map,
-					function (_v3) {
-						var label = _v3.a;
+					function (_v0) {
+						var label = _v0.a;
 						return A2(
 							$elm$html$Html$div,
 							_List_fromArray(
@@ -12184,19 +12183,103 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 								]));
 					},
 					monthlyPrevalenceData)));
-		var resolveMetricsForYear = function (selectedYear) {
-			return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
-				$pzp1997$assoc_list$AssocList$values(
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table wide')
+				]),
+			_List_fromArray(
+				[
+					headerRow,
 					A2(
-						$pzp1997$assoc_list$AssocList$filter,
-						F2(
-							function (_v1, _v2) {
-								var year = _v1.a;
-								return _Utils_eq(year, selectedYear);
+					viewRow,
+					$author$project$Translate$StuntingModerate,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.stuntingModerate;
 							}),
-						allEncountersByMonth)));
-		};
-		var _v0 = A2($elm$core$Debug$log, 'allEncountersByMonth', allEncountersByMonth);
+						monthlyPrevalenceData)),
+					A2(
+					viewRow,
+					$author$project$Translate$StuntingSevere,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.stuntingSevere;
+							}),
+						monthlyPrevalenceData)),
+					A2(
+					viewRow,
+					$author$project$Translate$WastingModerate,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.wastingModerate;
+							}),
+						monthlyPrevalenceData)),
+					A2(
+					viewRow,
+					$author$project$Translate$WastingSevere,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.wastingSevere;
+							}),
+						monthlyPrevalenceData)),
+					A2(
+					viewRow,
+					$author$project$Translate$UnderweightModerate,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.underweightModerate;
+							}),
+						monthlyPrevalenceData)),
+					A2(
+					viewRow,
+					$author$project$Translate$UnderweightSevere,
+					A2(
+						$elm$core$List$map,
+						A2(
+							$elm$core$Basics$composeR,
+							$elm$core$Tuple$second,
+							function ($) {
+								return $.underweightSevere;
+							}),
+						monthlyPrevalenceData))
+				]));
+	});
+var $author$project$Pages$Reports$View$viewNutritionReport = F3(
+	function (language, limitDate, records) {
+		var recordsForChildrenBellow6 = A2(
+			$elm$core$List$filter,
+			function (record) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, record.birthDate, limitDate) < 6;
+			},
+			records);
+		var recordsForImpactedChildrenBellow6 = A2(
+			$elm$core$List$filter,
+			function (record) {
+				return $author$project$Pages$Reports$Utils$countTotalEncounetrs(record) > 1;
+			},
+			recordsForChildrenBellow6);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12206,88 +12289,9 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 			_List_fromArray(
 				[
 					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('table wide')
-						]),
-					_List_fromArray(
-						[
-							headerRow,
-							A2(
-							viewRow,
-							'Stunting Moderate',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.stuntingModerate;
-									}),
-								monthlyPrevalenceData)),
-							A2(
-							viewRow,
-							'Stunting Severe',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.stuntingSevere;
-									}),
-								monthlyPrevalenceData)),
-							A2(
-							viewRow,
-							'Wasting Moderate',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.wastingModerate;
-									}),
-								monthlyPrevalenceData)),
-							A2(
-							viewRow,
-							'Wasting Severe',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.wastingSevere;
-									}),
-								monthlyPrevalenceData)),
-							A2(
-							viewRow,
-							'Underweight Moderate',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.underweightModerate;
-									}),
-								monthlyPrevalenceData)),
-							A2(
-							viewRow,
-							'Underweight Severe',
-							A2(
-								$elm$core$List$map,
-								A2(
-									$elm$core$Basics$composeR,
-									$elm$core$Tuple$second,
-									function ($) {
-										return $.underweightSevere;
-									}),
-								monthlyPrevalenceData))
-						]))
+					A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, limitDate, recordsForChildrenBellow6),
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, ':', 'section heading'),
+					A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, limitDate, recordsForImpactedChildrenBellow6)
 				]));
 	});
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
@@ -12683,6 +12687,19 @@ var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = 
 	}
 };
 var $elm$core$List$sortBy = _List_sortBy;
+var $pzp1997$assoc_list$AssocList$filter = F2(
+	function (isGood, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return A2(isGood, key, value);
+				},
+				alist));
+	});
 var $author$project$Backend$Entities$EntityId = function (a) {
 	return {$: 'EntityId', a: a};
 };

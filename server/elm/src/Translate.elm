@@ -111,13 +111,19 @@ type TranslationId
     | Sorwathe
     | StandardPediatricVisit
     | Stunting
+    | StuntingModerate
+    | StuntingSevere
     | Status
     | TargetedInterventions
     | Total
     | ViewMode
     | Village
+    | UnderweightModerate
+    | UnderweightSevere
     | Unique
     | UniversalIntervention
+    | WastingModerate
+    | WastingSevere
     | Year
     | Zone
 
@@ -669,6 +675,18 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        StuntingModerate ->
+            { english = "Stunting Moderate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        StuntingSevere ->
+            { english = "Stunting Severe"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Status ->
             { english = "Status"
             , kinyarwanda = Nothing
@@ -699,6 +717,18 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        UnderweightModerate ->
+            { english = "Underweight Moderate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UnderweightSevere ->
+            { english = "Underweight Severe"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Unique ->
             { english = "Unique"
             , kinyarwanda = Nothing
@@ -707,6 +737,18 @@ translationSet transId =
 
         UniversalIntervention ->
             { english = "Universal Intervention"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        WastingModerate ->
+            { english = "Wasting Moderate"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        WastingSevere ->
+            { english = "Wasting Severe"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

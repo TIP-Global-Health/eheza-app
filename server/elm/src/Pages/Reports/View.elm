@@ -664,6 +664,24 @@ viewNutritionReport language limitDate records =
                 )
                 records
 
+        recordsForImpactedChildrenBellow6 =
+            List.filter
+                (\record ->
+                    countTotalEncounetrs record > 1
+                )
+                recordsForChildrenBellow6
+    in
+    div [ class "report nutrition" ]
+        [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
+        , viewMonthlyPrevalenceTable language limitDate recordsForChildrenBellow6
+        , viewCustomLabel language Translate.PrevalenceByMonthTwoVisitsOrMore ":" "section heading"
+        , viewMonthlyPrevalenceTable language limitDate recordsForImpactedChildrenBellow6
+        ]
+
+
+viewMonthlyPrevalenceTable : Language -> NominalDate -> List PatientData -> Html Msg
+viewMonthlyPrevalenceTable language limitDate records =
+    let
         allEncounters =
             List.map
                 (\record ->
@@ -678,11 +696,8 @@ viewNutritionReport language limitDate records =
                         |> Maybe.Extra.values
                         |> List.concat
                 )
-                recordsForChildrenBellow6
+                records
                 |> List.concat
-
-        _ =
-            Debug.log "allEncountersByMonth" allEncountersByMonth
 
         allEncountersByMonth =
             List.foldl
@@ -710,20 +725,8 @@ viewNutritionReport language limitDate records =
                 Dict.empty
                 allEncounters
 
-        currentYear =
-            Date.year limitDate
-
-        resolveMetricsForYear selectedYear =
-            Dict.filter
-                (\( year, _ ) _ ->
-                    year == selectedYear
-                )
-                allEncountersByMonth
-                |> Dict.values
-                |> sumNutritionMetrics
-
         monthlyPrevalenceData =
-            List.range 31 42
+            List.range 1 12
                 |> List.map
                     (\index ->
                         let
@@ -760,18 +763,21 @@ viewNutritionReport language limitDate records =
                 (\value ->
                     div [ class "item value" ] [ text <| Round.round 3 value ++ "%" ]
                 )
-                >> List.append [ div [ class "item row-label" ] [ text label ] ]
+                >> List.append [ div [ class "item row-label" ] [ text <| translate language label ] ]
                 >> div [ class "row" ]
     in
-    div [ class "report nutrition" ]
-        [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
-        , div [ class "table wide" ]
-            [ headerRow
-            , List.map (Tuple.second >> .stuntingModerate) monthlyPrevalenceData |> viewRow "Stunting Moderate"
-            , List.map (Tuple.second >> .stuntingSevere) monthlyPrevalenceData |> viewRow "Stunting Severe"
-            , List.map (Tuple.second >> .wastingModerate) monthlyPrevalenceData |> viewRow "Wasting Moderate"
-            , List.map (Tuple.second >> .wastingSevere) monthlyPrevalenceData |> viewRow "Wasting Severe"
-            , List.map (Tuple.second >> .underweightModerate) monthlyPrevalenceData |> viewRow "Underweight Moderate"
-            , List.map (Tuple.second >> .underweightSevere) monthlyPrevalenceData |> viewRow "Underweight Severe"
-            ]
+    div [ class "table wide" ]
+        [ headerRow
+        , List.map (Tuple.second >> .stuntingModerate) monthlyPrevalenceData
+            |> viewRow Translate.StuntingModerate
+        , List.map (Tuple.second >> .stuntingSevere) monthlyPrevalenceData
+            |> viewRow Translate.StuntingSevere
+        , List.map (Tuple.second >> .wastingModerate) monthlyPrevalenceData
+            |> viewRow Translate.WastingModerate
+        , List.map (Tuple.second >> .wastingSevere) monthlyPrevalenceData
+            |> viewRow Translate.WastingSevere
+        , List.map (Tuple.second >> .underweightModerate) monthlyPrevalenceData
+            |> viewRow Translate.UnderweightModerate
+        , List.map (Tuple.second >> .underweightSevere) monthlyPrevalenceData
+            |> viewRow Translate.UnderweightSevere
         ]

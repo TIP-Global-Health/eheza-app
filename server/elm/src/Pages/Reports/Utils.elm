@@ -56,46 +56,6 @@ countTotalEncounetrs data =
         + countGroupDataEncounters data.groupNutritionAchiData
 
 
-
---
---
--- calcualteNutritionMetricsForPatient : PatientData -> NutritionMetrics
--- calcualteNutritionMetricsForPatient data =
---     [ Maybe.map
---         (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
---         data.wellChildData
---     , Maybe.map
---         (List.map calcualteNutritionMetricsForEncounters >> sumNutritionMetrics)
---         data.individualNutritionData
---     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionPmtctData
---     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionFbfData
---     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionSorwatheData
---     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionChwData
---     , Maybe.map calcualteNutritionMetricsForEncounters data.groupNutritionAchiData
---     ]
---         |> Maybe.Extra.values
---         |> sumNutritionMetrics
--- calcualteNutritionMetricsForEncounters : List NutritionEncounterData -> NutritionMetrics
--- calcualteNutritionMetricsForEncounters =
---     let
---         categorizeZScore =
---             Maybe.map
---                 (\score ->
---                     if score <= -3 then
---                         ( 0, 0, 1 )
---
---                     else if score <= -2 then
---                         ( 0, 1, 0 )
---
---                     else
---                         ( 1, 0, 0 )
---                 )
---                 >> Maybe.withDefault ( 0, 0, 0 )
---     in
---     List.map nutritionEncounterDataToNutritionMetrics
---         >> sumNutritionMetrics
-
-
 sumNutritionMetrics : List NutritionMetrics -> NutritionMetrics
 sumNutritionMetrics =
     List.foldl
