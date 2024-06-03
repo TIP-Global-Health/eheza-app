@@ -66,74 +66,76 @@ view language currentTime nurseId nurse db model =
                     let
                         messagingCenterView =
                             viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
-
-                        surveys =
-                            Dict.get nurseId db.resilienceSurveysByNurse
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map Dict.values
-                                |> Maybe.withDefault []
-
-                        surveysSorted =
-                            List.sortWith (sortByDateDesc .dateMeasured) surveys
-
-                        runSurvey surveyType =
-                            let
-                                filteredSurveys =
-                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
-
-                                surveyCount =
-                                    List.length filteredSurveys
-
-                                filterCondition survey =
-                                    let
-                                        diffMonthsLastSurveyCurrent =
-                                            Date.diff Months survey.dateMeasured currentDate
-
-                                        diffMonthsProgramStartLastSurvey =
-                                            Date.diff Months programStartDate survey.dateMeasured
-                                    in
-                                    if surveyCount == 0 then
-                                        -- We need to have at least one survey completed.
-                                        True
-
-                                    else if surveyCount >= 3 then
-                                        -- There can be up to 3 surveys during program which lasts
-                                        -- 6 months. At the begining, after 3 months and at the end.
-                                        -- So, if we have 3 surveys already, there's no need to another one,
-                                        False
-
-                                    else if diffMonthsProgramStartLastSurvey >= 6 then
-                                        -- Last survey run after 6 months from programstart date.
-                                        -- It means that program has alreqady ended there.
-                                        -- No need to run another one.
-                                        False
-
-                                    else if diffMonthsLastSurveyCurrent >= 3 then
-                                        -- If we got so far, and interval from last survey
-                                        -- is 3 months or more, we should run the survey.
-                                        True
-
-                                    else
-                                        False
-                            in
-                            List.head filteredSurveys
-                                |> Maybe.map filterCondition
-                                |> Maybe.withDefault True
-
-                        runAdoptionSurvey =
-                            runSurvey ResilienceSurveyAdoption
-
-                        runQuarterlySurvey =
-                            runSurvey ResilienceSurveyQuarterly
                     in
-                    if runQuarterlySurvey then
-                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\surveys ->
+                                let
+                                    surveysSorted =
+                                        Dict.values surveys
+                                            |> List.sortWith (sortByDateDesc .dateMeasured)
 
-                    else if runAdoptionSurvey then
-                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                                    runSurvey surveyType =
+                                        let
+                                            filteredSurveys =
+                                                List.filter (.surveyType >> (==) surveyType) surveysSorted
 
-                    else
-                        messagingCenterView
+                                            surveyCount =
+                                                List.length filteredSurveys
+
+                                            filterCondition survey =
+                                                let
+                                                    diffMonthsLastSurveyCurrent =
+                                                        Date.diff Months survey.dateMeasured currentDate
+
+                                                    diffMonthsProgramStartLastSurvey =
+                                                        Date.diff Months programStartDate survey.dateMeasured
+                                                in
+                                                if surveyCount == 0 then
+                                                    -- We need to have at least one survey completed.
+                                                    True
+
+                                                else if surveyCount >= 3 then
+                                                    -- There can be up to 3 surveys during the program which lasts
+                                                    -- 6 months. At the beginning, after 3 months, and at the end.
+                                                    -- So, if we have 3 surveys already, there's no need for another one,
+                                                    False
+
+                                                else if diffMonthsProgramStartLastSurvey >= 6 then
+                                                    -- Last survey run after 6 months from the program start date.
+                                                    -- It means that the program has already ended there.
+                                                    -- No need to run another one.
+                                                    False
+
+                                                else if diffMonthsLastSurveyCurrent >= 3 then
+                                                    -- If we got so far, and the interval from the last survey
+                                                    -- is 3 months or more, we should run the survey.
+                                                    True
+
+                                                else
+                                                    False
+                                        in
+                                        List.head filteredSurveys
+                                            |> Maybe.map filterCondition
+                                            |> Maybe.withDefault True
+
+                                    runAdoptionSurvey =
+                                        runSurvey ResilienceSurveyAdoption
+
+                                    runQuarterlySurvey =
+                                        runSurvey ResilienceSurveyQuarterly
+                                in
+                                if runQuarterlySurvey then
+                                    viewQuarterlySurvey language currentDate nurseId model.surveyForm
+
+                                else if runAdoptionSurvey then
+                                    viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                                else
+                                    messagingCenterView
+                            )
+                        |> Maybe.withDefault messagingCenterView
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
