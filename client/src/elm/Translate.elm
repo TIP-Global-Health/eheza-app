@@ -2985,7 +2985,7 @@ translationSet trans =
 
         AdoptionSurveyScoreInterpretation score ->
             if score < 36 then
-                { english = "Law effort to adopt resilience activities: Please, learn and integrate resilience activities in your daily life"
+                { english = "Low effort to adopt resilience activities: Please, learn and integrate resilience activities in your daily life"
                 , kinyarwanda = Just "Ugira imbaraga nke mu gushyira mu ngiro ibikorwa bigufasha kumererwa neza. Gerageza kwiga no kongera mu bikorwa byawe bya buri munsi ibikorwa bigufasha kumererwa neza."
                 , kirundi = Nothing
                 }
