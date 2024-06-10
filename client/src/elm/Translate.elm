@@ -5961,7 +5961,7 @@ translationSet trans =
 
             else
                 { english = "Favorite"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ishimire ubutumwa"
                 , kirundi = Nothing
                 }
 
@@ -6377,7 +6377,7 @@ translationSet trans =
 
         Guide ->
             { english = "Guide"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ifashayobora"
             , kirundi = Nothing
             }
 
@@ -10694,31 +10694,31 @@ translationSet trans =
 
                 TabFavorites ->
                     { english = "Favorites"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ubutumwa wishimiye"
                     , kirundi = Nothing
                     }
 
                 TabGrowth ->
                     { english = "Growth"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Terimbere"
                     , kirundi = Nothing
                     }
 
                 TabConnecting ->
                     { english = "Connecting"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Gusabana"
                     , kirundi = Nothing
                     }
 
                 TabSelfcare ->
                     { english = "Selfcare"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kwiyitaho"
                     , kirundi = Nothing
                     }
 
                 TabStress ->
                     { english = "Stress"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kunanirwa"
                     , kirundi = Nothing
                     }
 
@@ -18184,13 +18184,13 @@ translationSet trans =
 
         RemindMe ->
             { english = "Remind Me"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Unyibutse"
             , kirundi = Just "Nyibutsa"
             }
 
         RemindMePhrase ->
             { english = "Remind me of this message in:"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Nyibutsa ubu butumwa mu:"
             , kirundi = Just "Unyibutse ubu butumwa mu:"
             }
 
@@ -18384,7 +18384,7 @@ translationSet trans =
 
                 ResilienceCategoryMindfulness ->
                     { english = "Mindfulness"
-                    , kinyarwanda = Just "Zirikana ibi"
+                    , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
@@ -18762,19 +18762,19 @@ translationSet trans =
 
         ResilienceGuideSection3Bullet5 ->
             { english = "Stress Management"
-            , kinyarwanda = Just "Kwiyitaho"
+            , kinyarwanda = Just "Kunanirwa"
             , kirundi = Nothing
             }
 
         ResilienceGuideSection3Bullet6 ->
             { english = "Self-care"
-            , kinyarwanda = Just "Kunanirwa"
+            , kinyarwanda = Just "Kwiyitaho"
             , kirundi = Nothing
             }
 
         ResilienceGuideSection3Bullet7 ->
             { english = "Mindfulness"
-            , kinyarwanda = Just "Zirikana ibi"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
