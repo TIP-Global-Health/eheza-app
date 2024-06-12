@@ -416,6 +416,12 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-hc-report.php --limit_date=$limit_date --region=$region");
   }
 
+    /**
+   * Generates the duplicates report.
+   */
+  public function reportDuplicates($health_center = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-duplicates-report.php --health_center=$health_center");
+  }
   /**
    * Generates the acute illness report.
    */

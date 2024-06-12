@@ -17,60 +17,6 @@ if (!$limit_date) {
   exit;
 }
 
-/**
- * Gets the node ID of the health center.
- *
- * @param string $health_center_name
- *   The name of a healthcenter.
- *
- * @return string
- *   The node ID of the health center.
- */
-function get_health_center_id($health_center_name = NULL) {
-  if ($health_center_name) {
-    $health_center_name = str_replace(['_', '-', '.'], ' ', $health_center_name);
-    $results = db_query("SELECT nid FROM node WHERE title = :title AND type = :type", array(
-      ':title' => $health_center_name,
-      ':type' => 'health_center',
-    ));
-    if (!$results->fetchField()) {
-      $results = db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type", array(
-        ':title' => db_like($health_center_name) . '%',
-        ':type' => 'health_center',
-      ));
-      if (!$results->fetchField()) {
-        drush_print('No health centers match the name provided');
-        exit(1);
-      }
-      elseif (!$results->fetchField()) {
-        return db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type LIMIT 1", array(
-          ':title' => db_like($health_center_name) . '%',
-          ':type' => 'health_center',
-        ))->fetchField();
-      }
-      else {
-        $results = db_query("SELECT nid FROM node WHERE title LIKE :title AND type = :type", array(
-          ':title' => db_like($health_center_name) . '%',
-          ':type' => 'health_center',
-        ));
-        drush_print('Multiple health centers match the name provided including ' .
-          get_health_center($results->fetchField()) . ', ' . get_health_center($results->fetchField()) .
-          ", etc. \r\nPlease use a more specific name");
-        exit(1);
-      }
-    }
-    else {
-      return db_query("SELECT nid FROM node WHERE title = :title AND type = :type", array(
-        ':title' => $health_center_name,
-        ':type' => 'health_center',
-      ))->fetchField();
-    }
-  }
-  else {
-    return NULL;
-  }
-}
-
 $center_id = get_health_center_id($center_name);
 
 // We need to filter for all the measurements at several places,
@@ -255,7 +201,7 @@ function encounter_all_count($type, $filter = NULL, $limit = NULL, $center_id = 
       LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
       LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
       LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-      WHERE 
+      WHERE
       FROM_UNIXTIME(node.created) < '$limit'
       {$center_clause}")->fetchField();
   }
@@ -316,7 +262,7 @@ function encounter_unique_count($type, $filter = NULL, $limit = NULL, $center_id
       LEFT JOIN field_data_field_individual_participant ip ON e.field_{$type}_encounter_target_id=ip.entity_id
       LEFT JOIN field_data_field_person person ON ip.field_individual_participant_target_id=person.entity_id
       LEFT JOIN field_data_field_health_center hc ON person.field_person_target_id=hc.entity_id
-      WHERE 
+      WHERE
         FROM_UNIXTIME(node.created) < '$limit'
         {$center_clause}")->fetchField();
   }
