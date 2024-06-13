@@ -33,4 +33,5 @@ then
   cp ../../eheza-infra/elm/${EHEZA_SITE}/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
 fi
 
+export TZ=Europe/Budapest
 cd ../../client  && gulp $@
