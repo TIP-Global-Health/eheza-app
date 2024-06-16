@@ -9,6 +9,7 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import List.Extra
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)

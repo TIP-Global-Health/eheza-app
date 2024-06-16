@@ -12631,7 +12631,43 @@ var $elm$core$Set$size = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$size(dict);
 };
-var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
+var $elm_community$list_extra$List$Extra$uniqueHelp = F4(
+	function (f, existing, remaining, accumulator) {
+		uniqueHelp:
+		while (true) {
+			if (!remaining.b) {
+				return $elm$core$List$reverse(accumulator);
+			} else {
+				var first = remaining.a;
+				var rest = remaining.b;
+				var computedFirst = f(first);
+				if (A2($elm$core$List$member, computedFirst, existing)) {
+					var $temp$f = f,
+						$temp$existing = existing,
+						$temp$remaining = rest,
+						$temp$accumulator = accumulator;
+					f = $temp$f;
+					existing = $temp$existing;
+					remaining = $temp$remaining;
+					accumulator = $temp$accumulator;
+					continue uniqueHelp;
+				} else {
+					var $temp$f = f,
+						$temp$existing = A2($elm$core$List$cons, computedFirst, existing),
+						$temp$remaining = rest,
+						$temp$accumulator = A2($elm$core$List$cons, first, accumulator);
+					f = $temp$f;
+					existing = $temp$existing;
+					remaining = $temp$remaining;
+					accumulator = $temp$accumulator;
+					continue uniqueHelp;
+				}
+			}
+		}
+	});
+var $elm_community$list_extra$List$Extra$unique = function (list) {
+	return A4($elm_community$list_extra$List$Extra$uniqueHelp, $elm$core$Basics$identity, _List_Nil, list, _List_Nil);
+};
 var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults = F2(
 	function (currentPeriodMetric, previousPeriodMetric) {
 		var wastingSevereNotIdentifiedInPreviousPeriod = A2(
@@ -12646,10 +12682,10 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.stuntingSevere),
 			$elm$core$Set$fromList(previousPeriodMetric.stuntingSevere));
-		var previousPeriodWastingModerateSevere = $author$project$Pages$Utils$unique(
+		var previousPeriodWastingModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.wastingModerate, previousPeriodMetric.wastingSevere));
 		var previousPeriodWastingTotal = $elm$core$Set$fromList(
-			$author$project$Pages$Utils$unique(
+			$elm_community$list_extra$List$Extra$unique(
 				_Utils_ap(previousPeriodWastingModerateSevere, previousPeriodMetric.wastingNormal)));
 		var wastingModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
@@ -12663,10 +12699,10 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.wastingModerate),
 			$elm$core$Set$fromList(previousPeriodWastingModerateSevere));
-		var previousPeriodUnderweightModerateSevere = $author$project$Pages$Utils$unique(
+		var previousPeriodUnderweightModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.underweightModerate, previousPeriodMetric.underweightSevere));
 		var previousPeriodUnderweightTotal = $elm$core$Set$fromList(
-			$author$project$Pages$Utils$unique(
+			$elm_community$list_extra$List$Extra$unique(
 				_Utils_ap(previousPeriodUnderweightModerateSevere, previousPeriodMetric.underweightNormal)));
 		var underweightModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
@@ -12680,10 +12716,10 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.underweightModerate),
 			$elm$core$Set$fromList(previousPeriodUnderweightModerateSevere));
-		var previousPeriodStuntingModerateSevere = $author$project$Pages$Utils$unique(
+		var previousPeriodStuntingModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.stuntingModerate, previousPeriodMetric.stuntingSevere));
 		var previousPeriodStuntingTotal = $elm$core$Set$fromList(
-			$author$project$Pages$Utils$unique(
+			$elm_community$list_extra$List$Extra$unique(
 				_Utils_ap(previousPeriodStuntingModerateSevere, previousPeriodMetric.stuntingNormal)));
 		var stuntingModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
@@ -13156,15 +13192,15 @@ var $author$project$Pages$Reports$View$viewMonthlyIncidenceTable = F3(
 				A2($elm$core$List$range, 1, 12)));
 	});
 var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResults = function (metrics) {
-	var wastingTotal = $author$project$Pages$Utils$unique(
+	var wastingTotal = $elm_community$list_extra$List$Extra$unique(
 		_Utils_ap(
 			metrics.wastingModerate,
 			_Utils_ap(metrics.wastingSevere, metrics.wastingNormal)));
-	var underweightTotal = $author$project$Pages$Utils$unique(
+	var underweightTotal = $elm_community$list_extra$List$Extra$unique(
 		_Utils_ap(
 			metrics.underweightModerate,
 			_Utils_ap(metrics.underweightSevere, metrics.underweightNormal)));
-	var stuntingTotal = $author$project$Pages$Utils$unique(
+	var stuntingTotal = $elm_community$list_extra$List$Extra$unique(
 		_Utils_ap(
 			metrics.stuntingModerate,
 			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));

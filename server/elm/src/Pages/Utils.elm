@@ -230,12 +230,3 @@ viewGenerateReportButton language path selectionMadeMsg =
         [ button [ onClick selectionMadeMsg ]
             [ text <| translate language Translate.GenerateReport ]
         ]
-
-
-
--- Helper functions
-
-
-unique : List a -> List a
-unique =
-    EverySet.fromList >> EverySet.toList
