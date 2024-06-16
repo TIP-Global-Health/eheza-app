@@ -691,6 +691,10 @@ viewNutritionReport language currentDate reportData =
                 , viewQuarterlyIncidenceTable language currentDate data.encountersByMonth
                 , viewCustomLabel language Translate.IncidenceByQuarterTwoVisitsOrMore ":" "section heading"
                 , viewQuarterlyIncidenceTable language currentDate encountersByMonthForImpacted
+                , viewCustomLabel language Translate.IncidenceByYearOneVisitOrMore ":" "section heading"
+                , viewYearlyIncidenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.IncidenceByYearTwoVisitsOrMore ":" "section heading"
+                , viewYearlyIncidenceTable language currentDate encountersByMonthForImpacted
                 ]
 
         _ ->
@@ -780,6 +784,41 @@ viewQuarterlyIncidenceTable language currentDate encountersByMonth =
                             |> Maybe.withDefault emptyNutritionMetrics
                 in
                 ( Translate.QuarterYear quarter year
+                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewYearlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewYearlyIncidenceTable language currentDate encountersByMonth =
+    let
+        dataSetsByYear =
+            List.range 1 3
+                |> List.map
+                    (\index ->
+                        resolveDataSetForYear currentDate index encountersByMonth
+                    )
+    in
+    List.range 1 2
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Years (-1 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    dataSet =
+                        List.Extra.getAt (index - 1) dataSetsByYear
+                            |> Maybe.withDefault emptyNutritionMetrics
+
+                    previousDataSet =
+                        List.Extra.getAt index dataSetsByYear
+                            |> Maybe.withDefault emptyNutritionMetrics
+                in
+                ( Translate.Year year
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )

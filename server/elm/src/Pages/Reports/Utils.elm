@@ -265,6 +265,39 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
     }
 
 
+resolveDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
+resolveDataSetForMonth date monthIndex encountersByMonth =
+    let
+        selectedDate =
+            Date.add Months (-1 * monthIndex) date
+
+        year =
+            Date.year selectedDate
+
+        month =
+            Date.month selectedDate
+
+        monthNumber =
+            Date.monthNumber selectedDate
+    in
+    Dict.get ( year, monthNumber ) encountersByMonth
+        |> Maybe.withDefault emptyNutritionMetrics
+
+
+{-| Previous data set for given month is defined as aggregation of values taken
+from 3 months that come prior to that monnths. For example, for November, it's
+October, September and August.
+-}
+resolvePreviousDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
+resolvePreviousDataSetForMonth date monthIndex encountersByMonth =
+    List.range 1 3
+        |> List.map
+            (\gap ->
+                resolveDataSetForMonth date (monthIndex + gap) encountersByMonth
+            )
+        |> sumNutritionMetrics
+
+
 resolveDataSetForQuarter : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
 resolveDataSetForQuarter date quarterIndex encountersByMonth =
     let
@@ -302,40 +335,19 @@ resolvePreviousQuarterDateInfo date =
 quarterToMonths : Int -> List Int
 quarterToMonths quarter =
     List.range 1 3
-        |> List.map
-            (\gap ->
-                3 * (quarter - 1) + gap
-            )
+        |> List.map (\gap -> 3 * (quarter - 1) + gap)
 
 
-resolveDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
-resolveDataSetForMonth date monthIndex encountersByMonth =
+resolveDataSetForYear : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
+resolveDataSetForYear date yearIndex encountersByMonth =
     let
-        selectedDate =
-            Date.add Months (-1 * monthIndex) date
-
-        year =
-            Date.year selectedDate
-
-        month =
-            Date.month selectedDate
-
-        monthNumber =
-            Date.monthNumber selectedDate
+        selectedYear =
+            Date.year date - yearIndex
     in
-    Dict.get ( year, monthNumber ) encountersByMonth
-        |> Maybe.withDefault emptyNutritionMetrics
-
-
-{-| Previous data set for given month is defined as aggregation of values taken
-from 3 months that come prior to that monnths. For example, for November, it's
-October, September and August.
--}
-resolvePreviousDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
-resolvePreviousDataSetForMonth date monthIndex encountersByMonth =
-    List.range 1 3
-        |> List.map
-            (\gap ->
-                resolveDataSetForMonth date (monthIndex + gap) encountersByMonth
-            )
+    Dict.filter
+        (\( year, month ) _ ->
+            year == selectedYear
+        )
+        encountersByMonth
+        |> Dict.values
         |> sumNutritionMetrics

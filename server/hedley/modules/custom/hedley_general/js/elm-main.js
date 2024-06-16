@@ -9387,6 +9387,13 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'WastingSevere':
 				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
+				var year = transId.a;
+				return {
+					english: $elm$core$String$fromInt(year),
+					kinyarwanda: $elm$core$Maybe$Nothing,
+					kirundi: $elm$core$Maybe$Nothing
+				};
+			case 'YearLabel':
 				return {
 					english: 'Year',
 					kinyarwanda: $elm$core$Maybe$Just('Umwaka'),
@@ -10247,7 +10254,7 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 };
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
-var $author$project$Translate$Year = {$: 'Year'};
+var $author$project$Translate$YearLabel = {$: 'YearLabel'};
 var $justinmimbs$date$Date$clamp = F3(
 	function (dateA, dateB, dateX) {
 		var a = dateA.a;
@@ -11056,7 +11063,7 @@ var $author$project$DateSelector$Selector$viewPopup = F4(
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$Year))
+							A2($author$project$Translate$translate, language, $author$project$Translate$YearLabel))
 						])),
 					A3($author$project$DateSelector$Selector$viewYearSelectList, minimum, maximum, maybeSelected)
 				]));
@@ -11979,6 +11986,8 @@ var $author$project$Translate$IncidenceByMonthOneVisitOrMore = {$: 'IncidenceByM
 var $author$project$Translate$IncidenceByMonthTwoVisitsOrMore = {$: 'IncidenceByMonthTwoVisitsOrMore'};
 var $author$project$Translate$IncidenceByQuarterOneVisitOrMore = {$: 'IncidenceByQuarterOneVisitOrMore'};
 var $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore = {$: 'IncidenceByQuarterTwoVisitsOrMore'};
+var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYearOneVisitOrMore'};
+var $author$project$Translate$IncidenceByYearTwoVisitsOrMore = {$: 'IncidenceByYearTwoVisitsOrMore'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
 var $pzp1997$assoc_list$AssocList$map = F2(
@@ -13309,6 +13318,68 @@ var $author$project$Pages$Reports$View$viewQuarterlyIncidenceTable = F3(
 				},
 				A2($elm$core$List$range, 1, 4)));
 	});
+var $author$project$Translate$Year = function (a) {
+	return {$: 'Year', a: a};
+};
+var $pzp1997$assoc_list$AssocList$filter = F2(
+	function (isGood, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$filter,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return A2(isGood, key, value);
+				},
+				alist));
+	});
+var $author$project$Pages$Reports$Utils$resolveDataSetForYear = F3(
+	function (date, yearIndex, encountersByMonth) {
+		var selectedYear = $justinmimbs$date$Date$year(date) - yearIndex;
+		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+			$pzp1997$assoc_list$AssocList$values(
+				A2(
+					$pzp1997$assoc_list$AssocList$filter,
+					F2(
+						function (_v0, _v1) {
+							var year = _v0.a;
+							var month = _v0.b;
+							return _Utils_eq(year, selectedYear);
+						}),
+					encountersByMonth)));
+	});
+var $author$project$Pages$Reports$View$viewYearlyIncidenceTable = F3(
+	function (language, currentDate, encountersByMonth) {
+		var dataSetsByYear = A2(
+			$elm$core$List$map,
+			function (index) {
+				return A3($author$project$Pages$Reports$Utils$resolveDataSetForYear, currentDate, index, encountersByMonth);
+			},
+			A2($elm$core$List$range, 1, 3));
+		return A3(
+			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			language,
+			currentDate,
+			A2(
+				$elm$core$List$map,
+				function (index) {
+					var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, (-1) * index, currentDate);
+					var year = $justinmimbs$date$Date$year(selectedDate);
+					var previousDataSet = A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
+						A2($elm_community$list_extra$List$Extra$getAt, index, dataSetsByYear));
+					var dataSet = A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
+						A2($elm_community$list_extra$List$Extra$getAt, index - 1, dataSetsByYear));
+					return _Utils_Tuple2(
+						$author$project$Translate$Year(year),
+						A2($author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults, dataSet, previousDataSet));
+				},
+				A2($elm$core$List$range, 1, 2)));
+	});
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, currentDate, reportData) {
 		if (reportData.$ === 'Success') {
@@ -13396,7 +13467,11 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterOneVisitOrMore, ':', 'section heading'),
 						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, data.encountersByMonth),
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
+						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, encountersByMonthForImpacted),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByYearOneVisitOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewYearlyIncidenceTable, language, currentDate, data.encountersByMonth),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByYearTwoVisitsOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewYearlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
 					]));
 		} else {
 			return A2(
@@ -13804,19 +13879,6 @@ var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = 
 	}
 };
 var $elm$core$List$sortBy = _List_sortBy;
-var $pzp1997$assoc_list$AssocList$filter = F2(
-	function (isGood, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$filter,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return A2(isGood, key, value);
-				},
-				alist));
-	});
 var $author$project$Backend$Entities$EntityId = function (a) {
 	return {$: 'EntityId', a: a};
 };

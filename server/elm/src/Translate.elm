@@ -131,7 +131,8 @@ type TranslationId
     | UniversalIntervention
     | WastingModerate
     | WastingSevere
-    | Year
+    | Year Int
+    | YearLabel
     | Zone
 
 
@@ -802,7 +803,13 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        Year ->
+        Year year ->
+            { english = String.fromInt year
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        YearLabel ->
             { english = "Year"
             , kinyarwanda = Just "Umwaka"
             , kirundi = Just "Umwaka"
