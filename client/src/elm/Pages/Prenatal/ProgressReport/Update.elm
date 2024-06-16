@@ -76,7 +76,7 @@ update msg model =
             ( updatedModel, Cmd.none, [] )
 
         ReviewAndAcceptLabsResults personId encounterId labsResultsId value ->
-            ( model
+            ( { model | labResultsMode = Nothing, labResultsHistoryOrigin = Nothing }
             , Cmd.none
             , [ Backend.PrenatalEncounter.Model.SaveLabsResults personId (Just labsResultsId) { value | reviewState = Just LabsResultsReviewCompleted }
                     |> Backend.Model.MsgPrenatalEncounter encounterId

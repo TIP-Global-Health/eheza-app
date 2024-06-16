@@ -1929,8 +1929,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     (\egaWeeks ->
                         (egaWeeks >= 20)
                             && (egaWeeks < 37)
-                            && moderatePreeclampsiaByMeasurementsInitialPhase
-                                measurements
+                            && moderatePreeclampsiaByMeasurementsInitialPhase measurements
                     )
 
         DiagnosisModeratePreeclampsiaRecurrentPhase ->
@@ -1942,7 +1941,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             (not <| diagnosedModeratePreeclampsiaPrevoiusly assembled)
                 && -- If diagnosed Moderate Preeclampsia at initial stage, we do not
                    -- need to diagnose again.
-                   (not <| diagnosed DiagnosisModeratePreeclampsiaInitialPhase assembled)
+                   (not <| diagnosedAtInitalPhase DiagnosisModeratePreeclampsiaInitialPhase)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
                         (egaWeeks >= 20)
@@ -1960,7 +1959,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
         DiagnosisSeverePreeclampsiaRecurrentPhase ->
             (-- If diagnosed Severe Preeclampsia at initial stage, we do not
              -- need to diagnose again.
-             not <| diagnosed DiagnosisSeverePreeclampsiaInitialPhase assembled
+             not <| diagnosedAtInitalPhase DiagnosisSeverePreeclampsiaInitialPhase
             )
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2081,7 +2080,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
-            (not <| diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase assembled)
+            (not <| diagnosedAtInitalPhase Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase)
                 && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
@@ -2096,7 +2095,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                     )
 
         Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
-            (not <| diagnosed Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase assembled)
+            (not <| diagnosedAtInitalPhase Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase)
                 && (not <| diagnosedPreviouslyAnyOf diabetesDiagnoses assembled)
                 && resolveEGAWeeksAndThen
                     (\egaWeeks ->
