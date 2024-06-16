@@ -101,7 +101,7 @@ randomBloodSugarResultNormal result =
             value >= 74 && value <= 126
 
         TestRunAfterMeal value ->
-            value >= 74 && value <= 200
+            value >= 74 && value < 200
 
 
 hemoglobinResultNormal : Float -> Bool
