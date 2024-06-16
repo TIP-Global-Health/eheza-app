@@ -9076,6 +9076,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Incidence by month, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthTwoVisitsOrMore':
 				return {english: 'Incidence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByQuarterOneVisitOrMore':
+				return {english: 'Incidence by quarter, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByQuarterTwoVisitsOrMore':
+				return {english: 'Incidence by quarter, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByYearOneVisitOrMore':
+				return {english: 'Incidence by year, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByYearTwoVisitsOrMore':
+				return {english: 'Incidence by year, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Individual':
 				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
@@ -9287,6 +9295,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Prevalence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'QuarterYear':
+				var quarter = transId.a;
+				var year = transId.b;
+				return {
+					english: $elm$core$String$fromInt(year) + ('Q' + $elm$core$String$fromInt(quarter)),
+					kinyarwanda: $elm$core$Maybe$Nothing,
+					kirundi: $elm$core$Maybe$Nothing
+				};
 			case 'Registered':
 				return {english: 'Registered', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'RegisteredPatients':
@@ -11961,6 +11977,8 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
 var $author$project$Translate$IncidenceByMonthOneVisitOrMore = {$: 'IncidenceByMonthOneVisitOrMore'};
 var $author$project$Translate$IncidenceByMonthTwoVisitsOrMore = {$: 'IncidenceByMonthTwoVisitsOrMore'};
+var $author$project$Translate$IncidenceByQuarterOneVisitOrMore = {$: 'IncidenceByQuarterOneVisitOrMore'};
+var $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore = {$: 'IncidenceByQuarterTwoVisitsOrMore'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
 var $pzp1997$assoc_list$AssocList$map = F2(
@@ -12614,7 +12632,7 @@ var $elm$core$Set$size = function (_v0) {
 	return $elm$core$Dict$size(dict);
 };
 var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
-var $author$project$Pages$Reports$View$generateIncidenceNutritionMetricsResults = F2(
+var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults = F2(
 	function (currentPeriodMetric, previousPeriodMetric) {
 		var wastingSevereNotIdentifiedInPreviousPeriod = A2(
 			$elm$core$Set$diff,
@@ -12710,9 +12728,9 @@ var $author$project$Pages$Reports$View$generateIncidenceNutritionMetricsResults 
 				previousPeriodWastingTotal)
 		};
 	});
-var $author$project$Pages$Reports$View$resolveDataSetForMonth = F3(
-	function (currentDate, monthIndex, encountersByMonth) {
-		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * monthIndex, currentDate);
+var $author$project$Pages$Reports$Utils$resolveDataSetForMonth = F3(
+	function (date, monthIndex, encountersByMonth) {
+		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * monthIndex, date);
 		var year = $justinmimbs$date$Date$year(selectedDate);
 		var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
 		var month = $justinmimbs$date$Date$month(selectedDate);
@@ -12724,15 +12742,15 @@ var $author$project$Pages$Reports$View$resolveDataSetForMonth = F3(
 				_Utils_Tuple2(year, monthNumber),
 				encountersByMonth));
 	});
-var $author$project$Pages$Reports$View$resolvePreviousDataSetForMonth = F3(
-	function (currentDate, monthIndex, encountersByMonth) {
+var $author$project$Pages$Reports$Utils$resolvePreviousDataSetForMonth = F3(
+	function (date, monthIndex, encountersByMonth) {
 		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
-			_List_fromArray(
-				[
-					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 1, encountersByMonth),
-					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 2, encountersByMonth),
-					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 3, encountersByMonth)
-				]));
+			A2(
+				$elm$core$List$map,
+				function (gap) {
+					return A3($author$project$Pages$Reports$Utils$resolveDataSetForMonth, date, monthIndex + gap, encountersByMonth);
+				},
+				A2($elm$core$List$range, 1, 3)));
 	});
 var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
 var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
@@ -13131,14 +13149,13 @@ var $author$project$Pages$Reports$View$viewMonthlyIncidenceTable = F3(
 					return _Utils_Tuple2(
 						A3($author$project$Translate$MonthYear, month, year, true),
 						A2(
-							$author$project$Pages$Reports$View$generateIncidenceNutritionMetricsResults,
-							A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, index, encountersByMonth),
-							A3($author$project$Pages$Reports$View$resolvePreviousDataSetForMonth, currentDate, index, encountersByMonth)));
+							$author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults,
+							A3($author$project$Pages$Reports$Utils$resolveDataSetForMonth, currentDate, index, encountersByMonth),
+							A3($author$project$Pages$Reports$Utils$resolvePreviousDataSetForMonth, currentDate, index, encountersByMonth)));
 				},
 				A2($elm$core$List$range, 1, 12)));
 	});
-var $author$project$Pages$Reports$Model$emptyNutritionMetricsResults = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
-var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionMetricsResults = function (metrics) {
+var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResults = function (metrics) {
 	var wastingTotal = $author$project$Pages$Utils$unique(
 		_Utils_ap(
 			metrics.wastingModerate,
@@ -13179,18 +13196,82 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 					var month = $justinmimbs$date$Date$month(selectedDate);
 					return _Utils_Tuple2(
 						A3($author$project$Translate$MonthYear, month, year, true),
-						A2(
-							$elm$core$Maybe$withDefault,
-							$author$project$Pages$Reports$Model$emptyNutritionMetricsResults,
-							A2(
-								$elm$core$Maybe$map,
-								$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionMetricsResults,
-								A2(
-									$pzp1997$assoc_list$AssocList$get,
-									_Utils_Tuple2(year, monthNumber),
-									encountersByMonth))));
+						$author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResults(
+							A3($author$project$Pages$Reports$Utils$resolveDataSetForMonth, currentDate, index, encountersByMonth)));
 				},
 				A2($elm$core$List$range, 1, 12)));
+	});
+var $author$project$Translate$QuarterYear = F2(
+	function (a, b) {
+		return {$: 'QuarterYear', a: a, b: b};
+	});
+var $elm_community$list_extra$List$Extra$getAt = F2(
+	function (idx, xs) {
+		return (idx < 0) ? $elm$core$Maybe$Nothing : $elm$core$List$head(
+			A2($elm$core$List$drop, idx, xs));
+	});
+var $author$project$Pages$Reports$Utils$quarterToMonths = function (quarter) {
+	return A2(
+		$elm$core$List$map,
+		function (gap) {
+			return (3 * (quarter - 1)) + gap;
+		},
+		A2($elm$core$List$range, 1, 3));
+};
+var $author$project$Pages$Reports$Utils$resolvePreviousQuarter = function (date) {
+	var year = $justinmimbs$date$Date$year(date);
+	var quarter = $justinmimbs$date$Date$quarter(date);
+	return (quarter === 1) ? _Utils_Tuple2(year - 1, 4) : _Utils_Tuple2(year, quarter - 1);
+};
+var $author$project$Pages$Reports$Utils$resolveDataSetForQuarter = F3(
+	function (date, quarterIndex, encountersByMonth) {
+		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * quarterIndex, date);
+		var _v0 = $author$project$Pages$Reports$Utils$resolvePreviousQuarter(selectedDate);
+		var year = _v0.a;
+		var quarter = _v0.b;
+		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function (month) {
+						return A2(
+							$pzp1997$assoc_list$AssocList$get,
+							_Utils_Tuple2(year, month),
+							encountersByMonth);
+					},
+					$author$project$Pages$Reports$Utils$quarterToMonths(quarter))));
+	});
+var $author$project$Pages$Reports$View$viewQuarterlyIncidenceTable = F3(
+	function (language, currentDate, encountersByMonth) {
+		var dataSetsByQuarter = A2(
+			$elm$core$List$map,
+			function (index) {
+				return A3($author$project$Pages$Reports$Utils$resolveDataSetForQuarter, currentDate, index, encountersByMonth);
+			},
+			A2($elm$core$List$range, 1, 5));
+		return A3(
+			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			language,
+			currentDate,
+			A2(
+				$elm$core$List$map,
+				function (index) {
+					var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * index, currentDate);
+					var year = $justinmimbs$date$Date$year(selectedDate);
+					var quarter = $justinmimbs$date$Date$quarter(selectedDate);
+					var previousDataSet = A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
+						A2($elm_community$list_extra$List$Extra$getAt, index - 1, dataSetsByQuarter));
+					var dataSet = A2(
+						$elm$core$Maybe$withDefault,
+						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
+						A2($elm_community$list_extra$List$Extra$getAt, index - 1, dataSetsByQuarter));
+					return _Utils_Tuple2(
+						A2($author$project$Translate$QuarterYear, quarter, year),
+						A2($author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults, dataSet, previousDataSet));
+				},
+				A2($elm$core$List$range, 1, 4)));
 	});
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, currentDate, reportData) {
@@ -13275,7 +13356,11 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthOneVisitOrMore, ':', 'section heading'),
 						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, data.encountersByMonth),
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
+						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, encountersByMonthForImpacted),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterOneVisitOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, data.encountersByMonth),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
 					]));
 		} else {
 			return A2(

@@ -76,6 +76,10 @@ type TranslationId
     | Impacted
     | IncidenceByMonthOneVisitOrMore
     | IncidenceByMonthTwoVisitsOrMore
+    | IncidenceByQuarterOneVisitOrMore
+    | IncidenceByQuarterTwoVisitsOrMore
+    | IncidenceByYearOneVisitOrMore
+    | IncidenceByYearTwoVisitsOrMore
     | Individual
     | InfrastructureEnvironmentWash
     | Male
@@ -99,6 +103,7 @@ type TranslationId
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
+    | QuarterYear Int Int
     | Registered
     | RegisteredPatients
     | ReportType ReportType
@@ -288,6 +293,30 @@ translationSet transId =
 
         IncidenceByMonthTwoVisitsOrMore ->
             { english = "Incidence by month, two visits or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByQuarterOneVisitOrMore ->
+            { english = "Incidence by quarter, one visit or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByQuarterTwoVisitsOrMore ->
+            { english = "Incidence by quarter, two visits or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByYearOneVisitOrMore ->
+            { english = "Incidence by year, one visit or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByYearTwoVisitsOrMore ->
+            { english = "Incidence by year, two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -588,6 +617,12 @@ translationSet transId =
 
         Province ->
             { english = "Province"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        QuarterYear quarter year ->
+            { english = String.fromInt year ++ "Q" ++ String.fromInt quarter
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

@@ -18,13 +18,13 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import List.Extra
 import Maybe.Extra exposing (isJust)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
-import Pages.Utils exposing (unique, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
-import Set exposing (Set)
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -687,6 +687,10 @@ viewNutritionReport language currentDate reportData =
                 , viewMonthlyIncidenceTable language currentDate data.encountersByMonth
                 , viewCustomLabel language Translate.IncidenceByMonthTwoVisitsOrMore ":" "section heading"
                 , viewMonthlyIncidenceTable language currentDate encountersByMonthForImpacted
+                , viewCustomLabel language Translate.IncidenceByQuarterOneVisitOrMore ":" "section heading"
+                , viewQuarterlyIncidenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.IncidenceByQuarterTwoVisitsOrMore ":" "section heading"
+                , viewQuarterlyIncidenceTable language currentDate encountersByMonthForImpacted
                 ]
 
         _ ->
@@ -713,9 +717,8 @@ viewMonthlyPrevalenceTable language currentDate encountersByMonth =
                         Date.monthNumber selectedDate
                 in
                 ( Translate.MonthYear month year True
-                , Dict.get ( year, monthNumber ) encountersByMonth
-                    |> Maybe.map nutritionMetricsToNutritionMetricsResults
-                    |> Maybe.withDefault emptyNutritionMetricsResults
+                , resolveDataSetForMonth currentDate index encountersByMonth
+                    |> generatePrevalenceNutritionMetricsResults
                 )
             )
         |> viewNutritionMetricsResultsTable language currentDate
@@ -740,6 +743,44 @@ viewMonthlyIncidenceTable language currentDate encountersByMonth =
                 , generateIncidenceNutritionMetricsResults
                     (resolveDataSetForMonth currentDate index encountersByMonth)
                     (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewQuarterlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewQuarterlyIncidenceTable language currentDate encountersByMonth =
+    let
+        dataSetsByQuarter =
+            List.range 1 5
+                |> List.map
+                    (\index ->
+                        resolveDataSetForQuarter currentDate index encountersByMonth
+                    )
+    in
+    List.range 1 4
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Months (-3 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    quarter =
+                        Date.quarter selectedDate
+
+                    dataSet =
+                        List.Extra.getAt (index - 1) dataSetsByQuarter
+                            |> Maybe.withDefault emptyNutritionMetrics
+
+                    previousDataSet =
+                        List.Extra.getAt (index - 1) dataSetsByQuarter
+                            |> Maybe.withDefault emptyNutritionMetrics
+                in
+                ( Translate.QuarterYear quarter year
+                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
         |> viewNutritionMetricsResultsTable language currentDate
@@ -779,141 +820,4 @@ viewNutritionMetricsResultsTable language currentDate data =
             |> viewRow Translate.UnderweightModerate
         , List.map (Tuple.second >> .underweightSevere) data
             |> viewRow Translate.UnderweightSevere
-        ]
-
-
-generateIncidenceNutritionMetricsResults : NutritionMetrics -> NutritionMetrics -> NutritionMetricsResults
-generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetric =
-    let
-        calcualtePercentage nominator total =
-            if Set.isEmpty total then
-                0
-
-            else
-                (toFloat (Set.size nominator) / toFloat (Set.size total)) * 100
-
-        -- STUNTING
-        previousPeriodStuntingModerateSevere =
-            previousPeriodMetric.stuntingModerate
-                ++ previousPeriodMetric.stuntingSevere
-                |> unique
-
-        previousPeriodStuntingTotal =
-            previousPeriodStuntingModerateSevere
-                ++ previousPeriodMetric.stuntingNormal
-                |> unique
-                |> Set.fromList
-
-        stuntingModerateTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.stuntingModerate) previousPeriodStuntingTotal
-
-        stuntingModerateNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.stuntingModerate) (Set.fromList previousPeriodStuntingModerateSevere)
-
-        stuntingSevereTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.stuntingSevere) previousPeriodStuntingTotal
-
-        stuntingSevereNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.stuntingSevere) (Set.fromList previousPeriodMetric.stuntingSevere)
-
-        -- WASTING
-        previousPeriodWastingModerateSevere =
-            previousPeriodMetric.wastingModerate
-                ++ previousPeriodMetric.wastingSevere
-                |> unique
-
-        previousPeriodWastingTotal =
-            previousPeriodWastingModerateSevere
-                ++ previousPeriodMetric.wastingNormal
-                |> unique
-                |> Set.fromList
-
-        wastingModerateTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.wastingModerate) previousPeriodWastingTotal
-
-        wastingModerateNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.wastingModerate) (Set.fromList previousPeriodWastingModerateSevere)
-
-        wastingSevereTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.wastingSevere) previousPeriodWastingTotal
-
-        wastingSevereNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.wastingSevere) (Set.fromList previousPeriodMetric.wastingSevere)
-
-        -- UNDERWEIGHT
-        previousPeriodUnderweightModerateSevere =
-            previousPeriodMetric.underweightModerate
-                ++ previousPeriodMetric.underweightSevere
-                |> unique
-
-        previousPeriodUnderweightTotal =
-            previousPeriodUnderweightModerateSevere
-                ++ previousPeriodMetric.underweightNormal
-                |> unique
-                |> Set.fromList
-
-        underweightModerateTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.underweightModerate) previousPeriodUnderweightTotal
-
-        underweightModerateNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.underweightModerate) (Set.fromList previousPeriodUnderweightModerateSevere)
-
-        underweightSevereTestedInPreviousPeriod =
-            Set.intersect (Set.fromList currentPeriodMetric.underweightSevere) previousPeriodUnderweightTotal
-
-        underweightSevereNotIdentifiedInPreviousPeriod =
-            Set.diff (Set.fromList currentPeriodMetric.underweightSevere) (Set.fromList previousPeriodMetric.underweightSevere)
-    in
-    { stuntingModerate =
-        calcualtePercentage
-            (Set.intersect stuntingModerateTestedInPreviousPeriod stuntingModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodStuntingTotal
-    , stuntingSevere =
-        calcualtePercentage
-            (Set.intersect stuntingSevereTestedInPreviousPeriod stuntingSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodStuntingTotal
-    , wastingModerate =
-        calcualtePercentage
-            (Set.intersect wastingModerateTestedInPreviousPeriod wastingModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodWastingTotal
-    , wastingSevere =
-        calcualtePercentage
-            (Set.intersect wastingSevereTestedInPreviousPeriod wastingSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodWastingTotal
-    , underweightModerate =
-        calcualtePercentage
-            (Set.intersect underweightModerateTestedInPreviousPeriod underweightModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodUnderweightTotal
-    , underweightSevere =
-        calcualtePercentage
-            (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodUnderweightTotal
-    }
-
-
-resolveDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
-resolveDataSetForMonth currentDate monthIndex encountersByMonth =
-    let
-        selectedDate =
-            Date.add Months (-1 * monthIndex) currentDate
-
-        year =
-            Date.year selectedDate
-
-        month =
-            Date.month selectedDate
-
-        monthNumber =
-            Date.monthNumber selectedDate
-    in
-    Dict.get ( year, monthNumber ) encountersByMonth
-        |> Maybe.withDefault emptyNutritionMetrics
-
-
-resolvePreviousDataSetForMonth : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetrics -> NutritionMetrics
-resolvePreviousDataSetForMonth currentDate monthIndex encountersByMonth =
-    sumNutritionMetrics
-        [ resolveDataSetForMonth currentDate (monthIndex + 1) encountersByMonth
-        , resolveDataSetForMonth currentDate (monthIndex + 2) encountersByMonth
-        , resolveDataSetForMonth currentDate (monthIndex + 3) encountersByMonth
         ]
