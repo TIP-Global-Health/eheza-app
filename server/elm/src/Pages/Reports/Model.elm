@@ -62,7 +62,7 @@ emptyNutritionMetrics =
     }
 
 
-type alias NutritionPrevalence =
+type alias NutritionMetricsResults =
     { stuntingModerate : Float
     , stuntingSevere : Float
     , wastingModerate : Float
@@ -72,8 +72,8 @@ type alias NutritionPrevalence =
     }
 
 
-emptyNutritionPrevalence : NutritionPrevalence
-emptyNutritionPrevalence =
+emptyNutritionMetricsResults : NutritionMetricsResults
+emptyNutritionMetricsResults =
     { stuntingModerate = 0
     , stuntingSevere = 0
     , wastingModerate = 0

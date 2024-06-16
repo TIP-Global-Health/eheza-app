@@ -9072,6 +9072,10 @@ var $author$project$Translate$translationSet = function (transId) {
 				return $author$project$Translate$translateHttpError(val);
 			case 'Impacted':
 				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByMonthOneVisitOrMore':
+				return {english: 'Incidence by month, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'IncidenceByMonthTwoVisitsOrMore':
+				return {english: 'Incidence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Individual':
 				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
@@ -11955,6 +11959,8 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Translate$IncidenceByMonthOneVisitOrMore = {$: 'IncidenceByMonthOneVisitOrMore'};
+var $author$project$Translate$IncidenceByMonthTwoVisitsOrMore = {$: 'IncidenceByMonthTwoVisitsOrMore'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
 var $pzp1997$assoc_list$AssocList$map = F2(
@@ -11976,40 +11982,764 @@ var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
 	});
+var $elm$core$Set$Set_elm_builtin = function (a) {
+	return {$: 'Set_elm_builtin', a: a};
+};
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$Black = {$: 'Black'};
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: 'RBEmpty_elm_builtin'};
+var $elm$core$Dict$Red = {$: 'Red'};
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Red')) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) && (left.d.$ === 'RBNode_elm_builtin')) && (left.d.a.$ === 'Red')) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Red,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.e.d.$ === 'RBNode_elm_builtin') && (dict.e.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) && (dict.e.$ === 'RBNode_elm_builtin')) {
+		if ((dict.d.d.$ === 'RBNode_elm_builtin') && (dict.d.d.a.$ === 'Red')) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				$elm$core$Dict$Red,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr.$ === 'Black') {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					$elm$core$Dict$Black,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Red')) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === 'RBNode_elm_builtin') && (right.a.$ === 'Black')) {
+					if (right.d.$ === 'RBNode_elm_builtin') {
+						if (right.d.a.$ === 'Black') {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === 'RBNode_elm_builtin') && (dict.d.$ === 'RBNode_elm_builtin')) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor.$ === 'Black') {
+			if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === 'RBNode_elm_builtin') {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === 'RBNode_elm_builtin') && (left.a.$ === 'Black')) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === 'RBNode_elm_builtin') && (lLeft.a.$ === 'Red')) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === 'RBNode_elm_builtin') {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === 'RBNode_elm_builtin') {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === 'RBNode_elm_builtin') {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$diff = F2(
+	function (t1, t2) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, t) {
+					return A2($elm$core$Dict$remove, k, t);
+				}),
+			t1,
+			t2);
+	});
+var $elm$core$Set$diff = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$diff, dict1, dict2));
+	});
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $elm$core$Set$empty = $elm$core$Set$Set_elm_builtin($elm$core$Dict$empty);
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Red, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1.$) {
+				case 'LT':
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 'EQ':
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === 'RBNode_elm_builtin') && (_v0.a.$ === 'Red')) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, $elm$core$Dict$Black, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A3($elm$core$Dict$insert, key, _Utils_Tuple0, dict));
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $elm$core$Dict$filter = F2(
+	function (isGood, dict) {
+		return A3(
+			$elm$core$Dict$foldl,
+			F3(
+				function (k, v, d) {
+					return A2(isGood, k, v) ? A3($elm$core$Dict$insert, k, v, d) : d;
+				}),
+			$elm$core$Dict$empty,
+			dict);
+	});
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1.$) {
+					case 'LT':
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 'EQ':
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (_v0.$ === 'Just') {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Dict$intersect = F2(
+	function (t1, t2) {
+		return A2(
+			$elm$core$Dict$filter,
+			F2(
+				function (k, _v0) {
+					return A2($elm$core$Dict$member, k, t2);
+				}),
+			t1);
+	});
+var $elm$core$Set$intersect = F2(
+	function (_v0, _v1) {
+		var dict1 = _v0.a;
+		var dict2 = _v1.a;
+		return $elm$core$Set$Set_elm_builtin(
+			A2($elm$core$Dict$intersect, dict1, dict2));
+	});
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Set$isEmpty = function (_v0) {
+	var dict = _v0.a;
+	return $elm$core$Dict$isEmpty(dict);
+};
+var $elm$core$Dict$sizeHelp = F2(
+	function (n, dict) {
+		sizeHelp:
+		while (true) {
+			if (dict.$ === 'RBEmpty_elm_builtin') {
+				return n;
+			} else {
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$n = A2($elm$core$Dict$sizeHelp, n + 1, right),
+					$temp$dict = left;
+				n = $temp$n;
+				dict = $temp$dict;
+				continue sizeHelp;
+			}
+		}
+	});
+var $elm$core$Dict$size = function (dict) {
+	return A2($elm$core$Dict$sizeHelp, 0, dict);
+};
+var $elm$core$Set$size = function (_v0) {
+	var dict = _v0.a;
+	return $elm$core$Dict$size(dict);
+};
+var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
+var $author$project$Pages$Reports$View$generateIncidenceNutritionMetricsResults = F2(
+	function (currentPeriodMetric, previousPeriodMetric) {
+		var wastingSevereNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.wastingSevere),
+			$elm$core$Set$fromList(previousPeriodMetric.wastingSevere));
+		var underweightSevereNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.underweightSevere),
+			$elm$core$Set$fromList(previousPeriodMetric.underweightSevere));
+		var stuntingSevereNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.stuntingSevere),
+			$elm$core$Set$fromList(previousPeriodMetric.stuntingSevere));
+		var previousPeriodWastingModerateSevere = $author$project$Pages$Utils$unique(
+			_Utils_ap(previousPeriodMetric.wastingModerate, previousPeriodMetric.wastingSevere));
+		var previousPeriodWastingTotal = $elm$core$Set$fromList(
+			$author$project$Pages$Utils$unique(
+				_Utils_ap(previousPeriodWastingModerateSevere, previousPeriodMetric.wastingNormal)));
+		var wastingModerateTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.wastingModerate),
+			previousPeriodWastingTotal);
+		var wastingSevereTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.wastingSevere),
+			previousPeriodWastingTotal);
+		var wastingModerateNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.wastingModerate),
+			$elm$core$Set$fromList(previousPeriodWastingModerateSevere));
+		var previousPeriodUnderweightModerateSevere = $author$project$Pages$Utils$unique(
+			_Utils_ap(previousPeriodMetric.underweightModerate, previousPeriodMetric.underweightSevere));
+		var previousPeriodUnderweightTotal = $elm$core$Set$fromList(
+			$author$project$Pages$Utils$unique(
+				_Utils_ap(previousPeriodUnderweightModerateSevere, previousPeriodMetric.underweightNormal)));
+		var underweightModerateTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.underweightModerate),
+			previousPeriodUnderweightTotal);
+		var underweightSevereTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.underweightSevere),
+			previousPeriodUnderweightTotal);
+		var underweightModerateNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.underweightModerate),
+			$elm$core$Set$fromList(previousPeriodUnderweightModerateSevere));
+		var previousPeriodStuntingModerateSevere = $author$project$Pages$Utils$unique(
+			_Utils_ap(previousPeriodMetric.stuntingModerate, previousPeriodMetric.stuntingSevere));
+		var previousPeriodStuntingTotal = $elm$core$Set$fromList(
+			$author$project$Pages$Utils$unique(
+				_Utils_ap(previousPeriodStuntingModerateSevere, previousPeriodMetric.stuntingNormal)));
+		var stuntingModerateTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
+			previousPeriodStuntingTotal);
+		var stuntingSevereTestedInPreviousPeriod = A2(
+			$elm$core$Set$intersect,
+			$elm$core$Set$fromList(currentPeriodMetric.stuntingSevere),
+			previousPeriodStuntingTotal);
+		var stuntingModerateNotIdentifiedInPreviousPeriod = A2(
+			$elm$core$Set$diff,
+			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
+			$elm$core$Set$fromList(previousPeriodStuntingModerateSevere));
+		var calcualtePercentage = F2(
+			function (nominator, total) {
+				return $elm$core$Set$isEmpty(total) ? 0 : (($elm$core$Set$size(nominator) / $elm$core$Set$size(total)) * 100);
+			});
+		return {
+			stuntingModerate: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, stuntingModerateTestedInPreviousPeriod, stuntingModerateNotIdentifiedInPreviousPeriod),
+				previousPeriodStuntingTotal),
+			stuntingSevere: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, stuntingSevereTestedInPreviousPeriod, stuntingSevereNotIdentifiedInPreviousPeriod),
+				previousPeriodStuntingTotal),
+			underweightModerate: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, underweightModerateTestedInPreviousPeriod, underweightModerateNotIdentifiedInPreviousPeriod),
+				previousPeriodUnderweightTotal),
+			underweightSevere: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, underweightSevereTestedInPreviousPeriod, underweightSevereNotIdentifiedInPreviousPeriod),
+				previousPeriodUnderweightTotal),
+			wastingModerate: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, wastingModerateTestedInPreviousPeriod, wastingModerateNotIdentifiedInPreviousPeriod),
+				previousPeriodWastingTotal),
+			wastingSevere: A2(
+				calcualtePercentage,
+				A2($elm$core$Set$intersect, wastingSevereTestedInPreviousPeriod, wastingSevereNotIdentifiedInPreviousPeriod),
+				previousPeriodWastingTotal)
+		};
+	});
+var $author$project$Pages$Reports$View$resolveDataSetForMonth = F3(
+	function (currentDate, monthIndex, encountersByMonth) {
+		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * monthIndex, currentDate);
+		var year = $justinmimbs$date$Date$year(selectedDate);
+		var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
+		var month = $justinmimbs$date$Date$month(selectedDate);
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Pages$Reports$Model$emptyNutritionMetrics,
+			A2(
+				$pzp1997$assoc_list$AssocList$get,
+				_Utils_Tuple2(year, monthNumber),
+				encountersByMonth));
+	});
+var $author$project$Pages$Reports$View$resolvePreviousDataSetForMonth = F3(
+	function (currentDate, monthIndex, encountersByMonth) {
+		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(
+			_List_fromArray(
+				[
+					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 1, encountersByMonth),
+					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 2, encountersByMonth),
+					A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, monthIndex + 3, encountersByMonth)
+				]));
+	});
 var $author$project$Translate$StuntingModerate = {$: 'StuntingModerate'};
 var $author$project$Translate$StuntingSevere = {$: 'StuntingSevere'};
 var $author$project$Translate$UnderweightModerate = {$: 'UnderweightModerate'};
 var $author$project$Translate$UnderweightSevere = {$: 'UnderweightSevere'};
 var $author$project$Translate$WastingModerate = {$: 'WastingModerate'};
 var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
-var $author$project$Pages$Reports$Model$emptyNutritionPrevalence = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
-var $author$project$Pages$Utils$unique = A2($elm$core$Basics$composeR, $Gizra$elm_all_set$EverySet$fromList, $Gizra$elm_all_set$EverySet$toList);
-var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionPrevalence = function (metrics) {
-	var wastingTotal = $author$project$Pages$Utils$unique(
-		_Utils_ap(
-			metrics.wastingModerate,
-			_Utils_ap(metrics.wastingSevere, metrics.wastingNormal)));
-	var underweightTotal = $author$project$Pages$Utils$unique(
-		_Utils_ap(
-			metrics.underweightModerate,
-			_Utils_ap(metrics.underweightSevere, metrics.underweightNormal)));
-	var stuntingTotal = $author$project$Pages$Utils$unique(
-		_Utils_ap(
-			metrics.stuntingModerate,
-			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
-	var calcualtePercentage = F2(
-		function (nominator, total) {
-			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
-		});
-	return {
-		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
-		stuntingSevere: A2(calcualtePercentage, metrics.stuntingSevere, stuntingTotal),
-		underweightModerate: A2(calcualtePercentage, metrics.underweightModerate, underweightTotal),
-		underweightSevere: A2(calcualtePercentage, metrics.underweightSevere, underweightTotal),
-		wastingModerate: A2(calcualtePercentage, metrics.wastingModerate, wastingTotal),
-		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
-	};
-};
 var $myrho$elm_round$Round$addSign = F2(
 	function (signed, str) {
 		var isNotZero = A2(
@@ -12223,8 +12953,8 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
-	function (language, currentDate, encountersByMonth) {
+var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
+	function (language, currentDate, data) {
 		var viewRow = function (label) {
 			return A2(
 				$elm$core$Basics$composeR,
@@ -12265,27 +12995,6 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 								$elm$html$Html$Attributes$class('row')
 							]))));
 		};
-		var monthlyPrevalenceData = A2(
-			$elm$core$List$map,
-			function (index) {
-				var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, currentDate);
-				var year = $justinmimbs$date$Date$year(selectedDate);
-				var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
-				var month = $justinmimbs$date$Date$month(selectedDate);
-				return _Utils_Tuple2(
-					A3($author$project$Translate$MonthYear, month, year, true),
-					A2(
-						$elm$core$Maybe$withDefault,
-						$author$project$Pages$Reports$Model$emptyNutritionPrevalence,
-						A2(
-							$elm$core$Maybe$map,
-							$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionPrevalence,
-							A2(
-								$pzp1997$assoc_list$AssocList$get,
-								_Utils_Tuple2(year, monthNumber),
-								encountersByMonth))));
-			},
-			A2($elm$core$List$range, 1, 12));
 		var headerRow = A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12323,7 +13032,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 									A2($author$project$Translate$translate, language, label))
 								]));
 					},
-					monthlyPrevalenceData)));
+					data)));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12344,7 +13053,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.stuntingModerate;
 							}),
-						monthlyPrevalenceData)),
+						data)),
 					A2(
 					viewRow,
 					$author$project$Translate$StuntingSevere,
@@ -12356,7 +13065,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.stuntingSevere;
 							}),
-						monthlyPrevalenceData)),
+						data)),
 					A2(
 					viewRow,
 					$author$project$Translate$WastingModerate,
@@ -12368,7 +13077,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.wastingModerate;
 							}),
-						monthlyPrevalenceData)),
+						data)),
 					A2(
 					viewRow,
 					$author$project$Translate$WastingSevere,
@@ -12380,7 +13089,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.wastingSevere;
 							}),
-						monthlyPrevalenceData)),
+						data)),
 					A2(
 					viewRow,
 					$author$project$Translate$UnderweightModerate,
@@ -12392,7 +13101,7 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.underweightModerate;
 							}),
-						monthlyPrevalenceData)),
+						data)),
 					A2(
 					viewRow,
 					$author$project$Translate$UnderweightSevere,
@@ -12404,8 +13113,84 @@ var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
 							function ($) {
 								return $.underweightSevere;
 							}),
-						monthlyPrevalenceData))
+						data))
 				]));
+	});
+var $author$project$Pages$Reports$View$viewMonthlyIncidenceTable = F3(
+	function (language, currentDate, encountersByMonth) {
+		return A3(
+			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			language,
+			currentDate,
+			A2(
+				$elm$core$List$map,
+				function (index) {
+					var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, currentDate);
+					var year = $justinmimbs$date$Date$year(selectedDate);
+					var month = $justinmimbs$date$Date$month(selectedDate);
+					return _Utils_Tuple2(
+						A3($author$project$Translate$MonthYear, month, year, true),
+						A2(
+							$author$project$Pages$Reports$View$generateIncidenceNutritionMetricsResults,
+							A3($author$project$Pages$Reports$View$resolveDataSetForMonth, currentDate, index, encountersByMonth),
+							A3($author$project$Pages$Reports$View$resolvePreviousDataSetForMonth, currentDate, index, encountersByMonth)));
+				},
+				A2($elm$core$List$range, 1, 12)));
+	});
+var $author$project$Pages$Reports$Model$emptyNutritionMetricsResults = {stuntingModerate: 0, stuntingSevere: 0, underweightModerate: 0, underweightSevere: 0, wastingModerate: 0, wastingSevere: 0};
+var $author$project$Pages$Reports$Utils$nutritionMetricsToNutritionMetricsResults = function (metrics) {
+	var wastingTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.wastingModerate,
+			_Utils_ap(metrics.wastingSevere, metrics.wastingNormal)));
+	var underweightTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.underweightModerate,
+			_Utils_ap(metrics.underweightSevere, metrics.underweightNormal)));
+	var stuntingTotal = $author$project$Pages$Utils$unique(
+		_Utils_ap(
+			metrics.stuntingModerate,
+			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
+	var calcualtePercentage = F2(
+		function (nominator, total) {
+			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
+		});
+	return {
+		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
+		stuntingSevere: A2(calcualtePercentage, metrics.stuntingSevere, stuntingTotal),
+		underweightModerate: A2(calcualtePercentage, metrics.underweightModerate, underweightTotal),
+		underweightSevere: A2(calcualtePercentage, metrics.underweightSevere, underweightTotal),
+		wastingModerate: A2(calcualtePercentage, metrics.wastingModerate, wastingTotal),
+		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
+	};
+};
+var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
+	function (language, currentDate, encountersByMonth) {
+		return A3(
+			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			language,
+			currentDate,
+			A2(
+				$elm$core$List$map,
+				function (index) {
+					var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * index, currentDate);
+					var year = $justinmimbs$date$Date$year(selectedDate);
+					var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
+					var month = $justinmimbs$date$Date$month(selectedDate);
+					return _Utils_Tuple2(
+						A3($author$project$Translate$MonthYear, month, year, true),
+						A2(
+							$elm$core$Maybe$withDefault,
+							$author$project$Pages$Reports$Model$emptyNutritionMetricsResults,
+							A2(
+								$elm$core$Maybe$map,
+								$author$project$Pages$Reports$Utils$nutritionMetricsToNutritionMetricsResults,
+								A2(
+									$pzp1997$assoc_list$AssocList$get,
+									_Utils_Tuple2(year, monthNumber),
+									encountersByMonth))));
+				},
+				A2($elm$core$List$range, 1, 12)));
 	});
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, currentDate, reportData) {
@@ -12486,7 +13271,11 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
 						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, data.encountersByMonth),
 						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, encountersByMonthForImpacted)
+						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, encountersByMonthForImpacted),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthOneVisitOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, data.encountersByMonth),
+						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthTwoVisitsOrMore, ':', 'section heading'),
+						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
 					]));
 		} else {
 			return A2(

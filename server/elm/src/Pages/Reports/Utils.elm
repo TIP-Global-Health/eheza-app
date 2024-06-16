@@ -118,8 +118,8 @@ nutritionEncounterDataToNutritionMetrics personId =
         >> Maybe.withDefault emptyNutritionMetrics
 
 
-nutritionMetricsToNutritionPrevalence : NutritionMetrics -> NutritionPrevalence
-nutritionMetricsToNutritionPrevalence metrics =
+nutritionMetricsToNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
+nutritionMetricsToNutritionMetricsResults metrics =
     let
         calcualtePercentage nominator total =
             if List.isEmpty total then

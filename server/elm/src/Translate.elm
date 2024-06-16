@@ -74,6 +74,8 @@ type TranslationId
     | HomeVisit
     | HttpError StringIdHttpError
     | Impacted
+    | IncidenceByMonthOneVisitOrMore
+    | IncidenceByMonthTwoVisitsOrMore
     | Individual
     | InfrastructureEnvironmentWash
     | Male
@@ -274,6 +276,18 @@ translationSet transId =
 
         Impacted ->
             { english = "Impacted (2+ visits)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByMonthOneVisitOrMore ->
+            { english = "Incidence by month, one visit or more"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        IncidenceByMonthTwoVisitsOrMore ->
+            { english = "Incidence by month, two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
