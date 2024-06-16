@@ -776,7 +776,7 @@ viewQuarterlyIncidenceTable language currentDate encountersByMonth =
                             |> Maybe.withDefault emptyNutritionMetrics
 
                     previousDataSet =
-                        List.Extra.getAt (index - 1) dataSetsByQuarter
+                        List.Extra.getAt index dataSetsByQuarter
                             |> Maybe.withDefault emptyNutritionMetrics
                 in
                 ( Translate.QuarterYear quarter year

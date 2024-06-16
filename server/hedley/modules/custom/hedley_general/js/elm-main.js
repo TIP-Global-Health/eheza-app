@@ -13298,7 +13298,7 @@ var $author$project$Pages$Reports$View$viewQuarterlyIncidenceTable = F3(
 					var previousDataSet = A2(
 						$elm$core$Maybe$withDefault,
 						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
-						A2($elm_community$list_extra$List$Extra$getAt, index - 1, dataSetsByQuarter));
+						A2($elm_community$list_extra$List$Extra$getAt, index, dataSetsByQuarter));
 					var dataSet = A2(
 						$elm$core$Maybe$withDefault,
 						$author$project$Pages$Reports$Model$emptyNutritionMetrics,
