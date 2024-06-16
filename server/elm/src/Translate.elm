@@ -622,7 +622,7 @@ translationSet transId =
             }
 
         QuarterYear quarter year ->
-            { english = String.fromInt year ++ "Q" ++ String.fromInt quarter
+            { english = String.fromInt year ++ " Q" ++ String.fromInt quarter
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

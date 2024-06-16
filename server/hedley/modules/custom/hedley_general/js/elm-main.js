@@ -9299,7 +9299,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				var quarter = transId.a;
 				var year = transId.b;
 				return {
-					english: $elm$core$String$fromInt(year) + ('Q' + $elm$core$String$fromInt(quarter)),
+					english: $elm$core$String$fromInt(year) + (' Q' + $elm$core$String$fromInt(quarter)),
 					kinyarwanda: $elm$core$Maybe$Nothing,
 					kirundi: $elm$core$Maybe$Nothing
 				};
@@ -13254,15 +13254,15 @@ var $author$project$Pages$Reports$Utils$quarterToMonths = function (quarter) {
 		},
 		A2($elm$core$List$range, 1, 3));
 };
-var $author$project$Pages$Reports$Utils$resolvePreviousQuarter = function (date) {
+var $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo = function (date) {
 	var year = $justinmimbs$date$Date$year(date);
 	var quarter = $justinmimbs$date$Date$quarter(date);
 	return (quarter === 1) ? _Utils_Tuple2(year - 1, 4) : _Utils_Tuple2(year, quarter - 1);
 };
 var $author$project$Pages$Reports$Utils$resolveDataSetForQuarter = F3(
 	function (date, quarterIndex, encountersByMonth) {
-		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * quarterIndex, date);
-		var _v0 = $author$project$Pages$Reports$Utils$resolvePreviousQuarter(selectedDate);
+		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-3) * (quarterIndex - 1), date);
+		var _v0 = $author$project$Pages$Reports$Utils$resolvePreviousQuarterDateInfo(selectedDate);
 		var year = _v0.a;
 		var quarter = _v0.b;
 		return $author$project$Pages$Reports$Utils$sumNutritionMetrics(

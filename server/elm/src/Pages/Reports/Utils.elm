@@ -269,10 +269,10 @@ resolveDataSetForQuarter : NominalDate -> Int -> Dict ( Int, Int ) NutritionMetr
 resolveDataSetForQuarter date quarterIndex encountersByMonth =
     let
         selectedDate =
-            Date.add Months (-3 * quarterIndex) date
+            Date.add Months (-3 * (quarterIndex - 1)) date
 
         ( year, quarter ) =
-            resolvePreviousQuarter selectedDate
+            resolvePreviousQuarterDateInfo selectedDate
     in
     quarterToMonths quarter
         |> List.map
@@ -283,8 +283,8 @@ resolveDataSetForQuarter date quarterIndex encountersByMonth =
         |> sumNutritionMetrics
 
 
-resolvePreviousQuarter : NominalDate -> ( Int, Int )
-resolvePreviousQuarter date =
+resolvePreviousQuarterDateInfo : NominalDate -> ( Int, Int )
+resolvePreviousQuarterDateInfo date =
     let
         year =
             Date.year date
