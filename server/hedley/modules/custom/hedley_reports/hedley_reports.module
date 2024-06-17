@@ -334,97 +334,97 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
   $measurements = node_load_multiple($measurements_ids);
   foreach ($measurements as $measurement) {
-     switch($measurement->type) {
-       case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
-           }
-         }
-         break;
+    switch ($measurement->type) {
+      case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
 
-       case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
-           }
-         }
-         break;
+      case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
 
-       case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-             $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-           }
-         }
-         break;
+      case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
 
-       case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-             $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-           }
-         }
-         break;
+      case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
 
-       case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
-         $sessions_ids[] = $encounter_id;
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
-           }
-         }
-         break;
+      case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
 
-       case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
-         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
-         $sessions_ids[] = $encounter_id;
-         $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
-         $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
-         if (!empty($zscore_age)) {
-           if (empty($zscores_by_encounter[$encounter_id])) {
-             $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
-           }
-           else {
-             $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
-             $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
-           }
-         }
-         break;
+      case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
 
-       default:
-         $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
-         $sessions_ids[] = $encounter_id;
-     }
+      default:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+    }
   }
 
   $encounters_data = [];
@@ -449,7 +449,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       switch ($participant_type) {
         case 'acute-illness':
           $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
-          $encounter_data ="$encounter_date $encounter_type";
+          $encounter_data = "$encounter_date $encounter_type";
           break;
 
         case 'antenatal':
@@ -543,9 +543,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
  *   A string with the stunting, wasting, and underweight metrics separated
  *   by commas. If the input array is empty, returns ',,'.
  */
-function hedley_reports_nutrition_metrics_to_string($values) {
+function hedley_reports_nutrition_metrics_to_string(array $values) {
   if (empty($values)) {
-   return ',,';
+    return ',,';
   }
 
   $stunting = !empty($values['s']) ? $values['s'] : '';
