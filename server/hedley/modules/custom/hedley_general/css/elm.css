@@ -271,7 +271,7 @@ body.admin-menu #page-wrapper #header {
 .page-content .inputs .report .table .row {
   border-bottom: 1px solid white;
   display: flex;
-  justify-content: space-evenly;
+  justify-content: space-between;
   margin-left: 20px;
   margin-right: 20px;
   text-align: left;
