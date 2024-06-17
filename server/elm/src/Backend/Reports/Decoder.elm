@@ -64,7 +64,7 @@ decodePatientData =
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
         |> optionalAt [ "individual", "antenatal" ] (nullable (list (list decodePrenatalEncounterData))) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeHomeVisitEncounterData))) Nothing
-        |> optionalAt [ "individual", "well-chil" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "nutrition" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "group_nutrition", "pmtct" ] (nullable (list decodeNutritionEncounterData)) Nothing
         |> optionalAt [ "group_nutrition", "fbf" ] (nullable (list decodeNutritionEncounterData)) Nothing

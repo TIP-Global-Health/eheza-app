@@ -7739,7 +7739,7 @@ var $author$project$Backend$Reports$Decoder$decodePatientData = A4(
 						A4(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
 							_List_fromArray(
-								['individual', 'well-chil']),
+								['individual', 'well-child']),
 							$elm$json$Json$Decode$nullable(
 								$elm$json$Json$Decode$list(
 									$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionEncounterData))),
