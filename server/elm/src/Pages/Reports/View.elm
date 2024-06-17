@@ -746,6 +746,8 @@ viewMonthlyIncidenceTable language currentDate encountersByMonth =
                 ( Translate.MonthYear month year True
                 , generateIncidenceNutritionMetricsResults
                     (resolveDataSetForMonth currentDate index encountersByMonth)
+                    -- Per definition, for month, previous data set contains
+                    -- data of 3 months that came prior.
                     (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
                 )
             )
@@ -756,12 +758,17 @@ viewQuarterlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) Nutri
 viewQuarterlyIncidenceTable language currentDate encountersByMonth =
     let
         dataSetsByQuarter =
+            -- We show data of previous 4 quarters. So, if at Q2-2024, we show
+            -- data for Q1-2024, Q4-2023, Q3-2023 and Q2-2023  We calculate set
+            -- for 5 quarters (so claculating Q1-2023 as well), as for incidence
+            -- each quarter requires a set of previous quarters.
             List.range 1 5
                 |> List.map
                     (\index ->
                         resolveDataSetForQuarter currentDate index encountersByMonth
                     )
     in
+    -- Showing data of previous 4 quarters.
     List.range 1 4
         |> List.map
             (\index ->
@@ -794,12 +801,16 @@ viewYearlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) Nutritio
 viewYearlyIncidenceTable language currentDate encountersByMonth =
     let
         dataSetsByYear =
+            -- We show data of previous 2 years. So, if at 2024, we show
+            -- data for 2023 and 2022. We calculate set for 3 years (so claculating
+            -- 2021 as well), as for incidence each year requires a set of previous year.
             List.range 1 3
                 |> List.map
                     (\index ->
                         resolveDataSetForYear currentDate index encountersByMonth
                     )
     in
+    -- Showing data of previous 2 years.
     List.range 1 2
         |> List.map
             (\index ->
