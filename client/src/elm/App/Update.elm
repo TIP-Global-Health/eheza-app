@@ -882,8 +882,7 @@ update msg model =
                         MsgPageClinicalProgressReport id subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
-                                    data.clinicalProgressReportPages
-                                        |> Dict.get id
+                                    Dict.get id data.clinicalProgressReportPages
                                         |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
                                         |> Pages.Prenatal.ProgressReport.Update.update subMsg
                             in
@@ -1262,6 +1261,24 @@ update msg model =
                 )
                 model
 
+        UpdateNurseData nurse ->
+            updateConfigured
+                (\configured ->
+                    let
+                        updatedLoggedIn =
+                            RemoteData.map
+                                (\loggedIn ->
+                                    { loggedIn | nurse = nurse }
+                                )
+                                configured.loggedIn
+                    in
+                    ( { configured | loggedIn = updatedLoggedIn }
+                    , Cmd.none
+                    , []
+                    )
+                )
+                model
+
         CheckDataWanted ->
             -- Note that we will be called repeatedly. So, it's vitally important that
             -- the `fetch` implementations use a `WebData`-like strategy to indicate
@@ -1426,7 +1443,7 @@ handleRevision model revision =
             Maybe.andThen
                 (\( _, loggedIn ) ->
                     if Tuple.first loggedIn.nurse == uuid then
-                        Just (SetLoggedIn (Success ( uuid, data )))
+                        Just (UpdateNurseData ( uuid, data ))
 
                     else
                         Nothing
