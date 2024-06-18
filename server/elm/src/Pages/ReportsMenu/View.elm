@@ -53,7 +53,7 @@ viewMenu language data model =
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
                 "select-input"
-                |> wrapSelectListInput language Translate.ViewMode False
+                |> wrapSelectListInput language Translate.Scope False
 
         ( derivedInputs, actionButton_ ) =
             Maybe.map
@@ -111,7 +111,7 @@ viewMenu language data model =
                 actionButton_
     in
     div [ class "page-content" ]
-        [ viewCustomLabel language Translate.SelectViewMode ":" "header"
+        [ viewCustomLabel language Translate.SelectScope ":" "header"
         , div [ class "inputs" ] <|
             populationSelectionInput
                 :: derivedInputs

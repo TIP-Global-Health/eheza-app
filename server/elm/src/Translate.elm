@@ -94,6 +94,7 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
+    | NewScope
     | NewSelection
     | NutritionBehavior
     | NutritionTotal
@@ -111,9 +112,11 @@ type TranslationId
     | ResolveMonth Bool Month
     | Result
     | Save
+    | Scope
     | Sector
     | SelectedEntity SelectedEntity
     | SelectLimitDate
+    | SelectScope
     | SelectViewMode
     | Sorwathe
     | StandardPediatricVisit
@@ -555,6 +558,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+        NewScope ->
+            { english = "New Scope"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NewSelection ->
             { english = "New Selection"
             , kinyarwanda = Nothing
@@ -676,6 +685,12 @@ translationSet transId =
             , kirundi = Just "Emeza"
             }
 
+        Scope ->
+            { english = "Scope"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Sector ->
             { english = "Sector"
             , kinyarwanda = Nothing
@@ -698,6 +713,12 @@ translationSet transId =
 
         SelectLimitDate ->
             { english = "Limit date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        SelectScope ->
+            { english = "Please select desired scope"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -805,7 +826,7 @@ translationSet transId =
             }
 
         WideScopeNote ->
-            { english = "Note: Selected scope contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently."
+            { english = "Note: Selected scope possibly contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

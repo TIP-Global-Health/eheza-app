@@ -9269,6 +9269,8 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
+			case 'NewScope':
+				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
 				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionBehavior':
@@ -9328,6 +9330,8 @@ var $author$project$Translate$translationSet = function (transId) {
 					kinyarwanda: $elm$core$Maybe$Just('Kubika'),
 					kirundi: $elm$core$Maybe$Just('Emeza')
 				};
+			case 'Scope':
+				return {english: 'Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Sector':
 				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectedEntity':
@@ -9352,6 +9356,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'SelectLimitDate':
 				return {english: 'Limit date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'SelectScope':
+				return {english: 'Please select desired scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectViewMode':
 				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Sorwathe':
@@ -9387,7 +9393,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'WastingSevere':
 				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WideScopeNote':
-				return {english: 'Note: Selected scope contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Note: Selected scope possibly contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
 				var year = transId.a;
 				return {
@@ -9544,7 +9550,7 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $author$project$Translate$NewScope = {$: 'NewScope'};
 var $author$project$Translate$ReportType = function (a) {
 	return {$: 'ReportType', a: a};
 };
@@ -13644,7 +13650,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 									_List_fromArray(
 										[
 											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
 										]))
 								]))
 						]))
@@ -13865,7 +13871,8 @@ var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
 	return {$: 'PopulationSelectionOption', a: a};
 };
-var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
+var $author$project$Translate$Scope = {$: 'Scope'};
+var $author$project$Translate$SelectScope = {$: 'SelectScope'};
 var $author$project$Pages$ReportsMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$ReportsMenu$Model$SetGeoLocation = F2(
 	function (a, b) {
@@ -13877,7 +13884,6 @@ var $author$project$Pages$ReportsMenu$Model$SetHealthCenter = function (a) {
 var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a) {
 	return {$: 'SetPopulationSelection', a: a};
 };
-var $author$project$Translate$ViewMode = {$: 'ViewMode'};
 var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = function (selectionOption) {
 	switch (selectionOption.$) {
 		case 'SelectionOptionGlobal':
@@ -33478,7 +33484,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 		var populationSelectionInput = A4(
 			$author$project$Pages$Utils$wrapSelectListInput,
 			language,
-			$author$project$Translate$ViewMode,
+			$author$project$Translate$Scope,
 			false,
 			A7(
 				$author$project$Pages$Utils$viewSelectListInput,
@@ -33555,7 +33561,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 				]),
 			_List_fromArray(
 				[
-					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectViewMode, ':', 'header'),
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectScope, ':', 'header'),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -33593,6 +33599,7 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$ModePercentages = {$: 'ModePercentages'};
+var $author$project$Translate$NewSelection = {$: 'NewSelection'};
 var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
 	return {$: 'SetViewMode', a: a};
 };
@@ -35423,6 +35430,7 @@ var $author$project$Pages$Scoreboard$View$view = F4(
 			return $author$project$Gizra$Html$emptyNode;
 		}
 	});
+var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
 var $author$project$Pages$ScoreboardMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation = F2(
 	function (a, b) {

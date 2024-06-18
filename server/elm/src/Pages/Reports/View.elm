@@ -50,7 +50,7 @@ viewReportsData language currentDate data model =
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
                         [ button []
-                            [ text <| translate language Translate.NewSelection ]
+                            [ text <| translate language Translate.NewScope ]
                         ]
                     ]
                 ]
