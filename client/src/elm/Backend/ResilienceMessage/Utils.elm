@@ -123,7 +123,7 @@ generateEmptyMessagesByProgramStartDate : NominalDate -> NominalDate -> Dict Res
 generateEmptyMessagesByProgramStartDate currentDate programStartDate =
     Dict.filter
         (\_ message ->
-            Date.compare currentDate (Date.add Days (message.displayDay - 1) programStartDate) == LT
+            Date.compare (Date.add Days (message.displayDay - 1) programStartDate) currentDate == LT
         )
         emptyMessagesDict
 

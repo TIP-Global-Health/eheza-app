@@ -88,7 +88,6 @@ function hedley_resilience_field_default_field_bases() {
         'q12-2' => 'Question 12 - 2',
         'q12-3' => 'Question 12 - 3',
         'q12-4' => 'Question 12 - 4',
-
       ),
       'allowed_values_function' => '',
     ),
