@@ -254,6 +254,12 @@ body.admin-menu #page-wrapper #header {
   width: 58%;
 }
 
+.page-content .inputs .label.wide-scope {
+  margin-top: 30px;
+  color: #ffffff;
+  font-size: 25px;
+}
+
 .page-content .inputs .report .section.heading {
   font-size: 2rem;
   font-weight: bold;

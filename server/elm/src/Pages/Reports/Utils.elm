@@ -351,3 +351,8 @@ resolveDataSetForYear date yearIndex encountersByMonth =
         encountersByMonth
         |> Dict.values
         |> sumNutritionMetrics
+
+
+isWideScope : SelectedEntity -> Bool
+isWideScope selectedEntity =
+    List.member selectedEntity [ EntityGlobal, EntityProvince, EntityDistrict, EntityHealthCenter ]

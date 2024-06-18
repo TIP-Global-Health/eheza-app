@@ -161,7 +161,13 @@ viewReportsData language currentDate data model =
                     )
                     model.reportType
                     limitDateByReportType
-                    |> Maybe.withDefault emptyNode
+                    |> Maybe.withDefault
+                        (if isWideScope data.entityType then
+                            viewCustomLabel language Translate.WideScopeNote "" "label wide-scope"
+
+                         else
+                            emptyNode
+                        )
     in
     div [ class "page-content" ]
         [ topBar

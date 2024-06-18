@@ -533,7 +533,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
  * and 'u' for underweight. If a key is missing or its value is empty,
  * an empty string is used in its place.
  *
- * @param array $values
+ * @param array|null $values
  *   An associative array of nutrition metrics with the following possible keys:
  *   - 's': The stunting metric.
  *   - 'w': The wasting metric.
@@ -543,7 +543,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
  *   A string with the stunting, wasting, and underweight metrics separated
  *   by commas. If the input array is empty, returns ',,'.
  */
-function hedley_reports_nutrition_metrics_to_string(array $values) {
+function hedley_reports_nutrition_metrics_to_string($values) {
   if (empty($values)) {
     return ',,';
   }

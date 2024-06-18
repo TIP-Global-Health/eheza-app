@@ -35,7 +35,11 @@ update currentDate modelBackend msg model =
                                 ( model.nutritionReportData, Cmd.none )
 
                 modelUpdated =
-                    { model | reportType = mReportType, nutritionReportData = nutritionReportData }
+                    { model
+                        | reportType = mReportType
+                        , limitDate = Nothing
+                        , nutritionReportData = nutritionReportData
+                    }
             in
             PagesReturn
                 modelUpdated

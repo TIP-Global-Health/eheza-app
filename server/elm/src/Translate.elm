@@ -131,6 +131,7 @@ type TranslationId
     | UniversalIntervention
     | WastingModerate
     | WastingSevere
+    | WideScopeNote
     | Year Int
     | YearLabel
     | Zone
@@ -799,6 +800,12 @@ translationSet transId =
 
         WastingSevere ->
             { english = "Wasting Severe"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        WideScopeNote ->
+            { english = "Note: Selected scope contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

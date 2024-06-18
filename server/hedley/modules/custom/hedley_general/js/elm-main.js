@@ -6357,7 +6357,7 @@ var $author$project$Pages$Reports$Update$update = F4(
 				var cmd = _v1.b;
 				var modelUpdated = _Utils_update(
 					model,
-					{nutritionReportData: nutritionReportData, reportType: mReportType});
+					{limitDate: $elm$core$Maybe$Nothing, nutritionReportData: nutritionReportData, reportType: mReportType});
 				return A4($author$project$App$Model$PagesReturn, modelUpdated, cmd, $author$project$Error$Utils$noError, _List_Nil);
 			case 'SetLimitDate':
 				var value = msg.a;
@@ -9386,6 +9386,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WastingSevere':
 				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'WideScopeNote':
+				return {english: 'Note: Selected scope contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
 				var year = transId.a;
 				return {
@@ -9557,6 +9559,7 @@ var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a)
 var $author$project$Pages$Reports$Model$SetReportType = function (a) {
 	return {$: 'SetReportType', a: a};
 };
+var $author$project$Translate$WideScopeNote = {$: 'WideScopeNote'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$core$Basics$min = F2(
 	function (x, y) {
@@ -10227,6 +10230,43 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	} else {
 		return true;
 	}
+};
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) {
+	return A2(
+		$elm$core$List$member,
+		selectedEntity,
+		_List_fromArray(
+			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
 };
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
@@ -11165,6 +11205,22 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			},
 			popupState);
 	});
+var $author$project$Pages$Utils$viewCustomLabel = F4(
+	function (language, translationId, suffix, class_) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(class_)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					_Utils_ap(
+						A2($author$project$Translate$translate, language, translationId),
+						suffix))
+				]));
+	});
 var $author$project$Translate$ACHI = {$: 'ACHI'};
 var $author$project$Translate$ANCTotal = {$: 'ANCTotal'};
 var $author$project$Translate$AcuteIllnessTotal = {$: 'AcuteIllnessTotal'};
@@ -11193,52 +11249,6 @@ var $elm$html$Html$Attributes$classList = function (classes) {
 				$elm$core$Tuple$first,
 				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
 };
-var $elm$core$List$any = F2(
-	function (isOkay, list) {
-		any:
-		while (true) {
-			if (!list.b) {
-				return false;
-			} else {
-				var x = list.a;
-				var xs = list.b;
-				if (isOkay(x)) {
-					return true;
-				} else {
-					var $temp$isOkay = isOkay,
-						$temp$list = xs;
-					isOkay = $temp$isOkay;
-					list = $temp$list;
-					continue any;
-				}
-			}
-		}
-	});
-var $elm$core$List$member = F2(
-	function (x, xs) {
-		return A2(
-			$elm$core$List$any,
-			function (a) {
-				return _Utils_eq(a, x);
-			},
-			xs);
-	});
-var $author$project$Pages$Utils$viewCustomLabel = F4(
-	function (language, translationId, suffix, class_) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class(class_)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					_Utils_ap(
-						A2($author$project$Translate$translate, language, translationId),
-						suffix))
-				]));
-	});
 var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 	function (language, records) {
 		var wellChildEncountersData = A2(
@@ -13685,7 +13695,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
 		var content = $elm_community$maybe_extra$Maybe$Extra$isJust(model.dateSelectorPopupState) ? $author$project$Gizra$Html$emptyNode : A2(
 			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
+			$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
 			A3(
 				$elm$core$Maybe$map2,
 				F2(
