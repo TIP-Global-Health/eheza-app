@@ -664,6 +664,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                ReportPrenatal ->
+                    { english = "Antenatal"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         ReportTypeLabel ->
             { english = "Report Type"
             , kinyarwanda = Nothing

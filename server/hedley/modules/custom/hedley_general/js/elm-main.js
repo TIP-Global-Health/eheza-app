@@ -6321,12 +6321,15 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 	});
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
+var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
 		case 'demographics':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
 		case 'nutrition':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
+		case 'prenatal':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -9311,10 +9314,13 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Registered Patients', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ReportType':
 				var reportType = transId.a;
-				if (reportType.$ === 'ReportDemographics') {
-					return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-				} else {
-					return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				switch (reportType.$) {
+					case 'ReportDemographics':
+						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'ReportNutrition':
+						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Antenatal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'ReportTypeLabel':
 				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -10292,10 +10298,13 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
-	if (reportType.$ === 'ReportDemographics') {
-		return 'demographics';
-	} else {
-		return 'nutrition';
+	switch (reportType.$) {
+		case 'ReportDemographics':
+			return 'demographics';
+		case 'ReportNutrition':
+			return 'nutrition';
+		default:
+			return 'prenatal';
 	}
 };
 var $author$project$Translate$Save = {$: 'Save'};
@@ -13804,10 +13813,13 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								}
 							},
 							data.records);
-						if (reportType.$ === 'ReportDemographics') {
-							return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
-						} else {
-							return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
+						switch (reportType.$) {
+							case 'ReportDemographics':
+								return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
+							case 'ReportNutrition':
+								return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
+							default:
+								return $elm$html$Html$text('@todo');
 						}
 					}),
 				model.reportType,
@@ -13839,7 +13851,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPrenatal]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

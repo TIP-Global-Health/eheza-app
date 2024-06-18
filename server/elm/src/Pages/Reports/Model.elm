@@ -27,6 +27,7 @@ emptyModel =
 type ReportType
     = ReportDemographics
     | ReportNutrition
+    | ReportPrenatal
 
 
 type alias NutritionReportData =

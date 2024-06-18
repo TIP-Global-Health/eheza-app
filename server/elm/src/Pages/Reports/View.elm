@@ -158,6 +158,9 @@ viewReportsData language currentDate data model =
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate model.nutritionReportData
+
+                            ReportPrenatal ->
+                                text "@todo"
                     )
                     model.reportType
                     limitDateByReportType
@@ -174,7 +177,7 @@ viewReportsData language currentDate data model =
         , div [ class "inputs" ]
             [ viewSelectListInput language
                 model.reportType
-                [ ReportDemographics, ReportNutrition ]
+                [ ReportDemographics, ReportNutrition, ReportPrenatal ]
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
