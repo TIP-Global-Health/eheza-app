@@ -1982,7 +1982,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -6659,13 +6659,14 @@ generatePrenatalAssessmentMsgs :
     -> Language
     -> Site
     -> Bool
+    -> Bool
     -> Page
     -> Bool
     -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
     -> ModelIndexedDb
     -> PrenatalEncounterId
     -> List App.Model.Msg
-generatePrenatalAssessmentMsgs currentDate language site isChw activePage updateAssesment originData after id =
+generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
     Maybe.map
         (\assembledAfter ->
             let
@@ -6840,43 +6841,16 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
-                                                let
-                                                    ( message, instructions ) =
-                                                        let
-                                                            signs =
-                                                                List.map (Translate.PrenatalDiagnosis >> translate language) urgentDiagnoses
-                                                                    |> String.join ", "
-                                                        in
-                                                        -- Instructions for Emergency Referral.
-                                                        ( translate language Translate.DangerSignsLabelForNurse ++ " " ++ signs
-                                                        , if
-                                                            List.any
-                                                                (\immediateDeliveryDiagnosis ->
-                                                                    List.member immediateDeliveryDiagnosis urgentDiagnoses
-                                                                )
-                                                                Pages.Prenatal.Activity.Utils.immediateDeliveryDiagnoses
-                                                          then
-                                                            translate language Translate.EmergencyReferralHelperReferToHospitalForImmediateDelivery
-
-                                                          else if
-                                                            List.any
-                                                                (\maternityWardDiagnosis ->
-                                                                    List.member maternityWardDiagnosis urgentDiagnoses
-                                                                )
-                                                                Pages.Prenatal.Activity.Utils.maternityWardDiagnoses
-                                                          then
-                                                            translate language Translate.EmergencyReferralHelperReferToMaternityWard
-
-                                                          else
-                                                            translate language Translate.EmergencyReferralHelperReferToEmergencyObstetricCareServices
-                                                        )
-                                                in
-                                                -- View warning popup and navigate to Next Steps activity.
-                                                [ initialEncounterWarningPopupMsg ( message, instructions )
+                                                -- View warning popup with instructions for Emergency
+                                                -- Referral and navigate to Next Steps activity.
+                                                [ Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> initialEncounterWarningPopupMsg
                                                 , initialEncounterNextStepsMsg
                                                 ]
                                     in
@@ -6896,22 +6870,17 @@ generatePrenatalAssessmentMsgs currentDate language site isChw activePage update
                                                 addedDiagnoses
 
                                         additionalMsgs =
-                                            if List.isEmpty urgentDiagnoses then
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
                                                 []
 
                                             else
-                                                let
-                                                    signs =
-                                                        List.map (Translate.PrenatalDiagnosisNonUrgentMessage >> translate language) urgentDiagnoses
-                                                            |> String.join ", "
-                                                in
                                                 [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
                                                     |> UserPage
                                                     |> App.Model.SetActivePage
-                                                , recurrentEncounterWarningPopupMsg
-                                                    ( signs
-                                                    , translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
-                                                    )
+                                                , Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> recurrentEncounterWarningPopupMsg
                                                 ]
                                     in
                                     -- These messages are sent when diagnoses set has changed.
@@ -7985,7 +7954,7 @@ generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterI
 generateWellChildDangerSignsAlertMsgs currentDate maybeId =
     Maybe.map
         (\id ->
-            [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
+            [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.

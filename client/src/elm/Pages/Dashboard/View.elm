@@ -84,7 +84,7 @@ import Translate exposing (Language, TranslationId, translate, translateText, tr
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
-import TypedSvg.Types exposing (Fill(..), Transform(..))
+import TypedSvg.Types exposing (Paint(..), Transform(..))
 import Utils.Html exposing (spinner, viewModal)
 import Utils.NominalDate exposing (sortByDateDesc)
 
@@ -2302,7 +2302,7 @@ annular colors signs pieData =
 
         makeSlice index datum =
             Path.element (Shape.arc { datum | innerRadius = radius - 60 })
-                [ fill <| Fill <| getColor index ]
+                [ fill <| Paint <| getColor index ]
     in
     g [ transform [ Translate (3 * radius + 20) radius ] ]
         [ g [] <| List.indexedMap makeSlice pieData
@@ -2337,7 +2337,7 @@ viewPieChartLegend language translateFunc colorFunc signs =
                 in
                 div [ class "legend-item" ]
                     [ svg [ Svg.Attributes.width "12", Svg.Attributes.height "12", viewBox 0 0 100 100 ]
-                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Fill <| colorFunc sign ] []
+                        [ Svg.circle [ cx "50", cy "50", r "40", fill <| Paint <| colorFunc sign ] []
                         ]
                     , span [] [ text <| label ++ " (" ++ normalizedPercentage ++ "%)" ]
                     ]

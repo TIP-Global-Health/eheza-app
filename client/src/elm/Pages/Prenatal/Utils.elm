@@ -245,6 +245,8 @@ diagnosesCausingHospitalReferralByImmediateDiagnoses phase assembled =
                     emergencyReferralDiagnosesInitial
                         ++ [ DiagnosisModeratePreeclampsiaInitialPhase
                            , DiagnosisSeverePreeclampsiaInitialPhase
+                           , DiagnosisHyperemesisGravidumBySymptoms
+                           , DiagnosisSevereVomitingBySymptoms
                            , DiagnosisHeartburnPersistent
                            , DiagnosisDeepVeinThrombosis
                            , DiagnosisPelvicPainIntense
@@ -3911,11 +3913,17 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
             if diagnosedAnyOf triggeringDiagnoses assembled then
                 let
                     header =
-                        if diagnosed Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase assembled then
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+                        if
+                            diagnosedAnyOf
+                                [ Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+                                , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+                                ]
+                                assembled
+                        then
+                            Translate.Diabetes
 
                         else
-                            Translate.PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+                            Translate.GestationalDiabetes
                 in
                 ( [ viewCustomLabel language header "" "label header"
                   , viewCustomLabel language Translate.PrenatalHealthEducationDiabetesInform "." "label paragraph"

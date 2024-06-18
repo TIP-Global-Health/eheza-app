@@ -46,7 +46,9 @@ import Maybe.Extra exposing (isNothing)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Prenatal.Activity.Utils
 import Pages.Prenatal.Encounter.Utils exposing (getPrenatalEncountersForParticipant)
+import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Report.Utils exposing (getAcuteIllnessEncountersForParticipant)
 import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
@@ -1359,7 +1361,9 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
 
                 label =
                     if
-                        EverySet.member TestVitalsRecheck performedTests
+                        -- Vitals can be taken only by nurse.
+                        not isLabTech
+                            && EverySet.member TestVitalsRecheck performedTests
                             && (not <| EverySet.member TestVitalsRecheck completedTests)
                     then
                         -- Vitals recheck was scheduled, but not completed yet.
@@ -1367,9 +1371,19 @@ generatePrenatalLabsEntryData language currentDate isLabTech db item =
 
                     else
                         Translate.PrenatalLabsCaseManagementEntryTypeResults
+
+                urgentDiagnoses =
+                    Dict.get encounterId db.prenatalEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.diagnoses
+                                >> EverySet.toList
+                                >> List.filter Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                            )
+                        |> Maybe.withDefault []
             in
             translate language label
-                |> PrenatalLabsEntryData item.participantId name encounterId state
+                |> PrenatalLabsEntryData item.participantId name encounterId state urgentDiagnoses
         )
         item.encounterId
 
@@ -1381,22 +1395,39 @@ viewPrenatalLabsEntry :
     -> Html Msg
 viewPrenatalLabsEntry language isLabTech data =
     let
-        targetPage =
+        action =
             if isLabTech then
-                PrenatalRecurrentActivityPage data.encounterId LabResults
+                SetActivePage <|
+                    UserPage <|
+                        PrenatalRecurrentActivityPage data.encounterId LabResults
 
-            else if data.state == LabsEntryReadyForReview then
-                ClinicalProgressReportPage (Backend.PrenatalEncounter.Model.InitiatorCaseManagement data.encounterId) data.encounterId
+            else if List.isEmpty data.urgentDiagnoses then
+                if data.state == LabsEntryReadyForReview then
+                    SetActivePage <|
+                        UserPage <|
+                            ClinicalProgressReportPage
+                                (Backend.PrenatalEncounter.Model.InitiatorCaseManagement data.encounterId)
+                                data.encounterId
+
+                else
+                    SetActivePage <|
+                        UserPage <|
+                            PrenatalRecurrentEncounterPage data.encounterId
 
             else
-                PrenatalRecurrentEncounterPage data.encounterId
+                -- Since there's at least one urgent diagnosis, we need to
+                -- direct to Next Steps activity and view
+                Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                    language
+                    data.urgentDiagnoses
+                    |> HandleUrgentPrenatalDiagnoses data.encounterId
     in
     viewLabsEntry language
         isLabTech
         data.personName
         data.state
         data.label
-        targetPage
+        action
 
 
 viewLabsEntry :
@@ -1405,9 +1436,9 @@ viewLabsEntry :
     -> String
     -> LabsEntryState
     -> String
-    -> UserPage
+    -> Msg
     -> Html Msg
-viewLabsEntry language isLabTech personName state label targetPage =
+viewLabsEntry language isLabTech personName state label action =
     let
         entryStateClass =
             "due "
@@ -1431,7 +1462,7 @@ viewLabsEntry language isLabTech personName state label targetPage =
         , div [ class "assesment center" ] [ text label ]
         , div
             [ class "icon-forward"
-            , onClick <| SetActivePage <| UserPage targetPage
+            , onClick action
             ]
             []
         ]
@@ -1523,7 +1554,7 @@ viewNCDLabsEntry language data =
         data.personName
         data.state
         data.label
-        (NCDRecurrentEncounterPage data.encounterId)
+        (SetActivePage <| UserPage (NCDRecurrentEncounterPage data.encounterId))
 
 
 viewImmunizationPane : Language -> NominalDate -> Dict PersonId ImmunizationFollowUpItem -> ModelIndexedDb -> Model -> Html Msg

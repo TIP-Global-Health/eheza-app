@@ -10,6 +10,7 @@ import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
+        , ResilienceSurveyType(..)
         )
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
@@ -24,25 +25,26 @@ type alias Model =
     , expandedMessages : EverySet ResilienceMessageId
     , messageOptionsDialogState : Maybe MessageOptionsDialogState
     , kickOffForm : KickOffForm
-    , monthlySurveyForm : MonthlySurveyForm
+    , surveyForm : SurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
     }
 
 
 emptyModel : Model
 emptyModel =
-    { activeTab = TabUnread
+    { activeTab = TabGuide
     , tabScrollPosition = 0
     , expandedMessages = EverySet.empty
     , messageOptionsDialogState = Nothing
     , kickOffForm = emptyKickOffForm
-    , monthlySurveyForm = emptyMonthlySurveyForm
+    , surveyForm = emptySurveyForm
     , surveyScoreDialogState = Nothing
     }
 
 
 type MessagingTab
-    = TabUnread
+    = TabGuide
+    | TabUnread
     | TabFavorites
     | TabGrowth
     | TabConnecting
@@ -79,17 +81,18 @@ emptyKickOffForm =
     }
 
 
-type alias MonthlySurveyForm =
+type alias SurveyForm =
     Dict ResilienceSurveyQuestion ResilienceSurveyQuestionOption
 
 
-emptyMonthlySurveyForm : MonthlySurveyForm
-emptyMonthlySurveyForm =
+emptySurveyForm : SurveyForm
+emptySurveyForm =
     Dict.empty
 
 
 type SurveyScoreDialogState
-    = MonthlySurveyScore Int
+    = QuarterlySurveyScore Int
+    | AdoptionSurveyScore Int
 
 
 type Msg
@@ -102,8 +105,8 @@ type Msg
     | SetUbudehe String
     | SetMaritalStatus String
     | SaveKickOffSurvey NurseId Nurse
-    | SetMonthlySurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
-    | SaveMonthlySurvey NurseId
+    | SetSurveyAnswer ResilienceSurveyQuestion ResilienceSurveyQuestionOption
+    | SaveSurvey ResilienceSurveyType NurseId
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int
