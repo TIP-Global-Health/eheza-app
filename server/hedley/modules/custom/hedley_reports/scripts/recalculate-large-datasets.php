@@ -56,7 +56,7 @@ foreach ($provinces as $province) {
       continue;
     }
     drush_print("Running calculation for District scope. Province: $province, District: $district.");
-    $duration = create_or_update_results_data_node('district', $district, NULL, NULL);
+    $duration = create_or_update_results_data_node('district', $province, $district, NULL);
     drush_print("Calculation completed within $duration seconds.");
   }
 }
