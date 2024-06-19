@@ -61,8 +61,8 @@ decodePatientData =
         |> required "created" decodeYYYYMMDD
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" (decodeWithFallback Female decodeGender)
-        |> optionalAt [ "individual", "acute-illness" ] (nullable (list decodeAcuteIllnessParticipantData)) Nothing
-        |> optionalAt [ "individual", "antenatal" ] (nullable (list (list decodePrenatalEncounterData))) Nothing
+        |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
+        |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
         |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeHomeVisitEncounterData))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "individual", "nutrition" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
@@ -82,14 +82,6 @@ decodeGender =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| gender ++ " is not a recognized Gender.")
             )
-
-
-decodeAcuteIllnessParticipantData : Decoder AcuteIllnessParticipantData
-decodeAcuteIllnessParticipantData =
-    succeed AcuteIllnessParticipantData
-        |> required "created" decodeYYYYMMDD
-        |> optional "edd" (nullable decodeYYYYMMDD) Nothing
-        |> required "encounters" (list decodeAcuteIllnessEncounterData)
 
 
 decodeAcuteIllnessEncounterData : Decoder AcuteIllnessEncounterData
@@ -135,6 +127,15 @@ acuteIllnessEncounterTypeFromString encounterType =
 
         _ ->
             Nothing
+
+
+decodePrenatalParticipantData : Decoder PrenatalParticipantData
+decodePrenatalParticipantData =
+    succeed PrenatalParticipantData
+        |> required "created" decodeYYYYMMDD
+        |> optional "edd" (nullable decodeYYYYMMDD) Nothing
+        |> optional "dc" (nullable decodeYYYYMMDD) Nothing
+        |> required "encounters" (list decodePrenatalEncounterData)
 
 
 decodePrenatalEncounterData : Decoder PrenatalEncounterData

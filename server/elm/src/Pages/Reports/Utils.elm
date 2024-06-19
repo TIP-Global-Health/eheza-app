@@ -51,8 +51,8 @@ countTotalEncounetrs data =
             Maybe.map List.length
                 >> Maybe.withDefault 0
     in
-    countIndividualDataEncounters (Maybe.map (List.map .encounters) data.acuteIllnessData)
-        + countIndividualDataEncounters data.prenatalData
+    countIndividualDataEncounters data.acuteIllnessData
+        + countIndividualDataEncounters (Maybe.map (List.map .encounters) data.prenatalData)
         + countIndividualDataEncounters data.homeVisitData
         + countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData

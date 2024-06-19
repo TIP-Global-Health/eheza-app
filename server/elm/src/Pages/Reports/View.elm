@@ -9,6 +9,7 @@ import Backend.Reports.Model
         , Gender(..)
         , PatientData
         , PrenatalEncounterType(..)
+        , PrenatalParticipantData
         , ReportsData
         )
 import Date exposing (Interval(..), Unit(..))
@@ -115,7 +116,7 @@ viewReportsData language currentDate data model =
                                         (\record ->
                                             if Date.compare record.created limitDate == LT then
                                                 let
-                                                    filterAcuteIllnessData =
+                                                    filterPrenatalData =
                                                         Maybe.map
                                                             (List.filterMap
                                                                 (\participantData ->
@@ -124,6 +125,19 @@ viewReportsData language currentDate data model =
 
                                                                     else
                                                                         let
+                                                                            dateConcluded =
+                                                                                -- If pregnancy was concluded, but conclusion date is
+                                                                                -- after limit date, we mark pregnancy as not concluded.
+                                                                                Maybe.andThen
+                                                                                    (\date ->
+                                                                                        if Date.compare limitDate date == LT then
+                                                                                            Nothing
+
+                                                                                        else
+                                                                                            Just date
+                                                                                    )
+                                                                                    participantData.dateConcluded
+
                                                                             filteredEncounters =
                                                                                 List.filter
                                                                                     (\encounterData ->
@@ -131,7 +145,7 @@ viewReportsData language currentDate data model =
                                                                                     )
                                                                                     participantData.encounters
                                                                         in
-                                                                        Just { participantData | encounters = filteredEncounters }
+                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
                                                                 )
                                                             )
 
@@ -155,8 +169,8 @@ viewReportsData language currentDate data model =
                                                 in
                                                 Just
                                                     { record
-                                                        | acuteIllnessData = filterAcuteIllnessData record.acuteIllnessData
-                                                        , prenatalData = filterIndividualBy .startDate record.prenatalData
+                                                        | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                        , prenatalData = filterPrenatalData record.prenatalData
                                                         , homeVisitData = filterIndividualBy identity record.homeVisitData
                                                         , wellChildData = filterIndividualBy .startDate record.wellChildData
                                                         , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
@@ -180,7 +194,7 @@ viewReportsData language currentDate data model =
                                 viewNutritionReport language limitDate model.nutritionReportData
 
                             ReportPrenatal ->
-                                text "@todo"
+                                viewPrenatalReport language limitDate recordsTillLimitDate
                     )
                     model.reportType
                     limitDateByReportType
@@ -436,7 +450,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -449,7 +464,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -474,8 +490,7 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.acuteIllnessData
                     >> Maybe.map
-                        (List.map .encounters
-                            >> List.concat
+                        (List.concat
                             >> List.filter
                                 (\encounter ->
                                     List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
@@ -488,8 +503,7 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.acuteIllnessData
                     >> Maybe.map
-                        (List.map .encounters
-                            >> List.concat
+                        (List.concat
                             >> List.filter
                                 (\encounter ->
                                     not <| List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
@@ -902,3 +916,73 @@ viewNutritionMetricsResultsTable language currentDate data =
         , List.map (Tuple.second >> .underweightSevere) data
             |> viewRow Translate.UnderweightSevere
         ]
+
+
+viewPrenatalReport : Language -> NominalDate -> List PatientData -> Html Msg
+viewPrenatalReport language limitDate records =
+    let
+        filtered =
+            List.map .prenatalData records
+                |> Maybe.Extra.values
+                |> List.concat
+                |> List.filterMap
+                    (\participantData ->
+                        if isJust participantData.eddDate then
+                            let
+                                filteredEncounters =
+                                    List.filter
+                                        (\encounter ->
+                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                                        )
+                                        participantData.encounters
+                            in
+                            Just { participantData | encounters = filteredEncounters }
+
+                        else
+                            Nothing
+                    )
+
+        ( completed, active ) =
+            List.partition
+                (\participantData ->
+                    -- Pregnancy is cobsidered completed if
+                    -- either conclusion date was set.
+                    isJust participantData.dateConcluded
+                        || (-- Or it's been 30 days or more since estimated delivery date.
+                            Maybe.map
+                                (\eddDate ->
+                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
+                                )
+                                participantData.eddDate
+                                |> -- We never get here, as filtered, only contains pregnancies
+                                   -- that got EDD set.
+                                   Maybe.withDefault False
+                           )
+                )
+                filtered
+
+        visitsForActive =
+            countVisitsByType active
+
+        visitsForCompleted =
+            countVisitsByType completed
+
+        countVisitsByType data =
+            List.map
+                (\participantData ->
+                    let
+                        totalEncounetrs =
+                            List.length participantData.encounters
+
+                        nurseEncounters =
+                            List.filter (.encounterType >> (==) NurseEncounter)
+                                participantData.encounters
+                                |> List.length
+                    in
+                    { nurse = nurseEncounters
+                    , chw = totalEncounetrs - nurseEncounters
+                    }
+                )
+                data
+    in
+    div [ class "report prenatal" ] []

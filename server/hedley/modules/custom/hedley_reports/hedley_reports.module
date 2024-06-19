@@ -484,6 +484,10 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       if (!empty($edd_date)) {
         $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
       }
+      $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($date_concluded)) {
+        $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
+      }
       $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
       $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
     }
