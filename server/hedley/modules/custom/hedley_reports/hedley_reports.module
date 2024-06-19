@@ -476,11 +476,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       }
     }
 
+    if ($participant_type == 'antenatal') {
+      $participant_data = [
+        'created' => date("Y-m-d", $individual_participant->created),
+      ];
+      $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($edd_date)) {
+        $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
+      }
+      $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
+      $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
+    }
+  }
+
+  if (!empty($encounters_data)) {
     foreach ($encounters_data as $key => $data_type) {
       $encounters_data[$key] = array_values($data_type);
     }
-  }
-  if (!empty($encounters_data)) {
     $data['individual'] = $encounters_data;
   }
 
