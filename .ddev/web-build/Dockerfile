@@ -1,7 +1,8 @@
 ARG BASE_IMAGE
 FROM $BASE_IMAGE
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests inotify-tools build-essential mime-support
+RUN apt-get update || true
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::="--force-confold" --no-install-recommends --no-install-suggests inotify-tools build-essential mime-support
 
 # Download and install Python 2.7 and dependencies from Debian 11 (Bullseye)
 ADD https://deb.debian.org/debian/pool/main/libf/libffi/libffi7_3.3-6_amd64.deb /tmp/
