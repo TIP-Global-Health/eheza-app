@@ -70,6 +70,7 @@ type TranslationId
     | FBF
     | Female
     | GenerateReport
+    | HC
     | HealthCenter
     | HomeVisit
     | HttpError StringIdHttpError
@@ -96,11 +97,16 @@ type TranslationId
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewScope
     | NewSelection
+    | NumberOfVisits Int
+    | NumberOfVisitsLabel
     | NutritionBehavior
     | NutritionTotal
     | PleaseWaitMessage
     | PMTCT
     | PopulationSelectionOption PopulationSelectionOption
+    | PregnanciesActive
+    | PregnanciesAll
+    | PregnanciesCompleted
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -265,6 +271,12 @@ translationSet transId =
 
         GenerateReport ->
             { english = "Generate Report"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HC ->
+            { english = "HC"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -570,6 +582,31 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        NumberOfVisits number ->
+            if number == 1 then
+                { english = "1 visit"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else if number > 5 then
+                { english = "5+ visits"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = String.fromInt number ++ " visits"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+        NumberOfVisitsLabel ->
+            { english = "# Visits"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NutritionBehavior ->
             { english = "Nutrition Behavior"
             , kinyarwanda = Nothing
@@ -613,6 +650,24 @@ translationSet transId =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        PregnanciesActive ->
+            { english = "Active Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesAll ->
+            { english = "All Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesCompleted ->
+            { english = "Completed Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month, one visit or more"

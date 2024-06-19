@@ -945,7 +945,7 @@ viewPrenatalReport language limitDate records =
         ( completed, active ) =
             List.partition
                 (\participantData ->
-                    -- Pregnancy is cobsidered completed if
+                    -- Pregnancy is considered completed if
                     -- either conclusion date was set.
                     isJust participantData.dateConcluded
                         || (-- Or it's been 30 days or more since estimated delivery date.
@@ -961,11 +961,13 @@ viewPrenatalReport language limitDate records =
                 )
                 filtered
 
-        visitsForActive =
+        ( partitionedVisitsForActiveNurse, partitionedVisitsForActiveChw ) =
             countVisitsByType active
+                |> partitionByNumberOfVisits
 
-        visitsForCompleted =
+        ( partitionedVisitsForCompletedNurse, partitionedVisitsForCompletedChw ) =
             countVisitsByType completed
+                |> partitionByNumberOfVisits
 
         countVisitsByType data =
             List.map
@@ -984,5 +986,165 @@ viewPrenatalReport language limitDate records =
                     }
                 )
                 data
+
+        partitionByNumberOfVisits =
+            List.foldl
+                (\countedVisits ( nurseDict, chwDict ) ->
+                    let
+                        resolveKeyForValue value =
+                            if value > 5 then
+                                -1
+
+                            else
+                                value
+
+                        updateDict value dict =
+                            if value == 0 then
+                                dict
+
+                            else
+                                let
+                                    key =
+                                        resolveKeyForValue value
+                                in
+                                Dict.get key dict
+                                    |> Maybe.map
+                                        (\total ->
+                                            Dict.insert key (total + 1) dict
+                                        )
+                                    |> Maybe.withDefault (Dict.insert key 1 dict)
+                    in
+                    ( updateDict countedVisits.nurse nurseDict
+                    , updateDict countedVisits.chw chwDict
+                    )
+                )
+                ( Dict.empty, Dict.empty )
+
+        resolveValueFromDict key =
+            Dict.get key >> Maybe.withDefault 0
+
+        activeNurseVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForActiveNurse
+
+        activeNurseVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForActiveNurse
+
+        activeNurseVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForActiveNurse
+
+        activeNurseVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForActiveNurse
+
+        activeNurseVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForActiveNurse
+
+        activeNurseVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForActiveNurse
+
+        activeChwVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForActiveChw
+
+        activeChwVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForActiveChw
+
+        activeChwVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForActiveChw
+
+        activeChwVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForActiveChw
+
+        activeChwVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForActiveChw
+
+        activeChwVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForActiveChw
+
+        completedNurseVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForCompletedNurse
+
+        completedChwVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForCompletedChw
+
+        completedChwVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForCompletedChw
+
+        completedChwVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForCompletedChw
+
+        completedChwVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForCompletedChw
+
+        completedChwVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForCompletedChw
+
+        completedChwVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForCompletedChw
+
+        viewTable caption values =
+            let
+                rows =
+                    List.indexedMap
+                        (\index ( chwValue, nurseValue ) ->
+                            viewRow (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                        )
+                        values
+            in
+            [ viewCustomLabel language caption ":" "section heading"
+            , div [ class "table anc" ] <|
+                div [ class "row captions" ]
+                    [ div [ class "item label" ] [ text <| translate language Translate.NumberOfVisitsLabel ]
+                    , div [ class "item value" ] [ text <| translate language Translate.CHW ]
+                    , div [ class "item value" ] [ text <| translate language Translate.HC ]
+                    , div [ class "item value" ] [ text <| translate language Translate.All ]
+                    ]
+                    :: rows
+            ]
+
+        viewRow labelTransId valueChw valueNurse =
+            div [ class "row" ]
+                [ div [ class "item label" ] [ text <| translate language labelTransId ]
+                , div [ class "item value" ] [ text <| String.fromInt valueChw ]
+                , div [ class "item value" ] [ text <| String.fromInt valueNurse ]
+                , div [ class "item value" ] [ text <| String.fromInt <| valueChw + valueNurse ]
+                ]
     in
-    div [ class "report prenatal" ] []
+    div [ class "report prenatal" ] <|
+        viewTable Translate.PregnanciesAll
+            [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
+            , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
+            , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
+            , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
+            , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
+            , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+            ]
+            ++ viewTable Translate.PregnanciesActive
+                [ ( activeChwVisits1, activeNurseVisits1 )
+                , ( activeChwVisits2, activeNurseVisits2 )
+                , ( activeChwVisits3, activeNurseVisits3 )
+                , ( activeChwVisits4, activeNurseVisits4 )
+                , ( activeChwVisits5, activeNurseVisits5 )
+                , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
+                ]
+            ++ viewTable Translate.PregnanciesCompleted
+                [ ( completedChwVisits1, completedNurseVisits1 )
+                , ( completedChwVisits2, completedNurseVisits2 )
+                , ( completedChwVisits3, completedNurseVisits3 )
+                , ( completedChwVisits4, completedNurseVisits4 )
+                , ( completedChwVisits5, completedNurseVisits5 )
+                , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
+                ]
