@@ -115,6 +115,26 @@ viewReportsData language currentDate data model =
                                         (\record ->
                                             if Date.compare record.created limitDate == LT then
                                                 let
+                                                    filterAcuteIllnessData =
+                                                        Maybe.map
+                                                            (List.filterMap
+                                                                (\participantData ->
+                                                                    if Date.compare participantData.created limitDate == LT then
+                                                                        Nothing
+
+                                                                    else
+                                                                        let
+                                                                            filteredEncounters =
+                                                                                List.filter
+                                                                                    (\encounterData ->
+                                                                                        Date.compare encounterData.startDate limitDate == LT
+                                                                                    )
+                                                                                    participantData.encounters
+                                                                        in
+                                                                        Just { participantData | encounters = filteredEncounters }
+                                                                )
+                                                            )
+
                                                     filterIndividualBy resolveDateFunc =
                                                         Maybe.map
                                                             (List.map
@@ -135,7 +155,7 @@ viewReportsData language currentDate data model =
                                                 in
                                                 Just
                                                     { record
-                                                        | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                        | acuteIllnessData = filterAcuteIllnessData record.acuteIllnessData
                                                         , prenatalData = filterIndividualBy .startDate record.prenatalData
                                                         , homeVisitData = filterIndividualBy identity record.homeVisitData
                                                         , wellChildData = filterIndividualBy .startDate record.wellChildData
@@ -454,7 +474,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.acuteIllnessData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]
@@ -467,7 +488,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.acuteIllnessData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     not <| List.member encounter.encounterType [ AcuteIllnessEncounterNurse, AcuteIllnessEncounterNurseSubsequent ]

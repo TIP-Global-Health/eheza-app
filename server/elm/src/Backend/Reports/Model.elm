@@ -30,7 +30,7 @@ type alias PatientData =
     , created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
-    , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
+    , acuteIllnessData : Maybe (List AcuteIllnessParticipantData)
     , prenatalData : Maybe (List (List PrenatalEncounterData))
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
@@ -50,6 +50,13 @@ type alias PersonId =
 type Gender
     = Female
     | Male
+
+
+type alias AcuteIllnessParticipantData =
+    { created : NominalDate
+    , edd_date : Maybe NominalDate
+    , encounters : List AcuteIllnessEncounterData
+    }
 
 
 type alias AcuteIllnessEncounterData =
