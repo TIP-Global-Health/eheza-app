@@ -241,7 +241,6 @@ function hedley_person_field_default_field_bases() {
       'allowed_values' => array(
         'hiv-exposed-infant' => 'HIV-exposed infant',
         'negative' => 'Negative',
-        'negative-dc' => 'Negative - discordant couple',
         'positive' => 'Positive',
         'unknown' => 'Unknown',
       ),

@@ -575,7 +575,6 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   $valid_values = [
     'hiv-exposed infant',
     'negative',
-    'negative - discordant couple',
     'positive',
     'unknown',
   ];
@@ -768,10 +767,6 @@ function hedley_person_import_patient($patient_type, array $values) {
 
       case 'negative':
         $wrapper->field_hiv_status->set('negative');
-        break;
-
-      case 'negative - discordant couple':
-        $wrapper->field_hiv_status->set('negative-dc');
         break;
 
       case 'positive':

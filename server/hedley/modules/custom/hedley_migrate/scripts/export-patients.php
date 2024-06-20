@@ -106,10 +106,6 @@ while ($processed < $total) {
         $hiv_status = 'negative';
         break;
 
-      case 'negative-dc':
-        $hiv_status = 'negative - discordant couple';
-        break;
-
       case 'positive':
         $hiv_status = 'positive';
         break;

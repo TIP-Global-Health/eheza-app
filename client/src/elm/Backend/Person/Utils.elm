@@ -271,9 +271,6 @@ hivStatusToString status =
         Negative ->
             "negative"
 
-        NegativeDiscordantCouple ->
-            "negative-dc"
-
         Positive ->
             "positive"
 

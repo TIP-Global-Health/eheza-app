@@ -61,9 +61,6 @@ decodeHivStatus =
                     "negative" ->
                         succeed Negative
 
-                    "negative-dc" ->
-                        succeed NegativeDiscordantCouple
-
                     "positive" ->
                         succeed Positive
 

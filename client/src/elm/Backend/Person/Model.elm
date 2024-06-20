@@ -37,7 +37,6 @@ type alias Person =
 type HIVStatus
     = HIVExposedInfant
     | Negative
-    | NegativeDiscordantCouple
     | Positive
     | Unknown
 
