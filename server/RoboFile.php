@@ -417,6 +417,13 @@ class RoboFile extends Tasks {
   }
 
   /**
+   * Generates the duplicates report.
+   */
+  public function reportDuplicates($health_center = NULL, $village = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-duplicates-report.php --health_center=$health_center --village=$village");
+  }
+
+  /**
    * Generates the acute illness report.
    */
   public function reportAcuteIllness($start_date = NULL, $end_date = NULL, $region = NULL) {
@@ -426,11 +433,11 @@ class RoboFile extends Tasks {
   /**
    * Generates the ANC report.
    */
-  public function reportAnc($limit_date = NULL) {
+  public function reportAnc($limit_date = NULL, $region = NULL) {
     if (empty($limit_date)) {
       $limit_date = date('Y-m-d');
     }
-    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php --limit_date=$limit_date");
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-anc-report.php --limit_date=$limit_date  --region=$region");
   }
 
   /**
@@ -450,4 +457,10 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-nutrition-report.php --region=$region");
   }
 
+    /**
+   * Generates the NCDA report.
+   */
+  public function reportNcda($start_date = NULL, $end_date = NULL, $region = NULL) {
+    $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-ncda-report.php --start_date=$start_date --end_date=$end_date --region=$region");
+  }
 }
