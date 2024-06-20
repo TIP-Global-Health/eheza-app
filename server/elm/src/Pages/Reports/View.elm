@@ -173,6 +173,10 @@ viewReportsData language currentDate data model =
                                                         , prenatalData = filterPrenatalData record.prenatalData
                                                         , homeVisitData = filterIndividualBy identity record.homeVisitData
                                                         , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                        , childScorecardData = filterIndividualBy identity record.childScorecardData
+                                                        , ncdData = filterIndividualBy identity record.ncdData
+                                                        , hivData = filterIndividualBy identity record.hivData
+                                                        , tuberculosisData = filterIndividualBy identity record.tuberculosisData
                                                         , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
                                                         , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
                                                         , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
@@ -378,7 +382,7 @@ viewDemographicsReportPatients language limitDate records =
             filterImpacted females50YearsOrMore
 
         filterImpacted =
-            List.filter (\patient -> countTotalEncounetrs patient > 1)
+            List.filter (\patient -> countTotalEncounters patient > 1)
 
         patientsImpacted =
             malesImpacted1MonthAndLess
@@ -546,6 +550,50 @@ viewDemographicsReportEncounters language records =
         homeVisitDataEncountersUnique =
             countUnique homeVisitEncountersData
 
+        childScorecardEncountersData =
+            List.filterMap
+                (.childScorecardData >> Maybe.map List.concat)
+                records
+
+        childScorecardDataEncountersTotal =
+            countTotal childScorecardEncountersData
+
+        childScorecardDataEncountersUnique =
+            countUnique childScorecardEncountersData
+
+        ncdEncountersData =
+            List.filterMap
+                (.ncdData >> Maybe.map List.concat)
+                records
+
+        ncdDataEncountersTotal =
+            countTotal ncdEncountersData
+
+        ncdDataEncountersUnique =
+            countUnique ncdEncountersData
+
+        hivEncountersData =
+            List.filterMap
+                (.hivData >> Maybe.map List.concat)
+                records
+
+        hivDataEncountersTotal =
+            countTotal hivEncountersData
+
+        hivDataEncountersUnique =
+            countUnique hivEncountersData
+
+        tuberculosisEncountersData =
+            List.filterMap
+                (.tuberculosisData >> Maybe.map List.concat)
+                records
+
+        tuberculosisDataEncountersTotal =
+            countTotal tuberculosisEncountersData
+
+        tuberculosisDataEncountersUnique =
+            countUnique tuberculosisEncountersData
+
         nutritionIndividualEncountersData =
             List.filterMap
                 (.individualNutritionData >> Maybe.map List.concat)
@@ -635,6 +683,10 @@ viewDemographicsReportEncounters language records =
                 + acuteIllnessDataChwEncountersTotal
                 + wellChildDataEncountersTotal
                 + homeVisitDataEncountersTotal
+                + childScorecardDataEncountersTotal
+                + ncdDataEncountersTotal
+                + hivDataEncountersTotal
+                + tuberculosisDataEncountersTotal
                 + overallNutritionTotal
 
         overallUnique =
@@ -644,6 +696,10 @@ viewDemographicsReportEncounters language records =
                 + acuteIllnessDataChwEncountersUnique
                 + wellChildDataEncountersUnique
                 + homeVisitDataEncountersUnique
+                + childScorecardDataEncountersUnique
+                + ncdDataEncountersUnique
+                + hivDataEncountersUnique
+                + tuberculosisDataEncountersUnique
                 + overallNutritionUnique
 
         countTotal =
@@ -689,6 +745,10 @@ viewDemographicsReportEncounters language records =
         , viewRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
         , viewRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
         , viewRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
+        , viewRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
+        , viewRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
+        , viewRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
+        , viewRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
         , viewRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
         , viewRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
         , viewRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
@@ -973,7 +1033,7 @@ viewPrenatalReport language limitDate records =
             List.map
                 (\participantData ->
                     let
-                        totalEncounetrs =
+                        totalEncounters =
                             List.length participantData.encounters
 
                         nurseEncounters =
@@ -982,7 +1042,7 @@ viewPrenatalReport language limitDate records =
                                 |> List.length
                     in
                     { nurse = nurseEncounters
-                    , chw = totalEncounetrs - nurseEncounters
+                    , chw = totalEncounters - nurseEncounters
                     }
                 )
                 data

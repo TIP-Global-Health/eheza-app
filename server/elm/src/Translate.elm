@@ -58,6 +58,7 @@ type TranslationId
     | ANCTotal
     | CBNP
     | Cell
+    | ChildScorecard
     | CHW
     | Colline
     | CollineSub
@@ -72,6 +73,7 @@ type TranslationId
     | GenerateReport
     | HC
     | HealthCenter
+    | HIV
     | HomeVisit
     | HttpError StringIdHttpError
     | Impacted
@@ -87,6 +89,7 @@ type TranslationId
     | Month Month
     | MonthLabel
     | MonthYear Month Int Bool
+    | NCD
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -132,6 +135,7 @@ type TranslationId
     | Status
     | TargetedInterventions
     | Total
+    | Tuberculosis
     | ViewMode
     | Village
     | UnderweightModerate
@@ -221,6 +225,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        ChildScorecard ->
+            { english = "Child Scorecard"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CHW ->
             { english = "CHW"
             , kinyarwanda = Nothing
@@ -283,6 +293,12 @@ translationSet transId =
 
         HealthCenter ->
             { english = "Health Center"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIV ->
+            { english = "HIV"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -367,6 +383,12 @@ translationSet transId =
 
         MonthYear month year short ->
             translateMonthYY month year short
+
+        NCD ->
+            { english = "NCD"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -834,6 +856,12 @@ translationSet transId =
 
         Total ->
             { english = "Total"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Tuberculosis ->
+            { english = "Tuberculosis"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

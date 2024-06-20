@@ -40,8 +40,8 @@ reportTypeFromString reportType =
             Nothing
 
 
-countTotalEncounetrs : PatientData -> Int
-countTotalEncounetrs data =
+countTotalEncounters : PatientData -> Int
+countTotalEncounters data =
     let
         countIndividualDataEncounters =
             Maybe.map (List.map List.length >> List.sum)
@@ -55,6 +55,10 @@ countTotalEncounetrs data =
         + countIndividualDataEncounters (Maybe.map (List.map .encounters) data.prenatalData)
         + countIndividualDataEncounters data.homeVisitData
         + countIndividualDataEncounters data.wellChildData
+        + countIndividualDataEncounters data.childScorecardData
+        + countIndividualDataEncounters data.ncdData
+        + countIndividualDataEncounters data.hivData
+        + countIndividualDataEncounters data.tuberculosisData
         + countIndividualDataEncounters data.individualNutritionData
         + countGroupDataEncounters data.groupNutritionPmtctData
         + countGroupDataEncounters data.groupNutritionFbfData

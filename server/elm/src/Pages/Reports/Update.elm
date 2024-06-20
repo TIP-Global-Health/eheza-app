@@ -93,7 +93,7 @@ calculateNutritionReportDataTask currentDate data =
             impacted =
                 List.filterMap
                     (\record ->
-                        if countTotalEncounetrs record > 1 then
+                        if countTotalEncounters record > 1 then
                             Just record.id
 
                         else
