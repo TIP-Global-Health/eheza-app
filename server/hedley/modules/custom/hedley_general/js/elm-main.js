@@ -5840,27 +5840,20 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Pages$Reports$Utils$countTotalEncounters = function (data) {
-	var countIndividualDataEncounters = A2(
-		$elm$core$Basics$composeR,
-		$elm$core$Maybe$map(
-			A2(
-				$elm$core$Basics$composeR,
-				$elm$core$List$map($elm$core$List$length),
-				$elm$core$List$sum)),
-		$elm$core$Maybe$withDefault(0));
+var $author$project$Pages$Reports$Utils$countIndividualDataEncounters = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Maybe$map(
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map($elm$core$List$length),
+			$elm$core$List$sum)),
+	$elm$core$Maybe$withDefault(0));
+var $author$project$Pages$Reports$Utils$countTotalNutritionEncounters = function (data) {
 	var countGroupDataEncounters = A2(
 		$elm$core$Basics$composeR,
 		$elm$core$Maybe$map($elm$core$List$length),
 		$elm$core$Maybe$withDefault(0));
-	return ((((((((((((countIndividualDataEncounters(data.acuteIllnessData) + countIndividualDataEncounters(
-		A2(
-			$elm$core$Maybe$map,
-			$elm$core$List$map(
-				function ($) {
-					return $.encounters;
-				}),
-			data.prenatalData))) + countIndividualDataEncounters(data.homeVisitData)) + countIndividualDataEncounters(data.wellChildData)) + countIndividualDataEncounters(data.childScorecardData)) + countIndividualDataEncounters(data.ncdData)) + countIndividualDataEncounters(data.hivData)) + countIndividualDataEncounters(data.tuberculosisData)) + countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
+	return ((((($author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.wellChildData) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.individualNutritionData)) + countGroupDataEncounters(data.groupNutritionPmtctData)) + countGroupDataEncounters(data.groupNutritionFbfData)) + countGroupDataEncounters(data.groupNutritionSorwatheData)) + countGroupDataEncounters(data.groupNutritionChwData)) + countGroupDataEncounters(data.groupNutritionAchiData);
 };
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -6177,7 +6170,7 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 				var impacted = A2(
 					$elm$core$List$filterMap,
 					function (record) {
-						return ($author$project$Pages$Reports$Utils$countTotalEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
+						return ($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
 					},
 					records);
 				var currentYear = $justinmimbs$date$Date$year(currentDate);
@@ -11740,6 +11733,16 @@ var $author$project$Translate$Impacted = {$: 'Impacted'};
 var $author$project$Translate$Male = {$: 'Male'};
 var $author$project$Translate$Registered = {$: 'Registered'};
 var $author$project$Translate$RegisteredPatients = {$: 'RegisteredPatients'};
+var $author$project$Pages$Reports$Utils$countTotalEncounters = function (data) {
+	return (((((($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(data) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.acuteIllnessData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(
+		A2(
+			$elm$core$Maybe$map,
+			$elm$core$List$map(
+				function ($) {
+					return $.encounters;
+				}),
+			data.prenatalData))) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.homeVisitData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.childScorecardData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.ncdData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.hivData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.tuberculosisData);
+};
 var $elm$core$List$partition = F2(
 	function (pred, list) {
 		var step = F2(
