@@ -6,6 +6,7 @@ module Translate exposing
 
 import App.Types exposing (Language(..))
 import Backend.Scoreboard.Model exposing (SelectedEntity(..))
+import Pages.Reports.Model exposing (ReportType(..))
 import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
@@ -58,11 +59,14 @@ type TranslationId
     | District
     | Demographics
     | EmptyString
+    | Female
     | GenerateReport
     | HealthCenter
     | HttpError StringIdHttpError
     | InfrastructureEnvironmentWash
+    | Male
     | Month Month
+    | MonthLabel
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -76,15 +80,24 @@ type TranslationId
     | PleaseWaitMessage
     | PopulationSelectionOption PopulationSelectionOption
     | Province
+    | Registered
+    | ReportType ReportType
+    | ReportTypeLabel
+    | ResolveMonth Bool Month
+    | Result
+    | Save
     | Sector
     | SelectedEntity SelectedEntity
+    | SelectLimitDate
     | SelectViewMode
     | Stunting
     | Status
     | TargetedInterventions
+    | Total
     | ViewMode
     | Village
     | UniversalIntervention
+    | Year
     | Zone
 
 
@@ -151,6 +164,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Female ->
+            { english = "Female"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         GenerateReport ->
             { english = "Generate Report"
             , kinyarwanda = Nothing
@@ -172,8 +191,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Male ->
+            { english = "Male"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Month month ->
             translateMonth month False
+
+        MonthLabel ->
+            { english = "Month"
+            , kinyarwanda = Just "Ukwezi"
+            , kirundi = Just "Ukwezi"
+            }
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -421,6 +452,41 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Registered ->
+            { english = "Registered"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ReportType reportType ->
+            case reportType of
+                ReportDemographics ->
+                    { english = "Demographics"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        ReportTypeLabel ->
+            { english = "Report Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ResolveMonth short month ->
+            translateMonth month short
+
+        Result ->
+            { english = "Result"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Save ->
+            { english = "Save"
+            , kinyarwanda = Just "Kubika"
+            , kirundi = Just "Emeza"
+            }
+
         Sector ->
             { english = "Sector"
             , kinyarwanda = Nothing
@@ -440,6 +506,12 @@ translationSet transId =
 
                 EntityVillage ->
                     translationSet Village
+
+        SelectLimitDate ->
+            { english = "Limit date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         SelectViewMode ->
             { english = "Please select desired view mode"
@@ -465,6 +537,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Total ->
+            { english = "Total"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         ViewMode ->
             { english = "View Mode"
             , kinyarwanda = Nothing
@@ -481,6 +559,12 @@ translationSet transId =
             { english = "Universal Intervention"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        Year ->
+            { english = "Year"
+            , kinyarwanda = Just "Umwaka"
+            , kirundi = Just "Umwaka"
             }
 
         Zone ->

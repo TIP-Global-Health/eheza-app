@@ -2,6 +2,7 @@ module App.Fetch exposing (fetch)
 
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
+import Pages.Reports.Fetch
 import Pages.Scoreboard.Fetch
 
 
@@ -34,9 +35,9 @@ fetch model =
         ReportsMenu ->
             []
 
-        -- @todo
-        -- Reports ->
-        -- Pages.Reports.Fetch.fetch model.backend model.reportsPage
-        --     |> List.map (\subMsg -> MsgBackend subMsg)
+        Reports ->
+            Pages.Reports.Fetch.fetch model.backend model.reportsPage
+                |> List.map (\subMsg -> MsgBackend subMsg)
+
         NotFound ->
             []

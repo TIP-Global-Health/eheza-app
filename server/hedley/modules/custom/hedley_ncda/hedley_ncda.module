@@ -106,7 +106,7 @@ function hedley_ncda_node_update($node) {
   }
 
   if ($node->type == 'person') {
-    hedley_ncda_trigger_recalculation_by_edited_person($node);
+    hedley_ncda_trigger_recalculation_for_edited_person($node);
     return;
   }
 
@@ -996,7 +996,7 @@ function hedley_ncda_trigger_recalculation_for_new_village($node) {
  * Triggers calculation of NCDA data, for newly created person.
  *
  * @param object $node
- *   The node object of a village.
+ *   The node object of a person.
  *
  * @throws EntityMetadataWrapperException
  */
@@ -1023,15 +1023,15 @@ function hedley_ncda_trigger_recalculation_for_created_person($node) {
 /**
  * Triggers recalculation of person's NCDA data, when edited.
  *
- * Recalculation is required only when birth date is edited.
+ * Recalculation is required only when birthdate is edited.
  * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
- *   The node object of a village.
+ *   The node object of a person.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_ncda_trigger_recalculation_by_edited_person($node) {
+function hedley_ncda_trigger_recalculation_for_edited_person($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
 

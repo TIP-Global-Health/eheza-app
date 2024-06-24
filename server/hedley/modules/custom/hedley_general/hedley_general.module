@@ -479,7 +479,6 @@ function hedley_general_file_insert($file) {
   file_move($file, $destination);
 }
 
-
 /**
  * Build Elm application for aggregated NCDA.
  *
@@ -500,6 +499,7 @@ function hedley_general_build_elm_app($page, array $data) {
 
   // Add CSS for all pages.
   drupal_add_css($path_hedley_general . '/css/elm.css', 'file');
+  drupal_add_css($path_hedley_general . '/css/date-selector.css', 'file');
 
   if (in_array($page, ['ncda-results', 'reports-results'])) {
     // Add CSS for results pages.

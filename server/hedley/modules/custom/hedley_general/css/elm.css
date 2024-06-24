@@ -242,3 +242,56 @@ body.admin-menu #page-wrapper #header {
 .page-content .pane-content .table-row .cell:last-child {
   border-right: none;
 }
+
+.page-content .inputs .form-input.date {
+  background: none;
+  border: 2px solid white;
+  color: #3b3b3b;
+  font-size: 2rem;
+  height: 50px;
+  text-align: center;
+  padding: 0 0.5em;
+  width: 58%;
+}
+
+.page-content .inputs .report .table {
+  border: 2px solid white;
+  padding: 15px;
+}
+
+.page-content .inputs .report .table .row {
+  border-bottom: 1px solid white;
+  display: flex;
+  justify-content: space-evenly;
+  margin-left: 20px;
+  margin-right: 20px;
+  text-align: left;
+  font-size: 1.5rem;
+}
+
+.page-content .inputs .report .table .row.totals {
+  font-weight: bold;
+  margin: auto;
+  margin-top: 20px;
+  width: 50%;
+}
+
+.page-content .inputs .report .table .row:last-child {
+  border-bottom: none;
+}
+
+.page-content .inputs .report .table .row .item {
+  padding: 10px;
+}
+
+.page-content .inputs .report .table .row.captions .item {
+  font-weight: bold;
+}
+
+.page-content .inputs .report .table .row .item.label {
+  width: 40%;
+}
+
+.page-content .inputs .report .table .row .item.value {
+  width: 30%;
+}

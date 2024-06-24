@@ -5404,6 +5404,10 @@ var $elm$browser$Browser$element = _Browser_element;
 var $author$project$App$Model$MsgBackend = function (a) {
 	return {$: 'MsgBackend', a: a};
 };
+var $author$project$Pages$Reports$Fetch$fetch = F2(
+	function (modelBackend, model) {
+		return _List_Nil;
+	});
 var $author$project$Pages$Scoreboard$Fetch$fetch = F2(
 	function (modelBackend, model) {
 		return _List_Nil;
@@ -5422,11 +5426,21 @@ var $author$project$App$Fetch$fetch = function (model) {
 				A2($author$project$Pages$Scoreboard$Fetch$fetch, model.backend, model.scoreboardPage));
 		case 'ReportsMenu':
 			return _List_Nil;
+		case 'Reports':
+			return A2(
+				$elm$core$List$map,
+				function (subMsg) {
+					return $author$project$App$Model$MsgBackend(subMsg);
+				},
+				A2($author$project$Pages$Reports$Fetch$fetch, model.backend, model.reportsPage));
 		default:
 			return _List_Nil;
 	}
 };
 var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Backend$Model$MsgReports = function (a) {
+	return {$: 'MsgReports', a: a};
+};
 var $author$project$Backend$Model$MsgReportsMenu = function (a) {
 	return {$: 'MsgReportsMenu', a: a};
 };
@@ -5438,6 +5452,9 @@ var $author$project$Backend$Model$MsgScoreboardMenu = function (a) {
 };
 var $author$project$App$Model$SetCurrentTime = function (a) {
 	return {$: 'SetCurrentTime', a: a};
+};
+var $author$project$Backend$Reports$Model$SetData = function (a) {
+	return {$: 'SetData', a: a};
 };
 var $author$project$Backend$ReportsMenu$Model$SetData = function (a) {
 	return {$: 'SetData', a: a};
@@ -5463,12 +5480,13 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
+var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
 var $author$project$Pages$Scoreboard$Model$emptyModel = {viewMode: $author$project$Pages$Scoreboard$Model$ModeValues, yearSelectorGap: 0};
 var $author$project$Pages$ScoreboardMenu$Model$emptyModel = {selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection};
-var $author$project$Backend$Model$emptyModelBackend = {reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
+var $author$project$Backend$Model$emptyModelBackend = {reportsData: $elm$core$Maybe$Nothing, reportsMenuData: $elm$core$Maybe$Nothing, scoreboardData: $elm$core$Maybe$Nothing, scoreboardMenuData: $elm$core$Maybe$Nothing};
 var $elm$time$Time$Posix = function (a) {
 	return {$: 'Posix', a: a};
 };
@@ -5480,6 +5498,7 @@ var $author$project$App$Model$emptyModel = {
 	errors: _List_Nil,
 	language: $author$project$App$Types$English,
 	reportsMenuPage: $author$project$Pages$ReportsMenu$Model$emptyModel,
+	reportsPage: $author$project$Pages$Reports$Model$emptyModel,
 	scoreboardMenuPage: $author$project$Pages$ScoreboardMenu$Model$emptyModel,
 	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel
 };
@@ -5495,6 +5514,7 @@ var $elm$time$Time$Zone = F2(
 	});
 var $elm$time$Time$customZone = $elm$time$Time$Zone;
 var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
+var $author$project$App$Types$Reports = {$: 'Reports'};
 var $author$project$App$Types$ReportsMenu = {$: 'ReportsMenu'};
 var $author$project$App$Types$Scoreboard = {$: 'Scoreboard'};
 var $author$project$App$Types$ScoreboardMenu = {$: 'ScoreboardMenu'};
@@ -5506,12 +5526,17 @@ var $author$project$App$Update$resolveActivePage = function (page) {
 			return $author$project$App$Types$Scoreboard;
 		case 'reports-menu':
 			return $author$project$App$Types$ReportsMenu;
+		case 'reports-results':
+			return $author$project$App$Types$Reports;
 		default:
 			return $author$project$App$Types$NotFound;
 	}
 };
 var $author$project$App$Model$MsgReportsMenuPage = function (a) {
 	return {$: 'MsgReportsMenuPage', a: a};
+};
+var $author$project$App$Model$MsgReportsPage = function (a) {
+	return {$: 'MsgReportsPage', a: a};
 };
 var $author$project$App$Model$MsgScoreboardMenuPage = function (a) {
 	return {$: 'MsgScoreboardMenuPage', a: a};
@@ -5740,6 +5765,53 @@ var $author$project$App$Model$PagesReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
+var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
+	if (reportType === 'demographics') {
+		return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Pages$Reports$Update$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'SetReportType':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							reportType: $author$project$Pages$Reports$Utils$reportTypeFromString(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetLimitDate':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							limitDate: $elm$core$Maybe$Just(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var state = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{dateSelectorPopupState: state}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+		}
+	});
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionGlobal = {$: 'SelectionOptionGlobal'};
 var $author$project$Pages$ReportsMenu$Types$SelectionOptionHealthCenter = {$: 'SelectionOptionHealthCenter'};
@@ -5860,110 +5932,66 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
-	});
-var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
-	function (id, name) {
-		return {id: id, name: name};
-	});
-var $elm$json$Json$Decode$fail = _Json_fail;
-var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
-var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
-	_List_fromArray(
-		[
-			$elm$json$Json$Decode$int,
-			A2(
-			$elm$json$Json$Decode$andThen,
-			function (s) {
-				var _v0 = $elm$core$String$toInt(s);
-				if (_v0.$ === 'Just') {
-					var value = _v0.a;
-					return $elm$json$Json$Decode$succeed(value);
-				} else {
-					return $elm$json$Json$Decode$fail('Not an integer');
-				}
-			},
-			$elm$json$Json$Decode$string)
-		]));
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
-			decoder);
-	});
-var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'name',
-	$elm$json$Json$Decode$string,
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'id',
-		$author$project$Gizra$Json$decodeInt,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$HealthCenterData)));
-var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
-var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
-var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
-var $elm$core$String$toLower = _String_toLower;
-var $author$project$Backend$Decoder$siteFromString = function (str) {
-	var _v0 = $elm$core$String$toLower(str);
-	switch (_v0) {
-		case 'rwanda':
-			return $author$project$App$Types$SiteRwanda;
-		case 'burundi':
-			return $author$project$App$Types$SiteBurundi;
-		default:
-			return $author$project$App$Types$SiteUnknown;
-	}
-};
-var $author$project$Backend$Decoder$decodeSite = A2(
-	$elm$json$Json$Decode$andThen,
-	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData),
-	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
-var $elm$json$Json$Decode$decodeValue = _Json_run;
-var $author$project$Backend$ReportsMenu$Update$update = F3(
-	function (currentDate, msg, model) {
-		var value = msg.a;
-		var modelUpdated = _Utils_update(
-			model,
-			{
-				reportsMenuData: $elm$core$Maybe$Just(
-					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
-			});
-		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
-	});
-var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
+var $author$project$Backend$Reports$Model$ReportsData = F4(
 	function (site, entityName, entityType, records) {
 		return {entityName: entityName, entityType: entityType, records: records, site: site};
 	});
-var $author$project$Backend$Scoreboard$Model$PatientData = F6(
-	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
-		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+var $author$project$Backend$Reports$Model$PatientData = F3(
+	function (created, birthDate, gender) {
+		return {birthDate: birthDate, created: created, gender: gender};
 	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
-	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
-		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
+var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
+var $author$project$Backend$Reports$Utils$genderFromString = function (s) {
+	switch (s) {
+		case 'female':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Female);
+		case 'male':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$Male);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
 	});
-var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
-	function (row1, row2) {
-		return {row1: row1, row2: row2};
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
 	});
+var $author$project$Backend$Reports$Decoder$decodeGender = A2(
+	$elm$json$Json$Decode$andThen,
+	function (gender) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(gender + ' is not a recognized Gender.'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Utils$genderFromString(gender)));
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Backend$Reports$Decoder$decodeGenderWithFallback = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$author$project$Backend$Reports$Decoder$decodeGender,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$Female)
+		]));
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
 		return g(
@@ -6129,16 +6157,6 @@ var $elm$parser$Parser$Advanced$keeper = F2(
 		return A3($elm$parser$Parser$Advanced$map2, $elm$core$Basics$apL, parseFunc, parseArg);
 	});
 var $elm$parser$Parser$keeper = $elm$parser$Parser$Advanced$keeper;
-var $elm$core$Maybe$map = F2(
-	function (f, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return $elm$core$Maybe$Just(
-				f(value));
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$parser$Parser$Advanced$map = F2(
 	function (func, _v0) {
 		var parse = _v0.a;
@@ -6276,15 +6294,6 @@ var $elm$parser$Parser$Advanced$mapChompedString = F2(
 			});
 	});
 var $elm$parser$Parser$mapChompedString = $elm$parser$Parser$Advanced$mapChompedString;
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $justinmimbs$date$Date$int1 = A2(
 	$elm$parser$Parser$mapChompedString,
 	F2(
@@ -6790,6 +6799,178 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodePatientData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'gender',
+	$author$project$Backend$Reports$Decoder$decodeGenderWithFallback,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'birth_date',
+		$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'created',
+			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PatientData))));
+var $author$project$Backend$Reports$Model$EntityCell = {$: 'EntityCell'};
+var $author$project$Backend$Reports$Model$EntityDistrict = {$: 'EntityDistrict'};
+var $author$project$Backend$Reports$Model$EntityGlobal = {$: 'EntityGlobal'};
+var $author$project$Backend$Reports$Model$EntityHealthCenter = {$: 'EntityHealthCenter'};
+var $author$project$Backend$Reports$Model$EntityProvince = {$: 'EntityProvince'};
+var $author$project$Backend$Reports$Model$EntitySector = {$: 'EntitySector'};
+var $author$project$Backend$Reports$Model$EntityVillage = {$: 'EntityVillage'};
+var $author$project$Backend$Reports$Decoder$decodeSelectedEntity = A2(
+	$elm$json$Json$Decode$andThen,
+	function (entityType) {
+		switch (entityType) {
+			case 'global':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityGlobal);
+			case 'province':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityProvince);
+			case 'district':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityDistrict);
+			case 'sector':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntitySector);
+			case 'cell':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityCell);
+			case 'village':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityVillage);
+			case 'health-center':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$EntityHealthCenter);
+			default:
+				return $elm$json$Json$Decode$fail(entityType + ' is unknown SelectedEntity type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$App$Types$SiteBurundi = {$: 'SiteBurundi'};
+var $author$project$App$Types$SiteRwanda = {$: 'SiteRwanda'};
+var $author$project$App$Types$SiteUnknown = {$: 'SiteUnknown'};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Backend$Decoder$siteFromString = function (str) {
+	var _v0 = $elm$core$String$toLower(str);
+	switch (_v0) {
+		case 'rwanda':
+			return $author$project$App$Types$SiteRwanda;
+		case 'burundi':
+			return $author$project$App$Types$SiteBurundi;
+		default:
+			return $author$project$App$Types$SiteUnknown;
+	}
+};
+var $author$project$Backend$Decoder$decodeSite = A2(
+	$elm$json$Json$Decode$andThen,
+	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'results',
+	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'entity_type',
+		$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'entity_name',
+			$elm$json$Json$Decode$string,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'site',
+				$author$project$Backend$Decoder$decodeSite,
+				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))));
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $author$project$Backend$Reports$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				reportsData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$Reports$Decoder$decodeReportsData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
+	function (site, healthCenters) {
+		return {healthCenters: healthCenters, site: site};
+	});
+var $author$project$Backend$ReportsMenu$Model$HealthCenterData = F2(
+	function (id, name) {
+		return {id: id, name: name};
+	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$int,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toInt(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not an integer');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'name',
+	$elm$json$Json$Decode$string,
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'id',
+		$author$project$Gizra$Json$decodeInt,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$HealthCenterData)));
+var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'health_centers',
+	$elm$json$Json$Decode$list($author$project$Backend$ReportsMenu$Decoder$decodeHealthCenterData),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'site',
+		$author$project$Backend$Decoder$decodeSite,
+		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
+var $author$project$Backend$ReportsMenu$Update$update = F3(
+	function (currentDate, msg, model) {
+		var value = msg.a;
+		var modelUpdated = _Utils_update(
+			model,
+			{
+				reportsMenuData: $elm$core$Maybe$Just(
+					A2($elm$json$Json$Decode$decodeValue, $author$project$Backend$ReportsMenu$Decoder$decodeMenuData, value))
+			});
+		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+	});
+var $author$project$Backend$Scoreboard$Model$ScoreboardData = F4(
+	function (site, entityName, entityType, records) {
+		return {entityName: entityName, entityType: entityType, records: records, site: site};
+	});
+var $author$project$Backend$Scoreboard$Model$PatientData = F6(
+	function (created, birthDate, eddDate, lowBirthWeight, nutrition, ncda) {
+		return {birthDate: birthDate, created: created, eddDate: eddDate, lowBirthWeight: lowBirthWeight, ncda: ncda, nutrition: nutrition};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$Backend$Scoreboard$Model$NCDAData = F5(
+	function (ancNewborn, universalIntervention, nutritionBehavior, targetedInterventions, infrastructureEnvironmentWash) {
+		return {ancNewborn: ancNewborn, infrastructureEnvironmentWash: infrastructureEnvironmentWash, nutritionBehavior: nutritionBehavior, targetedInterventions: targetedInterventions, universalIntervention: universalIntervention};
+	});
+var $author$project$Backend$Scoreboard$Model$ANCNewbornData = F2(
+	function (row1, row2) {
+		return {row1: row1, row2: row2};
+	});
 var $justinmimbs$date$Date$Months = {$: 'Months'};
 var $justinmimbs$date$Date$monthToNumber = function (m) {
 	switch (m.$) {
@@ -7670,7 +7851,7 @@ var $author$project$Backend$Update$updateBackend = F3(
 						return $author$project$Backend$Model$MsgScoreboard(subCmds);
 					},
 					model);
-			default:
+			case 'MsgReportsMenu':
 				var subMsg = msg.a;
 				return A4(
 					$author$project$Backend$Utils$updateSubModel,
@@ -7681,6 +7862,19 @@ var $author$project$Backend$Update$updateBackend = F3(
 						}),
 					function (subCmds) {
 						return $author$project$Backend$Model$MsgReportsMenu(subCmds);
+					},
+					model);
+			default:
+				var subMsg = msg.a;
+				return A4(
+					$author$project$Backend$Utils$updateSubModel,
+					subMsg,
+					F2(
+						function (subMsg_, model_) {
+							return A3($author$project$Backend$Reports$Update$update, currentDate, subMsg_, model_);
+						}),
+					function (subCmds) {
+						return $author$project$Backend$Model$MsgReports(subCmds);
 					},
 					model);
 		}
@@ -7817,6 +8011,26 @@ var $author$project$App$Update$update = F2(
 						return $author$project$App$Model$MsgReportsMenuPage(subCmds);
 					},
 					model);
+			case 'MsgReportsPage':
+				var subMsg = msg.a;
+				return A6(
+					$author$project$App$Utils$updateSubModel,
+					subMsg,
+					model.reportsPage,
+					F2(
+						function (subMsg_, subModel) {
+							return A2($author$project$Pages$Reports$Update$update, subMsg_, subModel);
+						}),
+					F2(
+						function (subModel, model_) {
+							return _Utils_update(
+								model_,
+								{reportsPage: subModel});
+						}),
+					function (subCmds) {
+						return $author$project$App$Model$MsgReportsPage(subCmds);
+					},
+					model);
 			default:
 				var date = msg.a;
 				return _Utils_Tuple2(
@@ -7854,6 +8068,13 @@ var $author$project$App$Update$init = function (flags) {
 					$author$project$App$Model$MsgBackend(
 						$author$project$Backend$Model$MsgReportsMenu(
 							$author$project$Backend$ReportsMenu$Model$SetData(flags.appData))),
+					model).a;
+			case 'Reports':
+				return A2(
+					$author$project$App$Update$update,
+					$author$project$App$Model$MsgBackend(
+						$author$project$Backend$Model$MsgReports(
+							$author$project$Backend$Reports$Model$SetData(flags.appData))),
 					model).a;
 			default:
 				return model;
@@ -8079,6 +8300,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Female':
+				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
 				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'HealthCenter':
@@ -8088,9 +8311,17 @@ var $author$project$Translate$translationSet = function (transId) {
 				return $author$project$Translate$translateHttpError(val);
 			case 'InfrastructureEnvironmentWash':
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Male':
+				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Month':
 				var month = transId.a;
 				return A2($author$project$Translate$translateMonth, month, false);
+			case 'MonthLabel':
+				return {
+					english: 'Month',
+					kinyarwanda: $elm$core$Maybe$Just('Ukwezi'),
+					kirundi: $elm$core$Maybe$Just('Ukwezi')
+				};
 			case 'NCDADemographicsItemLabel':
 				var item = transId.a;
 				switch (item.$) {
@@ -8274,6 +8505,25 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Registered':
+				return {english: 'Registered', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ReportType':
+				var reportType = transId.a;
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ReportTypeLabel':
+				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ResolveMonth':
+				var _short = transId.a;
+				var month = transId.b;
+				return A2($author$project$Translate$translateMonth, month, _short);
+			case 'Result':
+				return {english: 'Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Save':
+				return {
+					english: 'Save',
+					kinyarwanda: $elm$core$Maybe$Just('Kubika'),
+					kirundi: $elm$core$Maybe$Just('Emeza')
+				};
 			case 'Sector':
 				return {english: 'Sector', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectedEntity':
@@ -8296,6 +8546,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 				}
+			case 'SelectLimitDate':
+				return {english: 'Limit date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectViewMode':
 				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Stunting':
@@ -8304,12 +8556,20 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Total':
+				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ViewMode':
 				return {english: 'View Mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Village':
 				return {english: 'Village', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UniversalIntervention':
 				return {english: 'Universal Intervention', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Year':
+				return {
+					english: 'Year',
+					kinyarwanda: $elm$core$Maybe$Just('Umwaka'),
+					kirundi: $elm$core$Maybe$Just('Umwaka')
+				};
 			default:
 				return {english: 'Zone', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 		}
@@ -8453,24 +8713,693 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
-var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
-var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
-var $author$project$Translate$PopulationSelectionOption = function (a) {
-	return {$: 'PopulationSelectionOption', a: a};
+var $author$project$Translate$NewSelection = {$: 'NewSelection'};
+var $author$project$Translate$ReportType = function (a) {
+	return {$: 'ReportType', a: a};
 };
-var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
-var $author$project$Pages$ReportsMenu$Model$SelectionMade = {$: 'SelectionMade'};
-var $author$project$Pages$ReportsMenu$Model$SetGeoLocation = F2(
-	function (a, b) {
-		return {$: 'SetGeoLocation', a: a, b: b};
+var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
+var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
+var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
+	return {$: 'SetLimitDate', a: a};
+};
+var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a) {
+	return {$: 'SetLimitDateSelectorState', a: a};
+};
+var $author$project$Pages$Reports$Model$SetReportType = function (a) {
+	return {$: 'SetReportType', a: a};
+};
+var $justinmimbs$date$Date$Years = {$: 'Years'};
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
 	});
-var $author$project$Pages$ReportsMenu$Model$SetHealthCenter = function (a) {
-	return {$: 'SetHealthCenter', a: a};
+var $justinmimbs$date$Date$add = F3(
+	function (unit, n, _v0) {
+		var rd = _v0.a;
+		switch (unit.$) {
+			case 'Years':
+				return A3(
+					$justinmimbs$date$Date$add,
+					$justinmimbs$date$Date$Months,
+					12 * n,
+					$justinmimbs$date$Date$RD(rd));
+			case 'Months':
+				var date = $justinmimbs$date$Date$toCalendarDate(
+					$justinmimbs$date$Date$RD(rd));
+				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
+				var m = $justinmimbs$date$Date$numberToMonth(
+					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
+				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
+				return $justinmimbs$date$Date$RD(
+					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
+						$elm$core$Basics$min,
+						date.day,
+						A2($justinmimbs$date$Date$daysInMonth, y, m)));
+			case 'Weeks':
+				return $justinmimbs$date$Date$RD(rd + (7 * n));
+			default:
+				return $justinmimbs$date$Date$RD(rd + n);
+		}
+	});
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $justinmimbs$date$Date$day = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.day;
+	});
+var $justinmimbs$date$Date$month = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.month;
+	});
+var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
+var $justinmimbs$date$Date$ordinalDay = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toOrdinalDate,
+	function ($) {
+		return $.ordinalDay;
+	});
+var $elm$core$String$cons = _String_cons;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
 };
-var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a) {
-	return {$: 'SetPopulationSelection', a: a};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padLeft = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)),
+			string);
+	});
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
 };
-var $author$project$Translate$ViewMode = {$: 'ViewMode'};
+var $justinmimbs$date$Date$padSignedInt = F2(
+	function (length, _int) {
+		return _Utils_ap(
+			(_int < 0) ? '-' : '',
+			A3(
+				$elm$core$String$padLeft,
+				length,
+				_Utils_chr('0'),
+				$elm$core$String$fromInt(
+					$elm$core$Basics$abs(_int))));
+	});
+var $justinmimbs$date$Date$monthToQuarter = function (m) {
+	return (($justinmimbs$date$Date$monthToNumber(m) + 2) / 3) | 0;
+};
+var $justinmimbs$date$Date$quarter = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToQuarter);
+var $elm$core$String$right = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3(
+			$elm$core$String$slice,
+			-n,
+			$elm$core$String$length(string),
+			string);
+	});
+var $elm$time$Time$Fri = {$: 'Fri'};
+var $elm$time$Time$Mon = {$: 'Mon'};
+var $elm$time$Time$Sat = {$: 'Sat'};
+var $elm$time$Time$Sun = {$: 'Sun'};
+var $elm$time$Time$Thu = {$: 'Thu'};
+var $elm$time$Time$Tue = {$: 'Tue'};
+var $elm$time$Time$Wed = {$: 'Wed'};
+var $justinmimbs$date$Date$numberToWeekday = function (wdn) {
+	var _v0 = A2($elm$core$Basics$max, 1, wdn);
+	switch (_v0) {
+		case 1:
+			return $elm$time$Time$Mon;
+		case 2:
+			return $elm$time$Time$Tue;
+		case 3:
+			return $elm$time$Time$Wed;
+		case 4:
+			return $elm$time$Time$Thu;
+		case 5:
+			return $elm$time$Time$Fri;
+		case 6:
+			return $elm$time$Time$Sat;
+		default:
+			return $elm$time$Time$Sun;
+	}
+};
+var $justinmimbs$date$Date$toWeekDate = function (_v0) {
+	var rd = _v0.a;
+	var wdn = $justinmimbs$date$Date$weekdayNumber(
+		$justinmimbs$date$Date$RD(rd));
+	var wy = $justinmimbs$date$Date$year(
+		$justinmimbs$date$Date$RD(rd + (4 - wdn)));
+	var week1Day1 = $justinmimbs$date$Date$daysBeforeWeekYear(wy) + 1;
+	return {
+		weekNumber: 1 + (((rd - week1Day1) / 7) | 0),
+		weekYear: wy,
+		weekday: $justinmimbs$date$Date$numberToWeekday(wdn)
+	};
+};
+var $justinmimbs$date$Date$weekNumber = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toWeekDate,
+	function ($) {
+		return $.weekNumber;
+	});
+var $justinmimbs$date$Date$weekYear = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toWeekDate,
+	function ($) {
+		return $.weekYear;
+	});
+var $justinmimbs$date$Date$weekday = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$weekdayNumber, $justinmimbs$date$Date$numberToWeekday);
+var $justinmimbs$date$Date$ordinalSuffix = function (n) {
+	var nn = A2($elm$core$Basics$modBy, 100, n);
+	var _v0 = A2(
+		$elm$core$Basics$min,
+		(nn < 20) ? nn : A2($elm$core$Basics$modBy, 10, nn),
+		4);
+	switch (_v0) {
+		case 1:
+			return 'st';
+		case 2:
+			return 'nd';
+		case 3:
+			return 'rd';
+		default:
+			return 'th';
+	}
+};
+var $justinmimbs$date$Date$withOrdinalSuffix = function (n) {
+	return _Utils_ap(
+		$elm$core$String$fromInt(n),
+		$justinmimbs$date$Date$ordinalSuffix(n));
+};
+var $justinmimbs$date$Date$formatField = F4(
+	function (language, _char, length, date) {
+		switch (_char.valueOf()) {
+			case 'y':
+				if (length === 2) {
+					return A2(
+						$elm$core$String$right,
+						2,
+						A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$year(date))));
+				} else {
+					return A2(
+						$justinmimbs$date$Date$padSignedInt,
+						length,
+						$justinmimbs$date$Date$year(date));
+				}
+			case 'Y':
+				if (length === 2) {
+					return A2(
+						$elm$core$String$right,
+						2,
+						A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$weekYear(date))));
+				} else {
+					return A2(
+						$justinmimbs$date$Date$padSignedInt,
+						length,
+						$justinmimbs$date$Date$weekYear(date));
+				}
+			case 'Q':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$quarter(date));
+					case 2:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$quarter(date));
+					case 3:
+						return 'Q' + $elm$core$String$fromInt(
+							$justinmimbs$date$Date$quarter(date));
+					case 4:
+						return $justinmimbs$date$Date$withOrdinalSuffix(
+							$justinmimbs$date$Date$quarter(date));
+					case 5:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$quarter(date));
+					default:
+						return '';
+				}
+			case 'M':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$monthNumber(date));
+					case 2:
+						return A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$monthNumber(date)));
+					case 3:
+						return language.monthNameShort(
+							$justinmimbs$date$Date$month(date));
+					case 4:
+						return language.monthName(
+							$justinmimbs$date$Date$month(date));
+					case 5:
+						return A2(
+							$elm$core$String$left,
+							1,
+							language.monthNameShort(
+								$justinmimbs$date$Date$month(date)));
+					default:
+						return '';
+				}
+			case 'w':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$weekNumber(date));
+					case 2:
+						return A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$weekNumber(date)));
+					default:
+						return '';
+				}
+			case 'd':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$day(date));
+					case 2:
+						return A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$day(date)));
+					case 3:
+						return language.dayWithSuffix(
+							$justinmimbs$date$Date$day(date));
+					default:
+						return '';
+				}
+			case 'D':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$ordinalDay(date));
+					case 2:
+						return A3(
+							$elm$core$String$padLeft,
+							2,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$ordinalDay(date)));
+					case 3:
+						return A3(
+							$elm$core$String$padLeft,
+							3,
+							_Utils_chr('0'),
+							$elm$core$String$fromInt(
+								$justinmimbs$date$Date$ordinalDay(date)));
+					default:
+						return '';
+				}
+			case 'E':
+				switch (length) {
+					case 1:
+						return language.weekdayNameShort(
+							$justinmimbs$date$Date$weekday(date));
+					case 2:
+						return language.weekdayNameShort(
+							$justinmimbs$date$Date$weekday(date));
+					case 3:
+						return language.weekdayNameShort(
+							$justinmimbs$date$Date$weekday(date));
+					case 4:
+						return language.weekdayName(
+							$justinmimbs$date$Date$weekday(date));
+					case 5:
+						return A2(
+							$elm$core$String$left,
+							1,
+							language.weekdayNameShort(
+								$justinmimbs$date$Date$weekday(date)));
+					case 6:
+						return A2(
+							$elm$core$String$left,
+							2,
+							language.weekdayNameShort(
+								$justinmimbs$date$Date$weekday(date)));
+					default:
+						return '';
+				}
+			case 'e':
+				switch (length) {
+					case 1:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$weekdayNumber(date));
+					case 2:
+						return $elm$core$String$fromInt(
+							$justinmimbs$date$Date$weekdayNumber(date));
+					default:
+						return A4(
+							$justinmimbs$date$Date$formatField,
+							language,
+							_Utils_chr('E'),
+							length,
+							date);
+				}
+			default:
+				return '';
+		}
+	});
+var $justinmimbs$date$Date$formatWithTokens = F3(
+	function (language, tokens, date) {
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (token, formatted) {
+					if (token.$ === 'Field') {
+						var _char = token.a;
+						var length = token.b;
+						return _Utils_ap(
+							A4($justinmimbs$date$Date$formatField, language, _char, length, date),
+							formatted);
+					} else {
+						var str = token.a;
+						return _Utils_ap(str, formatted);
+					}
+				}),
+			'',
+			tokens);
+	});
+var $justinmimbs$date$Pattern$Literal = function (a) {
+	return {$: 'Literal', a: a};
+};
+var $justinmimbs$date$Pattern$escapedQuote = A2(
+	$elm$parser$Parser$ignorer,
+	$elm$parser$Parser$succeed(
+		$justinmimbs$date$Pattern$Literal('\'')),
+	$elm$parser$Parser$token('\'\''));
+var $justinmimbs$date$Pattern$Field = F2(
+	function (a, b) {
+		return {$: 'Field', a: a, b: b};
+	});
+var $elm$parser$Parser$Advanced$chompWhileHelp = F5(
+	function (isGood, offset, row, col, s0) {
+		chompWhileHelp:
+		while (true) {
+			var newOffset = A3($elm$parser$Parser$Advanced$isSubChar, isGood, offset, s0.src);
+			if (_Utils_eq(newOffset, -1)) {
+				return A3(
+					$elm$parser$Parser$Advanced$Good,
+					_Utils_cmp(s0.offset, offset) < 0,
+					_Utils_Tuple0,
+					{col: col, context: s0.context, indent: s0.indent, offset: offset, row: row, src: s0.src});
+			} else {
+				if (_Utils_eq(newOffset, -2)) {
+					var $temp$isGood = isGood,
+						$temp$offset = offset + 1,
+						$temp$row = row + 1,
+						$temp$col = 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				} else {
+					var $temp$isGood = isGood,
+						$temp$offset = newOffset,
+						$temp$row = row,
+						$temp$col = col + 1,
+						$temp$s0 = s0;
+					isGood = $temp$isGood;
+					offset = $temp$offset;
+					row = $temp$row;
+					col = $temp$col;
+					s0 = $temp$s0;
+					continue chompWhileHelp;
+				}
+			}
+		}
+	});
+var $elm$parser$Parser$Advanced$chompWhile = function (isGood) {
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			return A5($elm$parser$Parser$Advanced$chompWhileHelp, isGood, s.offset, s.row, s.col, s);
+		});
+};
+var $elm$parser$Parser$chompWhile = $elm$parser$Parser$Advanced$chompWhile;
+var $elm$parser$Parser$Advanced$getOffset = $elm$parser$Parser$Advanced$Parser(
+	function (s) {
+		return A3($elm$parser$Parser$Advanced$Good, false, s.offset, s);
+	});
+var $elm$parser$Parser$getOffset = $elm$parser$Parser$Advanced$getOffset;
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $justinmimbs$date$Pattern$fieldRepeats = function (str) {
+	var _v0 = $elm$core$String$toList(str);
+	if (_v0.b && (!_v0.b.b)) {
+		var _char = _v0.a;
+		return A2(
+			$elm$parser$Parser$keeper,
+			A2(
+				$elm$parser$Parser$keeper,
+				$elm$parser$Parser$succeed(
+					F2(
+						function (x, y) {
+							return A2($justinmimbs$date$Pattern$Field, _char, 1 + (y - x));
+						})),
+				A2(
+					$elm$parser$Parser$ignorer,
+					$elm$parser$Parser$getOffset,
+					$elm$parser$Parser$chompWhile(
+						$elm$core$Basics$eq(_char)))),
+			$elm$parser$Parser$getOffset);
+	} else {
+		return $elm$parser$Parser$problem('expected exactly one char');
+	}
+};
+var $elm$parser$Parser$Advanced$getChompedString = function (parser) {
+	return A2($elm$parser$Parser$Advanced$mapChompedString, $elm$core$Basics$always, parser);
+};
+var $elm$parser$Parser$getChompedString = $elm$parser$Parser$Advanced$getChompedString;
+var $justinmimbs$date$Pattern$field = A2(
+	$elm$parser$Parser$andThen,
+	$justinmimbs$date$Pattern$fieldRepeats,
+	$elm$parser$Parser$getChompedString(
+		$elm$parser$Parser$chompIf($elm$core$Char$isAlpha)));
+var $justinmimbs$date$Pattern$finalize = A2(
+	$elm$core$List$foldl,
+	F2(
+		function (token, tokens) {
+			var _v0 = _Utils_Tuple2(token, tokens);
+			if (((_v0.a.$ === 'Literal') && _v0.b.b) && (_v0.b.a.$ === 'Literal')) {
+				var x = _v0.a.a;
+				var _v1 = _v0.b;
+				var y = _v1.a.a;
+				var rest = _v1.b;
+				return A2(
+					$elm$core$List$cons,
+					$justinmimbs$date$Pattern$Literal(
+						_Utils_ap(x, y)),
+					rest);
+			} else {
+				return A2($elm$core$List$cons, token, tokens);
+			}
+		}),
+	_List_Nil);
+var $elm$parser$Parser$Advanced$lazy = function (thunk) {
+	return $elm$parser$Parser$Advanced$Parser(
+		function (s) {
+			var _v0 = thunk(_Utils_Tuple0);
+			var parse = _v0.a;
+			return parse(s);
+		});
+};
+var $elm$parser$Parser$lazy = $elm$parser$Parser$Advanced$lazy;
+var $justinmimbs$date$Pattern$isLiteralChar = function (_char) {
+	return (!_Utils_eq(
+		_char,
+		_Utils_chr('\''))) && (!$elm$core$Char$isAlpha(_char));
+};
+var $justinmimbs$date$Pattern$literal = A2(
+	$elm$parser$Parser$map,
+	$justinmimbs$date$Pattern$Literal,
+	$elm$parser$Parser$getChompedString(
+		A2(
+			$elm$parser$Parser$ignorer,
+			A2(
+				$elm$parser$Parser$ignorer,
+				$elm$parser$Parser$succeed(_Utils_Tuple0),
+				$elm$parser$Parser$chompIf($justinmimbs$date$Pattern$isLiteralChar)),
+			$elm$parser$Parser$chompWhile($justinmimbs$date$Pattern$isLiteralChar))));
+var $justinmimbs$date$Pattern$quotedHelp = function (result) {
+	return $elm$parser$Parser$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$parser$Parser$andThen,
+				function (str) {
+					return $justinmimbs$date$Pattern$quotedHelp(
+						_Utils_ap(result, str));
+				},
+				$elm$parser$Parser$getChompedString(
+					A2(
+						$elm$parser$Parser$ignorer,
+						A2(
+							$elm$parser$Parser$ignorer,
+							$elm$parser$Parser$succeed(_Utils_Tuple0),
+							$elm$parser$Parser$chompIf(
+								$elm$core$Basics$neq(
+									_Utils_chr('\'')))),
+						$elm$parser$Parser$chompWhile(
+							$elm$core$Basics$neq(
+								_Utils_chr('\'')))))),
+				A2(
+				$elm$parser$Parser$andThen,
+				function (_v0) {
+					return $justinmimbs$date$Pattern$quotedHelp(result + '\'');
+				},
+				$elm$parser$Parser$token('\'\'')),
+				$elm$parser$Parser$succeed(result)
+			]));
+};
+var $justinmimbs$date$Pattern$quoted = A2(
+	$elm$parser$Parser$keeper,
+	A2(
+		$elm$parser$Parser$ignorer,
+		$elm$parser$Parser$succeed($justinmimbs$date$Pattern$Literal),
+		$elm$parser$Parser$chompIf(
+			$elm$core$Basics$eq(
+				_Utils_chr('\'')))),
+	A2(
+		$elm$parser$Parser$ignorer,
+		$justinmimbs$date$Pattern$quotedHelp(''),
+		$elm$parser$Parser$oneOf(
+			_List_fromArray(
+				[
+					$elm$parser$Parser$chompIf(
+					$elm$core$Basics$eq(
+						_Utils_chr('\''))),
+					$elm$parser$Parser$end
+				]))));
+var $justinmimbs$date$Pattern$patternHelp = function (tokens) {
+	return $elm$parser$Parser$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$parser$Parser$andThen,
+				function (token) {
+					return $justinmimbs$date$Pattern$patternHelp(
+						A2($elm$core$List$cons, token, tokens));
+				},
+				$elm$parser$Parser$oneOf(
+					_List_fromArray(
+						[$justinmimbs$date$Pattern$field, $justinmimbs$date$Pattern$literal, $justinmimbs$date$Pattern$escapedQuote, $justinmimbs$date$Pattern$quoted]))),
+				$elm$parser$Parser$lazy(
+				function (_v0) {
+					return $elm$parser$Parser$succeed(
+						$justinmimbs$date$Pattern$finalize(tokens));
+				})
+			]));
+};
+var $elm$core$Result$withDefault = F2(
+	function (def, result) {
+		if (result.$ === 'Ok') {
+			var a = result.a;
+			return a;
+		} else {
+			return def;
+		}
+	});
+var $justinmimbs$date$Pattern$fromString = function (str) {
+	return A2(
+		$elm$core$Result$withDefault,
+		_List_fromArray(
+			[
+				$justinmimbs$date$Pattern$Literal(str)
+			]),
+		A2(
+			$elm$parser$Parser$run,
+			$justinmimbs$date$Pattern$patternHelp(_List_Nil),
+			str));
+};
+var $justinmimbs$date$Date$formatWithLanguage = F2(
+	function (language, pattern) {
+		var tokens = $elm$core$List$reverse(
+			$justinmimbs$date$Pattern$fromString(pattern));
+		return A2($justinmimbs$date$Date$formatWithTokens, language, tokens);
+	});
+var $justinmimbs$date$Date$weekdayToName = function (wd) {
+	switch (wd.$) {
+		case 'Mon':
+			return 'Monday';
+		case 'Tue':
+			return 'Tuesday';
+		case 'Wed':
+			return 'Wednesday';
+		case 'Thu':
+			return 'Thursday';
+		case 'Fri':
+			return 'Friday';
+		case 'Sat':
+			return 'Saturday';
+		default:
+			return 'Sunday';
+	}
+};
+var $justinmimbs$date$Date$language_en = {
+	dayWithSuffix: $justinmimbs$date$Date$withOrdinalSuffix,
+	monthName: $justinmimbs$date$Date$monthToName,
+	monthNameShort: A2(
+		$elm$core$Basics$composeR,
+		$justinmimbs$date$Date$monthToName,
+		$elm$core$String$left(3)),
+	weekdayName: $justinmimbs$date$Date$weekdayToName,
+	weekdayNameShort: A2(
+		$elm$core$Basics$composeR,
+		$justinmimbs$date$Date$weekdayToName,
+		$elm$core$String$left(3))
+};
+var $justinmimbs$date$Date$format = function (pattern) {
+	return A2($justinmimbs$date$Date$formatWithLanguage, $justinmimbs$date$Date$language_en, pattern);
+};
+var $author$project$Gizra$NominalDate$formatDDMMYYYY = $justinmimbs$date$Date$format('dd/MM/yyyy');
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
 var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	if (m.$ === 'Nothing') {
 		return false;
@@ -8478,34 +9407,643 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
-var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = function (selectionOption) {
-	switch (selectionOption.$) {
-		case 'SelectionOptionGlobal':
-			return 'all';
-		case 'SelectionOptionDemographics':
-			return 'demographics';
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
+};
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
+	});
+var $elm$html$Html$Events$onClick = function (msg) {
+	return A2(
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
+	return 'demographics';
+};
+var $author$project$Translate$Save = {$: 'Save'};
+var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
+var $author$project$Translate$Year = {$: 'Year'};
+var $justinmimbs$date$Date$clamp = F3(
+	function (dateA, dateB, dateX) {
+		var a = dateA.a;
+		var b = dateB.a;
+		var x = dateX.a;
+		return (_Utils_cmp(x, a) < 0) ? dateA : ((_Utils_cmp(b, x) < 0) ? dateB : dateX);
+	});
+var $elm$html$Html$p = _VirtualDom_node('p');
+var $author$project$DateSelector$Selector$Dimmed = {$: 'Dimmed'};
+var $author$project$DateSelector$Selector$Disabled = {$: 'Disabled'};
+var $author$project$DateSelector$Selector$Normal = {$: 'Normal'};
+var $author$project$DateSelector$Selector$Selected = {$: 'Selected'};
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $author$project$DateSelector$Selector$classNameFromState = function (state) {
+	switch (state.$) {
+		case 'Normal':
+			return '';
+		case 'Dimmed':
+			return 'date-selector--dimmed';
+		case 'Disabled':
+			return 'date-selector--disabled';
 		default:
-			return 'hc';
+			return 'date-selector--selected';
 	}
 };
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Pages$Utils$viewCustomLabel = F4(
-	function (language, translationId, suffix, class_) {
+var $justinmimbs$date$Date$fromRataDie = function (rd) {
+	return $justinmimbs$date$Date$RD(rd);
+};
+var $elm$core$List$drop = F2(
+	function (n, list) {
+		drop:
+		while (true) {
+			if (n <= 0) {
+				return list;
+			} else {
+				if (!list.b) {
+					return list;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs;
+					n = $temp$n;
+					list = $temp$list;
+					continue drop;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeReverse = F3(
+	function (n, list, kept) {
+		takeReverse:
+		while (true) {
+			if (n <= 0) {
+				return kept;
+			} else {
+				if (!list.b) {
+					return kept;
+				} else {
+					var x = list.a;
+					var xs = list.b;
+					var $temp$n = n - 1,
+						$temp$list = xs,
+						$temp$kept = A2($elm$core$List$cons, x, kept);
+					n = $temp$n;
+					list = $temp$list;
+					kept = $temp$kept;
+					continue takeReverse;
+				}
+			}
+		}
+	});
+var $elm$core$List$takeTailRec = F2(
+	function (n, list) {
+		return $elm$core$List$reverse(
+			A3($elm$core$List$takeReverse, n, list, _List_Nil));
+	});
+var $elm$core$List$takeFast = F3(
+	function (ctr, n, list) {
+		if (n <= 0) {
+			return _List_Nil;
+		} else {
+			var _v0 = _Utils_Tuple2(n, list);
+			_v0$1:
+			while (true) {
+				_v0$5:
+				while (true) {
+					if (!_v0.b.b) {
+						return list;
+					} else {
+						if (_v0.b.b.b) {
+							switch (_v0.a) {
+								case 1:
+									break _v0$1;
+								case 2:
+									var _v2 = _v0.b;
+									var x = _v2.a;
+									var _v3 = _v2.b;
+									var y = _v3.a;
+									return _List_fromArray(
+										[x, y]);
+								case 3:
+									if (_v0.b.b.b.b) {
+										var _v4 = _v0.b;
+										var x = _v4.a;
+										var _v5 = _v4.b;
+										var y = _v5.a;
+										var _v6 = _v5.b;
+										var z = _v6.a;
+										return _List_fromArray(
+											[x, y, z]);
+									} else {
+										break _v0$5;
+									}
+								default:
+									if (_v0.b.b.b.b && _v0.b.b.b.b.b) {
+										var _v7 = _v0.b;
+										var x = _v7.a;
+										var _v8 = _v7.b;
+										var y = _v8.a;
+										var _v9 = _v8.b;
+										var z = _v9.a;
+										var _v10 = _v9.b;
+										var w = _v10.a;
+										var tl = _v10.b;
+										return (ctr > 1000) ? A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A2($elm$core$List$takeTailRec, n - 4, tl))))) : A2(
+											$elm$core$List$cons,
+											x,
+											A2(
+												$elm$core$List$cons,
+												y,
+												A2(
+													$elm$core$List$cons,
+													z,
+													A2(
+														$elm$core$List$cons,
+														w,
+														A3($elm$core$List$takeFast, ctr + 1, n - 4, tl)))));
+									} else {
+										break _v0$5;
+									}
+							}
+						} else {
+							if (_v0.a === 1) {
+								break _v0$1;
+							} else {
+								break _v0$5;
+							}
+						}
+					}
+				}
+				return list;
+			}
+			var _v1 = _v0.b;
+			var x = _v1.a;
+			return _List_fromArray(
+				[x]);
+		}
+	});
+var $elm$core$List$take = F2(
+	function (n, list) {
+		return A3($elm$core$List$takeFast, 0, n, list);
+	});
+var $author$project$DateSelector$Selector$groupsOf = F2(
+	function (n, list) {
+		return $elm$core$List$isEmpty(list) ? _List_Nil : A2(
+			$elm$core$List$cons,
+			A2($elm$core$List$take, n, list),
+			A2(
+				$author$project$DateSelector$Selector$groupsOf,
+				n,
+				A2($elm$core$List$drop, n, list)));
+	});
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $justinmimbs$date$Date$isBetween = F3(
+	function (_v0, _v1, _v2) {
+		var a = _v0.a;
+		var b = _v1.a;
+		var x = _v2.a;
+		return A3($justinmimbs$date$Date$isBetweenInt, a, b, x);
+	});
+var $author$project$DateSelector$Selector$isSelectable = function (state) {
+	return _Utils_eq(state, $author$project$DateSelector$Selector$Normal) || _Utils_eq(state, $author$project$DateSelector$Selector$Dimmed);
+};
+var $justinmimbs$date$Date$Day = {$: 'Day'};
+var $justinmimbs$date$Date$Days = {$: 'Days'};
+var $justinmimbs$date$Date$Monday = {$: 'Monday'};
+var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
+	switch (wd.$) {
+		case 'Mon':
+			return 1;
+		case 'Tue':
+			return 2;
+		case 'Wed':
+			return 3;
+		case 'Thu':
+			return 4;
+		case 'Fri':
+			return 5;
+		case 'Sat':
+			return 6;
+		default:
+			return 7;
+	}
+};
+var $justinmimbs$date$Date$daysSincePreviousWeekday = F2(
+	function (wd, date) {
 		return A2(
-			$elm$html$Html$div,
+			$elm$core$Basics$modBy,
+			7,
+			($justinmimbs$date$Date$weekdayNumber(date) + 7) - $justinmimbs$date$Date$weekdayToNumber(wd));
+	});
+var $justinmimbs$date$Date$firstOfMonth = F2(
+	function (y, m) {
+		return $justinmimbs$date$Date$RD(
+			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + 1);
+	});
+var $justinmimbs$date$Date$quarterToMonth = function (q) {
+	return $justinmimbs$date$Date$numberToMonth((q * 3) - 2);
+};
+var $justinmimbs$date$Date$floor = F2(
+	function (interval, date) {
+		var rd = date.a;
+		switch (interval.$) {
+			case 'Year':
+				return $justinmimbs$date$Date$firstOfYear(
+					$justinmimbs$date$Date$year(date));
+			case 'Quarter':
+				return A2(
+					$justinmimbs$date$Date$firstOfMonth,
+					$justinmimbs$date$Date$year(date),
+					$justinmimbs$date$Date$quarterToMonth(
+						$justinmimbs$date$Date$quarter(date)));
+			case 'Month':
+				return A2(
+					$justinmimbs$date$Date$firstOfMonth,
+					$justinmimbs$date$Date$year(date),
+					$justinmimbs$date$Date$month(date));
+			case 'Week':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
+			case 'Monday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
+			case 'Tuesday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Tue, date));
+			case 'Wednesday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Wed, date));
+			case 'Thursday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Thu, date));
+			case 'Friday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Fri, date));
+			case 'Saturday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sat, date));
+			case 'Sunday':
+				return $justinmimbs$date$Date$RD(
+					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sun, date));
+			default:
+				return date;
+		}
+	});
+var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
+var $justinmimbs$date$Date$intervalToUnits = function (interval) {
+	switch (interval.$) {
+		case 'Year':
+			return _Utils_Tuple2(1, $justinmimbs$date$Date$Years);
+		case 'Quarter':
+			return _Utils_Tuple2(3, $justinmimbs$date$Date$Months);
+		case 'Month':
+			return _Utils_Tuple2(1, $justinmimbs$date$Date$Months);
+		case 'Day':
+			return _Utils_Tuple2(1, $justinmimbs$date$Date$Days);
+		default:
+			var week = interval;
+			return _Utils_Tuple2(1, $justinmimbs$date$Date$Weeks);
+	}
+};
+var $justinmimbs$date$Date$ceiling = F2(
+	function (interval, date) {
+		var floored = A2($justinmimbs$date$Date$floor, interval, date);
+		if (_Utils_eq(date, floored)) {
+			return date;
+		} else {
+			var _v0 = $justinmimbs$date$Date$intervalToUnits(interval);
+			var n = _v0.a;
+			var unit = _v0.b;
+			return A3($justinmimbs$date$Date$add, unit, n, floored);
+		}
+	});
+var $justinmimbs$date$Date$rangeHelp = F5(
+	function (unit, step, until, revList, current) {
+		rangeHelp:
+		while (true) {
+			if (_Utils_cmp(current, until) < 0) {
+				var _v0 = A3(
+					$justinmimbs$date$Date$add,
+					unit,
+					step,
+					$justinmimbs$date$Date$RD(current));
+				var next = _v0.a;
+				var $temp$unit = unit,
+					$temp$step = step,
+					$temp$until = until,
+					$temp$revList = A2(
+					$elm$core$List$cons,
+					$justinmimbs$date$Date$RD(current),
+					revList),
+					$temp$current = next;
+				unit = $temp$unit;
+				step = $temp$step;
+				until = $temp$until;
+				revList = $temp$revList;
+				current = $temp$current;
+				continue rangeHelp;
+			} else {
+				return $elm$core$List$reverse(revList);
+			}
+		}
+	});
+var $justinmimbs$date$Date$range = F4(
+	function (interval, step, _v0, _v1) {
+		var start = _v0.a;
+		var until = _v1.a;
+		var _v2 = $justinmimbs$date$Date$intervalToUnits(interval);
+		var n = _v2.a;
+		var unit = _v2.b;
+		var _v3 = A2(
+			$justinmimbs$date$Date$ceiling,
+			interval,
+			$justinmimbs$date$Date$RD(start));
+		var first = _v3.a;
+		return (_Utils_cmp(first, until) < 0) ? A5(
+			$justinmimbs$date$Date$rangeHelp,
+			unit,
+			A2($elm$core$Basics$max, 1, step) * n,
+			until,
+			_List_Nil,
+			first) : _List_Nil;
+	});
+var $author$project$DateSelector$Selector$monthDates = F2(
+	function (y, m) {
+		var start = A2(
+			$justinmimbs$date$Date$floor,
+			$justinmimbs$date$Date$Monday,
+			A3($justinmimbs$date$Date$fromCalendarDate, y, m, 1));
+		return A4(
+			$justinmimbs$date$Date$range,
+			$justinmimbs$date$Date$Day,
+			1,
+			start,
+			A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, 42, start));
+	});
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $elm$virtual_dom$VirtualDom$property = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_property,
+			_VirtualDom_noInnerHtmlOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$property = $elm$virtual_dom$VirtualDom$property;
+var $elm$html$Html$table = _VirtualDom_node('table');
+var $elm$html$Html$tbody = _VirtualDom_node('tbody');
+var $elm$html$Html$td = _VirtualDom_node('td');
+var $justinmimbs$date$Date$toRataDie = function (_v0) {
+	var rd = _v0.a;
+	return rd;
+};
+var $elm$html$Html$tr = _VirtualDom_node('tr');
+var $author$project$DateSelector$Selector$dayOfWeekNames = _List_fromArray(
+	['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su']);
+var $elm$html$Html$th = _VirtualDom_node('th');
+var $elm$html$Html$thead = _VirtualDom_node('thead');
+var $author$project$DateSelector$Selector$viewDayOfWeekHeader = A2(
+	$elm$html$Html$thead,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$tr,
+			_List_Nil,
+			A2(
+				$elm$core$List$map,
+				function (name) {
+					return A2(
+						$elm$html$Html$th,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text(name)
+							]));
+				},
+				$author$project$DateSelector$Selector$dayOfWeekNames))
+		]));
+var $author$project$DateSelector$Selector$viewDateTable = F3(
+	function (minimum, maximum, selected) {
+		var weeks = A2(
+			$author$project$DateSelector$Selector$groupsOf,
+			7,
+			A2(
+				$author$project$DateSelector$Selector$monthDates,
+				$justinmimbs$date$Date$year(selected),
+				$justinmimbs$date$Date$month(selected)));
+		var isInvertedMinMax = _Utils_eq(
+			A2($justinmimbs$date$Date$compare, minimum, maximum),
+			$elm$core$Basics$GT);
+		return A2(
+			$elm$html$Html$table,
+			_List_Nil,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class(class_)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					_Utils_ap(
-						A2($author$project$Translate$translate, language, translationId),
-						suffix))
+					$author$project$DateSelector$Selector$viewDayOfWeekHeader,
+					A2(
+					$elm$html$Html$tbody,
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$Events$on,
+							'click',
+							A2(
+								$elm$json$Json$Decode$map,
+								$justinmimbs$date$Date$fromRataDie,
+								A2(
+									$elm$json$Json$Decode$at,
+									_List_fromArray(
+										['target', 'time']),
+									$elm$json$Json$Decode$int)))
+						]),
+					A2(
+						$elm$core$List$map,
+						function (week) {
+							return A2(
+								$elm$html$Html$tr,
+								_List_Nil,
+								A2(
+									$elm$core$List$map,
+									function (date) {
+										var equalByDay = F2(
+											function (date1, date2) {
+												return _Utils_eq(
+													$justinmimbs$date$Date$day(date1),
+													$justinmimbs$date$Date$day(date2)) && (_Utils_eq(
+													$justinmimbs$date$Date$month(date1),
+													$justinmimbs$date$Date$month(date2)) && _Utils_eq(
+													$justinmimbs$date$Date$year(date1),
+													$justinmimbs$date$Date$year(date2)));
+											});
+										var state = A2(equalByDay, date, selected) ? $author$project$DateSelector$Selector$Selected : (((!A3($justinmimbs$date$Date$isBetween, minimum, maximum, date)) || isInvertedMinMax) ? $author$project$DateSelector$Selector$Disabled : ((!_Utils_eq(
+											$justinmimbs$date$Date$month(date),
+											$justinmimbs$date$Date$month(selected))) ? $author$project$DateSelector$Selector$Dimmed : $author$project$DateSelector$Selector$Normal));
+										var cell = _Utils_eq(state, $author$project$DateSelector$Selector$Selected) ? A2(
+											$elm$html$Html$p,
+											_List_Nil,
+											_List_fromArray(
+												[
+													$elm$html$Html$text(
+													$elm$core$String$fromInt(
+														$justinmimbs$date$Date$day(date)))
+												])) : $elm$html$Html$text(
+											$elm$core$String$fromInt(
+												$justinmimbs$date$Date$day(date)));
+										return A2(
+											$elm$html$Html$td,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class(
+													$author$project$DateSelector$Selector$classNameFromState(state)),
+													A2(
+													$elm$html$Html$Attributes$property,
+													'time',
+													$author$project$DateSelector$Selector$isSelectable(state) ? $elm$json$Json$Encode$int(
+														$justinmimbs$date$Date$toRataDie(date)) : $elm$json$Json$Encode$null)
+												]),
+											_List_fromArray(
+												[cell]));
+									},
+									week));
+						},
+						weeks))
 				]));
 	});
+var $author$project$DateSelector$Selector$viewDateTableDisabled = function (date) {
+	var weeks = A2(
+		$author$project$DateSelector$Selector$groupsOf,
+		7,
+		A2(
+			$author$project$DateSelector$Selector$monthDates,
+			$justinmimbs$date$Date$year(date),
+			$justinmimbs$date$Date$month(date)));
+	var disabled = $author$project$DateSelector$Selector$classNameFromState($author$project$DateSelector$Selector$Disabled);
+	return A2(
+		$elm$html$Html$table,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$author$project$DateSelector$Selector$viewDayOfWeekHeader,
+				A2(
+				$elm$html$Html$tbody,
+				_List_Nil,
+				A2(
+					$elm$core$List$map,
+					function (week) {
+						return A2(
+							$elm$html$Html$tr,
+							_List_Nil,
+							A2(
+								$elm$core$List$map,
+								function (date_) {
+									return A2(
+										$elm$html$Html$td,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class(disabled)
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												$elm$core$String$fromInt(
+													$justinmimbs$date$Date$day(date_)))
+											]));
+								},
+								week));
+					},
+					weeks))
+			]));
+};
+var $author$project$Translate$ResolveMonth = F2(
+	function (a, b) {
+		return {$: 'ResolveMonth', a: a, b: b};
+	});
+var $author$project$Gizra$NominalDate$allMonths = _List_fromArray(
+	[$elm$time$Time$Jan, $elm$time$Time$Feb, $elm$time$Time$Mar, $elm$time$Time$Apr, $elm$time$Time$May, $elm$time$Time$Jun, $elm$time$Time$Jul, $elm$time$Time$Aug, $elm$time$Time$Sep, $elm$time$Time$Oct, $elm$time$Time$Nov, $elm$time$Time$Dec]);
+var $author$project$DateSelector$Selector$isLeapYear = function (y) {
+	return ((!A2($elm$core$Basics$modBy, 4, y)) && (!(!A2($elm$core$Basics$modBy, 100, y)))) || (!A2($elm$core$Basics$modBy, 400, y));
+};
+var $author$project$DateSelector$Selector$daysInMonth = F2(
+	function (y, m) {
+		switch (m.$) {
+			case 'Jan':
+				return 31;
+			case 'Feb':
+				return $author$project$DateSelector$Selector$isLeapYear(y) ? 29 : 28;
+			case 'Mar':
+				return 31;
+			case 'Apr':
+				return 30;
+			case 'May':
+				return 31;
+			case 'Jun':
+				return 30;
+			case 'Jul':
+				return 31;
+			case 'Aug':
+				return 31;
+			case 'Sep':
+				return 30;
+			case 'Oct':
+				return 31;
+			case 'Nov':
+				return 30;
+			default:
+				return 31;
+		}
+	});
+var $author$project$DateSelector$Selector$dateWithMonth = F2(
+	function (date, m) {
+		var y = $justinmimbs$date$Date$year(date);
+		var d = $justinmimbs$date$Date$day(date);
+		return A3(
+			$justinmimbs$date$Date$fromCalendarDate,
+			y,
+			m,
+			A2(
+				$elm$core$Basics$min,
+				d,
+				A2($author$project$DateSelector$Selector$daysInMonth, y, m)));
+	});
 var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$html$Html$Attributes$boolProperty = F2(
 	function (key, bool) {
@@ -8516,6 +10054,606 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 	});
 var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$DateSelector$Selector$viewMonthSelectList = F4(
+	function (language, minimum, maximum, selectedDate) {
+		var isInvertedMinMax = _Utils_eq(
+			A2($justinmimbs$date$Date$compare, minimum, maximum),
+			$elm$core$Basics$GT);
+		var months = function () {
+			if (isInvertedMinMax) {
+				return _List_Nil;
+			} else {
+				var last = _Utils_eq(
+					$justinmimbs$date$Date$year(selectedDate),
+					$justinmimbs$date$Date$year(maximum)) ? $justinmimbs$date$Date$monthNumber(maximum) : 12;
+				var first = _Utils_eq(
+					$justinmimbs$date$Date$year(selectedDate),
+					$justinmimbs$date$Date$year(minimum)) ? $justinmimbs$date$Date$monthNumber(minimum) : 1;
+				return A2(
+					$elm$core$List$filter,
+					function (month) {
+						var monthNumber = $justinmimbs$date$Date$monthToNumber(month);
+						return (_Utils_cmp(monthNumber, first) > -1) && (_Utils_cmp(monthNumber, last) < 1);
+					},
+					$author$project$Gizra$NominalDate$allMonths);
+			}
+		}();
+		var options = A2(
+			$elm$core$List$map,
+			function (month) {
+				var monthNumber = $justinmimbs$date$Date$monthToNumber(month);
+				return A2(
+					$elm$html$Html$option,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$value(
+							$elm$core$String$fromInt(monthNumber)),
+							$elm$html$Html$Attributes$selected(
+							_Utils_eq(
+								$justinmimbs$date$Date$monthNumber(selectedDate),
+								monthNumber))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2(
+								$author$project$Translate$translate,
+								language,
+								A2($author$project$Translate$ResolveMonth, false, month)))
+						]));
+			},
+			months);
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$Events$on,
+					'input',
+					A2(
+						$elm$json$Json$Decode$map,
+						function (s) {
+							var selectedMonths = A2(
+								$elm$core$Maybe$withDefault,
+								1,
+								$elm$core$String$toInt(s));
+							return A2(
+								$author$project$DateSelector$Selector$dateWithMonth,
+								selectedDate,
+								$justinmimbs$date$Date$numberToMonth(selectedMonths));
+						},
+						A2(
+							$elm$json$Json$Decode$at,
+							_List_fromArray(
+								['target', 'value']),
+							$elm$json$Json$Decode$string)))
+				]),
+			options);
+	});
+var $author$project$DateSelector$Selector$viewMonthSelectListDisabled = A2(
+	$elm$html$Html$select,
+	_List_Nil,
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$option,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$value('')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('')
+				]))
+		]));
+var $author$project$DateSelector$Selector$dateWithYear = F2(
+	function (date, y) {
+		var m = $justinmimbs$date$Date$month(date);
+		var d = $justinmimbs$date$Date$day(date);
+		return (_Utils_eq(m, $elm$time$Time$Feb) && ((d === 29) && (!$author$project$DateSelector$Selector$isLeapYear(y)))) ? A3($justinmimbs$date$Date$fromCalendarDate, y, $elm$time$Time$Feb, 28) : A3($justinmimbs$date$Date$fromCalendarDate, y, m, d);
+	});
+var $author$project$DateSelector$Selector$viewYearSelectList = F3(
+	function (minimum, maximum, maybeSelected) {
+		var isSelectedYear = A2(
+			$elm$core$Maybe$withDefault,
+			$elm$core$Basics$always(false),
+			A2(
+				$elm$core$Maybe$map,
+				function (selected) {
+					return $elm$core$Basics$eq(
+						$justinmimbs$date$Date$year(selected));
+				},
+				maybeSelected));
+		var isInvertedMinMax = _Utils_eq(
+			A2($justinmimbs$date$Date$compare, minimum, maximum),
+			$elm$core$Basics$GT);
+		var years = isInvertedMinMax ? _List_fromArray(
+			[
+				$justinmimbs$date$Date$year(
+				A2($elm$core$Maybe$withDefault, minimum, maybeSelected))
+			]) : A2(
+			$elm$core$List$range,
+			$justinmimbs$date$Date$year(minimum),
+			$justinmimbs$date$Date$year(maximum));
+		var options_ = A2(
+			$elm$core$List$map,
+			function (year) {
+				return A2(
+					$elm$html$Html$option,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$value(
+							$elm$core$String$fromInt(year)),
+							$elm$html$Html$Attributes$selected(
+							isSelectedYear(year))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							$elm$core$String$fromInt(year))
+						]));
+			},
+			$elm$core$List$reverse(years));
+		var options = $elm_community$maybe_extra$Maybe$Extra$isNothing(maybeSelected) ? A2(
+			$elm$core$List$cons,
+			A2(
+				$elm$html$Html$option,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$value('')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('')
+					])),
+			options_) : options_;
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$Events$on,
+					'input',
+					A2(
+						$elm$json$Json$Decode$map,
+						function (s) {
+							var selectedYear = A2(
+								$elm$core$Maybe$withDefault,
+								2000,
+								$elm$core$String$toInt(s));
+							return A2(
+								$author$project$DateSelector$Selector$dateWithYear,
+								A2(
+									$elm$core$Maybe$withDefault,
+									A3(
+										$justinmimbs$date$Date$fromCalendarDate,
+										$justinmimbs$date$Date$year(minimum),
+										$elm$time$Time$Jan,
+										1),
+									maybeSelected),
+								selectedYear);
+						},
+						A2(
+							$elm$json$Json$Decode$at,
+							_List_fromArray(
+								['target', 'value']),
+							$elm$json$Json$Decode$string)))
+				]),
+			options);
+	});
+var $author$project$DateSelector$Selector$viewPopup = F4(
+	function (language, minimum, maximum, maybeSelected) {
+		var yearSection = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('year')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$Year))
+						])),
+					A3($author$project$DateSelector$Selector$viewYearSelectList, minimum, maximum, maybeSelected)
+				]));
+		var monthSection = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('month')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$MonthLabel))
+						])),
+					A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$DateSelector$Selector$viewMonthSelectListDisabled,
+					A2(
+						$elm$core$Maybe$map,
+						A3($author$project$DateSelector$Selector$viewMonthSelectList, language, minimum, maximum),
+						maybeSelected))
+				]));
+		var daysSection = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('days')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$DateSelector$Selector$viewDateTableDisabled(minimum),
+					A2(
+						$elm$core$Maybe$map,
+						A2($author$project$DateSelector$Selector$viewDateTable, minimum, maximum),
+						maybeSelected))
+				]));
+		return A2(
+			$elm$html$Html$map,
+			A2($justinmimbs$date$Date$clamp, minimum, maximum),
+			A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('calendar')
+					]),
+				_List_fromArray(
+					[yearSection, monthSection, daysSection])));
+	});
+var $author$project$DateSelector$SelectorPopup$view = F6(
+	function (language, toSelect, toClose, minimum, maximum, selected) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('date-selector-popup')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$map,
+					toSelect,
+					A4($author$project$DateSelector$Selector$viewPopup, language, minimum, maximum, selected)),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ui button save'),
+							$elm$html$Html$Events$onClick(toClose)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$Save))
+						]))
+				]));
+	});
+var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
+	function (language, popupState, selected) {
+		return A2(
+			$elm$core$Maybe$map,
+			function (config) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ui active modal calendar-popup')
+						]),
+					_List_fromArray(
+						[
+							A6($author$project$DateSelector$SelectorPopup$view, language, config.select, config.close, config.dateFrom, config.dateTo, selected)
+						]));
+			},
+			popupState);
+	});
+var $author$project$Translate$Female = {$: 'Female'};
+var $author$project$Translate$Male = {$: 'Male'};
+var $author$project$Translate$Registered = {$: 'Registered'};
+var $author$project$Translate$Total = {$: 'Total'};
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
+var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
+	function (language, currentDate, limitDate, data) {
+		var viewRow = F3(
+			function (label, valueMales, valueFemales) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item label')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(
+										$elm$core$List$length(valueMales)))
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(
+										$elm$core$List$length(valueFemales)))
+								]))
+						]));
+			});
+		var _v0 = A2(
+			$elm$core$List$partition,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.gender;
+				},
+				$elm$core$Basics$eq($author$project$Backend$Reports$Model$Male)),
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return _Utils_eq(
+						A2($justinmimbs$date$Date$compare, record.created, limitDate),
+						$elm$core$Basics$LT);
+				},
+				data.records));
+		var males = _v0.a;
+		var females = _v0.b;
+		var females10Years20Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
+			},
+			females);
+		var females1Month2Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
+			},
+			females);
+		var females1MonthAndLess = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
+			},
+			females);
+		var females20Years50Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
+			},
+			females);
+		var females2Years5Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
+			},
+			females);
+		var females50YearsOrMore = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
+			},
+			females);
+		var females5Years10Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
+			},
+			females);
+		var males10Years20Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 10) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 20);
+			},
+			males);
+		var males1Month2Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate) > 0) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 2);
+			},
+			males);
+		var males1MonthAndLess = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return !A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Months, patient.birthDate, limitDate);
+			},
+			males);
+		var males20Years50Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 20) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 50);
+			},
+			males);
+		var males2Years5Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 2) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 5);
+			},
+			males);
+		var males50YearsOrMore = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 50;
+			},
+			males);
+		var males5Years10Years = A2(
+			$elm$core$List$filter,
+			function (patient) {
+				return (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) >= 5) && (A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Years, patient.birthDate, limitDate) < 10);
+			},
+			males);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report demographics')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table registered')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Registered))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Male))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Female))
+										]))
+								])),
+							A3(viewRow, '0 - 1M', males1MonthAndLess, females1MonthAndLess),
+							A3(viewRow, '1M - 2Y', males1Month2Years, females1Month2Years),
+							A3(viewRow, '2Y - 5Y', males2Years5Years, females2Years5Years),
+							A3(viewRow, '5Y - 10Y', males5Years10Years, females5Years10Years),
+							A3(viewRow, '10Y - 20Y', males10Years20Years, females10Years20Years),
+							A3(viewRow, '20Y - 50Y', males20Years50Years, females20Years50Years),
+							A3(viewRow, '50Y +', males50YearsOrMore, females50YearsOrMore),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row totals')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											$elm$core$String$fromInt(
+												$elm$core$List$length(
+													_Utils_ap(males, females))))
+										]))
+								]))
+						]))
+				]));
+	});
+var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
+var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
+	var classes = A2(
+		$elm$core$String$join,
+		' ',
+		A2($elm$core$List$cons, 'overlay', extraClasses));
+	return A2(
+		$elm$core$Basics$composeL,
+		$author$project$Gizra$Html$showMaybe,
+		$elm$core$Maybe$map(
+			function (modal) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(classes)
+						]),
+					_List_fromArray(
+						[modal]));
+			}));
+};
+var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
 	return A2(
 		$elm$html$Html$option,
@@ -8535,17 +10673,12 @@ var $elm$html$Html$Events$alwaysStop = function (x) {
 var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
 	return {$: 'MayStopPropagation', a: a};
 };
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
 var $elm$html$Html$Events$stopPropagationOn = F2(
 	function (event, decoder) {
 		return A2(
 			$elm$virtual_dom$VirtualDom$on,
 			event,
 			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
 	});
 var $elm$html$Html$Events$targetValue = A2(
 	$elm$json$Json$Decode$at,
@@ -8561,7 +10694,6 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			$elm$html$Html$Events$alwaysStop,
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
-var $elm$html$Html$select = _VirtualDom_node('select');
 var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
 	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
 		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
@@ -8599,6 +10731,231 @@ var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
 					},
 					options)));
 	});
+var $author$project$Pages$Utils$viewSelectListInput = F7(
+	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
+		var transFunc = A2(
+			$elm$core$Basics$composeR,
+			transId,
+			$author$project$Translate$translate(language));
+		var optionsPairs = A2(
+			$elm$core$List$map,
+			function (option) {
+				return _Utils_Tuple2(
+					transFunc(option),
+					option);
+			},
+			options);
+		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
+	});
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $author$project$Pages$Utils$viewCustomLabel = F4(
+	function (language, translationId, suffix, class_) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(class_)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					_Utils_ap(
+						A2($author$project$Translate$translate, language, translationId),
+						suffix))
+				]));
+	});
+var $author$project$Pages$Utils$viewLabel = F2(
+	function (language, translationId) {
+		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
+	});
+var $author$project$Pages$Utils$wrapSelectListInput = F4(
+	function (language, labelTransId, disabled, selectList) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('select-input-wrapper', true),
+							_Utils_Tuple2('disabled', disabled)
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
+					selectList
+				]));
+	});
+var $author$project$Pages$Reports$View$viewReportsData = F4(
+	function (language, currentDate, data, model) {
+		var topBar = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('top-bar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('new-selection')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewSelection))
+										]))
+								]))
+						]))
+				]));
+		var limitDateForView = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+		var dateSelectorConfig = {
+			close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+			dateDefault: $elm$core$Maybe$Just(currentDate),
+			dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
+			dateTo: currentDate,
+			select: $author$project$Pages$Reports$Model$SetLimitDate
+		};
+		var content = $elm_community$maybe_extra$Maybe$Extra$isJust(model.dateSelectorPopupState) ? $author$project$Gizra$Html$emptyNode : A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A3(
+				$elm$core$Maybe$map2,
+				F2(
+					function (reportType, limitDate) {
+						return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, currentDate, limitDate, data);
+					}),
+				model.reportType,
+				model.limitDate));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content')
+				]),
+			_List_fromArray(
+				[
+					topBar,
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					_List_fromArray(
+						[
+							A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
+							$author$project$Translate$ReportTypeLabel,
+							false,
+							A7(
+								$author$project$Pages$Utils$viewSelectListInput,
+								language,
+								model.reportType,
+								_List_fromArray(
+									[$author$project$Pages$Reports$Model$ReportDemographics]),
+								$author$project$Pages$Reports$Utils$reportTypeToString,
+								$author$project$Pages$Reports$Model$SetReportType,
+								$author$project$Translate$ReportType,
+								'select-input')),
+							A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
+							$author$project$Translate$SelectLimitDate,
+							false,
+							A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('form-input date'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+											$elm$core$Maybe$Just(dateSelectorConfig)))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(limitDateForView)
+									]))),
+							content
+						])),
+					$author$project$Utils$Html$viewModal(
+					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.dateSelectorPopupState, model.limitDate))
+				]));
+	});
+var $author$project$Pages$Reports$View$view = F4(
+	function (language, currentDate, modelBackend, model) {
+		var _v0 = modelBackend.reportsData;
+		if (_v0.$ === 'Just') {
+			if (_v0.a.$ === 'Ok') {
+				var data = _v0.a.a;
+				return A4($author$project$Pages$Reports$View$viewReportsData, language, currentDate, data, model);
+			} else {
+				var err = _v0.a.a;
+				return $elm$html$Html$text(
+					$elm$core$Debug$toString(err));
+			}
+		} else {
+			return $author$project$Gizra$Html$emptyNode;
+		}
+	});
+var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
+var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
+var $author$project$Translate$PopulationSelectionOption = function (a) {
+	return {$: 'PopulationSelectionOption', a: a};
+};
+var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
+var $author$project$Pages$ReportsMenu$Model$SelectionMade = {$: 'SelectionMade'};
+var $author$project$Pages$ReportsMenu$Model$SetGeoLocation = F2(
+	function (a, b) {
+		return {$: 'SetGeoLocation', a: a, b: b};
+	});
+var $author$project$Pages$ReportsMenu$Model$SetHealthCenter = function (a) {
+	return {$: 'SetHealthCenter', a: a};
+};
+var $author$project$Pages$ReportsMenu$Model$SetPopulationSelection = function (a) {
+	return {$: 'SetPopulationSelection', a: a};
+};
+var $author$project$Translate$ViewMode = {$: 'ViewMode'};
+var $author$project$Pages$ReportsMenu$Utils$populationSelectionOptionToString = function (selectionOption) {
+	switch (selectionOption.$) {
+		case 'SelectionOptionGlobal':
+			return 'all';
+		case 'SelectionOptionDemographics':
+			return 'demographics';
+		default:
+			return 'hc';
+	}
+};
+var $elm$core$List$sortBy = _List_sortBy;
 var $pzp1997$assoc_list$AssocList$filter = F2(
 	function (isGood, _v0) {
 		var alist = _v0.a;
@@ -27891,39 +30248,6 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5 = function (
 			return $author$project$Translate$EmptyString;
 	}
 };
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
-var $author$project$Pages$Utils$viewLabel = F2(
-	function (language, translationId) {
-		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
-	});
-var $author$project$Pages$Utils$wrapSelectListInput = F4(
-	function (language, labelTransId, disabled, selectList) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('select-input-wrapper', true),
-							_Utils_Tuple2('disabled', disabled)
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
-					selectList
-				]));
-	});
 var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 	function (language, currentValue, options, setMsg, labelTransId, disabled) {
 		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
@@ -28139,30 +30463,6 @@ var $elm$core$Maybe$andThen = F2(
 		}
 	});
 var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
 var $author$project$Pages$Utils$viewGenerateReportButton = F3(
 	function (language, path, selectionMadeMsg) {
 		return A2(
@@ -28261,22 +30561,6 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 					selection.cell)));
 		var path = pathPrefix + ('/' + (provincePart + (districtPart + (sectorPart + (cellPart + villagePart)))));
 		return A3($author$project$Pages$Utils$viewGenerateReportButton, language, path, selectionMadeMsg);
-	});
-var $author$project$Pages$Utils$viewSelectListInput = F7(
-	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
-		var transFunc = A2(
-			$elm$core$Basics$composeR,
-			transId,
-			$author$project$Translate$translate(language));
-		var optionsPairs = A2(
-			$elm$core$List$map,
-			function (option) {
-				return _Utils_Tuple2(
-					transFunc(option),
-					option);
-			},
-			options);
-		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 	function (language, data, model) {
@@ -28398,17 +30682,9 @@ var $author$project$Pages$Scoreboard$Model$ChaneYearGap = function (a) {
 	return {$: 'ChaneYearGap', a: a};
 };
 var $author$project$Pages$Scoreboard$Model$ModePercentages = {$: 'ModePercentages'};
-var $author$project$Translate$NewSelection = {$: 'NewSelection'};
 var $author$project$Pages$Scoreboard$Model$SetViewMode = function (a) {
 	return {$: 'SetViewMode', a: a};
 };
-var $justinmimbs$date$Date$month = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toCalendarDate,
-	function ($) {
-		return $.month;
-	});
-var $justinmimbs$date$Date$monthNumber = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToNumber);
 var $author$project$Pages$Scoreboard$View$generateMonthsGap = F2(
 	function (currentDate, yearSelectorGap) {
 		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
@@ -28444,130 +30720,7 @@ var $elm$core$List$repeat = F2(
 	function (n, value) {
 		return A3($elm$core$List$repeatHelp, _List_Nil, n, value);
 	});
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $justinmimbs$date$Date$add = F3(
-	function (unit, n, _v0) {
-		var rd = _v0.a;
-		switch (unit.$) {
-			case 'Years':
-				return A3(
-					$justinmimbs$date$Date$add,
-					$justinmimbs$date$Date$Months,
-					12 * n,
-					$justinmimbs$date$Date$RD(rd));
-			case 'Months':
-				var date = $justinmimbs$date$Date$toCalendarDate(
-					$justinmimbs$date$Date$RD(rd));
-				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
-				var m = $justinmimbs$date$Date$numberToMonth(
-					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
-				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
-				return $justinmimbs$date$Date$RD(
-					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
-						$elm$core$Basics$min,
-						date.day,
-						A2($justinmimbs$date$Date$daysInMonth, y, m)));
-			case 'Weeks':
-				return $justinmimbs$date$Date$RD(rd + (7 * n));
-			default:
-				return $justinmimbs$date$Date$RD(rd + n);
-		}
-	});
-var $justinmimbs$date$Date$Days = {$: 'Days'};
 var $justinmimbs$date$Date$Month = {$: 'Month'};
-var $elm$time$Time$Fri = {$: 'Fri'};
-var $elm$time$Time$Mon = {$: 'Mon'};
-var $elm$time$Time$Sat = {$: 'Sat'};
-var $elm$time$Time$Sun = {$: 'Sun'};
-var $elm$time$Time$Thu = {$: 'Thu'};
-var $elm$time$Time$Tue = {$: 'Tue'};
-var $elm$time$Time$Wed = {$: 'Wed'};
-var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
-	switch (wd.$) {
-		case 'Mon':
-			return 1;
-		case 'Tue':
-			return 2;
-		case 'Wed':
-			return 3;
-		case 'Thu':
-			return 4;
-		case 'Fri':
-			return 5;
-		case 'Sat':
-			return 6;
-		default:
-			return 7;
-	}
-};
-var $justinmimbs$date$Date$daysSincePreviousWeekday = F2(
-	function (wd, date) {
-		return A2(
-			$elm$core$Basics$modBy,
-			7,
-			($justinmimbs$date$Date$weekdayNumber(date) + 7) - $justinmimbs$date$Date$weekdayToNumber(wd));
-	});
-var $justinmimbs$date$Date$firstOfMonth = F2(
-	function (y, m) {
-		return $justinmimbs$date$Date$RD(
-			($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + 1);
-	});
-var $justinmimbs$date$Date$monthToQuarter = function (m) {
-	return (($justinmimbs$date$Date$monthToNumber(m) + 2) / 3) | 0;
-};
-var $justinmimbs$date$Date$quarter = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$month, $justinmimbs$date$Date$monthToQuarter);
-var $justinmimbs$date$Date$quarterToMonth = function (q) {
-	return $justinmimbs$date$Date$numberToMonth((q * 3) - 2);
-};
-var $justinmimbs$date$Date$floor = F2(
-	function (interval, date) {
-		var rd = date.a;
-		switch (interval.$) {
-			case 'Year':
-				return $justinmimbs$date$Date$firstOfYear(
-					$justinmimbs$date$Date$year(date));
-			case 'Quarter':
-				return A2(
-					$justinmimbs$date$Date$firstOfMonth,
-					$justinmimbs$date$Date$year(date),
-					$justinmimbs$date$Date$quarterToMonth(
-						$justinmimbs$date$Date$quarter(date)));
-			case 'Month':
-				return A2(
-					$justinmimbs$date$Date$firstOfMonth,
-					$justinmimbs$date$Date$year(date),
-					$justinmimbs$date$Date$month(date));
-			case 'Week':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
-			case 'Monday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Mon, date));
-			case 'Tuesday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Tue, date));
-			case 'Wednesday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Wed, date));
-			case 'Thursday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Thu, date));
-			case 'Friday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Fri, date));
-			case 'Saturday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sat, date));
-			case 'Sunday':
-				return $justinmimbs$date$Date$RD(
-					rd - A2($justinmimbs$date$Date$daysSincePreviousWeekday, $elm$time$Time$Sun, date));
-			default:
-				return date;
-		}
-	});
 var $author$project$Gizra$NominalDate$toLastDayOfMonth = A2(
 	$elm$core$Basics$composeR,
 	$justinmimbs$date$Date$floor($justinmimbs$date$Date$Month),
@@ -28594,9 +30747,6 @@ var $author$project$Utils$NominalDate$equalByYearAndMonth = F2(
 			$justinmimbs$date$Date$month(first),
 			$justinmimbs$date$Date$month(second));
 	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $elm$core$List$any = F2(
 	function (isOkay, list) {
 		any:
@@ -28618,10 +30768,6 @@ var $elm$core$List$any = F2(
 			}
 		}
 	});
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
 var $myrho$elm_round$Round$addSign = F2(
 	function (signed, str) {
 		var isNotZero = A2(
@@ -28639,7 +30785,6 @@ var $myrho$elm_round$Round$addSign = F2(
 			str);
 	});
 var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$String$cons = _String_cons;
 var $elm$core$Char$fromCode = _Char_fromCode;
 var $myrho$elm_round$Round$increaseNum = function (_v0) {
 	var head = _v0.a;
@@ -28667,23 +30812,6 @@ var $myrho$elm_round$Round$increaseNum = function (_v0) {
 };
 var $elm$core$Basics$isInfinite = _Basics_isInfinite;
 var $elm$core$Basics$isNaN = _Basics_isNaN;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var $elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			$elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var $elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3($elm$core$String$repeatHelp, n, chunk, '');
-	});
 var $elm$core$String$padRight = F3(
 	function (n, _char, string) {
 		return _Utils_ap(
@@ -29924,8 +32052,6 @@ var $author$project$Translate$UniversalIntervention = {$: 'UniversalIntervention
 var $author$project$Pages$Scoreboard$Model$VitaminA = {$: 'VitaminA'};
 var $author$project$Pages$Scoreboard$Utils$allVaccineTypes = _List_fromArray(
 	[$author$project$Backend$Scoreboard$Model$VaccineBCG, $author$project$Backend$Scoreboard$Model$VaccineOPV, $author$project$Backend$Scoreboard$Model$VaccineDTP, $author$project$Backend$Scoreboard$Model$VaccineDTPStandalone, $author$project$Backend$Scoreboard$Model$VaccinePCV13, $author$project$Backend$Scoreboard$Model$VaccineRotarix, $author$project$Backend$Scoreboard$Model$VaccineIPV, $author$project$Backend$Scoreboard$Model$VaccineMR]);
-var $justinmimbs$date$Date$Weeks = {$: 'Weeks'};
-var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $author$project$Pages$Scoreboard$Utils$getIntervalForVaccine = F2(
 	function (site, vaccineType) {
 		switch (vaccineType.$) {
@@ -30735,6 +32861,23 @@ var $author$project$App$View$view = function (model) {
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgReportsMenuPage,
 						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.reportsMenuPage))
+					]));
+		case 'Reports':
+			return A2(
+				$elm$html$Html$div,
+				_List_Nil,
+				_List_fromArray(
+					[
+						A2($author$project$Error$View$view, model.language, model.errors),
+						A2(
+						$elm$html$Html$map,
+						$author$project$App$Model$MsgReportsPage,
+						A4(
+							$author$project$Pages$Reports$View$view,
+							model.language,
+							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+							model.backend,
+							model.reportsPage))
 					]));
 		default:
 			return A2(

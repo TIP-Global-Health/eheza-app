@@ -528,7 +528,7 @@ function hedley_person_field_default_field_instances() {
         'display_label' => 1,
       ),
       'type' => 'options_onoff',
-      'weight' => 26,
+      'weight' => 27,
     ),
   );
 
@@ -1137,6 +1137,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_reports_data'.
+  $field_instances['node-person-field_reports_data'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 28,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reports_data',
+    'label' => 'Reports Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 24,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_second_name'.
   $field_instances['node-person-field_second_name'] = array(
     'bundle' => 'person',
@@ -1257,7 +1297,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 25,
+      'weight' => 26,
     ),
   );
 
@@ -1334,7 +1374,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 24,
+      'weight' => 25,
     ),
   );
 
@@ -1657,6 +1697,7 @@ function hedley_person_field_default_field_instances() {
   t('Province');
   t('Related by');
   t('Related to');
+  t('Reports Data');
   t('Resilience Birth date');
   t('Resilience Education Level');
   t('Resilience Gender');

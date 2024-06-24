@@ -5,6 +5,7 @@ import App.Types exposing (Page(..))
 import Error.View
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
+import Pages.Reports.View
 import Pages.ReportsMenu.View
 import Pages.Scoreboard.View
 import Pages.ScoreboardMenu.View
@@ -44,7 +45,17 @@ view model =
                         model.reportsMenuPage
                 ]
 
+        Reports ->
+            div []
+                [ Error.View.view model.language model.errors
+                , Html.map MsgReportsPage <|
+                    Pages.Reports.View.view
+                        model.language
+                        (fromLocalDateTime model.currentTime)
+                        model.backend
+                        model.reportsPage
+                ]
+
         NotFound ->
             div []
-                [ text "Wrong page?"
-                ]
+                [ text "Wrong page?" ]

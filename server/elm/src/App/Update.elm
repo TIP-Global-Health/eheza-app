@@ -9,11 +9,13 @@ import App.Model exposing (..)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
 import Backend.Model
+import Backend.Reports.Model
 import Backend.ReportsMenu.Model
 import Backend.Scoreboard.Model
 import Backend.ScoreboardMenu.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Reports.Update
 import Pages.ReportsMenu.Update
 import Pages.Scoreboard.Update
 import Pages.ScoreboardMenu.Update
@@ -59,15 +61,15 @@ init flags =
                         model
                         |> Tuple.first
 
-                -- @todo
-                -- Reports ->
-                -- update
-                --     (Backend.Reports.Model.SetData flags.appData
-                --         |> Backend.Model.MsgReports
-                --         |> MsgBackend
-                --     )
-                --     model
-                --     |> Tuple.first
+                Reports ->
+                    update
+                        (Backend.Reports.Model.SetData flags.appData
+                            |> Backend.Model.MsgReports
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
                 NotFound ->
                     model
 
@@ -95,9 +97,9 @@ resolveActivePage page =
         "reports-menu" ->
             ReportsMenu
 
-        -- @todo
-        -- "reports-results" ->
-        --     Reports
+        "reports-results" ->
+            Reports
+
         _ ->
             NotFound
 
@@ -143,6 +145,19 @@ update msg model =
                 (\subMsg_ subModel -> Pages.ReportsMenu.Update.update subMsg_ subModel)
                 (\subModel model_ -> { model_ | reportsMenuPage = subModel })
                 (\subCmds -> MsgReportsMenuPage subCmds)
+                model
+
+        MsgReportsPage subMsg ->
+            updateSubModel
+                subMsg
+                model.reportsPage
+                (\subMsg_ subModel ->
+                    Pages.Reports.Update.update
+                        subMsg_
+                        subModel
+                )
+                (\subModel model_ -> { model_ | reportsPage = subModel })
+                (\subCmds -> MsgReportsPage subCmds)
                 model
 
         SetCurrentTime date ->
