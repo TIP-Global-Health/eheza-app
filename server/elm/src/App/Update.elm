@@ -153,6 +153,8 @@ update msg model =
                 model.reportsPage
                 (\subMsg_ subModel ->
                     Pages.Reports.Update.update
+                        (fromLocalDateTime model.currentTime)
+                        model.backend
                         subMsg_
                         subModel
                 )

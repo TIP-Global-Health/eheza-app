@@ -18,10 +18,13 @@ import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
+import List.Extra
 import Maybe.Extra exposing (isJust)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import RemoteData exposing (RemoteData(..))
+import Round
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -47,22 +50,51 @@ viewReportsData language currentDate data model =
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
                         [ button []
-                            [ text <| translate language Translate.NewSelection ]
+                            [ text <| translate language Translate.NewScope ]
                         ]
                     ]
                 ]
 
-        dateSelectorConfig =
-            { select = SetLimitDate
-            , close = SetLimitDateSelectorState Nothing
-            , dateFrom = Date.add Years -6 currentDate
-            , dateTo = currentDate
-            , dateDefault = Just currentDate
-            }
+        limitDateInput =
+            Maybe.map
+                (\reportType ->
+                    -- Nutrition report does not allow selecting limit date, so
+                    -- we do not show limit date input when report is selected.
+                    if reportType /= ReportNutrition then
+                        let
+                            dateSelectorConfig =
+                                { select = SetLimitDate
+                                , close = SetLimitDateSelectorState Nothing
+                                , dateFrom = Date.add Years -6 currentDate
+                                , dateTo = currentDate
+                                , dateDefault = Just currentDate
+                                }
 
-        limitDateForView =
-            Maybe.map formatDDMMYYYY model.limitDate
-                |> Maybe.withDefault ""
+                            limitDateForView =
+                                Maybe.map formatDDMMYYYY model.limitDate
+                                    |> Maybe.withDefault ""
+                        in
+                        div
+                            [ class "form-input date"
+                            , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                            ]
+                            [ text limitDateForView ]
+                            |> wrapSelectListInput language Translate.SelectLimitDate False
+
+                    else
+                        emptyNode
+                )
+                model.reportType
+                |> Maybe.withDefault emptyNode
+
+        limitDateByReportType =
+            if model.reportType == Just ReportNutrition then
+                -- Nutrition report does not allow selecting limit date, so
+                -- we force it to be today.
+                Just currentDate
+
+            else
+                model.limitDate
 
         content =
             if isJust model.dateSelectorPopupState then
@@ -75,72 +107,80 @@ viewReportsData language currentDate data model =
                     (\reportType limitDate ->
                         let
                             recordsTillLimitDate =
-                                List.filterMap
-                                    (\record ->
-                                        if Date.compare record.created limitDate == LT then
-                                            let
-                                                filterIndividualBy resolveDateFunc =
-                                                    Maybe.map
-                                                        (List.map
+                                if Date.compare limitDate currentDate == EQ then
+                                    data.records
+
+                                else
+                                    List.filterMap
+                                        (\record ->
+                                            if Date.compare record.created limitDate == LT then
+                                                let
+                                                    filterIndividualBy resolveDateFunc =
+                                                        Maybe.map
+                                                            (List.map
+                                                                (List.filter
+                                                                    (\encounterData ->
+                                                                        Date.compare (resolveDateFunc encounterData) limitDate == LT
+                                                                    )
+                                                                )
+                                                            )
+
+                                                    filterGroupBy resolveDateFunc =
+                                                        Maybe.map
                                                             (List.filter
                                                                 (\encounterData ->
                                                                     Date.compare (resolveDateFunc encounterData) limitDate == LT
                                                                 )
                                                             )
-                                                        )
+                                                in
+                                                Just
+                                                    { record
+                                                        | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
+                                                        , prenatalData = filterIndividualBy .startDate record.prenatalData
+                                                        , homeVisitData = filterIndividualBy identity record.homeVisitData
+                                                        , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                        , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
+                                                        , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
+                                                        , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
+                                                        , groupNutritionSorwatheData = filterGroupBy .startDate record.groupNutritionSorwatheData
+                                                        , groupNutritionChwData = filterGroupBy .startDate record.groupNutritionChwData
+                                                        , groupNutritionAchiData = filterGroupBy .startDate record.groupNutritionAchiData
+                                                    }
 
-                                                filterGroupBy resolveDateFunc =
-                                                    Maybe.map
-                                                        (List.filter
-                                                            (\encounterData ->
-                                                                Date.compare (resolveDateFunc encounterData) limitDate == LT
-                                                            )
-                                                        )
-                                            in
-                                            Just
-                                                { record
-                                                    | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                    , prenatalData = filterIndividualBy .startDate record.prenatalData
-                                                    , homeVisitData = filterIndividualBy identity record.homeVisitData
-                                                    , wellChildData = filterIndividualBy identity record.wellChildData
-                                                    , individualNutritionData = filterIndividualBy identity record.individualNutritionData
-                                                    , groupNutritionPmtctData = filterGroupBy identity record.groupNutritionPmtctData
-                                                    , groupNutritionFbfData = filterGroupBy identity record.groupNutritionFbfData
-                                                    , groupNutritionSorwatheData = filterGroupBy identity record.groupNutritionSorwatheData
-                                                    , groupNutritionChwData = filterGroupBy identity record.groupNutritionChwData
-                                                    , groupNutritionAchiData = filterGroupBy identity record.groupNutritionAchiData
-                                                }
-
-                                        else
-                                            Nothing
-                                    )
-                                    data.records
+                                            else
+                                                Nothing
+                                        )
+                                        data.records
                         in
                         case reportType of
                             ReportDemographics ->
                                 viewDemographicsReport language limitDate recordsTillLimitDate
+
+                            ReportNutrition ->
+                                viewNutritionReport language limitDate model.nutritionReportData
                     )
                     model.reportType
-                    model.limitDate
-                    |> Maybe.withDefault emptyNode
+                    limitDateByReportType
+                    |> Maybe.withDefault
+                        (if isWideScope data.entityType then
+                            viewCustomLabel language Translate.WideScopeNote "" "label wide-scope"
+
+                         else
+                            emptyNode
+                        )
     in
     div [ class "page-content" ]
         [ topBar
         , div [ class "inputs" ]
             [ viewSelectListInput language
                 model.reportType
-                [ ReportDemographics ]
+                [ ReportDemographics, ReportNutrition ]
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
-            , div
-                [ class "form-input date"
-                , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                ]
-                [ text limitDateForView ]
-                |> wrapSelectListInput language Translate.SelectLimitDate False
+            , limitDateInput
             , content
             ]
         , viewModal <| viewCalendarPopup language model.dateSelectorPopupState model.limitDate
@@ -620,3 +660,220 @@ viewDemographicsReportEncounters language records =
         , viewCustomRow "row encounters-totals" Translate.Total overallTotal overallUnique False
         ]
     ]
+
+
+viewNutritionReport : Language -> NominalDate -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate reportData =
+    case reportData of
+        Success data ->
+            let
+                encountersByMonthForImpacted =
+                    Dict.map
+                        (\_ encounter ->
+                            { encounter
+                                | stuntingNormal = List.filter (\id -> List.member id data.impacted) encounter.stuntingNormal
+                                , stuntingModerate = List.filter (\id -> List.member id data.impacted) encounter.stuntingModerate
+                                , stuntingSevere = List.filter (\id -> List.member id data.impacted) encounter.stuntingSevere
+                                , wastingNormal = List.filter (\id -> List.member id data.impacted) encounter.wastingNormal
+                                , wastingModerate = List.filter (\id -> List.member id data.impacted) encounter.wastingModerate
+                                , wastingSevere = List.filter (\id -> List.member id data.impacted) encounter.wastingSevere
+                                , underweightNormal = List.filter (\id -> List.member id data.impacted) encounter.underweightNormal
+                                , underweightModerate = List.filter (\id -> List.member id data.impacted) encounter.underweightModerate
+                                , underweightSevere = List.filter (\id -> List.member id data.impacted) encounter.underweightSevere
+                            }
+                        )
+                        data.encountersByMonth
+            in
+            div [ class "report nutrition" ]
+                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
+                , viewMonthlyPrevalenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.PrevalenceByMonthTwoVisitsOrMore ":" "section heading"
+                , viewMonthlyPrevalenceTable language currentDate encountersByMonthForImpacted
+                , viewCustomLabel language Translate.IncidenceByMonthOneVisitOrMore ":" "section heading"
+                , viewMonthlyIncidenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.IncidenceByMonthTwoVisitsOrMore ":" "section heading"
+                , viewMonthlyIncidenceTable language currentDate encountersByMonthForImpacted
+                , viewCustomLabel language Translate.IncidenceByQuarterOneVisitOrMore ":" "section heading"
+                , viewQuarterlyIncidenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.IncidenceByQuarterTwoVisitsOrMore ":" "section heading"
+                , viewQuarterlyIncidenceTable language currentDate encountersByMonthForImpacted
+                , viewCustomLabel language Translate.IncidenceByYearOneVisitOrMore ":" "section heading"
+                , viewYearlyIncidenceTable language currentDate data.encountersByMonth
+                , viewCustomLabel language Translate.IncidenceByYearTwoVisitsOrMore ":" "section heading"
+                , viewYearlyIncidenceTable language currentDate encountersByMonthForImpacted
+                ]
+
+        _ ->
+            div [ class "report nutrition" ]
+                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading" ]
+
+
+viewMonthlyPrevalenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewMonthlyPrevalenceTable language currentDate encountersByMonth =
+    List.range 1 12
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Months (-1 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    month =
+                        Date.month selectedDate
+
+                    monthNumber =
+                        Date.monthNumber selectedDate
+                in
+                ( Translate.MonthYear month year True
+                , resolveDataSetForMonth currentDate index encountersByMonth
+                    |> generatePrevalenceNutritionMetricsResults
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewMonthlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewMonthlyIncidenceTable language currentDate encountersByMonth =
+    List.range 1 12
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Months (-1 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    month =
+                        Date.month selectedDate
+                in
+                ( Translate.MonthYear month year True
+                , generateIncidenceNutritionMetricsResults
+                    (resolveDataSetForMonth currentDate index encountersByMonth)
+                    -- Per definition, for month, previous data set contains
+                    -- data of 3 months that came prior.
+                    (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewQuarterlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewQuarterlyIncidenceTable language currentDate encountersByMonth =
+    let
+        dataSetsByQuarter =
+            -- We show data of previous 4 quarters. So, if at Q2-2024, we show
+            -- data for Q1-2024, Q4-2023, Q3-2023 and Q2-2023  We calculate set
+            -- for 5 quarters (so claculating Q1-2023 as well), as for incidence
+            -- each quarter requires a set of previous quarters.
+            List.range 1 5
+                |> List.map
+                    (\index ->
+                        resolveDataSetForQuarter currentDate index encountersByMonth
+                    )
+    in
+    -- Showing data of previous 4 quarters.
+    List.range 1 4
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Months (-3 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    quarter =
+                        Date.quarter selectedDate
+
+                    dataSet =
+                        List.Extra.getAt (index - 1) dataSetsByQuarter
+                            |> Maybe.withDefault emptyNutritionMetrics
+
+                    previousDataSet =
+                        List.Extra.getAt index dataSetsByQuarter
+                            |> Maybe.withDefault emptyNutritionMetrics
+                in
+                ( Translate.QuarterYear quarter year
+                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewYearlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
+viewYearlyIncidenceTable language currentDate encountersByMonth =
+    let
+        dataSetsByYear =
+            -- We show data of previous 2 years. So, if at 2024, we show
+            -- data for 2023 and 2022. We calculate set for 3 years (so claculating
+            -- 2021 as well), as for incidence each year requires a set of previous year.
+            List.range 1 3
+                |> List.map
+                    (\index ->
+                        resolveDataSetForYear currentDate index encountersByMonth
+                    )
+    in
+    -- Showing data of previous 2 years.
+    List.range 1 2
+        |> List.map
+            (\index ->
+                let
+                    selectedDate =
+                        Date.add Years (-1 * index) currentDate
+
+                    year =
+                        Date.year selectedDate
+
+                    dataSet =
+                        List.Extra.getAt (index - 1) dataSetsByYear
+                            |> Maybe.withDefault emptyNutritionMetrics
+
+                    previousDataSet =
+                        List.Extra.getAt index dataSetsByYear
+                            |> Maybe.withDefault emptyNutritionMetrics
+                in
+                ( Translate.Year year
+                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
+                )
+            )
+        |> viewNutritionMetricsResultsTable language currentDate
+
+
+viewNutritionMetricsResultsTable : Language -> NominalDate -> List ( TranslationId, NutritionMetricsResults ) -> Html Msg
+viewNutritionMetricsResultsTable language currentDate data =
+    let
+        headerRow =
+            List.map
+                (\( label, _ ) ->
+                    div [ class "item heading" ] [ text <| translate language label ]
+                )
+                data
+                |> List.append [ div [ class "item row-label" ] [ text "" ] ]
+                |> div [ class "row" ]
+
+        viewRow label =
+            List.map
+                (\value ->
+                    div [ class "item value" ] [ text <| Round.round 3 value ++ "%" ]
+                )
+                >> List.append [ div [ class "item row-label" ] [ text <| translate language label ] ]
+                >> div [ class "row" ]
+    in
+    div [ class "table wide" ]
+        [ headerRow
+        , List.map (Tuple.second >> .stuntingModerate) data
+            |> viewRow Translate.StuntingModerate
+        , List.map (Tuple.second >> .stuntingSevere) data
+            |> viewRow Translate.StuntingSevere
+        , List.map (Tuple.second >> .wastingModerate) data
+            |> viewRow Translate.WastingModerate
+        , List.map (Tuple.second >> .wastingSevere) data
+            |> viewRow Translate.WastingSevere
+        , List.map (Tuple.second >> .underweightModerate) data
+            |> viewRow Translate.UnderweightModerate
+        , List.map (Tuple.second >> .underweightSevere) data
+            |> viewRow Translate.UnderweightSevere
+        ]

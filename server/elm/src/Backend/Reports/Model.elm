@@ -26,20 +26,25 @@ type SelectedEntity
 
 
 type alias PatientData =
-    { created : NominalDate
+    { id : PersonId
+    , created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
     , prenatalData : Maybe (List (List PrenatalEncounterData))
-    , homeVisitData : Maybe (List EncountersData)
-    , wellChildData : Maybe (List EncountersData)
-    , individualNutritionData : Maybe (List EncountersData)
-    , groupNutritionPmtctData : Maybe EncountersData
-    , groupNutritionFbfData : Maybe EncountersData
-    , groupNutritionSorwatheData : Maybe EncountersData
-    , groupNutritionChwData : Maybe EncountersData
-    , groupNutritionAchiData : Maybe EncountersData
+    , homeVisitData : Maybe (List (List HomeVisitEncounterData))
+    , wellChildData : Maybe (List (List NutritionEncounterData))
+    , individualNutritionData : Maybe (List (List NutritionEncounterData))
+    , groupNutritionPmtctData : Maybe (List NutritionEncounterData)
+    , groupNutritionFbfData : Maybe (List NutritionEncounterData)
+    , groupNutritionSorwatheData : Maybe (List NutritionEncounterData)
+    , groupNutritionChwData : Maybe (List NutritionEncounterData)
+    , groupNutritionAchiData : Maybe (List NutritionEncounterData)
     }
+
+
+type alias PersonId =
+    Int
 
 
 type Gender
@@ -74,8 +79,21 @@ type PrenatalEncounterType
     | ChwPostpartumEncounter
 
 
-type alias EncountersData =
-    List NominalDate
+type alias NutritionEncounterData =
+    { startDate : NominalDate
+    , nutritionData : Maybe NutritionData
+    }
+
+
+type alias NutritionData =
+    { stunting : Maybe Float
+    , wasting : Maybe Float
+    , underweight : Maybe Float
+    }
+
+
+type alias HomeVisitEncounterData =
+    NominalDate
 
 
 type Msg

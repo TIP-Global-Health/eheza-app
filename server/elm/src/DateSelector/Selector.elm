@@ -21,7 +21,7 @@ viewPopup language minimum maximum maybeSelected =
     let
         yearSection =
             div [ class "year" ]
-                [ p [] [ text <| translate language Translate.Year ]
+                [ p [] [ text <| translate language Translate.YearLabel ]
                 , viewYearSelectList minimum maximum maybeSelected
                 ]
 

@@ -101,10 +101,12 @@ function hedley_reports_aggregated_reports_report_access() {
  */
 function hedley_reports_node_insert($node) {
   // Generate initial Reports data for newly created person.
-  // We need this to properly count 'children under 2'.
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_created_person($node);
+    return;
   }
+
+  hedley_reports_trigger_recalculation_by_new_content($node);
 }
 
 /**
@@ -241,6 +243,69 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
 }
 
 /**
+ * Triggers recalculation of person's NCDA data based on it's measurement node.
+ *
+ * @param object $node
+ *   The node object of a measurement.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_by_new_content($node) {
+  $triggering_encounters = [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+  ];
+  $triggering_measurements = hedley_reports_get_triggering_measurement_types();
+
+  if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
+    // Not a triggering content.
+    return;
+  }
+
+  if (in_array($node->type, $triggering_encounters)) {
+    // For encounters, resolving person ID through individual participant.
+    $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    if (empty($participant_id)) {
+      // Can't resolve to which participant encounter belongs.
+      return;
+    }
+    $wrapper = entity_metadata_wrapper('node', $participant_id);
+  }
+  else {
+    // For measurements, resolving person ID directly from measurement.
+    $wrapper = entity_metadata_wrapper('node', $node);
+  }
+
+  if (!$wrapper->__isset('field_person')) {
+    // Can't resolve to which person measurement belongs.
+    return;
+  }
+
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  // Trigger recalculation using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+/**
+ * Retrieves measurement types that trigger Reports data recalculation.
+ *
+ * @return array
+ *   The array of triggering measurement types.
+ */
+function hedley_reports_get_triggering_measurement_types() {
+  return array_unique(array_merge(
+    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+  ));
+}
+
+/**
  * Generate raw data for reports, and store in field on person node.
  *
  * @param object $person
@@ -257,9 +322,110 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     // We must know the birthdate to be able to present reports data.
     return FALSE;
   }
-  $data['created'] = date("Y-m-d", $person->created);
-  $data['birth_date'] = date("Y-m-d", $birth_date);
-  $data['gender'] = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  $data = [
+    'id' => $person->nid,
+    'created' => date("Y-m-d", $person->created),
+    'birth_date' => date("Y-m-d", $birth_date),
+    'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
+  ];
+
+  $sessions_ids = $zscores_by_encounter = [];
+  $measurements_bundles = hedley_reports_get_triggering_measurement_types();
+  $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
+  $measurements = node_load_multiple($measurements_ids);
+  foreach ($measurements as $measurement) {
+    switch ($measurement->type) {
+      case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      default:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+    }
+  }
 
   $encounters_data = [];
   $encounter_types_to_load = [
@@ -280,20 +446,26 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     $encounters = node_load_multiple($encounters_ids);
     foreach ($encounters as $encounter) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
-      if ($participant_type == 'acute-illness') {
-        $encounter_data = [
-          'start_date' => $encounter_date,
-          'encounter_type' => $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'],
-        ];
-      }
-      elseif ($participant_type == 'antenatal') {
-        $encounter_data = [
-          'start_date' => $encounter_date,
-          'encounter_type' => $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'],
-        ];
-      }
-      else {
-        $encounter_data = $encounter_date;
+      switch ($participant_type) {
+        case 'acute-illness':
+          $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_data = "$encounter_date $encounter_type";
+          break;
+
+        case 'antenatal':
+          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_data = "$encounter_date $encounter_type";
+          break;
+
+        case 'nutrition':
+        case 'well-child':
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
+          $encounter_data = "$encounter_date $nutrition";
+          break;
+
+        // Remaining one is home-visit.
+        default:
+          $encounter_data = $encounter_date;
       }
 
       if (empty($encounters_data[$participant_type][$individual_participant->nid])) {
@@ -308,15 +480,11 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $encounters_data[$key] = array_values($data_type);
     }
   }
-  $data['individual'] = $encounters_data;
-
-  // Load group data:
-  $measurements_ids = hedley_general_get_person_measurements($person->nid, HEDLEY_ACTIVITY_GROUP_REPORTS_BUNDLES);
-  $measurements = node_load_multiple($measurements_ids);
-  $sessions_ids = [];
-  foreach ($measurements as $measurement) {
-    $sessions_ids[] = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+  if (!empty($encounters_data)) {
+    $data['individual'] = $encounters_data;
   }
+
+  // Load group data.
   $sessions_ids = array_unique($sessions_ids);
   $sessions = node_load_multiple($sessions_ids);
   $clinics_ids = [];
@@ -334,21 +502,57 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   foreach ($sessions as $session) {
     $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
     $group_type = $group_type_by_clinic[$clinic_id];
-    $session_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+    $encounter_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$session->nid]);
+    $session_data = "$encounter_date $nutrition";
 
     if (empty($sessions_data[$group_type])) {
-      $sessions_data[$group_type] = [$session_date];
+      $sessions_data[$group_type] = [$session_data];
     }
     else {
-      $sessions_data[$group_type][] = $session_date;
+      $sessions_data[$group_type][] = $session_data;
     }
   }
-  $data['group_nutrition'] = $sessions_data;
+  if (!empty($sessions_data)) {
+    $data['group_nutrition'] = $sessions_data;
+  }
+
   $encoded_data = json_encode($data);
   $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
   node_save($person);
 
   return TRUE;
+}
+
+/**
+ * Converts nutrition metrics values to a comma-separated string.
+ *
+ * This function takes an associative array of nutrition metrics and
+ * converts it into a string where the values are separated by commas.
+ * The keys for the array should be 's' for stunting, 'w' for wasting,
+ * and 'u' for underweight. If a key is missing or its value is empty,
+ * an empty string is used in its place.
+ *
+ * @param array|null $values
+ *   An associative array of nutrition metrics with the following possible keys:
+ *   - 's': The stunting metric.
+ *   - 'w': The wasting metric.
+ *   - 'u': The underweight metric.
+ *
+ * @return string
+ *   A string with the stunting, wasting, and underweight metrics separated
+ *   by commas. If the input array is empty, returns ',,'.
+ */
+function hedley_reports_nutrition_metrics_to_string($values) {
+  if (empty($values)) {
+    return ',,';
+  }
+
+  $stunting = !empty($values['s']) ? $values['s'] : '';
+  $wasting = !empty($values['w']) ? $values['w'] : '';
+  $underweight = !empty($values['u']) ? $values['u'] : '';
+
+  return "$stunting,$wasting,$underweight";
 }
 
 /**

@@ -9,6 +9,7 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
+import List.Extra
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
@@ -52,7 +53,7 @@ viewMenu language data model =
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
                 "select-input"
-                |> wrapSelectListInput language Translate.ViewMode False
+                |> wrapSelectListInput language Translate.Scope False
 
         ( derivedInputs, actionButton_ ) =
             Maybe.map
@@ -110,7 +111,7 @@ viewMenu language data model =
                 actionButton_
     in
     div [ class "page-content" ]
-        [ viewCustomLabel language Translate.SelectViewMode ":" "header"
+        [ viewCustomLabel language Translate.SelectScope ":" "header"
         , div [ class "inputs" ] <|
             populationSelectionInput
                 :: derivedInputs
