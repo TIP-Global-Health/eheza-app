@@ -9,6 +9,7 @@ import Backend.Reports.Model
         , Gender(..)
         , PatientData
         , PrenatalEncounterType(..)
+        , PrenatalParticipantData
         , ReportsData
         )
 import Date exposing (Interval(..), Unit(..))
@@ -115,6 +116,39 @@ viewReportsData language currentDate data model =
                                         (\record ->
                                             if Date.compare record.created limitDate == LT then
                                                 let
+                                                    filterPrenatalData =
+                                                        Maybe.map
+                                                            (List.filterMap
+                                                                (\participantData ->
+                                                                    if Date.compare participantData.created limitDate == LT then
+                                                                        Nothing
+
+                                                                    else
+                                                                        let
+                                                                            dateConcluded =
+                                                                                -- If pregnancy was concluded, but conclusion date is
+                                                                                -- after limit date, we mark pregnancy as not concluded.
+                                                                                Maybe.andThen
+                                                                                    (\date ->
+                                                                                        if Date.compare limitDate date == LT then
+                                                                                            Nothing
+
+                                                                                        else
+                                                                                            Just date
+                                                                                    )
+                                                                                    participantData.dateConcluded
+
+                                                                            filteredEncounters =
+                                                                                List.filter
+                                                                                    (\encounterData ->
+                                                                                        Date.compare encounterData.startDate limitDate == LT
+                                                                                    )
+                                                                                    participantData.encounters
+                                                                        in
+                                                                        Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
+                                                                )
+                                                            )
+
                                                     filterIndividualBy resolveDateFunc =
                                                         Maybe.map
                                                             (List.map
@@ -136,9 +170,13 @@ viewReportsData language currentDate data model =
                                                 Just
                                                     { record
                                                         | acuteIllnessData = filterIndividualBy .startDate record.acuteIllnessData
-                                                        , prenatalData = filterIndividualBy .startDate record.prenatalData
+                                                        , prenatalData = filterPrenatalData record.prenatalData
                                                         , homeVisitData = filterIndividualBy identity record.homeVisitData
                                                         , wellChildData = filterIndividualBy .startDate record.wellChildData
+                                                        , childScorecardData = filterIndividualBy identity record.childScorecardData
+                                                        , ncdData = filterIndividualBy identity record.ncdData
+                                                        , hivData = filterIndividualBy identity record.hivData
+                                                        , tuberculosisData = filterIndividualBy identity record.tuberculosisData
                                                         , individualNutritionData = filterIndividualBy .startDate record.individualNutritionData
                                                         , groupNutritionPmtctData = filterGroupBy .startDate record.groupNutritionPmtctData
                                                         , groupNutritionFbfData = filterGroupBy .startDate record.groupNutritionFbfData
@@ -158,6 +196,9 @@ viewReportsData language currentDate data model =
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate model.nutritionReportData
+
+                            ReportPrenatal ->
+                                viewPrenatalReport language limitDate recordsTillLimitDate
                     )
                     model.reportType
                     limitDateByReportType
@@ -174,7 +215,7 @@ viewReportsData language currentDate data model =
         , div [ class "inputs" ]
             [ viewSelectListInput language
                 model.reportType
-                [ ReportDemographics, ReportNutrition ]
+                [ ReportDemographics, ReportNutrition, ReportPrenatal ]
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
@@ -341,7 +382,7 @@ viewDemographicsReportPatients language limitDate records =
             filterImpacted females50YearsOrMore
 
         filterImpacted =
-            List.filter (\patient -> countTotalEncounetrs patient > 1)
+            List.filter (\patient -> countTotalEncounters patient > 1)
 
         patientsImpacted =
             malesImpacted1MonthAndLess
@@ -413,7 +454,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -426,7 +468,8 @@ viewDemographicsReportEncounters language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.concat
+                        (List.map .encounters
+                            >> List.concat
                             >> List.filter
                                 (\encounter ->
                                     not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -506,6 +549,50 @@ viewDemographicsReportEncounters language records =
 
         homeVisitDataEncountersUnique =
             countUnique homeVisitEncountersData
+
+        childScorecardEncountersData =
+            List.filterMap
+                (.childScorecardData >> Maybe.map List.concat)
+                records
+
+        childScorecardDataEncountersTotal =
+            countTotal childScorecardEncountersData
+
+        childScorecardDataEncountersUnique =
+            countUnique childScorecardEncountersData
+
+        ncdEncountersData =
+            List.filterMap
+                (.ncdData >> Maybe.map List.concat)
+                records
+
+        ncdDataEncountersTotal =
+            countTotal ncdEncountersData
+
+        ncdDataEncountersUnique =
+            countUnique ncdEncountersData
+
+        hivEncountersData =
+            List.filterMap
+                (.hivData >> Maybe.map List.concat)
+                records
+
+        hivDataEncountersTotal =
+            countTotal hivEncountersData
+
+        hivDataEncountersUnique =
+            countUnique hivEncountersData
+
+        tuberculosisEncountersData =
+            List.filterMap
+                (.tuberculosisData >> Maybe.map List.concat)
+                records
+
+        tuberculosisDataEncountersTotal =
+            countTotal tuberculosisEncountersData
+
+        tuberculosisDataEncountersUnique =
+            countUnique tuberculosisEncountersData
 
         nutritionIndividualEncountersData =
             List.filterMap
@@ -596,6 +683,10 @@ viewDemographicsReportEncounters language records =
                 + acuteIllnessDataChwEncountersTotal
                 + wellChildDataEncountersTotal
                 + homeVisitDataEncountersTotal
+                + childScorecardDataEncountersTotal
+                + ncdDataEncountersTotal
+                + hivDataEncountersTotal
+                + tuberculosisDataEncountersTotal
                 + overallNutritionTotal
 
         overallUnique =
@@ -605,6 +696,10 @@ viewDemographicsReportEncounters language records =
                 + acuteIllnessDataChwEncountersUnique
                 + wellChildDataEncountersUnique
                 + homeVisitDataEncountersUnique
+                + childScorecardDataEncountersUnique
+                + ncdDataEncountersUnique
+                + hivDataEncountersUnique
+                + tuberculosisDataEncountersUnique
                 + overallNutritionUnique
 
         countTotal =
@@ -650,6 +745,10 @@ viewDemographicsReportEncounters language records =
         , viewRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
         , viewRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
         , viewRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
+        , viewRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
+        , viewRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
+        , viewRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
+        , viewRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
         , viewRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
         , viewRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
         , viewRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
@@ -877,3 +976,235 @@ viewNutritionMetricsResultsTable language currentDate data =
         , List.map (Tuple.second >> .underweightSevere) data
             |> viewRow Translate.UnderweightSevere
         ]
+
+
+viewPrenatalReport : Language -> NominalDate -> List PatientData -> Html Msg
+viewPrenatalReport language limitDate records =
+    let
+        filtered =
+            List.map .prenatalData records
+                |> Maybe.Extra.values
+                |> List.concat
+                |> List.filterMap
+                    (\participantData ->
+                        if isJust participantData.eddDate then
+                            let
+                                filteredEncounters =
+                                    List.filter
+                                        (\encounter ->
+                                            not <| List.member encounter.encounterType [ NursePostpartumEncounter, ChwPostpartumEncounter ]
+                                        )
+                                        participantData.encounters
+                            in
+                            Just { participantData | encounters = filteredEncounters }
+
+                        else
+                            Nothing
+                    )
+
+        ( completed, active ) =
+            List.partition
+                (\participantData ->
+                    -- Pregnancy is considered completed if
+                    -- either conclusion date was set.
+                    isJust participantData.dateConcluded
+                        || (-- Or it's been 30 days or more since estimated delivery date.
+                            Maybe.map
+                                (\eddDate ->
+                                    Date.compare (Date.add Days 30 eddDate) limitDate == LT
+                                )
+                                participantData.eddDate
+                                |> -- We never get here, as filtered, only contains pregnancies
+                                   -- that got EDD set.
+                                   Maybe.withDefault False
+                           )
+                )
+                filtered
+
+        ( partitionedVisitsForActiveNurse, partitionedVisitsForActiveChw ) =
+            countVisitsByType active
+                |> partitionByNumberOfVisits
+
+        ( partitionedVisitsForCompletedNurse, partitionedVisitsForCompletedChw ) =
+            countVisitsByType completed
+                |> partitionByNumberOfVisits
+
+        countVisitsByType data =
+            List.map
+                (\participantData ->
+                    let
+                        totalEncounters =
+                            List.length participantData.encounters
+
+                        nurseEncounters =
+                            List.filter (.encounterType >> (==) NurseEncounter)
+                                participantData.encounters
+                                |> List.length
+                    in
+                    { nurse = nurseEncounters
+                    , chw = totalEncounters - nurseEncounters
+                    }
+                )
+                data
+
+        partitionByNumberOfVisits =
+            List.foldl
+                (\countedVisits ( nurseDict, chwDict ) ->
+                    let
+                        resolveKeyForValue value =
+                            if value > 5 then
+                                -1
+
+                            else
+                                value
+
+                        updateDict value dict =
+                            if value == 0 then
+                                dict
+
+                            else
+                                let
+                                    key =
+                                        resolveKeyForValue value
+                                in
+                                Dict.get key dict
+                                    |> Maybe.map
+                                        (\total ->
+                                            Dict.insert key (total + 1) dict
+                                        )
+                                    |> Maybe.withDefault (Dict.insert key 1 dict)
+                    in
+                    ( updateDict countedVisits.nurse nurseDict
+                    , updateDict countedVisits.chw chwDict
+                    )
+                )
+                ( Dict.empty, Dict.empty )
+
+        resolveValueFromDict key =
+            Dict.get key >> Maybe.withDefault 0
+
+        activeNurseVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForActiveNurse
+
+        activeNurseVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForActiveNurse
+
+        activeNurseVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForActiveNurse
+
+        activeNurseVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForActiveNurse
+
+        activeNurseVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForActiveNurse
+
+        activeNurseVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForActiveNurse
+
+        activeChwVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForActiveChw
+
+        activeChwVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForActiveChw
+
+        activeChwVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForActiveChw
+
+        activeChwVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForActiveChw
+
+        activeChwVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForActiveChw
+
+        activeChwVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForActiveChw
+
+        completedNurseVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForCompletedNurse
+
+        completedNurseVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForCompletedNurse
+
+        completedChwVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForCompletedChw
+
+        completedChwVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForCompletedChw
+
+        completedChwVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForCompletedChw
+
+        completedChwVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForCompletedChw
+
+        completedChwVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForCompletedChw
+
+        completedChwVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForCompletedChw
+
+        viewTable caption values =
+            let
+                rows =
+                    List.indexedMap
+                        (\index ( chwValue, nurseValue ) ->
+                            viewRow (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                        )
+                        values
+            in
+            [ viewCustomLabel language caption ":" "section heading"
+            , div [ class "table anc" ] <|
+                div [ class "row captions" ]
+                    [ div [ class "item label" ] [ text <| translate language Translate.NumberOfVisitsLabel ]
+                    , div [ class "item value" ] [ text <| translate language Translate.CHW ]
+                    , div [ class "item value" ] [ text <| translate language Translate.HC ]
+                    , div [ class "item value" ] [ text <| translate language Translate.All ]
+                    ]
+                    :: rows
+            ]
+
+        viewRow labelTransId valueChw valueNurse =
+            div [ class "row" ]
+                [ div [ class "item label" ] [ text <| translate language labelTransId ]
+                , div [ class "item value" ] [ text <| String.fromInt valueChw ]
+                , div [ class "item value" ] [ text <| String.fromInt valueNurse ]
+                , div [ class "item value" ] [ text <| String.fromInt <| valueChw + valueNurse ]
+                ]
+    in
+    div [ class "report prenatal" ] <|
+        viewTable Translate.PregnanciesAll
+            [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
+            , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
+            , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
+            , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
+            , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
+            , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+            ]
+            ++ viewTable Translate.PregnanciesActive
+                [ ( activeChwVisits1, activeNurseVisits1 )
+                , ( activeChwVisits2, activeNurseVisits2 )
+                , ( activeChwVisits3, activeNurseVisits3 )
+                , ( activeChwVisits4, activeNurseVisits4 )
+                , ( activeChwVisits5, activeNurseVisits5 )
+                , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
+                ]
+            ++ viewTable Translate.PregnanciesCompleted
+                [ ( completedChwVisits1, completedNurseVisits1 )
+                , ( completedChwVisits2, completedNurseVisits2 )
+                , ( completedChwVisits3, completedNurseVisits3 )
+                , ( completedChwVisits4, completedNurseVisits4 )
+                , ( completedChwVisits5, completedNurseVisits5 )
+                , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
+                ]

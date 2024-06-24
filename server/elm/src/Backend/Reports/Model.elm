@@ -31,9 +31,13 @@ type alias PatientData =
     , birthDate : NominalDate
     , gender : Gender
     , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
-    , prenatalData : Maybe (List (List PrenatalEncounterData))
+    , prenatalData : Maybe (List PrenatalParticipantData)
     , homeVisitData : Maybe (List (List HomeVisitEncounterData))
     , wellChildData : Maybe (List (List NutritionEncounterData))
+    , childScorecardData : Maybe (List (List ChildScorecardEncounterData))
+    , ncdData : Maybe (List (List NCDEncounterData))
+    , hivData : Maybe (List (List HIVEncounterData))
+    , tuberculosisData : Maybe (List (List TuberculosisEncounterData))
     , individualNutritionData : Maybe (List (List NutritionEncounterData))
     , groupNutritionPmtctData : Maybe (List NutritionEncounterData)
     , groupNutritionFbfData : Maybe (List NutritionEncounterData)
@@ -62,6 +66,14 @@ type AcuteIllnessEncounterType
     = AcuteIllnessEncounterNurse
     | AcuteIllnessEncounterNurseSubsequent
     | AcuteIllnessEncounterCHW
+
+
+type alias PrenatalParticipantData =
+    { created : NominalDate
+    , eddDate : Maybe NominalDate
+    , dateConcluded : Maybe NominalDate
+    , encounters : List PrenatalEncounterData
+    }
 
 
 type alias PrenatalEncounterData =
@@ -93,6 +105,22 @@ type alias NutritionData =
 
 
 type alias HomeVisitEncounterData =
+    NominalDate
+
+
+type alias ChildScorecardEncounterData =
+    NominalDate
+
+
+type alias NCDEncounterData =
+    NominalDate
+
+
+type alias HIVEncounterData =
+    NominalDate
+
+
+type alias TuberculosisEncounterData =
     NominalDate
 
 

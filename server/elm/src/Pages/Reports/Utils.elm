@@ -20,6 +20,9 @@ reportTypeToString reportType =
         ReportNutrition ->
             "nutrition"
 
+        ReportPrenatal ->
+            "prenatal"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
@@ -30,31 +33,45 @@ reportTypeFromString reportType =
         "nutrition" ->
             Just ReportNutrition
 
+        "prenatal" ->
+            Just ReportPrenatal
+
         _ ->
             Nothing
 
 
-countTotalEncounetrs : PatientData -> Int
-countTotalEncounetrs data =
-    let
-        countIndividualDataEncounters =
-            Maybe.map (List.map List.length >> List.sum)
-                >> Maybe.withDefault 0
+countTotalEncounters : PatientData -> Int
+countTotalEncounters data =
+    countTotalNutritionEncounters data
+        + countIndividualDataEncounters data.acuteIllnessData
+        + countIndividualDataEncounters (Maybe.map (List.map .encounters) data.prenatalData)
+        + countIndividualDataEncounters data.homeVisitData
+        + countIndividualDataEncounters data.childScorecardData
+        + countIndividualDataEncounters data.ncdData
+        + countIndividualDataEncounters data.hivData
+        + countIndividualDataEncounters data.tuberculosisData
 
+
+countTotalNutritionEncounters : PatientData -> Int
+countTotalNutritionEncounters data =
+    let
         countGroupDataEncounters =
             Maybe.map List.length
                 >> Maybe.withDefault 0
     in
-    countIndividualDataEncounters data.acuteIllnessData
-        + countIndividualDataEncounters data.prenatalData
-        + countIndividualDataEncounters data.homeVisitData
-        + countIndividualDataEncounters data.wellChildData
+    countIndividualDataEncounters data.wellChildData
         + countIndividualDataEncounters data.individualNutritionData
         + countGroupDataEncounters data.groupNutritionPmtctData
         + countGroupDataEncounters data.groupNutritionFbfData
         + countGroupDataEncounters data.groupNutritionSorwatheData
         + countGroupDataEncounters data.groupNutritionChwData
         + countGroupDataEncounters data.groupNutritionAchiData
+
+
+countIndividualDataEncounters : Maybe (List (List a)) -> Int
+countIndividualDataEncounters =
+    Maybe.map (List.map List.length >> List.sum)
+        >> Maybe.withDefault 0
 
 
 sumNutritionMetrics : List NutritionMetrics -> NutritionMetrics

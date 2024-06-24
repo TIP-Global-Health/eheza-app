@@ -62,9 +62,13 @@ decodePatientData =
         |> required "birth_date" decodeYYYYMMDD
         |> required "gender" (decodeWithFallback Female decodeGender)
         |> optionalAt [ "individual", "acute-illness" ] (nullable (list (list decodeAcuteIllnessEncounterData))) Nothing
-        |> optionalAt [ "individual", "antenatal" ] (nullable (list (list decodePrenatalEncounterData))) Nothing
-        |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeHomeVisitEncounterData))) Nothing
+        |> optionalAt [ "individual", "antenatal" ] (nullable (list decodePrenatalParticipantData)) Nothing
+        |> optionalAt [ "individual", "home-visit" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "well-child" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
+        |> optionalAt [ "individual", "child-scoreboard" ] (nullable (list (list decodeYYYYMMDD))) Nothing
+        |> optionalAt [ "individual", "ncd" ] (nullable (list (list decodeYYYYMMDD))) Nothing
+        |> optionalAt [ "individual", "hiv" ] (nullable (list (list decodeYYYYMMDD))) Nothing
+        |> optionalAt [ "individual", "tuberculosis" ] (nullable (list (list decodeYYYYMMDD))) Nothing
         |> optionalAt [ "individual", "nutrition" ] (nullable (list (list decodeNutritionEncounterData))) Nothing
         |> optionalAt [ "group_nutrition", "pmtct" ] (nullable (list decodeNutritionEncounterData)) Nothing
         |> optionalAt [ "group_nutrition", "fbf" ] (nullable (list decodeNutritionEncounterData)) Nothing
@@ -127,6 +131,15 @@ acuteIllnessEncounterTypeFromString encounterType =
 
         _ ->
             Nothing
+
+
+decodePrenatalParticipantData : Decoder PrenatalParticipantData
+decodePrenatalParticipantData =
+    succeed PrenatalParticipantData
+        |> required "created" decodeYYYYMMDD
+        |> optional "edd" (nullable decodeYYYYMMDD) Nothing
+        |> optional "dc" (nullable decodeYYYYMMDD) Nothing
+        |> required "encounters" (list decodePrenatalEncounterData)
 
 
 decodePrenatalEncounterData : Decoder PrenatalEncounterData
@@ -219,11 +232,6 @@ nutritionDataFromString s =
 
         _ ->
             Nothing
-
-
-decodeHomeVisitEncounterData : Decoder HomeVisitEncounterData
-decodeHomeVisitEncounterData =
-    decodeYYYYMMDD
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a

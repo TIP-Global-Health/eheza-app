@@ -58,6 +58,7 @@ type TranslationId
     | ANCTotal
     | CBNP
     | Cell
+    | ChildScorecard
     | CHW
     | Colline
     | CollineSub
@@ -70,7 +71,9 @@ type TranslationId
     | FBF
     | Female
     | GenerateReport
+    | HC
     | HealthCenter
+    | HIV
     | HomeVisit
     | HttpError StringIdHttpError
     | Impacted
@@ -86,6 +89,7 @@ type TranslationId
     | Month Month
     | MonthLabel
     | MonthYear Month Int Bool
+    | NCD
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -96,11 +100,16 @@ type TranslationId
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewScope
     | NewSelection
+    | NumberOfVisits Int
+    | NumberOfVisitsLabel
     | NutritionBehavior
     | NutritionTotal
     | PleaseWaitMessage
     | PMTCT
     | PopulationSelectionOption PopulationSelectionOption
+    | PregnanciesActive
+    | PregnanciesAll
+    | PregnanciesCompleted
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -126,6 +135,7 @@ type TranslationId
     | Status
     | TargetedInterventions
     | Total
+    | Tuberculosis
     | ViewMode
     | Village
     | UnderweightModerate
@@ -215,6 +225,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        ChildScorecard ->
+            { english = "Child Scorecard"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CHW ->
             { english = "CHW"
             , kinyarwanda = Nothing
@@ -269,8 +285,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        HC ->
+            { english = "HC"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HealthCenter ->
             { english = "Health Center"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIV ->
+            { english = "HIV"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -355,6 +383,12 @@ translationSet transId =
 
         MonthYear month year short ->
             translateMonthYY month year short
+
+        NCD ->
+            { english = "NCD"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -570,6 +604,31 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        NumberOfVisits number ->
+            if number == 1 then
+                { english = "1 visit"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else if number > 5 then
+                { english = "5+ visits"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = String.fromInt number ++ " visits"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+        NumberOfVisitsLabel ->
+            { english = "# Visits"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NutritionBehavior ->
             { english = "Nutrition Behavior"
             , kinyarwanda = Nothing
@@ -613,6 +672,24 @@ translationSet transId =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+        PregnanciesActive ->
+            { english = "Active Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesAll ->
+            { english = "All Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnanciesCompleted ->
+            { english = "Completed Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month, one visit or more"
@@ -660,6 +737,12 @@ translationSet transId =
 
                 ReportNutrition ->
                     { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReportPrenatal ->
+                    { english = "Antenatal"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -773,6 +856,12 @@ translationSet transId =
 
         Total ->
             { english = "Total"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Tuberculosis ->
+            { english = "Tuberculosis"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

@@ -429,11 +429,15 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
   $encounters_data = [];
   $encounter_types_to_load = [
-    'acute-illness',
-    'antenatal',
-    'home-visit',
-    'nutrition',
-    'well-child',
+    HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
+    HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HIV_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HOME_VISIT_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NCD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
+    HEDLEY_STATS_TUBERCULOSIS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
   ];
   $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
   $individual_participants = node_load_multiple($individual_participants_ids);
@@ -447,23 +451,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
     foreach ($encounters as $encounter) {
       $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
       switch ($participant_type) {
-        case 'acute-illness':
+        case HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE:
           $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
           $encounter_data = "$encounter_date $encounter_type";
           break;
 
-        case 'antenatal':
+        case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
           $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
           $encounter_data = "$encounter_date $encounter_type";
           break;
 
-        case 'nutrition':
-        case 'well-child':
+        case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
+        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
           $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
           $encounter_data = "$encounter_date $nutrition";
           break;
 
-        // Remaining one is home-visit.
+        // For remaining types recording only encounter date.
         default:
           $encounter_data = $encounter_date;
       }
@@ -476,11 +480,28 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       }
     }
 
+    // Adding participant data for pregnancies.
+    if ($participant_type == HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE) {
+      $participant_data = [
+        'created' => date("Y-m-d", $individual_participant->created),
+      ];
+      $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($edd_date)) {
+        $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
+      }
+      $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($date_concluded)) {
+        $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
+      }
+      $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
+      $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
+    }
+  }
+
+  if (!empty($encounters_data)) {
     foreach ($encounters_data as $key => $data_type) {
       $encounters_data[$key] = array_values($data_type);
     }
-  }
-  if (!empty($encounters_data)) {
     $data['individual'] = $encounters_data;
   }
 
