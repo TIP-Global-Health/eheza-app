@@ -85,6 +85,7 @@ type TranslationId
     | IncidenceByYearTwoVisitsOrMore
     | Individual
     | InfrastructureEnvironmentWash
+    | LoadData
     | Male
     | Month Month
     | MonthLabel
@@ -125,6 +126,7 @@ type TranslationId
     | Sector
     | SelectedEntity SelectedEntity
     | SelectLimitDate
+    | SelectStartDate
     | SelectScope
     | SelectViewMode
     | Sorwathe
@@ -362,6 +364,12 @@ translationSet transId =
 
         InfrastructureEnvironmentWash ->
             { english = "Infrastructure, Environment & Wash"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        LoadData ->
+            { english = "Load Data"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -729,6 +737,12 @@ translationSet transId =
 
         ReportType reportType ->
             case reportType of
+                ReportAcuteIllness ->
+                    { english = "Acute Illness"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 ReportDemographics ->
                     { english = "Demographics"
                     , kinyarwanda = Nothing
@@ -796,6 +810,12 @@ translationSet transId =
 
         SelectLimitDate ->
             { english = "Limit date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        SelectStartDate ->
+            { english = "Start date"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

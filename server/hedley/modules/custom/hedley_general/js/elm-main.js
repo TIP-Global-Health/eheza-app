@@ -5481,7 +5481,7 @@ var $elm$core$Basics$composeR = F3(
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
 var $krisajenkins$remotedata$RemoteData$NotAsked = {$: 'NotAsked'};
-var $author$project$Pages$Reports$Model$emptyModel = {dateSelectorPopupState: $elm$core$Maybe$Nothing, limitDate: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Reports$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Components$Model$emptyDemographicsSelection = {cell: $elm$core$Maybe$Nothing, district: $elm$core$Maybe$Nothing, province: $elm$core$Maybe$Nothing, sector: $elm$core$Maybe$Nothing, village: $elm$core$Maybe$Nothing};
 var $author$project$Pages$ReportsMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedDemographics: $author$project$Pages$Components$Model$emptyDemographicsSelection, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $author$project$Pages$Scoreboard$Model$ModeValues = {$: 'ModeValues'};
@@ -6319,11 +6319,14 @@ var $author$project$Pages$Reports$Update$performNutritionReportDataCalculation =
 			$author$project$Pages$Reports$Update$wrapInResultTask(
 				A2($author$project$Pages$Reports$Update$calculateNutritionReportDataTask, currentDate, data)));
 	});
+var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
+		case 'acute-illness':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportAcuteIllness);
 		case 'demographics':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportDemographics);
 		case 'nutrition':
@@ -6360,8 +6363,39 @@ var $author$project$Pages$Reports$Update$update = F4(
 				var cmd = _v1.b;
 				var modelUpdated = _Utils_update(
 					model,
-					{limitDate: $elm$core$Maybe$Nothing, nutritionReportData: nutritionReportData, reportType: mReportType});
+					{limitDate: $elm$core$Maybe$Nothing, nutritionReportData: nutritionReportData, reportType: mReportType, startDate: $elm$core$Maybe$Nothing});
 				return A4($author$project$App$Model$PagesReturn, modelUpdated, cmd, $author$project$Error$Utils$noError, _List_Nil);
+			case 'SetStartDate':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							startDate: $elm$core$Maybe$Just(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetStartDateSelectorState':
+				var state = msg.a;
+				var defaultSelection = A2(
+					$elm_community$maybe_extra$Maybe$Extra$or,
+					model.startDate,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.dateDefault;
+						},
+						state));
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{startDate: defaultSelection, startDateSelectorPopupState: state}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
 			case 'SetLimitDate':
 				var value = msg.a;
 				return A4(
@@ -6389,7 +6423,7 @@ var $author$project$Pages$Reports$Update$update = F4(
 					$author$project$App$Model$PagesReturn,
 					_Utils_update(
 						model,
-						{dateSelectorPopupState: state, limitDate: defaultSelection}),
+						{limitDate: defaultSelection, limitDateSelectorPopupState: state}),
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
 					_List_Nil);
@@ -9191,6 +9225,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'LoadData':
+				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Male':
 				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Month':
@@ -9432,6 +9468,8 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'ReportType':
 				var reportType = transId.a;
 				switch (reportType.$) {
+					case 'ReportAcuteIllness':
+						return {english: 'Acute Illness', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
@@ -9479,6 +9517,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'SelectLimitDate':
 				return {english: 'Limit date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'SelectStartDate':
+				return {english: 'Start date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectScope':
 				return {english: 'Please select desired scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectViewMode':
@@ -9681,6 +9721,7 @@ var $author$project$Translate$ReportType = function (a) {
 };
 var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
 var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
+var $author$project$Translate$SelectStartDate = {$: 'SelectStartDate'};
 var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
 	return {$: 'SetLimitDate', a: a};
 };
@@ -9689,6 +9730,12 @@ var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a)
 };
 var $author$project$Pages$Reports$Model$SetReportType = function (a) {
 	return {$: 'SetReportType', a: a};
+};
+var $author$project$Pages$Reports$Model$SetStartDate = function (a) {
+	return {$: 'SetStartDate', a: a};
+};
+var $author$project$Pages$Reports$Model$SetStartDateSelectorState = function (a) {
+	return {$: 'SetStartDateSelectorState', a: a};
 };
 var $author$project$Translate$WideScopeNote = {$: 'WideScopeNote'};
 var $elm$html$Html$a = _VirtualDom_node('a');
@@ -10399,7 +10446,6 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 		_List_fromArray(
 			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -10419,6 +10465,8 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
 	switch (reportType.$) {
+		case 'ReportAcuteIllness':
+			return 'acute-illness';
 		case 'ReportDemographics':
 			return 'demographics';
 		case 'ReportNutrition':
@@ -14190,51 +14238,94 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 								]))
 						]))
 				]));
-		var limitDateInput = A2(
-			$elm$core$Maybe$withDefault,
-			$author$project$Gizra$Html$emptyNode,
-			A2(
-				$elm$core$Maybe$map,
-				function (reportType) {
-					if (!_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
-						var limitDateForView = A2(
-							$elm$core$Maybe$withDefault,
-							'',
-							A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-						var dateSelectorConfig = {
-							close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-							dateDefault: $elm$core$Maybe$Just(currentDate),
-							dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-							dateTo: currentDate,
-							select: $author$project$Pages$Reports$Model$SetLimitDate
-						};
-						return A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$SelectLimitDate,
-							false,
-							A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('form-input date'),
-										$elm$html$Html$Events$onClick(
-										$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
-											$elm$core$Maybe$Just(dateSelectorConfig)))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(limitDateForView)
-									])));
-					} else {
-						return $author$project$Gizra$Html$emptyNode;
-					}
-				},
-				model.reportType));
 		var limitDateByReportType = _Utils_eq(
 			model.reportType,
 			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
-		var content = $elm_community$maybe_extra$Maybe$Extra$isJust(model.dateSelectorPopupState) ? $author$project$Gizra$Html$emptyNode : A2(
+		var dateInputs = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (reportType) {
+					var startDateInput = function () {
+						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness)) {
+							var dateSelectorConfig = {
+								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+								dateDefault: $elm$core$Maybe$Just(currentDate),
+								dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
+								dateTo: currentDate,
+								select: $author$project$Pages$Reports$Model$SetStartDate
+							};
+							var dateForView = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$SelectStartDate,
+								false,
+								A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('form-input date'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Pages$Reports$Model$SetStartDateSelectorState(
+												$elm$core$Maybe$Just(dateSelectorConfig)))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(dateForView)
+										])));
+						} else {
+							return $author$project$Gizra$Html$emptyNode;
+						}
+					}();
+					var limitDateInput = function () {
+						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition) || (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness) && $elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate))) {
+							return $author$project$Gizra$Html$emptyNode;
+						} else {
+							var limitDateForView = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+							var dateFrom = A2(
+								$elm$core$Maybe$withDefault,
+								A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
+								model.startDate);
+							var dateSelectorConfig = {
+								close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+								dateDefault: $elm$core$Maybe$Just(currentDate),
+								dateFrom: dateFrom,
+								dateTo: currentDate,
+								select: $author$project$Pages$Reports$Model$SetLimitDate
+							};
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$SelectLimitDate,
+								false,
+								A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('form-input date'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+												$elm$core$Maybe$Just(dateSelectorConfig)))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(limitDateForView)
+										])));
+						}
+					}();
+					return _List_fromArray(
+						[startDateInput, limitDateInput]);
+				},
+				model.reportType));
+		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
 			A3(
@@ -14369,6 +14460,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							},
 							data.records);
 						switch (reportType.$) {
+							case 'ReportAcuteIllness':
+								return $elm$html$Html$text('@todo');
 							case 'ReportDemographics':
 								return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
 							case 'ReportNutrition':
@@ -14379,7 +14472,6 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 					}),
 				model.reportType,
 				limitDateByReportType));
-		var _v0 = A2($elm$core$Debug$log, '', data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -14395,28 +14487,33 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 						[
 							$elm$html$Html$Attributes$class('inputs')
 						]),
-					_List_fromArray(
-						[
-							A4(
-							$author$project$Pages$Utils$wrapSelectListInput,
-							language,
-							$author$project$Translate$ReportTypeLabel,
-							false,
-							A7(
-								$author$project$Pages$Utils$viewSelectListInput,
+					_Utils_ap(
+						_List_fromArray(
+							[
+								A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
 								language,
-								model.reportType,
-								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition, $author$project$Pages$Reports$Model$ReportPrenatal]),
-								$author$project$Pages$Reports$Utils$reportTypeToString,
-								$author$project$Pages$Reports$Model$SetReportType,
-								$author$project$Translate$ReportType,
-								'select-input')),
-							limitDateInput,
-							content
-						])),
+								$author$project$Translate$ReportTypeLabel,
+								false,
+								A7(
+									$author$project$Pages$Utils$viewSelectListInput,
+									language,
+									model.reportType,
+									_List_fromArray(
+										[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									$author$project$Pages$Reports$Utils$reportTypeToString,
+									$author$project$Pages$Reports$Model$SetReportType,
+									$author$project$Translate$ReportType,
+									'select-input'))
+							]),
+						_Utils_ap(
+							dateInputs,
+							_List_fromArray(
+								[content])))),
 					$author$project$Utils$Html$viewModal(
-					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.dateSelectorPopupState, model.limitDate))
+					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
+					$author$project$Utils$Html$viewModal(
+					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.limitDateSelectorPopupState, model.limitDate))
 				]));
 	});
 var $author$project$Pages$Reports$View$view = F4(
@@ -14435,6 +14532,7 @@ var $author$project$Pages$Reports$View$view = F4(
 			return $author$project$Gizra$Html$emptyNode;
 		}
 	});
+var $author$project$Translate$LoadData = {$: 'LoadData'};
 var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
 	return {$: 'PopulationSelectionOption', a: a};
@@ -33947,9 +34045,8 @@ var $author$project$Pages$Components$View$viewDemographicsSelection = F4(
 		return _List_fromArray(
 			[provinceInput, districtInput, sectorInput, cellInput, villageInput]);
 	});
-var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
-var $author$project$Pages$Utils$viewGenerateReportButton = F3(
-	function (language, path, selectionMadeMsg) {
+var $author$project$Pages$Utils$viewMenuActionButton = F4(
+	function (language, path, label, selectionMadeMsg) {
 		return A2(
 			$elm$html$Html$a,
 			_List_fromArray(
@@ -33967,12 +34064,12 @@ var $author$project$Pages$Utils$viewGenerateReportButton = F3(
 					_List_fromArray(
 						[
 							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$GenerateReport))
+							A2($author$project$Translate$translate, language, label))
 						]))
 				]));
 	});
-var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F5(
-	function (language, site, pathPrefix, selectionMadeMsg, selection) {
+var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton = F6(
+	function (language, site, pathPrefix, label, selectionMadeMsg, selection) {
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(site);
 		var provincePart = A2(
 			$elm$core$Maybe$withDefault,
@@ -34045,7 +34142,11 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 					},
 					selection.cell)));
 		var path = pathPrefix + ('/' + (provincePart + (districtPart + (sectorPart + (cellPart + villagePart)))));
-		return A3($author$project$Pages$Utils$viewGenerateReportButton, language, path, selectionMadeMsg);
+		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, label, selectionMadeMsg);
+	});
+var $author$project$Pages$Utils$viewLoadDataButton = F3(
+	function (language, path, selectionMadeMsg) {
+		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 	function (language, data, model) {
@@ -34074,11 +34175,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 						case 'SelectionOptionGlobal':
 							return _Utils_Tuple2(
 								_List_Nil,
-								A3($author$project$Pages$Utils$viewGenerateReportButton, language, '/admin/reports/aggregated-reports/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
+								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/aggregated-reports/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
 						case 'SelectionOptionDemographics':
 							return _Utils_Tuple2(
 								A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics),
-								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A5($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-reports/demographics', $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-reports/demographics', $author$project$Translate$LoadData, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 						default:
 							var options = A2(
 								$elm$core$List$map,
@@ -34108,7 +34209,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 										$elm$core$Maybe$map,
 										function (selectedHealthCenter) {
 											return A3(
-												$author$project$Pages$Utils$viewGenerateReportButton,
+												$author$project$Pages$Utils$viewLoadDataButton,
 												language,
 												'/admin/reports/aggregated-reports/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
 												$author$project$Pages$ReportsMenu$Model$SelectionMade);
@@ -35998,6 +36099,7 @@ var $author$project$Pages$Scoreboard$View$view = F4(
 			return $author$project$Gizra$Html$emptyNode;
 		}
 	});
+var $author$project$Translate$GenerateReport = {$: 'GenerateReport'};
 var $author$project$Translate$SelectViewMode = {$: 'SelectViewMode'};
 var $author$project$Pages$ScoreboardMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation = F2(
@@ -36009,7 +36111,7 @@ var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
 		var _v0 = _Utils_Tuple2(
 			A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation, model.selectedDemographics),
-			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A5($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-ncda', $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-ncda', $author$project$Translate$GenerateReport, $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 		var inputs = _v0.a;
 		var actionButton_ = _v0.b;
 		var actionButton = model.selected ? $elm$html$Html$text(

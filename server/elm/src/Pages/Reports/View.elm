@@ -20,7 +20,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
@@ -46,9 +46,6 @@ view language currentDate modelBackend model =
 viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
-        _ =
-            Debug.log "" data
-
         topBar =
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
@@ -59,37 +56,74 @@ viewReportsData language currentDate data model =
                     ]
                 ]
 
-        limitDateInput =
+        dateInputs =
             Maybe.map
                 (\reportType ->
-                    -- Nutrition report does not allow selecting limit date, so
-                    -- we do not show limit date input when report is selected.
-                    if reportType /= ReportNutrition then
-                        let
-                            dateSelectorConfig =
-                                { select = SetLimitDate
-                                , close = SetLimitDateSelectorState Nothing
-                                , dateFrom = Date.add Years -6 currentDate
-                                , dateTo = currentDate
-                                , dateDefault = Just currentDate
-                                }
+                    let
+                        startDateInput =
+                            if reportType == ReportAcuteIllness then
+                                let
+                                    dateSelectorConfig =
+                                        { select = SetStartDate
+                                        , close = SetStartDateSelectorState Nothing
+                                        , dateFrom = Date.add Years -6 currentDate
+                                        , dateTo = currentDate
+                                        , dateDefault = Just currentDate
+                                        }
 
-                            limitDateForView =
-                                Maybe.map formatDDMMYYYY model.limitDate
-                                    |> Maybe.withDefault ""
-                        in
-                        div
-                            [ class "form-input date"
-                            , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                            ]
-                            [ text limitDateForView ]
-                            |> wrapSelectListInput language Translate.SelectLimitDate False
+                                    dateForView =
+                                        Maybe.map formatDDMMYYYY model.startDate
+                                            |> Maybe.withDefault ""
+                                in
+                                div
+                                    [ class "form-input date"
+                                    , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
+                                    ]
+                                    [ text dateForView ]
+                                    |> wrapSelectListInput language Translate.SelectStartDate False
 
-                    else
-                        emptyNode
+                            else
+                                emptyNode
+
+                        limitDateInput =
+                            if
+                                -- Nutrition report does not allow selecting limit date, so
+                                -- we do not show limit date input when report is selected.
+                                (reportType == ReportNutrition)
+                                    || -- Acute Illness report requires setting start date before
+                                       -- limit date can be shown.
+                                       (reportType == ReportAcuteIllness && isNothing model.startDate)
+                            then
+                                emptyNode
+
+                            else
+                                let
+                                    dateFrom =
+                                        Maybe.withDefault (Date.add Years -6 currentDate) model.startDate
+
+                                    dateSelectorConfig =
+                                        { select = SetLimitDate
+                                        , close = SetLimitDateSelectorState Nothing
+                                        , dateFrom = dateFrom
+                                        , dateTo = currentDate
+                                        , dateDefault = Just currentDate
+                                        }
+
+                                    limitDateForView =
+                                        Maybe.map formatDDMMYYYY model.limitDate
+                                            |> Maybe.withDefault ""
+                                in
+                                div
+                                    [ class "form-input date"
+                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                                    ]
+                                    [ text limitDateForView ]
+                                    |> wrapSelectListInput language Translate.SelectLimitDate False
+                    in
+                    [ startDateInput, limitDateInput ]
                 )
                 model.reportType
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault []
 
         limitDateByReportType =
             if model.reportType == Just ReportNutrition then
@@ -101,7 +135,10 @@ viewReportsData language currentDate data model =
                 model.limitDate
 
         content =
-            if isJust model.dateSelectorPopupState then
+            if
+                isJust model.startDateSelectorPopupState
+                    || isJust model.limitDateSelectorPopupState
+            then
                 -- Date selector is open, so no need to calcualte
                 -- intermediate results.
                 emptyNode
@@ -194,6 +231,9 @@ viewReportsData language currentDate data model =
                                         data.records
                         in
                         case reportType of
+                            ReportAcuteIllness ->
+                                text "@todo"
+
                             ReportDemographics ->
                                 viewDemographicsReport language limitDate recordsTillLimitDate
 
@@ -215,19 +255,24 @@ viewReportsData language currentDate data model =
     in
     div [ class "page-content" ]
         [ topBar
-        , div [ class "inputs" ]
+        , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType
-                [ ReportDemographics, ReportNutrition, ReportPrenatal ]
+                [ ReportAcuteIllness
+                , ReportPrenatal
+                , ReportDemographics
+                , ReportNutrition
+                ]
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
-            , limitDateInput
-            , content
             ]
-        , viewModal <| viewCalendarPopup language model.dateSelectorPopupState model.limitDate
+                ++ dateInputs
+                ++ [ content ]
+        , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
+        , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
         ]
 
 

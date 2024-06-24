@@ -17,8 +17,8 @@ import Pages.Utils
     exposing
         ( viewCustomLabel
         , viewCustomSelectListInput
-        , viewGenerateReportButton
         , viewGeoLocationSelectListInput
+        , viewMenuActionButton
         , viewSelectListInput
         )
 import Translate exposing (TranslationId, translate)
@@ -159,8 +159,8 @@ viewDemographicsSelection language site setGeoLocationMsg selection =
     ]
 
 
-viewDemographicsSelectionActionButton : Language -> Site -> String -> msg -> DemographicsSelection -> Html msg
-viewDemographicsSelectionActionButton language site pathPrefix selectionMadeMsg selection =
+viewDemographicsSelectionActionButton : Language -> Site -> String -> TranslationId -> msg -> DemographicsSelection -> Html msg
+viewDemographicsSelectionActionButton language site pathPrefix label selectionMadeMsg selection =
     let
         geoInfo =
             getGeoInfo site
@@ -219,4 +219,4 @@ viewDemographicsSelectionActionButton language site pathPrefix selectionMadeMsg 
                 ++ cellPart
                 ++ villagePart
     in
-    viewGenerateReportButton language path selectionMadeMsg
+    viewMenuActionButton language path label selectionMadeMsg

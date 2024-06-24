@@ -226,7 +226,17 @@ viewActionButton language label allowAction action =
 
 viewGenerateReportButton : Language -> String -> msg -> Html msg
 viewGenerateReportButton language path selectionMadeMsg =
+    viewMenuActionButton language path Translate.GenerateReport selectionMadeMsg
+
+
+viewLoadDataButton : Language -> String -> msg -> Html msg
+viewLoadDataButton language path selectionMadeMsg =
+    viewMenuActionButton language path Translate.LoadData selectionMadeMsg
+
+
+viewMenuActionButton : Language -> String -> TranslationId -> msg -> Html msg
+viewMenuActionButton language path label selectionMadeMsg =
     a [ href path ]
         [ button [ onClick selectionMadeMsg ]
-            [ text <| translate language Translate.GenerateReport ]
+            [ text <| translate language label ]
         ]
