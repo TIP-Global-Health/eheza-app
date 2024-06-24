@@ -428,6 +428,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   }
 
   $encounters_data = [];
+  $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
   $encounter_types_to_load = [
     HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
     HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
@@ -453,7 +454,9 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       switch ($participant_type) {
         case HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE:
           $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
-          $encounter_data = "$encounter_date $encounter_type";
+          $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+          $mapped_diagnosis = !empty($ai_diagnosis_mapping[$diagnosis]) ? $ai_diagnosis_mapping[$diagnosis] : '';
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnosis";
           break;
 
         case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
@@ -1042,4 +1045,25 @@ function hedley_reports_gz_compress_file($data, $file_path) {
   gzwrite($gz_fp, $data);
   gzclose($gz_fp);
   return $file_path;
+}
+
+function hedley_reports_ai_diagnosis_mapping() {
+  return [
+    'covid19' => 'a',
+    'covid19-severe' => 'b',
+    'covid19-pneumonia' => 'c',
+    'covid19-low-risk' => 'd',
+    'malaria-complicated' => 'e',
+    'malaria-uncomplicated' => 'f',
+    'malaria-uncomplicated-pregnant' => 'g',
+    'gi-complicated' => 'h',
+    'gi-uncomplicated' => 'i',
+    'ri-complicated' => 'j',
+    'ri-uncomplicated' => 'k',
+    'cough-and-cold' => 'l',
+    'fever-of-unknown-origin' => 'm',
+    'undetermined' => 'n',
+    'tuberculosis-suspect' => 'o',
+    'none' => 'z',
+  ];
 }
