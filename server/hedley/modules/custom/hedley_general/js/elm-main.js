@@ -6570,10 +6570,61 @@ var $author$project$Backend$Reports$Model$PatientData = function (id) {
 	};
 };
 var $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW = {$: 'AcuteIllnessEncounterCHW'};
-var $author$project$Backend$Reports$Model$AcuteIllnessEncounterData = F2(
-	function (startDate, encounterType) {
-		return {encounterType: encounterType, startDate: startDate};
+var $author$project$Backend$Reports$Model$AcuteIllnessEncounterData = F3(
+	function (startDate, encounterType, diagnosis) {
+		return {diagnosis: diagnosis, encounterType: encounterType, startDate: startDate};
 	});
+var $author$project$Backend$Reports$Model$DiagnosisCovid19Suspect = {$: 'DiagnosisCovid19Suspect'};
+var $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin = {$: 'DiagnosisFeverOfUnknownOrigin'};
+var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated = {$: 'DiagnosisGastrointestinalInfectionComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated = {$: 'DiagnosisGastrointestinalInfectionUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19 = {$: 'DiagnosisLowRiskCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated = {$: 'DiagnosisMalariaComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated = {$: 'DiagnosisMalariaUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant = {$: 'DiagnosisMalariaUncomplicatedAndPregnant'};
+var $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19 = {$: 'DiagnosisPneuminialCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated = {$: 'DiagnosisRespiratoryInfectionComplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated = {$: 'DiagnosisRespiratoryInfectionUncomplicated'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereCovid19 = {$: 'DiagnosisSevereCovid19'};
+var $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough = {$: 'DiagnosisSimpleColdAndCough'};
+var $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect = {$: 'DiagnosisTuberculosisSuspect'};
+var $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded = {$: 'DiagnosisUndeterminedMoreEvaluationNeeded'};
+var $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping = function (mapping) {
+	switch (mapping) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCovid19Suspect);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereCovid19);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaComplicated);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurse = {$: 'AcuteIllnessEncounterNurse'};
 var $author$project$Backend$Reports$Model$AcuteIllnessEncounterNurseSubsequent = {$: 'AcuteIllnessEncounterNurseSubsequent'};
 var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString = function (encounterType) {
@@ -7330,21 +7381,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$core$Result$toMaybe = function (result) {
 	if (result.$ === 'Ok') {
@@ -7360,51 +7396,33 @@ var $author$project$Backend$Reports$Decoder$decodeAcuteIllnessEncounterData = A2
 	function (s) {
 		var _v0 = A2(
 			$elm$core$String$split,
-			' ',
+			'|',
 			$elm$core$String$trim(s));
-		_v0$2:
-		while (true) {
-			if (_v0.b) {
-				if (!_v0.b.b) {
-					var first = _v0.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData'),
-						A2(
-							$elm$core$Maybe$map,
-							function (startDate) {
-								return $elm$json$Json$Decode$succeed(
-									A2($author$project$Backend$Reports$Model$AcuteIllnessEncounterData, startDate, $author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW));
-							},
-							$elm$core$Result$toMaybe(
-								$justinmimbs$date$Date$fromIsoString(first))));
-				} else {
-					if (!_v0.b.b.b) {
-						var first = _v0.a;
-						var _v1 = _v0.b;
-						var second = _v1.a;
-						return A2(
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var encounterType = A2(
 							$elm$core$Maybe$withDefault,
-							$elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData'),
-							A3(
-								$elm$core$Maybe$map2,
-								F2(
-									function (startDate, encounterType) {
-										return $elm$json$Json$Decode$succeed(
-											A2($author$project$Backend$Reports$Model$AcuteIllnessEncounterData, startDate, encounterType));
-									}),
-								$elm$core$Result$toMaybe(
-									$justinmimbs$date$Date$fromIsoString(first)),
-								$author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString(second)));
-					} else {
-						break _v0$2;
-					}
-				}
-			} else {
-				break _v0$2;
-			}
+							$author$project$Backend$Reports$Model$AcuteIllnessEncounterCHW,
+							$author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString(second));
+						var diagnosis = $author$project$Backend$Reports$Decoder$acuteIllnessDiagnosisFromMapping(third);
+						return $elm$json$Json$Decode$succeed(
+							A3($author$project$Backend$Reports$Model$AcuteIllnessEncounterData, startDate, encounterType, diagnosis));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData');
 		}
-		return $elm$json$Json$Decode$fail('Failed to decode AcuteIllnessEncounterData');
 	},
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Model$Male = {$: 'Male'};
@@ -7537,6 +7555,21 @@ var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'}
 var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
 	function (startDate, encounterType) {
 		return {encounterType: encounterType, startDate: startDate};
+	});
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
 	});
 var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
 var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
@@ -10366,6 +10399,7 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 		_List_fromArray(
 			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -14345,6 +14379,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 					}),
 				model.reportType,
 				limitDateByReportType));
+		var _v0 = A2($elm$core$Debug$log, '', data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(

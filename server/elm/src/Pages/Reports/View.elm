@@ -46,6 +46,9 @@ view language currentDate modelBackend model =
 viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
+        _ =
+            Debug.log "" data
+
         topBar =
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
