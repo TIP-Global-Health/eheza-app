@@ -5,6 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..))
 import Backend.Scoreboard.Model exposing (SelectedEntity(..))
 import Pages.Reports.Model exposing (ReportType(..))
 import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
@@ -50,6 +51,7 @@ type StringIdHttpError
 
 type TranslationId
     = ACHI
+    | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessTotal
     | AcuteMalnutrition
     | AggregatedChildScoreboard
@@ -63,6 +65,7 @@ type TranslationId
     | Colline
     | CollineSub
     | Commune
+    | Diagnosis
     | District
     | Demographics
     | EmptyString
@@ -161,6 +164,98 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        AcuteIllnessDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisCovid19Suspect ->
+                    { english = "Suspected COVID-19"
+                    , kinyarwanda = Just "Aracyekwaho indwara ya COVID-19"
+                    , kirundi = Just "Hiketswe umugera wa COVID-19"
+                    }
+
+                DiagnosisSevereCovid19 ->
+                    { english = "Severe COVID-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bukabije"
+                    , kirundi = Just "COVID-19 ikaze"
+                    }
+
+                DiagnosisPneuminialCovid19 ->
+                    { english = "COVID-19 with signs of Pneumonia"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 hamwe n'ibimenyetso by'Umusonga"
+                    , kirundi = Just "Virisi ya Korona - 19 n'ibimenyetso vy'umusonga"
+                    }
+
+                DiagnosisLowRiskCovid19 ->
+                    { english = "Simple COVID-19"
+                    , kinyarwanda = Just "Uburwayi bwa Covid-19 bworoheje"
+                    , kirundi = Just "Korona (COVID-19) isanzwe"
+                    }
+
+                DiagnosisMalariaComplicated ->
+                    { english = "Complicated Malaria"
+                    , kinyarwanda = Just "Malariya y'igikatu"
+                    , kirundi = Just "Malariya ikomeye"
+                    }
+
+                DiagnosisMalariaUncomplicated ->
+                    { english = "Uncomplicated Malaria"
+                    , kinyarwanda = Just "Malariya yoroheje"
+                    , kirundi = Just "Malariya yoroshe/isanzwe"
+                    }
+
+                DiagnosisMalariaUncomplicatedAndPregnant ->
+                    { english = "Uncomplicated Malaria"
+                    , kinyarwanda = Just "Malariya yoroheje"
+                    , kirundi = Just "Malariya yoroshe/isanzwe"
+                    }
+
+                DiagnosisGastrointestinalInfectionComplicated ->
+                    { english = "Gastrointestinal Infection with Complications"
+                    , kinyarwanda = Just "Indwara yo mu nda ikabije"
+                    , kirundi = Just "Ingwara yo mu mara/m'umushishito hamwe n'ingorane zijanye nazo"
+                    }
+
+                DiagnosisGastrointestinalInfectionUncomplicated ->
+                    { english = "Gastrointestinal Infection without Complications"
+                    , kinyarwanda = Just "Indwara yo mu nda yoroheje"
+                    , kirundi = Just "Ingwara yo mu mara/m'umushishito ata ngorane zijanye nazo"
+                    }
+
+                DiagnosisSimpleColdAndCough ->
+                    { english = "Simple Cold and Cough"
+                    , kinyarwanda = Just "Ibicurane n'inkorora byoroheje"
+                    , kirundi = Just "Imbeho hamwe n'inkorora biswnzwe"
+                    }
+
+                DiagnosisRespiratoryInfectionComplicated ->
+                    { english = "Acute Respiratory Infection with Complications"
+                    , kinyarwanda = Just "Indwara y'ubuhumekero ikabije"
+                    , kirundi = Just "Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n'ingorane bijanye"
+                    }
+
+                DiagnosisRespiratoryInfectionUncomplicated ->
+                    { english = "Uncomplicated Pneumonia"
+                    , kinyarwanda = Just "Umusonga woroheje"
+                    , kirundi = Just "Hiketswe ingwara y'umusonga igoye"
+                    }
+
+                DiagnosisFeverOfUnknownOrigin ->
+                    { english = "Fever of Unknown Origin"
+                    , kinyarwanda = Just "Umuriro utazi icyawuteye"
+                    , kirundi = Just "Ubushuhe bitazwi iyo bwazananye"
+                    }
+
+                DiagnosisUndeterminedMoreEvaluationNeeded ->
+                    { english = "Undetermined - More Evaluation Needed"
+                    , kinyarwanda = Just "Ntibisobanutse - Hakenewe Isuzuma Ryimbitse"
+                    , kirundi = Just "Ntibimenyekana - Isuzuma ryinshi rirakenewe"
+                    }
+
+                DiagnosisTuberculosisSuspect ->
+                    { english = "Tuberculosis Suspect"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         AcuteIllnessTotal ->
             { english = "Acute Illness (total)"
             , kinyarwanda = Nothing
@@ -207,6 +302,12 @@ translationSet transId =
             { english = "Sub-Colline"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        Diagnosis ->
+            { english = "Diagnosis"
+            , kinyarwanda = Just "Uburwayi bwabonetse"
+            , kirundi = Just "Isuzumwa"
             }
 
         Commune ->

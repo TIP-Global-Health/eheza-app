@@ -9154,6 +9154,96 @@ var $author$project$Translate$translationSet = function (transId) {
 		switch (transId.$) {
 			case 'ACHI':
 				return {english: 'ACHI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'AcuteIllnessDiagnosis':
+				var diagnosis = transId.a;
+				switch (diagnosis.$) {
+					case 'DiagnosisCovid19Suspect':
+						return {
+							english: 'Suspected COVID-19',
+							kinyarwanda: $elm$core$Maybe$Just('Aracyekwaho indwara ya COVID-19'),
+							kirundi: $elm$core$Maybe$Just('Hiketswe umugera wa COVID-19')
+						};
+					case 'DiagnosisSevereCovid19':
+						return {
+							english: 'Severe COVID-19',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 bukabije'),
+							kirundi: $elm$core$Maybe$Just('COVID-19 ikaze')
+						};
+					case 'DiagnosisPneuminialCovid19':
+						return {
+							english: 'COVID-19 with signs of Pneumonia',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 hamwe n\'ibimenyetso by\'Umusonga'),
+							kirundi: $elm$core$Maybe$Just('Virisi ya Korona - 19 n\'ibimenyetso vy\'umusonga')
+						};
+					case 'DiagnosisLowRiskCovid19':
+						return {
+							english: 'Simple COVID-19',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwa Covid-19 bworoheje'),
+							kirundi: $elm$core$Maybe$Just('Korona (COVID-19) isanzwe')
+						};
+					case 'DiagnosisMalariaComplicated':
+						return {
+							english: 'Complicated Malaria',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya y\'igikatu'),
+							kirundi: $elm$core$Maybe$Just('Malariya ikomeye')
+						};
+					case 'DiagnosisMalariaUncomplicated':
+						return {
+							english: 'Uncomplicated Malaria',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya yoroheje'),
+							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe')
+						};
+					case 'DiagnosisMalariaUncomplicatedAndPregnant':
+						return {
+							english: 'Uncomplicated Malaria',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya yoroheje'),
+							kirundi: $elm$core$Maybe$Just('Malariya yoroshe/isanzwe')
+						};
+					case 'DiagnosisGastrointestinalInfectionComplicated':
+						return {
+							english: 'Gastrointestinal Infection with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda ikabije'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito hamwe n\'ingorane zijanye nazo')
+						};
+					case 'DiagnosisGastrointestinalInfectionUncomplicated':
+						return {
+							english: 'Gastrointestinal Infection without Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara yo mu nda yoroheje'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu mara/m\'umushishito ata ngorane zijanye nazo')
+						};
+					case 'DiagnosisSimpleColdAndCough':
+						return {
+							english: 'Simple Cold and Cough',
+							kinyarwanda: $elm$core$Maybe$Just('Ibicurane n\'inkorora byoroheje'),
+							kirundi: $elm$core$Maybe$Just('Imbeho hamwe n\'inkorora biswnzwe')
+						};
+					case 'DiagnosisRespiratoryInfectionComplicated':
+						return {
+							english: 'Acute Respiratory Infection with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubuhumekero ikabije'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n\'ingorane bijanye')
+						};
+					case 'DiagnosisRespiratoryInfectionUncomplicated':
+						return {
+							english: 'Uncomplicated Pneumonia',
+							kinyarwanda: $elm$core$Maybe$Just('Umusonga woroheje'),
+							kirundi: $elm$core$Maybe$Just('Hiketswe ingwara y\'umusonga igoye')
+						};
+					case 'DiagnosisFeverOfUnknownOrigin':
+						return {
+							english: 'Fever of Unknown Origin',
+							kinyarwanda: $elm$core$Maybe$Just('Umuriro utazi icyawuteye'),
+							kirundi: $elm$core$Maybe$Just('Ubushuhe bitazwi iyo bwazananye')
+						};
+					case 'DiagnosisUndeterminedMoreEvaluationNeeded':
+						return {
+							english: 'Undetermined - More Evaluation Needed',
+							kinyarwanda: $elm$core$Maybe$Just('Ntibisobanutse - Hakenewe Isuzuma Ryimbitse'),
+							kirundi: $elm$core$Maybe$Just('Ntibimenyekana - Isuzuma ryinshi rirakenewe')
+						};
+					default:
+						return {english: 'Tuberculosis Suspect', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'AcuteIllnessTotal':
 				return {english: 'Acute Illness (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'AcuteMalnutrition':
@@ -9170,6 +9260,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CollineSub':
 				return {english: 'Sub-Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Diagnosis':
+				return {
+					english: 'Diagnosis',
+					kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwabonetse'),
+					kirundi: $elm$core$Maybe$Just('Isuzumwa')
+				};
 			case 'Commune':
 				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CBNP':
@@ -10475,6 +10571,152 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'prenatal';
 	}
 };
+var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
+	return {$: 'AcuteIllnessDiagnosis', a: a};
+};
+var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
+var $author$project$Translate$Total = {$: 'Total'};
+var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
+var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
+	function (language, startDate, records) {
+		var viewRow = F2(
+			function (diagnosis, value) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item label')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									A2(
+										$author$project$Translate$translate,
+										language,
+										$author$project$Translate$AcuteIllnessDiagnosis(diagnosis)))
+								])),
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('item value')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(
+									$elm$core$String$fromInt(value))
+								]))
+						]));
+			});
+		var filtered = A2(
+			$elm$core$List$filter,
+			function (encounter) {
+				return !_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+					$elm$core$Basics$LT);
+			},
+			$elm$core$List$concat(
+				$elm$core$List$concat(
+					$elm_community$maybe_extra$Maybe$Extra$values(
+						A2(
+							$elm$core$List$map,
+							function ($) {
+								return $.acuteIllnessData;
+							},
+							records)))));
+		var diagnosesCountDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (diagnosis, accum) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A3($pzp1997$assoc_list$AssocList$insert, diagnosis, 1, accum),
+						A2(
+							$elm$core$Maybe$map,
+							function (value) {
+								return A3($pzp1997$assoc_list$AssocList$insert, diagnosis, value + 1, accum);
+							},
+							A2($pzp1997$assoc_list$AssocList$get, diagnosis, accum)));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.diagnosis;
+					},
+					filtered)));
+		var rows = A2(
+			$elm$core$List$map,
+			function (diagnosis) {
+				return A2(
+					viewRow,
+					diagnosis,
+					A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
+			},
+			$author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses);
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report acute-illness')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item label')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis))
+										])),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('item value')
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
+										]))
+								])),
+						rows))
+				]));
+	});
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
 var $author$project$Translate$YearLabel = {$: 'YearLabel'};
@@ -11423,7 +11665,6 @@ var $author$project$Translate$NutritionTotal = {$: 'NutritionTotal'};
 var $author$project$Translate$PMTCT = {$: 'PMTCT'};
 var $author$project$Translate$Sorwathe = {$: 'Sorwathe'};
 var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
-var $author$project$Translate$Total = {$: 'Total'};
 var $author$project$Translate$Tuberculosis = {$: 'Tuberculosis'};
 var $author$project$Translate$Unique = {$: 'Unique'};
 var $elm$html$Html$Attributes$classList = function (classes) {
@@ -14249,13 +14490,16 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 				function (reportType) {
 					var startDateInput = function () {
 						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness)) {
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just(currentDate),
-								dateFrom: A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-								dateTo: currentDate,
-								select: $author$project$Pages$Reports$Model$SetStartDate
-							};
+							var dateSelectorConfig = function () {
+								var sixYearsAgo = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate);
+								return {
+									close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+									dateDefault: $elm$core$Maybe$Just(sixYearsAgo),
+									dateFrom: sixYearsAgo,
+									dateTo: currentDate,
+									select: $author$project$Pages$Reports$Model$SetStartDate
+								};
+							}();
 							var dateForView = A2(
 								$elm$core$Maybe$withDefault,
 								'',
@@ -14461,7 +14705,15 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							data.records);
 						switch (reportType.$) {
 							case 'ReportAcuteIllness':
-								return $elm$html$Html$text('@todo');
+								return A2(
+									$elm$core$Maybe$withDefault,
+									$author$project$Gizra$Html$emptyNode,
+									A2(
+										$elm$core$Maybe$map,
+										function (startDate) {
+											return A3($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, startDate, recordsTillLimitDate);
+										},
+										model.startDate));
 							case 'ReportDemographics':
 								return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
 							case 'ReportNutrition':

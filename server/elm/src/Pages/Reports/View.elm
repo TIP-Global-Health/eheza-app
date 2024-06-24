@@ -12,6 +12,7 @@ import Backend.Reports.Model
         , PrenatalParticipantData
         , ReportsData
         )
+import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
@@ -64,11 +65,15 @@ viewReportsData language currentDate data model =
                             if reportType == ReportAcuteIllness then
                                 let
                                     dateSelectorConfig =
+                                        let
+                                            sixYearsAgo =
+                                                Date.add Years -6 currentDate
+                                        in
                                         { select = SetStartDate
                                         , close = SetStartDateSelectorState Nothing
-                                        , dateFrom = Date.add Years -6 currentDate
+                                        , dateFrom = sixYearsAgo
                                         , dateTo = currentDate
-                                        , dateDefault = Just currentDate
+                                        , dateDefault = Just sixYearsAgo
                                         }
 
                                     dateForView =
@@ -232,7 +237,12 @@ viewReportsData language currentDate data model =
                         in
                         case reportType of
                             ReportAcuteIllness ->
-                                text "@todo"
+                                Maybe.map
+                                    (\startDate ->
+                                        viewAcuteIllnessReport language startDate recordsTillLimitDate
+                                    )
+                                    model.startDate
+                                    |> Maybe.withDefault emptyNode
 
                             ReportDemographics ->
                                 viewDemographicsReport language limitDate recordsTillLimitDate
@@ -1256,3 +1266,57 @@ viewPrenatalReport language limitDate records =
                 , ( completedChwVisits5, completedNurseVisits5 )
                 , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
                 ]
+
+
+viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
+viewAcuteIllnessReport language startDate records =
+    let
+        filtered =
+            -- We got recordes filtered by limit date (end date).
+            -- Now we need to filter from start date.
+            List.map .acuteIllnessData records
+                |> Maybe.Extra.values
+                |> List.concat
+                |> List.concat
+                |> List.filter
+                    (\encounter ->
+                        not <| Date.compare encounter.startDate startDate == LT
+                    )
+
+        diagnosesCountDict =
+            List.map .diagnosis filtered
+                |> Maybe.Extra.values
+                |> List.foldl
+                    (\diagnosis accum ->
+                        Dict.get diagnosis accum
+                            |> Maybe.map
+                                (\value ->
+                                    Dict.insert diagnosis (value + 1) accum
+                                )
+                            |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
+                    )
+                    Dict.empty
+
+        rows =
+            List.map
+                (\diagnosis ->
+                    Dict.get diagnosis diagnosesCountDict
+                        |> Maybe.withDefault 0
+                        |> viewRow diagnosis
+                )
+                allAcuteIllnessDiagnoses
+
+        viewRow diagnosis value =
+            div [ class "row" ]
+                [ div [ class "item label" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                , div [ class "item value" ] [ text <| String.fromInt value ]
+                ]
+    in
+    div [ class "report acute-illness" ]
+        [ div [ class "table" ] <|
+            div [ class "row captions" ]
+                [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
+                , div [ class "item value" ] [ text <| translate language Translate.Total ]
+                ]
+                :: rows
+        ]
