@@ -20,10 +20,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-// Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 240);
-
-
 drush_print("Running calculation for Global scope.");
 $duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
 drush_print("Calculation completed within $duration seconds.");
@@ -31,7 +27,7 @@ drush_print("Calculation completed within $duration seconds.");
 // Resolving unique provinces as they appear at DB.
 $query = db_select('field_data_field_province', 'fp')
   ->fields('fp', array('field_province_value'))
-  ->distinct(TRUE);
+  ->distinct();
 $result = $query->execute();
 $provinces = [];
 foreach ($result as $record) {

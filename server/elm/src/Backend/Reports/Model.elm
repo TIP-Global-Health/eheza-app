@@ -29,12 +29,53 @@ type alias PatientData =
     { created : NominalDate
     , birthDate : NominalDate
     , gender : Gender
+    , acuteIllnessData : Maybe (List (List AcuteIllnessEncounterData))
+    , prenatalData : Maybe (List (List PrenatalEncounterData))
+    , homeVisitData : Maybe (List EncountersData)
+    , wellChildData : Maybe (List EncountersData)
+    , individualNutritionData : Maybe (List EncountersData)
+    , groupNutritionPmtctData : Maybe EncountersData
+    , groupNutritionFbfData : Maybe EncountersData
+    , groupNutritionSorwatheData : Maybe EncountersData
+    , groupNutritionChwData : Maybe EncountersData
+    , groupNutritionAchiData : Maybe EncountersData
     }
 
 
 type Gender
     = Female
     | Male
+
+
+type alias AcuteIllnessEncounterData =
+    { startDate : NominalDate
+    , encounterType : AcuteIllnessEncounterType
+    }
+
+
+type AcuteIllnessEncounterType
+    = AcuteIllnessEncounterNurse
+    | AcuteIllnessEncounterNurseSubsequent
+    | AcuteIllnessEncounterCHW
+
+
+type alias PrenatalEncounterData =
+    { startDate : NominalDate
+    , encounterType : PrenatalEncounterType
+    }
+
+
+type PrenatalEncounterType
+    = NurseEncounter
+    | NursePostpartumEncounter
+    | ChwFirstEncounter
+    | ChwSecondEncounter
+    | ChwThirdPlusEncounter
+    | ChwPostpartumEncounter
+
+
+type alias EncountersData =
+    List NominalDate
 
 
 type Msg

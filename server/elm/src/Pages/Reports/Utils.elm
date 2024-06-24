@@ -23,3 +23,26 @@ reportTypeFromString reportType =
 
         _ ->
             Nothing
+
+
+countTotalEncounetrs : PatientData -> Int
+countTotalEncounetrs data =
+    let
+        countIndividualDataEncounters =
+            Maybe.map (List.map List.length >> List.sum)
+                >> Maybe.withDefault 0
+
+        countGroupDataEncounters =
+            Maybe.map List.length
+                >> Maybe.withDefault 0
+    in
+    countIndividualDataEncounters data.acuteIllnessData
+        + countIndividualDataEncounters data.prenatalData
+        + countIndividualDataEncounters data.homeVisitData
+        + countIndividualDataEncounters data.wellChildData
+        + countIndividualDataEncounters data.individualNutritionData
+        + countGroupDataEncounters data.groupNutritionPmtctData
+        + countGroupDataEncounters data.groupNutritionFbfData
+        + countGroupDataEncounters data.groupNutritionSorwatheData
+        + countGroupDataEncounters data.groupNutritionChwData
+        + countGroupDataEncounters data.groupNutritionAchiData
