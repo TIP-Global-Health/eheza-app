@@ -1302,13 +1302,18 @@ viewAcuteIllnessReport language startDate records =
                 (\diagnosis ->
                     Dict.get diagnosis diagnosesCountDict
                         |> Maybe.withDefault 0
-                        |> viewRow diagnosis
+                        |> viewRow (Translate.AcuteIllnessDiagnosis diagnosis)
                 )
                 allAcuteIllnessDiagnoses
 
-        viewRow diagnosis value =
+        totalsRow =
+            Dict.values diagnosesCountDict
+                |> List.sum
+                |> viewRow Translate.Total
+
+        viewRow label value =
             div [ class "row" ]
-                [ div [ class "item label" ] [ text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis ]
+                [ div [ class "item label" ] [ text <| translate language label ]
                 , div [ class "item value" ] [ text <| String.fromInt value ]
                 ]
     in
@@ -1318,5 +1323,5 @@ viewAcuteIllnessReport language startDate records =
                 [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
                 , div [ class "item value" ] [ text <| translate language Translate.Total ]
                 ]
-                :: rows
+                :: (rows ++ [ totalsRow ])
         ]

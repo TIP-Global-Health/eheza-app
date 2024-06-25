@@ -10581,7 +10581,7 @@ var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromA
 var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 	function (language, startDate, records) {
 		var viewRow = F2(
-			function (diagnosis, value) {
+			function (label, value) {
 				return A2(
 					$elm$html$Html$div,
 					_List_fromArray(
@@ -10599,10 +10599,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 							_List_fromArray(
 								[
 									$elm$html$Html$text(
-									A2(
-										$author$project$Translate$translate,
-										language,
-										$author$project$Translate$AcuteIllnessDiagnosis(diagnosis)))
+									A2($author$project$Translate$translate, language, label))
 								])),
 							A2(
 							$elm$html$Html$div,
@@ -10660,13 +10657,18 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 			function (diagnosis) {
 				return A2(
 					viewRow,
-					diagnosis,
+					$author$project$Translate$AcuteIllnessDiagnosis(diagnosis),
 					A2(
 						$elm$core$Maybe$withDefault,
 						0,
 						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
 			},
 			$author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses);
+		var totalsRow = A2(
+			viewRow,
+			$author$project$Translate$Total,
+			$elm$core$List$sum(
+				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10714,7 +10716,10 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
 										]))
 								])),
-						rows))
+						_Utils_ap(
+							rows,
+							_List_fromArray(
+								[totalsRow]))))
 				]));
 	});
 var $author$project$Translate$Save = {$: 'Save'};
