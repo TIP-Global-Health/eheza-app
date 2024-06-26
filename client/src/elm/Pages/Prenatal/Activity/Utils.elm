@@ -547,10 +547,15 @@ expectNextStepsTask currentDate assembled task =
                 && -- If we refer patients somewhere, there's no need to wait.
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
-                   -- test that was performed, or, 2 hours waiting is
-                   -- required for blood pressure recheck.
+                   -- test that was performed, or, 2 hours waiting is required
+                   -- for blood pressure recheck during initial nurse encounter.
                    (getMeasurementValueFunc assembled.measurements.labsResults
-                        |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
+                        |> Maybe.map
+                            (\value ->
+                                EverySet.diff value.performedTests value.completedTests
+                                    |> EverySet.isEmpty
+                                    |> not
+                            )
                         |> Maybe.withDefault False
                    )
 
