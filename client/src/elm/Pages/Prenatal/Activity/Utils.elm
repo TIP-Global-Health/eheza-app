@@ -551,8 +551,8 @@ expectNextStepsTask currentDate assembled task =
 
 continuousHypertensionTreatmentRequired : AssembledData -> Bool
 continuousHypertensionTreatmentRequired assembled =
-    -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
-    ((updateHypertensionTreatmentWithMedication assembled
+    (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+     (updateHypertensionTreatmentWithMedication assembled
         && (-- Hypertension / Moderate Preeclamsia treatment
             -- did not cause an adverse event.
             not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
