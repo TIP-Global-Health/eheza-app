@@ -24176,6 +24176,12 @@ translateActivePage page =
                     , kirundi = Nothing
                     }
 
+                TuberculosisProgressReportPage _ ->
+                    { english = "Tuberculosis Progress Report"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 EducationSessionPage _ ->
                     translationSet GroupEducation
 
