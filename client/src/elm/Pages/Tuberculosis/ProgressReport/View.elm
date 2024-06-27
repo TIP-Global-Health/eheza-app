@@ -104,7 +104,60 @@ viewContent language currentDate site features model assembled =
         [ class "ui report unstackable items"
         , Html.Attributes.id "report-content"
         ]
-        [ viewPersonInfoPane language currentDate assembled.person ]
+        [ viewPersonInfoPane language currentDate assembled.person
+        , viewSummaryPane language currentDate assembled
+        , viewTreatmentTimelinePane language currentDate assembled
+        , viewAdverseEventsPane language currentDate assembled
+        , viewEncountersPane language currentDate assembled
+        ]
+
+
+viewSummaryPane : Language -> NominalDate -> AssembledData -> Html any
+viewSummaryPane language currentDate assembled =
+    let
+        content =
+            []
+    in
+    div [ class "pane summary" ]
+        [ viewPaneHeading language Translate.Summary
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewTreatmentTimelinePane : Language -> NominalDate -> AssembledData -> Html any
+viewTreatmentTimelinePane language currentDate assembled =
+    let
+        content =
+            []
+    in
+    div [ class "pane treatment-timeline" ]
+        [ viewPaneHeading language Translate.TreatmentTimeline
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewAdverseEventsPane : Language -> NominalDate -> AssembledData -> Html any
+viewAdverseEventsPane language currentDate assembled =
+    let
+        content =
+            []
+    in
+    div [ class "pane adverse-events" ]
+        [ viewPaneHeading language Translate.AdverseEvents
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewEncountersPane : Language -> NominalDate -> AssembledData -> Html any
+viewEncountersPane language currentDate assembled =
+    let
+        content =
+            []
+    in
+    div [ class "pane encounters" ]
+        [ viewPaneHeading language Translate.Encounters
+        , div [ class "pane-content" ] content
+        ]
 
 
 
