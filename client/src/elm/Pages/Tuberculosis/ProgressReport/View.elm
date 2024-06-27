@@ -19,8 +19,8 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Measurement.Model exposing (LaboratoryTask(..))
-import Pages.AcuteIllness.Participant.Utils exposing (isAcuteIllnessActive)
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Tuberculosis.ProgressReport.Model exposing (..)
 import Pages.Utils
@@ -29,6 +29,7 @@ import Pages.Utils
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         )
+import Pages.WellChild.ProgressReport.View exposing (viewPaneHeading, viewPersonInfoPane)
 import RemoteData
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
@@ -51,11 +52,12 @@ view language currentDate site features id db model =
         assembled =
             generateAssembledData id db
 
-        -- header =
-        --     viewHeader language initiator model
-        --
-        -- content =
-        --     viewWebData language (viewContent language currentDate site features initiator db model) identity assembled
+        header =
+            viewHeader language id
+
+        content =
+            viewWebData language (viewContent language currentDate site features model) identity assembled
+
         -- endEncounterDialog =
         --     if model.showEndEncounterDialog then
         --         Just <|
@@ -68,103 +70,44 @@ view language currentDate site features id db model =
         --     else
         --         Nothing
     in
-    div [ class "page-report ncd" ] <|
-        [--  header
-         -- , content
-         -- , viewModal endEncounterDialog
+    div [ class "page-report tuberculosis" ] <|
+        [ header
+        , content
+
+        -- , viewModal endEncounterDialog
         ]
 
 
+viewHeader : Language -> TuberculosisEncounterId -> Html Msg
+viewHeader language id =
+    div [ class "ui basic segment head" ]
+        [ h1 [ class "ui header" ]
+            [ text <| translate language Translate.ProgressReport ]
+        , span
+            [ class "link-back"
+            , onClick <| SetActivePage (UserPage <| TuberculosisEncounterPage id)
+            ]
+            [ span [ class "icon-back" ] [] ]
+        ]
 
--- viewHeader : Language -> TuberculosisProgressReportInitiator -> Model -> Html Msg
--- viewHeader language initiator model =
---     let
---         label =
---             Maybe.map
---                 (\mode ->
---                     case mode of
---                         LabResultsCurrent _ ->
---                             Translate.LabResults
---
---                         LabResultsHistory _ ->
---                             Translate.LabHistory
---                 )
---                 model.labResultsMode
---                 |> Maybe.withDefault Translate.TuberculosisProgressReport
---
---         backIcon =
---             let
---                 iconForView action =
---                     span
---                         [ class "link-back" ]
---                         [ span
---                             [ class "icon-back"
---                             , onClick action
---                             ]
---                             []
---                         ]
---
---                 goBackAction defaultAction =
---                     Maybe.map goBackActionByLabResultsState model.labResultsMode
---                         |> Maybe.withDefault (goBackActionByDiagnosisMode defaultAction)
---
---                 goBackActionByLabResultsState mode =
---                     let
---                         backToCurrentMsg targetMode =
---                             SetLabResultsMode (Just (LabResultsCurrent targetMode))
---                     in
---                     case mode of
---                         LabResultsCurrent currentMode ->
---                             case currentMode of
---                                 LabResultsCurrentMain ->
---                                     SetLabResultsMode Nothing
---
---                                 LabResultsCurrentDipstickShort ->
---                                     backToCurrentMsg LabResultsCurrentMain
---
---                                 LabResultsCurrentDipstickLong ->
---                                     backToCurrentMsg LabResultsCurrentMain
---
---                                 LabResultsCurrentLipidPanel ->
---                                     backToCurrentMsg LabResultsCurrentMain
---
---                         LabResultsHistory _ ->
---                             SetLabResultsMode model.labResultsHistoryOrigin
---
---                 goBackActionByDiagnosisMode defaultAction =
---                     case model.diagnosisMode of
---                         ModeActiveDiagnosis ->
---                             defaultAction
---
---                         ModeCompletedDiagnosis ->
---                             SetDiagnosisMode ModeActiveDiagnosis
---             in
---             case initiator of
---                 Backend.TuberculosisEncounter.Types.InitiatorEncounterPage id ->
---                     iconForView <| goBackAction (SetActivePage <| UserPage <| TuberculosisEncounterPage id)
---
---                 Backend.TuberculosisEncounter.Types.InitiatorRecurrentEncounterPage id ->
---                     iconForView <| goBackAction (SetActivePage <| UserPage <| TuberculosisRecurrentEncounterPage id)
---     in
---     div
---         [ class "ui basic segment head" ]
---         [ h1 [ class "ui header" ]
---             [ text <| translate language label ]
---         , backIcon
---         ]
---
---
--- viewContent :
---     Language
---     -> NominalDate
---     -> Site
---     -> EverySet SiteFeature
---     -> TuberculosisProgressReportInitiator
---     -> ModelIndexedDb
---     -> Model
---     -> AssembledData
---     -> Html Msg
--- viewContent language currentDate site features initiator db model assembled =
+
+viewContent :
+    Language
+    -> NominalDate
+    -> Site
+    -> EverySet SiteFeature
+    -> Model
+    -> AssembledData
+    -> Html Msg
+viewContent language currentDate site features model assembled =
+    div
+        [ class "ui report unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
+        [ viewPersonInfoPane language currentDate assembled.person ]
+
+
+
 --     let
 --         derivedContent =
 --             let

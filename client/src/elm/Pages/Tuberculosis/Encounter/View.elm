@@ -136,13 +136,12 @@ viewMainPageContent language currentDate db assembled model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [-- @todo:
-                     -- viewReportLink language
-                     --     Translate.ProgressReport
-                     --     (SetActivePage <|
-                     --         UserPage <|
-                     --             TuberculosisProgressReportPage (InitiatorEncounterPage assembled.id)
-                     --     )
+                    [ viewReportLink language
+                        Translate.ProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                TuberculosisProgressReportPage assembled.id
+                        )
                     ]
 
             else

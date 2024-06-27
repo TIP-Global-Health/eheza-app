@@ -186,15 +186,12 @@ viewHeader language id initiator =
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language label
-            ]
+            [ text <| translate language label ]
         , span
             [ class "link-back"
             , onClick <| SetActivePage (UserPage goBackPage)
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 

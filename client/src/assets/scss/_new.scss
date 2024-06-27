@@ -1148,12 +1148,11 @@ div.page-activity {
   }
 }
 
-// Prenatal Encounter, Nutrition Encounter and
-// Acute Illness Encounter pages
 div.page-encounter.nutrition,
 div.page-encounter.prenatal,
 div.page-encounter.acute-illness,
-div.page-encounter.ncd {
+div.page-encounter.ncd,
+div.page-encounter.tuberculosis {
 
   .ui.full.segment {
 
@@ -4039,7 +4038,8 @@ div.page-report.clinical,
 div.page-report.demographics,
 div.page-activity.patient-record,
 div.page-report.child-scoreboard,
-div.page-report.ncd {
+div.page-report.ncd,
+div.page-report.tuberculosis {
   background: unset;
 
   .pane-heading {
