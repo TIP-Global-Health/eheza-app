@@ -3878,6 +3878,16 @@ div.page-report.tuberculosis {
     padding: 20px;
   }
 
+  .pane .pane-content .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
   .pane .pane-content .entry {
     line-height: 40px;
   }
@@ -3892,6 +3902,33 @@ div.page-report.tuberculosis {
     width: 70%;
   }
 
+  .pane.encounters .pane-content .heading .date {
+    width: 80%;
+  }
+
+  .pane.encounters .pane-content .entry {
+    border-bottom: 1px solid $color-text;
+    display: flex;
+    padding: 15px 30px;
+  }
+
+  .pane.encounters .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+  .pane.encounters .pane-content .entry .label {
+    float: left;
+    width: 80%;
+  }
+
+  .pane.encounters .pane-content .entry .icon .icon-forward {
+    align-self: center;
+    background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+    background-size: 45px 50px;
+    height: 50px;
+    margin-left: 20px;
+    width: 50px;
+  }
 }
 
 div.page-report.acute-illness,

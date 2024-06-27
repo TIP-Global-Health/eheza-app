@@ -239,22 +239,31 @@ viewEncountersPane language currentDate assembled =
         allEncountersData =
             generateAllEncounters assembled
 
+        heading =
+            div [ class "heading" ]
+                [ div [ class "date" ] [ text <| translate language Translate.EncounterDate ]
+                , div [ class "icon" ] [ text <| translate language Translate.SeeMore ]
+                ]
+
         entries =
             List.map
                 (\data ->
-                    viewEntry (formatDDMMYYYY data.startDate) emptyNode
+                    viewEntry (formatDDMMYYYY data.startDate) data.id
                 )
                 allEncountersData
 
-        viewEntry label htmlValue =
+        viewEntry label encounterId =
             div [ class "entry" ]
                 [ div [ class "label" ] [ text label ]
-                , div [ class "value" ] [ htmlValue ]
+                , div [ class "icon" ]
+                    [ div [ class "icon-forward" ] [] ]
                 ]
     in
     div [ class "pane encounters" ]
         [ viewPaneHeading language Translate.Encounters
-        , div [ class "pane-content" ] entries
+        , div [ class "pane-content" ] <|
+            heading
+                :: entries
         ]
 
 
