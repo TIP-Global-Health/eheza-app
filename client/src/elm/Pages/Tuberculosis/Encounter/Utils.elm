@@ -76,7 +76,7 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success initialEncounter)
 
 
-generatePreviousEncountersData : Maybe TuberculosisEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List PreviousEncounterData
+generatePreviousEncountersData : Maybe TuberculosisEncounterId -> IndividualEncounterParticipantId -> ModelIndexedDb -> List EncounterData
 generatePreviousEncountersData currentEncounterId participantId db =
     getTuberculosisEncountersForParticipant db participantId
         |> List.filterMap

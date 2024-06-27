@@ -520,6 +520,7 @@ type TranslationId
     | ColorYellow
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
+    | CompletionDate
     | Contacted114
     | ContactedHC
     | ContactedHCQuestion
@@ -536,6 +537,7 @@ type TranslationId
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSectionScar CSectionScar
+    | CurrentMedication
     | Dashboard Dashboard
     | Group
     | Groups
@@ -815,6 +817,7 @@ type TranslationId
     | InfrastructureEnvironment
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
+    | InitiationDate
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
     | InstructionsChooseOneMedication
@@ -4242,6 +4245,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+        CompletionDate ->
+            { english = "Completion Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Contacted114 ->
             { english = "Contacted 114"
             , kinyarwanda = Just "Namenyesheje 114"
@@ -4371,6 +4380,12 @@ translationSet trans =
 
                 NoScar ->
                     translationSet None
+
+        CurrentMedication ->
+            { english = "Current Medication"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Group ->
             { english = "Group"
@@ -7814,6 +7829,12 @@ translationSet trans =
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     , kirundi = Just "Hisha ababyeyi / abarezi bose"
                     }
+
+        InitiationDate ->
+                { english = "Initiation Date"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
 
         IntractableVomiting isIntractable ->
             if isIntractable then

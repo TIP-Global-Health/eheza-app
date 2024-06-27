@@ -3871,6 +3871,24 @@ div.page-report.acute-illness {
   }
 }
 
+div.page-report.tuberculosis {
+
+  .pane.summary .pane-content {
+    color: $color-text;
+    padding: 20px;
+  }
+
+  .pane.summary .pane-content .entry {
+    line-height: 40px;
+  }
+
+  .pane.summary .pane-content .entry .label {
+    float: left;
+    width: 35%;
+  }
+
+}
+
 div.page-report.acute-illness,
 div.page-activity.trace-contact,
 div.page-encounter.well-child,
