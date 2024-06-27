@@ -337,7 +337,6 @@ type TranslationId
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllness
-    | AcuteIllnessAdverseEvent AdverseEvent
     | AcuteIllnessAdverseEventKindsQuestion
     | AcuteIllnessDangerSign AcuteIllnessDangerSign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
@@ -388,6 +387,7 @@ type TranslationId
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
     | AdoptionSurveyScoreInterpretation Int
+    | AdverseEvent AdverseEvent
     | AdverseEvents
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
@@ -2106,37 +2106,7 @@ translationSet trans =
             , kirundi = Just "Ingwara ikaze"
             }
 
-        AcuteIllnessAdverseEvent event ->
-            case event of
-                AdverseEventRashOrItching ->
-                    { english = "Rash or Itching"
-                    , kinyarwanda = Just "Kwishima cyangwa gusesa uduheri (turyaryata)"
-                    , kirundi = Just "Amaherehere canke kwiyagaza"
-                    }
 
-                AdverseEventFever ->
-                    translationSet Fever
-
-                AdverseEventDiarrhea ->
-                    translationSet Diarrhea
-
-                AdverseEventVomiting ->
-                    translationSet VomitingLabel
-
-                AdverseEventFatigue ->
-                    translationSet Fatigue
-
-                AdverseEventOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                NoAdverseEvent ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
 
         AcuteIllnessAdverseEventKindsQuestion ->
             { english = "What kind of adverse events"
@@ -3009,8 +2979,40 @@ translationSet trans =
                 , kirundi = Nothing
                 }
 
+        AdverseEvent event ->
+            case event of
+                AdverseEventRashOrItching ->
+                    { english = "Rash or Itching"
+                    , kinyarwanda = Just "Kwishima cyangwa gusesa uduheri (turyaryata)"
+                    , kirundi = Just "Amaherehere canke kwiyagaza"
+                    }
+
+                AdverseEventFever ->
+                    translationSet Fever
+
+                AdverseEventDiarrhea ->
+                    translationSet Diarrhea
+
+                AdverseEventVomiting ->
+                    translationSet VomitingLabel
+
+                AdverseEventFatigue ->
+                    translationSet Fatigue
+
+                AdverseEventOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    , kirundi = Just "Ibindi"
+                    }
+
+                NoAdverseEvent ->
+                    { english = "None of the above"
+                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
+                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
+                    }
+
         AdverseEvents ->
-            { english = "AdverseEvents"
+            { english = "Adverse Events"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

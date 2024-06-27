@@ -3873,18 +3873,23 @@ div.page-report.acute-illness {
 
 div.page-report.tuberculosis {
 
-  .pane.summary .pane-content {
+  .pane .pane-content {
     color: $color-text;
     padding: 20px;
   }
 
-  .pane.summary .pane-content .entry {
+  .pane .pane-content .entry {
     line-height: 40px;
   }
 
   .pane.summary .pane-content .entry .label {
     float: left;
     width: 35%;
+  }
+
+  .pane.adverse-events .pane-content .entry .label {
+    float: left;
+    width: 70%;
   }
 
 }

@@ -21,7 +21,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
+import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Tuberculosis.ProgressReport.Model exposing (..)
 import Pages.Utils
@@ -117,11 +117,7 @@ viewSummaryPane : Language -> NominalDate -> AssembledData -> Html any
 viewSummaryPane language currentDate assembled =
     let
         allEncountersData =
-            { id = assembled.id
-            , startDate = assembled.encounter.startDate
-            , measurements = assembled.measurements
-            }
-                :: assembled.previousEncountersData
+            generateAllEncounters assembled
 
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
@@ -198,22 +194,74 @@ viewTreatmentTimelinePane language currentDate assembled =
 viewAdverseEventsPane : Language -> NominalDate -> AssembledData -> Html any
 viewAdverseEventsPane language currentDate assembled =
     let
-        content =
-            []
+        allEncountersData =
+            generateAllEncounters assembled
+
+        adverseEventsWithDates =
+            List.filterMap
+                (\data ->
+                    getMeasurementValueFunc data.measurements.treatmentReview
+                        |> Maybe.map
+                            (\value ->
+                                ( data.startDate, value.adverseEvents )
+                            )
+                )
+                allEncountersData
+
+        entries =
+            List.map
+                (\( date, events ) ->
+                    let
+                        eventsForView =
+                            EverySet.toList events
+                                |> List.map (Translate.AdverseEvent >> translate language)
+                                |> String.join ", "
+                    in
+                    viewEntry eventsForView (formatDDMMYYYY date)
+                )
+                adverseEventsWithDates
+
+        viewEntry label value =
+            div [ class "entry" ]
+                [ div [ class "label" ] [ text label ]
+                , div [ class "value" ] [ text value ]
+                ]
     in
     div [ class "pane adverse-events" ]
         [ viewPaneHeading language Translate.AdverseEvents
-        , div [ class "pane-content" ] content
+        , div [ class "pane-content" ] entries
         ]
 
 
 viewEncountersPane : Language -> NominalDate -> AssembledData -> Html any
 viewEncountersPane language currentDate assembled =
     let
-        content =
-            []
+        allEncountersData =
+            generateAllEncounters assembled
+
+        entries =
+            List.map
+                (\data ->
+                    viewEntry (formatDDMMYYYY data.startDate) emptyNode
+                )
+                allEncountersData
+
+        viewEntry label htmlValue =
+            div [ class "entry" ]
+                [ div [ class "label" ] [ text label ]
+                , div [ class "value" ] [ htmlValue ]
+                ]
     in
     div [ class "pane encounters" ]
         [ viewPaneHeading language Translate.Encounters
-        , div [ class "pane-content" ] content
+        , div [ class "pane-content" ] entries
         ]
+
+
+generateAllEncounters : AssembledData -> List EncounterData
+generateAllEncounters assembled =
+    { id = assembled.id
+    , startDate = assembled.encounter.startDate
+    , measurements = assembled.measurements
+    }
+        :: assembled.previousEncountersData

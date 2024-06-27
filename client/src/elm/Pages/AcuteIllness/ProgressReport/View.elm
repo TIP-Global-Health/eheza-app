@@ -763,7 +763,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 
                                                         events =
                                                             EverySet.toList treatmentOngoing.adverseEvents
-                                                                |> List.map (Translate.AcuteIllnessAdverseEvent >> translate language)
+                                                                |> List.map (Translate.AdverseEvent >> translate language)
                                                     in
                                                     [ div [ class "treatment-comment" ]
                                                         [ text "- "
