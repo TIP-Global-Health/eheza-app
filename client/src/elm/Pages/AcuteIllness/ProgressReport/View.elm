@@ -749,7 +749,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                             viewMissedDoses =
                                                 div [ class "treatment-comment" ]
                                                     [ text "- "
-                                                    , text <| translate language <| Translate.MissedDosesOfMedicatgion missedDoses
+                                                    , text <| translate language <| Translate.MissedDosesOfMedication missedDoses
                                                     , text "."
                                                     ]
 

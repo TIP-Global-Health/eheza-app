@@ -136,16 +136,19 @@ viewSummaryPane language currentDate assembled =
             Maybe.andThen (.measurements >> .diagnostics >> getMeasurementValueFunc)
                 firstEncounterData
 
+        missedDoses =
+            List.filterMap
+                (\data ->
+                    getMeasurementValueFunc data.measurements.treatmentReview
+                        |> Maybe.map .missedDoses
+                )
+                allEncountersData
+                |> List.sum
+
         currentMedications =
             List.filter (.measurements >> .medication >> isJust) allEncountersData
                 |> List.head
                 |> Maybe.andThen (.measurements >> .medication >> getMeasurementValueFunc)
-
-        viewEntry label value =
-            div [ class "entry" ]
-                [ div [ class "label" ] [ text <| translate language label ]
-                , div [ class "value" ] [ text value ]
-                ]
 
         diagnosisForView =
             Maybe.map (Translate.TuberculosisDiagnosis >> translate language) diagnosis
@@ -167,12 +170,19 @@ viewSummaryPane language currentDate assembled =
                 )
                 currentMedications
                 |> Maybe.withDefault ""
+
+        viewEntry label value =
+            div [ class "entry" ]
+                [ div [ class "label" ] [ text <| translate language label ]
+                , div [ class "value" ] [ text value ]
+                ]
     in
     div [ class "pane summary" ]
         [ viewPaneHeading language Translate.Summary
         , div [ class "pane-content" ]
             [ viewEntry Translate.Diagnosis diagnosisForView
             , viewEntry Translate.InitiationDate initiationDateForView
+            , viewEntry Translate.MissedDoses (String.fromInt missedDoses)
             , viewEntry Translate.CompletionDate completionDateForView
             , viewEntry Translate.CurrentMedication currentMedicationsForView
             ]

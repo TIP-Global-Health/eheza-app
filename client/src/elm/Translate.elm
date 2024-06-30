@@ -998,7 +998,8 @@ type TranslationId
     | MMHGUnit
     | Minutes Int
     | MinutesAgo Int
-    | MissedDosesOfMedicatgion Int
+    | MissedDoses
+    | MissedDosesOfMedication Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | ModeratePreeclampsia
@@ -10814,7 +10815,13 @@ translationSet trans =
                     Just <| String.fromInt minutes ++ " iminota iheze"
             }
 
-        MissedDosesOfMedicatgion val ->
+        MissedDoses ->
+            { english = "Missed Doses"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MissedDosesOfMedication val ->
             if val == 0 then
                 { english = "No missed doses of medication"
                 , kinyarwanda = Just "Yafashe kandi arangiza neza imiti uko yayandikiwe"
