@@ -7,7 +7,8 @@ import Pages.Page exposing (Page)
 
 
 type alias Model =
-    { showEndEncounterDialog : Bool
+    { viewMode : ViewMode
+    , showEndEncounterDialog : Bool
     , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
 
     -- , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentTuberculosis)
@@ -16,17 +17,24 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { showEndEncounterDialog = False
+    { viewMode = ViewModeGlobal
+    , showEndEncounterDialog = False
     , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
 
     -- , components = Nothing
     }
 
 
+type ViewMode
+    = ViewModeGlobal
+    | ViewModeEncounter TuberculosisEncounterId
+
+
 type Msg
     = NoOp
     | CloseEncounter TuberculosisEncounterId
     | SetActivePage Page
+    | SetViewMode ViewMode
     | SetEndEncounterDialogState Bool
     | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
     | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)

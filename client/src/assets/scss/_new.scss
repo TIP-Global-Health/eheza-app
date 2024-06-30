@@ -3951,6 +3951,26 @@ div.page-report.tuberculosis {
     margin-left: 20px;
     width: 50px;
   }
+
+  .pane.encounter-details .pane-content .entry {
+    justify-content: space-between;
+  }
+
+  .pane.encounter-details .pane-content .entry .label {
+    float: left;
+    width: 30%;
+  }
+
+  .pane.encounter-details .pane-content .entry .confirmation {
+    float: left;
+    width: 20%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
 }
 
 div.page-report.acute-illness,

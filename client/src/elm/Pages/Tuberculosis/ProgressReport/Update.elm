@@ -29,6 +29,9 @@ update msg model =
         SetActivePage page ->
             ( model, Cmd.none, [ App.Model.SetActivePage page ] )
 
+        SetViewMode mode ->
+            ( { model | viewMode = mode }, Cmd.none, [] )
+
         SetEndEncounterDialogState isOpen ->
             ( { model | showEndEncounterDialog = isOpen }, Cmd.none, [] )
 

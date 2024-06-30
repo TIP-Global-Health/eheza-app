@@ -673,6 +673,7 @@ type TranslationId
     | FavoriteToggle Bool
     | FbfDistribution ClinicType
     | Feeding
+    | FeelingBetter
     | FetalHeartRate
     | FetalMovement
     | FetalPresentationLabel
@@ -1734,6 +1735,7 @@ type TranslationId
     | Success
     | SyncGeneral
     | TabletSinglePlural String
+    | TakenAsPrescribed
     | TakingMedicationAsPrescribed Bool
     | TasksCompleted Int Int
     | TargetedInterventions
@@ -5998,6 +6000,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
                 }
+
+        FeelingBetter ->
+            { english = "Feeling Better"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         FetalHeartRate ->
             { english = "Fetal Heart Rate"
@@ -21829,6 +21837,12 @@ translationSet trans =
                 , kinyarwanda = Just <| "ibinini " ++ value
                 , kirundi = Just <| "ibinini " ++ value
                 }
+
+        TakenAsPrescribed ->
+            { english = "Taken as prescribed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         TakingMedicationAsPrescribed taking ->
             if taking then

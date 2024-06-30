@@ -3,7 +3,7 @@ module Pages.Tuberculosis.ProgressReport.View exposing (view)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model
+import Backend.Measurement.Model exposing (TreatmentOngoingSign(..), TuberculosisDOTSign(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -54,7 +54,7 @@ view language currentDate site features id db model =
             generateAssembledData id db
 
         header =
-            viewHeader language id
+            viewHeader language id model
 
         content =
             viewWebData language (viewContent language currentDate site features model) identity assembled
@@ -79,14 +79,23 @@ view language currentDate site features id db model =
         ]
 
 
-viewHeader : Language -> TuberculosisEncounterId -> Html Msg
-viewHeader language id =
+viewHeader : Language -> TuberculosisEncounterId -> Model -> Html Msg
+viewHeader language id model =
+    let
+        action =
+            case model.viewMode of
+                ViewModeGlobal ->
+                    SetActivePage (UserPage <| TuberculosisEncounterPage id)
+
+                ViewModeEncounter _ ->
+                    SetViewMode ViewModeGlobal
+    in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
             [ text <| translate language Translate.ProgressReport ]
         , span
             [ class "link-back"
-            , onClick <| SetActivePage (UserPage <| TuberculosisEncounterPage id)
+            , onClick action
             ]
             [ span [ class "icon-back" ] [] ]
         ]
@@ -108,7 +117,37 @@ viewContent language currentDate site features model assembled =
             , measurements = assembled.measurements
             }
                 :: assembled.previousEncountersData
+    in
+    div
+        [ class "ui report unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
+    <|
+        case model.viewMode of
+            ViewModeGlobal ->
+                viewGlobalContent language
+                    currentDate
+                    model
+                    allEncountersData
+                    assembled
 
+            ViewModeEncounter encounterId ->
+                viewEncounterDetailsContent language
+                    currentDate
+                    encounterId
+                    model
+                    allEncountersData
+
+
+viewGlobalContent :
+    Language
+    -> NominalDate
+    -> Model
+    -> List EncounterData
+    -> AssembledData
+    -> List (Html Msg)
+viewGlobalContent language currentDate model allEncountersData assembled =
+    let
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
                 allEncountersData
@@ -118,16 +157,12 @@ viewContent language currentDate site features model assembled =
         initiationDate =
             Maybe.map .startDate firstEncounterData
     in
-    div
-        [ class "ui report unstackable items"
-        , Html.Attributes.id "report-content"
-        ]
-        [ viewPersonInfoPane language currentDate assembled.person
-        , viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate
-        , viewTreatmentTimelinePane language currentDate initiationDate
-        , viewAdverseEventsPane language currentDate allEncountersData
-        , viewEncountersPane language currentDate allEncountersData
-        ]
+    [ viewPersonInfoPane language currentDate assembled.person
+    , viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate
+    , viewTreatmentTimelinePane language currentDate initiationDate
+    , viewAdverseEventsPane language currentDate allEncountersData
+    , viewEncountersPane language currentDate allEncountersData
+    ]
 
 
 viewSummaryPane :
@@ -262,7 +297,7 @@ viewAdverseEventsPane language currentDate allEncountersData =
         ]
 
 
-viewEncountersPane : Language -> NominalDate -> List EncounterData -> Html any
+viewEncountersPane : Language -> NominalDate -> List EncounterData -> Html Msg
 viewEncountersPane language currentDate allEncountersData =
     let
         heading =
@@ -282,7 +317,12 @@ viewEncountersPane language currentDate allEncountersData =
             div [ class "entry" ]
                 [ div [ class "label" ] [ text label ]
                 , div [ class "icon" ]
-                    [ div [ class "icon-forward" ] [] ]
+                    [ div
+                        [ class "icon-forward"
+                        , onClick <| SetViewMode <| ViewModeEncounter encounterId
+                        ]
+                        []
+                    ]
                 ]
     in
     div [ class "pane encounters" ]
@@ -291,3 +331,136 @@ viewEncountersPane language currentDate allEncountersData =
             heading
                 :: entries
         ]
+
+
+viewEncounterDetailsContent :
+    Language
+    -> NominalDate
+    -> TuberculosisEncounterId
+    -> Model
+    -> List EncounterData
+    -> List (Html Msg)
+viewEncounterDetailsContent language currentDate encounterId model allEncountersData =
+    List.filter (.id >> (==) encounterId) allEncountersData
+        |> List.head
+        |> Maybe.map
+            (\data ->
+                let
+                    currentMedications =
+                        List.filterMap
+                            (\encounterData ->
+                                if not <| Date.compare encounterData.startDate data.startDate == GT then
+                                    getMeasurementValueFunc encounterData.measurements.medication
+
+                                else
+                                    Nothing
+                            )
+                            allEncountersData
+                            |> List.head
+
+                    currentMedicationsForView =
+                        Maybe.map
+                            (EverySet.toList
+                                >> List.map (Translate.TuberculosisPrescribedMedication >> translate language)
+                                >> String.join ", "
+                            )
+                            currentMedications
+                            |> Maybe.withDefault ""
+
+                    medicationDistributed =
+                        getMeasurementValueFunc data.measurements.dot
+                            |> Maybe.map (.medicationDistributionSign >> (==) DOTPositive)
+
+                    treatmentReviewEntriesData =
+                        getMeasurementValueFunc data.measurements.treatmentReview
+                            |> Maybe.map
+                                (\value ->
+                                    let
+                                        takenAsPrescribed =
+                                            EverySet.member TakenAsPrescribed value.signs
+
+                                        missedDoses =
+                                            EverySet.member MissedDoses value.signs
+
+                                        adverseEvents =
+                                            EverySet.member SideEffects value.signs
+                                    in
+                                    { takenAsPrescribedData =
+                                        ( Just takenAsPrescribed
+                                        , if takenAsPrescribed then
+                                            ""
+
+                                          else
+                                            translate language <| Translate.ReasonForNotTaking value.reasonForNotTaking
+                                        )
+                                    , feelingBetterData = ( Just <| EverySet.member FeelingBetter value.signs, "" )
+                                    , missedDosesData =
+                                        ( Just missedDoses
+                                        , if missedDoses then
+                                            String.fromInt value.missedDoses
+
+                                          else
+                                            ""
+                                        )
+                                    , adverseEventsData =
+                                        ( Just adverseEvents
+                                        , if adverseEvents then
+                                            EverySet.toList value.adverseEvents
+                                                |> List.map (Translate.AdverseEvent >> translate language)
+                                                |> String.join ", "
+
+                                          else
+                                            ""
+                                        )
+                                    }
+                                )
+
+                    viewTreatmentReviewEntry label mValue =
+                        let
+                            ( confirmed, value ) =
+                                Maybe.withDefault ( Nothing, "" ) mValue
+                        in
+                        viewEntry label confirmed value
+
+                    viewEntry label confirmation value =
+                        let
+                            confirmationForView =
+                                Maybe.map
+                                    (\confirmed ->
+                                        let
+                                            transId =
+                                                if confirmed then
+                                                    Translate.Yes
+
+                                                else
+                                                    Translate.No
+                                        in
+                                        translate language transId
+                                    )
+                                    confirmation
+                                    |> Maybe.withDefault ""
+                        in
+                        div [ class "entry" ]
+                            [ div [ class "label" ] [ text <| translate language label ]
+                            , div [ class "confiration" ] [ text confirmationForView ]
+                            , div [ class "value" ] [ text value ]
+                            ]
+                in
+                [ div [ class "pane encounter-details" ]
+                    [ div [ class <| "pane-heading" ]
+                        [ text <| translate language Translate.EncounterDate ++ ": " ++ formatDDMMYYYY data.startDate ]
+                    , div [ class <| "pane-content" ]
+                        [ viewEntry Translate.Medication medicationDistributed currentMedicationsForView
+                        , Maybe.map .takenAsPrescribedData treatmentReviewEntriesData
+                            |> viewTreatmentReviewEntry Translate.TakenAsPrescribed
+                        , Maybe.map .feelingBetterData treatmentReviewEntriesData
+                            |> viewTreatmentReviewEntry Translate.FeelingBetter
+                        , Maybe.map .missedDosesData treatmentReviewEntriesData
+                            |> viewTreatmentReviewEntry Translate.MissedDoses
+                        , Maybe.map .adverseEventsData treatmentReviewEntriesData
+                            |> viewTreatmentReviewEntry Translate.AdverseEvents
+                        ]
+                    ]
+                ]
+            )
+        >> Maybe.withDefault []
