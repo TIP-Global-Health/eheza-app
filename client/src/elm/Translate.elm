@@ -449,6 +449,7 @@ type TranslationId
     | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
     | BloodSmearTestResult
+    | BloodInSputumLabel
     | BloodInSputumQuestion
     | BMI
     | BMIHelper
@@ -1627,6 +1628,7 @@ type TranslationId
     | Send
     | SendToHC
     | SevereAbdominalPainLabel
+    | SevereFatigue
     | SevereFatigueQuestion
     | ReportToWhatsApp
     | ReportToWhatsAppComponentsSelectionHeader Components.ReportToWhatsAppDialog.Model.ReportType
@@ -1804,6 +1806,7 @@ type TranslationId
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
     | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
     | TuberculosisSuspect
+    | TuberculosisSymptom TuberculosisSymptom
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -3562,6 +3565,12 @@ translationSet trans =
             { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        BloodInSputumLabel ->
+            { english = "Blood in Sputum"
+            , kinyarwanda = Just "Amaraso mu gikororwa"
+            , kirundi = Just "Amaraso mu bikororwa"
             }
 
         BloodInSputumQuestion ->
@@ -20807,6 +20816,12 @@ translationSet trans =
             , kirundi = Just "Kurimba cane mu bwena"
             }
 
+        SevereFatigue ->
+            { english = "Severe Fatigue"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         SevereFatigueQuestion ->
             { english = "Do you have severe fatigue"
             , kinyarwanda = Just "Waba ugira umunaniro ukabije"
@@ -21587,10 +21602,8 @@ translationSet trans =
         SymptomsRespiratorySign sign ->
             case sign of
                 BloodInSputum ->
-                    { english = "Blood in Sputum"
-                    , kinyarwanda = Just "Amaraso mu gikororwa"
-                    , kirundi = Just "Amaraso mu bikororwa"
-                    }
+                    translationSet BloodInSputumLabel
+
 
                 Cough ->
                     { english = "Cough"
@@ -22476,6 +22489,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        TuberculosisSymptom symptom ->
+            case symptom of
+                TuberculosisSymptomNightSweats ->
+                    translationSet NightSweatsLabel
+
+                TuberculosisSymptomBloodInSputum ->
+                    translationSet BloodInSputumLabel
+
+                TuberculosisSymptomWeightLoss ->
+                    translationSet WeightLossLabel
+
+                TuberculosisSymptomSevereFatigue ->
+                    translationSet SevereFatigue
+
+                NoTuberculosisSymptoms ->
+                    translationSet None
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of

@@ -3,7 +3,16 @@ module Pages.Tuberculosis.ProgressReport.View exposing (view)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
-import Backend.Measurement.Model exposing (TreatmentOngoingSign(..), TuberculosisDOTSign(..))
+import Backend.Measurement.Model
+    exposing
+        ( FollowUpOption(..)
+        , ReferralFacility(..)
+        , SendToHCSign(..)
+        , TreatmentOngoingSign(..)
+        , TuberculosisDOTSign(..)
+        , TuberculosisHealthEducationSign(..)
+        , TuberculosisSymptom(..)
+        )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
@@ -415,6 +424,87 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                                     }
                                 )
 
+                    symptomsEntry =
+                        getMeasurementValueFunc data.measurements.symptomReview
+                            |> Maybe.map
+                                (\symptoms ->
+                                    let
+                                        symptomsForView =
+                                            EverySet.toList symptoms
+                                                |> List.map (Translate.TuberculosisSymptom >> translate language)
+                                                |> String.join ", "
+                                    in
+                                    div [ class "entry" ]
+                                        [ div [ class "label" ] [ text <| translate language Translate.SymptomReview ]
+                                        , div [ class "value long" ] [ text symptomsForView ]
+                                        ]
+                                )
+                            |> Maybe.withDefault emptyNode
+
+                    actionsTakenEntry =
+                        let
+                            sendToHCSignsSection =
+                                getMeasurementValueFunc data.measurements.referral
+                                    |> Maybe.map
+                                        (\value ->
+                                            let
+                                                completedForm =
+                                                    EverySet.member HandReferrerForm value.signs
+
+                                                sentToHC =
+                                                    EverySet.member ReferToHealthCenter value.signs
+                                            in
+                                            [ if completedForm then
+                                                li [] [ text <| translate language (Translate.CompleteFacilityReferralForm FacilityHealthCenter) ]
+
+                                              else
+                                                emptyNode
+                                            , if sentToHC then
+                                                li [] [ text <| translate language (Translate.SendPatientToFacility FacilityHealthCenter) ]
+
+                                              else
+                                                emptyNode
+                                            ]
+                                        )
+                                    |> Maybe.withDefault []
+
+                            healthEducationSection =
+                                getMeasurementValueFunc data.measurements.healthEducation
+                                    |> Maybe.map
+                                        (\value ->
+                                            if EverySet.member EducationFollowUpTesting value then
+                                                [ li [] [ text <| translate language Translate.ProvidedHealthEducationAction ] ]
+
+                                            else
+                                                []
+                                        )
+                                    |> Maybe.withDefault []
+
+                            followUpSection =
+                                getMeasurementValueFunc data.measurements.followUp
+                                    |> Maybe.map
+                                        (\value ->
+                                            let
+                                                filtered =
+                                                    EverySet.toList value.options
+                                                        |> List.filter ((/=) FollowUpNotNeeded)
+                                            in
+                                            if not <| List.isEmpty filtered then
+                                                [ li [] [ text <| translate language Translate.ScheduleFollowUp ] ]
+
+                                            else
+                                                []
+                                        )
+                                    |> Maybe.withDefault []
+                        in
+                        div [ class "entry" ]
+                            [ div [ class "label" ] [ text <| translate language Translate.ActionsTaken ]
+                            , ul [ class "value long" ] <|
+                                sendToHCSignsSection
+                                    ++ healthEducationSection
+                                    ++ followUpSection
+                            ]
+
                     viewTreatmentReviewEntry label mValue =
                         let
                             ( confirmed, value ) =
@@ -459,6 +549,8 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                             |> viewTreatmentReviewEntry Translate.MissedDoses
                         , Maybe.map .adverseEventsData treatmentReviewEntriesData
                             |> viewTreatmentReviewEntry Translate.AdverseEvents
+                        , symptomsEntry
+                        , actionsTakenEntry
                         ]
                     ]
                 ]

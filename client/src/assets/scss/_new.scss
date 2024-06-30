@@ -3983,6 +3983,16 @@ div.page-report.tuberculosis {
     font-size: 18px;
     width: 50%;
   }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value.long {
+    width: 65%;
+  }
 }
 
 div.page-report.acute-illness,
