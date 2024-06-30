@@ -2112,8 +2112,6 @@ translationSet trans =
             , kirundi = Just "Ingwara ikaze"
             }
 
-
-
         AcuteIllnessAdverseEventKindsQuestion ->
             { english = "What kind of adverse events"
             , kinyarwanda = Just "Ni ibihe bintu wabonye bidasanzwe (bitewe n'imiti wafashe)"
@@ -5454,7 +5452,7 @@ translationSet trans =
 
         EmptyString ->
             { english = ""
-            , kinyarwanda =Nothing
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -7851,10 +7849,10 @@ translationSet trans =
                     }
 
         InitiationDate ->
-                { english = "Initiation Date"
-                , kinyarwanda = Nothing
-                , kirundi = Nothing
-                }
+            { english = "Initiation Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         IntractableVomiting isIntractable ->
             if isIntractable then
@@ -21604,7 +21602,6 @@ translationSet trans =
                 BloodInSputum ->
                     translationSet BloodInSputumLabel
 
-
                 Cough ->
                     { english = "Cough"
                     , kinyarwanda = Just "Inkorora"
@@ -22195,7 +22192,7 @@ translationSet trans =
             , kirundi = Just "Umugwayi atubahiriza ivyo bamubwiye"
             }
 
-        TreatmentTimeline  ->
+        TreatmentTimeline ->
             { english = "Treatment Timeline"
             , kinyarwanda = Nothing
             , kirundi = Nothing
