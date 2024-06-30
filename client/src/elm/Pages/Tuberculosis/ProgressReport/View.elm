@@ -442,7 +442,7 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                         in
                         div [ class "entry" ]
                             [ div [ class "label" ] [ text <| translate language label ]
-                            , div [ class "confiration" ] [ text confirmationForView ]
+                            , div [ class "confirmation" ] [ text confirmationForView ]
                             , div [ class "value" ] [ text value ]
                             ]
                 in

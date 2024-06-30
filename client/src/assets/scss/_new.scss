@@ -3953,17 +3953,29 @@ div.page-report.tuberculosis {
   }
 
   .pane.encounter-details .pane-content .entry {
+    border-bottom: 1px solid $color-text;
     justify-content: space-between;
+    line-height: normal;
+    padding: 15px 0;
   }
+
+  .pane.encounter-details .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
 
   .pane.encounter-details .pane-content .entry .label {
     float: left;
-    width: 30%;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 35%;
   }
 
   .pane.encounter-details .pane-content .entry .confirmation {
     float: left;
-    width: 20%;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 15%;
   }
 
   .pane.encounter-details .pane-content .entry .value {
