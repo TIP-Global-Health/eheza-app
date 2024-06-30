@@ -101,23 +101,13 @@ viewContent :
     -> AssembledData
     -> Html Msg
 viewContent language currentDate site features model assembled =
-    div
-        [ class "ui report unstackable items"
-        , Html.Attributes.id "report-content"
-        ]
-        [ viewPersonInfoPane language currentDate assembled.person
-        , viewSummaryPane language currentDate assembled
-        , viewTreatmentTimelinePane language currentDate assembled
-        , viewAdverseEventsPane language currentDate assembled
-        , viewEncountersPane language currentDate assembled
-        ]
-
-
-viewSummaryPane : Language -> NominalDate -> AssembledData -> Html any
-viewSummaryPane language currentDate assembled =
     let
         allEncountersData =
-            generateAllEncounters assembled
+            { id = assembled.id
+            , startDate = assembled.encounter.startDate
+            , measurements = assembled.measurements
+            }
+                :: assembled.previousEncountersData
 
         firstEncounterData =
             List.filter (.measurements >> .diagnostics >> isJust)
@@ -127,7 +117,28 @@ viewSummaryPane language currentDate assembled =
 
         initiationDate =
             Maybe.map .startDate firstEncounterData
+    in
+    div
+        [ class "ui report unstackable items"
+        , Html.Attributes.id "report-content"
+        ]
+        [ viewPersonInfoPane language currentDate assembled.person
+        , viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate
+        , viewTreatmentTimelinePane language currentDate initiationDate
+        , viewAdverseEventsPane language currentDate allEncountersData
+        , viewEncountersPane language currentDate allEncountersData
+        ]
 
+
+viewSummaryPane :
+    Language
+    -> NominalDate
+    -> List EncounterData
+    -> Maybe EncounterData
+    -> Maybe NominalDate
+    -> Html any
+viewSummaryPane language currentDate allEncountersData firstEncounterData initiationDate =
+    let
         completionDate =
             Maybe.map (Date.add Months 6)
                 initiationDate
@@ -189,24 +200,32 @@ viewSummaryPane language currentDate assembled =
         ]
 
 
-viewTreatmentTimelinePane : Language -> NominalDate -> AssembledData -> Html any
-viewTreatmentTimelinePane language currentDate assembled =
+viewTreatmentTimelinePane : Language -> NominalDate -> Maybe NominalDate -> Html any
+viewTreatmentTimelinePane language currentDate initiationDate =
     let
         content =
-            []
+            Maybe.map
+                (\initDate ->
+                    List.range 1 6
+                        |> List.map
+                            (\index ->
+                                div [ classList [ ( "green", Date.diff Months initDate currentDate >= index ) ] ]
+                                    [ text <| translate language Translate.Month ++ " " ++ String.fromInt index ]
+                            )
+                        |> div [ class "timeline" ]
+                )
+                initiationDate
+                |> Maybe.withDefault emptyNode
     in
     div [ class "pane treatment-timeline" ]
         [ viewPaneHeading language Translate.TreatmentTimeline
-        , div [ class "pane-content" ] content
+        , div [ class "pane-content" ] [ content ]
         ]
 
 
-viewAdverseEventsPane : Language -> NominalDate -> AssembledData -> Html any
-viewAdverseEventsPane language currentDate assembled =
+viewAdverseEventsPane : Language -> NominalDate -> List EncounterData -> Html any
+viewAdverseEventsPane language currentDate allEncountersData =
     let
-        allEncountersData =
-            generateAllEncounters assembled
-
         adverseEventsWithDates =
             List.filterMap
                 (\data ->
@@ -243,12 +262,9 @@ viewAdverseEventsPane language currentDate assembled =
         ]
 
 
-viewEncountersPane : Language -> NominalDate -> AssembledData -> Html any
-viewEncountersPane language currentDate assembled =
+viewEncountersPane : Language -> NominalDate -> List EncounterData -> Html any
+viewEncountersPane language currentDate allEncountersData =
     let
-        allEncountersData =
-            generateAllEncounters assembled
-
         heading =
             div [ class "heading" ]
                 [ div [ class "date" ] [ text <| translate language Translate.EncounterDate ]
@@ -275,12 +291,3 @@ viewEncountersPane language currentDate assembled =
             heading
                 :: entries
         ]
-
-
-generateAllEncounters : AssembledData -> List EncounterData
-generateAllEncounters assembled =
-    { id = assembled.id
-    , startDate = assembled.encounter.startDate
-    , measurements = assembled.measurements
-    }
-        :: assembled.previousEncountersData

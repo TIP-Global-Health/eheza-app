@@ -3889,12 +3889,35 @@ div.page-report.tuberculosis {
   }
 
   .pane .pane-content .entry {
+    display: flex;
     line-height: 40px;
   }
 
   .pane.summary .pane-content .entry .label {
     float: left;
     width: 35%;
+  }
+
+  .pane.treatment-timeline .pane-content {
+    padding: 30px 10px;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline div {
+    border-top: 10px solid $color-text;
+    font-size: 18px;
+    height: 40px;
+    padding-top: 10px;
+    text-align: center;
+    width: 15%;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline div.green {
+    border-top: 10px solid $color-green-dark;
   }
 
   .pane.adverse-events .pane-content .entry .label {
@@ -3908,7 +3931,6 @@ div.page-report.tuberculosis {
 
   .pane.encounters .pane-content .entry {
     border-bottom: 1px solid $color-text;
-    display: flex;
     padding: 15px 30px;
   }
 
