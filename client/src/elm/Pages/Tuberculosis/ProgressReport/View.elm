@@ -59,23 +59,22 @@ view language currentDate site features id db model =
         content =
             viewWebData language (viewContent language currentDate site features model) identity assembled
 
-        -- endEncounterDialog =
-        --     if model.showEndEncounterDialog then
-        --         Just <|
-        --             viewEndEncounterDialog language
-        --                 Translate.EndEncounterQuestion
-        --                 Translate.OnceYouEndTheEncounter
-        --                 (CloseEncounter id)
-        --                 (SetEndEncounterDialogState False)
-        --
-        --     else
-        --         Nothing
+        endEncounterDialog =
+            if model.showEndEncounterDialog then
+                Just <|
+                    viewEndEncounterDialog language
+                        Translate.EndEncounterQuestion
+                        Translate.OnceYouEndTheEncounter
+                        (CloseEncounter id)
+                        (SetEndEncounterDialogState False)
+
+            else
+                Nothing
     in
     div [ class "page-report tuberculosis" ] <|
         [ header
         , content
-
-        -- , viewModal endEncounterDialog
+        , viewModal endEncounterDialog
         ]
 
 
