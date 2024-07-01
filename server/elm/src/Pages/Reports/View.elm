@@ -16,7 +16,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -1271,12 +1271,14 @@ viewPrenatalReport language limitDate records =
 viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewAcuteIllnessReport language startDate records =
     let
+        acuteIllnessDataRecords =
+            List.map .acuteIllnessData records
+                |> Maybe.Extra.values
+
         filtered =
             -- We got recordes filtered by limit date (end date).
             -- Now we need to filter from start date.
-            List.map .acuteIllnessData records
-                |> Maybe.Extra.values
-                |> List.concat
+            List.concat acuteIllnessDataRecords
                 |> List.concat
                 |> List.filter
                     (\encounter ->
@@ -1297,6 +1299,23 @@ viewAcuteIllnessReport language startDate records =
                     )
                     Dict.empty
 
+        -- Initial encounter always determine a diagnosis.
+        -- Here we count the illnesses for which no diagnosis was determined.
+        illnessesWithNoDiagnosis =
+            List.concat acuteIllnessDataRecords
+                |> List.filter
+                    (\encountersList ->
+                        List.sortWith (sortByDateDesc .startDate) encountersList
+                            |> List.head
+                            |> Maybe.map
+                                (\encounter ->
+                                    (not <| Date.compare encounter.startDate startDate == LT)
+                                        && isNothing encounter.diagnosis
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.length
+
         rows =
             List.map
                 (\diagnosis ->
@@ -1311,6 +1330,9 @@ viewAcuteIllnessReport language startDate records =
                 |> List.sum
                 |> viewRow Translate.Total
 
+        noneRow =
+            viewRow Translate.None illnessesWithNoDiagnosis
+
         viewRow label value =
             div [ class "row" ]
                 [ div [ class "item label" ] [ text <| translate language label ]
@@ -1323,5 +1345,5 @@ viewAcuteIllnessReport language startDate records =
                 [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
                 , div [ class "item value" ] [ text <| translate language Translate.Total ]
                 ]
-                :: (rows ++ [ totalsRow ])
+                :: (rows ++ [ totalsRow, noneRow ])
         ]

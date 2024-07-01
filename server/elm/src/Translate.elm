@@ -104,6 +104,7 @@ type TranslationId
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewScope
     | NewSelection
+    | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
     | NutritionBehavior
@@ -711,6 +712,12 @@ translationSet transId =
             { english = "New Selection"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        None ->
+            { english = "None"
+            , kinyarwanda = Just "Ntabyo"
+            , kirundi = Just "Nta na kimwe"
             }
 
         NumberOfVisits number ->

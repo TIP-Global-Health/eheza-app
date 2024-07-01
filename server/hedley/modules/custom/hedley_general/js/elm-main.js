@@ -9510,6 +9510,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
 				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'None':
+				return {
+					english: 'None',
+					kinyarwanda: $elm$core$Maybe$Just('Ntabyo'),
+					kirundi: $elm$core$Maybe$Just('Nta na kimwe')
+				};
 			case 'NumberOfVisits':
 				var number = transId.a;
 				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 5) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
@@ -10575,9 +10581,17 @@ var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
 	return {$: 'AcuteIllnessDiagnosis', a: a};
 };
 var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
+var $author$project$Translate$None = {$: 'None'};
 var $author$project$Translate$Total = {$: 'Total'};
 var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
 	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
+var $author$project$Gizra$NominalDate$sortByDateDesc = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity2),
+			getDateFunc(entity1));
+	});
 var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 	function (language, startDate, records) {
 		var viewRow = F2(
@@ -10614,6 +10628,13 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 								]))
 						]));
 			});
+		var acuteIllnessDataRecords = $elm_community$maybe_extra$Maybe$Extra$values(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.acuteIllnessData;
+				},
+				records));
 		var filtered = A2(
 			$elm$core$List$filter,
 			function (encounter) {
@@ -10622,14 +10643,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 					$elm$core$Basics$LT);
 			},
 			$elm$core$List$concat(
-				$elm$core$List$concat(
-					$elm_community$maybe_extra$Maybe$Extra$values(
-						A2(
-							$elm$core$List$map,
-							function ($) {
-								return $.acuteIllnessData;
-							},
-							records)))));
+				$elm$core$List$concat(acuteIllnessDataRecords)));
 		var diagnosesCountDict = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -10669,6 +10683,31 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 			$author$project$Translate$Total,
 			$elm$core$List$sum(
 				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
+		var illnessesWithNoDiagnosis = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				function (encountersList) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						false,
+						A2(
+							$elm$core$Maybe$map,
+							function (encounter) {
+								return (!_Utils_eq(
+									A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+									$elm$core$Basics$LT)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(encounter.diagnosis);
+							},
+							$elm$core$List$head(
+								A2(
+									$elm$core$List$sortWith,
+									$author$project$Gizra$NominalDate$sortByDateDesc(
+										function ($) {
+											return $.startDate;
+										}),
+									encountersList))));
+				},
+				$elm$core$List$concat(acuteIllnessDataRecords)));
+		var noneRow = A2(viewRow, $author$project$Translate$None, illnessesWithNoDiagnosis);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -10719,7 +10758,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 						_Utils_ap(
 							rows,
 							_List_fromArray(
-								[totalsRow]))))
+								[totalsRow, noneRow]))))
 				]));
 	});
 var $author$project$Translate$Save = {$: 'Save'};
