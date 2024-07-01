@@ -318,6 +318,8 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .inputs .report .table .row .item.value {
+  margin-bottom: auto;
+  margin-top: auto;
   width: 30%;
 }
 
