@@ -104,6 +104,7 @@ type TranslationId
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
     | NewScope
     | NewSelection
+    | NoDiagnosis
     | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
@@ -712,6 +713,12 @@ translationSet transId =
             { english = "New Selection"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        NoDiagnosis ->
+            { english = "No Diagnosis"
+            , kinyarwanda = Nothing
+            , kirundi = Just "Nta Gupima/gusuzuma"
             }
 
         None ->

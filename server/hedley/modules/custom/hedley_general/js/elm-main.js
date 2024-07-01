@@ -9510,6 +9510,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
 				return {english: 'New Selection', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NoDiagnosis':
+				return {
+					english: 'No Diagnosis',
+					kinyarwanda: $elm$core$Maybe$Nothing,
+					kirundi: $elm$core$Maybe$Just('Nta Gupima/gusuzuma')
+				};
 			case 'None':
 				return {
 					english: 'None',
@@ -10581,7 +10587,7 @@ var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
 	return {$: 'AcuteIllnessDiagnosis', a: a};
 };
 var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
-var $author$project$Translate$None = {$: 'None'};
+var $author$project$Translate$NoDiagnosis = {$: 'NoDiagnosis'};
 var $author$project$Translate$Total = {$: 'Total'};
 var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
 	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
@@ -10707,7 +10713,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 									encountersList))));
 				},
 				$elm$core$List$concat(acuteIllnessDataRecords)));
-		var noneRow = A2(viewRow, $author$project$Translate$None, illnessesWithNoDiagnosis);
+		var noneRow = A2(viewRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(

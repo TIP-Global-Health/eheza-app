@@ -1331,7 +1331,7 @@ viewAcuteIllnessReport language startDate records =
                 |> viewRow Translate.Total
 
         noneRow =
-            viewRow Translate.None illnessesWithNoDiagnosis
+            viewRow Translate.NoDiagnosis illnessesWithNoDiagnosis
 
         viewRow label value =
             div [ class "row" ]
