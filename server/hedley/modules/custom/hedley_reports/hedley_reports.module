@@ -718,7 +718,8 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
       $data['entity_type'] = 'global';
     }
     else {
-      $data['entity_name'] = $health_center;
+      $wrapper = entity_metadata_wrapper('node', $health_center);
+      $data['entity_name'] = $wrapper->label();
       $data['entity_type'] = 'health-center';
     }
   }

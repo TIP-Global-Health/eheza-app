@@ -11,6 +11,7 @@ import Backend.Reports.Model
         , PrenatalEncounterType(..)
         , PrenatalParticipantData
         , ReportsData
+        , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
@@ -48,6 +49,18 @@ viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
         topBar =
+            let
+                scopeLabel =
+                    case data.entityType of
+                        EntityGlobal ->
+                            translate language Translate.Global
+
+                        EntityHealthCenter ->
+                            data.entityName
+
+                        _ ->
+                            data.entityName ++ " " ++ translate language (Translate.SelectedScope data.entityType)
+            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
@@ -55,6 +68,8 @@ viewReportsData language currentDate data model =
                             [ text <| translate language Translate.NewScope ]
                         ]
                     ]
+                , div [ class "scope" ]
+                    [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
 
         dateInputs =

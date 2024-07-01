@@ -8984,6 +8984,9 @@ var $author$project$Translate$HttpError = function (a) {
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$District = {$: 'District'};
+var $author$project$Translate$Global = {$: 'Global'};
+var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
+var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Translate$Sector = {$: 'Sector'};
 var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$translateHttpError = function (transId) {
@@ -9290,6 +9293,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Female':
 				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Global':
+				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'GenerateReport':
 				return {english: 'Generate Report', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'HC':
@@ -9543,7 +9548,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				var selectionOption = transId.a;
 				switch (selectionOption.$) {
 					case 'SelectionOptionGlobal':
-						return {english: 'Gloabal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Global;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'SelectionOptionDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
@@ -9606,6 +9613,38 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'SelectedEntity':
 				var entity = transId.a;
 				switch (entity.$) {
+					case 'EntityDistrict':
+						var $temp$transId = $author$project$Translate$District;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntitySector':
+						var $temp$transId = $author$project$Translate$Sector;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntityCell':
+						var $temp$transId = $author$project$Translate$Cell;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						var $temp$transId = $author$project$Translate$Village;
+						transId = $temp$transId;
+						continue translationSet;
+				}
+			case 'SelectedScope':
+				var entity = transId.a;
+				switch (entity.$) {
+					case 'EntityGlobal':
+						var $temp$transId = $author$project$Translate$Global;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntityHealthCenter':
+						var $temp$transId = $author$project$Translate$HealthCenter;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'EntityProvince':
+						var $temp$transId = $author$project$Translate$Province;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'EntityDistrict':
 						var $temp$transId = $author$project$Translate$District;
 						transId = $temp$transId;
@@ -9828,8 +9867,12 @@ var $author$project$Translate$ReportType = function (a) {
 	return {$: 'ReportType', a: a};
 };
 var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
+var $author$project$Translate$Scope = {$: 'Scope'};
 var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
 var $author$project$Translate$SelectStartDate = {$: 'SelectStartDate'};
+var $author$project$Translate$SelectedScope = function (a) {
+	return {$: 'SelectedScope', a: a};
+};
 var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
 	return {$: 'SetLimitDate', a: a};
 };
@@ -11707,7 +11750,6 @@ var $author$project$Translate$EncounterType = {$: 'EncounterType'};
 var $author$project$Translate$Encounters = {$: 'Encounters'};
 var $author$project$Translate$FBF = {$: 'FBF'};
 var $author$project$Translate$HIV = {$: 'HIV'};
-var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
 var $author$project$Translate$HomeVisit = {$: 'HomeVisit'};
 var $author$project$Translate$Individual = {$: 'Individual'};
 var $author$project$Translate$NCD = {$: 'NCD'};
@@ -14494,41 +14536,68 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 	});
 var $author$project$Pages$Reports$View$viewReportsData = F4(
 	function (language, currentDate, data, model) {
-		var topBar = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('top-bar')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('new-selection')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$a,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$button,
-									_List_Nil,
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
-										]))
-								]))
-						]))
-				]));
+		var topBar = function () {
+			var scopeLabel = function () {
+				var _v1 = data.entityType;
+				switch (_v1.$) {
+					case 'EntityGlobal':
+						return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+					case 'EntityHealthCenter':
+						return data.entityName;
+					default:
+						return data.entityName + (' ' + A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$SelectedScope(data.entityType)));
+				}
+			}();
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('top-bar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('scope')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+							]))
+					]));
+		}();
 		var limitDateByReportType = _Utils_eq(
 			model.reportType,
 			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
@@ -14839,7 +14908,6 @@ var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
 	return {$: 'PopulationSelectionOption', a: a};
 };
-var $author$project$Translate$Scope = {$: 'Scope'};
 var $author$project$Translate$SelectScope = {$: 'SelectScope'};
 var $author$project$Pages$ReportsMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$ReportsMenu$Model$SetGeoLocation = F2(
@@ -34093,7 +34161,6 @@ var $author$project$Utils$GeoLocation$getGeoInfo = function (site) {
 		villages: $author$project$Utils$GeoLocation$getGeoVillages(site)
 	};
 };
-var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (site) {
 	return $author$project$Translate$Province;
 };
