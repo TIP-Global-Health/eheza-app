@@ -449,6 +449,7 @@ type TranslationId
     | BloodSmearLabel
     | BloodSmearResult BloodSmearResult
     | BloodSmearTestResult
+    | BloodInSputumLabel
     | BloodInSputumQuestion
     | BMI
     | BMIHelper
@@ -673,6 +674,7 @@ type TranslationId
     | FavoriteToggle Bool
     | FbfDistribution ClinicType
     | Feeding
+    | FeelingBetter
     | FetalHeartRate
     | FetalMovement
     | FetalPresentationLabel
@@ -1626,6 +1628,7 @@ type TranslationId
     | Send
     | SendToHC
     | SevereAbdominalPainLabel
+    | SevereFatigue
     | SevereFatigueQuestion
     | ReportToWhatsApp
     | ReportToWhatsAppComponentsSelectionHeader Components.ReportToWhatsAppDialog.Model.ReportType
@@ -1734,6 +1737,7 @@ type TranslationId
     | Success
     | SyncGeneral
     | TabletSinglePlural String
+    | TakenAsPrescribed
     | TakingMedicationAsPrescribed Bool
     | TasksCompleted Int Int
     | TargetedInterventions
@@ -1802,6 +1806,7 @@ type TranslationId
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
     | TuberculosisReasonMedicationsNotDistributed TuberculosisDOTSign
     | TuberculosisSuspect
+    | TuberculosisSymptom TuberculosisSymptom
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
     | TwoVisits
@@ -3558,6 +3563,12 @@ translationSet trans =
             { english = "Malaria Blood Smear Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        BloodInSputumLabel ->
+            { english = "Blood in Sputum"
+            , kinyarwanda = Just "Amaraso mu gikororwa"
+            , kirundi = Just "Amaraso mu bikororwa"
             }
 
         BloodInSputumQuestion ->
@@ -5996,6 +6007,12 @@ translationSet trans =
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
                 }
+
+        FeelingBetter ->
+            { english = "Feeling Better"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         FetalHeartRate ->
             { english = "Fetal Heart Rate"
@@ -20797,6 +20814,12 @@ translationSet trans =
             , kirundi = Just "Kurimba cane mu bwena"
             }
 
+        SevereFatigue ->
+            { english = "Severe Fatigue"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         SevereFatigueQuestion ->
             { english = "Do you have severe fatigue"
             , kinyarwanda = Just "Waba ugira umunaniro ukabije"
@@ -21577,10 +21600,7 @@ translationSet trans =
         SymptomsRespiratorySign sign ->
             case sign of
                 BloodInSputum ->
-                    { english = "Blood in Sputum"
-                    , kinyarwanda = Just "Amaraso mu gikororwa"
-                    , kirundi = Just "Amaraso mu bikororwa"
-                    }
+                    translationSet BloodInSputumLabel
 
                 Cough ->
                     { english = "Cough"
@@ -21827,6 +21847,12 @@ translationSet trans =
                 , kinyarwanda = Just <| "ibinini " ++ value
                 , kirundi = Just <| "ibinini " ++ value
                 }
+
+        TakenAsPrescribed ->
+            { english = "Taken as prescribed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         TakingMedicationAsPrescribed taking ->
             if taking then
@@ -22460,6 +22486,23 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        TuberculosisSymptom symptom ->
+            case symptom of
+                TuberculosisSymptomNightSweats ->
+                    translationSet NightSweatsLabel
+
+                TuberculosisSymptomBloodInSputum ->
+                    translationSet BloodInSputumLabel
+
+                TuberculosisSymptomWeightLoss ->
+                    translationSet WeightLossLabel
+
+                TuberculosisSymptomSevereFatigue ->
+                    translationSet SevereFatigue
+
+                NoTuberculosisSymptoms ->
+                    translationSet None
 
         TuberculosisSymptomQuestion symptom ->
             case symptom of

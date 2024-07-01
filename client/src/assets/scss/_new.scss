@@ -3951,6 +3951,48 @@ div.page-report.tuberculosis {
     margin-left: 20px;
     width: 50px;
   }
+
+  .pane.encounter-details .pane-content .entry {
+    border-bottom: 1px solid $color-text;
+    justify-content: space-between;
+    line-height: normal;
+    padding: 15px 0;
+  }
+
+  .pane.encounter-details .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+
+  .pane.encounter-details .pane-content .entry .label {
+    float: left;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 35%;
+  }
+
+  .pane.encounter-details .pane-content .entry .confirmation {
+    float: left;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 15%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value.long {
+    width: 65%;
+  }
 }
 
 div.page-report.acute-illness,
