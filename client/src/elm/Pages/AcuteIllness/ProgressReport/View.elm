@@ -749,7 +749,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                             viewMissedDoses =
                                                 div [ class "treatment-comment" ]
                                                     [ text "- "
-                                                    , text <| translate language <| Translate.MissedDosesOfMedicatgion missedDoses
+                                                    , text <| translate language <| Translate.MissedDosesOfMedication missedDoses
                                                     , text "."
                                                     ]
 
@@ -763,7 +763,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 
                                                         events =
                                                             EverySet.toList treatmentOngoing.adverseEvents
-                                                                |> List.map (Translate.AcuteIllnessAdverseEvent >> translate language)
+                                                                |> List.map (Translate.AdverseEvent >> translate language)
                                                     in
                                                     [ div [ class "treatment-comment" ]
                                                         [ text "- "

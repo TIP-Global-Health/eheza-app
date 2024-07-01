@@ -337,7 +337,6 @@ type TranslationId
     | AcuteFindingsGeneralSign AcuteFindingsGeneralSign
     | AcuteFindingsRespiratorySign AcuteFindingsRespiratorySign
     | AcuteIllness
-    | AcuteIllnessAdverseEvent AdverseEvent
     | AcuteIllnessAdverseEventKindsQuestion
     | AcuteIllnessDangerSign AcuteIllnessDangerSign
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
@@ -388,6 +387,8 @@ type TranslationId
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
     | AdoptionSurveyScoreInterpretation Int
+    | AdverseEvent AdverseEvent
+    | AdverseEvents
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
     | AgeWord
@@ -519,6 +520,7 @@ type TranslationId
     | ColorYellow
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
+    | CompletionDate
     | Contacted114
     | ContactedHC
     | ContactedHCQuestion
@@ -535,6 +537,7 @@ type TranslationId
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSectionScar CSectionScar
+    | CurrentMedication
     | Dashboard Dashboard
     | Group
     | Groups
@@ -628,6 +631,7 @@ type TranslationId
     | DangerSignsTask DangerSignsTask
     | EmptyString
     | EncounterDate
+    | Encounters
     | EncounterTypes
     | EncounterTypePageLabel DashboardPage
     | EncounterTypeFollowUpQuestion IndividualEncounterType
@@ -813,6 +817,7 @@ type TranslationId
     | InfrastructureEnvironment
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
+    | InitiationDate
     | IntractableVomiting Bool
     | IntractableVomitingQuestion
     | InstructionsChooseOneMedication
@@ -993,7 +998,8 @@ type TranslationId
     | MMHGUnit
     | Minutes Int
     | MinutesAgo Int
-    | MissedDosesOfMedicatgion Int
+    | MissedDoses
+    | MissedDosesOfMedication Int
     | ModeOfDelivery ModeOfDelivery
     | ModeOfDeliveryLabel
     | ModeratePreeclampsia
@@ -1689,6 +1695,7 @@ type TranslationId
     | SubsequentEncounterReferral AcuteIllnessEncounterType
     | SuccessiveAbortions
     | SuccessivePrematureDeliveries
+    | Summary
     | SuspectedCovid19CaseAlert
     | SuspectedCovid19CaseAlertHelper
     | SuspectedCovid19CaseIsolate
@@ -1770,6 +1777,7 @@ type TranslationId
     | TreatmentReviewTask Bool TreatmentReviewTask
     | TreatmentReviewWarningPopupMessage
     | TreatmentReviewWarningPopupInstructions
+    | TreatmentTimeline
     | TrySyncing
     | Tuberculosis
     | TuberculosisActivityTitle TuberculosisActivity
@@ -2098,38 +2106,6 @@ translationSet trans =
             , kinyarwanda = Just "Uburwayi butunguranye"
             , kirundi = Just "Ingwara ikaze"
             }
-
-        AcuteIllnessAdverseEvent event ->
-            case event of
-                AdverseEventRashOrItching ->
-                    { english = "Rash or Itching"
-                    , kinyarwanda = Just "Kwishima cyangwa gusesa uduheri (turyaryata)"
-                    , kirundi = Just "Amaherehere canke kwiyagaza"
-                    }
-
-                AdverseEventFever ->
-                    translationSet Fever
-
-                AdverseEventDiarrhea ->
-                    translationSet Diarrhea
-
-                AdverseEventVomiting ->
-                    translationSet VomitingLabel
-
-                AdverseEventFatigue ->
-                    translationSet Fatigue
-
-                AdverseEventOther ->
-                    { english = "Other"
-                    , kinyarwanda = Just "Ibindi"
-                    , kirundi = Just "Ibindi"
-                    }
-
-                NoAdverseEvent ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
 
         AcuteIllnessAdverseEventKindsQuestion ->
             { english = "What kind of adverse events"
@@ -2965,7 +2941,7 @@ translationSet trans =
                 AcuteIllnessLaboratory ->
                     { english = "Laboratory"
                     , kinyarwanda = Just "Ibizamini"
-                    , kirundi = Just "Icumba c'ipimiro/"
+                    , kirundi = Just "Icumba c'ipimiro"
                     }
 
                 AcuteIllnessExposure ->
@@ -3001,6 +2977,44 @@ translationSet trans =
                 , kinyarwanda = Just "Ufite umuco wo gukora ibikorwa bigufasha kumererwa neza. Komereza aho."
                 , kirundi = Nothing
                 }
+
+        AdverseEvent event ->
+            case event of
+                AdverseEventRashOrItching ->
+                    { english = "Rash or Itching"
+                    , kinyarwanda = Just "Kwishima cyangwa gusesa uduheri (turyaryata)"
+                    , kirundi = Just "Amaherehere canke kwiyagaza"
+                    }
+
+                AdverseEventFever ->
+                    translationSet Fever
+
+                AdverseEventDiarrhea ->
+                    translationSet Diarrhea
+
+                AdverseEventVomiting ->
+                    translationSet VomitingLabel
+
+                AdverseEventFatigue ->
+                    translationSet Fatigue
+
+                AdverseEventOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    , kirundi = Just "Ibindi"
+                    }
+
+                NoAdverseEvent ->
+                    { english = "None of the above"
+                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
+                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
+                    }
+
+        AdverseEvents ->
+            { english = "Adverse Events"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         AdverseEventSinglePlural val ->
             if val == 1 then
@@ -4232,6 +4246,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+        CompletionDate ->
+            { english = "Completion Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Contacted114 ->
             { english = "Contacted 114"
             , kinyarwanda = Just "Namenyesheje 114"
@@ -4361,6 +4381,12 @@ translationSet trans =
 
                 NoScar ->
                     translationSet None
+
+        CurrentMedication ->
+            { english = "Current Medication"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Group ->
             { english = "Group"
@@ -5415,7 +5441,7 @@ translationSet trans =
 
         EmptyString ->
             { english = ""
-            , kinyarwanda = Just ""
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -5423,6 +5449,12 @@ translationSet trans =
             { english = "Encounter Date"
             , kinyarwanda = Just "Itariki igikorwa cyakoreweho"
             , kirundi = Just "Itarike y'umubonano"
+            }
+
+        Encounters ->
+            { english = "Encounters"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         EncounterTypes ->
@@ -7798,6 +7830,12 @@ translationSet trans =
                     , kinyarwanda = Just "Hisha ababyeyi bose / abarezi"
                     , kirundi = Just "Hisha ababyeyi / abarezi bose"
                     }
+
+        InitiationDate ->
+            { english = "Initiation Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         IntractableVomiting isIntractable ->
             if isIntractable then
@@ -10775,7 +10813,13 @@ translationSet trans =
                     Just <| String.fromInt minutes ++ " iminota iheze"
             }
 
-        MissedDosesOfMedicatgion val ->
+        MissedDoses ->
+            { english = "Missed Doses"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MissedDosesOfMedication val ->
             if val == 0 then
                 { english = "No missed doses of medication"
                 , kinyarwanda = Just "Yafashe kandi arangiza neza imiti uko yayandikiwe"
@@ -21315,6 +21359,12 @@ translationSet trans =
             , kirundi = Just "Ukwibaruka hataragera kwakurikiranye"
             }
 
+        Summary ->
+            { english = "Summary"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         SuspectedCovid19CaseAlert ->
             { english = "Suspected COVID-19 case"
             , kinyarwanda = Just "Acyekwaho kwandura COVID-19"
@@ -22114,6 +22164,12 @@ translationSet trans =
             { english = "Further evaluation necessary"
             , kinyarwanda = Just "Gusuzuma byimbitse"
             , kirundi = Just "Umugwayi atubahiriza ivyo bamubwiye"
+            }
+
+        TreatmentTimeline ->
+            { english = "Treatment Timeline"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         TrySyncing ->
