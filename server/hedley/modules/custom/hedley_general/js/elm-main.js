@@ -14545,10 +14545,11 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 					case 'EntityHealthCenter':
 						return data.entityName;
 					default:
-						return data.entityName + (' ' + A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$SelectedScope(data.entityType)));
+						return data.entityName + (' ' + $elm$core$String$toLower(
+							A2(
+								$author$project$Translate$translate,
+								language,
+								$author$project$Translate$SelectedScope(data.entityType))));
 				}
 			}();
 			return A2(

@@ -59,7 +59,7 @@ viewReportsData language currentDate data model =
                             data.entityName
 
                         _ ->
-                            data.entityName ++ " " ++ translate language (Translate.SelectedScope data.entityType)
+                            data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
             in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
