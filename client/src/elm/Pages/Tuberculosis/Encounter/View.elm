@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.View exposing (view)
+module Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, partitionActivities, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -97,8 +97,7 @@ viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData
 viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled)
+            partitionActivities currentDate assembled
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -157,7 +156,7 @@ viewMainPageContent language currentDate db assembled model =
                     ]
 
         allowEndEncounter =
-            allowEndingEcounter pendingActivities
+            allowEndingEncounter pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -170,6 +169,12 @@ viewMainPageContent language currentDate db assembled model =
     ]
 
 
-allowEndingEcounter : List TuberculosisActivity -> Bool
-allowEndingEcounter pendingActivities =
+partitionActivities : NominalDate -> AssembledData -> ( List TuberculosisActivity, List TuberculosisActivity )
+partitionActivities currentDate assembled =
+    List.filter (expectActivity currentDate assembled) allActivities
+        |> List.partition (activityCompleted currentDate assembled)
+
+
+allowEndingEncounter : List TuberculosisActivity -> Bool
+allowEndingEncounter pendingActivities =
     List.isEmpty pendingActivities

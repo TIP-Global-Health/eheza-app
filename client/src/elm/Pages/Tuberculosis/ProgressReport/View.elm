@@ -32,6 +32,7 @@ import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
+import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.Tuberculosis.ProgressReport.Model exposing (..)
 import Pages.Utils
     exposing
@@ -125,26 +126,60 @@ viewContent language currentDate site features model assembled =
             , measurements = assembled.measurements
             }
                 :: assembled.previousEncountersData
+
+        panes =
+            case model.viewMode of
+                ViewModeGlobal ->
+                    viewGlobalContent language
+                        currentDate
+                        model
+                        allEncountersData
+                        assembled
+
+                ViewModeEncounter encounterId ->
+                    viewEncounterDetailsContent language
+                        currentDate
+                        encounterId
+                        model
+                        allEncountersData
+
+        endEncounterMenu =
+            let
+                ( _, pendingActivities ) =
+                    partitionActivities currentDate assembled
+
+                allowEndEncounter =
+                    allowEndingEncounter pendingActivities
+            in
+            viewEndEncounterMenuForProgressReport language
+                features
+                allowEndEncounter
+                SetEndEncounterDialogState
+                (MsgReportToWhatsAppDialog <|
+                    Components.ReportToWhatsAppDialog.Model.SetState <|
+                        Just Components.ReportToWhatsAppDialog.Model.Consent
+                )
     in
     div
         [ class "ui report unstackable items"
         , Html.Attributes.id "report-content"
         ]
     <|
-        case model.viewMode of
-            ViewModeGlobal ->
-                viewGlobalContent language
-                    currentDate
-                    model
-                    allEncountersData
-                    assembled
-
-            ViewModeEncounter encounterId ->
-                viewEncounterDetailsContent language
-                    currentDate
-                    encounterId
-                    model
-                    allEncountersData
+        panes
+            ++ [ -- Actions are hidden when 'Share via WhatsApp' dialog is open,
+                 -- so they do not appear on generated screenshot.
+                 showIf (isNothing model.reportToWhatsAppDialog.state) endEncounterMenu
+               , Html.map MsgReportToWhatsAppDialog
+                    (Components.ReportToWhatsAppDialog.View.view
+                        language
+                        currentDate
+                        site
+                        ( assembled.participant.person, assembled.person )
+                        Components.ReportToWhatsAppDialog.Model.ReportTuberculosis
+                        Nothing
+                        model.reportToWhatsAppDialog
+                    )
+               ]
 
 
 viewGlobalContent :

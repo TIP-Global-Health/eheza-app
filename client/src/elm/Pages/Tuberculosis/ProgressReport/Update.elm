@@ -42,23 +42,3 @@ update msg model =
             in
             ( { model | reportToWhatsAppDialog = dialogUpdated }, cmd, appMsgs )
                 |> sequenceExtra update extraMsgs
-
-        SetReportComponents maybeComponents ->
-            let
-                updatedModel =
-                    -- @todo
-                    -- Maybe.map
-                    --     (\components ->
-                    --         case components of
-                    --             Components.ReportToWhatsAppDialog.Model.Tuberculosis wellChildComponents ->
-                    --                 { model | components = Just wellChildComponents }
-                    --
-                    --             -- We should never get here.
-                    --             _ ->
-                    --                 model
-                    --     )
-                    --     maybeComponents
-                    --     |> Maybe.withDefault { model | components = Nothing }
-                    model
-            in
-            ( updatedModel, Cmd.none, [] )

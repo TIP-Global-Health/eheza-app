@@ -1,4 +1,4 @@
-module Pages.Nutrition.Encounter.View exposing (allowEndingEcounter, partitionActivities, view)
+module Pages.Nutrition.Encounter.View exposing (allowEndingEncounter, partitionActivities, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
@@ -206,7 +206,7 @@ viewMainPageContent language currentDate zscores features id isChw db data model
                 action
 
         allowEndEncounter =
-            allowEndingEcounter isChw pendingActivities
+            allowEndingEncounter isChw pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -246,8 +246,8 @@ partitionActivitiesConsideringSkipped currentDate zscores features isChw db asse
         |> List.partition (activityCompleted currentDate zscores features isChw assembled db)
 
 
-allowEndingEcounter : Bool -> List NutritionActivity -> Bool
-allowEndingEcounter isChw pendingActivities =
+allowEndingEncounter : Bool -> List NutritionActivity -> Bool
+allowEndingEncounter isChw pendingActivities =
     let
         mandatoryActivities =
             allMandatoryActivities isChw

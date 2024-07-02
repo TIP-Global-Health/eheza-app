@@ -20834,11 +20834,10 @@ translationSet trans =
 
         ReportToWhatsAppComponentsSelectionHeader reportType ->
             case reportType of
-                Components.ReportToWhatsAppDialog.Model.ReportWellChild ->
-                    { english = "Please select which sections of the Standard Pediatric Visit Report you would like to send:"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Hitamwo ibice vy'ivyegeranyo bisanzwe vyo kuramutsa/vyo kugendera abana ushaka kurungika:"
-                    }
+                -- Not in use, because Acute Illness report does not allow
+                -- components selection.
+                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness ->
+                    translationSet EmptyString
 
                 Components.ReportToWhatsAppDialog.Model.ReportAntenatal ->
                     { english = "Please select which sections of the Antenatal Report you would like to send:"
@@ -20846,15 +20845,21 @@ translationSet trans =
                     , kirundi = Just "Hitamwo ibice vy'ivyegeranyo vy'abibungenze canke vy'imvyaro wipfuza kurungika:"
                     }
 
-                -- Not in use, because AcuteIllness does not allow
-                -- components selection.
-                Components.ReportToWhatsAppDialog.Model.ReportAcuteIllness ->
-                    translationSet EmptyString
-
                 Components.ReportToWhatsAppDialog.Model.ReportNCD ->
                     { english = "Please select which sections of the NCD Report you would like to send:"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Hitamwo ibice vy'ivyegeranyo vy'ingwara zitandukira ushaka kurungika:"
+                    }
+
+                -- Not in use, because Tuberculosis report does not allow
+                -- components selection.
+                Components.ReportToWhatsAppDialog.Model.ReportTuberculosis ->
+                    translationSet EmptyString
+
+                Components.ReportToWhatsAppDialog.Model.ReportWellChild ->
+                    { english = "Please select which sections of the Standard Pediatric Visit Report you would like to send:"
+                    , kinyarwanda = Nothing
+                    , kirundi = Just "Hitamwo ibice vy'ivyegeranyo bisanzwe vyo kuramutsa/vyo kugendera abana ushaka kurungika:"
                     }
 
         ReportToWhatsAppConfirmationBeforeExecutingHeader ->

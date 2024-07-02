@@ -10,8 +10,6 @@ type alias Model =
     { viewMode : ViewMode
     , showEndEncounterDialog : Bool
     , reportToWhatsAppDialog : Components.ReportToWhatsAppDialog.Model.Model
-
-    -- , components : Maybe (EverySet Components.ReportToWhatsAppDialog.Model.ReportComponentTuberculosis)
     }
 
 
@@ -20,8 +18,6 @@ emptyModel =
     { viewMode = ViewModeGlobal
     , showEndEncounterDialog = False
     , reportToWhatsAppDialog = Components.ReportToWhatsAppDialog.Model.emptyModel
-
-    -- , components = Nothing
     }
 
 
@@ -37,4 +33,3 @@ type Msg
     | SetViewMode ViewMode
     | SetEndEncounterDialogState Bool
     | MsgReportToWhatsAppDialog (Components.ReportToWhatsAppDialog.Model.Msg Msg)
-    | SetReportComponents (Maybe Components.ReportToWhatsAppDialog.Model.ReportComponentsList)

@@ -39,7 +39,7 @@ import Pages.AcuteIllness.Activity.View
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
-import Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -104,7 +104,7 @@ viewContent language currentDate site features id isChw initiator model assemble
                             partitionActivities currentDate isChw assembled
 
                         allowEndEncounter =
-                            allowEndingEcounter currentDate isChw assembled pendingActivities
+                            allowEndingEncounter currentDate isChw assembled pendingActivities
                     in
                     viewEndEncounterMenuForProgressReport language
                         features
