@@ -640,7 +640,13 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if continuousHypertensionTreatmentRequired assembled then
+                    if
+                        -- Hypertension diagnosed at current encounter.
+                        diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                            || -- Hypertension diagnosed previously and we
+                               -- need to continue treatment.
+                               continuousHypertensionTreatmentRequired assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
