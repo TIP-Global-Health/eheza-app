@@ -466,25 +466,6 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    let
-                        hypertensionlikeDiagnosesCondition =
-                            -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
-                            (updateHypertensionTreatmentWithMedication assembled
-                                && (-- Hypertension / Moderate Preeclamsia treatment
-                                    -- did not cause an adverse event.
-                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-                                   )
-                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                    -- in referral to hospital.
-                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
-                                   )
-                            )
-                                || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
-                                   -- at current encounter does not indicate a need for hospitalization.
-                                   (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                                        && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
-                                   )
-                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
@@ -640,7 +621,13 @@ nextStepsTaskCompleted currentDate assembled task =
                         True
 
                 hypertensionTreatmentCompleted =
-                    if continuousHypertensionTreatmentRequired assembled then
+                    if
+                        -- Hypertension diagnosed at current encounter.
+                        diagnosedHypertension PrenatalEncounterPhaseInitial assembled
+                            || -- Hypertension diagnosed previously and we
+                               -- need to continue treatment.
+                               continuousHypertensionTreatmentRequired assembled
+                    then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
                     else
