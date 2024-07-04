@@ -1008,7 +1008,9 @@ referToMentalHealthSpecialist assembled =
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
     (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
-        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+        || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
+                && referredToSpecialityCareProgram EnrolledToARVProgram assembled
+           )
 
 
 referToUltrasound : AssembledData -> Bool
@@ -5864,7 +5866,8 @@ matchRequiredReferralFacility assembled facility =
             referToARVProgram assembled
 
         FacilityNCDProgram ->
-            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+            expectSpecialityCareSignSection assembled EnrolledToNCDProgram
+                && referredToSpecialityCareProgram EnrolledToNCDProgram assembled
 
         FacilityANCServices ->
             -- Explicit NCD facility.
