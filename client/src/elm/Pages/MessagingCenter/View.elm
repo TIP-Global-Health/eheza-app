@@ -142,7 +142,7 @@ view language currentTime nurseId nurse db model =
         [ header
         , content
         , viewModal <|
-            surveyScoreDialog language model.surveyScoreDialogState
+            surveyScoreDialog language nurseId db model.surveyScoreDialogState
         ]
 
 
@@ -369,31 +369,114 @@ viewAdoptionSurvey language currentDate nurseId form =
 
 surveyScoreDialog :
     Language
+    -> NurseId
+    -> ModelIndexedDb
     -> Maybe SurveyScoreDialogState
     -> Maybe (Html Msg)
-surveyScoreDialog language =
+surveyScoreDialog language nurseId db =
     Maybe.map
         (\dialogState ->
             let
-                ( scoreText, interpretationFunction ) =
+                surveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
+
+                adoptionSurveys =
+                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
+
+                sortedSurveys =
+                    List.sortWith (\survey1 survey2 -> Date.compare survey1.dateMeasured survey2.dateMeasured) adoptionSurveys
+
+                survey1Score =
+                    case List.head sortedSurveys of
+                        Just survey ->
+                            Dict.values survey.signs
+                                |> List.map
+                                    (\answer ->
+                                        case answer of
+                                            ResilienceSurveyQuestionOption0 ->
+                                                1
+
+                                            ResilienceSurveyQuestionOption1 ->
+                                                2
+
+                                            ResilienceSurveyQuestionOption2 ->
+                                                3
+
+                                            ResilienceSurveyQuestionOption3 ->
+                                                4
+
+                                            ResilienceSurveyQuestionOption4 ->
+                                                5
+                                    )
+                                |> List.sum
+
+                        Nothing ->
+                            0
+
+                adoptionSurveyCount =
+                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
+                        |> List.length
+
+                ( scoreText, interpretationFunction, additionalMessage ) =
                     case dialogState of
                         QuarterlySurveyScore score ->
                             ( String.fromInt score ++ "/20"
                             , Translate.QuarterlySurveyScoreInterpretation score
+                            , Nothing
                             )
 
                         AdoptionSurveyScore score ->
+                            let
+                                message =
+                                    if adoptionSurveyCount == 2 then
+                                        if score > survey1Score then
+                                            Just Translate.AdoptionSurveyProgressImproving
+
+                                        else if score < survey1Score then
+                                            Just Translate.AdoptionSurveyProgressNotImproving
+
+                                        else
+                                            Just Translate.AdoptionSurveyProgressSame
+
+                                    else if adoptionSurveyCount == 3 then
+                                        Nothing
+
+                                    else
+                                        Nothing
+                            in
                             ( String.fromInt score ++ "/60"
                             , Translate.AdoptionSurveyScoreInterpretation score
+                            , message
                             )
 
-                data =
-                    ( p [ class "score" ] [ text scoreText ]
-                    , p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
-                    , SetSurveyScoreDialogState Nothing
-                    )
+                topMessage =
+                    p [ class "score" ] [ text scoreText ]
+
+                bottomMessage =
+                    p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+
+                additionalMessageElement =
+                    case additionalMessage of
+                        Just msg ->
+                            p [ class "message" ] [ text <| translate language <| msg ]
+
+                        Nothing ->
+                            text ""
+
+                dialogContent =
+                    div []
+                        [ topMessage
+                        , bottomMessage
+                        , additionalMessageElement
+                        ]
+
+                dialogData =
+                    ( dialogContent, div [] [], SetSurveyScoreDialogState Nothing )
             in
-            customPopup language False Translate.Continue "survey-score-popup blue" data
+            customPopup language False Translate.Continue "survey-score-popup blue" dialogData
         )
 
 
