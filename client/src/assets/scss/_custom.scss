@@ -1391,6 +1391,10 @@ input::placeholder {
         margin-bottom: 1rem;
         text-align: center;
         text-transform: uppercase;
+
+        &.message {
+          text-align: left;
+        }
       }
 
       .popup-action {

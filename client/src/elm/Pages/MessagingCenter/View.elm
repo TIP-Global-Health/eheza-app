@@ -377,6 +377,23 @@ surveyScoreDialog language nurseId db =
     Maybe.map
         (\dialogState ->
             let
+                getScore answer =
+                    case answer of
+                        ResilienceSurveyQuestionOption0 ->
+                            1
+
+                        ResilienceSurveyQuestionOption1 ->
+                            2
+
+                        ResilienceSurveyQuestionOption2 ->
+                            3
+
+                        ResilienceSurveyQuestionOption3 ->
+                            4
+
+                        ResilienceSurveyQuestionOption4 ->
+                            5
+
                 surveys =
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
@@ -393,24 +410,17 @@ surveyScoreDialog language nurseId db =
                     case List.head sortedSurveys of
                         Just survey ->
                             Dict.values survey.signs
-                                |> List.map
-                                    (\answer ->
-                                        case answer of
-                                            ResilienceSurveyQuestionOption0 ->
-                                                1
+                                |> List.map getScore
+                                |> List.sum
 
-                                            ResilienceSurveyQuestionOption1 ->
-                                                2
+                        Nothing ->
+                            0
 
-                                            ResilienceSurveyQuestionOption2 ->
-                                                3
-
-                                            ResilienceSurveyQuestionOption3 ->
-                                                4
-
-                                            ResilienceSurveyQuestionOption4 ->
-                                                5
-                                    )
+                survey2Score =
+                    case List.drop 1 sortedSurveys |> List.head of
+                        Just survey ->
+                            Dict.values survey.signs
+                                |> List.map getScore
                                 |> List.sum
 
                         Nothing ->
@@ -433,16 +443,20 @@ surveyScoreDialog language nurseId db =
                                 message =
                                     if adoptionSurveyCount == 2 then
                                         if score > survey1Score then
-                                            Just Translate.AdoptionSurveyProgressImproving
+                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving) ]
 
                                         else if score < survey1Score then
-                                            Just Translate.AdoptionSurveyProgressNotImproving
+                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving) ]
 
                                         else
-                                            Just Translate.AdoptionSurveyProgressSame
+                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
 
                                     else if adoptionSurveyCount == 3 then
-                                        Nothing
+                                        Just <|
+                                            ul []
+                                                [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore survey1Score)) ]
+                                                , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore survey2Score)) ]
+                                                ]
 
                                     else
                                         Nothing
@@ -461,7 +475,7 @@ surveyScoreDialog language nurseId db =
                 additionalMessageElement =
                     case additionalMessage of
                         Just msg ->
-                            p [ class "message" ] [ text <| translate language <| msg ]
+                            p [ class "message" ] [ msg ]
 
                         Nothing ->
                             text ""

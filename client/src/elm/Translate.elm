@@ -387,6 +387,8 @@ type TranslationId
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
+    | AdoptionSurveyBaselineScore Int
+    | AdoptionSurvey3MonthScore Int
     | AdoptionSurveyScoreInterpretation Int
     | AdoptionSurveyProgressImproving
     | AdoptionSurveyProgressNotImproving
@@ -2985,6 +2987,18 @@ translationSet trans =
 
                 AcuteIllnessDangerSigns ->
                     translationSet DangerSigns
+
+        AdoptionSurveyBaselineScore score ->
+            { english = "Baseline Score: " ++ String.fromInt score ++ "/60"
+            , kinyarwanda = Just <| "Amanota wagize bwambere: " ++ String.fromInt score ++ "/60"
+            , kirundi = Nothing
+            }
+
+        AdoptionSurvey3MonthScore score ->
+            { english = "Second Survey Score: " ++ String.fromInt score ++ "/60"
+            , kinyarwanda = Just <| "Amanota y'isuzuma rya kabiri: " ++ String.fromInt score ++ "/60"
+            , kirundi = Nothing
+            }
 
         AdoptionSurveyScoreInterpretation score ->
             if score < 36 then
