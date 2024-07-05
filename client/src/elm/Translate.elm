@@ -388,6 +388,9 @@ type TranslationId
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
     | AdoptionSurveyScoreInterpretation Int
+    | AdoptionSurveyProgressImproving
+    | AdoptionSurveyProgressNotImproving
+    | AdoptionSurveyProgressSame
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
     | AgeWord
@@ -3001,6 +3004,24 @@ translationSet trans =
                 , kinyarwanda = Just "Ufite umuco wo gukora ibikorwa bigufasha kumererwa neza. Komereza aho."
                 , kirundi = Nothing
                 }
+
+        AdoptionSurveyProgressImproving ->
+            { english = "Congratulations; you've improved."
+            , kinyarwanda = Just "Wabikoze neza, Komereza aho,"
+            , kirundi = Nothing
+            }
+
+        AdoptionSurveyProgressNotImproving ->
+            { english = "You slid back compared to your last performance"
+            , kinyarwanda = Just "Wasubiye inyuma ugereranyije n'ubushize."
+            , kirundi = Nothing
+            }
+
+        AdoptionSurveyProgressSame ->
+            { english = "You remained in the same category."
+            , kinyarwanda = Just "Wagumye mu cyiciro kimwe."
+            , kirundi = Nothing
+            }
 
         AdverseEventSinglePlural val ->
             if val == 1 then
