@@ -49,18 +49,6 @@ viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
         topBar =
-            let
-                scopeLabel =
-                    case data.entityType of
-                        EntityGlobal ->
-                            translate language Translate.Global
-
-                        EntityHealthCenter ->
-                            data.entityName
-
-                        _ ->
-                            data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
-            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
@@ -71,6 +59,17 @@ viewReportsData language currentDate data model =
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
+
+        scopeLabel =
+            case data.entityType of
+                EntityGlobal ->
+                    translate language Translate.Global
+
+                EntityHealthCenter ->
+                    data.entityName
+
+                _ ->
+                    data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
 
         dateInputs =
             Maybe.map
@@ -260,7 +259,7 @@ viewReportsData language currentDate data model =
                                     |> Maybe.withDefault emptyNode
 
                             ReportDemographics ->
-                                viewDemographicsReport language limitDate recordsTillLimitDate
+                                viewDemographicsReport language limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
                                 viewNutritionReport language limitDate model.nutritionReportData
@@ -301,8 +300,8 @@ viewReportsData language currentDate data model =
         ]
 
 
-viewDemographicsReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewDemographicsReport language limitDate records =
+viewDemographicsReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewDemographicsReport language limitDate scopeLabel records =
     let
         demographicsReportPatientsData =
             generateDemographicsReportPatientsData language limitDate records
@@ -311,7 +310,11 @@ viewDemographicsReport language limitDate records =
             generateDemographicsReportEncountersData language records
 
         csvFileName =
-            "demographics-report-" ++ customFormatDDMMYYYY "-" limitDate ++ ".csv"
+            "demographics-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
 
         csvContent =
             demographicsReportPatientsDataToCSV demographicsReportPatientsData

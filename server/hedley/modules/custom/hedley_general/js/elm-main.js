@@ -12399,6 +12399,13 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 				])
 		};
 	});
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
 var $elm$html$Html$Attributes$classList = function (classes) {
 	return $elm$html$Html$Attributes$class(
 		A2(
@@ -12655,11 +12662,12 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 					])),
 			A2($elm$core$List$map, viewTable, data.tables));
 	});
-var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
-	function (language, limitDate, records) {
+var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
+	function (language, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
-		var csvFileName = 'demographics-report-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv');
+		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
 		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
 		return A2(
 			$elm$html$Html$div,
@@ -14664,69 +14672,67 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 	});
 var $author$project$Pages$Reports$View$viewReportsData = F4(
 	function (language, currentDate, data, model) {
-		var topBar = function () {
-			var scopeLabel = function () {
-				var _v1 = data.entityType;
-				switch (_v1.$) {
-					case 'EntityGlobal':
-						return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
-					case 'EntityHealthCenter':
-						return data.entityName;
-					default:
-						return data.entityName + (' ' + $elm$core$String$toLower(
-							A2(
-								$author$project$Translate$translate,
-								language,
-								$author$project$Translate$SelectedScope(data.entityType))));
-				}
-			}();
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('top-bar')
-					]),
-				_List_fromArray(
-					[
+		var scopeLabel = function () {
+			var _v1 = data.entityType;
+			switch (_v1.$) {
+				case 'EntityGlobal':
+					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+				case 'EntityHealthCenter':
+					return data.entityName;
+				default:
+					return data.entityName + (' ' + $elm$core$String$toLower(
 						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('new-selection')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$a,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
-											]))
-									]))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('scope')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
-							]))
-					]));
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$SelectedScope(data.entityType))));
+			}
 		}();
+		var topBar = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('top-bar')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('new-selection')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$a,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$button,
+									_List_Nil,
+									_List_fromArray(
+										[
+											$elm$html$Html$text(
+											A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+										]))
+								]))
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('scope')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+						]))
+				]));
 		var limitDateByReportType = _Utils_eq(
 			model.reportType,
 			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
@@ -14963,7 +14969,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 										},
 										model.startDate));
 							case 'ReportDemographics':
-								return A3($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, recordsTillLimitDate);
+								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
 								return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
 							default:
