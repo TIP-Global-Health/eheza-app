@@ -312,7 +312,7 @@ viewDemographicsReport language limitDate records =
 
         csvContent =
             demographicsReportPatientsDataToCSV demographicsReportPatientsData
-                ++ "\n\n"
+                ++ "\n\n\n"
                 ++ demographicsReportEncountersDataToCSV demographicsReportEncountersData
     in
     div [ class "report demographics" ] <|
@@ -620,7 +620,7 @@ demographicsReportPatientsDataToCSV data =
     in
     [ data.heading ++ "\n"
     , List.map tableDataToCSV data.tables
-        |> String.join "\n"
+        |> String.join "\n\n"
     ]
         |> String.join "\n"
 

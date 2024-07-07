@@ -11827,7 +11827,7 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 				data.heading + '\n',
 				A2(
 				$elm$core$String$join,
-				'\n',
+				'\n\n',
 				A2($elm$core$List$map, tableDataToCSV, data.tables))
 			]));
 };
@@ -12653,7 +12653,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 	function (language, limitDate, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
-		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
+		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
