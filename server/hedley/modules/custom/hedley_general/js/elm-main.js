@@ -11774,51 +11774,20 @@ var $elm$core$List$partition = F2(
 	});
 var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = F3(
 	function (language, limitDate, records) {
-		var viewRow = F3(
-			function (label, valueMales, valueFemales) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('row')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item label')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(label)
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(
-										$elm$core$List$length(valueMales)))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(
-										$elm$core$List$length(valueFemales)))
-								]))
-						]));
+		var labels = _List_fromArray(
+			['0 - 1M', '1M - 2Y', '2Y - 5Y', '5Y - 10Y', '10Y - 20Y', '20Y - 50Y', '50Y +']);
+		var generateRow = F2(
+			function (label, _v1) {
+				var valueMales = _v1.a;
+				var valueFemales = _v1.b;
+				return _List_fromArray(
+					[
+						label,
+						$elm$core$String$fromInt(
+						$elm$core$List$length(valueMales)),
+						$elm$core$String$fromInt(
+						$elm$core$List$length(valueFemales))
+					]);
 			});
 		var filterImpacted = $elm$core$List$filter(
 			function (patient) {
@@ -11969,65 +11938,20 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 						_List_fromArray(
 							[$author$project$Translate$Registered, $author$project$Translate$Male, $author$project$Translate$Female])),
 					name: 'registered',
-					rows: _List_fromArray(
-						[
-							_List_fromArray(
+					rows: A3(
+						$elm$core$List$map2,
+						generateRow,
+						labels,
+						_List_fromArray(
 							[
-								'0 - 1M',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males1MonthAndLess)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females1MonthAndLess))
-							]),
-							_List_fromArray(
-							[
-								'1M - 2Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males1Month2Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females1Month2Years))
-							]),
-							_List_fromArray(
-							[
-								'2Y - 5Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males2Years5Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females2Years5Years))
-							]),
-							_List_fromArray(
-							[
-								'5Y - 10Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males5Years10Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females5Years10Years))
-							]),
-							_List_fromArray(
-							[
-								'10Y - 20Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males10Years20Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females10Years20Years))
-							]),
-							_List_fromArray(
-							[
-								'20Y - 50Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males20Years50Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females20Years50Years))
-							]),
-							_List_fromArray(
-							[
-								'50Y +',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(males50YearsOrMore)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(females50YearsOrMore))
-							])
-						]),
+								_Utils_Tuple2(males1MonthAndLess, females1MonthAndLess),
+								_Utils_Tuple2(males1Month2Years, females1Month2Years),
+								_Utils_Tuple2(males2Years5Years, females2Years5Years),
+								_Utils_Tuple2(males5Years10Years, females5Years10Years),
+								_Utils_Tuple2(males10Years20Years, females10Years20Years),
+								_Utils_Tuple2(males20Years50Years, females20Years50Years),
+								_Utils_Tuple2(males50YearsOrMore, females50YearsOrMore)
+							])),
 					totals: _Utils_Tuple2(
 						A2($author$project$Translate$translate, language, $author$project$Translate$Total),
 						$elm$core$String$fromInt(
@@ -12041,65 +11965,20 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 						_List_fromArray(
 							[$author$project$Translate$Impacted, $author$project$Translate$Male, $author$project$Translate$Female])),
 					name: 'impacted',
-					rows: _List_fromArray(
-						[
-							_List_fromArray(
+					rows: A3(
+						$elm$core$List$map2,
+						generateRow,
+						labels,
+						_List_fromArray(
 							[
-								'0 - 1M',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted1MonthAndLess)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted1MonthAndLess))
-							]),
-							_List_fromArray(
-							[
-								'1M - 2Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted1Month2Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted1Month2Years))
-							]),
-							_List_fromArray(
-							[
-								'2Y - 5Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted2Years5Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted2Years5Years))
-							]),
-							_List_fromArray(
-							[
-								'5Y - 10Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted5Years10Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted5Years10Years))
-							]),
-							_List_fromArray(
-							[
-								'10Y - 20Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted10Years20Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted10Years20Years))
-							]),
-							_List_fromArray(
-							[
-								'20Y - 50Y',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted20Years50Years)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted20Years50Years))
-							]),
-							_List_fromArray(
-							[
-								'50Y +',
-								$elm$core$String$fromInt(
-								$elm$core$List$length(malesImpacted50YearsOrMore)),
-								$elm$core$String$fromInt(
-								$elm$core$List$length(femalesImpacted50YearsOrMore))
-							])
-						]),
+								_Utils_Tuple2(malesImpacted1MonthAndLess, femalesImpacted1MonthAndLess),
+								_Utils_Tuple2(malesImpacted1Month2Years, femalesImpacted1Month2Years),
+								_Utils_Tuple2(malesImpacted2Years5Years, femalesImpacted2Years5Years),
+								_Utils_Tuple2(malesImpacted5Years10Years, femalesImpacted5Years10Years),
+								_Utils_Tuple2(malesImpacted10Years20Years, femalesImpacted10Years20Years),
+								_Utils_Tuple2(malesImpacted20Years50Years, femalesImpacted20Years50Years),
+								_Utils_Tuple2(malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore)
+							])),
 					totals: _Utils_Tuple2(
 						A2($author$project$Translate$translate, language, $author$project$Translate$Total),
 						$elm$core$String$fromInt(

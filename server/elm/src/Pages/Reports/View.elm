@@ -490,39 +490,49 @@ generateDemographicsReportPatientsData language limitDate records =
                 ++ malesImpacted50YearsOrMore
                 ++ femalesImpacted50YearsOrMore
 
-        viewRow label valueMales valueFemales =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text label ]
-                , div [ class "item value" ] [ text <| String.fromInt <| List.length valueMales ]
-                , div [ class "item value" ] [ text <| String.fromInt <| List.length valueFemales ]
-                ]
+        labels =
+            [ "0 - 1M"
+            , "1M - 2Y"
+            , "2Y - 5Y"
+            , "5Y - 10Y"
+            , "10Y - 20Y"
+            , "20Y - 50Y"
+            , "50Y +"
+            ]
+
+        generateRow label ( valueMales, valueFemales ) =
+            [ label, String.fromInt <| List.length valueMales, String.fromInt <| List.length valueFemales ]
     in
     { heading = translate language Translate.RegisteredPatients
     , tables =
         [ { name = "registered"
           , captions = List.map (translate language) [ Translate.Registered, Translate.Male, Translate.Female ]
           , rows =
-                [ [ "0 - 1M", String.fromInt <| List.length males1MonthAndLess, String.fromInt <| List.length females1MonthAndLess ]
-                , [ "1M - 2Y", String.fromInt <| List.length males1Month2Years, String.fromInt <| List.length females1Month2Years ]
-                , [ "2Y - 5Y", String.fromInt <| List.length males2Years5Years, String.fromInt <| List.length females2Years5Years ]
-                , [ "5Y - 10Y", String.fromInt <| List.length males5Years10Years, String.fromInt <| List.length females5Years10Years ]
-                , [ "10Y - 20Y", String.fromInt <| List.length males10Years20Years, String.fromInt <| List.length females10Years20Years ]
-                , [ "20Y - 50Y", String.fromInt <| List.length males20Years50Years, String.fromInt <| List.length females20Years50Years ]
-                , [ "50Y +", String.fromInt <| List.length males50YearsOrMore, String.fromInt <| List.length females50YearsOrMore ]
-                ]
+                List.map2 generateRow
+                    labels
+                    [ ( males1MonthAndLess, females1MonthAndLess )
+                    , ( males1Month2Years, females1Month2Years )
+                    , ( males2Years5Years, females2Years5Years )
+                    , ( males5Years10Years, females5Years10Years )
+                    , ( males10Years20Years, females10Years20Years )
+                    , ( males20Years50Years, females20Years50Years )
+                    , ( males50YearsOrMore, females50YearsOrMore )
+                    ]
           , totals = ( translate language Translate.Total, String.fromInt <| List.length <| males ++ females )
           }
         , { name = "impacted"
           , captions = List.map (translate language) [ Translate.Impacted, Translate.Male, Translate.Female ]
           , rows =
-                [ [ "0 - 1M", String.fromInt <| List.length malesImpacted1MonthAndLess, String.fromInt <| List.length femalesImpacted1MonthAndLess ]
-                , [ "1M - 2Y", String.fromInt <| List.length malesImpacted1Month2Years, String.fromInt <| List.length femalesImpacted1Month2Years ]
-                , [ "2Y - 5Y", String.fromInt <| List.length malesImpacted2Years5Years, String.fromInt <| List.length femalesImpacted2Years5Years ]
-                , [ "5Y - 10Y", String.fromInt <| List.length malesImpacted5Years10Years, String.fromInt <| List.length femalesImpacted5Years10Years ]
-                , [ "10Y - 20Y", String.fromInt <| List.length malesImpacted10Years20Years, String.fromInt <| List.length femalesImpacted10Years20Years ]
-                , [ "20Y - 50Y", String.fromInt <| List.length malesImpacted20Years50Years, String.fromInt <| List.length femalesImpacted20Years50Years ]
-                , [ "50Y +", String.fromInt <| List.length malesImpacted50YearsOrMore, String.fromInt <| List.length femalesImpacted50YearsOrMore ]
-                ]
+                List.map2 generateRow
+                    labels
+                    [ ( malesImpacted1MonthAndLess, femalesImpacted1MonthAndLess )
+                    , ( malesImpacted1Month2Years, femalesImpacted1Month2Years )
+                    , ( malesImpacted2Years5Years, femalesImpacted2Years5Years )
+                    , ( malesImpacted5Years10Years, femalesImpacted5Years10Years )
+                    , ( malesImpacted10Years20Years, femalesImpacted10Years20Years )
+                    , ( malesImpacted20Years50Years, femalesImpacted20Years50Years )
+                    , ( malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore )
+                    ]
           , totals = ( translate language Translate.Total, String.fromInt <| List.length patientsImpacted )
           }
         ]
