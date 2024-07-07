@@ -303,13 +303,30 @@ viewReportsData language currentDate data model =
 
 viewDemographicsReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewDemographicsReport language limitDate records =
+    let
+        demographicsReportPatientsData =
+            generateDemographicsReportPatientsData language limitDate records
+    in
     div [ class "report demographics" ] <|
-        viewDemographicsReportPatients language limitDate records
+        viewDemographicsReportPatients language limitDate demographicsReportPatientsData
             ++ viewDemographicsReportEncounters language records
 
 
-viewDemographicsReportPatients : Language -> NominalDate -> List PatientData -> List (Html Msg)
-viewDemographicsReportPatients language limitDate records =
+generateDemographicsReportPatientsData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    ->
+        { heading : String
+        , tables :
+            List
+                { captions : List String
+                , name : String
+                , rows : List (List String)
+                , totals : ( String, String )
+                }
+        }
+generateDemographicsReportPatientsData language limitDate records =
     let
         ( males, females ) =
             List.partition (.gender >> (==) Male) records
@@ -480,44 +497,84 @@ viewDemographicsReportPatients language limitDate records =
                 , div [ class "item value" ] [ text <| String.fromInt <| List.length valueFemales ]
                 ]
     in
-    [ viewCustomLabel language Translate.RegisteredPatients ":" "section heading"
-    , div [ class "table registered" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Registered ]
-            , div [ class "item value" ] [ text <| translate language Translate.Male ]
-            , div [ class "item value" ] [ text <| translate language Translate.Female ]
-            ]
-        , viewRow "0 - 1M" males1MonthAndLess females1MonthAndLess
-        , viewRow "1M - 2Y" males1Month2Years females1Month2Years
-        , viewRow "2Y - 5Y" males2Years5Years females2Years5Years
-        , viewRow "5Y - 10Y" males5Years10Years females5Years10Years
-        , viewRow "10Y - 20Y" males10Years20Years females10Years20Years
-        , viewRow "20Y - 50Y" males20Years50Years females20Years50Years
-        , viewRow "50Y +" males50YearsOrMore females50YearsOrMore
-        , div [ class "row totals" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Total ]
-            , div [ class "item value" ] [ text <| String.fromInt <| List.length <| males ++ females ]
-            ]
+    { heading = translate language Translate.RegisteredPatients
+    , tables =
+        [ { name = "registered"
+          , captions = List.map (translate language) [ Translate.Registered, Translate.Male, Translate.Female ]
+          , rows =
+                [ [ "0 - 1M", String.fromInt <| List.length males1MonthAndLess, String.fromInt <| List.length females1MonthAndLess ]
+                , [ "1M - 2Y", String.fromInt <| List.length males1Month2Years, String.fromInt <| List.length females1Month2Years ]
+                , [ "2Y - 5Y", String.fromInt <| List.length males2Years5Years, String.fromInt <| List.length females2Years5Years ]
+                , [ "5Y - 10Y", String.fromInt <| List.length males5Years10Years, String.fromInt <| List.length females5Years10Years ]
+                , [ "10Y - 20Y", String.fromInt <| List.length males10Years20Years, String.fromInt <| List.length females10Years20Years ]
+                , [ "20Y - 50Y", String.fromInt <| List.length males20Years50Years, String.fromInt <| List.length females20Years50Years ]
+                , [ "50Y +", String.fromInt <| List.length males50YearsOrMore, String.fromInt <| List.length females50YearsOrMore ]
+                ]
+          , totals = ( translate language Translate.Total, String.fromInt <| List.length <| males ++ females )
+          }
+        , { name = "impacted"
+          , captions = List.map (translate language) [ Translate.Impacted, Translate.Male, Translate.Female ]
+          , rows =
+                [ [ "0 - 1M", String.fromInt <| List.length malesImpacted1MonthAndLess, String.fromInt <| List.length femalesImpacted1MonthAndLess ]
+                , [ "1M - 2Y", String.fromInt <| List.length malesImpacted1Month2Years, String.fromInt <| List.length femalesImpacted1Month2Years ]
+                , [ "2Y - 5Y", String.fromInt <| List.length malesImpacted2Years5Years, String.fromInt <| List.length femalesImpacted2Years5Years ]
+                , [ "5Y - 10Y", String.fromInt <| List.length malesImpacted5Years10Years, String.fromInt <| List.length femalesImpacted5Years10Years ]
+                , [ "10Y - 20Y", String.fromInt <| List.length malesImpacted10Years20Years, String.fromInt <| List.length femalesImpacted10Years20Years ]
+                , [ "20Y - 50Y", String.fromInt <| List.length malesImpacted20Years50Years, String.fromInt <| List.length femalesImpacted20Years50Years ]
+                , [ "50Y +", String.fromInt <| List.length malesImpacted50YearsOrMore, String.fromInt <| List.length femalesImpacted50YearsOrMore ]
+                ]
+          , totals = ( translate language Translate.Total, String.fromInt <| List.length patientsImpacted )
+          }
         ]
-    , div [ class "table impacted" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Impacted ]
-            , div [ class "item value" ] [ text <| translate language Translate.Male ]
-            , div [ class "item value" ] [ text <| translate language Translate.Female ]
-            ]
-        , viewRow "0 - 1M" malesImpacted1MonthAndLess femalesImpacted1MonthAndLess
-        , viewRow "1M - 2Y" malesImpacted1Month2Years femalesImpacted1Month2Years
-        , viewRow "2Y - 5Y" malesImpacted2Years5Years femalesImpacted2Years5Years
-        , viewRow "5Y - 10Y" malesImpacted5Years10Years femalesImpacted5Years10Years
-        , viewRow "10Y - 20Y" malesImpacted10Years20Years femalesImpacted10Years20Years
-        , viewRow "20Y - 50Y" malesImpacted20Years50Years femalesImpacted20Years50Years
-        , viewRow "50Y +" malesImpacted50YearsOrMore femalesImpacted50YearsOrMore
-        , div [ class "row totals" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Total ]
-            , div [ class "item value" ] [ text <| String.fromInt <| List.length patientsImpacted ]
-            ]
-        ]
-    ]
+    }
+
+
+viewDemographicsReportPatients :
+    Language
+    -> NominalDate
+    ->
+        { heading : String
+        , tables :
+            List
+                { captions : List String
+                , name : String
+                , rows : List (List String)
+                , totals : ( String, String )
+                }
+        }
+    -> List (Html Msg)
+viewDemographicsReportPatients language limitDate data =
+    let
+        viewTable tableData =
+            div [ class <| "table " ++ tableData.name ] <|
+                [ div [ class "row captions" ] <|
+                    List.map (\caption -> div [ class "item label" ] [ text caption ]) tableData.captions
+                ]
+                    ++ List.map
+                        (\cells ->
+                            div [ class "row" ] <|
+                                List.indexedMap
+                                    (\index cellText ->
+                                        div
+                                            [ classList
+                                                [ ( "item", True )
+                                                , ( "label", index == 0 )
+                                                , ( "value", index /= 0 )
+                                                ]
+                                            ]
+                                            [ text cellText ]
+                                    )
+                                    cells
+                        )
+                        tableData.rows
+                    ++ [ div [ class "row totals" ]
+                            [ div [ class "item label" ] [ text <| Tuple.first tableData.totals ]
+                            , div [ class "item value" ] [ text <| Tuple.second tableData.totals ]
+                            ]
+                       ]
+    in
+    div [ class "section heading" ] [ text data.heading ]
+        :: List.map viewTable data.tables
 
 
 viewDemographicsReportEncounters : Language -> List PatientData -> List (Html Msg)
