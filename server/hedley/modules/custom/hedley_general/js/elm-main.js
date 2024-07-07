@@ -11777,11 +11777,6 @@ var $author$project$Pages$Utils$viewCustomLabel = F4(
 						suffix))
 				]));
 	});
-var $author$project$Pages$Reports$Model$DownloadCSV = F2(
-	function (a, b) {
-		return {$: 'DownloadCSV', a: a, b: b};
-	});
-var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
 var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
 	return A2(
 		$elm$core$String$join,
@@ -12662,6 +12657,27 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 					])),
 			A2($elm$core$List$map, viewTable, data.tables));
 	});
+var $author$project$Pages$Reports$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
+var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
+	function (language, csvFileName, csvContent) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('download-csv'),
+					$elm$html$Html$Events$onClick(
+					A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
+				]));
+	});
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
@@ -12681,19 +12697,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 					A2($author$project$Pages$Reports$View$viewDemographicsReportEncounters, language, demographicsReportEncountersData),
 					_List_fromArray(
 						[
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('download-csv'),
-									$elm$html$Html$Events$onClick(
-									A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
-								]))
+							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 						]))));
 	});
 var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
@@ -14230,146 +14234,8 @@ var $author$project$Translate$NumberOfVisitsLabel = {$: 'NumberOfVisitsLabel'};
 var $author$project$Translate$PregnanciesActive = {$: 'PregnanciesActive'};
 var $author$project$Translate$PregnanciesAll = {$: 'PregnanciesAll'};
 var $author$project$Translate$PregnanciesCompleted = {$: 'PregnanciesCompleted'};
-var $author$project$Pages$Reports$View$viewPrenatalReport = F3(
+var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
-		var viewRow = F3(
-			function (labelTransId, valueChw, valueNurse) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('row')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item label')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, labelTransId))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(valueChw))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(valueNurse))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(valueChw + valueNurse))
-								]))
-						]));
-			});
-		var viewTable = F2(
-			function (caption, values) {
-				var rows = A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (index, _v4) {
-							var chwValue = _v4.a;
-							var nurseValue = _v4.b;
-							return A3(
-								viewRow,
-								$author$project$Translate$NumberOfVisits(index + 1),
-								chwValue,
-								nurseValue);
-						}),
-					values);
-				return _List_fromArray(
-					[
-						A4($author$project$Pages$Utils$viewCustomLabel, language, caption, ':', 'section heading'),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('table anc')
-							]),
-						A2(
-							$elm$core$List$cons,
-							A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('row captions')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item label')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$NumberOfVisitsLabel))
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$CHW))
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$HC))
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$All))
-											]))
-									])),
-							rows))
-					]);
-			});
 		var resolveValueFromDict = function (key) {
 			return A2(
 				$elm$core$Basics$composeR,
@@ -14379,9 +14245,9 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F3(
 		var partitionByNumberOfVisits = A2(
 			$elm$core$List$foldl,
 			F2(
-				function (countedVisits, _v3) {
-					var nurseDict = _v3.a;
-					var chwDict = _v3.b;
+				function (countedVisits, _v4) {
+					var nurseDict = _v4.a;
+					var chwDict = _v4.b;
 					var resolveKeyForValue = function (value) {
 						return (value > 5) ? (-1) : value;
 					};
@@ -14407,6 +14273,40 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F3(
 						A2(updateDict, countedVisits.chw, chwDict));
 				}),
 			_Utils_Tuple2($pzp1997$assoc_list$AssocList$empty, $pzp1997$assoc_list$AssocList$empty));
+		var generateTableData = F2(
+			function (heading, values) {
+				var generateRowData = F3(
+					function (labelTransId, valueChw, valueNurse) {
+						return _List_fromArray(
+							[
+								A2($author$project$Translate$translate, language, labelTransId),
+								$elm$core$String$fromInt(valueChw),
+								$elm$core$String$fromInt(valueNurse),
+								$elm$core$String$fromInt(valueChw + valueNurse)
+							]);
+					});
+				return {
+					captions: A2(
+						$elm$core$List$map,
+						$author$project$Translate$translate(language),
+						_List_fromArray(
+							[$author$project$Translate$NumberOfVisitsLabel, $author$project$Translate$CHW, $author$project$Translate$HC, $author$project$Translate$All])),
+					heading: A2($author$project$Translate$translate, language, heading) + ':',
+					rows: A2(
+						$elm$core$List$indexedMap,
+						F2(
+							function (index, _v3) {
+								var chwValue = _v3.a;
+								var nurseValue = _v3.b;
+								return A3(
+									generateRowData,
+									$author$project$Translate$NumberOfVisits(index + 1),
+									chwValue,
+									nurseValue);
+							}),
+						values)
+				};
+			});
 		var filtered = A2(
 			$elm$core$List$filterMap,
 			function (participantData) {
@@ -14509,6 +14409,139 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F3(
 		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
+		return _List_fromArray(
+			[
+				A2(
+				generateTableData,
+				$author$project$Translate$PregnanciesAll,
+				_List_fromArray(
+					[
+						_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
+						_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
+						_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
+						_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
+						_Utils_Tuple2(activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5),
+						_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
+					])),
+				A2(
+				generateTableData,
+				$author$project$Translate$PregnanciesActive,
+				_List_fromArray(
+					[
+						_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
+						_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
+						_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
+						_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
+						_Utils_Tuple2(activeChwVisits5, activeNurseVisits5),
+						_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
+					])),
+				A2(
+				generateTableData,
+				$author$project$Translate$PregnanciesCompleted,
+				_List_fromArray(
+					[
+						_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
+						_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
+						_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
+						_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
+						_Utils_Tuple2(completedChwVisits5, completedNurseVisits5),
+						_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
+					]))
+			]);
+	});
+var $author$project$Pages$Reports$View$prenatalReportDataToCSV = function (data) {
+	var tableDataToCSV = function (tableData) {
+		return A2(
+			$elm$core$String$join,
+			'\n',
+			_List_fromArray(
+				[
+					tableData.heading,
+					A2($elm$core$String$join, ',', tableData.captions),
+					A2(
+					$elm$core$String$join,
+					'\n',
+					A2(
+						$elm$core$List$map,
+						$elm$core$String$join(','),
+						tableData.rows))
+				]));
+	};
+	return A2(
+		$elm$core$String$join,
+		'\n\n',
+		A2($elm$core$List$map, tableDataToCSV, data));
+};
+var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var viewCells = function (cells) {
+			return A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, cellText) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2('label', !index),
+											_Utils_Tuple2('value', !(!index))
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(cellText)
+								]));
+					}),
+				cells);
+		};
+		var viewRow = function (cells) {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('row')
+					]),
+				viewCells(cells));
+		};
+		var viewTable = function (tableData) {
+			return _List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('section heading')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(tableData.heading)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table anc')
+						]),
+					A2(
+						$elm$core$List$cons,
+						A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row captions')
+								]),
+							viewCells(tableData.captions)),
+						A2($elm$core$List$map, viewRow, tableData.rows)))
+				]);
+		};
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
+		var csvFileName = 'anc-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$prenatalReportDataToCSV(data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -14516,43 +14549,12 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F3(
 					$elm$html$Html$Attributes$class('report prenatal')
 				]),
 			_Utils_ap(
-				A2(
-					viewTable,
-					$author$project$Translate$PregnanciesAll,
-					_List_fromArray(
-						[
-							_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
-							_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
-							_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
-							_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
-							_Utils_Tuple2(activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5),
-							_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
-						])),
-				_Utils_ap(
-					A2(
-						viewTable,
-						$author$project$Translate$PregnanciesActive,
-						_List_fromArray(
-							[
-								_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
-								_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
-								_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
-								_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
-								_Utils_Tuple2(activeChwVisits5, activeNurseVisits5),
-								_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
-							])),
-					A2(
-						viewTable,
-						$author$project$Translate$PregnanciesCompleted,
-						_List_fromArray(
-							[
-								_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
-								_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
-								_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
-								_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
-								_Utils_Tuple2(completedChwVisits5, completedNurseVisits5),
-								_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
-							])))));
+				$elm$core$List$concat(
+					A2($elm$core$List$map, viewTable, data)),
+				_List_fromArray(
+					[
+						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+					])));
 	});
 var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
 	return A2(
@@ -14973,7 +14975,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							case 'ReportNutrition':
 								return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
 							default:
-								return A3($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, recordsTillLimitDate);
+								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
 					}),
 				model.reportType,

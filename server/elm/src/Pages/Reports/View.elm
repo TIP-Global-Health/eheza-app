@@ -265,7 +265,7 @@ viewReportsData language currentDate data model =
                                 viewNutritionReport language limitDate model.nutritionReportData
 
                             ReportPrenatal ->
-                                viewPrenatalReport language limitDate recordsTillLimitDate
+                                viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
                     )
                     model.reportType
                     limitDateByReportType
@@ -324,12 +324,7 @@ viewDemographicsReport language limitDate scopeLabel records =
     div [ class "report demographics" ] <|
         viewDemographicsReportPatients language limitDate demographicsReportPatientsData
             ++ viewDemographicsReportEncounters language demographicsReportEncountersData
-            ++ [ button
-                    [ class "download-csv"
-                    , onClick <| DownloadCSV csvFileName csvContent
-                    ]
-                    [ text <| translate language Translate.DownloadCSV ]
-               ]
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
 generateDemographicsReportPatientsData :
@@ -1233,8 +1228,62 @@ viewNutritionMetricsResultsTable language currentDate data =
         ]
 
 
-viewPrenatalReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewPrenatalReport language limitDate records =
+viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPrenatalReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePrenatalReportData language limitDate records
+
+        viewTable tableData =
+            [ div [ class "section heading" ] [ text tableData.heading ]
+            , div [ class "table anc" ] <|
+                (div [ class "row captions" ] <|
+                    viewCells tableData.captions
+                )
+                    :: List.map viewRow tableData.rows
+            ]
+
+        viewRow cells =
+            div [ class "row" ] <|
+                viewCells cells
+
+        viewCells cells =
+            List.indexedMap
+                (\index cellText ->
+                    div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "label", index == 0 )
+                            , ( "value", index /= 0 )
+                            ]
+                        ]
+                        [ text cellText ]
+                )
+                cells
+
+        csvFileName =
+            "anc-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            prenatalReportDataToCSV data
+    in
+    div [ class "report prenatal" ] <|
+        (List.map viewTable data
+            |> List.concat
+        )
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+generatePrenatalReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> List { heading : String, captions : List String, rows : List (List String) }
+generatePrenatalReportData language limitDate records =
     let
         filtered =
             List.map .prenatalData records
@@ -1410,59 +1459,66 @@ viewPrenatalReport language limitDate records =
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompletedChw
 
-        viewTable caption values =
+        generateTableData heading values =
             let
-                rows =
-                    List.indexedMap
-                        (\index ( chwValue, nurseValue ) ->
-                            viewRow (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
-                        )
-                        values
-            in
-            [ viewCustomLabel language caption ":" "section heading"
-            , div [ class "table anc" ] <|
-                div [ class "row captions" ]
-                    [ div [ class "item label" ] [ text <| translate language Translate.NumberOfVisitsLabel ]
-                    , div [ class "item value" ] [ text <| translate language Translate.CHW ]
-                    , div [ class "item value" ] [ text <| translate language Translate.HC ]
-                    , div [ class "item value" ] [ text <| translate language Translate.All ]
+                generateRowData labelTransId valueChw valueNurse =
+                    [ translate language labelTransId
+                    , String.fromInt valueChw
+                    , String.fromInt valueNurse
+                    , String.fromInt <| valueChw + valueNurse
                     ]
-                    :: rows
-            ]
-
-        viewRow labelTransId valueChw valueNurse =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text <| translate language labelTransId ]
-                , div [ class "item value" ] [ text <| String.fromInt valueChw ]
-                , div [ class "item value" ] [ text <| String.fromInt valueNurse ]
-                , div [ class "item value" ] [ text <| String.fromInt <| valueChw + valueNurse ]
-                ]
+            in
+            { heading = translate language heading ++ ":"
+            , captions = List.map (translate language) [ Translate.NumberOfVisitsLabel, Translate.CHW, Translate.HC, Translate.All ]
+            , rows =
+                List.indexedMap
+                    (\index ( chwValue, nurseValue ) ->
+                        generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                    )
+                    values
+            }
     in
-    div [ class "report prenatal" ] <|
-        viewTable Translate.PregnanciesAll
-            [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
-            , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
-            , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
-            , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
-            , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
-            , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+    [ generateTableData Translate.PregnanciesAll
+        [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
+        , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
+        , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
+        , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
+        , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
+        , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+        ]
+    , generateTableData Translate.PregnanciesActive
+        [ ( activeChwVisits1, activeNurseVisits1 )
+        , ( activeChwVisits2, activeNurseVisits2 )
+        , ( activeChwVisits3, activeNurseVisits3 )
+        , ( activeChwVisits4, activeNurseVisits4 )
+        , ( activeChwVisits5, activeNurseVisits5 )
+        , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
+        ]
+    , generateTableData Translate.PregnanciesCompleted
+        [ ( completedChwVisits1, completedNurseVisits1 )
+        , ( completedChwVisits2, completedNurseVisits2 )
+        , ( completedChwVisits3, completedNurseVisits3 )
+        , ( completedChwVisits4, completedNurseVisits4 )
+        , ( completedChwVisits5, completedNurseVisits5 )
+        , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
+        ]
+    ]
+
+
+prenatalReportDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
+prenatalReportDataToCSV data =
+    let
+        tableDataToCSV tableData =
+            [ tableData.heading
+            , String.join "," tableData.captions
+            , List.map (String.join ",")
+                tableData.rows
+                |> String.join "\n"
             ]
-            ++ viewTable Translate.PregnanciesActive
-                [ ( activeChwVisits1, activeNurseVisits1 )
-                , ( activeChwVisits2, activeNurseVisits2 )
-                , ( activeChwVisits3, activeNurseVisits3 )
-                , ( activeChwVisits4, activeNurseVisits4 )
-                , ( activeChwVisits5, activeNurseVisits5 )
-                , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
-                ]
-            ++ viewTable Translate.PregnanciesCompleted
-                [ ( completedChwVisits1, completedNurseVisits1 )
-                , ( completedChwVisits2, completedNurseVisits2 )
-                , ( completedChwVisits3, completedNurseVisits3 )
-                , ( completedChwVisits4, completedNurseVisits4 )
-                , ( completedChwVisits5, completedNurseVisits5 )
-                , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
-                ]
+                |> String.join "\n"
+    in
+    List.map tableDataToCSV data
+        |> String.join "\n\n"
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
@@ -1544,3 +1600,12 @@ viewAcuteIllnessReport language startDate records =
                 ]
                 :: (rows ++ [ totalsRow, noneRow ])
         ]
+
+
+viewDownloadCSVButton : Language -> String -> String -> Html Msg
+viewDownloadCSVButton language csvFileName csvContent =
+    button
+        [ class "download-csv"
+        , onClick <| DownloadCSV csvFileName csvContent
+        ]
+        [ text <| translate language Translate.DownloadCSV ]
