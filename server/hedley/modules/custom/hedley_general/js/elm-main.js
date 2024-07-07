@@ -11782,7 +11782,7 @@ var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = f
 		'\n',
 		_List_fromArray(
 			[
-				data.heading,
+				data.heading + '\n',
 				A2($elm$core$String$join, ',', data.captions),
 				A2(
 				$elm$core$String$join,
@@ -11822,10 +11822,14 @@ var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = fun
 	return A2(
 		$elm$core$String$join,
 		'\n',
-		A2(
-			$elm$core$List$cons,
-			data.heading,
-			A2($elm$core$List$map, tableDataToCSV, data.tables)));
+		_List_fromArray(
+			[
+				data.heading + '\n',
+				A2(
+				$elm$core$String$join,
+				'\n',
+				A2($elm$core$List$map, tableDataToCSV, data.tables))
+			]));
 };
 var $author$project$Translate$ACHI = {$: 'ACHI'};
 var $author$project$Translate$ANCTotal = {$: 'ANCTotal'};
@@ -12111,7 +12115,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				$author$project$Translate$translate(language),
 				_List_fromArray(
 					[$author$project$Translate$EncounterType, $author$project$Translate$All, $author$project$Translate$Unique])),
-			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Encounters),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Encounters) + ':',
 			rows: _List_fromArray(
 				[
 					A4(generateRow, $author$project$Translate$ANCTotal, prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal, prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique, false),
@@ -12330,7 +12334,7 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 														femalesImpacted20Years50Years,
 														_Utils_ap(malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore)))))))))))));
 		return {
-			heading: A2($author$project$Translate$translate, language, $author$project$Translate$RegisteredPatients),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$RegisteredPatients) + ':',
 			tables: _List_fromArray(
 				[
 					{

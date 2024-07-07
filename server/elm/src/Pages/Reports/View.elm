@@ -512,7 +512,7 @@ generateDemographicsReportPatientsData language limitDate records =
         generateRow label ( valueMales, valueFemales ) =
             [ label, String.fromInt <| List.length valueMales, String.fromInt <| List.length valueFemales ]
     in
-    { heading = translate language Translate.RegisteredPatients
+    { heading = translate language Translate.RegisteredPatients ++ ":"
     , tables =
         [ { name = "registered"
           , captions = List.map (translate language) [ Translate.Registered, Translate.Male, Translate.Female ]
@@ -618,9 +618,10 @@ demographicsReportPatientsDataToCSV data =
             ]
                 |> String.join "\n"
     in
-    (data.heading
-        :: List.map tableDataToCSV data.tables
-    )
+    [ data.heading ++ "\n"
+    , List.map tableDataToCSV data.tables
+        |> String.join "\n"
+    ]
         |> String.join "\n"
 
 
@@ -896,7 +897,7 @@ generateDemographicsReportEncountersData language records =
         generateRow labelTransId all unique shiftLeft =
             ( [ translate language labelTransId, String.fromInt all, String.fromInt unique ], shiftLeft )
     in
-    { heading = translate language Translate.Encounters
+    { heading = translate language Translate.Encounters ++ ":"
     , captions = List.map (translate language) [ Translate.EncounterType, Translate.All, Translate.Unique ]
     , rows =
         [ generateRow Translate.ANCTotal
@@ -994,7 +995,7 @@ demographicsReportEncountersDataToCSV :
     }
     -> String
 demographicsReportEncountersDataToCSV data =
-    [ data.heading
+    [ data.heading ++ "\n"
     , String.join "," data.captions
     , List.map (Tuple.first >> String.join ",")
         data.rows
