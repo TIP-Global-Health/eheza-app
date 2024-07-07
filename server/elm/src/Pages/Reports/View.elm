@@ -17,7 +17,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, sortByDateDesc)
+import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -310,6 +310,9 @@ viewDemographicsReport language limitDate records =
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language records
 
+        csvFileName =
+            "demographics-report-" ++ customFormatDDMMYYYY "-" limitDate ++ ".csv"
+
         csvContent =
             demographicsReportPatientsDataToCSV demographicsReportPatientsData
                 ++ "\n\n\n"
@@ -318,7 +321,7 @@ viewDemographicsReport language limitDate records =
     div [ class "report demographics" ] <|
         viewDemographicsReportPatients language limitDate demographicsReportPatientsData
             ++ viewDemographicsReportEncounters language demographicsReportEncountersData
-            ++ [ button [ onClick <| DownloadCSV "zaza.csv" csvContent ] [ text "Download" ] ]
+            ++ [ button [ onClick <| DownloadCSV csvFileName csvContent ] [ text <| translate language Translate.Download ] ]
 
 
 generateDemographicsReportPatientsData :

@@ -68,6 +68,7 @@ type TranslationId
     | Diagnosis
     | District
     | Demographics
+    | Download
     | EmptyString
     | Encounters
     | EncounterType
@@ -352,6 +353,12 @@ translationSet transId =
 
         Demographics ->
             { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Download ->
+            { english = "Download"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

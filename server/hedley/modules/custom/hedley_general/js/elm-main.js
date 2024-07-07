@@ -9316,6 +9316,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Demographics':
 				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Download':
+				return {english: 'Download', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Encounters':
@@ -10579,7 +10581,10 @@ var $justinmimbs$date$Date$language_en = {
 var $justinmimbs$date$Date$format = function (pattern) {
 	return A2($justinmimbs$date$Date$formatWithLanguage, $justinmimbs$date$Date$language_en, pattern);
 };
-var $author$project$Gizra$NominalDate$formatDDMMYYYY = $justinmimbs$date$Date$format('dd/MM/yyyy');
+var $author$project$Gizra$NominalDate$customFormatDDMMYYYY = function (delimiter) {
+	return $justinmimbs$date$Date$format('dd' + (delimiter + ('MM' + (delimiter + 'yyyy'))));
+};
+var $author$project$Gizra$NominalDate$formatDDMMYYYY = $author$project$Gizra$NominalDate$customFormatDDMMYYYY('/');
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -11772,6 +11777,7 @@ var $author$project$Pages$Utils$viewCustomLabel = F4(
 						suffix))
 				]));
 	});
+var $author$project$Translate$Download = {$: 'Download'};
 var $author$project$Pages$Reports$Model$DownloadCSV = F2(
 	function (a, b) {
 		return {$: 'DownloadCSV', a: a, b: b};
@@ -12653,6 +12659,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 	function (language, limitDate, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
+		var csvFileName = 'demographics-report-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv');
 		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
 		return A2(
 			$elm$html$Html$div,
@@ -12671,11 +12678,12 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 							_List_fromArray(
 								[
 									$elm$html$Html$Events$onClick(
-									A2($author$project$Pages$Reports$Model$DownloadCSV, 'zaza.csv', csvContent))
+									A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
 								]),
 							_List_fromArray(
 								[
-									$elm$html$Html$text('Download')
+									$elm$html$Html$text(
+									A2($author$project$Translate$translate, language, $author$project$Translate$Download))
 								]))
 						]))));
 	});
