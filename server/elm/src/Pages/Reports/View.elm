@@ -306,10 +306,13 @@ viewDemographicsReport language limitDate records =
     let
         demographicsReportPatientsData =
             generateDemographicsReportPatientsData language limitDate records
+
+        demographicsReportEncountersData =
+            generateDemographicsReportEncountersData language records
     in
     div [ class "report demographics" ] <|
         viewDemographicsReportPatients language limitDate demographicsReportPatientsData
-            ++ viewDemographicsReportEncounters language records
+            ++ viewDemographicsReportEncounters language demographicsReportEncountersData
 
 
 generateDemographicsReportPatientsData :
@@ -587,8 +590,16 @@ viewDemographicsReportPatients language limitDate data =
         :: List.map viewTable data.tables
 
 
-viewDemographicsReportEncounters : Language -> List PatientData -> List (Html Msg)
-viewDemographicsReportEncounters language records =
+generateDemographicsReportEncountersData :
+    Language
+    -> List PatientData
+    ->
+        { heading : String
+        , captions : List String
+        , rows : List ( List String, Bool )
+        , totals : { label : String, total : String, unique : String }
+        }
+generateDemographicsReportEncountersData language records =
     let
         prenatalDataNurseEncounters =
             List.filterMap
@@ -848,56 +859,96 @@ viewDemographicsReportEncounters language records =
         countUnique =
             List.filter (not << List.isEmpty) >> List.length
 
-        viewRow =
-            viewCustomRow "row"
-
-        viewCustomRow rowClass labelTransId all unique shiftLeft =
-            div [ class rowClass ]
-                [ div
-                    [ classList
-                        [ ( "item label", True )
-                        , ( "ml-5", shiftLeft )
-                        ]
-                    ]
-                    [ text <| translate language labelTransId ]
-                , div [ class "item value" ] [ text <| String.fromInt all ]
-                , div [ class "item value" ] [ text <| String.fromInt unique ]
-                ]
+        generateRow labelTransId all unique shiftLeft =
+            ( [ translate language labelTransId, String.fromInt all, String.fromInt unique ], shiftLeft )
     in
-    [ viewCustomLabel language Translate.Encounters ":" "section heading"
-    , div [ class "table encounters" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.EncounterType ]
-            , div [ class "item value" ] [ text <| translate language Translate.All ]
-            , div [ class "item value" ] [ text <| translate language Translate.Unique ]
-            ]
-        , viewRow Translate.ANCTotal
+    { heading = translate language Translate.Encounters
+    , captions = List.map (translate language) [ Translate.EncounterType, Translate.All, Translate.Unique ]
+    , rows =
+        [ generateRow Translate.ANCTotal
             (prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal)
             (prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique)
             False
-        , viewRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
-        , viewRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
-        , viewRow Translate.AcuteIllnessTotal
+        , generateRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
+        , generateRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
+        , generateRow Translate.AcuteIllnessTotal
             (acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal)
             (acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique)
             False
-        , viewRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
-        , viewRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
-        , viewRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
-        , viewRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
-        , viewRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
-        , viewRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
-        , viewRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
-        , viewRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
-        , viewRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
-        , viewRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
-        , viewRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
-        , viewRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
-        , viewRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
-        , viewRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
-        , viewRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
-        , viewCustomRow "row encounters-totals" Translate.Total overallTotal overallUnique False
+        , generateRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
+        , generateRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
+        , generateRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
+        , generateRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
+        , generateRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
+        , generateRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
+        , generateRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
+        , generateRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
+        , generateRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
+        , generateRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
+        , generateRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
+        , generateRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
+        , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
+        , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
+        , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
         ]
+    , totals =
+        { label = translate language Translate.Total
+        , total = String.fromInt overallTotal
+        , unique = String.fromInt overallUnique
+        }
+    }
+
+
+viewDemographicsReportEncounters :
+    Language
+    ->
+        { heading : String
+        , captions : List String
+        , rows : List ( List String, Bool )
+        , totals : { label : String, total : String, unique : String }
+        }
+    -> List (Html Msg)
+viewDemographicsReportEncounters language data =
+    let
+        viewRow ( cells, shiftLeft ) =
+            div [ class "row" ] <|
+                List.indexedMap
+                    (\index cellText ->
+                        div
+                            [ classList
+                                [ ( "item", True )
+                                , ( "label", index == 0 )
+                                , ( "ml-5", index == 0 && shiftLeft )
+                                , ( "value", index /= 0 )
+                                ]
+                            ]
+                            [ text cellText ]
+                    )
+                    cells
+    in
+    [ div [ class "section heading" ] [ text data.heading ]
+    , div [ class "table encounters" ] <|
+        [ div [ class "row captions" ] <|
+            List.indexedMap
+                (\index caption ->
+                    div
+                        [ classList
+                            [ ( "item", True )
+                            , ( "label", index == 0 )
+                            , ( "value", index /= 0 )
+                            ]
+                        ]
+                        [ text caption ]
+                )
+                data.captions
+        ]
+            ++ List.map viewRow data.rows
+            ++ [ div [ class "row encounters-totals" ]
+                    [ div [ class "item label" ] [ text data.totals.label ]
+                    , div [ class "item value" ] [ text data.totals.total ]
+                    , div [ class "item value" ] [ text data.totals.unique ]
+                    ]
+               ]
     ]
 
 
