@@ -466,25 +466,6 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    let
-                        hypertensionlikeDiagnosesCondition =
-                            -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
-                            (updateHypertensionTreatmentWithMedication assembled
-                                && (-- Hypertension / Moderate Preeclamsia treatment
-                                    -- did not cause an adverse event.
-                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-                                   )
-                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                    -- in referral to hospital.
-                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
-                                   )
-                            )
-                                || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
-                                   -- at current encounter does not indicate a need for hospitalization.
-                                   (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                                        && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
-                                   )
-                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
@@ -504,18 +485,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     ]
                                     assembled
-                                || (hypertensionlikeDiagnosesCondition
-                                        && -- If Preeclampsia was diagnosed at current
-                                           -- encounter, there's no need to medicate, because
-                                           -- patient is sent to hospital anyway.
-                                           (not <|
-                                                diagnosedAnyOf
-                                                    [ DiagnosisModeratePreeclampsiaInitialPhase
-                                                    , DiagnosisSeverePreeclampsiaInitialPhase
-                                                    ]
-                                                    assembled
-                                           )
-                                   )
+                                || continuousHypertensionTreatmentRequired assembled
                            )
 
                 NursePostpartumEncounter ->
@@ -547,12 +517,48 @@ expectNextStepsTask currentDate assembled task =
                 && -- If we refer patients somewhere, there's no need to wait.
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
-                   -- test that was performed, or, 2 hours waiting is
-                   -- required for blood pressure recheck.
+                   -- test that was performed, or, 2 hours waiting is required
+                   -- for blood pressure recheck during initial nurse encounter.
                    (getMeasurementValueFunc assembled.measurements.labsResults
-                        |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
+                        |> Maybe.map
+                            (\value ->
+                                EverySet.diff value.performedTests value.completedTests
+                                    |> EverySet.isEmpty
+                                    |> not
+                            )
                         |> Maybe.withDefault False
                    )
+
+
+continuousHypertensionTreatmentRequired : AssembledData -> Bool
+continuousHypertensionTreatmentRequired assembled =
+    (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+     (updateHypertensionTreatmentWithMedication assembled
+        && (-- Hypertension / Moderate Preeclamsia treatment
+            -- did not cause an adverse event.
+            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+           )
+        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+            -- in referral to hospital.
+            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+           )
+     )
+        || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
+           -- at current encounter does not indicate a need for hospitalization.
+           (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
+           )
+    )
+        && (-- If Preeclampsia was diagnosed at current
+            -- encounter, there's no need to medicate, because
+            -- patient is sent to hospital anyway.
+            not <|
+                diagnosedAnyOf
+                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                    , DiagnosisSeverePreeclampsiaInitialPhase
+                    ]
+                    assembled
+           )
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -616,14 +622,11 @@ nextStepsTaskCompleted currentDate assembled task =
 
                 hypertensionTreatmentCompleted =
                     if
+                        -- Hypertension diagnosed at current encounter.
                         diagnosedHypertension PrenatalEncounterPhaseInitial assembled
-                            || -- Adding this to account for continuous treatment that may be
-                               -- provided for Moderate Preeclampsia.
-                               diagnosedPreviouslyAnyOf
-                                [ DiagnosisModeratePreeclampsiaInitialPhase
-                                , DiagnosisModeratePreeclampsiaRecurrentPhase
-                                ]
-                                assembled
+                            || -- Hypertension diagnosed previously and we
+                               -- need to continue treatment.
+                               continuousHypertensionTreatmentRequired assembled
                     then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
@@ -1005,7 +1008,9 @@ referToMentalHealthSpecialist assembled =
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
     (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
-        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+        || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
+                && referredToSpecialityCareProgram EnrolledToARVProgram assembled
+           )
 
 
 referToUltrasound : AssembledData -> Bool
@@ -5861,7 +5866,8 @@ matchRequiredReferralFacility assembled facility =
             referToARVProgram assembled
 
         FacilityNCDProgram ->
-            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+            expectSpecialityCareSignSection assembled EnrolledToNCDProgram
+                && referredToSpecialityCareProgram EnrolledToNCDProgram assembled
 
         FacilityANCServices ->
             -- Explicit NCD facility.

@@ -663,8 +663,9 @@ matchRequiredReferralFacility assembled facility =
 
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
-    (diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements)
-        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+    -- No need to check Speciality care, since there is no
+    -- recurrent phase for postpartum encounter.
+    diagnosed DiagnosisHIVRecurrentPhase assembled && hivProgramAtHC assembled.measurements
 
 
 referralFacilities : List ReferralFacility
