@@ -309,10 +309,16 @@ viewDemographicsReport language limitDate records =
 
         demographicsReportEncountersData =
             generateDemographicsReportEncountersData language records
+
+        csvContent =
+            demographicsReportPatientsDataToCSV demographicsReportPatientsData
+                ++ "\n\n"
+                ++ demographicsReportEncountersDataToCSV demographicsReportEncountersData
     in
     div [ class "report demographics" ] <|
         viewDemographicsReportPatients language limitDate demographicsReportPatientsData
             ++ viewDemographicsReportEncounters language demographicsReportEncountersData
+            ++ [ button [ onClick <| DownloadCSV "zaza.csv" csvContent ] [ text "Download" ] ]
 
 
 generateDemographicsReportPatientsData :
@@ -588,6 +594,34 @@ viewDemographicsReportPatients language limitDate data =
     in
     div [ class "section heading" ] [ text data.heading ]
         :: List.map viewTable data.tables
+
+
+demographicsReportPatientsDataToCSV :
+    { heading : String
+    , tables :
+        List
+            { captions : List String
+            , name : String
+            , rows : List (List String)
+            , totals : ( String, String )
+            }
+    }
+    -> String
+demographicsReportPatientsDataToCSV data =
+    let
+        tableDataToCSV tableData =
+            [ String.join "," tableData.captions
+            , List.map (String.join ",")
+                tableData.rows
+                |> String.join "\n"
+            , Tuple.first tableData.totals ++ "," ++ Tuple.second tableData.totals
+            ]
+                |> String.join "\n"
+    in
+    (data.heading
+        :: List.map tableDataToCSV data.tables
+    )
+        |> String.join "\n"
 
 
 generateDemographicsReportEncountersData :
@@ -950,6 +984,24 @@ viewDemographicsReportEncounters language data =
                     ]
                ]
     ]
+
+
+demographicsReportEncountersDataToCSV :
+    { heading : String
+    , captions : List String
+    , rows : List ( List String, Bool )
+    , totals : { label : String, total : String, unique : String }
+    }
+    -> String
+demographicsReportEncountersDataToCSV data =
+    [ data.heading
+    , String.join "," data.captions
+    , List.map (Tuple.first >> String.join ",")
+        data.rows
+        |> String.join "\n"
+    , String.join "," [ data.totals.label, data.totals.total, data.totals.unique ]
+    ]
+        |> String.join "\n"
 
 
 viewNutritionReport : Language -> NominalDate -> RemoteData String NutritionReportData -> Html Msg

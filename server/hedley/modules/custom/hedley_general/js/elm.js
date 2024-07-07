@@ -23,11 +23,27 @@
         const appSettings = elmApps[appName];
 
         // Initiate ELM application.
-        const app = Elm.Main.init({node: node, flags: {
+        var app = Elm.Main.init({node: node, flags: {
           appData: appSettings.data,
           page: appSettings.page,
         }});
 
+        if (appSettings.page === 'reports-results') {
+          app.ports.downloadCsv.subscribe(function(data) {
+            var filename = data[0];
+            var content = data[1];
+            var element = document.createElement('a');
+            element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(content));
+            element.setAttribute('download', filename);
+
+            element.style.display = 'none';
+            document.body.appendChild(element);
+
+            element.click();
+
+            document.body.removeChild(element);
+          });
+        }
       });
     }
   };

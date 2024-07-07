@@ -1,6 +1,7 @@
 module Pages.Reports.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
+import App.Ports
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model exposing (PatientData)
@@ -88,6 +89,13 @@ update currentDate modelBackend msg model =
             PagesReturn
                 { model | nutritionReportData = RemoteData.fromResult result }
                 Cmd.none
+                noError
+                []
+
+        DownloadCSV fileName content ->
+            PagesReturn
+                model
+                (App.Ports.downloadCsv ( fileName, content ))
                 noError
                 []
 

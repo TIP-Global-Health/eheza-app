@@ -5775,6 +5775,30 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(_Utils_Tuple0),
+				entries));
+	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$App$Ports$downloadCsv = _Platform_outgoingPort(
+	'downloadCsv',
+	function ($) {
+		var a = $.a;
+		var b = $.b;
+		return A2(
+			$elm$json$Json$Encode$list,
+			$elm$core$Basics$identity,
+			_List_fromArray(
+				[
+					$elm$json$Json$Encode$string(a),
+					$elm$json$Json$Encode$string(b)
+				]));
+	});
 var $krisajenkins$remotedata$RemoteData$Failure = function (a) {
 	return {$: 'Failure', a: a};
 };
@@ -6427,7 +6451,7 @@ var $author$project$Pages$Reports$Update$update = F4(
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
 					_List_Nil);
-			default:
+			case 'NutritionReportDataCalculationCompleted':
 				var result = msg.a;
 				return A4(
 					$author$project$App$Model$PagesReturn,
@@ -6437,6 +6461,16 @@ var $author$project$Pages$Reports$Update$update = F4(
 							nutritionReportData: $krisajenkins$remotedata$RemoteData$fromResult(result)
 						}),
 					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var fileName = msg.a;
+				var content = msg.b;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					model,
+					$author$project$App$Ports$downloadCsv(
+						_Utils_Tuple2(fileName, content)),
 					$author$project$Error$Utils$noError,
 					_List_Nil);
 		}
@@ -8957,7 +8991,6 @@ var $elm$virtual_dom$VirtualDom$map = _VirtualDom_map;
 var $elm$html$Html$map = $elm$virtual_dom$VirtualDom$map;
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
-var $elm$json$Json$Encode$string = _Json_wrap;
 var $elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
 		return A2(
@@ -11739,6 +11772,61 @@ var $author$project$Pages$Utils$viewCustomLabel = F4(
 						suffix))
 				]));
 	});
+var $author$project$Pages$Reports$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[
+				data.heading,
+				A2($elm$core$String$join, ',', data.captions),
+				A2(
+				$elm$core$String$join,
+				'\n',
+				A2(
+					$elm$core$List$map,
+					A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Tuple$first,
+						$elm$core$String$join(',')),
+					data.rows)),
+				A2(
+				$elm$core$String$join,
+				',',
+				_List_fromArray(
+					[data.totals.label, data.totals.total, data.totals.unique]))
+			]));
+};
+var $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV = function (data) {
+	var tableDataToCSV = function (tableData) {
+		return A2(
+			$elm$core$String$join,
+			'\n',
+			_List_fromArray(
+				[
+					A2($elm$core$String$join, ',', tableData.captions),
+					A2(
+					$elm$core$String$join,
+					'\n',
+					A2(
+						$elm$core$List$map,
+						$elm$core$String$join(','),
+						tableData.rows)),
+					tableData.totals.a + (',' + tableData.totals.b)
+				]));
+	};
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		A2(
+			$elm$core$List$cons,
+			data.heading,
+			A2($elm$core$List$map, tableDataToCSV, data.tables)));
+};
 var $author$project$Translate$ACHI = {$: 'ACHI'};
 var $author$project$Translate$ANCTotal = {$: 'ANCTotal'};
 var $author$project$Translate$AcuteIllnessTotal = {$: 'AcuteIllnessTotal'};
@@ -12561,6 +12649,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 	function (language, limitDate, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
+		var csvContent = $author$project$Pages$Reports$View$demographicsReportPatientsDataToCSV(demographicsReportPatientsData) + ('\n\n' + $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV(demographicsReportEncountersData));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -12569,7 +12658,22 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 				]),
 			_Utils_ap(
 				A3($author$project$Pages$Reports$View$viewDemographicsReportPatients, language, limitDate, demographicsReportPatientsData),
-				A2($author$project$Pages$Reports$View$viewDemographicsReportEncounters, language, demographicsReportEncountersData)));
+				_Utils_ap(
+					A2($author$project$Pages$Reports$View$viewDemographicsReportEncounters, language, demographicsReportEncountersData),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$button,
+							_List_fromArray(
+								[
+									$elm$html$Html$Events$onClick(
+									A2($author$project$Pages$Reports$Model$DownloadCSV, 'zaza.csv', csvContent))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Download')
+								]))
+						]))));
 	});
 var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
 var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
