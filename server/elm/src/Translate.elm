@@ -68,7 +68,7 @@ type TranslationId
     | Diagnosis
     | District
     | Demographics
-    | Download
+    | DownloadCSV
     | EmptyString
     | Encounters
     | EncounterType
@@ -357,8 +357,8 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        Download ->
-            { english = "Download"
+        DownloadCSV ->
+            { english = "Download CSV"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

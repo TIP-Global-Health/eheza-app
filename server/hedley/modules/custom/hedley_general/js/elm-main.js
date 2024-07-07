@@ -9316,8 +9316,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Demographics':
 				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'Download':
-				return {english: 'Download', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DownloadCSV':
+				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
 				return {english: '', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Encounters':
@@ -11777,11 +11777,11 @@ var $author$project$Pages$Utils$viewCustomLabel = F4(
 						suffix))
 				]));
 	});
-var $author$project$Translate$Download = {$: 'Download'};
 var $author$project$Pages$Reports$Model$DownloadCSV = F2(
 	function (a, b) {
 		return {$: 'DownloadCSV', a: a, b: b};
 	});
+var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
 var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
 	return A2(
 		$elm$core$String$join,
@@ -12677,13 +12677,14 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F3(
 							$elm$html$Html$button,
 							_List_fromArray(
 								[
+									$elm$html$Html$Attributes$class('download-csv'),
 									$elm$html$Html$Events$onClick(
 									A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
 								]),
 							_List_fromArray(
 								[
 									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, $author$project$Translate$Download))
+									A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
 								]))
 						]))));
 	});

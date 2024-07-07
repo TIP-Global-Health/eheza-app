@@ -321,7 +321,12 @@ viewDemographicsReport language limitDate records =
     div [ class "report demographics" ] <|
         viewDemographicsReportPatients language limitDate demographicsReportPatientsData
             ++ viewDemographicsReportEncounters language demographicsReportEncountersData
-            ++ [ button [ onClick <| DownloadCSV csvFileName csvContent ] [ text <| translate language Translate.Download ] ]
+            ++ [ button
+                    [ class "download-csv"
+                    , onClick <| DownloadCSV csvFileName csvContent
+                    ]
+                    [ text <| translate language Translate.DownloadCSV ]
+               ]
 
 
 generateDemographicsReportPatientsData :
