@@ -262,7 +262,7 @@ viewReportsData language currentDate data model =
                                 viewDemographicsReport language limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
-                                viewNutritionReport language limitDate model.nutritionReportData
+                                viewNutritionReport language limitDate scopeLabel model.nutritionReportData
 
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
@@ -1011,8 +1011,8 @@ demographicsReportEncountersDataToCSV data =
         |> String.join "\n"
 
 
-viewNutritionReport : Language -> NominalDate -> RemoteData String NutritionReportData -> Html Msg
-viewNutritionReport language currentDate reportData =
+viewNutritionReport : Language -> NominalDate -> String -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate scopeLabel reportData =
     case reportData of
         Success data ->
             let
@@ -1067,10 +1067,22 @@ viewNutritionReport language currentDate reportData =
                     , incidenceByYearOneVisitOrMoreData
                     , incidenceByYearTwoVisitsOrMore
                     ]
+
+                csvFileName =
+                    "nutrition-report-"
+                        ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                        ++ "-"
+                        ++ customFormatDDMMYYYY "-" currentDate
+                        ++ ".csv"
+
+                csvContent =
+                    reportTablesDataToCSV generatedData
             in
-            List.map viewNutritionMetricsResultsTable generatedData
-                |> List.concat
-                |> div [ class "report nutrition" ]
+            div [ class "report nutrition" ] <|
+                (List.map viewNutritionMetricsResultsTable generatedData
+                    |> List.concat
+                )
+                    ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
         _ ->
             div [ class "report nutrition" ]
@@ -1253,7 +1265,7 @@ toNutritionMetricsResultsTableData language heading data =
                 )
                 >> List.append [ translate language label ]
     in
-    { heading = translate language heading
+    { heading = translate language heading ++ ":"
     , captions = captions
     , rows =
         [ List.map (Tuple.second >> .stuntingModerate) data
@@ -1355,7 +1367,7 @@ viewPrenatalReport language limitDate scopeLabel records =
                 ++ ".csv"
 
         csvContent =
-            prenatalReportDataToCSV data
+            reportTablesDataToCSV data
     in
     div [ class "report prenatal" ] <|
         (List.map viewTable data
@@ -1591,22 +1603,6 @@ generatePrenatalReportData language limitDate records =
     ]
 
 
-prenatalReportDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
-prenatalReportDataToCSV data =
-    let
-        tableDataToCSV tableData =
-            [ tableData.heading
-            , String.join "," tableData.captions
-            , List.map (String.join ",")
-                tableData.rows
-                |> String.join "\n"
-            ]
-                |> String.join "\n"
-    in
-    List.map tableDataToCSV data
-        |> String.join "\n\n"
-
-
 viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewAcuteIllnessReport language startDate records =
     let
@@ -1695,3 +1691,20 @@ viewDownloadCSVButton language csvFileName csvContent =
         , onClick <| DownloadCSV csvFileName csvContent
         ]
         [ text <| translate language Translate.DownloadCSV ]
+
+
+reportTablesDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
+reportTablesDataToCSV =
+    List.map reportTableDataToCSV
+        >> String.join "\n\n"
+
+
+reportTableDataToCSV : { heading : String, captions : List String, rows : List (List String) } -> String
+reportTableDataToCSV tableData =
+    [ tableData.heading
+    , String.join "," tableData.captions
+    , List.map (String.join ",")
+        tableData.rows
+        |> String.join "\n"
+    ]
+        |> String.join "\n"

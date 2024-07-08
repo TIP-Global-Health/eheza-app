@@ -9346,17 +9346,17 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'Impacted':
 				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthOneVisitOrMore':
-				return {english: 'Incidence by month, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthTwoVisitsOrMore':
-				return {english: 'Incidence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByQuarterOneVisitOrMore':
-				return {english: 'Incidence by quarter, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by quarter - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByQuarterTwoVisitsOrMore':
-				return {english: 'Incidence by quarter, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by quarter - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByYearOneVisitOrMore':
-				return {english: 'Incidence by year, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by year - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByYearTwoVisitsOrMore':
-				return {english: 'Incidence by year, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Incidence by year - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Individual':
 				return {english: 'Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'InfrastructureEnvironmentWash':
@@ -9598,9 +9598,9 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'PregnanciesCompleted':
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthOneVisitOrMore':
-				return {english: 'Prevalence by month, one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
-				return {english: 'Prevalence by month, two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Prevalence by month - two visits or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Province':
 				return {english: 'Province', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'QuarterYear':
@@ -13769,7 +13769,7 @@ var $author$project$Pages$Reports$View$toNutritionMetricsResultsTableData = F3(
 				data));
 		return {
 			captions: captions,
-			heading: A2($author$project$Translate$translate, language, heading),
+			heading: A2($author$project$Translate$translate, language, heading) + ':',
 			rows: _List_fromArray(
 				[
 					A2(
@@ -14063,6 +14063,27 @@ var $pzp1997$assoc_list$AssocList$map = F2(
 				},
 				alist));
 	});
+var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[
+				tableData.heading,
+				A2($elm$core$String$join, ',', tableData.captions),
+				A2(
+				$elm$core$String$join,
+				'\n',
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$join(','),
+					tableData.rows))
+			]));
+};
+var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
+	$elm$core$String$join('\n\n'));
 var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = function (data) {
 	var viewRow = function (cells) {
 		return A2(
@@ -14146,8 +14167,8 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = functi
 				A2($elm$core$List$map, viewRow, data.rows)))
 		]);
 };
-var $author$project$Pages$Reports$View$viewNutritionReport = F3(
-	function (language, currentDate, reportData) {
+var $author$project$Pages$Reports$View$viewNutritionReport = F4(
+	function (language, currentDate, scopeLabel, reportData) {
 		if (reportData.$ === 'Success') {
 			var data = reportData.a;
 			var prevalenceByMonthOneVisitOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData, language, currentDate, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, data.encountersByMonth);
@@ -14224,14 +14245,22 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 			var prevalenceByMonthTwoVisitsOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData, language, currentDate, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, encountersByMonthForImpacted);
 			var generatedData = _List_fromArray(
 				[prevalenceByMonthOneVisitOrMoreData, prevalenceByMonthTwoVisitsOrMoreData, incidenceByMonthOneVisitOrMoreData, incidenceByMonthTwoVisitsOrMoreData, incidenceByQuarterOneVisitOrMoreData, incidenceByQuarterTwoVisitsOrMoreData, incidenceByYearOneVisitOrMoreData, incidenceByYearTwoVisitsOrMore]);
+			var csvFileName = 'nutrition-report-' + ($elm$core$String$toLower(
+				A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', currentDate) + '.csv')));
+			var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(generatedData);
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('report nutrition')
 					]),
-				$elm$core$List$concat(
-					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable, generatedData)));
+				_Utils_ap(
+					$elm$core$List$concat(
+						A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable, generatedData)),
+					_List_fromArray(
+						[
+							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+						])));
 		} else {
 			return A2(
 				$elm$html$Html$div,
@@ -14468,29 +14497,6 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 					]))
 			]);
 	});
-var $author$project$Pages$Reports$View$prenatalReportDataToCSV = function (data) {
-	var tableDataToCSV = function (tableData) {
-		return A2(
-			$elm$core$String$join,
-			'\n',
-			_List_fromArray(
-				[
-					tableData.heading,
-					A2($elm$core$String$join, ',', tableData.captions),
-					A2(
-					$elm$core$String$join,
-					'\n',
-					A2(
-						$elm$core$List$map,
-						$elm$core$String$join(','),
-						tableData.rows))
-				]));
-	};
-	return A2(
-		$elm$core$String$join,
-		'\n\n',
-		A2($elm$core$List$map, tableDataToCSV, data));
-};
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
 		var viewCells = function (cells) {
@@ -14560,7 +14566,7 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
 		var csvFileName = 'anc-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
-		var csvContent = $author$project$Pages$Reports$View$prenatalReportDataToCSV(data);
+		var csvContent = $author$project$Pages$Reports$View$reportTablesDataToCSV(data);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -14992,7 +14998,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							case 'ReportDemographics':
 								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
-								return A3($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, model.nutritionReportData);
+								return A4($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, model.nutritionReportData);
 							default:
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}

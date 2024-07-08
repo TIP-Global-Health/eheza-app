@@ -439,37 +439,37 @@ translationSet transId =
             }
 
         IncidenceByMonthOneVisitOrMore ->
-            { english = "Incidence by month, one visit or more"
+            { english = "Incidence by month - one visit or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         IncidenceByMonthTwoVisitsOrMore ->
-            { english = "Incidence by month, two visits or more"
+            { english = "Incidence by month - two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         IncidenceByQuarterOneVisitOrMore ->
-            { english = "Incidence by quarter, one visit or more"
+            { english = "Incidence by quarter - one visit or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         IncidenceByQuarterTwoVisitsOrMore ->
-            { english = "Incidence by quarter, two visits or more"
+            { english = "Incidence by quarter - two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         IncidenceByYearOneVisitOrMore ->
-            { english = "Incidence by year, one visit or more"
+            { english = "Incidence by year - one visit or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         IncidenceByYearTwoVisitsOrMore ->
-            { english = "Incidence by year, two visits or more"
+            { english = "Incidence by year - two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -827,13 +827,13 @@ translationSet transId =
             }
 
         PrevalenceByMonthOneVisitOrMore ->
-            { english = "Prevalence by month, one visit or more"
+            { english = "Prevalence by month - one visit or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         PrevalenceByMonthTwoVisitsOrMore ->
-            { english = "Prevalence by month, two visits or more"
+            { english = "Prevalence by month - two visits or more"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
