@@ -33,6 +33,11 @@ body.admin-menu #page-wrapper #header {
   width: 100%;
 }
 
+.overlay .ui.modal.calendar-popup {
+  transform: scale(.8);
+  margin-top: unset;
+}
+
 .page-content {
   min-height: 768px;
   margin-bottom: 20px;
