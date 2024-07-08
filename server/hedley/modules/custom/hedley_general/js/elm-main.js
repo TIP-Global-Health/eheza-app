@@ -12730,21 +12730,6 @@ var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYe
 var $author$project$Translate$IncidenceByYearTwoVisitsOrMore = {$: 'IncidenceByYearTwoVisitsOrMore'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
-var $pzp1997$assoc_list$AssocList$map = F2(
-	function (alter, _v0) {
-		var alist = _v0.a;
-		return $pzp1997$assoc_list$AssocList$D(
-			A2(
-				$elm$core$List$map,
-				function (_v1) {
-					var key = _v1.a;
-					var value = _v1.b;
-					return _Utils_Tuple2(
-						key,
-						A2(alter, key, value));
-				},
-				alist));
-	});
 var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
@@ -13756,97 +13741,39 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
-	function (language, currentDate, data) {
-		var viewRow = function (label) {
+var $author$project$Pages$Reports$View$toNutritionMetricsResultsTableData = F3(
+	function (language, heading, data) {
+		var generateRow = function (label) {
 			return A2(
 				$elm$core$Basics$composeR,
 				$elm$core$List$map(
 					function (value) {
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									A2($myrho$elm_round$Round$round, 3, value) + '%')
-								]));
+						return A2($myrho$elm_round$Round$round, 3, value) + '%';
 					}),
-				A2(
-					$elm$core$Basics$composeR,
-					$elm$core$List$append(
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('item row-label')
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(
-										A2($author$project$Translate$translate, language, label))
-									]))
-							])),
-					$elm$html$Html$div(
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('row')
-							]))));
+				$elm$core$List$append(
+					_List_fromArray(
+						[
+							A2($author$project$Translate$translate, language, label)
+						])));
 		};
-		var headerRow = A2(
-			$elm$html$Html$div,
+		var captions = A2(
+			$elm$core$List$append,
 			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row')
-				]),
+				['']),
 			A2(
-				$elm$core$List$append,
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('item row-label')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('')
-							]))
-					]),
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var label = _v0.a;
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item heading')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, label))
-								]));
-					},
-					data)));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
+				$elm$core$List$map,
+				function (_v0) {
+					var label = _v0.a;
+					return A2($author$project$Translate$translate, language, label);
+				},
+				data));
+		return {
+			captions: captions,
+			heading: A2($author$project$Translate$translate, language, heading),
+			rows: _List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('table wide')
-				]),
-			_List_fromArray(
-				[
-					headerRow,
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$StuntingModerate,
 					A2(
 						$elm$core$List$map,
@@ -13858,7 +13785,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 							}),
 						data)),
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$StuntingSevere,
 					A2(
 						$elm$core$List$map,
@@ -13870,7 +13797,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 							}),
 						data)),
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$WastingModerate,
 					A2(
 						$elm$core$List$map,
@@ -13882,7 +13809,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 							}),
 						data)),
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$WastingSevere,
 					A2(
 						$elm$core$List$map,
@@ -13894,7 +13821,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 							}),
 						data)),
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$UnderweightModerate,
 					A2(
 						$elm$core$List$map,
@@ -13906,7 +13833,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 							}),
 						data)),
 					A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$UnderweightSevere,
 					A2(
 						$elm$core$List$map,
@@ -13917,14 +13844,15 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = F3(
 								return $.underweightSevere;
 							}),
 						data))
-				]));
+				])
+		};
 	});
-var $author$project$Pages$Reports$View$viewMonthlyIncidenceTable = F3(
-	function (language, currentDate, encountersByMonth) {
+var $author$project$Pages$Reports$View$generateMonthlyIncidenceTableData = F4(
+	function (language, currentDate, heading, encountersByMonth) {
 		return A3(
-			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			$author$project$Pages$Reports$View$toNutritionMetricsResultsTableData,
 			language,
-			currentDate,
+			heading,
 			A2(
 				$elm$core$List$map,
 				function (index) {
@@ -13966,12 +13894,12 @@ var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResult
 		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
 	};
 };
-var $author$project$Pages$Reports$View$viewMonthlyPrevalenceTable = F3(
-	function (language, currentDate, encountersByMonth) {
+var $author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData = F4(
+	function (language, currentDate, heading, encountersByMonth) {
 		return A3(
-			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			$author$project$Pages$Reports$View$toNutritionMetricsResultsTableData,
 			language,
-			currentDate,
+			heading,
 			A2(
 				$elm$core$List$map,
 				function (index) {
@@ -14026,8 +13954,8 @@ var $author$project$Pages$Reports$Utils$resolveDataSetForQuarter = F3(
 					},
 					$author$project$Pages$Reports$Utils$quarterToMonths(quarter))));
 	});
-var $author$project$Pages$Reports$View$viewQuarterlyIncidenceTable = F3(
-	function (language, currentDate, encountersByMonth) {
+var $author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData = F4(
+	function (language, currentDate, heading, encountersByMonth) {
 		var dataSetsByQuarter = A2(
 			$elm$core$List$map,
 			function (index) {
@@ -14035,9 +13963,9 @@ var $author$project$Pages$Reports$View$viewQuarterlyIncidenceTable = F3(
 			},
 			A2($elm$core$List$range, 1, 5));
 		return A3(
-			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			$author$project$Pages$Reports$View$toNutritionMetricsResultsTableData,
 			language,
-			currentDate,
+			heading,
 			A2(
 				$elm$core$List$map,
 				function (index) {
@@ -14089,8 +14017,8 @@ var $author$project$Pages$Reports$Utils$resolveDataSetForYear = F3(
 						}),
 					encountersByMonth)));
 	});
-var $author$project$Pages$Reports$View$viewYearlyIncidenceTable = F3(
-	function (language, currentDate, encountersByMonth) {
+var $author$project$Pages$Reports$View$generateYearlyIncidenceTableData = F4(
+	function (language, currentDate, heading, encountersByMonth) {
 		var dataSetsByYear = A2(
 			$elm$core$List$map,
 			function (index) {
@@ -14098,9 +14026,9 @@ var $author$project$Pages$Reports$View$viewYearlyIncidenceTable = F3(
 			},
 			A2($elm$core$List$range, 1, 3));
 		return A3(
-			$author$project$Pages$Reports$View$viewNutritionMetricsResultsTable,
+			$author$project$Pages$Reports$View$toNutritionMetricsResultsTableData,
 			language,
-			currentDate,
+			heading,
 			A2(
 				$elm$core$List$map,
 				function (index) {
@@ -14120,10 +14048,112 @@ var $author$project$Pages$Reports$View$viewYearlyIncidenceTable = F3(
 				},
 				A2($elm$core$List$range, 1, 2)));
 	});
+var $pzp1997$assoc_list$AssocList$map = F2(
+	function (alter, _v0) {
+		var alist = _v0.a;
+		return $pzp1997$assoc_list$AssocList$D(
+			A2(
+				$elm$core$List$map,
+				function (_v1) {
+					var key = _v1.a;
+					var value = _v1.b;
+					return _Utils_Tuple2(
+						key,
+						A2(alter, key, value));
+				},
+				alist));
+	});
+var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable2 = function (data) {
+	var viewRow = function (cells) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
+			A2(
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, cellText) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2('row-label', !index),
+											_Utils_Tuple2('value', !(!index))
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(cellText)
+								]));
+					}),
+				cells));
+	};
+	var headerRow = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			]),
+		A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (index, caption) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2('row-label', !index),
+										_Utils_Tuple2('heading', !(!index))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(caption)
+							]));
+				}),
+			data.captions));
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table wide')
+				]),
+			A2(
+				$elm$core$List$cons,
+				headerRow,
+				A2($elm$core$List$map, viewRow, data.rows)))
+		]);
+};
 var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 	function (language, currentDate, reportData) {
 		if (reportData.$ === 'Success') {
 			var data = reportData.a;
+			var prevalenceByMonthOneVisitOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData, language, currentDate, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, data.encountersByMonth);
+			var incidenceByYearOneVisitOrMoreData = A4($author$project$Pages$Reports$View$generateYearlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByYearOneVisitOrMore, data.encountersByMonth);
+			var incidenceByQuarterOneVisitOrMoreData = A4($author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByQuarterOneVisitOrMore, data.encountersByMonth);
+			var incidenceByMonthOneVisitOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByMonthOneVisitOrMore, data.encountersByMonth);
 			var encountersByMonthForImpacted = A2(
 				$pzp1997$assoc_list$AssocList$map,
 				F2(
@@ -14188,31 +14218,20 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 							});
 					}),
 				data.encountersByMonth);
+			var incidenceByMonthTwoVisitsOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByMonthTwoVisitsOrMore, encountersByMonthForImpacted);
+			var incidenceByQuarterTwoVisitsOrMoreData = A4($author$project$Pages$Reports$View$generateQuarterlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore, encountersByMonthForImpacted);
+			var incidenceByYearTwoVisitsOrMore = A4($author$project$Pages$Reports$View$generateYearlyIncidenceTableData, language, currentDate, $author$project$Translate$IncidenceByYearTwoVisitsOrMore, encountersByMonthForImpacted);
+			var prevalenceByMonthTwoVisitsOrMoreData = A4($author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData, language, currentDate, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, encountersByMonthForImpacted);
+			var generatedData = _List_fromArray(
+				[prevalenceByMonthOneVisitOrMoreData, prevalenceByMonthTwoVisitsOrMoreData, incidenceByMonthOneVisitOrMoreData, incidenceByMonthTwoVisitsOrMoreData, incidenceByQuarterOneVisitOrMoreData, incidenceByQuarterTwoVisitsOrMoreData, incidenceByYearOneVisitOrMoreData, incidenceByYearTwoVisitsOrMore]);
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
 						$elm$html$Html$Attributes$class('report nutrition')
 					]),
-				_List_fromArray(
-					[
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthOneVisitOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, data.encountersByMonth),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyPrevalenceTable, language, currentDate, encountersByMonthForImpacted),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthOneVisitOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, data.encountersByMonth),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByMonthTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewMonthlyIncidenceTable, language, currentDate, encountersByMonthForImpacted),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterOneVisitOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, data.encountersByMonth),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewQuarterlyIncidenceTable, language, currentDate, encountersByMonthForImpacted),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByYearOneVisitOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewYearlyIncidenceTable, language, currentDate, data.encountersByMonth),
-						A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$IncidenceByYearTwoVisitsOrMore, ':', 'section heading'),
-						A3($author$project$Pages$Reports$View$viewYearlyIncidenceTable, language, currentDate, encountersByMonthForImpacted)
-					]));
+				$elm$core$List$concat(
+					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable2, generatedData)));
 		} else {
 			return A2(
 				$elm$html$Html$div,
