@@ -1068,163 +1068,13 @@ viewNutritionReport language currentDate reportData =
                     , incidenceByYearTwoVisitsOrMore
                     ]
             in
-            List.map viewNutritionMetricsResultsTable2 generatedData
+            List.map viewNutritionMetricsResultsTable generatedData
                 |> List.concat
                 |> div [ class "report nutrition" ]
 
         _ ->
             div [ class "report nutrition" ]
                 [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading" ]
-
-
-
--- RRR
-
-
-viewMonthlyPrevalenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewMonthlyPrevalenceTable language currentDate encountersByMonth =
-    List.range 1 12
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    month =
-                        Date.month selectedDate
-
-                    monthNumber =
-                        Date.monthNumber selectedDate
-                in
-                ( Translate.MonthYear month year True
-                , resolveDataSetForMonth currentDate index encountersByMonth
-                    |> generatePrevalenceNutritionMetricsResults
-                )
-            )
-        |> viewNutritionMetricsResultsTable language currentDate
-
-
-
--- RRR
-
-
-viewMonthlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewMonthlyIncidenceTable language currentDate encountersByMonth =
-    List.range 1 12
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Months (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    month =
-                        Date.month selectedDate
-                in
-                ( Translate.MonthYear month year True
-                , generateIncidenceNutritionMetricsResults
-                    (resolveDataSetForMonth currentDate index encountersByMonth)
-                    -- Per definition, for month, previous data set contains
-                    -- data of 3 months that came prior.
-                    (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
-                )
-            )
-        |> viewNutritionMetricsResultsTable language currentDate
-
-
-
--- RRR
-
-
-viewQuarterlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewQuarterlyIncidenceTable language currentDate encountersByMonth =
-    let
-        dataSetsByQuarter =
-            -- We show data of previous 4 quarters. So, if at Q2-2024, we show
-            -- data for Q1-2024, Q4-2023, Q3-2023 and Q2-2023  We calculate set
-            -- for 5 quarters (so claculating Q1-2023 as well), as for incidence
-            -- each quarter requires a set of previous quarters.
-            List.range 1 5
-                |> List.map
-                    (\index ->
-                        resolveDataSetForQuarter currentDate index encountersByMonth
-                    )
-    in
-    -- Showing data of previous 4 quarters.
-    List.range 1 4
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Months (-3 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    quarter =
-                        Date.quarter selectedDate
-
-                    dataSet =
-                        List.Extra.getAt (index - 1) dataSetsByQuarter
-                            |> Maybe.withDefault emptyNutritionMetrics
-
-                    previousDataSet =
-                        List.Extra.getAt index dataSetsByQuarter
-                            |> Maybe.withDefault emptyNutritionMetrics
-                in
-                ( Translate.QuarterYear quarter year
-                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
-                )
-            )
-        |> viewNutritionMetricsResultsTable language currentDate
-
-
-
--- RRR
-
-
-viewYearlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewYearlyIncidenceTable language currentDate encountersByMonth =
-    let
-        dataSetsByYear =
-            -- We show data of previous 2 years. So, if at 2024, we show
-            -- data for 2023 and 2022. We calculate set for 3 years (so claculating
-            -- 2021 as well), as for incidence each year requires a set of previous year.
-            List.range 1 3
-                |> List.map
-                    (\index ->
-                        resolveDataSetForYear currentDate index encountersByMonth
-                    )
-    in
-    -- Showing data of previous 2 years.
-    List.range 1 2
-        |> List.map
-            (\index ->
-                let
-                    selectedDate =
-                        Date.add Years (-1 * index) currentDate
-
-                    year =
-                        Date.year selectedDate
-
-                    dataSet =
-                        List.Extra.getAt (index - 1) dataSetsByYear
-                            |> Maybe.withDefault emptyNutritionMetrics
-
-                    previousDataSet =
-                        List.Extra.getAt index dataSetsByYear
-                            |> Maybe.withDefault emptyNutritionMetrics
-                in
-                ( Translate.Year year
-                , generateIncidenceNutritionMetricsResults dataSet previousDataSet
-                )
-            )
-        |> viewNutritionMetricsResultsTable language currentDate
 
 
 generateMonthlyPrevalenceTableData :
@@ -1422,10 +1272,10 @@ toNutritionMetricsResultsTableData language heading data =
     }
 
 
-viewNutritionMetricsResultsTable2 :
+viewNutritionMetricsResultsTable :
     { heading : String, captions : List String, rows : List (List String) }
     -> List (Html Msg)
-viewNutritionMetricsResultsTable2 data =
+viewNutritionMetricsResultsTable data =
     let
         headerRow =
             List.indexedMap
@@ -1462,47 +1312,6 @@ viewNutritionMetricsResultsTable2 data =
         headerRow
             :: List.map viewRow data.rows
     ]
-
-
-
--- RRR
-
-
-viewNutritionMetricsResultsTable : Language -> NominalDate -> List ( TranslationId, NutritionMetricsResults ) -> Html Msg
-viewNutritionMetricsResultsTable language currentDate data =
-    let
-        headerRow =
-            List.map
-                (\( label, _ ) ->
-                    div [ class "item heading" ] [ text <| translate language label ]
-                )
-                data
-                |> List.append [ div [ class "item row-label" ] [ text "" ] ]
-                |> div [ class "row" ]
-
-        viewRow label =
-            List.map
-                (\value ->
-                    div [ class "item value" ] [ text <| Round.round 3 value ++ "%" ]
-                )
-                >> List.append [ div [ class "item row-label" ] [ text <| translate language label ] ]
-                >> div [ class "row" ]
-    in
-    div [ class "table wide" ]
-        [ headerRow
-        , List.map (Tuple.second >> .stuntingModerate) data
-            |> viewRow Translate.StuntingModerate
-        , List.map (Tuple.second >> .stuntingSevere) data
-            |> viewRow Translate.StuntingSevere
-        , List.map (Tuple.second >> .wastingModerate) data
-            |> viewRow Translate.WastingModerate
-        , List.map (Tuple.second >> .wastingSevere) data
-            |> viewRow Translate.WastingSevere
-        , List.map (Tuple.second >> .underweightModerate) data
-            |> viewRow Translate.UnderweightModerate
-        , List.map (Tuple.second >> .underweightSevere) data
-            |> viewRow Translate.UnderweightSevere
-        ]
 
 
 viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg

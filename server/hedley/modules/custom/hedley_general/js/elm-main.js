@@ -14063,7 +14063,7 @@ var $pzp1997$assoc_list$AssocList$map = F2(
 				},
 				alist));
 	});
-var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable2 = function (data) {
+var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = function (data) {
 	var viewRow = function (cells) {
 		return A2(
 			$elm$html$Html$div,
@@ -14231,7 +14231,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F3(
 						$elm$html$Html$Attributes$class('report nutrition')
 					]),
 				$elm$core$List$concat(
-					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable2, generatedData)));
+					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable, generatedData)));
 		} else {
 			return A2(
 				$elm$html$Html$div,
