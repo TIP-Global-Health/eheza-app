@@ -60,14 +60,14 @@ viewMenu language data model =
                 (\populationSelection ->
                     case populationSelection of
                         SelectionOptionGlobal ->
-                            ( [], viewLoadDataButton language "/admin/reports/aggregated-reports/all" SelectionMade )
+                            ( [], viewLoadDataButton language "/admin/reports/statistical-queries/all" SelectionMade )
 
                         SelectionOptionDemographics ->
                             ( viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics
                             , if isJust model.selectedDemographics.province then
                                 viewDemographicsSelectionActionButton language
                                     data.site
-                                    "/admin/reports/aggregated-reports/demographics"
+                                    "/admin/reports/statistical-queries/demographics"
                                     Translate.LoadData
                                     SelectionMade
                                     model.selectedDemographics
@@ -94,7 +94,7 @@ viewMenu language data model =
                             , Maybe.map
                                 (\selectedHealthCenter ->
                                     viewLoadDataButton language
-                                        ("/admin/reports/aggregated-reports/health-center/" ++ String.fromInt selectedHealthCenter)
+                                        ("/admin/reports/statistical-queries/health-center/" ++ String.fromInt selectedHealthCenter)
                                         SelectionMade
                                 )
                                 model.selectedHealthCenter

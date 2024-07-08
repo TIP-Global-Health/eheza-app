@@ -51,7 +51,7 @@ viewReportsData language currentDate data model =
         topBar =
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
-                    [ a [ href "/admin/reports/aggregated-reports" ]
+                    [ a [ href "/admin/reports/statistical-queries" ]
                         [ button []
                             [ text <| translate language Translate.NewScope ]
                         ]

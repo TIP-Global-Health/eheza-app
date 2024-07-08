@@ -14743,7 +14743,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							$elm$html$Html$a,
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+									$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
 								]),
 							_List_fromArray(
 								[
@@ -34715,11 +34715,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 						case 'SelectionOptionGlobal':
 							return _Utils_Tuple2(
 								_List_Nil,
-								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/aggregated-reports/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
+								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/statistical-queries/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
 						case 'SelectionOptionDemographics':
 							return _Utils_Tuple2(
 								A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics),
-								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-reports/demographics', $author$project$Translate$LoadData, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/statistical-queries/demographics', $author$project$Translate$LoadData, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 						default:
 							var options = A2(
 								$elm$core$List$map,
@@ -34751,7 +34751,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 											return A3(
 												$author$project$Pages$Utils$viewLoadDataButton,
 												language,
-												'/admin/reports/aggregated-reports/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
+												'/admin/reports/statistical-queries/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
 												$author$project$Pages$ReportsMenu$Model$SelectionMade);
 										},
 										model.selectedHealthCenter)));
