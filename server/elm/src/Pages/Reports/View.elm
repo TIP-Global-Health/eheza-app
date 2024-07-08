@@ -1686,11 +1686,13 @@ viewAcuteIllnessReport language startDate records =
 
 viewDownloadCSVButton : Language -> String -> String -> Html Msg
 viewDownloadCSVButton language csvFileName csvContent =
-    button
-        [ class "download-csv"
-        , onClick <| DownloadCSV csvFileName csvContent
+    div [ class "download-csv-wrapper" ]
+        [ button
+            [ class "download-csv"
+            , onClick <| DownloadCSV csvFileName csvContent
+            ]
+            [ text <| translate language Translate.DownloadCSV ]
         ]
-        [ text <| translate language Translate.DownloadCSV ]
 
 
 reportTablesDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
@@ -1703,8 +1705,7 @@ reportTableDataToCSV : { heading : String, captions : List String, rows : List (
 reportTableDataToCSV tableData =
     [ tableData.heading
     , String.join "," tableData.captions
-    , List.map (String.join ",")
-        tableData.rows
+    , List.map (String.join ",") tableData.rows
         |> String.join "\n"
     ]
         |> String.join "\n"

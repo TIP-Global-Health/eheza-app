@@ -12665,17 +12665,26 @@ var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
 var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
 	function (language, csvFileName, csvContent) {
 		return A2(
-			$elm$html$Html$button,
+			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('download-csv'),
-					$elm$html$Html$Events$onClick(
-					A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
+					$elm$html$Html$Attributes$class('download-csv-wrapper')
 				]),
 			_List_fromArray(
 				[
-					$elm$html$Html$text(
-					A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('download-csv'),
+							$elm$html$Html$Events$onClick(
+							A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
+						]))
 				]));
 	});
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
