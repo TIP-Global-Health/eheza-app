@@ -716,7 +716,7 @@ type TranslationId
     | GroupEncounterType GroupEncounterType
     | GroupOfFoods GroupOfFoods
     | Growth
-    | Guide
+    | GuideMessage
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -6410,8 +6410,8 @@ translationSet trans =
                 GroupEncounterEducation ->
                     translationSet HealthEducation
 
-        Guide ->
-            { english = "Guide"
+        GuideMessage ->
+            { english = "Guide Message"
             , kinyarwanda = Just "Ifashayobora"
             , kirundi = Nothing
             }
@@ -10722,7 +10722,7 @@ translationSet trans =
         MessagingTab tab ->
             case tab of
                 TabGuide ->
-                    translationSet Guide
+                    translationSet GuideMessage
 
                 TabUnread ->
                     translationSet (ReadToggle True)
@@ -24159,6 +24159,9 @@ translateActivePage page =
                     , kinyarwanda = Nothing
                     , kirundi = Just "Igihande c'ubutumwa"
                     }
+
+                GuideMessagePage ->
+                    translationSet GuideMessage
 
                 WellbeingPage ->
                     { english = "Wellbeing"

@@ -379,6 +379,9 @@ pageToFragment current =
                 WellbeingPage ->
                     Just "wellbeing"
 
+                GuideMessagePage ->
+                    Just "guide"
+
                 StockManagementPage ->
                     Just "stock-management"
 

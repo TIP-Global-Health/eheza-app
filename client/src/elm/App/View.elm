@@ -1085,6 +1085,24 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper configured.config model
 
+                    GuideMessagePage ->
+                        let
+                            ( nurseId, nurse ) =
+                                loggedInModel.nurse
+
+                            page_ =
+                                Dict.get nurseId loggedInModel.messagingCenterPages
+                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                        in
+                        Pages.Wellbeing.View.view model.language
+                            model.currentTime
+                            nurseId
+                            nurse
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper configured.config model
+
                     StockManagementPage ->
                         let
                             ( nurseId, nurse ) =
