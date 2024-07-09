@@ -780,7 +780,7 @@ translationSet transId =
             }
 
         PleaseWaitMessage ->
-            { english = "Please wait. This action may take a couple of minutes to complete."
+            { english = "This action may take several minutes to complete."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -794,16 +794,19 @@ translationSet transId =
         PopulationSelectionOption selectionOption ->
             case selectionOption of
                 SelectionOptionGlobal ->
-                    translationSet Global
+                    { english = "Entire Population"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 SelectionOptionDemographics ->
-                    { english = "Demographics"
+                    { english = "Demographic Region"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 SelectionOptionHealthCenter ->
-                    { english = "Health Center"
+                    { english = "Health Center Catchment"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1085,7 +1088,7 @@ translationSet transId =
             }
 
         WideScopeNote ->
-            { english = "Note: Selected scope possibly contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently."
+            { english = "The selected scope may contain a large number of patients and report generation could take several minutes."
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
