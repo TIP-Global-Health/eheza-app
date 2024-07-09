@@ -38,6 +38,7 @@ type alias Flags =
     { -- Type of application.
       page : String
     , appData : Value
+    , themePath : String
     }
 
 
@@ -46,6 +47,7 @@ type alias Model =
     , errors : List Error
     , language : Language
     , activePage : Page
+    , themePath : String
     , currentTime : Time.Posix
     , scoreboardMenuPage : Pages.ScoreboardMenu.Model.Model
     , scoreboardPage : Pages.Scoreboard.Model.Model
@@ -60,6 +62,7 @@ emptyModel =
     , errors = []
     , language = English
     , activePage = NotFound
+    , themePath = ""
     , currentTime = Time.millisToPosix 0
     , scoreboardMenuPage = Pages.ScoreboardMenu.Model.emptyModel
     , scoreboardPage = Pages.Scoreboard.Model.emptyModel

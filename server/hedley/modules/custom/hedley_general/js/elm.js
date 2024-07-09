@@ -26,6 +26,7 @@
         var app = Elm.Main.init({node: node, flags: {
           appData: appSettings.data,
           page: appSettings.page,
+          themePath: appSettings.theme_path,
         }});
 
         if (appSettings.page === 'reports-results') {

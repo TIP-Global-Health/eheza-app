@@ -26,14 +26,14 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/all'] = array(
-    'title' => 'Global report',
-    'description' => 'View global report',
+    'title' => 'Entire Population',
+    'description' => 'View report for Entire Population',
     'page callback' => 'hedley_reports_aggregated_callback_global',
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
   $items['admin/reports/statistical-queries/demographics/%'] = array(
-    'title' => 'Report for province',
+    'title' => 'Province',
     'description' => 'View report for province',
     'page callback' => 'hedley_reports_aggregated_callback_province',
     'page arguments' => [4],
@@ -41,7 +41,7 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%'] = array(
-    'title' => 'Report for district',
+    'title' => 'District',
     'description' => 'View report for district',
     'page callback' => 'hedley_reports_aggregated_callback_district',
     'page arguments' => [4, 5],
@@ -49,7 +49,7 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
-    'title' => 'Report for sector',
+    'title' => 'Sector',
     'description' => 'View report for sector',
     'page callback' => 'hedley_reports_aggregated_callback_sector',
     'page arguments' => [4, 5, 6],
@@ -57,7 +57,7 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
-    'title' => 'Report for cell',
+    'title' => 'Cell',
     'description' => 'View report for cell',
     'page callback' => 'hedley_reports_aggregated_callback_cell',
     'page arguments' => [4, 5, 6, 7],
@@ -65,7 +65,7 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
-    'title' => 'Report for village',
+    'title' => 'Village',
     'description' => 'View report for village',
     'page callback' => 'hedley_reports_aggregated_callback_village',
     'page arguments' => [4, 5, 6, 7, 8],
@@ -73,7 +73,7 @@ function hedley_reports_menu() {
   );
 
   $items['admin/reports/statistical-queries/health-center/%'] = array(
-    'title' => 'Report for health center',
+    'title' => 'Health center',
     'description' => 'View report for health center',
     'page callback' => 'hedley_reports_aggregated_callback_health_center',
     'page arguments' => [4],

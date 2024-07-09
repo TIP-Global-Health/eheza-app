@@ -25,18 +25,18 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
-import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (generateReportsHeaderImage, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
 
-view : Language -> NominalDate -> ModelBackend -> Model -> Html Msg
-view language currentDate modelBackend model =
+view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
+view language currentDate themePath modelBackend model =
     case modelBackend.reportsData of
         Just (Ok data) ->
-            viewReportsData language currentDate data model
+            viewReportsData language currentDate themePath data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -45,8 +45,8 @@ view language currentDate modelBackend model =
             emptyNode
 
 
-viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
-viewReportsData language currentDate data model =
+viewReportsData : Language -> NominalDate -> String -> ReportsData -> Model -> Html Msg
+viewReportsData language currentDate themePath data model =
     let
         topBar =
             div [ class "top-bar" ]
@@ -277,8 +277,9 @@ viewReportsData language currentDate data model =
                             emptyNode
                         )
     in
-    div [ class "page-content" ]
-        [ topBar
+    div [ class "page-content reports" ]
+        [ generateReportsHeaderImage themePath
+        , topBar
         , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType

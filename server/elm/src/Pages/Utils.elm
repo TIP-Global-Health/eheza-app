@@ -240,3 +240,12 @@ viewMenuActionButton language path label selectionMadeMsg =
         [ button [ onClick selectionMadeMsg ]
             [ text <| translate language label ]
         ]
+
+
+
+-- Images
+
+
+generateReportsHeaderImage : String -> Html any
+generateReportsHeaderImage themePath =
+    img [ src <| "/" ++ themePath ++ "/icons/statistical-queries.png" ] []

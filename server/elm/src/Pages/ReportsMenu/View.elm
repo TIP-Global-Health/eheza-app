@@ -18,7 +18,8 @@ import Pages.ReportsMenu.Types exposing (..)
 import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
-        ( viewCustomLabel
+        ( generateReportsHeaderImage
+        , viewCustomLabel
         , viewCustomSelectListInput
         , viewGeoLocationSelectListInput
         , viewLoadDataButton
@@ -29,11 +30,11 @@ import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
 
-view : Language -> ModelBackend -> Model -> Html Msg
-view language modelBackend model =
+view : Language -> String -> ModelBackend -> Model -> Html Msg
+view language themePath modelBackend model =
     case modelBackend.reportsMenuData of
         Just (Ok data) ->
-            viewMenu language data model
+            viewMenu language themePath data model
 
         Just (Err err) ->
             text <| Debug.toString err
@@ -42,8 +43,8 @@ view language modelBackend model =
             emptyNode
 
 
-viewMenu : Language -> MenuData -> Model -> Html Msg
-viewMenu language data model =
+viewMenu : Language -> String -> MenuData -> Model -> Html Msg
+viewMenu language themePath data model =
     let
         populationSelectionInput =
             viewSelectListInput language
@@ -111,8 +112,9 @@ viewMenu language data model =
             else
                 actionButton_
     in
-    div [ class "page-content" ]
-        [ viewCustomLabel language Translate.SelectScope ":" "header"
+    div [ class "page-content reports-menu" ]
+        [ generateReportsHeaderImage themePath
+        , viewCustomLabel language Translate.SelectScope ":" "header"
         , div [ class "inputs" ] <|
             populationSelectionInput
                 :: derivedInputs

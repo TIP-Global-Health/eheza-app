@@ -1,7 +1,5 @@
-body,
-#page-wrapper #main-wrapper,
-#page-wrapper #page {
-  background: #0393db;
+#main #content .section {
+  padding: unset;
 }
 
 body.admin-menu #page-wrapper #header {
@@ -17,11 +15,16 @@ body.admin-menu #page-wrapper #header {
 #page-wrapper #header #main-menu,
 #page-wrapper #header #secondary-menu h2,
 #page-wrapper #header #secondary-menu #secondary-menu-links .first,
+#page-wrapper #main-wrapper #content .section .tabs,
 #page-wrapper #footer-wrapper,
 #main-wrapper #breadcrumb,
 #main-wrapper #sidebar-first,
 #main-wrapper #page-title {
   display: none;
+}
+
+#page-wrapper #header #secondary-menu {
+  z-index: 1;
 }
 
 #main-wrapper #main {
@@ -35,13 +38,20 @@ body.admin-menu #page-wrapper #header {
 
 .overlay .ui.modal.calendar-popup {
   transform: scale(.8);
-  margin-top: unset;
+  margin-top: -3%;
 }
 
 .page-content {
+  background: #0393db;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin-top: -10px;
   min-height: 768px;
-  margin-bottom: 20px;
-  margin-top: 40px;
+  padding-top: 20px;
+}
+
+.page-content img {
+  width: 101%;
+  margin-top: -10px;
 }
 
 .page-content .header {
@@ -103,7 +113,6 @@ body.admin-menu #page-wrapper #header {
 .page-content .top-bar .scope {
   font-size: 28px;
   font-weight: bold;
-  text-decoration: underline;
 }
 
 .page-content .top-bar .year-selector {
@@ -133,7 +142,7 @@ body.admin-menu #page-wrapper #header {
   color: white;
   cursor: pointer;
   font-size: 18px;
-  height: 30px;
+  height: 35px;
 }
 
 .page-content .top-bar .new-selection a button {
@@ -276,8 +285,29 @@ body.admin-menu #page-wrapper #header {
 
 .page-content .inputs .label.wide-scope {
   margin-top: 120px;
-  color: #ffffff;
+  color: white;
   font-size: 25px;
+}
+
+.page-content.reports,
+.page-content.reports-menu {
+  background: white;
+  margin-top: 0;
+  padding-top:0;
+}
+
+.page-content.reports .select-input-wrapper .select-input,
+.page-content.reports-menu .select-input-wrapper .select-input {
+  border: 2px solid #3b3b3b;
+}
+
+.page-content.reports .select-input-wrapper .select-input:focus,
+.page-content.reports-menu .select-input-wrapper .select-input:focus {
+  outline-color: #3b3b3b;
+}
+
+.page-content.reports .inputs .form-input.date {
+  border: 2px solid #3b3b3b;
 }
 
 .page-content .inputs .report .section.heading {
@@ -289,13 +319,13 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .inputs .report .table {
-  border: 2px solid white;
+  border: 2px solid #3b3b3b;
   margin-bottom: 20px;
   padding: 15px;
 }
 
 .page-content .inputs .report .table .row {
-  border-bottom: 1px solid white;
+  border-bottom: 1px solid #3b3b3b;
   display: flex;
   justify-content: space-between;
   margin-left: 20px;
@@ -306,7 +336,8 @@ body.admin-menu #page-wrapper #header {
 
 .page-content .inputs .report .table .row.totals {
   font-weight: bold;
-  margin: auto;
+  margin-left: auto;
+  margin-right: auto;
   margin-top: 20px;
   width: 50%;
 }
@@ -343,6 +374,11 @@ body.admin-menu #page-wrapper #header {
   width: 30%;
 }
 
+.page-content .inputs .report.nutrition {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
 .page-content .inputs .report.nutrition .table.wide,
 .page-content .inputs .report.nutrition .section.heading {
   font-size: 24px;
@@ -350,10 +386,26 @@ body.admin-menu #page-wrapper #header {
   width: 120%;
 }
 
+.page-content .inputs .report .download-csv-wrapper {
+  height: 50px;
+}
+
 .page-content .inputs .report.nutrition .download-csv-wrapper {
   margin-left: -12%;
   padding-left: 35px;
   width: 120%;
+}
+
+.page-content.reports-menu .actions a button,
+.page-content.reports .top-bar .new-selection a button,
+.page-content.reports .inputs .report button.download-csv {
+  background-color: white;
+  border: 2px solid #3b3b3b;
+  color: #3b3b3b;
+}
+
+.page-content .inputs .report button.download-csv {
+  float: right;
 }
 
 .page-content .inputs .report.nutrition .table .row .item.heading,
