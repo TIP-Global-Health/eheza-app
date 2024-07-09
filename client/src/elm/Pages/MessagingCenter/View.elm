@@ -443,17 +443,17 @@ surveyScoreDialog language nurseId db =
                                 message =
                                     if adoptionSurveyCount == 2 then
                                         if score > survey1Score then
-                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving) ]
+                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
 
                                         else if score < survey1Score then
-                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving) ]
+                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
 
                                         else
                                             Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
 
                                     else if adoptionSurveyCount == 3 then
                                         Just <|
-                                            ul []
+                                            ul [ class "summary" ]
                                                 [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore survey1Score)) ]
                                                 , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore survey2Score)) ]
                                                 ]
@@ -475,10 +475,10 @@ surveyScoreDialog language nurseId db =
                 additionalMessageElement =
                     case additionalMessage of
                         Just msg ->
-                            p [ class "message" ] [ msg ]
+                            msg
 
                         Nothing ->
-                            text ""
+                            emptyNode
 
                 dialogContent =
                     div []
