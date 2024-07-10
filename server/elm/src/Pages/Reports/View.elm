@@ -253,7 +253,7 @@ viewReportsData language currentDate data model =
                             ReportAcuteIllness ->
                                 Maybe.map
                                     (\startDate ->
-                                        viewAcuteIllnessReport language startDate recordsTillLimitDate
+                                        viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
                                     )
                                     model.startDate
                                     |> Maybe.withDefault emptyNode
@@ -1528,8 +1528,8 @@ generatePrenatalReportData language limitDate records =
     ]
 
 
-viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewAcuteIllnessReport language startDate records =
+viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
+viewAcuteIllnessReport language limitDate startDate scopeLabel records =
     let
         data =
             generateAcuteIllnessReportData language startDate records
@@ -1537,12 +1537,25 @@ viewAcuteIllnessReport language startDate records =
         captionsRow =
             viewStandardCells data.captions
                 |> div [ class "row captions" ]
+
+        csvFileName =
+            "acute-illness-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" startDate
+                ++ "-to-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
     in
-    div [ class "report acute-illness" ]
+    div [ class "report acute-illness" ] <|
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
         ]
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
 generateAcuteIllnessReportData :
