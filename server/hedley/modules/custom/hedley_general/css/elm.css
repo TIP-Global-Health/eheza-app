@@ -36,6 +36,12 @@ body.admin-menu #page-wrapper #header {
   width: 100%;
 }
 
+#main-wrapper #main #content .page-content img {
+  width: 100%;
+  margin-top: -10px;
+  margin-right: 0;
+}
+
 .overlay .ui.modal.calendar-popup {
   transform: scale(.8);
   margin-top: -3%;
@@ -47,11 +53,6 @@ body.admin-menu #page-wrapper #header {
   margin-top: -10px;
   min-height: 768px;
   padding-top: 20px;
-}
-
-.page-content img {
-  width: 100%;
-  margin-top: -10px;
 }
 
 .page-content .header {
