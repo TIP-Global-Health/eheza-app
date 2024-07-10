@@ -29,7 +29,7 @@
         }});
 
         if (appSettings.page === 'reports-results') {
-          app.ports.downloadCsv.subscribe(function(data) {
+          app.ports.downloadCsv.subscribe(function (data) {
             var filename = data[0];
             var content = data[1];
             var element = document.createElement('a');
