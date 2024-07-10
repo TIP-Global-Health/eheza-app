@@ -108,11 +108,23 @@ surveyQuestionsAnswered surveyType surveyForm =
     Dict.size surveyForm == List.length surveyQuestions
 
 
-resolveSurveyScoreDialogState : ResilienceSurveyType -> Int -> SurveyScoreDialogState
-resolveSurveyScoreDialogState surveyType score =
+resolveSurveyScoreDialogState : NurseId -> ResilienceSurveyType -> Int -> ModelIndexedDb -> SurveyScoreDialogState
+resolveSurveyScoreDialogState nurseId surveyType score db =
     case surveyType of
         ResilienceSurveyQuarterly ->
             QuarterlySurveyScore score
 
         ResilienceSurveyAdoption ->
-            AdoptionSurveyScore score
+            let
+                -- Ordered from first to last.
+                -- Also, making sure we don't include current survey score
+                -- and there are up to 2 surveys (which should be the case,
+                -- as there can be up to 3 surveys filled, but verification is
+                -- required nevertheless).
+                previousSurveysScores =
+                    -- @todo
+                    []
+            in
+            previousSurveysScores
+                ++ [ score ]
+                |> AdoptionSurveyScore

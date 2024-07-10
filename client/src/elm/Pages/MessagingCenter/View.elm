@@ -438,33 +438,50 @@ surveyScoreDialog language nurseId db =
                             , Nothing
                             )
 
-                        AdoptionSurveyScore score ->
-                            let
-                                message =
-                                    if adoptionSurveyCount == 2 then
-                                        if score > survey1Score then
-                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+                        AdoptionSurveyScore scores ->
+                            -- @todo : delete
+                            -- let
+                            --     message =
+                            --         if adoptionSurveyCount == 2 then
+                            --             if score > survey1Score then
+                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+                            --
+                            --             else if score < survey1Score then
+                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+                            --
+                            --             else
+                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                            --
+                            --         else if adoptionSurveyCount == 3 then
+                            --             Just <|
+                            --                 ul [ class "summary" ]
+                            --                     [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore survey1Score)) ]
+                            --                     , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore survey2Score)) ]
+                            --                     ]
+                            --
+                            --         else
+                            --             Nothing
+                            -- in
+                            -- ( String.fromInt score ++ "/60"
+                            -- , Translate.AdoptionSurveyScoreInterpretation score
+                            -- , message
+                            -- )
+                            case scores of
+                                [ first ] ->
+                                    -- @todo
+                                    ( "", Translate.EmptyString, Nothing )
 
-                                        else if score < survey1Score then
-                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+                                [ first, second ] ->
+                                    -- @todo
+                                    ( "", Translate.EmptyString, Nothing )
 
-                                        else
-                                            Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                [ first, second, third ] ->
+                                    -- @todo
+                                    ( "", Translate.EmptyString, Nothing )
 
-                                    else if adoptionSurveyCount == 3 then
-                                        Just <|
-                                            ul [ class "summary" ]
-                                                [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore survey1Score)) ]
-                                                , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore survey2Score)) ]
-                                                ]
-
-                                    else
-                                        Nothing
-                            in
-                            ( String.fromInt score ++ "/60"
-                            , Translate.AdoptionSurveyScoreInterpretation score
-                            , message
-                            )
+                                _ ->
+                                    -- We shold never get here.
+                                    ( "", Translate.EmptyString, Nothing )
 
                 topMessage =
                     p [ class "score" ] [ text scoreText ]

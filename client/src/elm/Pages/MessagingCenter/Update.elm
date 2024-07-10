@@ -3,7 +3,7 @@ module Pages.MessagingCenter.Update exposing (update)
 import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (resilienceRoleFromString)
 import Backend.Person.Utils
@@ -30,8 +30,8 @@ import Time
 import Time.Extra
 
 
-update : Time.Posix -> NominalDate -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentTime currentDate msg model =
+update : Time.Posix -> NominalDate -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentTime currentDate db msg model =
     case msg of
         SetActivePage page ->
             ( model
@@ -212,7 +212,7 @@ update currentTime currentDate msg model =
                                 |> Backend.Model.MsgResilienceSurvey nurseId
                                 |> App.Model.MsgIndexedDb
                           ]
-                        , [ resolveSurveyScoreDialogState surveyType surveyScore
+                        , [ resolveSurveyScoreDialogState nurseId surveyType surveyScore db
                                 |> Just
                                 |> SetSurveyScoreDialogState
                           ]
@@ -225,7 +225,7 @@ update currentTime currentDate msg model =
             , Cmd.none
             , msgs
             )
-                |> sequenceExtra (update currentTime currentDate) extraMsgs
+                |> sequenceExtra (update currentTime currentDate db) extraMsgs
 
         SetSurveyScoreDialogState state ->
             ( { model | surveyScoreDialogState = state }
