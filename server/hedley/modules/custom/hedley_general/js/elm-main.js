@@ -10694,41 +10694,15 @@ var $author$project$Gizra$NominalDate$sortByDateDesc = F3(
 			getDateFunc(entity2),
 			getDateFunc(entity1));
 	});
-var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
+var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
 	function (language, startDate, records) {
-		var viewRow = F2(
+		var generateRow = F2(
 			function (label, value) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('row')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item label')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									A2($author$project$Translate$translate, language, label))
-								])),
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('item value')
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(
-									$elm$core$String$fromInt(value))
-								]))
-						]));
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
 			});
 		var acuteIllnessDataRecords = $elm_community$maybe_extra$Maybe$Extra$values(
 			A2(
@@ -10772,7 +10746,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 			$elm$core$List$map,
 			function (diagnosis) {
 				return A2(
-					viewRow,
+					generateRow,
 					$author$project$Translate$AcuteIllnessDiagnosis(diagnosis),
 					A2(
 						$elm$core$Maybe$withDefault,
@@ -10781,7 +10755,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 			},
 			$author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses);
 		var totalsRow = A2(
-			viewRow,
+			generateRow,
 			$author$project$Translate$Total,
 			$elm$core$List$sum(
 				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
@@ -10809,59 +10783,156 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F3(
 									encountersList))));
 				},
 				$elm$core$List$concat(acuteIllnessDataRecords)));
-		var noneRow = A2(viewRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
+		var noneRow = A2(generateRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _Utils_ap(
+				rows,
+				_Utils_ap(
+					_List_fromArray(
+						[totalsRow]),
+					_List_fromArray(
+						[noneRow])))
+		};
+	});
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[
+				tableData.heading,
+				A2($elm$core$String$join, ',', tableData.captions),
+				A2(
+				$elm$core$String$join,
+				'\n',
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$join(','),
+					tableData.rows))
+			]));
+};
+var $author$project$Pages$Reports$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
+var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
+	function (language, csvFileName, csvContent) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('download-csv-wrapper')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('download-csv'),
+							$elm$html$Html$Events$onClick(
+							A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
+						]))
+				]));
+	});
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $author$project$Pages$Reports$View$viewCustomCells = F2(
+	function (labelClass, valueClass) {
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, cellText) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(labelClass, !index),
+										_Utils_Tuple2(valueClass, !(!index))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(cellText)
+							]));
+				}));
+	});
+var $author$project$Pages$Reports$View$viewStandardCells = A2($author$project$Pages$Reports$View$viewCustomCells, 'label', 'value');
+var $author$project$Pages$Reports$View$viewStandardRow = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Pages$Reports$View$viewStandardCells,
+	$elm$html$Html$div(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			])));
+var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
+	function (language, limitDate, startDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generateAcuteIllnessReportData, language, startDate, records);
+		var csvFileName = 'acute-illness-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', startDate) + ('-to-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')))));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Reports$View$viewStandardCells(data.captions));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$class('report acute-illness')
 				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('table')
-						]),
-					A2(
-						$elm$core$List$cons,
+			_Utils_ap(
+				_List_fromArray(
+					[
 						A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row captions')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('item label')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis))
-										])),
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('item value')
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(
-											A2($author$project$Translate$translate, language, $author$project$Translate$Total))
-										]))
-								])),
-						_Utils_ap(
-							rows,
-							_List_fromArray(
-								[totalsRow, noneRow]))))
-				]));
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('table')
+							]),
+						A2(
+							$elm$core$List$cons,
+							captionsRow,
+							A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, data.rows)))
+					]),
+				_List_fromArray(
+					[
+						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+					])));
 	});
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
@@ -12409,23 +12480,6 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 				])
 		};
 	});
-var $elm$core$String$replace = F3(
-	function (before, after, string) {
-		return A2(
-			$elm$core$String$join,
-			after,
-			A2($elm$core$String$split, before, string));
-	});
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
 var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 	function (language, data) {
 		var viewRow = function (_v0) {
@@ -12488,28 +12542,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							A2(
-								$elm$core$List$indexedMap,
-								F2(
-									function (index, caption) {
-										return A2(
-											$elm$html$Html$div,
-											_List_fromArray(
-												[
-													$elm$html$Html$Attributes$classList(
-													_List_fromArray(
-														[
-															_Utils_Tuple2('item', true),
-															_Utils_Tuple2('label', !index),
-															_Utils_Tuple2('value', !(!index))
-														]))
-												]),
-											_List_fromArray(
-												[
-													$elm$html$Html$text(caption)
-												]));
-									}),
-								data.captions))
+							$author$project$Pages$Reports$View$viewStandardCells(data.captions))
 						]),
 					_Utils_ap(
 						A2($elm$core$List$map, viewRow, data.rows),
@@ -12521,39 +12554,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 									[
 										$elm$html$Html$Attributes$class('row encounters-totals')
 									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item label')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(data.totals.label)
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(data.totals.total)
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(data.totals.unique)
-											]))
-									]))
+								$author$project$Pages$Reports$View$viewStandardCells(
+									_List_fromArray(
+										[data.totals.label, data.totals.total, data.totals.unique])))
 							]))))
 			]);
 	});
@@ -12575,88 +12578,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							A2(
-								$elm$core$List$map,
-								function (caption) {
-									return A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item label')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(caption)
-											]));
-								},
-								tableData.captions))
+							$author$project$Pages$Reports$View$viewStandardCells(tableData.captions))
 						]),
-					_Utils_ap(
-						A2(
-							$elm$core$List$map,
-							function (cells) {
-								return A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('row')
-										]),
-									A2(
-										$elm$core$List$indexedMap,
-										F2(
-											function (index, cellText) {
-												return A2(
-													$elm$html$Html$div,
-													_List_fromArray(
-														[
-															$elm$html$Html$Attributes$classList(
-															_List_fromArray(
-																[
-																	_Utils_Tuple2('item', true),
-																	_Utils_Tuple2('label', !index),
-																	_Utils_Tuple2('value', !(!index))
-																]))
-														]),
-													_List_fromArray(
-														[
-															$elm$html$Html$text(cellText)
-														]));
-											}),
-										cells));
-							},
-							tableData.rows),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('row totals')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item label')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(tableData.totals.a)
-											])),
-										A2(
-										$elm$html$Html$div,
-										_List_fromArray(
-											[
-												$elm$html$Html$Attributes$class('item value')
-											]),
-										_List_fromArray(
-											[
-												$elm$html$Html$text(tableData.totals.b)
-											]))
-									]))
-							]))));
+					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)));
 		};
 		return A2(
 			$elm$core$List$cons,
@@ -12671,36 +12595,6 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 						$elm$html$Html$text(data.heading)
 					])),
 			A2($elm$core$List$map, viewTable, data.tables));
-	});
-var $author$project$Pages$Reports$Model$DownloadCSV = F2(
-	function (a, b) {
-		return {$: 'DownloadCSV', a: a, b: b};
-	});
-var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
-var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
-	function (language, csvFileName, csvContent) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('download-csv-wrapper')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('download-csv'),
-							$elm$html$Html$Events$onClick(
-							A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
-						]))
-				]));
 	});
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, limitDate, scopeLabel, records) {
@@ -14087,23 +13981,6 @@ var $pzp1997$assoc_list$AssocList$map = F2(
 				},
 				alist));
 	});
-var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
-	return A2(
-		$elm$core$String$join,
-		'\n',
-		_List_fromArray(
-			[
-				tableData.heading,
-				A2($elm$core$String$join, ',', tableData.captions),
-				A2(
-				$elm$core$String$join,
-				'\n',
-				A2(
-					$elm$core$List$map,
-					$elm$core$String$join(','),
-					tableData.rows))
-			]));
-};
 var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
@@ -14116,57 +13993,15 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = functi
 				[
 					$elm$html$Html$Attributes$class('row')
 				]),
-			A2(
-				$elm$core$List$indexedMap,
-				F2(
-					function (index, cellText) {
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2('row-label', !index),
-											_Utils_Tuple2('value', !(!index))
-										]))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(cellText)
-								]));
-					}),
-				cells));
+			A3($author$project$Pages$Reports$View$viewCustomCells, 'row-label', 'value', cells));
 	};
-	var headerRow = A2(
+	var captionsRow = A2(
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
 				$elm$html$Html$Attributes$class('row')
 			]),
-		A2(
-			$elm$core$List$indexedMap,
-			F2(
-				function (index, caption) {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('item', true),
-										_Utils_Tuple2('row-label', !index),
-										_Utils_Tuple2('heading', !(!index))
-									]))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(caption)
-							]));
-				}),
-			data.captions));
+		A3($author$project$Pages$Reports$View$viewCustomCells, 'row-label', 'heading', data.captions));
 	return _List_fromArray(
 		[
 			A2(
@@ -14187,7 +14022,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = functi
 				]),
 			A2(
 				$elm$core$List$cons,
-				headerRow,
+				captionsRow,
 				A2($elm$core$List$map, viewRow, data.rows)))
 		]);
 };
@@ -14523,39 +14358,6 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
-		var viewCells = function (cells) {
-			return A2(
-				$elm$core$List$indexedMap,
-				F2(
-					function (index, cellText) {
-						return A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$classList(
-									_List_fromArray(
-										[
-											_Utils_Tuple2('item', true),
-											_Utils_Tuple2('label', !index),
-											_Utils_Tuple2('value', !(!index))
-										]))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(cellText)
-								]));
-					}),
-				cells);
-		};
-		var viewRow = function (cells) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('row')
-					]),
-				viewCells(cells));
-		};
 		var viewTable = function (tableData) {
 			return _List_fromArray(
 				[
@@ -14583,8 +14385,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							viewCells(tableData.captions)),
-						A2($elm$core$List$map, viewRow, tableData.rows)))
+							$author$project$Pages$Reports$View$viewStandardCells(tableData.captions)),
+						A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)))
 				]);
 		};
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
@@ -15016,7 +14818,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 									A2(
 										$elm$core$Maybe$map,
 										function (startDate) {
-											return A3($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, startDate, recordsTillLimitDate);
+											return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 										},
 										model.startDate));
 							case 'ReportDemographics':

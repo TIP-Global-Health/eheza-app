@@ -1048,6 +1048,15 @@ function hedley_reports_gz_compress_file($data, $file_path) {
   return $file_path;
 }
 
+/**
+ * Provides a mapping for AI diagnosis codes.
+ *
+ * This function returns an associative array where the keys are diagnosis
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping diagnosis identifiers to their codes.
+ */
 function hedley_reports_ai_diagnosis_mapping() {
   return [
     'covid19' => 'a',
