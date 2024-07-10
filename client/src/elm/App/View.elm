@@ -42,6 +42,7 @@ import Pages.EducationSession.Model
 import Pages.EducationSession.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
+import Pages.GuideMessage.View
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.View
 import Pages.HIV.Encounter.Model
@@ -1094,7 +1095,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                                 Dict.get nurseId loggedInModel.messagingCenterPages
                                     |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
-                        Pages.Wellbeing.View.view model.language
+                        Pages.GuideMessage.View.view model.language
                             model.currentTime
                             nurseId
                             nurse

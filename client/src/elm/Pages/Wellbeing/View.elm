@@ -43,8 +43,17 @@ view language currentTime nurseId nurse db model =
                 [ span [ class "text" ] [ text <| translate language Translate.ResilienceMessage ]
                 , span [ class "counter" ] [ text <| String.fromInt numberOfUnreadMessages ]
                 ]
+
+        guideMessageButton =
+            button
+                [ class "ui primary button"
+                , onClick <| SetActivePage <| UserPage GuideMessagePage
+                ]
+                [ span [ class "text" ] [ text <| translate language Translate.GuideMessage ]
+                ]
     in
     div [ class "page-activity wellbeing" ]
         [ header
         , resilienceMessageButton
+        , guideMessageButton
         ]
