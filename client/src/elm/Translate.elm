@@ -10721,9 +10721,6 @@ translationSet trans =
 
         MessagingTab tab ->
             case tab of
-                TabGuide ->
-                    translationSet GuideMessage
-
                 TabUnread ->
                     translationSet (ReadToggle True)
 

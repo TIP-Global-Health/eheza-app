@@ -32,7 +32,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { activeTab = TabGuide
+    { activeTab = TabUnread
     , tabScrollPosition = 0
     , expandedMessages = EverySet.empty
     , messageOptionsDialogState = Nothing
@@ -43,8 +43,7 @@ emptyModel =
 
 
 type MessagingTab
-    = TabGuide
-    | TabUnread
+    = TabUnread
     | TabFavorites
     | TabGrowth
     | TabConnecting
