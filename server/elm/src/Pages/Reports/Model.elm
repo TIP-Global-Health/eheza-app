@@ -9,8 +9,10 @@ import RemoteData exposing (RemoteData(..))
 
 type alias Model =
     { reportType : Maybe ReportType
+    , startDate : Maybe Date
+    , startDateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , limitDate : Maybe Date
-    , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
+    , limitDateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     , nutritionReportData : RemoteData String NutritionReportData
     }
 
@@ -18,14 +20,17 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { reportType = Nothing
+    , startDate = Nothing
+    , startDateSelectorPopupState = Nothing
     , limitDate = Nothing
-    , dateSelectorPopupState = Nothing
+    , limitDateSelectorPopupState = Nothing
     , nutritionReportData = NotAsked
     }
 
 
 type ReportType
-    = ReportDemographics
+    = ReportAcuteIllness
+    | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
 
@@ -86,6 +91,8 @@ emptyNutritionMetricsResults =
 
 type Msg
     = SetReportType String
+    | SetStartDate Date
+    | SetStartDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetLimitDate Date
     | SetLimitDateSelectorState (Maybe (DateSelectorConfig Msg))
     | NutritionReportDataCalculationCompleted (Result String NutritionReportData)

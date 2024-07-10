@@ -11,16 +11,18 @@ import Backend.Reports.Model
         , PrenatalEncounterType(..)
         , PrenatalParticipantData
         , ReportsData
+        , SelectedEntity(..)
         )
+import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
-import Maybe.Extra exposing (isJust)
+import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (viewCustomLabel, viewSelectListInput, wrapSelectListInput)
@@ -47,6 +49,18 @@ viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
         topBar =
+            let
+                scopeLabel =
+                    case data.entityType of
+                        EntityGlobal ->
+                            translate language Translate.Global
+
+                        EntityHealthCenter ->
+                            data.entityName
+
+                        _ ->
+                            data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
+            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
@@ -54,39 +68,82 @@ viewReportsData language currentDate data model =
                             [ text <| translate language Translate.NewScope ]
                         ]
                     ]
+                , div [ class "scope" ]
+                    [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
 
-        limitDateInput =
+        dateInputs =
             Maybe.map
                 (\reportType ->
-                    -- Nutrition report does not allow selecting limit date, so
-                    -- we do not show limit date input when report is selected.
-                    if reportType /= ReportNutrition then
-                        let
-                            dateSelectorConfig =
-                                { select = SetLimitDate
-                                , close = SetLimitDateSelectorState Nothing
-                                , dateFrom = Date.add Years -6 currentDate
-                                , dateTo = currentDate
-                                , dateDefault = Just currentDate
-                                }
+                    let
+                        startDateInput =
+                            if reportType == ReportAcuteIllness then
+                                let
+                                    dateSelectorConfig =
+                                        let
+                                            sixYearsAgo =
+                                                Date.add Years -6 currentDate
+                                        in
+                                        { select = SetStartDate
+                                        , close = SetStartDateSelectorState Nothing
+                                        , dateFrom = sixYearsAgo
+                                        , dateTo = currentDate
+                                        , dateDefault = Just sixYearsAgo
+                                        }
 
-                            limitDateForView =
-                                Maybe.map formatDDMMYYYY model.limitDate
-                                    |> Maybe.withDefault ""
-                        in
-                        div
-                            [ class "form-input date"
-                            , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
-                            ]
-                            [ text limitDateForView ]
-                            |> wrapSelectListInput language Translate.SelectLimitDate False
+                                    dateForView =
+                                        Maybe.map formatDDMMYYYY model.startDate
+                                            |> Maybe.withDefault ""
+                                in
+                                div
+                                    [ class "form-input date"
+                                    , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
+                                    ]
+                                    [ text dateForView ]
+                                    |> wrapSelectListInput language Translate.SelectStartDate False
 
-                    else
-                        emptyNode
+                            else
+                                emptyNode
+
+                        limitDateInput =
+                            if
+                                -- Nutrition report does not allow selecting limit date, so
+                                -- we do not show limit date input when report is selected.
+                                (reportType == ReportNutrition)
+                                    || -- Acute Illness report requires setting start date before
+                                       -- limit date can be shown.
+                                       (reportType == ReportAcuteIllness && isNothing model.startDate)
+                            then
+                                emptyNode
+
+                            else
+                                let
+                                    dateFrom =
+                                        Maybe.withDefault (Date.add Years -6 currentDate) model.startDate
+
+                                    dateSelectorConfig =
+                                        { select = SetLimitDate
+                                        , close = SetLimitDateSelectorState Nothing
+                                        , dateFrom = dateFrom
+                                        , dateTo = currentDate
+                                        , dateDefault = Just currentDate
+                                        }
+
+                                    limitDateForView =
+                                        Maybe.map formatDDMMYYYY model.limitDate
+                                            |> Maybe.withDefault ""
+                                in
+                                div
+                                    [ class "form-input date"
+                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                                    ]
+                                    [ text limitDateForView ]
+                                    |> wrapSelectListInput language Translate.SelectLimitDate False
+                    in
+                    [ startDateInput, limitDateInput ]
                 )
                 model.reportType
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault []
 
         limitDateByReportType =
             if model.reportType == Just ReportNutrition then
@@ -98,7 +155,10 @@ viewReportsData language currentDate data model =
                 model.limitDate
 
         content =
-            if isJust model.dateSelectorPopupState then
+            if
+                isJust model.startDateSelectorPopupState
+                    || isJust model.limitDateSelectorPopupState
+            then
                 -- Date selector is open, so no need to calcualte
                 -- intermediate results.
                 emptyNode
@@ -191,6 +251,14 @@ viewReportsData language currentDate data model =
                                         data.records
                         in
                         case reportType of
+                            ReportAcuteIllness ->
+                                Maybe.map
+                                    (\startDate ->
+                                        viewAcuteIllnessReport language startDate recordsTillLimitDate
+                                    )
+                                    model.startDate
+                                    |> Maybe.withDefault emptyNode
+
                             ReportDemographics ->
                                 viewDemographicsReport language limitDate recordsTillLimitDate
 
@@ -212,19 +280,24 @@ viewReportsData language currentDate data model =
     in
     div [ class "page-content" ]
         [ topBar
-        , div [ class "inputs" ]
+        , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType
-                [ ReportDemographics, ReportNutrition, ReportPrenatal ]
+                [ ReportAcuteIllness
+                , ReportPrenatal
+                , ReportDemographics
+                , ReportNutrition
+                ]
                 reportTypeToString
                 SetReportType
                 Translate.ReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
-            , limitDateInput
-            , content
             ]
-        , viewModal <| viewCalendarPopup language model.dateSelectorPopupState model.limitDate
+                ++ dateInputs
+                ++ [ content ]
+        , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
+        , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
         ]
 
 
@@ -1208,3 +1281,84 @@ viewPrenatalReport language limitDate records =
                 , ( completedChwVisits5, completedNurseVisits5 )
                 , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
                 ]
+
+
+viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
+viewAcuteIllnessReport language startDate records =
+    let
+        acuteIllnessDataRecords =
+            List.map .acuteIllnessData records
+                |> Maybe.Extra.values
+
+        filtered =
+            -- We got recordes filtered by limit date (end date).
+            -- Now we need to filter from start date.
+            List.concat acuteIllnessDataRecords
+                |> List.concat
+                |> List.filter
+                    (\encounter ->
+                        not <| Date.compare encounter.startDate startDate == LT
+                    )
+
+        diagnosesCountDict =
+            List.map .diagnosis filtered
+                |> Maybe.Extra.values
+                |> List.foldl
+                    (\diagnosis accum ->
+                        Dict.get diagnosis accum
+                            |> Maybe.map
+                                (\value ->
+                                    Dict.insert diagnosis (value + 1) accum
+                                )
+                            |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
+                    )
+                    Dict.empty
+
+        -- Initial encounter always determine a diagnosis.
+        -- Here we count the illnesses for which no diagnosis was determined.
+        illnessesWithNoDiagnosis =
+            List.concat acuteIllnessDataRecords
+                |> List.filter
+                    (\encountersList ->
+                        List.sortWith (sortByDateDesc .startDate) encountersList
+                            |> List.head
+                            |> Maybe.map
+                                (\encounter ->
+                                    (not <| Date.compare encounter.startDate startDate == LT)
+                                        && isNothing encounter.diagnosis
+                                )
+                            |> Maybe.withDefault False
+                    )
+                |> List.length
+
+        rows =
+            List.map
+                (\diagnosis ->
+                    Dict.get diagnosis diagnosesCountDict
+                        |> Maybe.withDefault 0
+                        |> viewRow (Translate.AcuteIllnessDiagnosis diagnosis)
+                )
+                allAcuteIllnessDiagnoses
+
+        totalsRow =
+            Dict.values diagnosesCountDict
+                |> List.sum
+                |> viewRow Translate.Total
+
+        noneRow =
+            viewRow Translate.NoDiagnosis illnessesWithNoDiagnosis
+
+        viewRow label value =
+            div [ class "row" ]
+                [ div [ class "item label" ] [ text <| translate language label ]
+                , div [ class "item value" ] [ text <| String.fromInt value ]
+                ]
+    in
+    div [ class "report acute-illness" ]
+        [ div [ class "table" ] <|
+            div [ class "row captions" ]
+                [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
+                , div [ class "item value" ] [ text <| translate language Translate.Total ]
+                ]
+                :: (rows ++ [ totalsRow, noneRow ])
+        ]

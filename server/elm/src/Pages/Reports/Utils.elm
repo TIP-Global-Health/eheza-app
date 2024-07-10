@@ -14,6 +14,9 @@ import Set exposing (Set)
 reportTypeToString : ReportType -> String
 reportTypeToString reportType =
     case reportType of
+        ReportAcuteIllness ->
+            "acute-illness"
+
         ReportDemographics ->
             "demographics"
 
@@ -27,6 +30,9 @@ reportTypeToString reportType =
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
     case reportType of
+        "acute-illness" ->
+            Just ReportAcuteIllness
+
         "demographics" ->
             Just ReportDemographics
 

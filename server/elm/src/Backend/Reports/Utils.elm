@@ -14,3 +14,23 @@ genderFromString s =
 
         _ ->
             Nothing
+
+
+allAcuteIllnessDiagnoses : List AcuteIllnessDiagnosis
+allAcuteIllnessDiagnoses =
+    [ DiagnosisCovid19Suspect
+    , DiagnosisSevereCovid19
+    , DiagnosisPneuminialCovid19
+    , DiagnosisLowRiskCovid19
+    , DiagnosisMalariaComplicated
+    , DiagnosisMalariaUncomplicated
+    , DiagnosisMalariaUncomplicatedAndPregnant
+    , DiagnosisGastrointestinalInfectionComplicated
+    , DiagnosisGastrointestinalInfectionUncomplicated
+    , DiagnosisSimpleColdAndCough
+    , DiagnosisRespiratoryInfectionComplicated
+    , DiagnosisRespiratoryInfectionUncomplicated
+    , DiagnosisFeverOfUnknownOrigin
+    , DiagnosisUndeterminedMoreEvaluationNeeded
+    , DiagnosisTuberculosisSuspect
+    ]

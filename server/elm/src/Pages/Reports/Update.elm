@@ -37,6 +37,7 @@ update currentDate modelBackend msg model =
                 modelUpdated =
                     { model
                         | reportType = mReportType
+                        , startDate = Nothing
                         , limitDate = Nothing
                         , nutritionReportData = nutritionReportData
                     }
@@ -44,6 +45,24 @@ update currentDate modelBackend msg model =
             PagesReturn
                 modelUpdated
                 cmd
+                noError
+                []
+
+        SetStartDate value ->
+            PagesReturn
+                { model | startDate = Just value }
+                Cmd.none
+                noError
+                []
+
+        SetStartDateSelectorState state ->
+            let
+                defaultSelection =
+                    Maybe.Extra.or model.startDate (Maybe.andThen .dateDefault state)
+            in
+            PagesReturn
+                { model | startDateSelectorPopupState = state, startDate = defaultSelection }
+                Cmd.none
                 noError
                 []
 
@@ -60,7 +79,7 @@ update currentDate modelBackend msg model =
                     Maybe.Extra.or model.limitDate (Maybe.andThen .dateDefault state)
             in
             PagesReturn
-                { model | dateSelectorPopupState = state, limitDate = defaultSelection }
+                { model | limitDateSelectorPopupState = state, limitDate = defaultSelection }
                 Cmd.none
                 noError
                 []

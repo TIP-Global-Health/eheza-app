@@ -1,12 +1,4 @@
-module Gizra.NominalDate exposing
-    ( NominalDate
-    , decodeYYYYMMDD, encodeYYYYMMDD
-    , formatYYYYMMDD
-    , fromLocalDateTime
-    , diffDays, diffCalendarMonthsAndDays
-    , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, toLastDayOfMonth, yearYYNumber
-    )
+module Gizra.NominalDate exposing (..)
 
 {-| Some utilities for dealing with "pure" dates that have no time or
 time zone information.
@@ -90,6 +82,7 @@ different day in a different time zone.
 fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime =
     Date.fromPosix Time.utc
+
 
 {-| Given a date, return date representing it's last month day.
 
@@ -366,3 +359,8 @@ allMonths =
 yearYYNumber : NominalDate -> Int
 yearYYNumber date =
     modBy 100 (Date.year date)
+
+
+sortByDateDesc : (a -> NominalDate) -> a -> a -> Order
+sortByDateDesc getDateFunc entity1 entity2 =
+    Date.compare (getDateFunc entity2) (getDateFunc entity1)

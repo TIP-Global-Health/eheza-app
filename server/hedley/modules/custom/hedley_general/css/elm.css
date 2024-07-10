@@ -88,10 +88,17 @@ body.admin-menu #page-wrapper #header {
 .page-content .top-bar {
   display: flex;
   height: 60px;
+  margin-bottom: 20px;
 }
 
 .page-content .top-bar .new-selection {
   width: 35%;
+}
+
+.page-content .top-bar .scope {
+  font-size: 28px;
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 .page-content .top-bar .year-selector {
@@ -318,6 +325,8 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .inputs .report .table .row .item.value {
+  margin-bottom: auto;
+  margin-top: auto;
   width: 30%;
 }
 

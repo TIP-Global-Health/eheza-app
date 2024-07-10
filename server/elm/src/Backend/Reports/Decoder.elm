@@ -93,23 +93,22 @@ decodeAcuteIllnessEncounterData =
     string
         |> andThen
             (\s ->
-                case String.split " " (String.trim s) of
-                    [ first ] ->
+                case String.split "|" (String.trim s) of
+                    [ first, second, third ] ->
                         Date.fromIsoString first
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (AcuteIllnessEncounterData startDate AcuteIllnessEncounterCHW)
-                                )
-                            |> Maybe.withDefault (fail "Failed to decode AcuteIllnessEncounterData")
+                                    let
+                                        encounterType =
+                                            acuteIllnessEncounterTypeFromString second
+                                                |> Maybe.withDefault AcuteIllnessEncounterCHW
 
-                    [ first, second ] ->
-                        Maybe.map2
-                            (\startDate encounterType ->
-                                succeed (AcuteIllnessEncounterData startDate encounterType)
-                            )
-                            (Date.fromIsoString first |> Result.toMaybe)
-                            (acuteIllnessEncounterTypeFromString second)
+                                        diagnosis =
+                                            acuteIllnessDiagnosisFromMapping third
+                                    in
+                                    succeed (AcuteIllnessEncounterData startDate encounterType diagnosis)
+                                )
                             |> Maybe.withDefault (fail "Failed to decode AcuteIllnessEncounterData")
 
                     _ ->
@@ -128,6 +127,58 @@ acuteIllnessEncounterTypeFromString encounterType =
 
         "chw-encounter" ->
             Just AcuteIllnessEncounterCHW
+
+        _ ->
+            Nothing
+
+
+acuteIllnessDiagnosisFromMapping : String -> Maybe AcuteIllnessDiagnosis
+acuteIllnessDiagnosisFromMapping mapping =
+    case mapping of
+        "a" ->
+            Just DiagnosisCovid19Suspect
+
+        "b" ->
+            Just DiagnosisSevereCovid19
+
+        "c" ->
+            Just DiagnosisPneuminialCovid19
+
+        "d" ->
+            Just DiagnosisLowRiskCovid19
+
+        "e" ->
+            Just DiagnosisMalariaComplicated
+
+        "f" ->
+            Just DiagnosisMalariaUncomplicated
+
+        "g" ->
+            Just DiagnosisMalariaUncomplicatedAndPregnant
+
+        "h" ->
+            Just DiagnosisGastrointestinalInfectionComplicated
+
+        "i" ->
+            Just DiagnosisGastrointestinalInfectionUncomplicated
+
+        "j" ->
+            Just DiagnosisSimpleColdAndCough
+
+        "k" ->
+            Just DiagnosisRespiratoryInfectionComplicated
+
+        "l" ->
+            Just DiagnosisRespiratoryInfectionUncomplicated
+
+        "m" ->
+            Just DiagnosisFeverOfUnknownOrigin
+
+        "n" ->
+            Just DiagnosisUndeterminedMoreEvaluationNeeded
+
+        "o" ->
+            Just DiagnosisTuberculosisSuspect
 
         _ ->
             Nothing

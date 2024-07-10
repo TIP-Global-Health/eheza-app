@@ -42,6 +42,7 @@ viewMenu language data model =
                 viewDemographicsSelectionActionButton language
                     data.site
                     "/admin/reports/aggregated-ncda"
+                    Translate.GenerateReport
                     SelectionMade
                     model.selectedDemographics
 

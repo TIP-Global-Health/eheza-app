@@ -20,8 +20,8 @@ import Pages.Utils
     exposing
         ( viewCustomLabel
         , viewCustomSelectListInput
-        , viewGenerateReportButton
         , viewGeoLocationSelectListInput
+        , viewLoadDataButton
         , viewSelectListInput
         , wrapSelectListInput
         )
@@ -60,7 +60,7 @@ viewMenu language data model =
                 (\populationSelection ->
                     case populationSelection of
                         SelectionOptionGlobal ->
-                            ( [], viewGenerateReportButton language "/admin/reports/aggregated-reports/all" SelectionMade )
+                            ( [], viewLoadDataButton language "/admin/reports/aggregated-reports/all" SelectionMade )
 
                         SelectionOptionDemographics ->
                             ( viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics
@@ -68,6 +68,7 @@ viewMenu language data model =
                                 viewDemographicsSelectionActionButton language
                                     data.site
                                     "/admin/reports/aggregated-reports/demographics"
+                                    Translate.LoadData
                                     SelectionMade
                                     model.selectedDemographics
 
@@ -92,7 +93,7 @@ viewMenu language data model =
                               ]
                             , Maybe.map
                                 (\selectedHealthCenter ->
-                                    viewGenerateReportButton language
+                                    viewLoadDataButton language
                                         ("/admin/reports/aggregated-reports/health-center/" ++ String.fromInt selectedHealthCenter)
                                         SelectionMade
                                 )

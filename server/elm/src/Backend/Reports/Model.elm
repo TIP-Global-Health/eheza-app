@@ -59,6 +59,7 @@ type Gender
 type alias AcuteIllnessEncounterData =
     { startDate : NominalDate
     , encounterType : AcuteIllnessEncounterType
+    , diagnosis : Maybe AcuteIllnessDiagnosis
     }
 
 
@@ -66,6 +67,24 @@ type AcuteIllnessEncounterType
     = AcuteIllnessEncounterNurse
     | AcuteIllnessEncounterNurseSubsequent
     | AcuteIllnessEncounterCHW
+
+
+type AcuteIllnessDiagnosis
+    = DiagnosisCovid19Suspect
+    | DiagnosisSevereCovid19
+    | DiagnosisPneuminialCovid19
+    | DiagnosisLowRiskCovid19
+    | DiagnosisMalariaComplicated
+    | DiagnosisMalariaUncomplicated
+    | DiagnosisMalariaUncomplicatedAndPregnant
+    | DiagnosisGastrointestinalInfectionComplicated
+    | DiagnosisGastrointestinalInfectionUncomplicated
+    | DiagnosisSimpleColdAndCough
+    | DiagnosisRespiratoryInfectionComplicated
+    | DiagnosisRespiratoryInfectionUncomplicated
+    | DiagnosisFeverOfUnknownOrigin
+    | DiagnosisUndeterminedMoreEvaluationNeeded
+    | DiagnosisTuberculosisSuspect
 
 
 type alias PrenatalParticipantData =
