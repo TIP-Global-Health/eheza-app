@@ -573,30 +573,9 @@ viewDemographicsReportPatients language limitDate data =
         viewTable tableData =
             div [ class <| "table " ++ tableData.name ] <|
                 [ div [ class "row captions" ] <|
-                    List.map (\caption -> div [ class "item label" ] [ text caption ]) tableData.captions
+                    viewStandardCells tableData.captions
                 ]
-                    ++ List.map
-                        (\cells ->
-                            div [ class "row" ] <|
-                                List.indexedMap
-                                    (\index cellText ->
-                                        div
-                                            [ classList
-                                                [ ( "item", True )
-                                                , ( "label", index == 0 )
-                                                , ( "value", index /= 0 )
-                                                ]
-                                            ]
-                                            [ text cellText ]
-                                    )
-                                    cells
-                        )
-                        tableData.rows
-                    ++ [ div [ class "row totals" ]
-                            [ div [ class "item label" ] [ text <| Tuple.first tableData.totals ]
-                            , div [ class "item value" ] [ text <| Tuple.second tableData.totals ]
-                            ]
-                       ]
+                    ++ List.map viewStandardRow tableData.rows
     in
     div [ class "section heading" ] [ text data.heading ]
         :: List.map viewTable data.tables
@@ -970,25 +949,11 @@ viewDemographicsReportEncounters language data =
     [ div [ class "section heading" ] [ text data.heading ]
     , div [ class "table encounters" ] <|
         [ div [ class "row captions" ] <|
-            List.indexedMap
-                (\index caption ->
-                    div
-                        [ classList
-                            [ ( "item", True )
-                            , ( "label", index == 0 )
-                            , ( "value", index /= 0 )
-                            ]
-                        ]
-                        [ text caption ]
-                )
-                data.captions
+            viewStandardCells data.captions
         ]
             ++ List.map viewRow data.rows
-            ++ [ div [ class "row encounters-totals" ]
-                    [ div [ class "item label" ] [ text data.totals.label ]
-                    , div [ class "item value" ] [ text data.totals.total ]
-                    , div [ class "item value" ] [ text data.totals.unique ]
-                    ]
+            ++ [ div [ class "row encounters-totals" ] <|
+                    viewStandardCells [ data.totals.label, data.totals.total, data.totals.unique ]
                ]
     ]
 
@@ -1289,39 +1254,17 @@ viewNutritionMetricsResultsTable :
     -> List (Html Msg)
 viewNutritionMetricsResultsTable data =
     let
-        headerRow =
-            List.indexedMap
-                (\index caption ->
-                    div
-                        [ classList
-                            [ ( "item", True )
-                            , ( "row-label", index == 0 )
-                            , ( "heading", index /= 0 )
-                            ]
-                        ]
-                        [ text caption ]
-                )
-                data.captions
-                |> div [ class "row" ]
+        captionsRow =
+            div [ class "row" ] <|
+                viewCustomCells "row-label" "heading" data.captions
 
         viewRow cells =
             div [ class "row" ] <|
-                List.indexedMap
-                    (\index cellText ->
-                        div
-                            [ classList
-                                [ ( "item", True )
-                                , ( "row-label", index == 0 )
-                                , ( "value", index /= 0 )
-                                ]
-                            ]
-                            [ text cellText ]
-                    )
-                    cells
+                viewCustomCells "row-label" "value" cells
     in
     [ div [ class "section heading" ] [ text data.heading ]
     , div [ class "table wide" ] <|
-        headerRow
+        captionsRow
             :: List.map viewRow data.rows
     ]
 
@@ -1336,28 +1279,10 @@ viewPrenatalReport language limitDate scopeLabel records =
             [ div [ class "section heading" ] [ text tableData.heading ]
             , div [ class "table anc" ] <|
                 (div [ class "row captions" ] <|
-                    viewCells tableData.captions
+                    viewStandardCells tableData.captions
                 )
-                    :: List.map viewRow tableData.rows
+                    :: List.map viewStandardRow tableData.rows
             ]
-
-        viewRow cells =
-            div [ class "row" ] <|
-                viewCells cells
-
-        viewCells cells =
-            List.indexedMap
-                (\index cellText ->
-                    div
-                        [ classList
-                            [ ( "item", True )
-                            , ( "label", index == 0 )
-                            , ( "value", index /= 0 )
-                            ]
-                        ]
-                        [ text cellText ]
-                )
-                cells
 
         csvFileName =
             "anc-report-"
@@ -1606,6 +1531,27 @@ generatePrenatalReportData language limitDate records =
 viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
 viewAcuteIllnessReport language startDate records =
     let
+        data =
+            generateAcuteIllnessReportData language startDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+    in
+    div [ class "report acute-illness" ]
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        ]
+
+
+generateAcuteIllnessReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateAcuteIllnessReportData language startDate records =
+    let
         acuteIllnessDataRecords =
             List.map .acuteIllnessData records
                 |> Maybe.Extra.values
@@ -1656,32 +1602,56 @@ viewAcuteIllnessReport language startDate records =
                 (\diagnosis ->
                     Dict.get diagnosis diagnosesCountDict
                         |> Maybe.withDefault 0
-                        |> viewRow (Translate.AcuteIllnessDiagnosis diagnosis)
+                        |> generateRow (Translate.AcuteIllnessDiagnosis diagnosis)
                 )
                 allAcuteIllnessDiagnoses
 
         totalsRow =
             Dict.values diagnosesCountDict
                 |> List.sum
-                |> viewRow Translate.Total
+                |> generateRow Translate.Total
 
         noneRow =
-            viewRow Translate.NoDiagnosis illnessesWithNoDiagnosis
+            generateRow Translate.NoDiagnosis illnessesWithNoDiagnosis
 
-        viewRow label value =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text <| translate language label ]
-                , div [ class "item value" ] [ text <| String.fromInt value ]
-                ]
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
     in
-    div [ class "report acute-illness" ]
-        [ div [ class "table" ] <|
-            div [ class "row captions" ]
-                [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
-                , div [ class "item value" ] [ text <| translate language Translate.Total ]
-                ]
-                :: (rows ++ [ totalsRow, noneRow ])
+    { heading = ""
+    , captions =
+        [ translate language Translate.Diagnosis
+        , translate language Translate.Total
         ]
+    , rows = rows ++ [ totalsRow ] ++ [ noneRow ]
+    }
+
+
+viewStandardRow : List String -> Html any
+viewStandardRow =
+    viewStandardCells
+        >> div [ class "row" ]
+
+
+viewStandardCells : List String -> List (Html any)
+viewStandardCells =
+    viewCustomCells "label" "value"
+
+
+viewCustomCells : String -> String -> List String -> List (Html any)
+viewCustomCells labelClass valueClass =
+    List.indexedMap
+        (\index cellText ->
+            div
+                [ classList
+                    [ ( "item", True )
+                    , ( labelClass, index == 0 )
+                    , ( valueClass, index /= 0 )
+                    ]
+                ]
+                [ text cellText ]
+        )
 
 
 viewDownloadCSVButton : Language -> String -> String -> Html Msg
