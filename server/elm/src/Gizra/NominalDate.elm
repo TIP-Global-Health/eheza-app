@@ -48,7 +48,12 @@ type alias NominalDateRange =
 -}
 formatDDMMYYYY : NominalDate -> String
 formatDDMMYYYY =
-    Date.format "dd/MM/yyyy"
+    customFormatDDMMYYYY "/"
+
+
+customFormatDDMMYYYY : String -> NominalDate -> String
+customFormatDDMMYYYY delimiter =
+    Date.format <| "dd" ++ delimiter ++ "MM" ++ delimiter ++ "yyyy"
 
 
 {-| Convert nominal date to a formatted string..

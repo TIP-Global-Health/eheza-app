@@ -96,3 +96,4 @@ type Msg
     | SetLimitDate Date
     | SetLimitDateSelectorState (Maybe (DateSelectorConfig Msg))
     | NutritionReportDataCalculationCompleted (Result String NutritionReportData)
+    | DownloadCSV String String

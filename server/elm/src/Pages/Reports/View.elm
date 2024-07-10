@@ -17,7 +17,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, sortByDateDesc)
+import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -49,18 +49,6 @@ viewReportsData : Language -> NominalDate -> ReportsData -> Model -> Html Msg
 viewReportsData language currentDate data model =
     let
         topBar =
-            let
-                scopeLabel =
-                    case data.entityType of
-                        EntityGlobal ->
-                            translate language Translate.Global
-
-                        EntityHealthCenter ->
-                            data.entityName
-
-                        _ ->
-                            data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
-            in
             div [ class "top-bar" ]
                 [ div [ class "new-selection" ]
                     [ a [ href "/admin/reports/aggregated-reports" ]
@@ -71,6 +59,17 @@ viewReportsData language currentDate data model =
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
+
+        scopeLabel =
+            case data.entityType of
+                EntityGlobal ->
+                    translate language Translate.Global
+
+                EntityHealthCenter ->
+                    data.entityName
+
+                _ ->
+                    data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
 
         dateInputs =
             Maybe.map
@@ -254,19 +253,19 @@ viewReportsData language currentDate data model =
                             ReportAcuteIllness ->
                                 Maybe.map
                                     (\startDate ->
-                                        viewAcuteIllnessReport language startDate recordsTillLimitDate
+                                        viewAcuteIllnessReport language limitDate startDate scopeLabel recordsTillLimitDate
                                     )
                                     model.startDate
                                     |> Maybe.withDefault emptyNode
 
                             ReportDemographics ->
-                                viewDemographicsReport language limitDate recordsTillLimitDate
+                                viewDemographicsReport language limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
-                                viewNutritionReport language limitDate model.nutritionReportData
+                                viewNutritionReport language limitDate scopeLabel model.nutritionReportData
 
                             ReportPrenatal ->
-                                viewPrenatalReport language limitDate recordsTillLimitDate
+                                viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
                     )
                     model.reportType
                     limitDateByReportType
@@ -301,15 +300,48 @@ viewReportsData language currentDate data model =
         ]
 
 
-viewDemographicsReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewDemographicsReport language limitDate records =
+viewDemographicsReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewDemographicsReport language limitDate scopeLabel records =
+    let
+        demographicsReportPatientsData =
+            generateDemographicsReportPatientsData language limitDate records
+
+        demographicsReportEncountersData =
+            generateDemographicsReportEncountersData language records
+
+        csvFileName =
+            "demographics-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            demographicsReportPatientsDataToCSV demographicsReportPatientsData
+                ++ "\n\n\n"
+                ++ demographicsReportEncountersDataToCSV demographicsReportEncountersData
+    in
     div [ class "report demographics" ] <|
-        viewDemographicsReportPatients language limitDate records
-            ++ viewDemographicsReportEncounters language records
+        viewDemographicsReportPatients language limitDate demographicsReportPatientsData
+            ++ viewDemographicsReportEncounters language demographicsReportEncountersData
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
-viewDemographicsReportPatients : Language -> NominalDate -> List PatientData -> List (Html Msg)
-viewDemographicsReportPatients language limitDate records =
+generateDemographicsReportPatientsData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    ->
+        { heading : String
+        , tables :
+            List
+                { captions : List String
+                , name : String
+                , rows : List (List String)
+                , totals : ( String, String )
+                }
+        }
+generateDemographicsReportPatientsData language limitDate records =
     let
         ( males, females ) =
             List.partition (.gender >> (==) Male) records
@@ -473,55 +505,121 @@ viewDemographicsReportPatients language limitDate records =
                 ++ malesImpacted50YearsOrMore
                 ++ femalesImpacted50YearsOrMore
 
-        viewRow label valueMales valueFemales =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text label ]
-                , div [ class "item value" ] [ text <| String.fromInt <| List.length valueMales ]
-                , div [ class "item value" ] [ text <| String.fromInt <| List.length valueFemales ]
-                ]
+        labels =
+            [ "0 - 1M"
+            , "1M - 2Y"
+            , "2Y - 5Y"
+            , "5Y - 10Y"
+            , "10Y - 20Y"
+            , "20Y - 50Y"
+            , "50Y +"
+            ]
+
+        generateRow label ( valueMales, valueFemales ) =
+            [ label, String.fromInt <| List.length valueMales, String.fromInt <| List.length valueFemales ]
     in
-    [ viewCustomLabel language Translate.RegisteredPatients ":" "section heading"
-    , div [ class "table registered" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Registered ]
-            , div [ class "item value" ] [ text <| translate language Translate.Male ]
-            , div [ class "item value" ] [ text <| translate language Translate.Female ]
-            ]
-        , viewRow "0 - 1M" males1MonthAndLess females1MonthAndLess
-        , viewRow "1M - 2Y" males1Month2Years females1Month2Years
-        , viewRow "2Y - 5Y" males2Years5Years females2Years5Years
-        , viewRow "5Y - 10Y" males5Years10Years females5Years10Years
-        , viewRow "10Y - 20Y" males10Years20Years females10Years20Years
-        , viewRow "20Y - 50Y" males20Years50Years females20Years50Years
-        , viewRow "50Y +" males50YearsOrMore females50YearsOrMore
-        , div [ class "row totals" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Total ]
-            , div [ class "item value" ] [ text <| String.fromInt <| List.length <| males ++ females ]
-            ]
+    { heading = translate language Translate.RegisteredPatients ++ ":"
+    , tables =
+        [ { name = "registered"
+          , captions = List.map (translate language) [ Translate.Registered, Translate.Male, Translate.Female ]
+          , rows =
+                List.map2 generateRow
+                    labels
+                    [ ( males1MonthAndLess, females1MonthAndLess )
+                    , ( males1Month2Years, females1Month2Years )
+                    , ( males2Years5Years, females2Years5Years )
+                    , ( males5Years10Years, females5Years10Years )
+                    , ( males10Years20Years, females10Years20Years )
+                    , ( males20Years50Years, females20Years50Years )
+                    , ( males50YearsOrMore, females50YearsOrMore )
+                    ]
+          , totals = ( translate language Translate.Total, String.fromInt <| List.length <| males ++ females )
+          }
+        , { name = "impacted"
+          , captions = List.map (translate language) [ Translate.Impacted, Translate.Male, Translate.Female ]
+          , rows =
+                List.map2 generateRow
+                    labels
+                    [ ( malesImpacted1MonthAndLess, femalesImpacted1MonthAndLess )
+                    , ( malesImpacted1Month2Years, femalesImpacted1Month2Years )
+                    , ( malesImpacted2Years5Years, femalesImpacted2Years5Years )
+                    , ( malesImpacted5Years10Years, femalesImpacted5Years10Years )
+                    , ( malesImpacted10Years20Years, femalesImpacted10Years20Years )
+                    , ( malesImpacted20Years50Years, femalesImpacted20Years50Years )
+                    , ( malesImpacted50YearsOrMore, femalesImpacted50YearsOrMore )
+                    ]
+          , totals = ( translate language Translate.Total, String.fromInt <| List.length patientsImpacted )
+          }
         ]
-    , div [ class "table impacted" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Impacted ]
-            , div [ class "item value" ] [ text <| translate language Translate.Male ]
-            , div [ class "item value" ] [ text <| translate language Translate.Female ]
+    }
+
+
+viewDemographicsReportPatients :
+    Language
+    -> NominalDate
+    ->
+        { heading : String
+        , tables :
+            List
+                { captions : List String
+                , name : String
+                , rows : List (List String)
+                , totals : ( String, String )
+                }
+        }
+    -> List (Html Msg)
+viewDemographicsReportPatients language limitDate data =
+    let
+        viewTable tableData =
+            div [ class <| "table " ++ tableData.name ] <|
+                [ div [ class "row captions" ] <|
+                    viewStandardCells tableData.captions
+                ]
+                    ++ List.map viewStandardRow tableData.rows
+    in
+    div [ class "section heading" ] [ text data.heading ]
+        :: List.map viewTable data.tables
+
+
+demographicsReportPatientsDataToCSV :
+    { heading : String
+    , tables :
+        List
+            { captions : List String
+            , name : String
+            , rows : List (List String)
+            , totals : ( String, String )
+            }
+    }
+    -> String
+demographicsReportPatientsDataToCSV data =
+    let
+        tableDataToCSV tableData =
+            [ String.join "," tableData.captions
+            , List.map (String.join ",")
+                tableData.rows
+                |> String.join "\n"
+            , Tuple.first tableData.totals ++ "," ++ Tuple.second tableData.totals
             ]
-        , viewRow "0 - 1M" malesImpacted1MonthAndLess femalesImpacted1MonthAndLess
-        , viewRow "1M - 2Y" malesImpacted1Month2Years femalesImpacted1Month2Years
-        , viewRow "2Y - 5Y" malesImpacted2Years5Years femalesImpacted2Years5Years
-        , viewRow "5Y - 10Y" malesImpacted5Years10Years femalesImpacted5Years10Years
-        , viewRow "10Y - 20Y" malesImpacted10Years20Years femalesImpacted10Years20Years
-        , viewRow "20Y - 50Y" malesImpacted20Years50Years femalesImpacted20Years50Years
-        , viewRow "50Y +" malesImpacted50YearsOrMore femalesImpacted50YearsOrMore
-        , div [ class "row totals" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.Total ]
-            , div [ class "item value" ] [ text <| String.fromInt <| List.length patientsImpacted ]
-            ]
-        ]
+                |> String.join "\n"
+    in
+    [ data.heading ++ "\n"
+    , List.map tableDataToCSV data.tables
+        |> String.join "\n\n"
     ]
+        |> String.join "\n"
 
 
-viewDemographicsReportEncounters : Language -> List PatientData -> List (Html Msg)
-viewDemographicsReportEncounters language records =
+generateDemographicsReportEncountersData :
+    Language
+    -> List PatientData
+    ->
+        { heading : String
+        , captions : List String
+        , rows : List ( List String, Bool )
+        , totals : { label : String, total : String, unique : String }
+        }
+generateDemographicsReportEncountersData language records =
     let
         prenatalDataNurseEncounters =
             List.filterMap
@@ -781,61 +879,105 @@ viewDemographicsReportEncounters language records =
         countUnique =
             List.filter (not << List.isEmpty) >> List.length
 
-        viewRow =
-            viewCustomRow "row"
-
-        viewCustomRow rowClass labelTransId all unique shiftLeft =
-            div [ class rowClass ]
-                [ div
-                    [ classList
-                        [ ( "item label", True )
-                        , ( "ml-5", shiftLeft )
-                        ]
-                    ]
-                    [ text <| translate language labelTransId ]
-                , div [ class "item value" ] [ text <| String.fromInt all ]
-                , div [ class "item value" ] [ text <| String.fromInt unique ]
-                ]
+        generateRow labelTransId all unique shiftLeft =
+            ( [ translate language labelTransId, String.fromInt all, String.fromInt unique ], shiftLeft )
     in
-    [ viewCustomLabel language Translate.Encounters ":" "section heading"
-    , div [ class "table encounters" ]
-        [ div [ class "row captions" ]
-            [ div [ class "item label" ] [ text <| translate language Translate.EncounterType ]
-            , div [ class "item value" ] [ text <| translate language Translate.All ]
-            , div [ class "item value" ] [ text <| translate language Translate.Unique ]
-            ]
-        , viewRow Translate.ANCTotal
+    { heading = translate language Translate.Encounters ++ ":"
+    , captions = List.map (translate language) [ Translate.EncounterType, Translate.All, Translate.Unique ]
+    , rows =
+        [ generateRow Translate.ANCTotal
             (prenatalDataNurseEncountersTotal + prenatalDataChwEncountersTotal)
             (prenatalDataNurseEncountersUnique + prenatalDataChwEncountersUnique)
             False
-        , viewRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
-        , viewRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
-        , viewRow Translate.AcuteIllnessTotal
+        , generateRow Translate.HealthCenter prenatalDataNurseEncountersTotal prenatalDataNurseEncountersUnique True
+        , generateRow Translate.CHW prenatalDataChwEncountersTotal prenatalDataChwEncountersUnique True
+        , generateRow Translate.AcuteIllnessTotal
             (acuteIllnessDataNurseEncountersTotal + acuteIllnessDataChwEncountersTotal)
             (acuteIllnessDataNurseEncountersUnique + acuteIllnessDataChwEncountersUnique)
             False
-        , viewRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
-        , viewRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
-        , viewRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
-        , viewRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
-        , viewRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
-        , viewRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
-        , viewRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
-        , viewRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
-        , viewRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
-        , viewRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
-        , viewRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
-        , viewRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
-        , viewRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
-        , viewRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
-        , viewRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
-        , viewCustomRow "row encounters-totals" Translate.Total overallTotal overallUnique False
+        , generateRow Translate.HealthCenter acuteIllnessDataNurseEncountersTotal acuteIllnessDataNurseEncountersUnique True
+        , generateRow Translate.CHW acuteIllnessDataChwEncountersTotal acuteIllnessDataChwEncountersUnique True
+        , generateRow Translate.StandardPediatricVisit wellChildDataEncountersTotal wellChildDataEncountersUnique False
+        , generateRow Translate.HomeVisit homeVisitDataEncountersTotal homeVisitDataEncountersUnique False
+        , generateRow Translate.ChildScorecard childScorecardDataEncountersTotal childScorecardDataEncountersUnique False
+        , generateRow Translate.NCD ncdDataEncountersTotal ncdDataEncountersUnique False
+        , generateRow Translate.HIV hivDataEncountersTotal hivDataEncountersUnique False
+        , generateRow Translate.Tuberculosis tuberculosisDataEncountersTotal tuberculosisDataEncountersUnique False
+        , generateRow Translate.NutritionTotal overallNutritionTotal overallNutritionUnique False
+        , generateRow Translate.PMTCT nutritionGroupPmtctEncountersTotal nutritionGroupPmtctEncountersUnique True
+        , generateRow Translate.FBF nutritionGroupFbfEncountersTotal nutritionGroupFbfEncountersUnique True
+        , generateRow Translate.Sorwathe nutritionGroupSorwatheEncountersTotal nutritionGroupSorwatheEncountersUnique True
+        , generateRow Translate.CBNP nutritionGroupChwEncountersTotal nutritionGroupChwEncountersUnique True
+        , generateRow Translate.ACHI nutritionGroupAchiEncountersTotal nutritionGroupAchiEncountersUnique True
+        , generateRow Translate.Individual nutritionIndividualEncountersTotal nutritionIndividualEncountersUnique True
         ]
+    , totals =
+        { label = translate language Translate.Total
+        , total = String.fromInt overallTotal
+        , unique = String.fromInt overallUnique
+        }
+    }
+
+
+viewDemographicsReportEncounters :
+    Language
+    ->
+        { heading : String
+        , captions : List String
+        , rows : List ( List String, Bool )
+        , totals : { label : String, total : String, unique : String }
+        }
+    -> List (Html Msg)
+viewDemographicsReportEncounters language data =
+    let
+        viewRow ( cells, shiftLeft ) =
+            div [ class "row" ] <|
+                List.indexedMap
+                    (\index cellText ->
+                        div
+                            [ classList
+                                [ ( "item", True )
+                                , ( "label", index == 0 )
+                                , ( "ml-5", index == 0 && shiftLeft )
+                                , ( "value", index /= 0 )
+                                ]
+                            ]
+                            [ text cellText ]
+                    )
+                    cells
+    in
+    [ div [ class "section heading" ] [ text data.heading ]
+    , div [ class "table encounters" ] <|
+        [ div [ class "row captions" ] <|
+            viewStandardCells data.captions
+        ]
+            ++ List.map viewRow data.rows
+            ++ [ div [ class "row encounters-totals" ] <|
+                    viewStandardCells [ data.totals.label, data.totals.total, data.totals.unique ]
+               ]
     ]
 
 
-viewNutritionReport : Language -> NominalDate -> RemoteData String NutritionReportData -> Html Msg
-viewNutritionReport language currentDate reportData =
+demographicsReportEncountersDataToCSV :
+    { heading : String
+    , captions : List String
+    , rows : List ( List String, Bool )
+    , totals : { label : String, total : String, unique : String }
+    }
+    -> String
+demographicsReportEncountersDataToCSV data =
+    [ data.heading ++ "\n"
+    , String.join "," data.captions
+    , List.map (Tuple.first >> String.join ",")
+        data.rows
+        |> String.join "\n"
+    , String.join "," [ data.totals.label, data.totals.total, data.totals.unique ]
+    ]
+        |> String.join "\n"
+
+
+viewNutritionReport : Language -> NominalDate -> String -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate scopeLabel reportData =
     case reportData of
         Success data ->
             let
@@ -855,33 +997,70 @@ viewNutritionReport language currentDate reportData =
                             }
                         )
                         data.encountersByMonth
+
+                prevalenceByMonthOneVisitOrMoreData =
+                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthOneVisitOrMore data.encountersByMonth
+
+                prevalenceByMonthTwoVisitsOrMoreData =
+                    generateMonthlyPrevalenceTableData language currentDate Translate.PrevalenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+
+                incidenceByMonthOneVisitOrMoreData =
+                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthOneVisitOrMore data.encountersByMonth
+
+                incidenceByMonthTwoVisitsOrMoreData =
+                    generateMonthlyIncidenceTableData language currentDate Translate.IncidenceByMonthTwoVisitsOrMore encountersByMonthForImpacted
+
+                incidenceByQuarterOneVisitOrMoreData =
+                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterOneVisitOrMore data.encountersByMonth
+
+                incidenceByQuarterTwoVisitsOrMoreData =
+                    generateQuarterlyIncidenceTableData language currentDate Translate.IncidenceByQuarterTwoVisitsOrMore encountersByMonthForImpacted
+
+                incidenceByYearOneVisitOrMoreData =
+                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearOneVisitOrMore data.encountersByMonth
+
+                incidenceByYearTwoVisitsOrMore =
+                    generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearTwoVisitsOrMore encountersByMonthForImpacted
+
+                generatedData =
+                    [ prevalenceByMonthOneVisitOrMoreData
+                    , prevalenceByMonthTwoVisitsOrMoreData
+                    , incidenceByMonthOneVisitOrMoreData
+                    , incidenceByMonthTwoVisitsOrMoreData
+                    , incidenceByQuarterOneVisitOrMoreData
+                    , incidenceByQuarterTwoVisitsOrMoreData
+                    , incidenceByYearOneVisitOrMoreData
+                    , incidenceByYearTwoVisitsOrMore
+                    ]
+
+                csvFileName =
+                    "nutrition-report-"
+                        ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                        ++ "-"
+                        ++ customFormatDDMMYYYY "-" currentDate
+                        ++ ".csv"
+
+                csvContent =
+                    reportTablesDataToCSV generatedData
             in
-            div [ class "report nutrition" ]
-                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading"
-                , viewMonthlyPrevalenceTable language currentDate data.encountersByMonth
-                , viewCustomLabel language Translate.PrevalenceByMonthTwoVisitsOrMore ":" "section heading"
-                , viewMonthlyPrevalenceTable language currentDate encountersByMonthForImpacted
-                , viewCustomLabel language Translate.IncidenceByMonthOneVisitOrMore ":" "section heading"
-                , viewMonthlyIncidenceTable language currentDate data.encountersByMonth
-                , viewCustomLabel language Translate.IncidenceByMonthTwoVisitsOrMore ":" "section heading"
-                , viewMonthlyIncidenceTable language currentDate encountersByMonthForImpacted
-                , viewCustomLabel language Translate.IncidenceByQuarterOneVisitOrMore ":" "section heading"
-                , viewQuarterlyIncidenceTable language currentDate data.encountersByMonth
-                , viewCustomLabel language Translate.IncidenceByQuarterTwoVisitsOrMore ":" "section heading"
-                , viewQuarterlyIncidenceTable language currentDate encountersByMonthForImpacted
-                , viewCustomLabel language Translate.IncidenceByYearOneVisitOrMore ":" "section heading"
-                , viewYearlyIncidenceTable language currentDate data.encountersByMonth
-                , viewCustomLabel language Translate.IncidenceByYearTwoVisitsOrMore ":" "section heading"
-                , viewYearlyIncidenceTable language currentDate encountersByMonthForImpacted
-                ]
+            div [ class "report nutrition" ] <|
+                (List.map viewNutritionMetricsResultsTable generatedData
+                    |> List.concat
+                )
+                    ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
         _ ->
             div [ class "report nutrition" ]
                 [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading" ]
 
 
-viewMonthlyPrevalenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewMonthlyPrevalenceTable language currentDate encountersByMonth =
+generateMonthlyPrevalenceTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> Dict ( Int, Int ) NutritionMetrics
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
     List.range 1 12
         |> List.map
             (\index ->
@@ -903,11 +1082,16 @@ viewMonthlyPrevalenceTable language currentDate encountersByMonth =
                     |> generatePrevalenceNutritionMetricsResults
                 )
             )
-        |> viewNutritionMetricsResultsTable language currentDate
+        |> toNutritionMetricsResultsTableData language heading
 
 
-viewMonthlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewMonthlyIncidenceTable language currentDate encountersByMonth =
+generateMonthlyIncidenceTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> Dict ( Int, Int ) NutritionMetrics
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
     List.range 1 12
         |> List.map
             (\index ->
@@ -929,11 +1113,16 @@ viewMonthlyIncidenceTable language currentDate encountersByMonth =
                     (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
                 )
             )
-        |> viewNutritionMetricsResultsTable language currentDate
+        |> toNutritionMetricsResultsTableData language heading
 
 
-viewQuarterlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewQuarterlyIncidenceTable language currentDate encountersByMonth =
+generateQuarterlyIncidenceTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> Dict ( Int, Int ) NutritionMetrics
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateQuarterlyIncidenceTableData language currentDate heading encountersByMonth =
     let
         dataSetsByQuarter =
             -- We show data of previous 4 quarters. So, if at Q2-2024, we show
@@ -972,11 +1161,16 @@ viewQuarterlyIncidenceTable language currentDate encountersByMonth =
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> viewNutritionMetricsResultsTable language currentDate
+        |> toNutritionMetricsResultsTableData language heading
 
 
-viewYearlyIncidenceTable : Language -> NominalDate -> Dict ( Int, Int ) NutritionMetrics -> Html Msg
-viewYearlyIncidenceTable language currentDate encountersByMonth =
+generateYearlyIncidenceTableData :
+    Language
+    -> NominalDate
+    -> TranslationId
+    -> Dict ( Int, Int ) NutritionMetrics
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateYearlyIncidenceTableData language currentDate heading encountersByMonth =
     let
         dataSetsByYear =
             -- We show data of previous 2 years. So, if at 2024, we show
@@ -1011,48 +1205,108 @@ viewYearlyIncidenceTable language currentDate encountersByMonth =
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> viewNutritionMetricsResultsTable language currentDate
+        |> toNutritionMetricsResultsTableData language heading
 
 
-viewNutritionMetricsResultsTable : Language -> NominalDate -> List ( TranslationId, NutritionMetricsResults ) -> Html Msg
-viewNutritionMetricsResultsTable language currentDate data =
+toNutritionMetricsResultsTableData :
+    Language
+    -> TranslationId
+    -> List ( TranslationId, NutritionMetricsResults )
+    -> { heading : String, captions : List String, rows : List (List String) }
+toNutritionMetricsResultsTableData language heading data =
     let
-        headerRow =
+        captions =
             List.map
                 (\( label, _ ) ->
-                    div [ class "item heading" ] [ text <| translate language label ]
+                    translate language label
                 )
                 data
-                |> List.append [ div [ class "item row-label" ] [ text "" ] ]
-                |> div [ class "row" ]
+                |> List.append [ "" ]
 
-        viewRow label =
+        generateRow label =
             List.map
                 (\value ->
-                    div [ class "item value" ] [ text <| Round.round 3 value ++ "%" ]
+                    Round.round 3 value ++ "%"
                 )
-                >> List.append [ div [ class "item row-label" ] [ text <| translate language label ] ]
-                >> div [ class "row" ]
+                >> List.append [ translate language label ]
     in
-    div [ class "table wide" ]
-        [ headerRow
-        , List.map (Tuple.second >> .stuntingModerate) data
-            |> viewRow Translate.StuntingModerate
+    { heading = translate language heading ++ ":"
+    , captions = captions
+    , rows =
+        [ List.map (Tuple.second >> .stuntingModerate) data
+            |> generateRow Translate.StuntingModerate
         , List.map (Tuple.second >> .stuntingSevere) data
-            |> viewRow Translate.StuntingSevere
+            |> generateRow Translate.StuntingSevere
         , List.map (Tuple.second >> .wastingModerate) data
-            |> viewRow Translate.WastingModerate
+            |> generateRow Translate.WastingModerate
         , List.map (Tuple.second >> .wastingSevere) data
-            |> viewRow Translate.WastingSevere
+            |> generateRow Translate.WastingSevere
         , List.map (Tuple.second >> .underweightModerate) data
-            |> viewRow Translate.UnderweightModerate
+            |> generateRow Translate.UnderweightModerate
         , List.map (Tuple.second >> .underweightSevere) data
-            |> viewRow Translate.UnderweightSevere
+            |> generateRow Translate.UnderweightSevere
         ]
+    }
 
 
-viewPrenatalReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewPrenatalReport language limitDate records =
+viewNutritionMetricsResultsTable :
+    { heading : String, captions : List String, rows : List (List String) }
+    -> List (Html Msg)
+viewNutritionMetricsResultsTable data =
+    let
+        captionsRow =
+            div [ class "row" ] <|
+                viewCustomCells "row-label" "heading" data.captions
+
+        viewRow cells =
+            div [ class "row" ] <|
+                viewCustomCells "row-label" "value" cells
+    in
+    [ div [ class "section heading" ] [ text data.heading ]
+    , div [ class "table wide" ] <|
+        captionsRow
+            :: List.map viewRow data.rows
+    ]
+
+
+viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPrenatalReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePrenatalReportData language limitDate records
+
+        viewTable tableData =
+            [ div [ class "section heading" ] [ text tableData.heading ]
+            , div [ class "table anc" ] <|
+                (div [ class "row captions" ] <|
+                    viewStandardCells tableData.captions
+                )
+                    :: List.map viewStandardRow tableData.rows
+            ]
+
+        csvFileName =
+            "anc-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTablesDataToCSV data
+    in
+    div [ class "report prenatal" ] <|
+        (List.map viewTable data
+            |> List.concat
+        )
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+generatePrenatalReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> List { heading : String, captions : List String, rows : List (List String) }
+generatePrenatalReportData language limitDate records =
     let
         filtered =
             List.map .prenatalData records
@@ -1228,63 +1482,88 @@ viewPrenatalReport language limitDate records =
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompletedChw
 
-        viewTable caption values =
+        generateTableData heading values =
             let
-                rows =
-                    List.indexedMap
-                        (\index ( chwValue, nurseValue ) ->
-                            viewRow (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
-                        )
-                        values
-            in
-            [ viewCustomLabel language caption ":" "section heading"
-            , div [ class "table anc" ] <|
-                div [ class "row captions" ]
-                    [ div [ class "item label" ] [ text <| translate language Translate.NumberOfVisitsLabel ]
-                    , div [ class "item value" ] [ text <| translate language Translate.CHW ]
-                    , div [ class "item value" ] [ text <| translate language Translate.HC ]
-                    , div [ class "item value" ] [ text <| translate language Translate.All ]
+                generateRowData labelTransId valueChw valueNurse =
+                    [ translate language labelTransId
+                    , String.fromInt valueChw
+                    , String.fromInt valueNurse
+                    , String.fromInt <| valueChw + valueNurse
                     ]
-                    :: rows
-            ]
-
-        viewRow labelTransId valueChw valueNurse =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text <| translate language labelTransId ]
-                , div [ class "item value" ] [ text <| String.fromInt valueChw ]
-                , div [ class "item value" ] [ text <| String.fromInt valueNurse ]
-                , div [ class "item value" ] [ text <| String.fromInt <| valueChw + valueNurse ]
-                ]
+            in
+            { heading = translate language heading ++ ":"
+            , captions = List.map (translate language) [ Translate.NumberOfVisitsLabel, Translate.CHW, Translate.HC, Translate.All ]
+            , rows =
+                List.indexedMap
+                    (\index ( chwValue, nurseValue ) ->
+                        generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                    )
+                    values
+            }
     in
-    div [ class "report prenatal" ] <|
-        viewTable Translate.PregnanciesAll
-            [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
-            , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
-            , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
-            , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
-            , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
-            , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
-            ]
-            ++ viewTable Translate.PregnanciesActive
-                [ ( activeChwVisits1, activeNurseVisits1 )
-                , ( activeChwVisits2, activeNurseVisits2 )
-                , ( activeChwVisits3, activeNurseVisits3 )
-                , ( activeChwVisits4, activeNurseVisits4 )
-                , ( activeChwVisits5, activeNurseVisits5 )
-                , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
-                ]
-            ++ viewTable Translate.PregnanciesCompleted
-                [ ( completedChwVisits1, completedNurseVisits1 )
-                , ( completedChwVisits2, completedNurseVisits2 )
-                , ( completedChwVisits3, completedNurseVisits3 )
-                , ( completedChwVisits4, completedNurseVisits4 )
-                , ( completedChwVisits5, completedNurseVisits5 )
-                , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
-                ]
+    [ generateTableData Translate.PregnanciesAll
+        [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
+        , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
+        , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
+        , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
+        , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
+        , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+        ]
+    , generateTableData Translate.PregnanciesActive
+        [ ( activeChwVisits1, activeNurseVisits1 )
+        , ( activeChwVisits2, activeNurseVisits2 )
+        , ( activeChwVisits3, activeNurseVisits3 )
+        , ( activeChwVisits4, activeNurseVisits4 )
+        , ( activeChwVisits5, activeNurseVisits5 )
+        , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
+        ]
+    , generateTableData Translate.PregnanciesCompleted
+        [ ( completedChwVisits1, completedNurseVisits1 )
+        , ( completedChwVisits2, completedNurseVisits2 )
+        , ( completedChwVisits3, completedNurseVisits3 )
+        , ( completedChwVisits4, completedNurseVisits4 )
+        , ( completedChwVisits5, completedNurseVisits5 )
+        , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
+        ]
+    ]
 
 
-viewAcuteIllnessReport : Language -> NominalDate -> List PatientData -> Html Msg
-viewAcuteIllnessReport language startDate records =
+viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
+viewAcuteIllnessReport language limitDate startDate scopeLabel records =
+    let
+        data =
+            generateAcuteIllnessReportData language startDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "acute-illness-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" startDate
+                ++ "-to-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report acute-illness" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        ]
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+generateAcuteIllnessReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> { heading : String, captions : List String, rows : List (List String) }
+generateAcuteIllnessReportData language startDate records =
     let
         acuteIllnessDataRecords =
             List.map .acuteIllnessData records
@@ -1336,29 +1615,80 @@ viewAcuteIllnessReport language startDate records =
                 (\diagnosis ->
                     Dict.get diagnosis diagnosesCountDict
                         |> Maybe.withDefault 0
-                        |> viewRow (Translate.AcuteIllnessDiagnosis diagnosis)
+                        |> generateRow (Translate.AcuteIllnessDiagnosis diagnosis)
                 )
                 allAcuteIllnessDiagnoses
 
         totalsRow =
             Dict.values diagnosesCountDict
                 |> List.sum
-                |> viewRow Translate.Total
+                |> generateRow Translate.Total
 
         noneRow =
-            viewRow Translate.NoDiagnosis illnessesWithNoDiagnosis
+            generateRow Translate.NoDiagnosis illnessesWithNoDiagnosis
 
-        viewRow label value =
-            div [ class "row" ]
-                [ div [ class "item label" ] [ text <| translate language label ]
-                , div [ class "item value" ] [ text <| String.fromInt value ]
-                ]
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
     in
-    div [ class "report acute-illness" ]
-        [ div [ class "table" ] <|
-            div [ class "row captions" ]
-                [ div [ class "item label" ] [ text <| translate language Translate.Diagnosis ]
-                , div [ class "item value" ] [ text <| translate language Translate.Total ]
-                ]
-                :: (rows ++ [ totalsRow, noneRow ])
+    { heading = ""
+    , captions =
+        [ translate language Translate.Diagnosis
+        , translate language Translate.Total
         ]
+    , rows = rows ++ [ totalsRow ] ++ [ noneRow ]
+    }
+
+
+viewStandardRow : List String -> Html any
+viewStandardRow =
+    viewStandardCells
+        >> div [ class "row" ]
+
+
+viewStandardCells : List String -> List (Html any)
+viewStandardCells =
+    viewCustomCells "label" "value"
+
+
+viewCustomCells : String -> String -> List String -> List (Html any)
+viewCustomCells labelClass valueClass =
+    List.indexedMap
+        (\index cellText ->
+            div
+                [ classList
+                    [ ( "item", True )
+                    , ( labelClass, index == 0 )
+                    , ( valueClass, index /= 0 )
+                    ]
+                ]
+                [ text cellText ]
+        )
+
+
+viewDownloadCSVButton : Language -> String -> String -> Html Msg
+viewDownloadCSVButton language csvFileName csvContent =
+    div [ class "download-csv-wrapper" ]
+        [ button
+            [ class "download-csv"
+            , onClick <| DownloadCSV csvFileName csvContent
+            ]
+            [ text <| translate language Translate.DownloadCSV ]
+        ]
+
+
+reportTablesDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
+reportTablesDataToCSV =
+    List.map reportTableDataToCSV
+        >> String.join "\n\n"
+
+
+reportTableDataToCSV : { heading : String, captions : List String, rows : List (List String) } -> String
+reportTableDataToCSV tableData =
+    [ tableData.heading
+    , String.join "," tableData.captions
+    , List.map (String.join ",") tableData.rows
+        |> String.join "\n"
+    ]
+        |> String.join "\n"

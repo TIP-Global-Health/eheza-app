@@ -120,7 +120,8 @@ body.admin-menu #page-wrapper #header {
   visibility: hidden;
 }
 
-.page-content .top-bar .new-selection a button {
+.page-content .top-bar .new-selection a button,
+.page-content .inputs .report button.download-csv {
   background-color: #0393db;
   border: 2px solid white;
   border-radius: 5px;
@@ -128,7 +129,14 @@ body.admin-menu #page-wrapper #header {
   cursor: pointer;
   font-size: 18px;
   height: 30px;
+}
+
+.page-content .top-bar .new-selection a button {
   margin-left: 20px;
+}
+
+.page-content .inputs .report button.download-csv {
+  float: right;
 }
 
 .page-content .top-bar .values-percents {
@@ -334,6 +342,12 @@ body.admin-menu #page-wrapper #header {
 .page-content .inputs .report.nutrition .section.heading {
   font-size: 24px;
   margin-left: -12%;
+  width: 120%;
+}
+
+.page-content .inputs .report.nutrition .download-csv-wrapper {
+  margin-left: -12%;
+  padding-left: 35px;
   width: 120%;
 }
 
