@@ -4889,10 +4889,11 @@ div.page-activity.guideMessage {
 
     .title {
       font-weight: bold;
-
-      &.note {
-        font-style: italic;
-      }
+      font-size: 25px;
+    }
+    .note {
+      font-style: italic;
+      font-weight: bold;
     }
   }
 }
