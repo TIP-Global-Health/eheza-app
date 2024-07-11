@@ -522,6 +522,7 @@ function hedley_general_build_elm_app($page, array $data) {
       $app_id => [
         'page' => $page,
         'data' => $data,
+        'theme_path' => $path_hedley_general,
       ],
     ],
   ];

@@ -18,78 +18,78 @@ define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_rep
  * Implements hook_menu().
  */
 function hedley_reports_menu() {
-  $items['admin/reports/aggregated-reports'] = array(
-    'title' => 'Aggregated Reports',
-    'description' => 'View Aggregated Reports',
+  $items['admin/reports/statistical-queries'] = array(
+    'title' => 'Statistical Queries',
+    'description' => 'View Statistical Queries',
     'page callback' => 'hedley_reports_aggregated_callback_menu',
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/all'] = array(
-    'title' => 'Global report',
-    'description' => 'View global report',
+  $items['admin/reports/statistical-queries/all'] = array(
+    'title' => 'Entire Population',
+    'description' => 'View report for Entire Population',
     'page callback' => 'hedley_reports_aggregated_callback_global',
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/demographics/%'] = array(
-    'title' => 'Report for province',
+  $items['admin/reports/statistical-queries/demographics/%'] = array(
+    'title' => 'Province',
     'description' => 'View report for province',
     'page callback' => 'hedley_reports_aggregated_callback_province',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/demographics/%/%'] = array(
-    'title' => 'Report for district',
+  $items['admin/reports/statistical-queries/demographics/%/%'] = array(
+    'title' => 'District',
     'description' => 'View report for district',
     'page callback' => 'hedley_reports_aggregated_callback_district',
     'page arguments' => [4, 5],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/demographics/%/%/%'] = array(
-    'title' => 'Report for sector',
+  $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
+    'title' => 'Sector',
     'description' => 'View report for sector',
     'page callback' => 'hedley_reports_aggregated_callback_sector',
     'page arguments' => [4, 5, 6],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/demographics/%/%/%/%'] = array(
-    'title' => 'Report for cell',
+  $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
+    'title' => 'Cell',
     'description' => 'View report for cell',
     'page callback' => 'hedley_reports_aggregated_callback_cell',
     'page arguments' => [4, 5, 6, 7],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/demographics/%/%/%/%/%'] = array(
-    'title' => 'Report for village',
+  $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
+    'title' => 'Village',
     'description' => 'View report for village',
     'page callback' => 'hedley_reports_aggregated_callback_village',
     'page arguments' => [4, 5, 6, 7, 8],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
-  $items['admin/reports/aggregated-reports/health-center/%'] = array(
-    'title' => 'Report for health center',
+  $items['admin/reports/statistical-queries/health-center/%'] = array(
+    'title' => 'Health center',
     'description' => 'View report for health center',
     'page callback' => 'hedley_reports_aggregated_callback_health_center',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_aggregated_reports_report_access',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
   return $items;
 }
 
 /**
- * Grants access to Aggregated Reports viewers, superuser and administrators.
+ * Grants access to Statistical Queries viewers, superuser and administrators.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
  */
-function hedley_reports_aggregated_reports_report_access() {
+function hedley_reports_statistical_queries_report_access() {
   // @todo: do we need new role?
   $data_mananger_role = user_role_load_by_name('Data Manager');
 
@@ -123,7 +123,7 @@ function hedley_reports_node_update($node) {
  */
 function hedley_reports_advanced_queue_info() {
   $items[HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA] = [
-    'label' => t('Calculate Aggregated Reports data'),
+    'label' => t('Calculate Statistical Queries data'),
     'worker callback' => 'hedley_reports_calculate_aggregated_data_worker',
     'groups' => [
       'hedley',
@@ -171,7 +171,7 @@ function hedley_reports_calculate_aggregated_data_worker($queue_item) {
   ];
   return [
     'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
-    'result' => t('Aggregated Reports data has been calculated for person ID: @nid', $params),
+    'result' => t('Statistical Queries data has been calculated for person ID: @nid', $params),
   ];
 }
 

@@ -41,6 +41,7 @@ view model =
                 , Html.map MsgReportsMenuPage <|
                     Pages.ReportsMenu.View.view
                         model.language
+                        model.themePath
                         model.backend
                         model.reportsMenuPage
                 ]
@@ -52,6 +53,7 @@ view model =
                     Pages.Reports.View.view
                         model.language
                         (fromLocalDateTime model.currentTime)
+                        model.themePath
                         model.backend
                         model.reportsPage
                 ]

@@ -5501,7 +5501,8 @@ var $author$project$App$Model$emptyModel = {
 	reportsMenuPage: $author$project$Pages$ReportsMenu$Model$emptyModel,
 	reportsPage: $author$project$Pages$Reports$Model$emptyModel,
 	scoreboardMenuPage: $author$project$Pages$ScoreboardMenu$Model$emptyModel,
-	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel
+	scoreboardPage: $author$project$Pages$Scoreboard$Model$emptyModel,
+	themePath: ''
 };
 var $elm$time$Time$Name = function (a) {
 	return {$: 'Name', a: a};
@@ -8929,7 +8930,7 @@ var $author$project$App$Update$init = function (flags) {
 	var activePage = $author$project$App$Update$resolveActivePage(flags.page);
 	var model = _Utils_update(
 		$author$project$App$Model$emptyModel,
-		{activePage: activePage});
+		{activePage: activePage, themePath: flags.themePath});
 	var modelWithAppData = function () {
 		var _v0 = model.activePage;
 		switch (_v0.$) {
@@ -9576,20 +9577,18 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'NutritionTotal':
 				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
-				return {english: 'Please wait. This action may take a couple of minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'This action may take several minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PMTCT':
 				return {english: 'PMTCT', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PopulationSelectionOption':
 				var selectionOption = transId.a;
 				switch (selectionOption.$) {
 					case 'SelectionOptionGlobal':
-						var $temp$transId = $author$project$Translate$Global;
-						transId = $temp$transId;
-						continue translationSet;
+						return {english: 'Entire Population', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'SelectionOptionDemographics':
-						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Demographic Region', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Health Center', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Health Center Catchment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'PregnanciesActive':
 				return {english: 'Active Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -9740,7 +9739,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'WastingSevere':
 				return {english: 'Wasting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WideScopeNote':
-				return {english: 'Note: Selected scope possibly contains large number of patients, so it may take SEVERAL MINUTES to generate the report. Please wait patiently.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Year':
 				var year = transId.a;
 				return {
@@ -10585,6 +10584,22 @@ var $author$project$Gizra$NominalDate$customFormatDDMMYYYY = function (delimiter
 	return $justinmimbs$date$Date$format('dd' + (delimiter + ('MM' + (delimiter + 'yyyy'))));
 };
 var $author$project$Gizra$NominalDate$formatDDMMYYYY = $author$project$Gizra$NominalDate$customFormatDDMMYYYY('/');
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $author$project$Pages$Utils$generateReportsHeaderImage = function (themePath) {
+	return A2(
+		$elm$html$Html$img,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$src('/' + (themePath + '/icons/statistical-queries.png'))
+			]),
+		_List_Nil);
+};
 var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
@@ -14508,8 +14523,8 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 					selectList
 				]));
 	});
-var $author$project$Pages$Reports$View$viewReportsData = F4(
-	function (language, currentDate, data, model) {
+var $author$project$Pages$Reports$View$viewReportsData = F5(
+	function (language, currentDate, themePath, data, model) {
 		var scopeLabel = function () {
 			var _v1 = data.entityType;
 			switch (_v1.$) {
@@ -14545,7 +14560,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 							$elm$html$Html$a,
 							_List_fromArray(
 								[
-									$elm$html$Html$Attributes$href('/admin/reports/aggregated-reports')
+									$elm$html$Html$Attributes$href('/admin/reports/statistical-queries')
 								]),
 							_List_fromArray(
 								[
@@ -14820,10 +14835,11 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('page-content')
+					$elm$html$Html$Attributes$class('page-content reports')
 				]),
 			_List_fromArray(
 				[
+					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
 					topBar,
 					A2(
 					$elm$html$Html$div,
@@ -14860,13 +14876,13 @@ var $author$project$Pages$Reports$View$viewReportsData = F4(
 					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.limitDateSelectorPopupState, model.limitDate))
 				]));
 	});
-var $author$project$Pages$Reports$View$view = F4(
-	function (language, currentDate, modelBackend, model) {
+var $author$project$Pages$Reports$View$view = F5(
+	function (language, currentDate, themePath, modelBackend, model) {
 		var _v0 = modelBackend.reportsData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A4($author$project$Pages$Reports$View$viewReportsData, language, currentDate, data, model);
+				return A5($author$project$Pages$Reports$View$viewReportsData, language, currentDate, themePath, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -34490,8 +34506,8 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	function (language, path, selectionMadeMsg) {
 		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
 	});
-var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
-	function (language, data, model) {
+var $author$project$Pages$ReportsMenu$View$viewMenu = F4(
+	function (language, themePath, data, model) {
 		var populationSelectionInput = A4(
 			$author$project$Pages$Utils$wrapSelectListInput,
 			language,
@@ -34517,11 +34533,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 						case 'SelectionOptionGlobal':
 							return _Utils_Tuple2(
 								_List_Nil,
-								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/aggregated-reports/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
+								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/statistical-queries/all', $author$project$Pages$ReportsMenu$Model$SelectionMade));
 						case 'SelectionOptionDemographics':
 							return _Utils_Tuple2(
 								A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ReportsMenu$Model$SetGeoLocation, model.selectedDemographics),
-								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-reports/demographics', $author$project$Translate$LoadData, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
+								$elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/statistical-queries/demographics', $author$project$Translate$LoadData, $author$project$Pages$ReportsMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);
 						default:
 							var options = A2(
 								$elm$core$List$map,
@@ -34553,7 +34569,7 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 											return A3(
 												$author$project$Pages$Utils$viewLoadDataButton,
 												language,
-												'/admin/reports/aggregated-reports/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
+												'/admin/reports/statistical-queries/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
 												$author$project$Pages$ReportsMenu$Model$SelectionMade);
 										},
 										model.selectedHealthCenter)));
@@ -34568,10 +34584,11 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('page-content')
+					$elm$html$Html$Attributes$class('page-content reports-menu')
 				]),
 			_List_fromArray(
 				[
+					$author$project$Pages$Utils$generateReportsHeaderImage(themePath),
 					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectScope, ':', 'header'),
 					A2(
 					$elm$html$Html$div,
@@ -34590,13 +34607,13 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F3(
 						[actionButton]))
 				]));
 	});
-var $author$project$Pages$ReportsMenu$View$view = F3(
-	function (language, modelBackend, model) {
+var $author$project$Pages$ReportsMenu$View$view = F4(
+	function (language, themePath, modelBackend, model) {
 		var _v0 = modelBackend.reportsMenuData;
 		if (_v0.$ === 'Just') {
 			if (_v0.a.$ === 'Ok') {
 				var data = _v0.a.a;
-				return A3($author$project$Pages$ReportsMenu$View$viewMenu, language, data, model);
+				return A4($author$project$Pages$ReportsMenu$View$viewMenu, language, themePath, data, model);
 			} else {
 				var err = _v0.a.a;
 				return $elm$html$Html$text(
@@ -36542,7 +36559,7 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgReportsMenuPage,
-						A3($author$project$Pages$ReportsMenu$View$view, model.language, model.backend, model.reportsMenuPage))
+						A4($author$project$Pages$ReportsMenu$View$view, model.language, model.themePath, model.backend, model.reportsMenuPage))
 					]));
 		case 'Reports':
 			return A2(
@@ -36554,10 +36571,11 @@ var $author$project$App$View$view = function (model) {
 						A2(
 						$elm$html$Html$map,
 						$author$project$App$Model$MsgReportsPage,
-						A4(
+						A5(
 							$author$project$Pages$Reports$View$view,
 							model.language,
 							$author$project$Gizra$NominalDate$fromLocalDateTime(model.currentTime),
+							model.themePath,
 							model.backend,
 							model.reportsPage))
 					]));
@@ -36581,13 +36599,18 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 _Platform_export({'Main':{'init':$author$project$Main$main(
 	A2(
 		$elm$json$Json$Decode$andThen,
-		function (page) {
+		function (themePath) {
 			return A2(
 				$elm$json$Json$Decode$andThen,
-				function (appData) {
-					return $elm$json$Json$Decode$succeed(
-						{appData: appData, page: page});
+				function (page) {
+					return A2(
+						$elm$json$Json$Decode$andThen,
+						function (appData) {
+							return $elm$json$Json$Decode$succeed(
+								{appData: appData, page: page, themePath: themePath});
+						},
+						A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
 				},
-				A2($elm$json$Json$Decode$field, 'appData', $elm$json$Json$Decode$value));
+				A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string));
 		},
-		A2($elm$json$Json$Decode$field, 'page', $elm$json$Json$Decode$string)))(0)}});}(this));
+		A2($elm$json$Json$Decode$field, 'themePath', $elm$json$Json$Decode$string)))(0)}});}(this));
