@@ -90,10 +90,9 @@ function hedley_reports_menu() {
  *   TRUE if the user has access, FALSE otherwise.
  */
 function hedley_reports_statistical_queries_report_access() {
-  // @todo: do we need new role?
-  $data_mananger_role = user_role_load_by_name('Data Manager');
+  $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
 
-  return user_has_role($data_mananger_role->rid) || hedley_admin_administrators_access();
+  return user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
 }
 
 /**
