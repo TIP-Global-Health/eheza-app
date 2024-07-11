@@ -37,8 +37,8 @@ function hedley_patient_menu() {
 /**
  * Implements hook_user_login().
  *
- * When Data Manager users log in, redirect them
- * to Aggregated NCDA report page.
+ * Performs redirect for user with Data Manager or
+ * Statistical Queries Manager role.
  */
 function hedley_patient_user_login(&$edit, $account) {
   $data_mananger_role = user_role_load_by_name('Data Manager');
