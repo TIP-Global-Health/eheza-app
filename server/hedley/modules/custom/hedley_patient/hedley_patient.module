@@ -42,12 +42,20 @@ function hedley_patient_menu() {
  */
 function hedley_patient_user_login(&$edit, $account) {
   $data_mananger_role = user_role_load_by_name('Data Manager');
-  if (!user_has_role($data_mananger_role->rid, $account)) {
+  $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  if (user_has_role($data_mananger_role->rid, $account)) {
+    // Path of Aggregated NCDA report page.
+    $path = 'admin/reports/aggregated-ncda';
+  }
+  else if (user_has_role($statistical_queries_manager_role->rid, $account)) {
+    // Path of Statistical Queries page.
+    $path = 'admin/reports/statistical-queries';
+  }
+  else {
     return;
   }
 
-  // Path of Aggregated NCDA report page.
-  $path = 'admin/reports/aggregated-ncda';
+  // Execute redirect.
   // The 'Location' HTTP header must be absolute.
   $options['absolute'] = TRUE;
   $url = url($path, $options);
