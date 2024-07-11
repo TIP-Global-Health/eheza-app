@@ -47,7 +47,7 @@ function hedley_patient_user_login(&$edit, $account) {
     // Path of Aggregated NCDA report page.
     $path = 'admin/reports/aggregated-ncda';
   }
-  else if (user_has_role($statistical_queries_manager_role->rid, $account)) {
+  elseif (user_has_role($statistical_queries_manager_role->rid, $account)) {
     // Path of Statistical Queries page.
     $path = 'admin/reports/statistical-queries';
   }
