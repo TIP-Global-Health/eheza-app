@@ -28,6 +28,7 @@ import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (generateReportsHeaderImage, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
+import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -81,7 +82,7 @@ viewReportsData language currentDate themePath data model =
                                     dateSelectorConfig =
                                         let
                                             sixYearsAgo =
-                                                Date.add Years -6 currentDate
+                                                Date.fromCalendarDate 2018 Jan 1
                                         in
                                         { select = SetStartDate
                                         , close = SetStartDateSelectorState Nothing

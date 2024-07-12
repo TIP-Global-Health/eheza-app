@@ -78,7 +78,7 @@ while (TRUE) {
 
   $nid = end($ids);
   $total += count($patients);
-  drush_print("Calculated so far: $total");
+  drush_print("Updated so far: $total");
 
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
     drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
