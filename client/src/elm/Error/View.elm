@@ -1,4 +1,4 @@
-module Error.View exposing (view, viewError)
+module Error.View exposing (view)
 
 import App.Model exposing (ConfiguredModel)
 import Backend.Nurse.Model exposing (Role(..))
@@ -9,8 +9,8 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Json.Decode
 import Json.Encode
-import RemoteData exposing (RemoteData(..))
-import Translate as Trans exposing (Language, translate)
+import RemoteData exposing (RemoteData)
+import Translate exposing (Language)
 import Utils.WebData
 
 

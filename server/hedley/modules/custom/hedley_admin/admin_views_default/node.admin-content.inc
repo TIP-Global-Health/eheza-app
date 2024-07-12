@@ -46,7 +46,7 @@ $handler->display->display_options['style_options']['columns'] = array(
   'edit_node' => 'edit_node',
   'delete_node' => 'edit_node',
 );
-$handler->display->display_options['style_options']['default'] = 'changed';
+$handler->display->display_options['style_options']['default'] = '-1';
 $handler->display->display_options['style_options']['info'] = array(
   'views_bulk_operations' => array(
     'align' => '',
@@ -112,7 +112,7 @@ $handler->display->display_options['empty']['area_text_custom']['table'] = 'view
 $handler->display->display_options['empty']['area_text_custom']['field'] = 'area_text_custom';
 $handler->display->display_options['empty']['area_text_custom']['empty'] = TRUE;
 $handler->display->display_options['empty']['area_text_custom']['content'] = 'No content available.';
-/* Relationship: Content: Author */
+/* Relationship: Content: Content author */
 $handler->display->display_options['relationships']['uid']['id'] = 'uid';
 $handler->display->display_options['relationships']['uid']['table'] = 'node';
 $handler->display->display_options['relationships']['uid']['field'] = 'uid';
@@ -227,7 +227,7 @@ $handler->display->display_options['fields']['name']['field'] = 'name';
 $handler->display->display_options['fields']['name']['relationship'] = 'uid';
 $handler->display->display_options['fields']['name']['label'] = 'Author';
 $handler->display->display_options['fields']['name']['hide_alter_empty'] = FALSE;
-/* Field: Content: Published */
+/* Field: Content: Published status */
 $handler->display->display_options['fields']['status']['id'] = 'status';
 $handler->display->display_options['fields']['status']['table'] = 'node';
 $handler->display->display_options['fields']['status']['field'] = 'status';
@@ -238,12 +238,12 @@ $handler->display->display_options['fields']['changed']['table'] = 'node';
 $handler->display->display_options['fields']['changed']['field'] = 'changed';
 $handler->display->display_options['fields']['changed']['label'] = 'Updated';
 $handler->display->display_options['fields']['changed']['date_format'] = 'short';
-/* Field: Content: Edit link */
+/* Field: Content: Link to edit content */
 $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
 $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
 $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
 $handler->display->display_options['fields']['edit_node']['label'] = 'Operations';
-/* Field: Content: Delete link */
+/* Field: Content: Link to delete content */
 $handler->display->display_options['fields']['delete_node']['id'] = 'delete_node';
 $handler->display->display_options['fields']['delete_node']['table'] = 'views_entity_node';
 $handler->display->display_options['fields']['delete_node']['field'] = 'delete_node';
@@ -281,7 +281,7 @@ $handler->display->display_options['filters']['uid']['expose']['label'] = 'Autho
 $handler->display->display_options['filters']['uid']['expose']['operator'] = 'uid_op';
 $handler->display->display_options['filters']['uid']['expose']['identifier'] = 'author';
 $handler->display->display_options['filters']['uid']['expose']['remember'] = TRUE;
-/* Filter criterion: Content: Published */
+/* Filter criterion: Content: Published status */
 $handler->display->display_options['filters']['status']['id'] = 'status';
 $handler->display->display_options['filters']['status']['table'] = 'node';
 $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -303,6 +303,20 @@ $handler->display->display_options['filters']['vid']['expose']['label'] = 'Vocab
 $handler->display->display_options['filters']['vid']['expose']['operator'] = 'vid_op';
 $handler->display->display_options['filters']['vid']['expose']['identifier'] = 'vid';
 $handler->display->display_options['filters']['vid']['expose']['remember'] = TRUE;
+/* Filter criterion: UUID */
+$handler->display->display_options['filters']['field_uuid_value']['id'] = 'field_uuid_value';
+$handler->display->display_options['filters']['field_uuid_value']['table'] = 'field_data_field_uuid';
+$handler->display->display_options['filters']['field_uuid_value']['field'] = 'field_uuid_value';
+$handler->display->display_options['filters']['field_uuid_value']['ui_name'] = 'UUID';
+$handler->display->display_options['filters']['field_uuid_value']['operator'] = 'contains';
+$handler->display->display_options['filters']['field_uuid_value']['exposed'] = TRUE;
+$handler->display->display_options['filters']['field_uuid_value']['expose']['operator_id'] = 'field_uuid_value_op';
+$handler->display->display_options['filters']['field_uuid_value']['expose']['label'] = 'UUID';
+$handler->display->display_options['filters']['field_uuid_value']['expose']['operator'] = 'field_uuid_value_op';
+$handler->display->display_options['filters']['field_uuid_value']['expose']['identifier'] = 'field_uuid_value';
+$handler->display->display_options['filters']['field_uuid_value']['expose']['remember_roles'] = array(
+  2 => '2',
+);
 
 /* Display: System */
 $handler = $view->new_display('system', 'System', 'system_1');

@@ -225,76 +225,92 @@ function hedley_device_assign_shards($node, $wrapper) {
     return;
   }
 
-  switch ($node->type) {
-    case 'clinic':
-      // We only assign shards, when clinic is created, based on
-      // HC clinic is assigned to. We do nothing when clinic is edited.
-      $shards = [];
-      if (empty($node->original)) {
-        $health_centeter_id = $wrapper->field_health_center->getIdentifier();
-        // Even though health_centeter is a required field on clinic,
-        // we have this check to allow SimpleTest to pass.
-        if (!empty($health_centeter_id)) {
-          $shards = [$health_centeter_id];
+  $individual_encounter_types = hedley_general_get_individual_encounter_types();
+  if (in_array($node->type, $individual_encounter_types)) {
+    // Assign shards based on Person of the individual participant,
+    // to which encounter belongs.
+    $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
+    $shards = hedley_general_shards_by_person($person_id);
+  }
+  else {
+    switch ($node->type) {
+      case 'clinic':
+        // We only assign shards, when clinic is created, based on
+        // HC clinic is assigned to. We do nothing when clinic is edited.
+        $shards = [];
+        if (empty($node->original)) {
+          $health_centeter_id = $wrapper->field_health_center->getIdentifier();
+          // Even though health_center is a required field on clinic,
+          // we have this check to allow SimpleTest to pass.
+          if (!empty($health_centeter_id)) {
+            $shards = [$health_centeter_id];
+          }
         }
-      }
-      break;
+        break;
 
-    case 'session':
-      // Assign shards based on HC of the clinic, to which session belongs.
-      $clinic_id = $wrapper->field_clinic->getIdentifier();
-      $shard = hedley_general_shard_by_health_center($clinic_id);
-      $shards = !$shard ? [] : [$shard];
-      break;
+      case 'session':
+        // Assign shards based on HC of the clinic, to which session belongs.
+        $clinic_id = $wrapper->field_clinic->getIdentifier();
+        $shard = hedley_general_shard_by_health_center($clinic_id);
+        $shards = !$shard ? [] : [$shard];
+        break;
 
-    case 'person':
-      // When editing person, calculate shards by it's participants.
-      // Note that this only happens when field_shards is not set.
-      if (!empty($node->original)) {
-        $shards = hedley_patient_shards_for_person_by_pmtct_participants($node->nid);
-      }
-      // When creating person, assign health center as shard.
-      else {
+      case 'person':
+        // When editing person, calculate shards by it's participants.
+        // Note that this only happens when field_shards is not set.
+        if (!empty($node->original)) {
+          $shards = hedley_patient_shards_for_person_by_pmtct_participants($node->nid);
+        }
+        // When creating person, assign health center as shard.
+        else {
+          $health_centeter_id = $wrapper->field_health_center->getIdentifier();
+          $shards = $health_centeter_id ? [$health_centeter_id] : [];
+        }
+        break;
+
+      case 'pmtct_participant':
+        // Participant shards are the union of adult and child shards.
+        $child_id = $wrapper->field_person->getIdentifier();
+        $adult_id = $wrapper->field_adult->getIdentifier();
+        $shards_child = hedley_general_shards_by_person($child_id);
+        $shards_adult = hedley_general_shards_by_person($adult_id);
+        $shards = array_unique(array_merge($shards_child, $shards_adult));
+        break;
+
+      case 'relationship':
+        // Relationship shards are the union of adult and child shards.
+        $child_id = $wrapper->field_related_to->getIdentifier();
+        $adult_id = $wrapper->field_person->getIdentifier();
+        $shards_child = hedley_general_shards_by_person($child_id);
+        $shards_adult = hedley_general_shards_by_person($adult_id);
+        $shards = array_unique(array_merge($shards_child, $shards_adult));
+        break;
+
+      case 'stock_update':
+        // When creating stock update entry, assign health center as shard.
+        // Note that there's no option to edit such entry from device.
         $health_centeter_id = $wrapper->field_health_center->getIdentifier();
         $shards = $health_centeter_id ? [$health_centeter_id] : [];
-      }
-      break;
+        break;
 
-    case 'pmtct_participant':
-      // Participant shards are the union of adult and child shards.
-      $child_id = $wrapper->field_person->getIdentifier();
-      $adult_id = $wrapper->field_adult->getIdentifier();
-      $shards_child = hedley_general_shards_by_person($child_id);
-      $shards_adult = hedley_general_shards_by_person($adult_id);
-      $shards = array_unique(array_merge($shards_child, $shards_adult));
-      break;
+      case 'education_session':
+        // Shard is assigned only when session is created, as there is no
+        // option for village to change when session is edited.
+        if (empty($node->original)) {
+          // Assign shards based on HC of the village, to which session belongs.
+          $village_id = $wrapper->field_village_ref->getIdentifier();
+          $shard = hedley_general_shard_by_health_center($village_id);
+          $shards = !$shard ? [] : [$shard];
+        }
+        break;
 
-    case 'relationship':
-      // Relationship shards are the union of adult and child shards.
-      $child_id = $wrapper->field_related_to->getIdentifier();
-      $adult_id = $wrapper->field_person->getIdentifier();
-      $shards_child = hedley_general_shards_by_person($child_id);
-      $shards_adult = hedley_general_shards_by_person($adult_id);
-      $shards = array_unique(array_merge($shards_child, $shards_adult));
-      break;
-
-    case 'prenatal_encounter':
-    case 'nutrition_encounter':
-    case 'acute_illness_encounter':
-    case 'home_visit_encounter':
-    case 'well_child_encounter':
-      // Assign shards based on Person of the individual participant,
-      // to which encounter belongs.
-      $person_id = $wrapper->field_individual_participant->field_person->getIdentifier();
-      $shards = hedley_general_shards_by_person($person_id);
-      break;
-
-    // Handling individual_participant and all kinds of measurements.
-    // Shards are assigned based on Person for which measurement was taken.
-    default:
-      $person_id = $wrapper->field_person->getIdentifier();
-      $shards = hedley_general_shards_by_person($person_id);
-      break;
+      // Handling individual_participant and all kinds of measurements.
+      // Shards are assigned based on Person for which measurement was taken.
+      default:
+        $person_id = $wrapper->field_person->getIdentifier();
+        $shards = hedley_general_shards_by_person($person_id);
+        break;
+    }
   }
 
   if (empty($shards)) {

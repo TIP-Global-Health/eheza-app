@@ -1,24 +1,21 @@
 module Pages.IndividualEncounterParticipants.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Gizra.Html exposing (emptyNode, showMaybe)
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (unwrap)
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (fromEntityUuid)
-import SyncManager.Model
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -54,7 +51,7 @@ viewHeader title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
@@ -92,24 +89,37 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 AntenatalEncounter ->
                     isPersonAFertileWoman currentDate person
 
+                ChildScoreboardEncounter ->
+                    isChw && isChildUnderAgeOf2 currentDate person
+
+                HIVEncounter ->
+                    isChw
+
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
+                    False
+
+                NCDEncounter ->
+                    -- Patient is 12 years old or above.
+                    Maybe.map (\birthDate -> diffYears birthDate currentDate >= 12)
+                        person.birthDate
+                        |> Maybe.withDefault False
+
                 NutritionEncounter ->
                     isPersonAnAdult currentDate person
                         |> Maybe.map not
                         |> Maybe.withDefault False
 
+                TuberculosisEncounter ->
+                    isChw
+
                 WellChildEncounter ->
-                    if isChw then
-                        -- CHW can run only Newborn exam, which is
-                        -- performed for children up to 2 months old.
-                        isNewborn currentDate person
-                            |> Maybe.withDefault False
+                    isPersonAnAdult currentDate person
+                        |> Maybe.map not
+                        |> Maybe.withDefault False
 
-                    else
-                        isPersonAnAdult currentDate person
-                            |> Maybe.map not
-                            |> Maybe.withDefault False
-
-                _ ->
+                InmmunizationEncounter ->
+                    -- Not in use (possibly future development).
                     False
 
         -- For CHW nurse, we present people only from the village that was selected.
@@ -131,7 +141,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (Dict.filter
-                            (\filteredPersonId filteredPerson ->
+                            (\_ filteredPerson ->
                                 -- Show only participants that belong to selected health center.
                                 -- Todo: check if this really required.
                                 (filteredPerson.healthCenterId == Just healthCenterId)
@@ -202,18 +212,35 @@ viewParticipant language currentDate encounterType db id person =
         action =
             case encounterType of
                 AcuteIllnessEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage id ]
 
                 AntenatalEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage id ]
+
+                ChildScoreboardEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| ChildScoreboardParticipantPage id ]
+
+                HIVEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| HIVParticipantPage id ]
+
+                HomeVisitEncounter ->
+                    -- We do not have direct access to Home Visit encounter.
+                    []
+
+                NCDEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage id ]
 
                 NutritionEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage id ]
+
+                TuberculosisEncounter ->
+                    [ onClick <| SetActivePage <| UserPage <| TuberculosisParticipantPage id ]
 
                 WellChildEncounter ->
-                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage id ]
+                    [ onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage id ]
 
-                _ ->
+                InmmunizationEncounter ->
+                    -- Not implemented (possibly future development).
                     []
 
         viewAction =

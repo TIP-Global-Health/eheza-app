@@ -87,9 +87,9 @@ function hedley_acute_illness_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -480,7 +480,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -756,7 +756,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1142,7 +1142,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1385,6 +1385,44 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_follow_up-field_acute_illness_diagnosis'.
+  $field_instances['node-acute_illness_follow_up-field_acute_illness_diagnosis'] = array(
+    'bundle' => 'acute_illness_follow_up',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_acute_illness_diagnosis',
+    'label' => 'Acute Illness Diagnosis',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 13,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_follow_up-field_acute_illness_encounter'.
   $field_instances['node-acute_illness_follow_up-field_acute_illness_encounter'] = array(
     'bundle' => 'acute_illness_follow_up',
@@ -1430,6 +1468,63 @@ function hedley_acute_illness_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-acute_illness_follow_up-field_date_concluded'.
+  $field_instances['node-acute_illness_follow_up-field_date_concluded'] = array(
+    'bundle' => 'acute_illness_follow_up',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 7,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_date_concluded',
+    'label' => 'Date concluded',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-acute_illness_follow_up-field_date_measured'.
   $field_instances['node-acute_illness_follow_up-field_date_measured'] = array(
     'bundle' => 'acute_illness_follow_up',
@@ -1463,7 +1558,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1774,7 +1869,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2094,7 +2189,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2406,7 +2501,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Contact date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2463,7 +2558,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date concluded',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2520,7 +2615,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2655,7 +2750,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Last Follow Up Date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3252,9 +3347,9 @@ function hedley_acute_illness_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -3785,7 +3880,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4132,7 +4227,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4441,7 +4536,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -4787,7 +4882,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5171,7 +5266,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5519,7 +5614,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -5866,7 +5961,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6177,7 +6272,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -6525,7 +6620,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7057,7 +7152,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -7978,7 +8073,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -8521,7 +8616,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9029,7 +9124,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9339,7 +9434,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -9686,7 +9781,7 @@ function hedley_acute_illness_field_default_field_instances() {
     'label' => 'Date Measured',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -10010,6 +10105,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Acute Findings Signs General');
   t('Acute Findings Signs Respiratory');
   t('Acute Illness Danger Signs');
+  t('Acute Illness Diagnosis');
   t('Acute Illness Encounter');
   t('Administration Note');
   t('Adverse Events');

@@ -1,6 +1,5 @@
 module ZScore.Utils exposing
-    ( compareZScore
-    , diffDays
+    ( diffDays
     , valueForZScore
     , viewZScore
     , zScoreBmiForAge
@@ -114,14 +113,14 @@ zScoreForMonths clamp unwrapValue wrapValue (Days days) value table =
 
         highMonths =
             ceiling fractionalMonths
-
-        diffMonths =
-            fractionalMonths - toFloat lowMonths
     in
     Maybe.map2
         (\low high ->
             let
                 -- We interpolate an entry from fractional months
+                diffMonths =
+                    fractionalMonths - toFloat lowMonths
+
                 entry =
                     { l = low.l + (diffMonths * (high.l - low.l))
                     , m = wrapValue (unwrapValue low.m + diffMonths * (unwrapValue high.m - unwrapValue low.m))
@@ -228,13 +227,6 @@ We'll show two decimal points.
 viewZScore : ZScore -> String
 viewZScore =
     Round.round 2
-
-
-{-| Is the first ZScore greater than, less than, or equal to the second?
--}
-compareZScore : ZScore -> ZScore -> Order
-compareZScore =
-    compare
 
 
 {-| Difference in whole days between two dates.

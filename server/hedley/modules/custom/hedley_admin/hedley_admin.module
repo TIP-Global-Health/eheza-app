@@ -22,6 +22,15 @@ function hedley_admin_menu() {
     'access arguments' => ['hedley reporting admin'],
   ];
 
+  $items['admin/reports/devices-sync-state'] = array(
+    'title' => 'Devices with suspected synchronization issue',
+    'description' => 'Presents devices that are suspected to have synchronization issue',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hedley_admin_devices_sync_state_table'),
+    'access callback' => 'hedley_admin_administrators_access',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
@@ -115,7 +124,7 @@ function hedley_admin_vbo_export_csv($variables) {
  * Implements hook_block_info().
  */
 function hedley_admin_block_info() {
-  $blocks['ihangane_sidebar_menu'] = [
+  $blocks['eheza_app_sidebar_menu'] = [
     'info' => t('E-Heza Admin Menu'),
     'cache' => DRUPAL_CACHE_GLOBAL,
   ];
@@ -127,13 +136,18 @@ function hedley_admin_block_info() {
  * Implements hook_block_view().
  */
 function hedley_admin_block_view($delta) {
-  if ($delta != 'ihangane_sidebar_menu') {
+  if ($delta != 'eheza_app_sidebar_menu') {
+    return;
+  }
+
+  if (!hedley_admin_administrators_access()) {
+    // Only administrators can view the block.
     return;
   }
 
   $query = db_select('menu_links', 'm');
   $query->fields('m', ['link_path', 'link_title', 'options']);
-  $query->condition('menu_name', 'menu-ihangane-admin-menu');
+  $query->condition('menu_name', 'menu-eheza-app-admin-menu');
   $query->orderBy('weight');
 
   $results = $query->execute()->fetchAll();
@@ -307,4 +321,98 @@ function hedley_admin_health_center_access($account = FALSE) {
     watchdog('hedley_admin', $e->getMessage());
     return FALSE;
   }
+}
+
+/**
+ * Implements hook_form() for the suspected devices state table.
+ *
+ * This function generates a table displaying information
+ * for devices that are suspected to have a synchronization problem.
+ */
+function hedley_admin_devices_sync_state_table(array $form, array &$form_state) {
+  // Table header definitions.
+  $header = array(
+    'index' => t('#'),
+    'name' => t('Device Name'),
+    'to_upload' => [
+      'data' => t('Changes to Upload'),
+      'class' => 'align-center',
+    ],
+    'last_sync' => [
+      'data' => t('Last Sync Contact'),
+      'class' => 'align-center',
+    ],
+  );
+
+  // SQL query to retrieve synchronization data.
+  $query = db_select('node', 'n');
+  $query->join('users', 'u', 'u.uid = n.uid');
+  $query->join('field_data_field_total_to_upload', 'ttu', 'ttu.entity_id = u.uid');
+  $query->join('field_data_field_sync_phase', 'sp', 'sp.entity_id = u.uid');
+  $query->addField('u', 'name');
+  $query->addField('ttu', 'field_total_to_upload_value');
+  $query->addExpression('FROM_UNIXTIME(u.access)', 'last_sync');
+  $query->condition('n.type', 'sync_incident');
+  $query->condition('sp.field_sync_phase_value', 'sync-start');
+  $query->condition('ttu.field_total_to_upload_value', 10, '>');
+  $query->condition('u.access', strtotime('-2 months'), '>');
+  $query->groupBy('u.name');
+  $query->orderBy('last_sync', 'DESC');
+
+  $result = $query->execute();
+
+  $rows = [];
+  foreach ($result as $key => $row) {
+    $words = explode(' ', $row->name);
+    if (end($words) == 'Robot') {
+      array_splice($words, -1);
+    }
+
+    $rows[] = [
+      'index' => $key + 1,
+      'name' => implode(' ', $words),
+      'to_upload' => [
+        'data' => $row->field_total_to_upload_value,
+        'class' => 'align-center',
+      ],
+      'last_sync' => array(
+        'data' => $row->last_sync,
+        'class' => 'align-center',
+      ),
+    ];
+  }
+
+  $form['table'] = [
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No data available'),
+  ];
+
+  // Add CSS style for center alignment.
+  drupal_add_css('.align-center { text-align: center; }', array('type' => 'inline'));
+
+  return $form;
+}
+
+/**
+ * Allows access to superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_admin_administrators_access() {
+  if (user_is_anonymous()) {
+    return FALSE;
+  }
+
+  global $user;
+
+  if ($user->uid == 1) {
+    return TRUE;
+  }
+
+  $admin_role = user_role_load_by_name('administrator');
+
+  return user_has_role($admin_role->rid);
 }

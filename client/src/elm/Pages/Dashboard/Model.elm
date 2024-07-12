@@ -1,15 +1,13 @@
 module Pages.Dashboard.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Dashboard.Model exposing (ParticipantStats)
-import Backend.Entities exposing (HealthCenterId, VillageId)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import AssocList exposing (Dict)
+import Backend.Dashboard.Model exposing (EducationSessionData, ParticipantStats)
+import Backend.Entities exposing (VillageId)
+import Backend.Measurement.Model exposing (FamilyPlanningSign, Gender, VaccineDose, WellChildVaccineType)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
-import Pages.Page exposing (AcuteIllnessDashboardPage(..), ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..))
+import Pages.Page exposing (DashboardPage(..), Page)
 
 
 type FilterPeriod
@@ -113,13 +111,14 @@ type alias Model =
     , currentBeneficiariesIncidenceChartsFilter : DashboardFilter
     , currentCaseManagementFilter : DashboardFilter
     , currentCaseManagementSubFilter : DashboardSubFilter
+    , educationSessionDrillIn : Maybe EducationSessionData
     , latestPage : DashboardPage
     , modalState : Maybe ModalState
 
     -- This is used by month selector to determine
     -- the gap from current month. We allow to go back
     -- 6 months, so, valid values are between 0 and 5.
-    , monthGap : MonthGap
+    , monthGap : Int
     }
 
 
@@ -146,17 +145,14 @@ emptyModel maybeSelectedVillage =
     , currentBeneficiariesIncidenceChartsFilter = Stunting
     , currentCaseManagementFilter = Stunting
     , currentCaseManagementSubFilter = FilterTotal
-    , latestPage = MainPage
+    , educationSessionDrillIn = Nothing
+    , latestPage = PageMain
     , modalState = Nothing
     , monthGap = 0
     }
 
 
-type alias MonthGap =
-    Int
-
-
-maxMonthGap : MonthGap
+maxMonthGap : Int
 maxMonthGap =
     5
 
@@ -255,3 +251,4 @@ type Msg
     | SetFilterProgramType String
     | SetSelectedVillage String
     | SetActivePage Page
+    | SetEducationSessionDrillIn (Maybe EducationSessionData)

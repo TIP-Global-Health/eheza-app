@@ -1,8 +1,15 @@
 module Pages.Clinics.Fetch exposing (fetch)
 
+import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Model
-import Maybe.Extra
+import Backend.Model exposing (ModelIndexedDb)
+import List.Extra
+import List.Zipper as Zipper
+import Pages.Clinics.Model exposing (Model)
+import RemoteData
+import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import SyncManager.Model exposing (SyncInfoStatus(..))
+import SyncManager.Utils exposing (getSyncedHealthCenters)
 
 
 {-| The `fetch` function is an innovation in how to manage the "lazy" loading
@@ -44,8 +51,55 @@ fetch in case of error (at least, not without a delay), since you wouldn't want
 to just automatically retry errors constantly.
 
 -}
-fetch : Maybe ClinicId -> List Backend.Model.MsgIndexedDb
-fetch clinicId =
+fetch : HealthCenterId -> ModelIndexedDb -> SyncManager.Model.Model -> Model -> List Backend.Model.MsgIndexedDb
+fetch selectedHealthCenterId db syncManager model =
+    let
+        fetchClinicsMsgs =
+            RemoteData.toMaybe db.clinics
+                |> Maybe.andThen
+                    (\clinics ->
+                        let
+                            selectedHealthCenterSyncInfo =
+                                syncManager.syncInfoAuthorities
+                                    |> Maybe.andThen
+                                        (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid selectedHealthCenterId))
+                        in
+                        Maybe.map2
+                            (\syncInfo clinicType ->
+                                case syncInfo.status of
+                                    NotAvailable ->
+                                        []
+
+                                    Uploading ->
+                                        []
+
+                                    Downloading ->
+                                        []
+
+                                    _ ->
+                                        let
+                                            syncedHealthCenters =
+                                                getSyncedHealthCenters syncManager
+                                                    |> List.map toEntityUuid
+                                        in
+                                        Dict.filter
+                                            (\_ clinic ->
+                                                -- Group belongs to seleced health center.
+                                                (clinic.healthCenterId == selectedHealthCenterId)
+                                                    -- Health center is synced.
+                                                    && List.member clinic.healthCenterId syncedHealthCenters
+                                                    -- Group is of selected type.
+                                                    && (clinic.clinicType == clinicType)
+                                            )
+                                            clinics
+                                            |> Dict.keys
+                                            |> List.map Backend.Model.FetchSessionsByClinic
+                            )
+                            selectedHealthCenterSyncInfo
+                            model.clinicType
+                    )
+                |> Maybe.withDefault []
+    in
     -- So, to recap, this is called by the parent's `fetch` function, to see
     -- whether any data needs to be fetched. We can return messages that will
     -- fetch needed data. The function is located here because it is kind of a
@@ -59,7 +113,4 @@ fetch clinicId =
     -- centrally, by looking at the messages we return. That allows us to
     -- **remember** what data is desired ... and, thus, no longer desired ...
     -- so we can know when to **forget** things as well.
-    Maybe.Extra.values
-        [ Just Backend.Model.FetchClinics
-        , Maybe.map Backend.Model.FetchSessionsByClinic clinicId
-        ]
+    Backend.Model.FetchClinics :: fetchClinicsMsgs

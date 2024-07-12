@@ -11,17 +11,25 @@ type alias NutritionEncounter =
     { participant : IndividualEncounterParticipantId
     , startDate : NominalDate
     , endDate : Maybe NominalDate
+    , encounterType : NutritionEncounterType
     , shard : Maybe HealthCenterId
     }
 
 
-emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> Maybe HealthCenterId -> NutritionEncounter
-emptyNutritionEncounter participant startDate shard =
+emptyNutritionEncounter : IndividualEncounterParticipantId -> NominalDate -> NutritionEncounterType -> Maybe HealthCenterId -> NutritionEncounter
+emptyNutritionEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate
     , endDate = Nothing
+    , encounterType = encounterType
     , shard = shard
     }
+
+
+type NutritionEncounterType
+    = NutritionEncounterNurse
+    | NutritionEncounterCHW
+    | NutritionEncounterUnknown
 
 
 {-| This is a subdivision of ModelIndexedDb that tracks requests in-progress
@@ -34,6 +42,7 @@ type alias Model =
     , saveNutrition : WebData ()
     , savePhoto : WebData ()
     , saveWeight : WebData ()
+    , saveNCDA : WebData ()
     , saveSendToHC : WebData ()
     , saveHealthEducation : WebData ()
     , saveContributingFactors : WebData ()
@@ -49,6 +58,7 @@ emptyModel =
     , saveNutrition = NotAsked
     , savePhoto = NotAsked
     , saveWeight = NotAsked
+    , saveNCDA = NotAsked
     , saveSendToHC = NotAsked
     , saveHealthEducation = NotAsked
     , saveContributingFactors = NotAsked
@@ -65,15 +75,17 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveNutrition PersonId (Maybe NutritionNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
-    | SavePhoto PersonId (Maybe NutritionPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe NutritionWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
+    | SaveNCDA PersonId (Maybe NutritionNCDAId) NCDAValue
+    | HandleSavedNCDA (WebData ())
     | SaveSendToHC PersonId (Maybe NutritionSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
     | SaveHealthEducation PersonId (Maybe NutritionHealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
     | SaveContributingFactors PersonId (Maybe NutritionContributingFactorsId) (EverySet ContributingFactorsSign)
     | HandleSavedContributingFactors (WebData ())
-    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe NutritionFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())

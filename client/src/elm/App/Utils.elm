@@ -2,9 +2,9 @@ module App.Utils exposing (..)
 
 import App.Model exposing (..)
 import Backend.Entities exposing (HealthCenterId)
-import Error.Model exposing (Error)
-import Maybe.Extra exposing (unwrap)
-import RemoteData
+import Error.Model exposing (Error, ErrorType(..))
+import Maybe.Extra
+import RemoteData exposing (RemoteData(..), WebData)
 import Task
 
 
@@ -12,8 +12,7 @@ import Task
 -}
 getLoggedInData : Model -> Maybe ( HealthCenterId, LoggedInModel )
 getLoggedInData model =
-    model.configuration
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe model.configuration
         |> Maybe.andThen (.loggedIn >> RemoteData.toMaybe)
         |> Maybe.map2 (\healthCenterId loggedIn -> ( healthCenterId, loggedIn )) model.healthCenterId
 
@@ -23,18 +22,19 @@ and send to console.
 -}
 handleErrors : Maybe Error -> Model -> Model
 handleErrors maybeError model =
-    let
-        errors =
-            unwrap model.errors
-                (\error ->
+    Maybe.map
+        (\error ->
+            let
+                errors =
                     error
                         :: model.errors
                         -- Make sure list doesn't grow too much.
                         |> List.take 50
-                )
-                maybeError
-    in
-    { model | errors = errors }
+            in
+            { model | errors = errors }
+        )
+        maybeError
+        |> Maybe.withDefault model
 
 
 {-| Helper function to call a Page, and wire Error handling into it.
@@ -46,11 +46,14 @@ updateSubModel :
     -> (subModel -> Model -> Model)
     -> (subMsg -> Msg)
     -> Model
-    -> ( Model, Cmd Msg )
+    -> ( Model, Cmd Msg, List Msg )
 updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
     let
         return =
             updateFunc subMsg subModel
+
+        modelUpdatedWithError =
+            handleErrors return.error model
 
         appCmds =
             if List.isEmpty return.appMsgs then
@@ -65,14 +68,17 @@ updateSubModel subMsg subModel updateFunc modelUpdateFunc msg model =
                         )
                     |> Cmd.batch
 
-        modelUpdatedWithError =
-            handleErrors return.error model
+        appMsgs =
+            Maybe.map (.error >> TriggerRollbar SyncProcess >> List.singleton)
+                return.error
+                |> Maybe.withDefault []
     in
     ( modelUpdateFunc return.model modelUpdatedWithError
     , Cmd.batch
         [ Cmd.map msg return.cmd
         , appCmds
         ]
+    , appMsgs
     )
 
 
@@ -105,3 +111,13 @@ sequenceSubModelReturn updater msgs startingPoint =
 focusOnCalendarMsg : Msg
 focusOnCalendarMsg =
     App.Model.ScrollToElement "dropdown--content-container"
+
+
+triggerRollbarOnFailure : WebData any -> List Msg
+triggerRollbarOnFailure data =
+    case data of
+        Failure err ->
+            [ TriggerRollbar IndexedDB (Http err) ]
+
+        _ ->
+            []

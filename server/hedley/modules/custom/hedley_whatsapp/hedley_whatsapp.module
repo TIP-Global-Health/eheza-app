@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley WhatsApp feature.
+ */
+
+include_once 'hedley_whatsapp.features.inc';
+
+define('HEDLEY_WHATSAPP_ENGLISH_CODE', 'en');
+
+/**
+ * Returns the progress report message template.
+ *
+ * SID is resolved using selected language.
+ * If no template is set for the language, defaults to English template.
+ *
+ * @param string $language
+ *   The language code for the template.
+ *
+ * @return string
+ *   The progress report message template.
+ */
+function hedley_whatsapp_get_progress_report_template_sid($language) {
+  $english_template_variable = "hedley_whatsapp_progress_report_template_sid_" . HEDLEY_WHATSAPP_ENGLISH_CODE;
+  $english_template_sid = variable_get($english_template_variable, '');
+  if ($language == HEDLEY_WHATSAPP_ENGLISH_CODE) {
+    return $english_template_sid;
+  }
+
+  $template_variable = "hedley_whatsapp_progress_report_template_sid_$language";
+  return variable_get($template_variable, $english_template_sid);
+}

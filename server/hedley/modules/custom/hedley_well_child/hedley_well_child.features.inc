@@ -35,6 +35,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_caring' => array(
+      'name' => t('Well Child Caring'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_contributing_factors' => array(
       'name' => t('Well Child Contributing Factors'),
       'base' => 'node_content',
@@ -46,7 +54,16 @@ function hedley_well_child_node_info() {
     'well_child_dtp_immunisation' => array(
       'name' => t('Well Child DTP Immunisation'),
       'base' => 'node_content',
-      'description' => '',
+      'description' => t('Stands for PTP-HepB-Hib immunisation, also called Pentavalent.
+Protects against five potential killers – Diptheria, Tetanus, Pertusis, Hib, and Hepatitis B.'),
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_dtp_sa_immunisation' => array(
+      'name' => t('Well Child DTP (standalone) Immunisation'),
+      'base' => 'node_content',
+      'description' => t('Protects against three potential killers – Diptheria, Tetanus and Pertusis.'),
       'has_title' => '1',
       'title_label' => t('Title'),
       'help' => '',
@@ -67,8 +84,24 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_feeding' => array(
+      'name' => t('Well Child Feeding'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_follow_up' => array(
       'name' => t('Well Child Follow Up'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_food_security' => array(
+      'name' => t('Well Child Food Security'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
@@ -107,6 +140,14 @@ function hedley_well_child_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'well_child_hygiene' => array(
+      'name' => t('Well Child Hygiene'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'well_child_ipv_immunisation' => array(
       'name' => t('Well Child IPV Immunisation'),
       'base' => 'node_content',
@@ -133,6 +174,14 @@ function hedley_well_child_node_info() {
     ),
     'well_child_muac' => array(
       'name' => t('Well Child MUAC'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'well_child_ncda' => array(
+      'name' => t('Well Child NCDA'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

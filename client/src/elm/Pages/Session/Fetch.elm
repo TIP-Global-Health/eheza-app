@@ -7,6 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.NutritionEncounter.Fetch
 import Backend.Session.Fetch exposing (fetchEditableSession)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Pages.Activities.Fetch
@@ -17,11 +18,19 @@ import Pages.Participant.Fetch
 import Pages.Participants.Fetch
 import Pages.ProgressReport.Fetch
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
 
 
-fetch : NominalDate -> ZScore.Model.Model -> SessionId -> SessionPage -> ModelIndexedDb -> List MsgIndexedDb
-fetch currentDate zscores sessionId sessionPage db =
+fetch :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> SessionId
+    -> SessionPage
+    -> ModelIndexedDb
+    -> List MsgIndexedDb
+fetch currentDate zscores features sessionId sessionPage db =
     let
         fetchForChild childId =
             let
@@ -62,7 +71,14 @@ fetch currentDate zscores sessionId sessionPage db =
                                                             { completed = Dict.empty
                                                             , pending = Dict.empty
                                                             }
-                                                            (Activity.Utils.summarizeChildActivity currentDate zscores childActivity ediatbleSession.offlineSession False db)
+                                                            (Activity.Utils.summarizeChildActivity currentDate
+                                                                zscores
+                                                                features
+                                                                childActivity
+                                                                ediatbleSession.offlineSession
+                                                                False
+                                                                db
+                                                            )
                                                         |> .pending
                                                         |> Dict.toList
                                                         |> List.head

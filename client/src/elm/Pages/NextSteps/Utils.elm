@@ -1,24 +1,16 @@
 module Pages.NextSteps.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (NutritionEncounterId)
 import Backend.Measurement.Model
     exposing
         ( ChildMeasurements
-        , ContributingFactorsSign(..)
-        , FollowUpOption(..)
         , MeasurementData
         )
-import Backend.Measurement.Utils exposing (currentValue, currentValues, getMeasurementValueFunc, mapMeasurementData)
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
-import List.Extra
-import Maybe.Extra exposing (isJust, isNothing, or, unwrap)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
+import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
+import Measurement.Utils exposing (contributingFactorsFormWithDefault, healthEducationFormWithDefault, nutritionFollowUpFormWithDefault, sendToHCFormWithDefault)
 import Pages.NextSteps.Model exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, taskCompleted, valueConsideringIsDirtyField)
-import RemoteData exposing (RemoteData(..))
+import Pages.Utils exposing (taskCompleted)
 
 
 nextStepsTasksCompletedFromTotal : MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
@@ -98,7 +90,7 @@ nextStepsTasksCompletedFromTotal measurements data task =
                     mapMeasurementData .followUp measurements
                         |> .current
                         |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
+                        |> nutritionFollowUpFormWithDefault data.followUpForm
             in
             ( taskCompleted form.option
             , 1

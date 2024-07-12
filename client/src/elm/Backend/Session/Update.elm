@@ -1,26 +1,24 @@
 module Backend.Session.Update exposing (update)
 
+import App.Model
 import App.Ports exposing (bindDropZone)
+import App.Utils exposing (triggerRollbarOnFailure)
 import AssocList as Dict
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Measurement.Encoder exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Fetch
-import Backend.Session.Encoder exposing (encodeSession)
 import Backend.Session.Model exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
-import Gizra.NominalDate exposing (NominalDate, encodeYYYYMMDD)
-import Json.Encode exposing (object)
-import Json.Encode.Extra
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import Measurement.Model exposing (OutMsgChild(..), OutMsgMother(..))
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, encodeEntityUuid, toCmd, withoutDecoder)
+import Restful.Endpoint exposing (toCmd, withoutDecoder)
 
 
-update : Maybe NurseId -> SessionId -> Maybe Session -> NominalDate -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List MsgIndexedDb )
-update nurseId sessionId maybeSession currentDate db msg model =
+update : NominalDate -> Maybe NurseId -> SessionId -> Maybe Session -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate nurseId sessionId maybeSession db msg model =
     case msg of
         CloseSession ->
             unwrap
@@ -39,13 +37,21 @@ update nurseId sessionId maybeSession currentDate db msg model =
         HandleClosedSession data ->
             ( { model | closeSessionRequest = data }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         MeasurementOutMsgChild personId subMsg ->
             case subMsg of
+                NoOp ->
+                    ( model, Cmd.none, [] )
+
                 FetchIndividualNutritionData id ->
-                    ( model, Cmd.none, Backend.NutritionEncounter.Fetch.fetch id db )
+                    let
+                        appMsgs =
+                            Backend.NutritionEncounter.Fetch.fetch id db
+                                |> List.map App.Model.MsgIndexedDb
+                    in
+                    ( model, Cmd.none, appMsgs )
 
                 SaveHeight valueId value ->
                     ( { model | saveHeightRequest = Dict.insert personId Loading model.saveHeightRequest }
@@ -113,6 +119,12 @@ update nurseId sessionId maybeSession currentDate db msg model =
                     , []
                     )
 
+                SaveNCDA valueId value ->
+                    ( { model | saveNCDARequest = Dict.insert personId Loading model.saveNCDARequest }
+                    , saveMeasurementCmd currentDate sessionId personId nurseId Nothing valueId value groupNCDAEndpoint (HandleSaveNCDA personId)
+                    , []
+                    )
+
         -- We're handling responses in order to pick up error conditions.
         -- However, we'll let the general "handleRevision" mechanism handle
         -- integrating the data into our model ... we need that anyway, so
@@ -158,89 +170,95 @@ update nurseId sessionId maybeSession currentDate db msg model =
         HandleSaveAttendance personId data ->
             ( { model | saveAttendanceRequest = Dict.insert personId data model.saveAttendanceRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveCounselingSession personId data ->
             ( { model | saveCounselingSessionRequest = Dict.insert personId data model.saveCounselingSessionRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveParticipantConsent personId data ->
             ( { model | saveParticipantConsentRequest = Dict.insert personId data model.saveParticipantConsentRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveFamilyPlanning personId data ->
             ( { model | saveFamilyPlanningRequest = Dict.insert personId data model.saveFamilyPlanningRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveLactation personId data ->
             ( { model | saveLactationRequest = Dict.insert personId data model.saveLactationRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveFbf personId data ->
             ( { model | saveFbfRequest = Dict.insert personId data model.saveFbfRequest }
             , Cmd.none
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveHeight personId data ->
             ( { model | saveHeightRequest = Dict.insert personId data model.saveHeightRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveWeight personId data ->
             ( { model | saveWeightRequest = Dict.insert personId data model.saveWeightRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveMuac personId data ->
             ( { model | saveMuacRequest = Dict.insert personId data model.saveMuacRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSavePhoto personId data ->
             ( { model | savePhotoRequest = Dict.insert personId data model.savePhotoRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveNutrition personId data ->
             ( { model | saveNutritionRequest = Dict.insert personId data model.saveNutritionRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveContributingFactors personId data ->
             ( { model | saveContributingFactorsRequest = Dict.insert personId data model.saveContributingFactorsRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveFollowUp personId data ->
             ( { model | saveFollowUpRequest = Dict.insert personId data model.saveFollowUpRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveHealthEducation personId data ->
             ( { model | saveHealthEducationRequest = Dict.insert personId data model.saveHealthEducationRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
             )
 
         HandleSaveSendToHC personId data ->
             ( { model | saveSendToHCRequest = Dict.insert personId data model.saveSendToHCRequest }
             , bindDropZone ()
-            , []
+            , triggerRollbarOnFailure data
+            )
+
+        HandleSaveNCDA personId data ->
+            ( { model | saveNCDARequest = Dict.insert personId data model.saveNCDARequest }
+            , bindDropZone ()
+            , triggerRollbarOnFailure data
             )

@@ -135,14 +135,16 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   public function createMother($clinic_id) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
-      'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_clinic->set($clinic_id);
+    $wrapper->field_second_name->set($this->randomName());
     $wrapper->field_birth_date->set(strtotime('1998-07-01'));
     $wrapper->field_clinic->set($clinic_id);
     $wrapper->field_ubudehe->set(1);
     $wrapper->field_education_level->set(2);
+    $wrapper->field_gender->set('female');
     $wrapper->save();
 
     return $node->nid;
@@ -166,10 +168,10 @@ class HedleyWebTestBase extends DrupalWebTestCase {
   public function createChild($mother_id, $health_center_id = NULL, $child_bd = NULL, $created = NULL) {
     $node = $this->drupalCreateNode([
       'type' => 'person',
-      'title' => $this->randomName(),
     ]);
 
     $wrapper = entity_metadata_wrapper('node', $node);
+    $wrapper->field_second_name->set($this->randomName());
     $wrapper->field_gender->set('male');
 
     if ($child_bd) {

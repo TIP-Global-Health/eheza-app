@@ -1,7 +1,7 @@
 module Backend.ParticipantConsent.Model exposing (FormBody, ParticipantForm)
 
 import Html.Parser exposing (Node)
-import Translate.Model exposing (Language, TranslationSet)
+import Translate.Model exposing (TranslationSet)
 
 
 {-| Models the form we show to obtain a consent.

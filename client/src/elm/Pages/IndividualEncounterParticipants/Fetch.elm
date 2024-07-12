@@ -1,7 +1,7 @@
 module Pages.IndividualEncounterParticipants.Fetch exposing (fetch)
 
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Backend.Model exposing (MsgIndexedDb(..))
 import Pages.IndividualEncounterParticipants.Model exposing (..)
 
 
@@ -9,8 +9,7 @@ fetch : IndividualEncounterType -> Model -> List MsgIndexedDb
 fetch encounterType model =
     let
         trimmed =
-            model.search
-                |> Maybe.withDefault ""
+            Maybe.withDefault "" model.search
                 |> String.trim
     in
     [ FetchHealthCenters, FetchVillages ]

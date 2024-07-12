@@ -5,9 +5,9 @@ import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, isPersonAnAdult)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, Relationship)
+import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship)
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import Gizra.Html exposing (emptyNode, showMaybe)
@@ -18,9 +18,10 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isNothing)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
+import Pages.Utils exposing (emptySelectOption)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
 import Utils.WebData exposing (viewError, viewWebData)
@@ -51,7 +52,7 @@ viewHeader language initiator id1 =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.CreateRelationship ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage goBackPage
             ]
@@ -125,18 +126,6 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                 |> Maybe.Extra.orElse savedRelationship
 
         possibleRelationships =
-            let
-                expected =
-                    case isPersonAnAdult currentDate data.person1 of
-                        Just True ->
-                            [ MyChild, MyCaregiven ]
-
-                        Just False ->
-                            [ MyParent, MyCaregiver ]
-
-                        Nothing ->
-                            [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
-            in
             case savedRelationship of
                 -- In case we got relationship already,
                 -- we do not allow to set another relationship type.
@@ -146,6 +135,18 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                 Nothing ->
                     -- Always add the currently set relationship, if there is one, even
                     -- if it's not expected.
+                    let
+                        expected =
+                            case isPersonAnAdult currentDate data.person1 of
+                                Just True ->
+                                    [ MyChild, MyCaregiven ]
+
+                                Just False ->
+                                    [ MyParent, MyCaregiver ]
+
+                                Nothing ->
+                                    [ MyChild, MyCaregiven, MyParent, MyCaregiver ]
+                    in
                     case viewedRelationship of
                         Just viewed ->
                             if List.member viewed expected then
@@ -236,11 +237,7 @@ viewFetchedContent language currentDate selectedHealthCenter maybeVillageGroupId
                                         emptyNode
 
                                     _ ->
-                                        option
-                                            [ value ""
-                                            , selected (model.assignToGroup == Nothing)
-                                            ]
-                                            [ text "" ]
+                                        emptySelectOption (model.assignToGroup == Nothing)
 
                             initiatorCondition clinicId =
                                 case initiator of

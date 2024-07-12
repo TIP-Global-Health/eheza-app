@@ -16,7 +16,7 @@ var $ = require("gulp-load-plugins")();
 var del = require("del");
 
 var rename = require("gulp-rename");
-// BrowserSync isn"t a gulp package, and needs to be loaded manually
+// BrowserSync isn't a gulp package, and needs to be loaded manually
 var browserSync = require("browser-sync");
 
 var elm = require('gulp-elm');
@@ -50,12 +50,10 @@ gulp.task("clean:dev", function(cb) {
     cb);
 });
 
-
 // Deletes the directory that the optimized site is output to
 gulp.task("clean:prod", function(cb) {
   return del(["dist"], cb);
 });
-
 
 // Compiles the SASS files and moves them into the "assets/stylesheets" directory
 gulp.task("styles", [], function() {
@@ -123,7 +121,7 @@ gulp.task("zscore", [], function() {
     // And turn the JSON into an Elm fixture for testing
     .pipe(transform('utf8', function(content, file) {
       var moduleName = capitalize(path.basename(file.path, '.json'));
-      return `module ZScore.Fixture.${moduleName} exposing (..)\n\n\njson : String\njson =\n    """${content}"""`;
+      return `module ZScore.Fixture.${moduleName} exposing (json)\n\n\njson : String\njson =\n    """${content}"""`;
     })).pipe($.rename(function(path) {
       path.basename = capitalize(path.basename);
       path.extname = '.elm';
@@ -148,7 +146,7 @@ function capitalize(input) {
   return input.charAt(0).toUpperCase() + input.slice(1);
 }
 
-// Optimizes the images that exists
+// Optimizes the images that exist
 gulp.task("images", function() {
   return gulp.src("src/assets/images/**")
     .pipe($.changed("dist/assets/images"))
@@ -174,8 +172,8 @@ gulp.task("copy:fonts", function() {
 });
 
 // Copy index.html and CNAME files to the "serve" directory
-gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
-  "copy:fonts"
+gulp.task("copy:dev", ["copy:bower", "copy:html2canvas", "copy:signature_pad",
+  "copy:rollbar", "copy:images", "copy:favicon", "copy:fonts"
 ], function() {
   return gulp.src(["src/index.html", "src/CNAME", "src/js/**/*"])
     .pipe(gulp.dest("serve"))
@@ -186,7 +184,6 @@ gulp.task("copy:dev", ["copy:bower", "copy:images", "copy:favicon",
 
 // Copy bower.
 gulp.task("copy:bower", function() {
-  // There are unused Dexie files that causes trouble for uglify later
   return gulp.src([
       "bower_components/**/*",
       "!bower_components/**/*.es.js",
@@ -194,6 +191,36 @@ gulp.task("copy:bower", function() {
     ]).pipe(gulp.dest("serve/bower_components"))
     .pipe($.size({
       title: "Bower"
+    }))
+});
+
+// Copy html2canvas.
+gulp.task("copy:html2canvas", function() {
+  return gulp.src([
+      "node_modules/html2canvas/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/html2canvas"))
+    .pipe($.size({
+      title: "Html2Canvas"
+    }))
+});
+
+// Copy signature_pad.
+gulp.task("copy:signature_pad", function() {
+  return gulp.src([
+      "node_modules/signature_pad/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/signature_pad"))
+    .pipe($.size({
+      title: "SignaturePad"
+    }))
+});
+
+// Copy rollbar.
+gulp.task("copy:rollbar", function() {
+  return gulp.src([
+      "node_modules/rollbar/**/*"
+    ]).pipe(gulp.dest("serve/bower_components/rollbar"))
+    .pipe($.size({
+      title: "Rollbar"
     }))
 });
 
@@ -228,7 +255,6 @@ gulp.task('bower', function() {
     .pipe(wiredep())
     .pipe(gulp.dest("serve"));
 });
-
 
 // Optimizes all the CSS, HTML and concats the JS etc
 gulp.task("minify", ["styles", "zscore", "copy:images", "copy:favicon"],
@@ -277,6 +303,7 @@ gulp.task("deploy", [], function() {
 });
 
 gulp.task('elm-init', elm.init);
+
 gulp.task('elm', ['elm-init', 'version'], function() {
   return gulp.src('src/elm/Main.elm')
     .pipe(plumber())
@@ -328,14 +355,14 @@ gulp.task("serve:emulator", ["build", "ssl-cert"], function() {
   });
 });
 
-// Makes an SSL certificate for ihangane.dev for the Android emulator. Just
+// Makes an SSL certificate for eheza-app.dev for the Android emulator. Just
 // run this once, and then do what is necessary to trust it.
 gulp.task("ssl-cert", function(cb) {
   fs.access("ssl/ssl.crt", fs.constants.F_OK, (err) => {
     if (err) {
       // Doesn't exist, so create cert.
       const cmdGen =
-        "openssl req -batch -config ssl/ihangane.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
+        "openssl req -batch -config ssl/eheza-app.dev.conf -new -sha256 -newkey rsa:2048 -nodes -x509 -days 1024 -keyout ssl/ssl.key -out ssl/ssl.pem";
       exec(cmdGen, {}, function(err, stdout, stderr) {
         console.log(stdout);
         console.log(stderr);
@@ -354,17 +381,16 @@ gulp.task("ssl-cert", function(cb) {
 // reload the website accordingly. Update or add other files you need to be watched.
 gulp.task("watch", function() {
   // We need to copy dev, so index.html may be replaced by error messages.
-  gulp.watch(["src/index.html", "src/js/**/*.js"], ["copy:dev",
-    "pwa:dev",
-    reload
-  ]);
-  gulp.watch(["src/elm/**/*.elm"], ["elm", "copy:dev",
+  gulp.watch(["src/index.html", "src/js/**/*.js"], [
     "pwa:dev", reload
   ]);
-  gulp.watch(["src/assets/scss/**/*.scss"], ["styles", "copy:dev",
+  gulp.watch(["src/elm/**/*.elm"], [
     "pwa:dev", reload
   ]);
-  gulp.watch(["src/assets/zscore/**/*.txt"], ["zscore", "copy:dev",
+  gulp.watch(["src/assets/scss/**/*.scss"], [
+    "pwa:dev", reload
+  ]);
+  gulp.watch(["src/assets/zscore/**/*.txt"], [
     "pwa:dev", reload
   ]);
 });
@@ -394,20 +420,10 @@ var precacheLocalDev = [
   'bower_components/dropzone/dist/min/dropzone.min.js',
   'bower_components/dexie/dist/dexie.min.js',
   'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.css'
-];
-
-// There may be a better way to do this, but for the moment we have some
-// slight duplication here.
-var precacheProd = [
-  precacheFileGlob,
-  'assets/**/' + precacheFileGlob,
-  'bower_components/copy-button/bundled.min.*.js',
-  'bower_components/dropzone/dist/min/dropzone.min.*.css',
-  'bower_components/dropzone/dist/min/dropzone.min.*.js',
-  'bower_components/dexie/dist/dexie.min.*.js',
-  'bower_components/semantic/dist/themes/**/' + precacheFileGlob,
-  'bower_components/semantic/dist/semantic.min.*.css'
+  'bower_components/semantic/dist/semantic.min.css',
+  'bower_components/html2canvas/dist/html2canvas.min.js',
+  'bower_components/signature_pad/dist/signature_pad.umd.min.js',
+  'bower_components/rollbar/dist/rollbar.umd.min.js'
 ];
 
 // For offline use while developing
@@ -416,35 +432,10 @@ gulp.task('pwa:dev', ["styles", "zscore", "copy:dev", "elm"], function() {
 
   return workboxBuild.generateSW({
     swDest: 'serve/service-worker.js',
-    cacheId: 'ihangane',
+    cacheId: 'eheza-app',
     globDirectory: 'serve',
     globPatterns: precacheLocalDev,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
-    clientsClaim: true,
-    skipWaiting: false,
-    importScripts: [
-      'bower_components/dexie/dist/dexie.min.js',
-      'uuid.js',
-      'sw.js',
-      'config.js',
-      'lifecycle.js',
-      'nodes.js',
-      'statistics.js',
-      'photos.js',
-    ]
-  });
-});
-
-// Offline use in production.
-gulp.task('pwa:prod', function() {
-  var workboxBuild = require('workbox-build');
-
-  return workboxBuild.generateSW({
-    swDest: 'dist/service-worker.js',
-    cacheId: 'ihangane',
-    globDirectory: 'dist',
-    globPatterns: precacheProd,
-    maximumFileSizeToCacheInBytes: 20 * 1024 * 1024,
+    maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
     clientsClaim: true,
     skipWaiting: false,
     importScripts: [
@@ -464,14 +455,10 @@ gulp.task('pwa:prod', function() {
 gulp.task("emulator", ["serve:emulator", "watch"]);
 
 // Default task, run when just writing "gulp" in the terminal
-gulp.task("default", ["serve:dev", "watch"]);
+gulp.task("default", gulpSequence("serve:dev", "watch"));
 
 // Builds the site but doesnt serve it to you
-// @todo: Add "bower" here
-gulp.task("build", gulpSequence("clean:dev", ["styles",
-  "zscore", "copy:dev",
-  "elm", "pwa:dev"
-]));
+gulp.task("build", gulpSequence("clean:dev", "pwa:dev"));
 
 // Tweak config to include real environment.
 gulp.task("deploy:config", function() {
@@ -488,9 +475,7 @@ gulp.task("deploy:revert", function() {
   return exec("git checkout src/elm/Config.elm");
 });
 
-
 // Builds your site with the "build" command and then runs all the optimizations on
 // it and outputs it to "./dist"
-gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"], ["minify", "cname",
-  "images"
-], "pwa:dev", "deploy:revert"));
+gulp.task("publish", gulpSequence("deploy:config", ["build", "clean:prod"],
+ ["minify", "cname", "images"], "deploy:revert"));

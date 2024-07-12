@@ -8,6 +8,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
 import Backend.Session.Model exposing (EditableSession, Session)
 import Backend.Session.Utils exposing (isClosed)
+import EverySet exposing (EverySet)
 import Gizra.Html exposing (showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
@@ -28,20 +29,33 @@ import Pages.ProgressReport.View
 import Pages.Session.Model exposing (..)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
-import Utils.WebData exposing (viewError, viewWebData)
+import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
 
-view : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate zscores isChw nurse sessionId page model db =
+view :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> Nurse
+    -> SessionId
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+view language currentDate zscores site features isChw nurse sessionId page model db =
     let
         sessionData =
             Dict.get sessionId db.sessions
                 |> Maybe.withDefault NotAsked
     in
     viewWebData language
-        (\session -> viewFoundSession language currentDate zscores isChw nurse ( sessionId, session ) page model db)
+        (\session -> viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db)
         (wrapError language sessionId)
         sessionData
 
@@ -55,9 +69,9 @@ wrapError language sessionId errorHtml =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.GroupEncounterLoading ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Nothing
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -67,13 +81,21 @@ wrapError language sessionId errorHtml =
         ]
 
 
-viewFoundSession : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> ( SessionId, Session ) -> SessionPage -> Model -> ModelIndexedDb -> Html Msg
-viewFoundSession language currentDate zscores isChw nurse ( sessionId, session ) page model db =
+viewFoundSession :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> Nurse
+    -> ( SessionId, Session )
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
+viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db =
     let
-        editableSession =
-            Dict.get sessionId db.editableSessions
-                |> Maybe.withDefault NotAsked
-
         authorized =
             db.clinics
                 |> RemoteData.toMaybe
@@ -85,8 +107,13 @@ viewFoundSession language currentDate zscores isChw nurse ( sessionId, session )
         viewClosedSession language sessionId session db
 
     else if authorized then
+        let
+            editableSession =
+                Dict.get sessionId db.editableSessions
+                    |> Maybe.withDefault NotAsked
+        in
         viewWebData language
-            (viewEditableSession language currentDate zscores isChw nurse sessionId page model db)
+            (viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db)
             (wrapError language sessionId)
             editableSession
 
@@ -94,12 +121,25 @@ viewFoundSession language currentDate zscores isChw nurse ( sessionId, session )
         viewUnauthorizedSession language sessionId session db
 
 
-viewEditableSession : Language -> NominalDate -> ZScore.Model.Model -> Bool -> Nurse -> SessionId -> SessionPage -> Model -> ModelIndexedDb -> EditableSession -> Html Msg
-viewEditableSession language currentDate zscores isChw nurse sessionId page model db session =
+viewEditableSession :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
+    -> Bool
+    -> Nurse
+    -> SessionId
+    -> SessionPage
+    -> Model
+    -> ModelIndexedDb
+    -> EditableSession
+    -> Html Msg
+viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db session =
     case page of
         ActivitiesPage ->
             model.activitiesPage
-                |> Pages.Activities.View.view language nurse ( sessionId, session )
+                |> Pages.Activities.View.view language isChw ( sessionId, session )
                 |> Html.map MsgActivities
 
         ActivityPage activityType ->
@@ -107,40 +147,60 @@ viewEditableSession language currentDate zscores isChw nurse sessionId page mode
                 ChildActivity activity ->
                     Dict.get activity model.childActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                        |> Pages.Activity.View.view childParticipant language currentDate zscores isChw activity ( sessionId, session ) model db
+                        |> Pages.Activity.View.view childParticipant
+                            language
+                            currentDate
+                            zscores
+                            site
+                            features
+                            isChw
+                            activity
+                            ( sessionId, session )
+                            model
+                            db
                         |> (\( html, maybeChildId ) -> Html.map (MsgChildActivity activity maybeChildId) html)
 
                 MotherActivity activity ->
                     Dict.get activity model.motherActivityPages
                         |> Maybe.withDefault Pages.Activity.Model.emptyModel
-                        |> Pages.Activity.View.view motherParticipant language currentDate zscores isChw activity ( sessionId, session ) model db
+                        |> Pages.Activity.View.view motherParticipant
+                            language
+                            currentDate
+                            zscores
+                            site
+                            features
+                            isChw
+                            activity
+                            ( sessionId, session )
+                            model
+                            db
                         |> (\( html, maybeMotherId ) -> Html.map (MsgMotherActivity activity maybeMotherId) html)
 
         AttendancePage ->
-            Pages.Attendance.View.view language nurse ( sessionId, session ) model.attendancePage
+            Pages.Attendance.View.view language isChw ( sessionId, session ) model.attendancePage
                 |> Html.map MsgAttendance
 
         ParticipantsPage ->
             model.participantsPage
-                |> Pages.Participants.View.view language nurse ( sessionId, session )
+                |> Pages.Participants.View.view language isChw ( sessionId, session )
                 |> Html.map MsgParticipants
 
         ProgressReportPage childId ->
             Dict.get childId model.progressReportPages
                 |> Maybe.withDefault Pages.ProgressReport.Model.emptyModel
-                |> Pages.ProgressReport.View.view language currentDate zscores isChw childId ( sessionId, session ) db
+                |> Pages.ProgressReport.View.view language currentDate zscores site features isChw childId ( sessionId, session ) db
                 |> Html.map (MsgProgressReport childId)
 
         ChildPage childId ->
             Dict.get childId model.childPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewChild language currentDate zscores isChw childId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewChild language currentDate zscores site features isChw childId ( sessionId, session ) model db
                 |> Html.map (MsgChild childId)
 
         MotherPage motherId ->
             Dict.get motherId model.motherPages
                 |> Maybe.withDefault Pages.Participant.Model.emptyModel
-                |> Pages.Participant.View.viewMother language currentDate zscores isChw motherId ( sessionId, session ) model db
+                |> Pages.Participant.View.viewMother language currentDate zscores site features isChw motherId ( sessionId, session ) model db
                 |> Html.map (MsgMother motherId)
 
         NextStepsPage childId activity ->
@@ -164,9 +224,9 @@ viewClosedSession language sessionId session db =
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []
@@ -194,9 +254,9 @@ viewUnauthorizedSession language sessionId session db =
                     |> Maybe.map (.name >> text)
                     |> showMaybe
                 ]
-            , a
+            , span
                 [ class "link-back"
-                , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just session.clinicId
+                , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
                 , span [] []

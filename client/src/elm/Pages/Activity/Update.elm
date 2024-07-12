@@ -9,6 +9,7 @@ import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Session.Model exposing (EditableSession)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import LocalData
 import Measurement.Model
@@ -16,6 +17,7 @@ import Measurement.Update
 import Pages.Activity.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (matchFilter, normalizeFilter)
+import SyncManager.Model exposing (SiteFeature)
 import ZScore.Model
 
 
@@ -26,6 +28,7 @@ is similar to the code in `Pages.Participant.Update`.
 updateChild :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Msg PersonId Measurement.Model.MsgChild
     -> Model PersonId
     -> EditableSession
@@ -33,7 +36,7 @@ updateChild :
     -> Maybe Measurement.Model.ModelChild
     -> ModelIndexedDb
     -> ChildUpdateReturns
-updateChild currentDate zscores msg model session activity childForm db =
+updateChild currentDate zscores features msg model session activity childForm db =
     case msg of
         GoBackToActivitiesPage sessionId ->
             ChildUpdateReturns
@@ -65,14 +68,15 @@ updateChild currentDate zscores msg model session activity childForm db =
                 updatedModel =
                     { model | filter = filter }
 
-                participants =
-                    calculateChildrenParticipants currentDate zscores session activity db updatedModel
-
                 outMsg =
                     if List.member activity [ Height, Muac, Weight ] |> not then
                         Nothing
 
                     else
+                        let
+                            participants =
+                                calculateChildrenParticipants currentDate zscores features session activity db updatedModel
+                        in
                         case model.selectedTab of
                             Pending ->
                                 participants.pending
@@ -122,7 +126,7 @@ updateChild currentDate zscores msg model session activity childForm db =
                                 Nothing
 
                             Completed ->
-                                calculateChildrenParticipants currentDate zscores session activity db model
+                                calculateChildrenParticipants currentDate zscores features session activity db model
                                     |> .completed
                                     |> Dict.toList
                                     |> List.head
@@ -143,12 +147,13 @@ It also takes into consideration the 'name' filter that exists on activity page.
 calculateChildrenParticipants :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> EditableSession
     -> ChildActivity
     -> ModelIndexedDb
     -> Model PersonId
     -> CompletedAndPending (Dict PersonId Person)
-calculateChildrenParticipants currentDate zscores session activity db model =
+calculateChildrenParticipants currentDate zscores features session activity db model =
     let
         applyNameFilter { pending, completed } =
             { pending = Dict.filter filterParticipantNames pending
@@ -167,7 +172,7 @@ calculateChildrenParticipants currentDate zscores session activity db model =
             { completed = Dict.empty
             , pending = Dict.empty
             }
-            (Activity.Utils.summarizeChildActivity currentDate zscores activity session.offlineSession False db >> applyNameFilter)
+            (Activity.Utils.summarizeChildActivity currentDate zscores features activity session.offlineSession False db >> applyNameFilter)
 
 
 updateMother :

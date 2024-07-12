@@ -1,12 +1,12 @@
 module Backend.IndividualEncounterParticipant.Encoder exposing (..)
 
 import Backend.IndividualEncounterParticipant.Model exposing (..)
-import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounterTypeToString)
+import Backend.IndividualEncounterParticipant.Utils exposing (..)
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfExists)
+import Utils.Json exposing (encodeIfSet)
 
 
 encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> List ( String, Value )
@@ -27,7 +27,7 @@ encodeIndividualEncounterParticipant data =
     , ( "deleted", bool data.deleted )
     , ( "type", string "individual_participant" )
     ]
-        ++ encodeIfExists "shard" data.shard encodeEntityUuid
+        ++ encodeIfSet "shard" data.shard encodeEntityUuid
 
 
 encodeIndividualEncounterType : IndividualEncounterType -> Value
@@ -44,29 +44,16 @@ encodeIndividualEncounterParticipantOutcome participantOutcome =
         AcuteIllness outcome ->
             encodeAcuteIllnessOutcome outcome
 
+        Tuberculosis outcome ->
+            encodeTuberculosisOutcome outcome
+
+        HIV outcome ->
+            encodeHIVOutcome outcome
+
 
 encodePregnancyOutcome : PregnancyOutcome -> Value
 encodePregnancyOutcome outcome =
     pregnancyOutcomeToString outcome |> string
-
-
-pregnancyOutcomeToString : PregnancyOutcome -> String
-pregnancyOutcomeToString outcome =
-    case outcome of
-        OutcomeLiveAtTerm ->
-            "live-at-term"
-
-        OutcomeLivePreTerm ->
-            "live-pre-term"
-
-        OutcomeStillAtTerm ->
-            "still-at-term"
-
-        OutcomeStillPreTerm ->
-            "still-pre-term"
-
-        OutcomeAbortions ->
-            "abortions"
 
 
 encodeDeliveryLocation : DeliveryLocation -> Value
@@ -74,38 +61,16 @@ encodeDeliveryLocation location =
     deliveryLocationToString location |> string
 
 
-deliveryLocationToString : DeliveryLocation -> String
-deliveryLocationToString location =
-    case location of
-        FacilityDelivery ->
-            "facility"
-
-        HomeDelivery ->
-            "home"
-
-
-acuteIllnessOutcomeToString : AcuteIllnessOutcome -> String
-acuteIllnessOutcomeToString outcome =
-    case outcome of
-        OutcomeIllnessResolved ->
-            "illness-resolved"
-
-        OutcomeLostToFollowUp ->
-            "lost-to-follow-up"
-
-        OutcomeMovedOutsideCA ->
-            "moved-out-of-ca"
-
-        OutcomePatientDied ->
-            "patient-died"
-
-        OutcomeReferredToHC ->
-            "referred-to-hc"
-
-        OutcomeOther ->
-            "other"
-
-
 encodeAcuteIllnessOutcome : AcuteIllnessOutcome -> Value
 encodeAcuteIllnessOutcome outcome =
     acuteIllnessOutcomeToString outcome |> string
+
+
+encodeTuberculosisOutcome : TuberculosisOutcome -> Value
+encodeTuberculosisOutcome outcome =
+    tuberculosisOutcomeToString outcome |> string
+
+
+encodeHIVOutcome : HIVOutcome -> Value
+encodeHIVOutcome outcome =
+    hivOutcomeToString outcome |> string

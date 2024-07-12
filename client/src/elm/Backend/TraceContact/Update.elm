@@ -1,15 +1,16 @@
 module Backend.TraceContact.Update exposing (update)
 
+import App.Model
+import App.Utils exposing (triggerRollbarOnFailure)
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (AcuteIllnessTraceContact)
-import Backend.Model exposing (ModelIndexedDb)
 import Backend.TraceContact.Model exposing (..)
 import Backend.Utils exposing (editMeasurementCmd)
 import RemoteData exposing (RemoteData(..))
 
 
-update : AcuteIllnessTraceContactId -> Maybe AcuteIllnessTraceContact -> Msg -> Model -> ( Model, Cmd Msg )
+update : AcuteIllnessTraceContactId -> Maybe AcuteIllnessTraceContact -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update id traceContact msg model =
     case msg of
         EditTraceContact value ->
@@ -22,9 +23,11 @@ update id traceContact msg model =
                 )
                 traceContact
                 |> Maybe.withDefault Cmd.none
+            , []
             )
 
         HandleSavedTraceContact data ->
             ( { model | saveTraceContact = data }
             , Cmd.none
+            , triggerRollbarOnFailure data
             )

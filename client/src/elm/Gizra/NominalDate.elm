@@ -5,7 +5,7 @@ module Gizra.NominalDate exposing
     , fromLocalDateTime
     , diffDays, diffCalendarMonthsAndDays
     , NominalDateRange, decodeDrupalRange, encodeDrupalRange
-    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, yearYY, yearYYNumber
+    , allMonths, daysInMonth, diffCalendarMonths, diffCalendarYearsAndMonths, diffMonths, diffWeeks, diffYears, formatDDMMYY, formatDDMMYYYY, isDiffTruthy, isLeapYear, monthMM, toLastDayOfMonth, yearYY, yearYYNumber
     )
 
 {-| Some utilities for dealing with "pure" dates that have no time or
@@ -24,7 +24,7 @@ time zone information.
 
 -}
 
-import Date
+import Date exposing (..)
 import Gizra.String exposing (addLeadingZero)
 import Json.Decode exposing (Decoder, andThen, field, map2, string)
 import Json.Decode.Extra exposing (fromResult)
@@ -70,6 +70,16 @@ formatYYYYMMDD date =
     Date.format "yyyy-MM-dd" date
 
 
+{-| Convert nominal date to a formatted string..
+
+    formatMMDDYYYY (date 2017 5 22) --> "22/05/17"
+
+-}
+formatDDMMYY : NominalDate -> String
+formatDDMMYY date =
+    Date.format "dd/MM/yy" date
+
+
 {-| Converts an `elm-lang/core` `Date` to a `NominalDate`.
 
 We pick up the date part according to whatever the local browser's time zone
@@ -81,6 +91,19 @@ different day in a different time zone.
 fromLocalDateTime : Time.Posix -> NominalDate
 fromLocalDateTime =
     Date.fromPosix Time.utc
+
+
+{-| Given a date, return date representing it's last month day.
+
+    toLastDayOfMonth 2019-08-01" --> 2019-08-31"
+    toLastDayOfMonth 2017-02-20" --> 2017-02-28"
+
+-}
+toLastDayOfMonth : NominalDate -> NominalDate
+toLastDayOfMonth =
+    Date.floor Month
+        >> Date.add Months 1
+        >> Date.add Days -1
 
 
 {-| Decodes nominal date from string of the form "2017-02-20".

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_forms.features.field_base.inc
@@ -68,6 +69,7 @@ function hedley_forms_field_default_field_bases() {
       'allowed_values' => array(
         'en' => 'English',
         'rw' => 'Kinyarwanda',
+        'bu' => 'Kirundi',
       ),
       'allowed_values_function' => '',
     ),

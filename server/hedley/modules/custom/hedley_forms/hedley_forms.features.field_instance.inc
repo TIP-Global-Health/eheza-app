@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * hedley_forms.features.field_instance.inc
@@ -20,6 +21,7 @@ function hedley_forms_field_default_field_instances() {
         'label' => 'above',
         'module' => 'date',
         'settings' => array(
+          'custom_date_format' => '',
           'format_type' => 'long',
           'fromto' => 'both',
           'multiple_from' => '',
@@ -40,9 +42,9 @@ function hedley_forms_field_default_field_instances() {
     'entity_type' => 'node',
     'field_name' => 'field_date_measured',
     'label' => 'Date Measured',
-    'required' => 0,
+    'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',

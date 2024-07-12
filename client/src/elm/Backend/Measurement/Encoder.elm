@@ -1,6 +1,7 @@
 module Backend.Measurement.Encoder exposing (..)
 
 import AssocList as Dict exposing (Dict)
+import Backend.AcuteIllnessEncounter.Encoder exposing (encodeAcuteIllnessDiagnosis)
 import Backend.Counseling.Encoder exposing (encodeCounselingTiming)
 import Backend.Counseling.Model exposing (CounselingTiming)
 import Backend.Entities exposing (..)
@@ -8,18 +9,14 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (..)
 import Backend.Person.Encoder exposing (encodeGender)
 import Backend.Person.Utils exposing (genderToString)
+import Backend.PrenatalEncounter.Encoder exposing (encodePrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (formatYYYYMMDD)
-import Json.Encode as Encoder exposing (Value, bool, float, int, list, object, string)
+import Json.Encode exposing (Value, bool, float, int, list, string)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (EntityUuid(..), encodeEntityUuid, fromEntityUuid)
+import Restful.Endpoint exposing (EntityUuid, encodeEntityUuid, fromEntityUuid)
 import Translate.Utils exposing (encodeLanguage)
-
-
-encodeEverySet : (a -> Value) -> EverySet a -> Value
-encodeEverySet encoder set =
-    EverySet.toList set
-        |> list encoder
+import Utils.Json exposing (encodeEverySet, encodeEverySetNullable, encodeIfSet, encodeNullable, encodeNullableWithValueFunc)
 
 
 encodeHeight : Height -> List ( String, Value )
@@ -93,39 +90,39 @@ encodeWeightValueWithType type_ (WeightInKg weight) =
 
 encodePhoto : Photo -> List ( String, Value )
 encodePhoto =
-    encodeGroupMeasurement (encodePhotoUrlWithType "photo")
+    encodeGroupMeasurement (encodeImageUrlWithType "photo")
 
 
 encodeNutritionPhoto : NutritionPhoto -> List ( String, Value )
 encodeNutritionPhoto =
-    encodeNutritionMeasurement (encodePhotoUrlWithType "nutrition_photo")
+    encodeNutritionMeasurement (encodeImageUrlWithType "nutrition_photo")
 
 
 encodePrenatalPhoto : PrenatalPhoto -> List ( String, Value )
 encodePrenatalPhoto =
-    encodePrenatalMeasurement (encodePhotoUrlWithType "prenatal_photo")
+    encodePrenatalMeasurement (encodeImageUrlWithType "prenatal_photo")
 
 
 encodeWellChildPhoto : WellChildPhoto -> List ( String, Value )
 encodeWellChildPhoto =
-    encodeWellChildMeasurement (encodePhotoUrlWithType "well_child_photo")
+    encodeWellChildMeasurement (encodeImageUrlWithType "well_child_photo")
 
 
-encodePhotoUrlWithType : String -> PhotoUrl -> List ( String, Value )
-encodePhotoUrlWithType type_ (PhotoUrl url) =
+encodeImageUrlWithType : String -> ImageUrl -> List ( String, Value )
+encodeImageUrlWithType type_ (ImageUrl url) =
     [ ( "photo", string url )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
 
 
-encodePregnancyTesting : PregnancyTest -> List ( String, Value )
-encodePregnancyTesting =
-    encodePrenatalMeasurement encodePregnancyTestingValue
+encodePregnancyTest : PregnancyTest -> List ( String, Value )
+encodePregnancyTest =
+    encodePrenatalMeasurement encodeCHWPregnancyTestValue
 
 
-encodePregnancyTestingValue : PregnancyTestResult -> List ( String, Value )
-encodePregnancyTestingValue value =
+encodeCHWPregnancyTestValue : PregnancyTestResult -> List ( String, Value )
+encodeCHWPregnancyTestValue value =
     [ ( "urine_pregnancy_test", encodePregnancyTestResult value )
     , ( "deleted", bool False )
     , ( "type", string "pregnancy_testing" )
@@ -134,23 +131,7 @@ encodePregnancyTestingValue value =
 
 encodePregnancyTestResult : PregnancyTestResult -> Value
 encodePregnancyTestResult =
-    pregnancyTestResultAsString >> string
-
-
-pregnancyTestResultAsString : PregnancyTestResult -> String
-pregnancyTestResultAsString sign =
-    case sign of
-        PregnancyTestPositive ->
-            "positive"
-
-        PregnancyTestNegative ->
-            "negative"
-
-        PregnancyTestIndeterminate ->
-            "indeterminate"
-
-        PregnancyTestUnableToConduct ->
-            "unable-to-conduct"
+    pregnancyTestResultToString >> string
 
 
 encodePrenatalHealthEducation : PrenatalHealthEducation -> List ( String, Value )
@@ -158,12 +139,13 @@ encodePrenatalHealthEducation =
     encodePrenatalMeasurement encodePrenatalHealthEducationValue
 
 
-encodePrenatalHealthEducationValue : EverySet PrenatalHealthEducationSign -> List ( String, Value )
-encodePrenatalHealthEducationValue signs =
-    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign signs )
+encodePrenatalHealthEducationValue : PrenatalHealthEducationValue -> List ( String, Value )
+encodePrenatalHealthEducationValue value =
+    [ ( "prenatal_health_education", encodeEverySet encodePrenatalHealthEducationSign value.signs )
     , ( "deleted", bool False )
     , ( "type", string "prenatal_health_education" )
     ]
+        ++ encodeEverySetNullable "health_education_signs_ph2" value.signsPhase2 encodePrenatalHealthEducationSign
 
 
 encodePrenatalHealthEducationSign : PrenatalHealthEducationSign -> Value
@@ -194,6 +176,57 @@ encodePrenatalHealthEducationSign sign =
             EducationHygiene ->
                 "hygiene"
 
+            EducationPositiveHIV ->
+                "positive-hiv"
+
+            EducationSaferSexHIV ->
+                "safer-sex-hiv"
+
+            EducationPartnerTesting ->
+                "partner-testing"
+
+            EducationNauseaVomiting ->
+                "nausea-vomiting"
+
+            EducationLegCramps ->
+                "leg-cramps"
+
+            EducationLowBackPain ->
+                "low-back-pain"
+
+            EducationConstipation ->
+                "constipation"
+
+            EducationHeartburn ->
+                "heartburn"
+
+            EducationVaricoseVeins ->
+                "varicose-veins"
+
+            EducationLegPainRedness ->
+                "leg-pain-redness"
+
+            EducationPelvicPain ->
+                "pelvic-pain"
+
+            EducationSaferSex ->
+                "safer-sex"
+
+            EducationHIVDetectableViralLoad ->
+                "hiv-detectable-viral-load"
+
+            EducationMentalHealth ->
+                "mental-health"
+
+            EducationDiabetes ->
+                "diabetes"
+
+            EducationEarlyMastitisOrEngorgment ->
+                "early-mastitis-engorgment"
+
+            EducationMastitis ->
+                "mastitis"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -210,6 +243,7 @@ encodePrenatalFollowUpValue value =
     , ( "deleted", bool False )
     , ( "type", string "prenatal_follow_up" )
     ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodePrenatalAssesment : PrenatalAssesment -> Value
@@ -225,7 +259,7 @@ encodePrenatalAssesment assesment =
 
 encodePrenatalSendToHC : PrenatalSendToHC -> List ( String, Value )
 encodePrenatalSendToHC =
-    encodePrenatalMeasurement (encodeSendToHCValueWithType "prenatal_send_to_hc")
+    encodePrenatalMeasurement encodePrenatalReferralValue
 
 
 encodeAppointmentConfirmation : PrenatalAppointmentConfirmation -> List ( String, Value )
@@ -239,6 +273,528 @@ encodeAppointmentConfirmationValue value =
     , ( "deleted", bool False )
     , ( "type", string "appointment_confirmation" )
     ]
+
+
+encodePrenatalBloodGpRsTest : PrenatalBloodGpRsTest -> List ( String, Value )
+encodePrenatalBloodGpRsTest =
+    encodePrenatalMeasurement encodeBloodGpRsTestValue
+
+
+encodeBloodGpRsTestValue : BloodGpRsTestValue (EntityUuid a) -> List ( String, Value )
+encodeBloodGpRsTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "blood_group" value.bloodGroup encodeBloodGroup
+        ++ encodeNullable "rhesus" value.rhesus encodeRhesus
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_blood_gprs_test" )
+           ]
+
+
+encodeBloodGroup : BloodGroup -> Value
+encodeBloodGroup =
+    bloodGroupToString >> string
+
+
+encodeRhesus : Rhesus -> Value
+encodeRhesus =
+    rhesusToString >> string
+
+
+encodePrenatalHemoglobinTest : PrenatalHemoglobinTest -> List ( String, Value )
+encodePrenatalHemoglobinTest =
+    encodePrenatalMeasurement encodeHemoglobinTestValue
+
+
+encodeHemoglobinTestValue : HemoglobinTestValue -> List ( String, Value )
+encodeHemoglobinTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "hemoglobin_count" value.hemoglobinCount float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hemoglobin_test" )
+           ]
+
+
+encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
+encodePrenatalHepatitisBTest =
+    encodePrenatalMeasurement encodeHepatitisBTestValue
+
+
+encodeHepatitisBTestValue : HepatitisBTestValue (EntityUuid a) -> List ( String, Value )
+encodeHepatitisBTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hepatitis_b_test" )
+           ]
+
+
+encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
+encodePrenatalHIVTest =
+    encodePrenatalMeasurement (encodeHIVTestValue "prenatal_hiv_test")
+
+
+encodeHIVTestValue : String -> HIVTestValue -> List ( String, Value )
+encodeHIVTestValue type_ value =
+    let
+        hivSigns =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        EverySet.singleton NoPrenatalHIVSign
+
+                    else
+                        signs
+                )
+                value.hivSigns
+                |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
+           , ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
+
+
+encodePrenatalHIVPCRTest : PrenatalHIVPCRTest -> List ( String, Value )
+encodePrenatalHIVPCRTest =
+    encodePrenatalMeasurement encodeHIVPCRTestValue
+
+
+encodeHIVPCRTestValue : HIVPCRTestValue -> List ( String, Value )
+encodeHIVPCRTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "hiv_viral_load_status" value.hivViralLoadStatus encodeViralLoadStatus
+        ++ encodeNullable "hiv_viral_load" value.hivViralLoad float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_hiv_pcr_test" )
+           ]
+
+
+encodeViralLoadStatus : ViralLoadStatus -> Value
+encodeViralLoadStatus value =
+    string <|
+        case value of
+            ViralLoadDetectable ->
+                "detectable"
+
+            ViralLoadUndetectable ->
+                "undetectable"
+
+
+encodePrenatalHIVSign : PrenatalHIVSign -> Value
+encodePrenatalHIVSign =
+    prenatalHIVSignToString >> string
+
+
+encodePrenatalPartnerHIVTest : PrenatalPartnerHIVTest -> List ( String, Value )
+encodePrenatalPartnerHIVTest =
+    encodePrenatalMeasurement encodePartnerHIVTestValue
+
+
+encodePartnerHIVTestValue : PartnerHIVTestValue -> List ( String, Value )
+encodePartnerHIVTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_partner_hiv_test" )
+           ]
+
+
+encodePrenatalMalariaTest : PrenatalMalariaTest -> List ( String, Value )
+encodePrenatalMalariaTest =
+    encodePrenatalMeasurement encodeMalariaTestValue
+
+
+encodeMalariaTestValue : MalariaTestValue -> List ( String, Value )
+encodeMalariaTestValue value =
+    [ ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+    , ( "blood_smear_result", encodeBloodSmearResult value.bloodSmearResult )
+    ]
+        ++ encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_malaria_test" )
+           ]
+
+
+encodeBloodSmearResult : BloodSmearResult -> Value
+encodeBloodSmearResult =
+    bloodSmearResultToString >> string
+
+
+encodePrenatalRandomBloodSugarTest : PrenatalRandomBloodSugarTest -> List ( String, Value )
+encodePrenatalRandomBloodSugarTest =
+    encodePrenatalMeasurement (encodeRandomBloodSugarTestValue "prenatal_random_blood_sugar_test")
+
+
+encodeRandomBloodSugarTestValue : String -> RandomBloodSugarTestValue (EntityUuid a) -> List ( String, Value )
+encodeRandomBloodSugarTestValue type_ value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "sugar_count" value.sugarCount float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
+
+
+encodeTestPrerequisite : TestPrerequisite -> Value
+encodeTestPrerequisite value =
+    string <|
+        case value of
+            PrerequisiteFastFor12h ->
+                "fasting-12h"
+
+            PrerequisiteImmediateResult ->
+                "immediate-result"
+
+            NoTestPrerequisites ->
+                "none"
+
+
+encodePrenatalSyphilisTest : PrenatalSyphilisTest -> List ( String, Value )
+encodePrenatalSyphilisTest =
+    encodePrenatalMeasurement encodeSyphilisTestValue
+
+
+encodeSyphilisTestValue : SyphilisTestValue (EntityUuid a) -> List ( String, Value )
+encodeSyphilisTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ -- This test may be used by different modules, and it's possible that
+           -- one will have originating_encounter field, and other will not.
+           -- Therefore, we use encodeIfSet instead of encodeNullable.
+           encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ encodeEverySetNullable "illness_symptoms" value.symptoms encodeIllnessSymptom
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_syphilis_test" )
+           ]
+
+
+encodeIllnessSymptom : IllnessSymptom -> Value
+encodeIllnessSymptom =
+    illnessSymptomToString >> string
+
+
+encodePrenatalUrineDipstickTest : PrenatalUrineDipstickTest -> List ( String, Value )
+encodePrenatalUrineDipstickTest =
+    encodePrenatalMeasurement (encodeUrineDipstickTestValue "prenatal_urine_dipstick_test")
+
+
+encodeUrineDipstickTestValue : String -> UrineDipstickTestValue -> List ( String, Value )
+encodeUrineDipstickTestValue type_ value =
+    let
+        encodeField encoder fieldName fieldValue =
+            encodeNullable fieldName fieldValue encoder
+
+        protein =
+            encodeField encodeProteinValue "protein" value.protein
+
+        ph =
+            encodeField encodePHValue "ph" value.ph
+
+        glucose =
+            encodeField encodeGlucoseValue "glucose" value.glucose
+
+        leukocytes =
+            encodeField encodeLeukocytesValue "leukocytes" value.leukocytes
+
+        nitrite =
+            encodeField encodeNitriteValue "nitrite" value.nitrite
+
+        urobilinogen =
+            encodeField encodeUrobilinogenValue "urobilinogen" value.urobilinogen
+
+        haemoglobin =
+            encodeField encodeHaemoglobinValue "haemoglobin" value.haemoglobin
+
+        ketone =
+            encodeField encodeKetoneValue "ketone" value.ketone
+
+        bilirubin =
+            encodeField encodeBilirubinValue "bilirubin" value.bilirubin
+    in
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
+        ++ encodeNullable "test_variant" value.testVariant encodeTestVariant
+        ++ protein
+        ++ ph
+        ++ glucose
+        ++ leukocytes
+        ++ nitrite
+        ++ urobilinogen
+        ++ haemoglobin
+        ++ ketone
+        ++ bilirubin
+        ++ [ ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
+
+
+encodeTestVariant : TestVariant -> Value
+encodeTestVariant value =
+    string <|
+        case value of
+            VariantShortTest ->
+                "short"
+
+            VariantLongTest ->
+                "long"
+
+
+encodeProteinValue : ProteinValue -> Value
+encodeProteinValue =
+    proteinValueToString >> string
+
+
+encodePHValue : PHValue -> Value
+encodePHValue =
+    phValueToString >> string
+
+
+encodeGlucoseValue : GlucoseValue -> Value
+encodeGlucoseValue =
+    glucoseValueToString >> string
+
+
+encodeLeukocytesValue : LeukocytesValue -> Value
+encodeLeukocytesValue =
+    leukocytesValueToString >> string
+
+
+encodeNitriteValue : NitriteValue -> Value
+encodeNitriteValue =
+    nitriteValueToString >> string
+
+
+encodeUrobilinogenValue : UrobilinogenValue -> Value
+encodeUrobilinogenValue =
+    urobilinogenValueToString >> string
+
+
+encodeHaemoglobinValue : HaemoglobinValue -> Value
+encodeHaemoglobinValue =
+    haemoglobinValueToString >> string
+
+
+encodeKetoneValue : KetoneValue -> Value
+encodeKetoneValue =
+    ketoneValueToString >> string
+
+
+encodeBilirubinValue : BilirubinValue -> Value
+encodeBilirubinValue =
+    bilirubinValueToString >> string
+
+
+encodeTestExecutionNote : TestExecutionNote -> Value
+encodeTestExecutionNote value =
+    string <|
+        case value of
+            TestNoteRunToday ->
+                "run-today"
+
+            TestNoteRunPreviously ->
+                "run-previously"
+
+            TestNoteLackOfReagents ->
+                "lack-of-reagents"
+
+            TestNoteLackOfOtherSupplies ->
+                "lack-of-other-supplies"
+
+            TestNoteNoEquipment ->
+                "no-equipment"
+
+            TestNoteBrokenEquipment ->
+                "broken-equipment"
+
+            TestNoteNotIndicated ->
+                "not-indicated"
+
+            TestNoteKnownAsPositive ->
+                "known-as-positive"
+
+            TestNoteToBeDoneAtHospital ->
+                "to-be-done-at-hospital"
+
+            TestNoteRunConfirmedByLabTech ->
+                "run-confirmed-by-lab-tech"
+
+
+encodeTestResult : TestResult -> Value
+encodeTestResult =
+    testResultToString >> string
+
+
+encodePrenatalLabsResults : PrenatalLabsResults -> List ( String, Value )
+encodePrenatalLabsResults =
+    encodePrenatalMeasurement (encodeLabsResultsValue "prenatal_labs_results")
+
+
+encodeLabsResultsValue : String -> LabsResultsValue -> List ( String, Value )
+encodeLabsResultsValue type_ value =
+    let
+        patientNotified =
+            if value.patientNotified then
+                [ ( "patient_notified", bool True ) ]
+
+            else
+                []
+    in
+    [ ( "performed_tests", encodeEverySet encodeLaboratoryTest value.performedTests )
+    , ( "completed_tests", encodeEverySet encodeLaboratoryTest value.completedTests )
+    , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.resolutionDate )
+    ]
+        ++ patientNotified
+        ++ encodeEverySetNullable "tests_with_follow_up" value.testsWithFollowUp encodeLaboratoryTest
+        ++ encodeNullable "review_state" value.reviewState encodeLabsResultsReviewState
+        ++ [ ( "deleted", bool False )
+           , ( "type", string type_ )
+           ]
+
+
+encodeLaboratoryTest : LaboratoryTest -> Value
+encodeLaboratoryTest =
+    laboratoryTestToString >> string
+
+
+encodeLabsResultsReviewState : LabsResultsReviewState -> Value
+encodeLabsResultsReviewState =
+    reviewStateToString >> string
+
+
+encodePrenatalMentalHealth : PrenatalMentalHealth -> List ( String, Value )
+encodePrenatalMentalHealth =
+    encodePrenatalMeasurement encodePrenatalMentalHealthValue
+
+
+encodePrenatalMentalHealthValue : PrenatalMentalHealthValue -> List ( String, Value )
+encodePrenatalMentalHealthValue value =
+    let
+        signs =
+            Dict.toList value.signs
+                |> List.map
+                    (\( question, answer ) ->
+                        prenatalMentalHealthQuestionToString question
+                            ++ "-"
+                            ++ prenatalMentalHealthQuestionOptionToString answer
+                    )
+    in
+    [ ( "mental_health_signs", list string signs )
+    , ( "specialist_at_hc", bool value.specialistAtHC )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_mental_health" )
+    ]
+
+
+encodePrenatalTetanusImmunisation : PrenatalTetanusImmunisation -> List ( String, Value )
+encodePrenatalTetanusImmunisation =
+    encodePrenatalMeasurement (encodeVaccinationValueWithType "prenatal_tetanus_immunisation")
+
+
+encodePrenatalBreastfeeding : PrenatalBreastfeeding -> List ( String, Value )
+encodePrenatalBreastfeeding =
+    encodePrenatalMeasurement encodeBreastfeedingValue
+
+
+encodeBreastfeedingValue : BreastfeedingValue -> List ( String, Value )
+encodeBreastfeedingValue value =
+    [ ( "breastfeeding_signs", encodeEverySet encodeBreastfeedingSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_breastfeeding" )
+    ]
+
+
+encodeBreastfeedingSign : BreastfeedingSign -> Value
+encodeBreastfeedingSign =
+    breastfeedingSignToString >> string
+
+
+encodePrenatalGUExam : PrenatalGUExam -> List ( String, Value )
+encodePrenatalGUExam =
+    encodePrenatalMeasurement encodeGUExamValue
+
+
+encodeGUExamValue : GUExamValue -> List ( String, Value )
+encodeGUExamValue value =
+    [ ( "vaginal_exam_signs", encodeEverySet encodeVaginalExamSign value.vaginalExamSigns )
+    , ( "gu_exam_signs", encodeEverySet encodeGUExamSign value.guExamSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_gu_exam" )
+    ]
+        ++ encodeEverySetNullable "postpartum_healing_problem" value.postpartumHealingProblems encodePostpartumHealingProblem
+
+
+encodeVaginalExamSign : VaginalExamSign -> Value
+encodeVaginalExamSign =
+    vaginalExamSignToString >> string
+
+
+encodeGUExamSign : GUExamSign -> Value
+encodeGUExamSign =
+    guExamSignToString >> string
+
+
+encodePostpartumHealingProblem : PostpartumHealingProblem -> Value
+encodePostpartumHealingProblem =
+    postpartumHealingProblemToString >> string
+
+
+encodePrenatalSpecialityCare : PrenatalSpecialityCare -> List ( String, Value )
+encodePrenatalSpecialityCare =
+    encodePrenatalMeasurement encodeSpecialityCareValue
+
+
+encodeSpecialityCareValue : SpecialityCareValue -> List ( String, Value )
+encodeSpecialityCareValue value =
+    [ ( "speciality_care_signs", encodeEverySet encodeSpecialityCareSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_speciality_care" )
+    ]
+
+
+encodeSpecialityCareSign : SpecialityCareSign -> Value
+encodeSpecialityCareSign sign =
+    string <|
+        case sign of
+            EnrolledToARVProgram ->
+                "arv"
+
+            EnrolledToNCDProgram ->
+                "ncd"
+
+            NoSpecialityCareSigns ->
+                "none"
 
 
 encodeNutrition : ChildNutrition -> List ( String, Value )
@@ -258,12 +814,6 @@ encodeWellChildNutrition =
 
 encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value )
 encodeNutritionValueWithType type_ value =
-    let
-        assesment =
-            EverySet.toList value.assesment
-                |> List.head
-                |> Maybe.withDefault NoNutritionAssessment
-    in
     [ ( "nutrition_signs", encodeEverySet encodeNutritionSign value.signs )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
     , ( "deleted", bool False )
@@ -312,11 +862,6 @@ encodeAttendance =
     encodeGroupMeasurement encodeAttendanceValue
 
 
-encodeFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodeFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "family_planning" signs
-
-
 encodeFamilyPlanningValueWithType : String -> EverySet FamilyPlanningSign -> List ( String, Value )
 encodeFamilyPlanningValueWithType type_ signs =
     [ ( "family_planning_signs", encodeEverySet encodeFamilyPlanningSign signs )
@@ -327,7 +872,7 @@ encodeFamilyPlanningValueWithType type_ signs =
 
 encodeFamilyPlanning : FamilyPlanning -> List ( String, Value )
 encodeFamilyPlanning =
-    encodeGroupMeasurement encodeFamilyPlanningValue
+    encodeGroupMeasurement (encodeFamilyPlanningValueWithType "family_planning")
 
 
 encodeLactationValue : EverySet LactationSign -> List ( String, Value )
@@ -374,6 +919,26 @@ encodeHomeVisitMeasurement =
 encodeWellChildMeasurement : (value -> List ( String, Value )) -> WellChildMeasurement value -> List ( String, Value )
 encodeWellChildMeasurement =
     encodeMeasurement "well_child_encounter"
+
+
+encodeNCDMeasurement : (value -> List ( String, Value )) -> NCDMeasurement value -> List ( String, Value )
+encodeNCDMeasurement =
+    encodeMeasurement "ncd_encounter"
+
+
+encodeChildScoreboardMeasurement : (value -> List ( String, Value )) -> ChildScoreboardMeasurement value -> List ( String, Value )
+encodeChildScoreboardMeasurement =
+    encodeMeasurement "child_scoreboard_encounter"
+
+
+encodeTuberculosisMeasurement : (value -> List ( String, Value )) -> TuberculosisMeasurement value -> List ( String, Value )
+encodeTuberculosisMeasurement =
+    encodeMeasurement "tuberculosis_encounter"
+
+
+encodeHIVMeasurement : (value -> List ( String, Value )) -> HIVMeasurement value -> List ( String, Value )
+encodeHIVMeasurement =
+    encodeMeasurement "hiv_encounter"
 
 
 encodeMeasurement : String -> (value -> List ( String, Value )) -> Measurement (EntityUuid a) value -> List ( String, Value )
@@ -455,6 +1020,21 @@ encodeLactationSign sign =
             string "none"
 
 
+encodeBreastExam : BreastExam -> List ( String, Value )
+encodeBreastExam =
+    encodePrenatalMeasurement encodeBreastExamValue
+
+
+encodeBreastExamValue : BreastExamValue -> List ( String, Value )
+encodeBreastExamValue value =
+    [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
+    , ( "breast_self_exam", bool value.selfGuidance )
+    , ( "deleted", bool False )
+    , ( "type", string "breast_exam" )
+    ]
+        ++ encodeNullable "discharge_type" value.dischargeType encodeDischargeType
+
+
 encodeBreastExamSign : BreastExamSign -> Value
 encodeBreastExamSign sign =
     string <|
@@ -468,22 +1048,31 @@ encodeBreastExamSign sign =
             Infection ->
                 "infection"
 
+            Warmth ->
+                "warmth"
+
             NormalBreast ->
                 "normal"
 
 
-encodeBreastExamValue : BreastExamValue -> List ( String, Value )
-encodeBreastExamValue value =
-    [ ( "breast", encodeEverySet encodeBreastExamSign value.exam )
-    , ( "breast_self_exam", bool value.selfGuidance )
-    , ( "deleted", bool False )
-    , ( "type", string "breast_exam" )
-    ]
+encodeDischargeType : DischargeType -> Value
+encodeDischargeType sign =
+    string <|
+        case sign of
+            DischargeMilky ->
+                "milky"
 
+            DischargeClear ->
+                "clear"
 
-encodeBreastExam : BreastExam -> List ( String, Value )
-encodeBreastExam =
-    encodePrenatalMeasurement encodeBreastExamValue
+            DischargeBrownOrBloody ->
+                "brown-bloody"
+
+            DischargeYellow ->
+                "yellow"
+
+            DischargeGreen ->
+                "green"
 
 
 encodeHairHeadCPESign : HairHeadCPESign -> Value
@@ -607,8 +1196,8 @@ encodeLegsCPESign sign =
                 "normal"
 
 
-encodeCorePhysicalExamValue : CorePhysicalExamValue -> List ( String, Value )
-encodeCorePhysicalExamValue value =
+encodeCorePhysicalExamValueWithType : String -> CorePhysicalExamValue -> List ( String, Value )
+encodeCorePhysicalExamValueWithType type_ value =
     [ ( "head_hair", encodeEverySet encodeHairHeadCPESign value.hairHead )
     , ( "eyes", encodeEverySet encodeEyesCPESign value.eyes )
     , ( "heart", encodeEverySet encodeHeartCPESign value.heart )
@@ -619,13 +1208,13 @@ encodeCorePhysicalExamValue value =
     , ( "hands", encodeEverySet encodeHandsCPESign value.hands )
     , ( "legs", encodeEverySet encodeLegsCPESign value.legs )
     , ( "deleted", bool False )
-    , ( "type", string "core_physical_exam" )
+    , ( "type", string type_ )
     ]
 
 
 encodeCorePhysicalExam : CorePhysicalExam -> List ( String, Value )
 encodeCorePhysicalExam =
-    encodePrenatalMeasurement encodeCorePhysicalExamValue
+    encodePrenatalMeasurement (encodeCorePhysicalExamValueWithType "core_physical_exam")
 
 
 encodeDangerSign : DangerSign -> Value
@@ -653,6 +1242,27 @@ encodeDangerSign sign =
             ExtremeWeakness ->
                 "extreme-weakness"
 
+            ImminentDelivery ->
+                "imminent-delivery"
+
+            Labor ->
+                "labor"
+
+            LooksVeryIll ->
+                "looks-very-ill"
+
+            SevereVomiting ->
+                "severe-vomiting"
+
+            Unconscious ->
+                "unconscious"
+
+            GushLeakingVaginalFluid ->
+                "gush-leaking-vaginal-fluid"
+
+            PrematureOnsetContractions ->
+                "premature-onset-contractions"
+
             NoDangerSign ->
                 "none"
 
@@ -668,13 +1278,13 @@ encodeDangerSignsValue value =
 
 
 encodePostpartumMotherDangerSign : PostpartumMotherDangerSign -> Value
-encodePostpartumMotherDangerSign sign =
-    postpartumMotherDangerSignToString sign |> string
+encodePostpartumMotherDangerSign =
+    postpartumMotherDangerSignToString >> string
 
 
 encodePostpartumChildDangerSign : PostpartumChildDangerSign -> Value
-encodePostpartumChildDangerSign sign =
-    postpartumChildDangerSignToString sign |> string
+encodePostpartumChildDangerSign =
+    postpartumChildDangerSignToString >> string
 
 
 encodeDangerSigns : DangerSigns -> List ( String, Value )
@@ -695,6 +1305,12 @@ encodeLastMenstrualPeriodValue value =
     , ( "deleted", bool False )
     , ( "type", string "last_menstrual_period" )
     ]
+        ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
+
+
+encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
+encodeLmpDateNotConfidentReason =
+    lmpDateNotConfidentReasonToString >> string
 
 
 encodeMedicalHistorySign : MedicalHistorySign -> Value
@@ -761,13 +1377,90 @@ encodeMedicationSign sign =
             DewormingPill ->
                 "deworming-pill"
 
+            Mebendazole ->
+                "mebendezole"
+
+            PostpartumFolicAcid ->
+                "folic-acid"
+
+            PostpartumVitaminA ->
+                "vitamin-a"
+
             NoMedication ->
+                "none"
+
+
+encodeMedicationTreatmentSign : MedicationTreatmentSign -> Value
+encodeMedicationTreatmentSign sign =
+    string <|
+        case sign of
+            MedicationTreatmentStillTaking ->
+                "still-taking"
+
+            MedicationTreatmentMissedDoses ->
+                "missed-doses"
+
+            MedicationTreatmentAdverseEvents ->
+                "adverse-events"
+
+            MedicationTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
+
+            NoMedicationTreatment ->
+                "none"
+
+
+encodeHIVTreatmentSign : HIVTreatmentSign -> Value
+encodeHIVTreatmentSign sign =
+    string <|
+        case sign of
+            HIVTreatmentStillTaking ->
+                "still-taking"
+
+            HIVTreatmentMissedDoses ->
+                "missed-doses"
+
+            HIVTreatmentAdverseEvents ->
+                "adverse-events"
+
+            HIVTreatmentAdverseEventsHospitalization ->
+                "adverse-events-hospitalization"
+
+            HIVTreatmentMedicineByPMTCT ->
+                "medicine-pmtct"
+
+            HIVTreatmentNoMedicineNotSeenAtPMTCT ->
+                "no-medicine-not-seen"
+
+            HIVTreatmentNoMedicineOutOfStock ->
+                "no-medicine-out-of-stock"
+
+            HIVTreatmentNoMedicinePatientRefused ->
+                "no-medicine-patient-refused"
+
+            HIVTreatmentNoMedicineOther ->
+                "no-medicine-other"
+
+            NoHIVTreatment ->
                 "none"
 
 
 encodeMedication : Medication -> List ( String, Value )
 encodeMedication =
     encodePrenatalMeasurement encodeMedicationValue
+
+
+encodeMedicationValue : MedicationValue -> List ( String, Value )
+encodeMedicationValue value =
+    encodeEverySetNullable "medication" value.signs encodeMedicationSign
+        ++ encodeEverySetNullable "hiv_treatment" value.hivTreatment encodeHIVTreatmentSign
+        ++ encodeEverySetNullable "hypertension_treatment" value.hypertensionTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "malaria_treatment" value.malariaTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "anemia_treatment" value.anemiaTreatment encodeMedicationTreatmentSign
+        ++ encodeEverySetNullable "syphilis_treatment" value.syphilisTreatment encodeMedicationTreatmentSign
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "medication" )
+           ]
 
 
 encodeChildFbf : Fbf -> List ( String, Value )
@@ -809,14 +1502,6 @@ encodeDistributionNoticeAsString notice =
             "other"
 
 
-encodeMedicationValue : EverySet MedicationSign -> List ( String, Value )
-encodeMedicationValue value =
-    [ ( "medication", encodeEverySet encodeMedicationSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "medication" )
-    ]
-
-
 encodeFetalPresentation : FetalPresentation -> Value
 encodeFetalPresentation sign =
     string <|
@@ -854,7 +1539,7 @@ encodeMuacInCm (MuacInCm cm) =
 
 encodeObstetricalExamValue : ObstetricalExamValue -> List ( String, Value )
 encodeObstetricalExamValue value =
-    [ ( "fundal_height", encodeHeightInCm value.fundalHeight )
+    [ ( "fundal_palpable", bool value.fundalPalpable )
     , ( "fetal_presentation", encodeFetalPresentation value.fetalPresentation )
     , ( "fetal_movement", bool value.fetalMovement )
     , ( "fetal_heart_rate", int value.fetalHeartRate )
@@ -862,6 +1547,7 @@ encodeObstetricalExamValue value =
     , ( "deleted", bool False )
     , ( "type", string "obstetrical_exam" )
     ]
+        ++ encodeNullable "fundal_height" value.fundalHeight encodeHeightInCm
 
 
 encodeObstetricalExam : ObstetricalExam -> List ( String, Value )
@@ -906,6 +1592,9 @@ encodeCSectionReason sign =
 
             Other ->
                 "other"
+
+            PreviousCSection ->
+                "previous-c-section"
 
 
 encodeCSectionScar : CSectionScar -> Value
@@ -999,13 +1688,13 @@ encodeObstetricHistoryStep2 =
 encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, Value )
 encodeObstetricHistoryStep2Value value =
     [ ( "c_sections", int value.cSections )
-    , ( "c_section_reason", encodeEverySet encodeCSectionReason value.cSectionReason )
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     , ( "deleted", bool False )
     , ( "type", string "obstetric_history_step2" )
     ]
+        ++ encodeEverySetNullable "c_section_reason" value.cSectionReason encodeCSectionReason
 
 
 encodeBirthPlan : BirthPlan -> List ( String, Value )
@@ -1047,12 +1736,7 @@ encodeBirthPlanSign sign =
 
 encodePrenatalFamilyPlanning : PrenatalFamilyPlanning -> List ( String, Value )
 encodePrenatalFamilyPlanning =
-    encodePrenatalMeasurement encodePrenatalFamilyPlanningValue
-
-
-encodePrenatalFamilyPlanningValue : EverySet FamilyPlanningSign -> List ( String, Value )
-encodePrenatalFamilyPlanningValue signs =
-    encodeFamilyPlanningValueWithType "prenatal_family_planning" signs
+    encodePrenatalMeasurement (encodeFamilyPlanningValueWithType "prenatal_family_planning")
 
 
 encodePrenatalNutrition : PrenatalNutrition -> List ( String, Value )
@@ -1070,28 +1754,40 @@ encodePrenatalNutritionValue value =
     ]
 
 
-encodeResourceSign : ResourceSign -> Value
-encodeResourceSign sign =
+encodeMalariaPrevention : MalariaPrevention -> List ( String, Value )
+encodeMalariaPrevention =
+    encodePrenatalMeasurement encodeMalariaPreventionValue
+
+
+encodeMalariaPreventionValue : MalariaPreventionValue -> List ( String, Value )
+encodeMalariaPreventionValue value =
+    [ ( "resources", encodeEverySet encodeMalariaPreventionSign value.resources )
+    , ( "phase_recorded", encodePhaseRecorded value.phaseRecorded )
+    , ( "deleted", bool False )
+    , ( "type", string "resource" )
+    ]
+
+
+encodeMalariaPreventionSign : MalariaPreventionSign -> Value
+encodeMalariaPreventionSign sign =
     string <|
         case sign of
             MosquitoNet ->
                 "mosquito-net"
 
-            NoResource ->
+            NoMalariaPreventionSigns ->
                 "none"
 
 
-encodeResource : Resource -> List ( String, Value )
-encodeResource =
-    encodePrenatalMeasurement encodeResourceValue
+encodePhaseRecorded : PhaseRecorded -> Value
+encodePhaseRecorded value =
+    string <|
+        case value of
+            PhaseInitial ->
+                "initial"
 
-
-encodeResourceValue : EverySet ResourceSign -> List ( String, Value )
-encodeResourceValue value =
-    [ ( "resources", encodeEverySet encodeResourceSign value )
-    , ( "deleted", bool False )
-    , ( "type", string "resource" )
-    ]
+            PhaseRecurrent ->
+                "recurrent"
 
 
 encodeSocialHistorySign : SocialHistorySign -> Value
@@ -1108,27 +1804,6 @@ encodeSocialHistorySign sign =
                 "none"
 
 
-socialHistoryHivTestingResultToString : SocialHistoryHivTestingResult -> String
-socialHistoryHivTestingResultToString result =
-    case result of
-        ResultHivPositive ->
-            "positive"
-
-        ResultHivNegative ->
-            "negative"
-
-        ResultHivIndeterminate ->
-            "indeterminate"
-
-        NoHivTesting ->
-            "none"
-
-
-encodeSocialHistoryHivTestingResult : SocialHistoryHivTestingResult -> Value
-encodeSocialHistoryHivTestingResult result =
-    socialHistoryHivTestingResultToString result |> string
-
-
 encodeSocialHistory : SocialHistory -> List ( String, Value )
 encodeSocialHistory =
     encodePrenatalMeasurement encodeSocialHistoryValue
@@ -1136,8 +1811,7 @@ encodeSocialHistory =
 
 encodeSocialHistoryValue : SocialHistoryValue -> List ( String, Value )
 encodeSocialHistoryValue value =
-    [ ( "social_history", encodeEverySet encodeSocialHistorySign value.socialHistory )
-    , ( "partner_hiv_testing", encodeSocialHistoryHivTestingResult value.hivTestingResult )
+    [ ( "social_history", encodeEverySet encodeSocialHistorySign value )
     , ( "deleted", bool False )
     , ( "type", string "social_history" )
     ]
@@ -1150,28 +1824,18 @@ encodeVitals =
 
 encodeVitalsValueWithType : String -> VitalsValue -> List ( String, Value )
 encodeVitalsValueWithType type_ value =
-    let
-        sysEntry =
-            Maybe.map (\sys -> [ ( "sys", float sys ) ])
-                value.sys
-                |> Maybe.withDefault []
-
-        diaEntry =
-            Maybe.map (\dia -> [ ( "dia", float dia ) ])
-                value.dia
-                |> Maybe.withDefault []
-
-        heartRateEntry =
-            Maybe.map (\heartRate -> [ ( "heart_rate", int heartRate ) ])
-                value.heartRate
-                |> Maybe.withDefault []
-    in
-    sysEntry
-        ++ diaEntry
-        ++ heartRateEntry
-        ++ [ ( "respiratory_rate", int value.respiratoryRate )
-           , ( "body_temperature", float value.bodyTemperature )
-           , ( "deleted", bool False )
+    [ ( "respiratory_rate", int value.respiratoryRate )
+    , ( "body_temperature", float value.bodyTemperature )
+    ]
+        -- Not all Vitals CTs got the sys, dia, sys_repeated,
+        -- dia_repeated and  heart_rate fields. Therefore we use
+        -- encodeIfSet, to send the field only if it has a value.
+        ++ encodeIfSet "sys" value.sys float
+        ++ encodeIfSet "dia" value.dia float
+        ++ encodeIfSet "heart_rate" value.heartRate int
+        ++ encodeIfSet "sys_repeated" value.sysRepeated float
+        ++ encodeIfSet "dia_repeated" value.diaRepeated float
+        ++ [ ( "deleted", bool False )
            , ( "type", string type_ )
            ]
 
@@ -1421,18 +2085,9 @@ encodeCovidTesting =
 
 encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
 encodeCovidTestingValue value =
-    let
-        optional =
-            Maybe.map
-                (\administrationNote ->
-                    [ ( "administration_note", encodeAdministrationNote administrationNote ) ]
-                )
-                value.administrationNote
-                |> Maybe.withDefault []
-    in
-    optional
-        ++ [ ( "rapid_test_result", encodeRapidTestResult value.result )
-           , ( "deleted", bool False )
+    ( "rapid_test_result", encodeRapidTestResult value.result )
+        :: encodeNullable "administration_note" value.administrationNote encodeAdministrationNote
+        ++ [ ( "deleted", bool False )
            , ( "type", string "covid_testing" )
            ]
 
@@ -1487,7 +2142,7 @@ encodeGroupSendToHC =
 encodeSendToHCValueWithType : String -> SendToHCValue -> List ( String, Value )
 encodeSendToHCValueWithType type_ value =
     [ ( "send_to_hc", encodeEverySet encodeSendToHCSign value.signs )
-    , ( "reason_not_sent_to_hc", encodeReasonForNotSendingToHC value.reasonForNotSendingToHC )
+    , ( "reason_not_sent_to_hc", encodeReasonForNonReferral value.reasonForNotSendingToHC )
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
@@ -1516,24 +2171,128 @@ encodeSendToHCSign sign =
                 "none"
 
 
-encodeReasonForNotSendingToHC : ReasonForNotSendingToHC -> Value
-encodeReasonForNotSendingToHC event =
+encodeReasonForNonReferral : ReasonForNonReferral -> Value
+encodeReasonForNonReferral =
+    reasonForNonReferralToString >> string
+
+
+encodePrenatalReferralValue : PrenatalReferralValue -> List ( String, Value )
+encodePrenatalReferralValue value =
+    encodeEverySetNullable "send_to_hc" value.sendToHCSigns encodeSendToHCSign
+        ++ encodeNullable "reason_not_sent_to_hc" value.reasonForNotSendingToHC encodeReasonForNonReferral
+        ++ encodeEverySetNullable "referrals" value.referToFacilitySigns encodeReferToFacilitySign
+        ++ encodeEverySetNullable "reasons_for_non_referrals" value.facilityNonReferralReasons encodeNonReferralSign
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "prenatal_send_to_hc" )
+           ]
+
+
+encodeReferToFacilitySign : ReferToFacilitySign -> Value
+encodeReferToFacilitySign sign =
     string <|
-        case event of
-            ClientRefused ->
-                "client-refused"
+        case sign of
+            ReferToHospital ->
+                "hospital"
 
-            NoAmbulance ->
-                "no-ambulance"
+            ReferralFormHospital ->
+                "hospital-referral-form"
 
-            ClientUnableToAffordFees ->
-                "unable-to-afford-fee"
+            ReferToMentalHealthSpecialist ->
+                "mhs"
 
-            ReasonForNotSendingToHCOther ->
-                "other"
+            ReferralFormMentalHealthSpecialist ->
+                "mhs-referral-form"
 
-            NoReasonForNotSendingToHC ->
+            AccompanyToMentalHealthSpecialist ->
+                "mhs-accompany"
+
+            ReferToARVProgram ->
+                "arv"
+
+            ReferralFormARVProgram ->
+                "arv-referral-form"
+
+            AccompanyToARVProgram ->
+                "arv-accompany"
+
+            ReferToNCDProgram ->
+                "ncd"
+
+            ReferralFormNCDProgram ->
+                "ncd-referral-form"
+
+            AccompanyToNCDProgram ->
+                "ncd-accompany"
+
+            ReferToANCServices ->
+                "anc"
+
+            ReferralFormANCServices ->
+                "anc-referral-form"
+
+            AccompanyToANCServices ->
+                "anc-accompany"
+
+            ReferToUltrasound ->
+                "us"
+
+            ReferralFormUltrasound ->
+                "us-referral-form"
+
+            NoReferToFacilitySigns ->
                 "none"
+
+
+encodeNonReferralSign : NonReferralSign -> Value
+encodeNonReferralSign sign =
+    string <|
+        case sign of
+            NonReferralReasonHospital reason ->
+                "hospital-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonMentalHealthSpecialist reason ->
+                "mhs-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonARVProgram reason ->
+                "arv-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonNCDProgram reason ->
+                "ncd-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonANCServices reason ->
+                "anc-" ++ reasonForNonReferralToString reason
+
+            NonReferralReasonUltrasound reason ->
+                "us-" ++ reasonForNonReferralToString reason
+
+            NoNonReferralSigns ->
+                "none"
+
+
+encodeReferralFacility : ReferralFacility -> Value
+encodeReferralFacility facility =
+    string <|
+        case facility of
+            FacilityHealthCenter ->
+                "hc"
+
+            FacilityHospital ->
+                "hospital"
+
+            FacilityMentalHealthSpecialist ->
+                "mhs"
+
+            FacilityARVProgram ->
+                "arv"
+
+            FacilityNCDProgram ->
+                "ncd"
+
+            FacilityANCServices ->
+                "anc"
+
+            FacilityUltrasound ->
+                "us"
 
 
 encodeContributingFactors : ContributingFactors -> List ( String, Value )
@@ -1581,21 +2340,21 @@ encodeContributingFactorsSign sign =
 
 encodeFollowUp : FollowUp -> List ( String, Value )
 encodeFollowUp =
-    encodeGroupMeasurement (encodeFollowUpValueWithType "follow_up")
+    encodeGroupMeasurement (encodeNutritionFollowUpValueWithType "follow_up")
 
 
 encodeNutritionFollowUp : NutritionFollowUp -> List ( String, Value )
 encodeNutritionFollowUp =
-    encodeNutritionMeasurement (encodeFollowUpValueWithType "nutrition_follow_up")
+    encodeNutritionMeasurement (encodeNutritionFollowUpValueWithType "nutrition_follow_up")
 
 
 encodeWellChildFollowUp : WellChildFollowUp -> List ( String, Value )
 encodeWellChildFollowUp =
-    encodeWellChildMeasurement (encodeFollowUpValueWithType "well_child_follow_up")
+    encodeWellChildMeasurement (encodeNutritionFollowUpValueWithType "well_child_follow_up")
 
 
-encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
-encodeFollowUpValueWithType type_ value =
+encodeNutritionFollowUpValueWithType : String -> NutritionFollowUpValue -> List ( String, Value )
+encodeNutritionFollowUpValueWithType type_ value =
     let
         assesment =
             EverySet.toList value.assesment
@@ -1616,6 +2375,7 @@ encodeFollowUpValueWithType type_ value =
     , ( "deleted", bool False )
     , ( "type", string type_ )
     ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeAcuteIllnessFollowUp : AcuteIllnessFollowUp -> List ( String, Value )
@@ -1623,18 +2383,19 @@ encodeAcuteIllnessFollowUp =
     encodeAcuteIllnessMeasurement encodeAcuteIllnessFollowUpValue
 
 
-encodeAcuteIllnessFollowUpValue : EverySet FollowUpOption -> List ( String, Value )
+encodeAcuteIllnessFollowUpValue : AcuteIllnessFollowUpValue -> List ( String, Value )
 encodeAcuteIllnessFollowUpValue value =
-    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value )
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_follow_up" )
     ]
+        ++ encodeNullable "acute_illness_diagnosis" value.diagnosis encodeAcuteIllnessDiagnosis
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeNutritionAssessment : NutritionAssessment -> Value
-encodeNutritionAssessment assesment =
-    nutritionAssessmentToString assesment
-        |> string
+encodeNutritionAssessment =
+    nutritionAssessmentToString >> string
 
 
 encodeFollowUpOption : FollowUpOption -> Value
@@ -1653,7 +2414,7 @@ encodeFollowUpOption option =
             TwoWeeks ->
                 "2-w"
 
-            OneMonths ->
+            OneMonth ->
                 "1-m"
 
             TwoMonths ->
@@ -1662,19 +2423,22 @@ encodeFollowUpOption option =
             ThreeMonths ->
                 "3-m"
 
+            FollowUpNotNeeded ->
+                "none"
+
 
 encodeNutritionFeeding : NutritionFeeding -> List ( String, Value )
 encodeNutritionFeeding =
-    encodeHomeVisitMeasurement encodeNutritionFeedingValue
+    encodeHomeVisitMeasurement (encodeNutritionFeedingValueWithType "nutrition_feeding")
 
 
-encodeNutritionFeedingValue : NutritionFeedingValue -> List ( String, Value )
-encodeNutritionFeedingValue value =
+encodeNutritionFeedingValueWithType : String -> NutritionFeedingValue -> List ( String, Value )
+encodeNutritionFeedingValueWithType type_ value =
     [ ( "nutrition_feeding_signs", encodeEverySet encodeNutritionFeedingSign value.signs )
     , ( "supplement_type", encodeNutritionSupplementType value.supplementType )
     , ( "sachets_per_day", float value.sachetsPerDay )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_feeding" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1735,16 +2499,16 @@ encodeNutritionFeedingSign sign =
 
 encodeNutritionHygiene : NutritionHygiene -> List ( String, Value )
 encodeNutritionHygiene =
-    encodeHomeVisitMeasurement encodeNutritionHygieneValue
+    encodeHomeVisitMeasurement (encodeNutritionHygieneValueWithType "nutrition_hygiene")
 
 
-encodeNutritionHygieneValue : NutritionHygieneValue -> List ( String, Value )
-encodeNutritionHygieneValue value =
+encodeNutritionHygieneValueWithType : String -> NutritionHygieneValue -> List ( String, Value )
+encodeNutritionHygieneValueWithType type_ value =
     [ ( "nutrition_hygiene_signs", encodeEverySet encodeNutritionHygieneSign value.signs )
     , ( "main_water_source", encodeMainWaterSource value.mainWaterSource )
     , ( "water_preparation_option", encodeWaterPreparationOption value.waterPreparationOption )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_hygiene" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1810,15 +2574,15 @@ encodeWaterPreparationOption type_ =
 
 encodeNutritionFoodSecurity : NutritionFoodSecurity -> List ( String, Value )
 encodeNutritionFoodSecurity =
-    encodeHomeVisitMeasurement encodeNutritionFoodSecurityValue
+    encodeHomeVisitMeasurement (encodeNutritionFoodSecurityValueWithType "nutrition_food_security")
 
 
-encodeNutritionFoodSecurityValue : NutritionFoodSecurityValue -> List ( String, Value )
-encodeNutritionFoodSecurityValue value =
+encodeNutritionFoodSecurityValueWithType : String -> NutritionFoodSecurityValue -> List ( String, Value )
+encodeNutritionFoodSecurityValueWithType type_ value =
     [ ( "food_security_signs", encodeEverySet encodeNutritionFoodSecuritySign value.signs )
     , ( "main_income_source", encodeMainIncomeSource value.mainIncomeSource )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_food_security" )
+    , ( "type", string type_ )
     ]
 
 
@@ -1852,20 +2616,20 @@ encodeMainIncomeSource type_ =
 
 encodeNutritionCaring : NutritionCaring -> List ( String, Value )
 encodeNutritionCaring =
-    encodeHomeVisitMeasurement encodeNutritionCaringValue
+    encodeHomeVisitMeasurement (encodeNutritionCaringValueWithType "nutrition_caring")
 
 
-encodeNutritionCaringValue : NutritionCaringValue -> List ( String, Value )
-encodeNutritionCaringValue value =
-    [ ( "nutrition_caring_signs", encodeEverySet encondeNutritionCaringSign value.signs )
+encodeNutritionCaringValueWithType : String -> NutritionCaringValue -> List ( String, Value )
+encodeNutritionCaringValueWithType type_ value =
+    [ ( "nutrition_caring_signs", encodeEverySet encodeNutritionCaringSign value.signs )
     , ( "child_caring_options", encodeNutritionCaringOption value.caringOption )
     , ( "deleted", bool False )
-    , ( "type", string "nutrition_caring" )
+    , ( "type", string type_ )
     ]
 
 
-encondeNutritionCaringSign : NutritionCaringSign -> Value
-encondeNutritionCaringSign sign =
+encodeNutritionCaringSign : NutritionCaringSign -> Value
+encodeNutritionCaringSign sign =
     string <|
         case sign of
             ParentsAliveHealthy ->
@@ -1908,15 +2672,31 @@ encodeMedicationDistribution =
 
 encodeMedicationDistributionValue : MedicationDistributionValue -> List ( String, Value )
 encodeMedicationDistributionValue value =
-    [ ( "prescribed_medication", encodeEverySet encondeMedicationDistributionSign value.distributionSigns )
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
     , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
     , ( "deleted", bool False )
     , ( "type", string "medication_distribution" )
     ]
 
 
-encondeMedicationDistributionSign : MedicationDistributionSign -> Value
-encondeMedicationDistributionSign sign =
+encodePrenatalMedicationDistribution : PrenatalMedicationDistribution -> List ( String, Value )
+encodePrenatalMedicationDistribution =
+    encodePrenatalMeasurement encodePrenatalMedicationDistributionValue
+
+
+encodePrenatalMedicationDistributionValue : PrenatalMedicationDistributionValue -> List ( String, Value )
+encodePrenatalMedicationDistributionValue value =
+    [ ( "prescribed_medication", encodeEverySet encodeMedicationDistributionSign value.distributionSigns )
+    , ( "non_administration_reason", encodeEverySet encodeMedicationNonAdministrationSign value.nonAdministrationSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_medication_distribution" )
+    ]
+        ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
+        ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
+
+
+encodeMedicationDistributionSign : MedicationDistributionSign -> Value
+encodeMedicationDistributionSign sign =
     string <|
         case sign of
             Amoxicillin ->
@@ -1940,14 +2720,47 @@ encondeMedicationDistributionSign sign =
             Mebendezole ->
                 "mebendezole"
 
-            VitaminA ->
-                "vitamin-a"
-
             Paracetamol ->
                 "paracetamol"
 
+            Tenofovir ->
+                "tenofovir"
+
+            Lamivudine ->
+                "lamivudine"
+
+            Dolutegravir ->
+                "dolutegravir"
+
+            TDF3TC ->
+                "tdf3tc"
+
+            Iron ->
+                "iron"
+
+            FolicAcid ->
+                "folicacid"
+
+            Ceftriaxone ->
+                "ceftriaxone"
+
+            Azithromycin ->
+                "azithromycin"
+
+            Metronidazole ->
+                "metronidazole"
+
+            VitaminA ->
+                "vitamina"
+
             NoMedicationDistributionSigns ->
                 "none"
+
+            NoMedicationDistributionSignsInitialPhase ->
+                "none-initial"
+
+            NoMedicationDistributionSignsRecurrentPhase ->
+                "none-recurrent"
 
 
 encodeMedicationNonAdministrationSign : MedicationNonAdministrationSign -> Value
@@ -1969,8 +2782,51 @@ encodeMedicationNonAdministrationSign sign =
             MedicationParacetamol reason ->
                 "paracetamol-" ++ administrationNoteToString reason
 
+            MedicationMebendezole reason ->
+                "mebendezole-" ++ administrationNoteToString reason
+
+            MedicationTenofovir reason ->
+                "tenofovir-" ++ administrationNoteToString reason
+
+            MedicationLamivudine reason ->
+                "lamivudine-" ++ administrationNoteToString reason
+
+            MedicationDolutegravir reason ->
+                "dolutegravir-" ++ administrationNoteToString reason
+
+            MedicationTDF3TC reason ->
+                "tdf3tc-" ++ administrationNoteToString reason
+
+            MedicationIron reason ->
+                "iron-" ++ administrationNoteToString reason
+
+            MedicationFolicAcid reason ->
+                "folicacid-" ++ administrationNoteToString reason
+
+            MedicationCeftriaxone reason ->
+                "ceftriaxone-" ++ administrationNoteToString reason
+
+            MedicationAzithromycin reason ->
+                "azithromycin-" ++ administrationNoteToString reason
+
+            MedicationMetronidazole reason ->
+                "metronidazole-" ++ administrationNoteToString reason
+
+            MedicationVitaminA reason ->
+                "vitamina-" ++ administrationNoteToString reason
+
             NoMedicationNonAdministrationSigns ->
                 "none"
+
+
+encodeRecommendedTreatmentSign : RecommendedTreatmentSign -> Value
+encodeRecommendedTreatmentSign =
+    recommendedTreatmentSignToString >> string
+
+
+encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
+encodeAvoidingGuidanceReason =
+    avoidingGuidanceReasonToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )
@@ -2266,17 +3122,17 @@ encodeAcuteIllnessMuac =
 
 encodeTreatmentOngoing : TreatmentOngoing -> List ( String, Value )
 encodeTreatmentOngoing =
-    encodeAcuteIllnessMeasurement encodeTreatmentOngoingValue
+    encodeAcuteIllnessMeasurement (encodeTreatmentOngoingValueWithType "treatment_ongoing")
 
 
-encodeTreatmentOngoingValue : TreatmentOngoingValue -> List ( String, Value )
-encodeTreatmentOngoingValue value =
+encodeTreatmentOngoingValueWithType : String -> TreatmentOngoingValue -> List ( String, Value )
+encodeTreatmentOngoingValueWithType type_ value =
     [ ( "treatment_ongoing", encodeEverySet encodeTreatmentOngoingSign value.signs )
     , ( "reason_for_not_taking", encodeReasonForNotTakingSign value.reasonForNotTaking )
     , ( "missed_doses", int value.missedDoses )
     , ( "adverse_events", encodeEverySet encodeAdverseEvent value.adverseEvents )
     , ( "deleted", bool False )
-    , ( "type", string "treatment_ongoing" )
+    , ( "type", string type_ )
     ]
 
 
@@ -2312,6 +3168,9 @@ encodeReasonForNotTakingSign reason =
 
             NotTakingMemoryProblems ->
                 "memory-problems"
+
+            NotTakingTreatmentNotStarted ->
+                "treatment-not-started"
 
             NotTakingOther ->
                 "other"
@@ -2467,47 +3326,6 @@ encodeAcuteIllnessTraceContactValue item =
 
 encodeContactTraceItem : ContactTraceItem -> List ( String, Value )
 encodeContactTraceItem item =
-    let
-        lastFollowUp =
-            Maybe.map
-                (\lastFollowUpDate ->
-                    [ ( "last_follow_up_date", Gizra.NominalDate.encodeYYYYMMDD lastFollowUpDate ) ]
-                )
-                item.lastFollowUpDate
-                |> Maybe.withDefault []
-
-        signsGeneral =
-            Maybe.map
-                (\generalSigns ->
-                    [ ( "symptoms_general", encodeEverySet encodeSymptomsGeneralSign generalSigns ) ]
-                )
-                item.generalSigns
-                |> Maybe.withDefault []
-
-        signsRespiratory =
-            Maybe.map
-                (\respiratorySigns ->
-                    [ ( "symptoms_respiratory", encodeEverySet encodeSymptomsRespiratorySign respiratorySigns ) ]
-                )
-                item.respiratorySigns
-                |> Maybe.withDefault []
-
-        signsGI =
-            Maybe.map
-                (\giSigns ->
-                    [ ( "symptoms_gi", encodeEverySet encodeSymptomsGISign giSigns ) ]
-                )
-                item.giSigns
-                |> Maybe.withDefault []
-
-        outcome =
-            Maybe.map
-                (\traceOutcome ->
-                    [ ( "trace_outcome", encodeTraceOutcome traceOutcome ) ]
-                )
-                item.traceOutcome
-                |> Maybe.withDefault []
-    in
     [ ( "referred_person", encodeEntityUuid item.personId )
     , ( "first_name", string item.firstName )
     , ( "second_name", string item.secondName )
@@ -2516,26 +3334,26 @@ encodeContactTraceItem item =
     , ( "contact_date", Gizra.NominalDate.encodeYYYYMMDD item.contactDate )
     , ( "date_concluded", Gizra.NominalDate.encodeYYYYMMDD item.resolutionDate )
     ]
-        ++ lastFollowUp
-        ++ signsGeneral
-        ++ signsRespiratory
-        ++ signsGI
-        ++ outcome
+        ++ encodeNullable "last_follow_up_date" item.lastFollowUpDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeEverySetNullable "symptoms_general" item.generalSigns encodeSymptomsGeneralSign
+        ++ encodeEverySetNullable "symptoms_respiratory" item.respiratorySigns encodeSymptomsRespiratorySign
+        ++ encodeEverySetNullable "symptoms_gi" item.giSigns encodeSymptomsGISign
+        ++ encodeNullable "trace_outcome" item.traceOutcome encodeTraceOutcome
 
 
 encodeSymptomsGeneralSign : SymptomsGeneralSign -> Value
-encodeSymptomsGeneralSign sign =
-    symptomsGeneralSignToString sign |> string
+encodeSymptomsGeneralSign =
+    symptomsGeneralSignToString >> string
 
 
 encodeSymptomsRespiratorySign : SymptomsRespiratorySign -> Value
-encodeSymptomsRespiratorySign sign =
-    symptomsRespiratorySignToString sign |> string
+encodeSymptomsRespiratorySign =
+    symptomsRespiratorySignToString >> string
 
 
 encodeSymptomsGISign : SymptomsGISign -> Value
-encodeSymptomsGISign sign =
-    symptomsGISignToString sign |> string
+encodeSymptomsGISign =
+    symptomsGISignToString >> string
 
 
 encodeTraceOutcome : TraceOutcome -> Value
@@ -2898,8 +3716,8 @@ encodeWellChildVitaminAValue note =
 
 
 encodeAdministrationNote : AdministrationNote -> Value
-encodeAdministrationNote note =
-    administrationNoteToString note |> string
+encodeAdministrationNote =
+    administrationNoteToString >> string
 
 
 encodeWellChildPregnancySummary : WellChildPregnancySummary -> List ( String, Value )
@@ -2911,9 +3729,15 @@ encodePregnancySummaryValue : PregnancySummaryValue -> List ( String, Value )
 encodePregnancySummaryValue value =
     [ ( "expected_date_concluded", Gizra.NominalDate.encodeYYYYMMDD value.expectedDateConcluded )
     , ( "delivery_complications", encodeEverySet encodeDeliveryComplication value.deliveryComplications )
+    , ( "pregnancy_summary_signs", encodeEverySet encodePregnancySummarySign value.signs )
+    , ( "birth_defects", encodeEverySet encodeBirthDefect value.birthDefects )
     , ( "deleted", bool False )
     , ( "type", string "well_child_pregnancy_summary" )
     ]
+        ++ encodeNullable "apgar_one_min" value.apgarOneMin float
+        ++ encodeNullable "apgar_five_min" value.apgarFiveMin float
+        ++ encodeNullableWithValueFunc "weight" (\(WeightInGrm weight) -> weight) value.birthWeight float
+        ++ encodeNullableWithValueFunc "height" (\(HeightInCm height) -> height) value.birthLength float
 
 
 encodeDeliveryComplication : DeliveryComplication -> Value
@@ -2945,6 +3769,76 @@ encodeDeliveryComplication complication =
                 "none"
 
 
+encodePregnancySummarySign : PregnancySummarySign -> Value
+encodePregnancySummarySign sign =
+    string <|
+        case sign of
+            ApgarScores ->
+                "apgar-scores"
+
+            BirthLength ->
+                "birth-length"
+
+            NoPregnancySummarySigns ->
+                "none"
+
+
+encodeBirthDefect : BirthDefect -> Value
+encodeBirthDefect defect =
+    string <|
+        case defect of
+            DefectBirthInjury ->
+                "birth-injury"
+
+            DefectCleftLipWithCleftPalate ->
+                "cleft-lip-with-cleft-palate"
+
+            DefectCleftPalate ->
+                "cleft-palate"
+
+            DefectClubFoot ->
+                "club-foot"
+
+            DefectMacrocephaly ->
+                "macrocephaly"
+
+            DefectGastroschisis ->
+                "gastroschisis"
+
+            DefectHearingLoss ->
+                "hearing-loss"
+
+            DefectUndescendedTestes ->
+                "undescended-testes"
+
+            DefectHypospadias ->
+                "hypospadias"
+
+            DefectInguinalHernia ->
+                "inguinal-hernia"
+
+            DefectMicrocephaly ->
+                "microcephaly"
+
+            DefectNeuralTubes ->
+                "neural-tubes"
+
+            DefectDownSyndrome ->
+                "down-syndrome"
+
+            DefectCongenitalHeart ->
+                "congenital-heart"
+
+            DefectVentricalSeptal ->
+                "ventrical-septal"
+
+            DefectPulmonaryValveAtresiaAndStenosis ->
+                "pulmonary-valve-atresia-and-stenosis"
+
+            NoBirthDefects ->
+                "none"
+
+
 encodeWellChildNextVisit : WellChildNextVisit -> List ( String, Value )
 encodeWellChildNextVisit =
     encodeWellChildMeasurement encodeNextVisitValue
@@ -2957,6 +3851,8 @@ encodeNextVisitValue value =
     , ( "deleted", bool False )
     , ( "type", string "well_child_next_visit" )
     ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "asap_immunisation_date" value.asapImmunisationDate Gizra.NominalDate.encodeYYYYMMDD
 
 
 encodeWellChildBCGImmunisation : WellChildBCGImmunisation -> List ( String, Value )
@@ -2967,6 +3863,11 @@ encodeWellChildBCGImmunisation =
 encodeWellChildDTPImmunisation : WellChildDTPImmunisation -> List ( String, Value )
 encodeWellChildDTPImmunisation =
     encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_dtp_immunisation")
+
+
+encodeWellChildDTPStandaloneImmunisation : WellChildDTPStandaloneImmunisation -> List ( String, Value )
+encodeWellChildDTPStandaloneImmunisation =
+    encodeWellChildMeasurement (encodeVaccinationValueWithType "well_child_dtp_sa_immunisation")
 
 
 encodeWellChildHPVImmunisation : WellChildHPVImmunisation -> List ( String, Value )
@@ -3010,5 +3911,710 @@ encodeVaccinationValueWithType type_ value =
 
 
 encodeVaccinationDose : VaccineDose -> Value
-encodeVaccinationDose dose =
-    vaccineDoseToString dose |> string
+encodeVaccinationDose =
+    vaccineDoseToString >> string
+
+
+encodePrenatalSymptomReview : PrenatalSymptomReview -> List ( String, Value )
+encodePrenatalSymptomReview =
+    encodePrenatalMeasurement encodePrenatalSymptomReviewValue
+
+
+encodePrenatalSymptomReviewValue : PrenatalSymptomReviewValue -> List ( String, Value )
+encodePrenatalSymptomReviewValue value =
+    [ ( "prenatal_symptoms", encodeEverySet encodePrenatalSymptom value.symptoms )
+    , ( "prenatal_symptom_questions", encodeEverySet encodePrenatalSymptomQuestion value.symptomQuestions )
+    , ( "deleted", bool False )
+    , ( "type", string "prenatal_symptom_review" )
+    ]
+        ++ encodeNullable "flank_pain_sign" value.flankPainSign encodePrenatalFlankPainSign
+
+
+encodePrenatalSymptom : PrenatalSymptom -> Value
+encodePrenatalSymptom =
+    prenatalSymptomToString >> string
+
+
+encodePrenatalSymptomQuestion : PrenatalSymptomQuestion -> Value
+encodePrenatalSymptomQuestion =
+    prenatalSymptomQuestionToString >> string
+
+
+encodePrenatalFlankPainSign : PrenatalFlankPainSign -> Value
+encodePrenatalFlankPainSign =
+    prenatalFlankPainSignToString >> string
+
+
+encodePrenatalOutsideCare : PrenatalOutsideCare -> List ( String, Value )
+encodePrenatalOutsideCare =
+    encodePrenatalMeasurement (encodeOutsideCareValue "prenatal_diagnoses" encodePrenatalDiagnosis "prenatal_outside_care")
+
+
+encodeOutsideCareValue : String -> (diagnosis -> Value) -> String -> OutsideCareValue diagnosis -> List ( String, Value )
+encodeOutsideCareValue fieldName diagnosisEncouder type_ value =
+    [ ( "outside_care_signs", encodeEverySet encodeOutsideCareSign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ encodeEverySetNullable fieldName value.diagnoses diagnosisEncouder
+        ++ encodeEverySetNullable "outside_care_medications" value.medications encodeOutsideCareMedication
+
+
+encodeOutsideCareSign : OutsideCareSign -> Value
+encodeOutsideCareSign =
+    outsideCareSignToString >> string
+
+
+encodeOutsideCareMedication : OutsideCareMedication -> Value
+encodeOutsideCareMedication =
+    outsideCareMedicationToString >> string
+
+
+encodeNCDCoMorbidities : NCDCoMorbidities -> List ( String, Value )
+encodeNCDCoMorbidities =
+    encodeNCDMeasurement encodeNCDCoMorbiditiesValue
+
+
+encodeNCDCoMorbiditiesValue : NCDCoMorbiditiesValue -> List ( String, Value )
+encodeNCDCoMorbiditiesValue value =
+    [ ( "comorbidities", encodeEverySet encodeMedicalCondition value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_co_morbidities" )
+    ]
+
+
+encodeMedicalCondition : MedicalCondition -> Value
+encodeMedicalCondition =
+    medicalConditionToString >> string
+
+
+encodeNCDCoreExam : NCDCoreExam -> List ( String, Value )
+encodeNCDCoreExam =
+    encodeNCDMeasurement (encodeCorePhysicalExamValueWithType "ncd_core_exam")
+
+
+encodeNCDCreatinineTest : NCDCreatinineTest -> List ( String, Value )
+encodeNCDCreatinineTest =
+    encodeNCDMeasurement encodeCreatinineTestValue
+
+
+encodeCreatinineTestValue : CreatinineTestValue -> List ( String, Value )
+encodeCreatinineTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "creatinine_result" value.creatinineResult float
+        ++ encodeNullable "bun_result" value.bunResult float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_creatinine_test" )
+           ]
+
+
+encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
+encodeNCDDangerSigns =
+    encodeNCDMeasurement encodeNCDDangerSignsValue
+
+
+encodeNCDDangerSignsValue : NCDDangerSignsValue -> List ( String, Value )
+encodeNCDDangerSignsValue value =
+    [ ( "ncd_danger_signs", encodeEverySet encodeNCDDangerSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_danger_signs" )
+    ]
+
+
+encodeNCDDangerSign : NCDDangerSign -> Value
+encodeNCDDangerSign =
+    ncdDangerSignToString >> string
+
+
+encodeNCDFamilyHistory : NCDFamilyHistory -> List ( String, Value )
+encodeNCDFamilyHistory =
+    encodeNCDMeasurement encodeNCDFamilyHistoryValue
+
+
+encodeNCDFamilyHistoryValue : NCDFamilyHistoryValue -> List ( String, Value )
+encodeNCDFamilyHistoryValue value =
+    [ ( "ncd_family_history_signs", encodeEverySet encodeNCDFamilyHistorySign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_family_history" )
+    ]
+        ++ encodeEverySetNullable "hypertension_predecessors" value.hypertensionPredecessors encodePredecessor
+        ++ encodeEverySetNullable "heart_problem_predecessors" value.heartProblemPredecessors encodePredecessor
+        ++ encodeEverySetNullable "diabetes_predecessors" value.diabetesPredecessors encodePredecessor
+
+
+encodeNCDFamilyHistorySign : NCDFamilyHistorySign -> Value
+encodeNCDFamilyHistorySign =
+    ncdFamilyHistorySignToString >> string
+
+
+encodePredecessor : Predecessor -> Value
+encodePredecessor =
+    predecessorToString >> string
+
+
+encodeNCDFamilyPlanning : NCDFamilyPlanning -> List ( String, Value )
+encodeNCDFamilyPlanning =
+    encodeNCDMeasurement (encodeFamilyPlanningValueWithType "ncd_family_planning")
+
+
+encodeNCDHealthEducation : NCDHealthEducation -> List ( String, Value )
+encodeNCDHealthEducation =
+    encodeNCDMeasurement encodeNCDHealthEducationValue
+
+
+encodeNCDHealthEducationValue : NCDHealthEducationValue -> List ( String, Value )
+encodeNCDHealthEducationValue value =
+    [ ( "ncd_health_education_signs", encodeEverySet encodeNCDHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_health_education" )
+    ]
+
+
+encodeNCDHealthEducationSign : NCDHealthEducationSign -> Value
+encodeNCDHealthEducationSign sign =
+    string <|
+        case sign of
+            EducationHypertension ->
+                "hypertension"
+
+            NoNCDHealthEducationSigns ->
+                "none"
+
+
+encodeNCDHIVTest : NCDHIVTest -> List ( String, Value )
+encodeNCDHIVTest =
+    encodeNCDMeasurement (encodeHIVTestValue "ncd_hiv_test")
+
+
+encodeNCDLabsResults : NCDLabsResults -> List ( String, Value )
+encodeNCDLabsResults =
+    encodeNCDMeasurement (encodeLabsResultsValue "ncd_labs_results")
+
+
+encodeNCDLiverFunctionTest : NCDLiverFunctionTest -> List ( String, Value )
+encodeNCDLiverFunctionTest =
+    encodeNCDMeasurement encodeLiverFunctionTestValue
+
+
+encodeLiverFunctionTestValue : LiverFunctionTestValue -> List ( String, Value )
+encodeLiverFunctionTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "alt_result" value.altResult float
+        ++ encodeNullable "ast_result" value.astResult float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_liver_function_test" )
+           ]
+
+
+encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
+encodeNCDMedicationDistribution =
+    encodeNCDMeasurement encodeNCDMedicationDistributionValue
+
+
+encodeNCDMedicationDistributionValue : NCDMedicationDistributionValue -> List ( String, Value )
+encodeNCDMedicationDistributionValue value =
+    [ ( "recommended_treatment", encodeEverySet encodeRecommendedTreatmentSign value.recommendedTreatmentSigns )
+    , ( "ncd_guidance", encodeEverySet encodeNCDGuidanceSign value.guidanceSigns )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_medication_distribution" )
+    ]
+
+
+encodeNCDGuidanceSign : NCDGuidanceSign -> Value
+encodeNCDGuidanceSign sign =
+    string <|
+        case sign of
+            ReturnInOneMonth ->
+                "return-1m"
+
+            NoNCDGuidanceSigns ->
+                "none"
+
+
+encodeNCDMedicationHistory : NCDMedicationHistory -> List ( String, Value )
+encodeNCDMedicationHistory =
+    encodeNCDMeasurement encodeNCDMedicationHistoryValue
+
+
+encodeNCDMedicationHistoryValue : NCDMedicationHistoryValue -> List ( String, Value )
+encodeNCDMedicationHistoryValue value =
+    [ ( "causing_hypertension", encodeEverySet encodeMedicationCausingHypertension value.medicationsCausingHypertension )
+    , ( "treating_hypertension", encodeEverySet encodeMedicationTreatingHypertension value.medicationsTreatingHypertension )
+    , ( "treating_diabetes", encodeEverySet encodeMedicationTreatingDiabetes value.medicationsTreatingDiabetes )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_medication_history" )
+    ]
+
+
+encodeMedicationCausingHypertension : MedicationCausingHypertension -> Value
+encodeMedicationCausingHypertension =
+    medicationCausingHypertensionToString >> string
+
+
+encodeMedicationTreatingHypertension : MedicationTreatingHypertension -> Value
+encodeMedicationTreatingHypertension =
+    medicationTreatingHypertensionToString >> string
+
+
+encodeMedicationTreatingDiabetes : MedicationTreatingDiabetes -> Value
+encodeMedicationTreatingDiabetes =
+    medicationTreatingDiabetesToString >> string
+
+
+encodeNCDOutsideCare : NCDOutsideCare -> List ( String, Value )
+encodeNCDOutsideCare =
+    encodeNCDMeasurement (encodeOutsideCareValue "medical_conditions" encodeMedicalCondition "ncd_outside_care")
+
+
+encodeNCDPregnancyTest : NCDPregnancyTest -> List ( String, Value )
+encodeNCDPregnancyTest =
+    encodeNCDMeasurement encodePregnancyTestValue
+
+
+encodePregnancyTestValue : PregnancyTestValue -> List ( String, Value )
+encodePregnancyTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_pregnancy_test" )
+           ]
+
+
+encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
+encodeNCDRandomBloodSugarTest =
+    encodeNCDMeasurement (encodeRandomBloodSugarTestValue "ncd_random_blood_sugar_test")
+
+
+encodeNCDReferral : NCDReferral -> List ( String, Value )
+encodeNCDReferral =
+    encodeNCDMeasurement encodeReferralValue
+
+
+encodeReferralValue : ReferralValue -> List ( String, Value )
+encodeReferralValue value =
+    ( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns )
+        :: encodeEverySetNullable "reasons_for_non_referrals" value.nonReferralReasons encodeNonReferralSign
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_referral" )
+           ]
+
+
+encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )
+encodeNCDSocialHistory =
+    encodeNCDMeasurement encodeNCDSocialHistoryValue
+
+
+encodeNCDSocialHistoryValue : NCDSocialHistoryValue -> List ( String, Value )
+encodeNCDSocialHistoryValue value =
+    [ ( "ncd_social_history_signs", encodeEverySet encodeNCDSocialHistorySign value.signs )
+    , ( "food_group", encodeFoodGroup value.foodGroup )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_social_history" )
+    ]
+        ++ encodeNullable "beverages_per_week" value.cigarettesPerWeek int
+        ++ encodeNullable "cigarettes_per_week" value.cigarettesPerWeek int
+
+
+encodeNCDSocialHistorySign : NCDSocialHistorySign -> Value
+encodeNCDSocialHistorySign =
+    ncdSocialHistorySignToString >> string
+
+
+encodeFoodGroup : FoodGroup -> Value
+encodeFoodGroup =
+    foodGroupToString >> string
+
+
+encodeNCDSymptomReview : NCDSymptomReview -> List ( String, Value )
+encodeNCDSymptomReview =
+    encodeNCDMeasurement encodeNCDSymptomReviewValue
+
+
+encodeNCDSymptomReviewValue : NCDSymptomReviewValue -> List ( String, Value )
+encodeNCDSymptomReviewValue value =
+    [ ( "ncd_group1_symptoms", encodeEverySet encodeNCDGroup1Symptom value.group1Symptoms )
+    , ( "ncd_group2_symptoms", encodeEverySet encodeNCDGroup2Symptom value.group2Symptoms )
+    , ( "ncd_pain_symptoms", encodeEverySet encodeNCDPainSymptom value.painSymptoms )
+    , ( "deleted", bool False )
+    , ( "type", string "ncd_symptom_review" )
+    ]
+
+
+encodeNCDGroup1Symptom : NCDGroup1Symptom -> Value
+encodeNCDGroup1Symptom =
+    ncdGroup1SymptomToString >> string
+
+
+encodeNCDGroup2Symptom : NCDGroup2Symptom -> Value
+encodeNCDGroup2Symptom =
+    ncdGroup2SymptomToString >> string
+
+
+encodeNCDPainSymptom : NCDPainSymptom -> Value
+encodeNCDPainSymptom =
+    ncdPainSymptomToString >> string
+
+
+encodeNCDUrineDipstickTest : NCDUrineDipstickTest -> List ( String, Value )
+encodeNCDUrineDipstickTest =
+    encodeNCDMeasurement (encodeUrineDipstickTestValue "ncd_urine_dipstick_test")
+
+
+encodeNCDVitals : NCDVitals -> List ( String, Value )
+encodeNCDVitals =
+    encodeNCDMeasurement (encodeVitalsValueWithType "ncd_vitals")
+
+
+encodeGroupNCDA : GroupNCDA -> List ( String, Value )
+encodeGroupNCDA =
+    encodeGroupMeasurement (encodeNCDAValueWithType "group_ncda")
+
+
+encodeNutritionNCDA : NutritionNCDA -> List ( String, Value )
+encodeNutritionNCDA =
+    encodeNutritionMeasurement (encodeNCDAValueWithType "nutrition_ncda")
+
+
+encodeWellChildNCDA : WellChildNCDA -> List ( String, Value )
+encodeWellChildNCDA =
+    encodeWellChildMeasurement (encodeNCDAValueWithType "well_child_ncda")
+
+
+encodeChildScoreboardNCDA : ChildScoreboardNCDA -> List ( String, Value )
+encodeChildScoreboardNCDA =
+    encodeChildScoreboardMeasurement (encodeNCDAValueWithType "child_scoreboard_ncda")
+
+
+encodeNCDAValueWithType : String -> NCDAValue -> List ( String, Value )
+encodeNCDAValueWithType type_ value =
+    [ ( "ncda_signs", encodeEverySet encodeNCDASign value.signs )
+    , ( "anc_visits_dates", encodeEverySet Gizra.NominalDate.encodeYYYYMMDD value.ancVisitsDates )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ encodeNullable "receive_option" value.receivesVitaminA encodeReceiveOption
+        ++ encodeNullable "stunting_level" value.stuntingLevel encodeStuntingLevel
+        ++ encodeNullableWithValueFunc "birth_weight" (\(WeightInGrm weight) -> weight) value.birthWeight float
+        ++ encodeNullableWithValueFunc "weight" (\(WeightInKg weight) -> weight) value.weight float
+        ++ encodeNullableWithValueFunc "muac" (\(MuacInCm muac) -> muac) value.muac float
+
+
+encodeNCDASign : NCDASign -> Value
+encodeNCDASign =
+    ncdaSignToString >> string
+
+
+encodeReceiveOption : ReceiveOption -> Value
+encodeReceiveOption =
+    receiveOptionToString >> string
+
+
+encodeStuntingLevel : StuntingLevel -> Value
+encodeStuntingLevel =
+    stuntingLevelToString >> string
+
+
+encodeNCDLipidPanelTest : NCDLipidPanelTest -> List ( String, Value )
+encodeNCDLipidPanelTest =
+    encodeNCDMeasurement encodeLipidPanelTestValue
+
+
+encodeLipidPanelTestValue : LipidPanelTestValue -> List ( String, Value )
+encodeLipidPanelTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "unit_of_measurement" value.unitOfMeasurement encodeUnitOfMeasurement
+        ++ encodeNullable "total_cholesterol" value.totalCholesterolResult float
+        ++ encodeNullable "ldl_cholesterol" value.ldlCholesterolResult float
+        ++ encodeNullable "hdl_cholesterol" value.hdlCholesterolResult float
+        ++ encodeNullable "triglycerides" value.triglyceridesResult float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_lipid_panel_test" )
+           ]
+
+
+encodeUnitOfMeasurement : UnitOfMeasurement -> Value
+encodeUnitOfMeasurement =
+    unitOfMeasurementToString >> string
+
+
+encodeNCDHbA1cTest : NCDHbA1cTest -> List ( String, Value )
+encodeNCDHbA1cTest =
+    encodeNCDMeasurement encodeHbA1cTestValue
+
+
+encodeHbA1cTestValue : HbA1cTestValue -> List ( String, Value )
+encodeHbA1cTestValue value =
+    ( "test_execution_note", encodeTestExecutionNote value.executionNote )
+        :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "hba1c_result" value.hba1cResult float
+        ++ [ ( "deleted", bool False )
+           , ( "type", string "ncd_hba1c_test" )
+           ]
+
+
+encodeChildScoreboardBCGImmunisation : ChildScoreboardBCGImmunisation -> List ( String, Value )
+encodeChildScoreboardBCGImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_bcg_iz")
+
+
+encodeChildScoreboardDTPImmunisation : ChildScoreboardDTPImmunisation -> List ( String, Value )
+encodeChildScoreboardDTPImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_iz")
+
+
+encodeChildScoreboardDTPStandaloneImmunisation : ChildScoreboardDTPStandaloneImmunisation -> List ( String, Value )
+encodeChildScoreboardDTPStandaloneImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_dtp_sa_iz")
+
+
+encodeChildScoreboardIPVImmunisation : ChildScoreboardIPVImmunisation -> List ( String, Value )
+encodeChildScoreboardIPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_ipv_iz")
+
+
+encodeChildScoreboardMRImmunisation : ChildScoreboardMRImmunisation -> List ( String, Value )
+encodeChildScoreboardMRImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_mr_iz")
+
+
+encodeChildScoreboardOPVImmunisation : ChildScoreboardOPVImmunisation -> List ( String, Value )
+encodeChildScoreboardOPVImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_opv_iz")
+
+
+encodeChildScoreboardPCV13Immunisation : ChildScoreboardPCV13Immunisation -> List ( String, Value )
+encodeChildScoreboardPCV13Immunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_pcv13_iz")
+
+
+encodeChildScoreboardRotarixImmunisation : ChildScoreboardRotarixImmunisation -> List ( String, Value )
+encodeChildScoreboardRotarixImmunisation =
+    encodeChildScoreboardMeasurement (encodeVaccinationValueWithType "child_scoreboard_rotarix_iz")
+
+
+encodeWellChildFeeding : WellChildFeeding -> List ( String, Value )
+encodeWellChildFeeding =
+    encodeWellChildMeasurement (encodeNutritionFeedingValueWithType "well_child_feeding")
+
+
+encodeWellChildHygiene : WellChildHygiene -> List ( String, Value )
+encodeWellChildHygiene =
+    encodeWellChildMeasurement (encodeNutritionHygieneValueWithType "well_child_hygiene")
+
+
+encodeWellChildCaring : WellChildCaring -> List ( String, Value )
+encodeWellChildCaring =
+    encodeWellChildMeasurement (encodeNutritionCaringValueWithType "well_child_caring")
+
+
+encodeWellChildFoodSecurity : WellChildFoodSecurity -> List ( String, Value )
+encodeWellChildFoodSecurity =
+    encodeWellChildMeasurement (encodeNutritionFoodSecurityValueWithType "well_child_food_security")
+
+
+encodeTuberculosisDiagnostics : TuberculosisDiagnostics -> List ( String, Value )
+encodeTuberculosisDiagnostics =
+    encodeTuberculosisMeasurement encodeTuberculosisDiagnosticsValue
+
+
+encodeTuberculosisDiagnosticsValue : TuberculosisDiagnosticsValue -> List ( String, Value )
+encodeTuberculosisDiagnosticsValue value =
+    [ ( "tuberculosis_diagnosis", encodeTuberculosisDiagnosis value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_diagnostics" )
+    ]
+
+
+encodeTuberculosisDiagnosis : TuberculosisDiagnosis -> Value
+encodeTuberculosisDiagnosis =
+    tuberculosisDiagnosisToString >> string
+
+
+encodeTuberculosisDOT : TuberculosisDOT -> List ( String, Value )
+encodeTuberculosisDOT =
+    encodeTuberculosisMeasurement encodeTuberculosisDOTValue
+
+
+encodeTuberculosisDOTValue : TuberculosisDOTValue -> List ( String, Value )
+encodeTuberculosisDOTValue value =
+    [ ( "dot_signs", encodeTuberculosisDOTSign value.sign )
+    , ( "dot_meds_distribution_sign", encodeTuberculosisDOTSign value.medicationDistributionSign )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_dot" )
+    ]
+
+
+encodeTuberculosisDOTSign : TuberculosisDOTSign -> Value
+encodeTuberculosisDOTSign =
+    tuberculosisDOTSignToString >> string
+
+
+encodeTuberculosisFollowUp : TuberculosisFollowUp -> List ( String, Value )
+encodeTuberculosisFollowUp =
+    encodeTuberculosisMeasurement (encodeFollowUpValueWithType "tuberculosis_follow_up")
+
+
+encodeFollowUpValueWithType : String -> FollowUpValue -> List ( String, Value )
+encodeFollowUpValueWithType type_ value =
+    [ ( "follow_up_options", encodeEverySet encodeFollowUpOption value.options )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+        ++ encodeNullable "date_concluded" value.resolutionDate Gizra.NominalDate.encodeYYYYMMDD
+
+
+encodeTuberculosisHealthEducation : TuberculosisHealthEducation -> List ( String, Value )
+encodeTuberculosisHealthEducation =
+    encodeTuberculosisMeasurement encodeTuberculosisHealthEducationValue
+
+
+encodeTuberculosisHealthEducationValue : TuberculosisHealthEducationValue -> List ( String, Value )
+encodeTuberculosisHealthEducationValue value =
+    [ ( "tb_health_education_signs", encodeEverySet encodeTuberculosisHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_health_education" )
+    ]
+
+
+encodeTuberculosisHealthEducationSign : TuberculosisHealthEducationSign -> Value
+encodeTuberculosisHealthEducationSign =
+    tuberculosisHealthEducationSignToString >> string
+
+
+encodeTuberculosisMedication : TuberculosisMedication -> List ( String, Value )
+encodeTuberculosisMedication =
+    encodeTuberculosisMeasurement encodeTuberculosisMedicationValue
+
+
+encodeTuberculosisMedicationValue : TuberculosisMedicationValue -> List ( String, Value )
+encodeTuberculosisMedicationValue value =
+    [ ( "prescribed_tb_medications", encodeEverySet encodeTuberculosisPrescribedMedication value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_medication" )
+    ]
+
+
+encodeTuberculosisPrescribedMedication : TuberculosisPrescribedMedication -> Value
+encodeTuberculosisPrescribedMedication =
+    tuberculosisPrescribedMedicationToString >> string
+
+
+encodeTuberculosisReferral : TuberculosisReferral -> List ( String, Value )
+encodeTuberculosisReferral =
+    encodeTuberculosisMeasurement (encodeSendToHCValueWithType "tuberculosis_referral")
+
+
+encodeTuberculosisSymptomReview : TuberculosisSymptomReview -> List ( String, Value )
+encodeTuberculosisSymptomReview =
+    encodeTuberculosisMeasurement encodeTuberculosisSymptomReviewValue
+
+
+encodeTuberculosisSymptomReviewValue : TuberculosisSymptomReviewValue -> List ( String, Value )
+encodeTuberculosisSymptomReviewValue value =
+    [ ( "tuberculosis_symptoms", encodeEverySet encodeTuberculosisSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "tuberculosis_symptom_review" )
+    ]
+
+
+encodeTuberculosisSymptom : TuberculosisSymptom -> Value
+encodeTuberculosisSymptom =
+    tuberculosisSymptomToString >> string
+
+
+encodeTuberculosisTreatmentReview : TuberculosisTreatmentReview -> List ( String, Value )
+encodeTuberculosisTreatmentReview =
+    encodeTuberculosisMeasurement (encodeTreatmentOngoingValueWithType "tuberculosis_treatment_review")
+
+
+encodeHIVDiagnostics : HIVDiagnostics -> List ( String, Value )
+encodeHIVDiagnostics =
+    encodeHIVMeasurement encodeHIVDiagnosticsValue
+
+
+encodeHIVDiagnosticsValue : HIVDiagnosticsValue -> List ( String, Value )
+encodeHIVDiagnosticsValue value =
+    [ ( "hiv_diagnosis_signs", encodeEverySet encodeHIVDiagnosisSign value.signs )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_diagnostics" )
+    ]
+        ++ encodeNullable "positive_result_date" value.positiveResultDate Gizra.NominalDate.encodeYYYYMMDD
+        ++ encodeNullable "test_result" value.testResult encodeTestResult
+
+
+encodeHIVDiagnosisSign : HIVDiagnosisSign -> Value
+encodeHIVDiagnosisSign =
+    hivDiagnosisSignToString >> string
+
+
+encodeHIVFollowUp : HIVFollowUp -> List ( String, Value )
+encodeHIVFollowUp =
+    encodeHIVMeasurement (encodeFollowUpValueWithType "hiv_follow_up")
+
+
+encodeHIVHealthEducation : HIVHealthEducation -> List ( String, Value )
+encodeHIVHealthEducation =
+    encodeHIVMeasurement encodeHIVHealthEducationValue
+
+
+encodeHIVHealthEducationValue : HIVHealthEducationValue -> List ( String, Value )
+encodeHIVHealthEducationValue value =
+    [ ( "hiv_health_education_signs", encodeEverySet encodeHIVHealthEducationSign value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_health_education" )
+    ]
+
+
+encodeHIVHealthEducationSign : HIVHealthEducationSign -> Value
+encodeHIVHealthEducationSign =
+    hivHealthEducationSignToString >> string
+
+
+encodeHIVMedication : HIVMedication -> List ( String, Value )
+encodeHIVMedication =
+    encodeHIVMeasurement encodeHIVMedicationValue
+
+
+encodeHIVMedicationValue : HIVMedicationValue -> List ( String, Value )
+encodeHIVMedicationValue value =
+    [ ( "prescribed_hiv_medications", encodeEverySet encodeHIVPrescribedMedication value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_medication" )
+    ]
+
+
+encodeHIVPrescribedMedication : HIVPrescribedMedication -> Value
+encodeHIVPrescribedMedication =
+    hivPrescribedMedicationToString >> string
+
+
+encodeHIVReferral : HIVReferral -> List ( String, Value )
+encodeHIVReferral =
+    encodeHIVMeasurement (encodeSendToHCValueWithType "hiv_referral")
+
+
+encodeHIVSymptomReview : HIVSymptomReview -> List ( String, Value )
+encodeHIVSymptomReview =
+    encodeHIVMeasurement encodeHIVSymptomReviewValue
+
+
+encodeHIVSymptomReviewValue : HIVSymptomReviewValue -> List ( String, Value )
+encodeHIVSymptomReviewValue value =
+    [ ( "hiv_symptoms", encodeEverySet encodeHIVSymptom value )
+    , ( "deleted", bool False )
+    , ( "type", string "hiv_symptom_review" )
+    ]
+
+
+encodeHIVSymptom : HIVSymptom -> Value
+encodeHIVSymptom =
+    hivSymptomToString >> string
+
+
+encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
+encodeHIVTreatmentReview =
+    encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")

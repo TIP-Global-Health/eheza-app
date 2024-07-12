@@ -35,6 +35,21 @@ function hedley_person_image_default_styles() {
     ),
   );
 
+  // Exported image style: person-photo.
+  $styles['person-photo'] = array(
+    'label' => 'Person photo',
+    'effects' => array(
+      1 => array(
+        'name' => 'image_scale_and_crop',
+        'data' => array(
+          'width' => 200,
+          'height' => 200,
+        ),
+        'weight' => 1,
+      ),
+    ),
+  );
+
   return $styles;
 }
 

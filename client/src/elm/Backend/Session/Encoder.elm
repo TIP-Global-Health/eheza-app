@@ -2,10 +2,10 @@ module Backend.Session.Encoder exposing (encodeSession)
 
 import Backend.Clinic.Encoder exposing (encodeClinicType)
 import Backend.Session.Model exposing (..)
-import Gizra.NominalDate exposing (encodeDrupalRange, encodeYYYYMMDD)
+import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
-import Restful.Endpoint exposing (encodeEntityUuid, fromEntityUuid)
+import Restful.Endpoint exposing (encodeEntityUuid)
 
 
 {-| Encodes a `Session`.

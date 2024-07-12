@@ -1,17 +1,14 @@
 module Pages.PinCode.Update exposing (update)
 
+import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.PinCode.Model exposing (..)
+import Time
+import Time.Extra
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, Maybe OutMsg )
 update msg model =
     case msg of
-        ClearPinCode ->
-            ( { model | code = "" }
-            , Cmd.none
-            , Nothing
-            )
-
         HandleLoginClicked ->
             ( { model | code = "" }
             , Cmd.none
@@ -34,4 +31,28 @@ update msg model =
             ( { model | code = code }
             , Cmd.none
             , Nothing
+            )
+
+        SetNextNotification value ->
+            ( { model | nextNotification = Just value }
+            , Cmd.none
+            , Nothing
+            )
+
+        HandleNotificationResponse accept ->
+            let
+                nextNotification =
+                    Maybe.map (Time.Extra.add Time.Extra.Hour 1 Time.utc)
+                        model.nextNotification
+
+                outMsg =
+                    if accept then
+                        Just <| SetActivePage <| UserPage MessagingCenterPage
+
+                    else
+                        Nothing
+            in
+            ( { model | nextNotification = nextNotification }
+            , Cmd.none
+            , outMsg
             )

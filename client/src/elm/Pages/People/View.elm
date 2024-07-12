@@ -1,25 +1,27 @@
 module Pages.People.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator(..))
 import Backend.Person.Model exposing (ExpectedAge(..), Initiator(..), Person)
-import Backend.Person.Utils exposing (ageInYears, defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth, isPersonAnAdult)
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
-import Gizra.Html exposing (emptyNode, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (unwrap)
+import Maybe.Extra exposing (isNothing, unwrap)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.People.Model exposing (..)
-import Pages.Utils
+import Pages.Utils exposing (viewBySyncStatus)
 import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid)
+import SyncManager.Model
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 import Utils.NominalDate exposing (renderDate)
@@ -35,8 +37,19 @@ import Utils.WebData exposing (viewWebData)
     family member for that person, either child, parent, etc.
 
 -}
-view : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator -> Maybe PersonId -> Model -> ModelIndexedDb -> Html Msg
-view language currentDate maybeVillageId isChw initiator relation model db =
+view :
+    Language
+    -> NominalDate
+    -> HealthCenterId
+    -> Maybe VillageId
+    -> Bool
+    -> Initiator
+    -> Maybe PersonId
+    -> SyncManager.Model.Model
+    -> ModelIndexedDb
+    -> Model
+    -> Html Msg
+view language currentDate healthCenterId maybeVillageId isChw initiator relation syncManager db model =
     let
         title =
             case relation of
@@ -49,16 +62,19 @@ view language currentDate maybeVillageId isChw initiator relation model db =
 
                 Nothing ->
                     translate language Translate.People
+
+        content =
+            div
+                [ class "search-wrapper" ]
+                [ div [ class "ui full segment" ]
+                    [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
+                ]
+                |> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
     in
     div
         [ class "page-people" ]
         [ viewHeader initiator relation title
-        , div
-            [ class "search-wrapper" ]
-            [ div
-                [ class "ui full segment" ]
-                [ viewSearchForm language currentDate maybeVillageId isChw initiator relation model db ]
-            ]
+        , content
         ]
 
 
@@ -96,7 +112,7 @@ viewHeader initiator relation title =
         [ h1
             [ class "ui header" ]
             [ text title ]
-        , a
+        , span
             [ class "link-back"
             , onClick <| SetActivePage goBackPage
             ]
@@ -215,7 +231,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                         (Dict.filter
                             (\filteredPersonId filteredPerson ->
                                 -- Applying conditions explained above.
-                                not (relation == Just filteredPersonId)
+                                (relation /= Just filteredPersonId)
                                     && personTypeCondition filteredPerson
                                     && personRelationCondition filteredPersonId
                                     && chwCondition filteredPerson
@@ -299,7 +315,13 @@ viewParticipant language currentDate initiator relation db id person =
 
         action =
             div [ class "action" ]
-                [ div [ class "action-icon-wrapper" ]
+                [ showIf (isNothing relation) <|
+                    span
+                        [ class "patient-record"
+                        , onClick <| SetActivePage <| UserPage <| PatientRecordPage InitiatorParticipantDirectory id
+                        ]
+                        []
+                , div [ class "action-icon-wrapper blue" ]
                     [ span
                         [ class "action-icon forward"
                         , onClick <| SetActivePage <| UserPage <| nextPage

@@ -1,3 +1,9 @@
+web_environment:
+  - EHEZA_SITE=rwanda
+  # - EHEZA_INFRA_REPO_REMOTE=git@github.com:organization/project.git
+  # - GITHUB_USERNAME=
+  # - GITHUB_ACCESS_TOKEN=
+  # - PANTHEON_NAME=
 hooks:
   post-import-db:
     # Sanitize email addresses
@@ -20,23 +26,38 @@ hooks:
     - exec: drush fra -y
     - exec: drush uli
   post-start:
-    - exec-host: ddev nvm install 8.0
-    - exec-host: ddev nvm use 8.0
+    - exec-host: ddev nvm install 10.16.0
+    - exec-host: ddev nvm alias default 10.16.0
     - exec-host: ddev client-install
     - exec: "cd .. && chmod +x ./scripts/build && ./scripts/build"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/health_center_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/health_center.csv"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/person_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/person.csv"
+    - exec: "cd .. && cp hedley/modules/custom/hedley_migrate/csv/village_$EHEZA_SITE.csv hedley/modules/custom/hedley_migrate/csv/village.csv"
     # If DDEV creates server/www/, it is owned by root for some reasons,
     # so we have a placeholder .gitignore there, that ignores everything, but
     # the gitignore, during the install process, it gets altered, so we restore
     # it to avoid having untracked files.
     - exec: "git checkout .gitignore"
-    - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://ihangane.ddev.site:4443"
+    - exec: drush site-install -y hedley install_configure_form.update_status_module='array(FALSE,FALSE)' --locale=en --account-name="admin" --account-pass="admin" --account-mail="admin@example.com" --db-url=mysql://db:db@db/db --uri="https://eheza-app.ddev.site:4443"
     - exec: drush en devel views_ui field_ui -y
     - exec: drush fra -y
+    - exec: composer update --lock -d sites/default/files/composer
     - exec: composer install -d sites/default/files/composer
+    - exec: drush vset hedley_general_site_name $EHEZA_SITE
     # Run migration
     - exec: drush en -y hedley_migrate
     - exec: drush en -y migrate migrate_ui migrate_extras
     - exec: drush mi --group=default --user=1
     - exec: drush mi --group=counseling --user=1
     - exec: drush mi --group=forms --user=1
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/health_center.csv"
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/person.csv"
+    - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/village.csv"
+    # Enabling features:
+    - exec: drush vset hedley_admin_feature_ncda_enabled 1
+    - exec: drush vset hedley_admin_feature_stock_management_enabled 1
+    - exec: drush vset hedley_admin_feature_tuberculosis_management_enabled 1
+    - exec: drush vset hedley_admin_feature_group_education_enabled 1
+    - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
+    - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
     - exec: drush uli

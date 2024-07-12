@@ -1,7 +1,9 @@
 module Backend.IndividualEncounterParticipant.Model exposing (..)
 
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounterType)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessEncounterType)
 import Backend.Entities exposing (..)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
+import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
 import Date exposing (Date)
@@ -33,44 +35,48 @@ type IndividualParticipantExtraData
     = AcuteIllnessData AcuteIllnessEncounterType
     | AntenatalData PrenatalEncounterType
     | WellChildData WellChildEncounterType
+    | NutritionData NutritionEncounterType
     | NoIndividualParticipantExtraData
 
 
+type IndividualParticipantInitiator
+    = InitiatorParticipantsPage
+    | InitiatorPatientRecord PatientRecordInitiator PersonId
+
+
 type alias Model =
-    { closePrenatalSession : WebData ()
-    , closeAcuteIllnessSession : WebData ()
-    , setEddDate : WebData ()
-    , setNewborn : WebData ()
+    { updateIndividualEncounterParticipant : WebData ()
     }
 
 
 type Msg
-    = ClosePrenatalSession Date PregnancyOutcome DeliveryLocation
-    | HandleClosedPrenatalSession (WebData ())
+    = ClosePrenatalSession NominalDate PregnancyOutcome DeliveryLocation
     | CloseAcuteIllnessSession AcuteIllnessOutcome
-    | HandleClosedAcuteIllnessSession (WebData ())
+    | CloseTuberculosisSession TuberculosisOutcome
+    | CloseHIVSession HIVOutcome
     | SetEddDate NominalDate
-    | HandleSetEddDate (WebData ())
     | SetNewborn PersonId
-    | HandleSetNewborn (WebData ())
+    | HandleUpdatedIndividualEncounterParticipant (WebData ())
 
 
 emptyModel : Model
 emptyModel =
-    { closePrenatalSession = NotAsked
-    , closeAcuteIllnessSession = NotAsked
-    , setEddDate = NotAsked
-    , setNewborn = NotAsked
+    { updateIndividualEncounterParticipant = NotAsked
     }
 
 
 type IndividualEncounterType
     = AcuteIllnessEncounter
     | AntenatalEncounter
+    | ChildScoreboardEncounter
+    | HIVEncounter
     | HomeVisitEncounter
-    | InmmunizationEncounter
+    | NCDEncounter
     | NutritionEncounter
+    | TuberculosisEncounter
     | WellChildEncounter
+      -- @todo : can be removed?
+    | InmmunizationEncounter
 
 
 type DeliveryLocation
@@ -81,24 +87,8 @@ type DeliveryLocation
 type IndividualEncounterParticipantOutcome
     = AcuteIllness AcuteIllnessOutcome
     | Pregnancy PregnancyOutcome
-
-
-type PregnancyOutcome
-    = OutcomeLiveAtTerm
-    | OutcomeLivePreTerm
-    | OutcomeStillAtTerm
-    | OutcomeStillPreTerm
-    | OutcomeAbortions
-
-
-allPregnancyOutcome : List PregnancyOutcome
-allPregnancyOutcome =
-    [ OutcomeLiveAtTerm
-    , OutcomeLivePreTerm
-    , OutcomeStillAtTerm
-    , OutcomeStillPreTerm
-    , OutcomeAbortions
-    ]
+    | Tuberculosis TuberculosisOutcome
+    | HIV HIVOutcome
 
 
 type AcuteIllnessOutcome
@@ -119,3 +109,29 @@ allAcuteIllnessOutcome =
     , OutcomeReferredToHC
     , OutcomeOther
     ]
+
+
+type PregnancyOutcome
+    = OutcomeLiveAtTerm
+    | OutcomeLivePreTerm
+    | OutcomeStillAtTerm
+    | OutcomeStillPreTerm
+    | OutcomeAbortions
+
+
+allPregnancyOutcome : List PregnancyOutcome
+allPregnancyOutcome =
+    [ OutcomeLiveAtTerm
+    , OutcomeLivePreTerm
+    , OutcomeStillAtTerm
+    , OutcomeStillPreTerm
+    , OutcomeAbortions
+    ]
+
+
+type TuberculosisOutcome
+    = TuberculosisOutcomeNotDiagnosed
+
+
+type HIVOutcome
+    = HIVOutcomeNotDiagnosed

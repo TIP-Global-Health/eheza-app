@@ -15,6 +15,7 @@ class HedleyRestfulBreastExams extends HedleyRestfulPrenatalActivityBase {
    */
   protected $fields = [
     'field_breast_self_exam',
+    'field_discharge_type',
   ];
 
   /**

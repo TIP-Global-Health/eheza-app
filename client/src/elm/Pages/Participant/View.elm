@@ -1,31 +1,34 @@
-module Pages.Participant.View exposing (viewChild, viewMother, viewUbudehe)
+module Pages.Participant.View exposing (viewChild, viewMother)
 
-import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity(..))
-import Activity.Utils exposing (getActivityIcon, summarizeChildParticipant, summarizeMotherParticipant)
+import Activity.Model exposing (Activity(..), ChildActivity(..), CompletedAndPending, MotherActivity)
+import Activity.Utils exposing (getActivityIcon, isCaregiver, summarizeChildParticipant, summarizeMotherParticipant)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
-import Backend.Person.Model exposing (Person, Ubudehe(..))
+import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInYears)
-import Backend.Session.Model exposing (EditableSession)
+import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
-import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showMaybe)
+import EverySet exposing (EverySet)
+import Gizra.Html exposing (divKeyed, emptyNode, keyed, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes as Attr exposing (..)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import LocalData
 import Maybe.Extra
 import Measurement.Model
 import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
-import Pages.NutritionActivity.View exposing (warningPopup)
+import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Participant.Model exposing (Model, Msg(..), Tab(..))
+import Pages.Participant.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Session.Model
+import Pages.Utils exposing (viewSkipNCDADialog)
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 import Utils.NominalDate exposing (renderAgeMonthsDays, renderAgeYearsMonths, renderDate)
@@ -43,6 +46,8 @@ viewChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> ( SessionId, EditableSession )
@@ -50,13 +55,13 @@ viewChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewChild language currentDate zscores isChw childId ( sessionId, session ) pages db model =
+viewChild language currentDate zscores site features isChw childId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the childId. If the session is consistent, we
     -- should always be able to get the child.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getChild childId session.offlineSession of
         Just child ->
-            viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model
+            viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -75,6 +80,8 @@ viewFoundChild :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> ( PersonId, Person )
     -> ( SessionId, EditableSession )
@@ -82,7 +89,7 @@ viewFoundChild :
     -> ModelIndexedDb
     -> Model ChildActivity
     -> Html (Msg ChildActivity Measurement.Model.MsgChild)
-viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId, session ) pages db model =
+viewFoundChild language currentDate zscores site features isChw ( childId, child ) ( sessionId, session ) pages db model =
     let
         maybeMother =
             getMyMother childId session.offlineSession
@@ -107,16 +114,19 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                 |> Maybe.withDefault False
 
         age =
-            let
-                renderAgeFunc =
-                    if isAboveAgeOf2Years then
-                        renderAgeYearsMonths
-
-                    else
-                        renderAgeMonthsDays
-            in
             child.birthDate
-                |> Maybe.map (\birthDate -> renderAgeFunc language birthDate currentDate)
+                |> Maybe.map
+                    (\birthDate ->
+                        let
+                            renderAgeFunc =
+                                if isAboveAgeOf2Years then
+                                    renderAgeYearsMonths
+
+                                else
+                                    renderAgeMonthsDays
+                        in
+                        renderAgeFunc language birthDate currentDate
+                    )
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
                 |> Translate.ReportAge
                 |> translate language
@@ -131,11 +141,13 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
         break =
             br [] []
 
-        config =
-            childParticipant
-
         activities =
-            summarizeChildParticipant currentDate zscores childId session.offlineSession isChw db
+            summarizeChildParticipant currentDate zscores features childId session.offlineSession isChw db
+
+        filteredActivities =
+            { pending = List.filter (\activity -> EverySet.member activity model.skippedActivities |> not) activities.pending
+            , completed = List.filter (\activity -> EverySet.member activity model.skippedActivities |> not) activities.completed
+            }
 
         selectedActivity =
             case model.selectedTab of
@@ -148,25 +160,25 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if List.member activity activities.completed then
+                                if List.member activity filteredActivities.completed then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head activities.completed)
+                        |> Maybe.Extra.orElse (List.head filteredActivities.completed)
 
                 Pending ->
                     model.selectedActivity
                         |> Maybe.andThen
                             (\activity ->
-                                if List.member activity activities.pending then
+                                if List.member activity filteredActivities.pending then
                                     Just activity
 
                                 else
                                     Nothing
                             )
-                        |> Maybe.Extra.orElse (List.head activities.pending)
+                        |> Maybe.Extra.orElse (List.head filteredActivities.pending)
 
         content =
             if model.selectedTab == ProgressReport then
@@ -192,14 +204,14 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Just activity ->
                         let
                             form =
-                                getChildForm childId pages session
+                                getChildForm site childId pages session
                         in
                         getChildMeasurementData childId session
                             |> LocalData.unwrap
                                 []
                                 (\measurements ->
-                                    [ resolvePreviousValuesSetForChild currentDate childId db
-                                        |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
+                                    [ resolvePreviousValuesSetForChild currentDate site childId db
+                                        |> Measurement.View.viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db form
                                         |> Html.map MsgMeasurement
                                         |> keyed "content"
                                     ]
@@ -208,11 +220,23 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     Nothing ->
                         []
 
-        popup =
-            warningPopup language
-                currentDate
-                (SetWarningPopupState [])
-                model.warningPopupState
+        dialog =
+            Maybe.andThen
+                (\state ->
+                    case state of
+                        DialogWarning assessments ->
+                            warningPopup language
+                                currentDate
+                                (SetDialogState Nothing)
+                                assessments
+
+                        DialogSkipNCDA ->
+                            Just <|
+                                viewSkipNCDADialog language
+                                    (SetSelectedActivity NCDA)
+                                    (SkipActivity NCDA)
+                )
+                model.dialogState
                 |> viewModal
                 |> keyed "pupup"
                 |> List.singleton
@@ -221,8 +245,7 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
         List.concat
             [ [ viewHeader language sessionId |> keyed "header"
               , div [ class "ui unstackable items participant-page child" ]
-                    [ div
-                        [ class "item" ]
+                    [ div [ class "item" ]
                         [ div
                             [ class "ui image" ]
                             [ thumbnailImage "child" child.avatarUrl child.name thumbnailDimensions.height thumbnailDimensions.width ]
@@ -240,9 +263,9 @@ viewFoundChild language currentDate zscores isChw ( childId, child ) ( sessionId
                     ]
                     |> keyed "child-info"
               ]
-            , viewActivityCards childParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards childParticipant language session.offlineSession childId filteredActivities model.selectedTab selectedActivity
             , content
-            , popup
+            , dialog
             ]
 
 
@@ -250,6 +273,8 @@ viewMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> ( SessionId, EditableSession )
@@ -257,13 +282,13 @@ viewMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewMother language currentDate zscores isChw motherId ( sessionId, session ) pages db model =
+viewMother language currentDate zscores site features isChw motherId ( sessionId, session ) pages db model =
     -- It's nice to just pass in the motherId. If the session is consistent, we
     -- should always be able to get the mother.  But it would be hard to
     -- convince the compiler of that, so we put in a pro-forma error message.
     case getMother motherId session.offlineSession of
         Just mother ->
-            viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model
+            viewFoundMother language currentDate zscores site features isChw ( motherId, mother ) ( sessionId, session ) pages db model
 
         Nothing ->
             -- TODO: Make this error a little nicer, and translatable ... it
@@ -280,6 +305,8 @@ viewFoundMother :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Bool
     -> ( PersonId, Person )
     -> ( SessionId, EditableSession )
@@ -287,10 +314,26 @@ viewFoundMother :
     -> ModelIndexedDb
     -> Model MotherActivity
     -> Html (Msg MotherActivity Measurement.Model.MsgMother)
-viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessionId, session ) pages db model =
+viewFoundMother language currentDate zscores site features isChw ( motherId, mother ) ( sessionId, session ) pages db model =
     let
         break =
             br [] []
+
+        ubudeheForView =
+            if site == SiteRwanda then
+                [ showMaybe <|
+                    Maybe.map
+                        (\ubudehe ->
+                            p [ class "ubudehe-wrapper" ]
+                                [ label [] [ text <| translate language Translate.UbudeheLabel ++ ": " ]
+                                , span [] [ text <| translate language <| Translate.UbudeheNumber ubudehe ]
+                                ]
+                        )
+                        mother.ubudehe
+                ]
+
+            else
+                []
 
         childrenList =
             getChildren motherId session.offlineSession
@@ -301,7 +344,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                 |> List.intersperse break
 
         activities =
-            summarizeMotherParticipant currentDate zscores motherId session.offlineSession isChw db
+            summarizeMotherParticipant currentDate zscores features motherId session.offlineSession isChw db
 
         selectedActivity =
             case model.selectedTab of
@@ -364,8 +407,7 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                         [ div
                             [ class "ui image" ]
                             [ thumbnailImage "mother" mother.avatarUrl mother.name thumbnailDimensions.height thumbnailDimensions.width ]
-                        , div
-                            [ class "content" ]
+                        , div [ class "content" ] <|
                             [ h2
                                 [ class "ui header" ]
                                 [ text mother.name ]
@@ -378,23 +420,16 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
                                             ]
                                     )
                                     mother.educationLevel
-                            , showMaybe <|
-                                Maybe.map
-                                    (\ubudehe ->
-                                        p [ class "ubudehe-wrapper" ]
-                                            [ label [] [ text <| translate language Translate.UbudeheLabel ]
-                                            , span [] [ text <| viewUbudehe ubudehe ]
-                                            ]
-                                    )
-                                    mother.ubudehe
-                            , p [] childrenList
-                            , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
                             ]
+                                ++ ubudeheForView
+                                ++ [ p [] childrenList
+                                   , viewFamilyLinks motherParticipant language motherId ( sessionId, session )
+                                   ]
                         ]
                     ]
                     |> keyed "mother"
               ]
-            , viewActivityCards motherParticipant language activities model.selectedTab session.offlineSession.session.clinicType selectedActivity
+            , viewActivityCards motherParticipant language session.offlineSession motherId activities model.selectedTab selectedActivity
             , content
             ]
 
@@ -402,23 +437,46 @@ viewFoundMother language currentDate zscores isChw ( motherId, mother ) ( sessio
 viewActivityCards :
     Participant id value activity msg NominalDate
     -> Language
+    -> OfflineSession
+    -> PersonId
     -> CompletedAndPending (List activity)
     -> Tab
-    -> ClinicType
     -> Maybe activity
     -> List ( String, Html (Msg activity any) )
-viewActivityCards config language activities selectedTab clinicType selectedActivity =
+viewActivityCards config language offlineSession personId activities selectedTab selectedActivity =
     let
+        clinicType =
+            offlineSession.session.clinicType
+
+        adultIsCaregiver =
+            isCaregiver personId offlineSession
+
         pendingActivitiesView =
             if List.isEmpty activities.pending then
-                [ span [] [ text <| translate language Translate.NoActivitiesPendingForThisParticipant ] ]
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
+
+                        else
+                            Translate.NoActivitiesPendingForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
 
         completedActivitiesView =
             if List.isEmpty activities.completed then
-                [ span [] [ text <| translate language Translate.NoActivitiesCompletedForThisParticipant ] ]
+                let
+                    messageTransId =
+                        if adultIsCaregiver then
+                            Translate.CaregiverMessage
+
+                        else
+                            Translate.NoActivitiesCompletedForThisParticipant
+                in
+                [ span [] [ text <| translate language messageTransId ] ]
 
             else
                 List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
@@ -443,11 +501,12 @@ viewActivityCards config language activities selectedTab clinicType selectedActi
         completedTabTitle =
             translate language <| Translate.ActivitiesCompleted <| List.length activities.completed
 
-        progressTabTitle =
-            translate language <| Translate.ProgressReport
-
         extraTabs =
             if config.showProgressReportTab then
+                let
+                    progressTabTitle =
+                        translate language <| Translate.ProgressReport
+                in
                 [ tabItem progressTabTitle (selectedTab == ProgressReport) "progressreport" (SetSelectedTab ProgressReport) ]
 
             else
@@ -477,10 +536,17 @@ viewActivityListItem config language clinicType selectedActivity activityItem =
 
             else
                 Translate.ActivitiesTitle activity
+
+        action =
+            if activity == ChildActivity NCDA then
+                SetDialogState <| Just DialogSkipNCDA
+
+            else
+                SetSelectedActivity activityItem
     in
     div [ class "column" ]
         [ a
-            [ onClick <| SetSelectedActivity activityItem
+            [ onClick action
             , classList
                 [ ( "link-section", True )
                 , ( "active", selectedActivity == Just activityItem )
@@ -499,7 +565,7 @@ viewHeader language id =
         [ h1
             [ class "ui header" ]
             [ text <| translate language Translate.Assessment ]
-        , a
+        , span
             [ class "link-back"
             , SessionPage id ParticipantsPage
                 |> UserPage
@@ -554,7 +620,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-baby" ] []
                     , span
                         [ class "count" ]
@@ -586,7 +652,7 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
                         ]
             in
             li attributes
-                [ a []
+                [ span [ class "icon" ]
                     [ span [ class "icon-mother" ] []
                     ]
                 ]
@@ -594,19 +660,3 @@ viewFamilyLinks config language participantId ( sessionId, session ) =
     ul
         [ class "links-body" ]
         (motherMarkup ++ childrenMarkup)
-
-
-viewUbudehe : Ubudehe -> String
-viewUbudehe ubudehe =
-    case ubudehe of
-        Ubudehe1 ->
-            "1"
-
-        Ubudehe2 ->
-            "2"
-
-        Ubudehe3 ->
-            "3"
-
-        Ubudehe4 ->
-            "4"

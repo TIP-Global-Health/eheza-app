@@ -51,5 +51,10 @@ deployment-robot-key
 ############
 vendor
 
-package-lock.json
 travis-cache
+
+/eheza-infra
+
+#Elm
+server/elm/elm-stuff
+server/elm/node_modules

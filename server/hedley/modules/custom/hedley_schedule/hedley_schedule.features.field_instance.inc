@@ -166,7 +166,7 @@ function hedley_schedule_field_default_field_instances() {
     'label' => 'Scheduled Date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1120,7 +1120,7 @@ function hedley_schedule_field_default_field_instances() {
     'label' => 'Scheduled Date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1261,7 +1261,7 @@ function hedley_schedule_field_default_field_instances() {
     'label' => 'Date concluded',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1398,7 +1398,7 @@ function hedley_schedule_field_default_field_instances() {
     'label' => 'Expected',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'blank',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1455,7 +1455,7 @@ function hedley_schedule_field_default_field_instances() {
     'label' => 'Expected date concluded',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1727,10 +1727,9 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
-  // Exported field_instance:
-  // 'node-nutrition_encounter-field_individual_participant'.
-  $field_instances['node-nutrition_encounter-field_individual_participant'] = array(
-    'bundle' => 'nutrition_encounter',
+  // Exported field_instance: 'node-ncd_encounter-field_individual_participant'.
+  $field_instances['node-ncd_encounter-field_individual_participant'] = array(
+    'bundle' => 'ncd_encounter',
     'default_value' => NULL,
     'deleted' => 0,
     'description' => '',
@@ -1772,6 +1771,227 @@ Used to track location where pregnancies were completed.',
     ),
   );
 
+  // Exported field_instance: 'node-ncd_encounter-field_scheduled_date'.
+  $field_instances['node-ncd_encounter-field_scheduled_date'] = array(
+    'bundle' => 'ncd_encounter',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 0,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_scheduled_date',
+    'label' => 'Scheduled Date',
+    'required' => FALSE,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => -3,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_encounter-field_shards'.
+  $field_instances['node-ncd_encounter-field_shards'] = array(
+    'bundle' => 'ncd_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 3,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_shards',
+    'label' => 'Shards',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-ncd_encounter-field_uuid'.
+  $field_instances['node-ncd_encounter-field_uuid'] = array(
+    'bundle' => 'ncd_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 2,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_uuid',
+    'label' => 'UUID',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-nutrition_encounter-field_individual_participant'.
+  $field_instances['node-nutrition_encounter-field_individual_participant'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 1,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_individual_participant',
+    'label' => 'Individual Participant',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-nutrition_encounter-field_nutrition_encounter_type'.
+  $field_instances['node-nutrition_encounter-field_nutrition_encounter_type'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 4,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_nutrition_encounter_type',
+    'label' => 'Nutrition Encounter Type',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 3,
+    ),
+  );
+
   // Exported field_instance: 'node-nutrition_encounter-field_scheduled_date'.
   $field_instances['node-nutrition_encounter-field_scheduled_date'] = array(
     'bundle' => 'nutrition_encounter',
@@ -1805,7 +2025,7 @@ Used to track location where pregnancies were completed.',
     'label' => 'Scheduled Date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -1824,7 +2044,7 @@ Used to track location where pregnancies were completed.',
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -1868,7 +2088,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 5,
     ),
   );
 
@@ -1908,7 +2128,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 1,
+      'weight' => 4,
     ),
   );
 
@@ -2030,9 +2250,13 @@ Used to track location where pregnancies were completed.',
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
       'weight' => 5,
     ),
   );
@@ -2113,7 +2337,7 @@ Used to track location where pregnancies were completed.',
     'label' => 'Expected',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'blank',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2380,7 +2604,7 @@ Used to track location where pregnancies were completed.',
     'label' => 'Scheduled Date',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'blank',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2520,9 +2744,13 @@ Used to track location where pregnancies were completed.',
     ),
     'widget' => array(
       'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_select',
+      'module' => 'entityreference',
+      'settings' => array(
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
       'weight' => -2,
     ),
   );
@@ -2573,6 +2801,7 @@ Used to track location where pregnancies were completed.',
   // Exported field_instance: 'node-session-field_scheduled_date'.
   $field_instances['node-session-field_scheduled_date'] = array(
     'bundle' => 'session',
+    'default_value' => 'blank',
     'deleted' => 0,
     'description' => 'The dates the session was active.',
     'display' => array(
@@ -2603,7 +2832,7 @@ Used to track location where pregnancies were completed.',
     'label' => 'Scheduled Date',
     'required' => 1,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'blank',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -2786,6 +3015,7 @@ Used to track outcome of pregnancies.');
   t('Leave this field blank -- it will be automatically generated.');
   t('Newborn');
   t('Nurse');
+  t('Nutrition Encounter Type');
   t('Once you have created a "Counseling Topic" and it has been used, make only minor edits -- any edit will affect the historical data of which topics have been discussed with participants. If an edit would represent a different topic, then create a new topic instead. You can remove an unused topic from the relevant "Counseling Schedule" -- but do not delete the unused topic, since that would also affect the historical data.');
   t('Outcome');
   t('Outcome location');

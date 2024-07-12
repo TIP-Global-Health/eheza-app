@@ -275,9 +275,6 @@ function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
       _hedley_migrate_preprocess_muac($node);
       break;
   }
-
-  // Adjust XSS.
-  _hedley_migrate_preprocess_xss('node', $node->type, $node);
 }
 
 /**
@@ -285,9 +282,6 @@ function hedley_migrate_hedley_faker_node_generate($node, Generator $faker) {
  */
 function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $faker) {
   $term->name = $faker->sentence(2);
-
-  // Adjust XSS.
-  _hedley_migrate_preprocess_xss('taxonomy_term', $term->vocabulary_machine_name, $term);
 }
 
 /**
@@ -304,9 +298,22 @@ function hedley_migrate_hedley_faker_taxonomy_term_generate($term, Generator $fa
  *  - Level 4: village
  */
 function hedley_migrate_generate_geo_terms_vocabulary() {
+  $site = variable_get('hedley_general_site_name', '');
+  if (empty($site)) {
+    throw new Exception('System Site not set.');
+  }
+
   if (taxonomy_vocabulary_machine_name_load('eheza_geolocation')) {
-    // Vocabulary already exists.
-    return;
+    throw new Exception('Geolocations taxonomy vocabulary already exists.');
+  }
+
+  // Load input file.
+  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
+  $source_file = $migrate_dir . '/csv/geolocations_' . strtolower($site) . '.csv';
+
+  $handler = fopen($source_file, 'r');
+  if (!$handler) {
+    throw new Exception("Failed to read $source_file");
   }
 
   // Create new vocabulary.
@@ -317,12 +324,7 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
   );
   taxonomy_vocabulary_save($vocabulary);
 
-  // Load input file.
-  $migrate_dir = variable_get('hedley_migrate_directory', FALSE) ? variable_get('hedley_migrate_directory') : drupal_get_path('module', 'hedley_migrate');
-  $source_file = $migrate_dir . '/csv/geo_locations.csv';
-
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
-
   foreach ($column_mapping as $column) {
     $data[] = [];
   }
@@ -331,7 +333,6 @@ function hedley_migrate_generate_geo_terms_vocabulary() {
   // skip it.
   $locator = [];
 
-  $handler = fopen($source_file, 'r');
   while ($row = fgetcsv($handler)) {
     foreach ($row as $index => $column) {
       _hedley_migrate_process_column($data, $locator, $index, $row, $vocabulary->vid, $column_mapping);
@@ -394,11 +395,14 @@ function _hedley_migrate_process_column(array &$data, array &$locator, $index, a
 
 /**
  * Generates static geolocation structure to be used by client.
+ *
+ * @return array|void
+ *   Static geolocation structure to be used by client.
  */
 function hedley_migrate_generate_geolocation_structure_for_client() {
   if (!$vocabulary = taxonomy_vocabulary_machine_name_load('eheza_geolocation')) {
     // Vocabulary does not exist.
-    return;
+    throw new Exception('Geolocations taxonomy vocabulary does not exist.');
   }
 
   $column_mapping = ['province', 'district', 'sector', 'cell', 'village'];
@@ -413,6 +417,8 @@ function hedley_migrate_generate_geolocation_structure_for_client() {
 
     $data[$index][$column] = hedley_migrate_generate_structure_for_terms_of_type($column, $data[$index]['tids']);
   }
+
+  return $data;
 }
 
 /**
@@ -482,61 +488,6 @@ function _hedley_migrate_get_children_by_parents(array $parents, $vocabulary_id 
   }
 
   return $query->execute()->fetchCol();
-}
-
-/**
- * Alters devel generated Sites to satisfy business logic.
- *
- * We should have at least one entity from each bundle with an XSS label.
- *
- * @param string $entity_type
- *   The entity type to alter.
- * @param string $bundle
- *   The bundle of the entity.
- * @param object $entity
- *   Site entity object.
- */
-function _hedley_migrate_preprocess_xss($entity_type, $bundle, $entity) {
-  // This global var keeps xss indication for each entity type / bundle.
-  $_hedley_devel_generate = &drupal_static(__FUNCTION__, []);
-
-  if (!$entity_info = entity_get_info($entity_type)) {
-    return;
-  }
-
-  $label_property = $entity_info['entity keys']['label'];
-
-  // Validate the current node type has at least one instance with XSS.
-  $xss_is_missing = empty($_hedley_devel_generate[$entity_type][$bundle]);
-
-  $randomly_add_xss = rand() % 2 == 0;
-  if (!$xss_is_missing && $randomly_add_xss) {
-    return;
-  }
-
-  // Indicate the current bundle has an XSS instance.
-  $_hedley_devel_generate[$entity_type][$bundle] = TRUE;
-
-  $wrapper = entity_metadata_wrapper($entity_type, $entity);
-
-  // Adjust node's title to include XSS.
-  $label = $wrapper->label();
-  $wrapper->{$label_property}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$label}')</script>");
-
-  // Handle all text fields.
-  foreach (field_info_instances($entity_type, $bundle) as $field_name => $field) {
-    $field = field_info_field($field_name);
-    if ($field['module'] != 'text') {
-      continue;
-    }
-
-    if ($field_name === 'field_uuid') {
-      // This is an auto-populated field.
-      continue;
-    }
-
-    $wrapper->{$field_name}->set("<script>alert('XSS-{$entity_type}-{$bundle}-{$field_name}')</script>");
-  }
 }
 
 /**

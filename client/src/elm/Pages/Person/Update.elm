@@ -1,24 +1,26 @@
 module Pages.Person.Update exposing (update)
 
 import App.Model
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
-import Backend.Person.Model exposing (ExpectedAge(..), ParticipantDirectoryOperation(..), Person)
+import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
 import Form
 import Form.Field
+import GeoLocation.Model exposing (ReverseGeoInfo)
+import GeoLocation.Utils exposing (getGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
-import RemoteData exposing (RemoteData(..), WebData)
+import RemoteData exposing (RemoteData(..))
+import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
+update : NominalDate -> Site -> ReverseGeoInfo -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw msg db model =
     case msg of
         MsgForm operation initiator subMsg ->
             let
@@ -35,19 +37,19 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                         |> Maybe.andThen (\personId -> Dict.get personId db.people)
                         |> Maybe.andThen RemoteData.toMaybe
 
-                maybeVillage =
-                    maybeVillageId
-                        |> Maybe.andThen (getVillageById db)
-
                 newForm =
-                    Form.update (validatePerson related operation (Just currentDate)) subMsg model.form
+                    Form.update (validatePerson site related operation (Just currentDate)) subMsg model.form
 
                 appMsgs =
                     case subMsg of
                         Form.Submit ->
                             let
+                                maybeVillage =
+                                    maybeVillageId
+                                        |> Maybe.andThen (getVillageById db)
+
                                 formWithDefaults =
-                                    applyDefaultValuesForPerson currentDate maybeVillage isChw related operation model.form
+                                    applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw related operation model.form
                             in
                             case operation of
                                 CreatePerson _ ->
@@ -92,7 +94,7 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                                                     -- `NotAsked` (to reset network errors
                                                     -- etc.)
                                                     |> Maybe.withDefault
-                                                        [ Backend.Model.HandlePatchedPerson personId NotAsked
+                                                        [ Backend.Model.HandlePatchedPerson InitiatorEditForm personId NotAsked
                                                             |> App.Model.MsgIndexedDb
                                                         ]
                                             )
@@ -113,16 +115,16 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
+            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
 
         ResetCreateForm ->
-            ( Pages.Person.Model.emptyCreateModel
+            ( Pages.Person.Model.emptyCreateModel site
             , Cmd.none
             , []
             )
 
         ResetEditForm ->
-            ( Pages.Person.Model.emptyEditModel
+            ( Pages.Person.Model.emptyEditModel site
             , Cmd.none
             , []
             )
@@ -133,12 +135,6 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
             , [ App.Model.SetActivePage page ]
             )
 
-        ToggleDateSelector ->
-            ( { model | isDateSelectorOpen = not model.isDateSelectorOpen }
-            , Cmd.none
-            , []
-            )
-
         DateSelected operation initiator date ->
             let
                 dateAsString =
@@ -147,7 +143,13 @@ update currentDate selectedHealthCenter maybeVillageId isChw msg db model =
                 setFieldMsg =
                     Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
             in
-            update currentDate selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+
+        SetDateSelectorState state ->
+            ( { model | dateSelectorPopupState = state }
+            , Cmd.none
+            , []
+            )
 
 
 generateMsgsForPersonEdit : NominalDate -> PersonId -> Person -> PersonForm -> ModelIndexedDb -> List App.Model.Msg
@@ -212,16 +214,14 @@ generateMsgsForPersonEdit currentDate personId person form db =
                 updatedChildren
                     |> List.map
                         (\( childId, child ) ->
-                            child
-                                |> Backend.Model.PatchPerson childId
+                            Backend.Model.PatchPerson InitiatorEditForm childId child
                                 |> App.Model.MsgIndexedDb
                         )
 
             else
                 []
     in
-    (person
-        |> Backend.Model.PatchPerson personId
+    (Backend.Model.PatchPerson InitiatorEditForm personId person
         |> App.Model.MsgIndexedDb
     )
         :: updateChildrenMsgs

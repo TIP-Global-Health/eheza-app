@@ -9,6 +9,7 @@ via sending messages through the `update` function.
 
 import App.Model
 import Backend.Model
+import Error.Model exposing (ErrorType(..))
 import Gizra.Update exposing (sequenceExtra)
 import Json.Decode exposing (Value, decodeValue)
 import Pages.Page
@@ -34,11 +35,7 @@ update currentTime msg model =
                     handleIncomingMsg currentTime incoming model
 
                 Err err ->
-                    let
-                        _ =
-                            Debug.log "decoder error" err
-                    in
-                    ( model, Cmd.none, [] )
+                    ( model, Cmd.none, [ App.Model.TriggerRollbar App.Model.IndexedDB (Decoder err) ] )
 
         SendOutgoingMsg msg_ ->
             sendOutgoingMsg currentTime msg_ model

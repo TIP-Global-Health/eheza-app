@@ -21,8 +21,8 @@ import Backend.Measurement.Model exposing (..)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
 import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
-import Gizra.NominalDate exposing (NominalDate, NominalDateRange)
-import LocalData exposing (LocalData(..))
+import Gizra.NominalDate exposing (NominalDate)
+import LocalData exposing (LocalData)
 import Measurement.Model
 import RemoteData exposing (RemoteData(..), WebData)
 
@@ -139,6 +139,7 @@ type alias Model =
     , saveFollowUpRequest : Dict PersonId (WebData ())
     , saveHealthEducationRequest : Dict PersonId (WebData ())
     , saveSendToHCRequest : Dict PersonId (WebData ())
+    , saveNCDARequest : Dict PersonId (WebData ())
     }
 
 
@@ -160,6 +161,7 @@ emptyModel =
     , saveFollowUpRequest = Dict.empty
     , saveHealthEducationRequest = Dict.empty
     , saveSendToHCRequest = Dict.empty
+    , saveNCDARequest = Dict.empty
     }
 
 
@@ -183,6 +185,7 @@ type Msg
     | HandleSaveFollowUp PersonId (WebData ())
     | HandleSaveHealthEducation PersonId (WebData ())
     | HandleSaveSendToHC PersonId (WebData ())
+    | HandleSaveNCDA PersonId (WebData ())
 
 
 batchSize : Int

@@ -8,7 +8,7 @@ import Backend.TraceContact.Model
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 
@@ -296,11 +296,8 @@ update currentDate id msg model =
                             if EverySet.isEmpty symptomsSet then
                                 False
 
-                            else if EverySet.toList symptomsSet == [ noneSign ] then
-                                False
-
                             else
-                                True
+                                EverySet.toList symptomsSet /= [ noneSign ]
 
                         popupState =
                             if

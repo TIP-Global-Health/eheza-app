@@ -1,6 +1,7 @@
 module Backend.Person.Decoder exposing
     ( decodeEducationLevel
     , decodeGender
+    , decodeGeoField
     , decodeHivStatus
     , decodeMaritalStatus
     , decodeModeOfDelivery
@@ -10,7 +11,7 @@ module Backend.Person.Decoder exposing
 
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Person.Model exposing (..)
-import Backend.Person.Utils exposing (genderFromString)
+import Backend.Person.Utils exposing (..)
 import Gizra.Json exposing (decodeInt, decodeStringWithDefault)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (..)
@@ -104,7 +105,7 @@ decodeGender =
             (\gender ->
                 genderFromString gender
                     |> Maybe.map succeed
-                    |> Maybe.withDefault (fail <| gender ++ " is not a recognized 'type' for Gender.")
+                    |> Maybe.withDefault (fail <| gender ++ " is not a recognized Gender.")
             )
 
 
@@ -113,21 +114,10 @@ decodeUbudehe =
     decodeInt
         |> andThen
             (\ubudehe ->
-                case ubudehe of
-                    1 ->
-                        succeed Ubudehe1
-
-                    2 ->
-                        succeed Ubudehe2
-
-                    3 ->
-                        succeed Ubudehe3
-
-                    4 ->
-                        succeed Ubudehe4
-
-                    _ ->
-                        fail <| String.fromInt ubudehe ++ " is out of range for Ubudehe"
+                ubudeheFromInt ubudehe
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <| String.fromInt ubudehe ++ " is not a recognized Ubudehe")
             )
 
 
@@ -136,32 +126,13 @@ decodeEducationLevel =
     decodeInt
         |> andThen
             (\educationLevel ->
-                case educationLevel of
-                    0 ->
-                        succeed NoSchooling
-
-                    1 ->
-                        succeed PrimarySchool
-
-                    2 ->
-                        succeed VocationalTrainingSchool
-
-                    3 ->
-                        succeed SecondarySchool
-
-                    4 ->
-                        succeed DiplomaProgram
-
-                    5 ->
-                        succeed HigherEducation
-
-                    6 ->
-                        succeed AdvancedDiploma
-
-                    _ ->
-                        fail <|
+                educationLevelFromInt educationLevel
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault
+                        (fail <|
                             String.fromInt educationLevel
                                 ++ " is not a recognized EducationLevel"
+                        )
             )
 
 
@@ -170,21 +141,9 @@ decodeMaritalStatus =
     string
         |> andThen
             (\status ->
-                case status of
-                    "divorced" ->
-                        succeed Divorced
-
-                    "married" ->
-                        succeed Married
-
-                    "single" ->
-                        succeed Single
-
-                    "widowed" ->
-                        succeed Widowed
-
-                    _ ->
-                        fail (status ++ " is not a recognized MaritalStatus")
+                maritalStatusFromString status
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| status ++ " is not a recognized MaritalStatus")
             )
 
 

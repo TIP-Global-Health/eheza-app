@@ -34,6 +34,9 @@ encodeActivityAsString activity =
         Weight ->
             "nutrition-weight"
 
+        NCDA ->
+            "nutrition-ncda"
+
         NextSteps ->
             "nutrition-next-steps"
 
@@ -57,6 +60,9 @@ decodeActivityFromString s =
 
         "nutrition-weight" ->
             Just Weight
+
+        "nutrition-ncda" ->
+            Just NCDA
 
         "nutrition-next-steps" ->
             Just NextSteps
@@ -86,10 +92,13 @@ getActivityIcon activity =
         Weight ->
             "weight"
 
+        NCDA ->
+            "history"
+
         NextSteps ->
             "next-steps"
 
 
-getAllActivities : List NutritionActivity
-getAllActivities =
-    [ Height, Muac, Nutrition, Weight, Photo, NextSteps ]
+allActivities : List NutritionActivity
+allActivities =
+    [ Height, Muac, Nutrition, Weight, Photo, NCDA, NextSteps ]

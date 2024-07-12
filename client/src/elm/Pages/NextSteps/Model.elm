@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Measurement.Model exposing (..)
-import Pages.Page exposing (Page)
 
 
 {-| This module manages the state for the first part of the UI
@@ -28,19 +27,18 @@ type alias Model =
     { sendToHCForm : SendToHCForm
     , healthEducationForm : HealthEducationForm
     , contributingFactorsForm : ContributingFactorsForm
-    , followUpForm : FollowUpForm
+    , followUpForm : NutritionFollowUpForm
     , activeTask : Maybe NextStepsTask
     , warningPopupState : List NutritionAssessment
     }
 
 
 type Msg
-    = SetRedirectPage Page
-    | SetWarningPopupState (List NutritionAssessment)
+    = SetWarningPopupState (List NutritionAssessment)
     | SetActiveNextStepsTask NextStepsTask
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
-    | SetReasonForNotSendingToHC ReasonForNotSendingToHC
+    | SetReasonForNonReferral ReasonForNonReferral
     | SaveSendToHC (Maybe GroupSendToHCId) SendToHCValue (Maybe NextStepsTask)
     | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
@@ -48,7 +46,7 @@ type Msg
     | SetContributingFactorsSign ContributingFactorsSign
     | SaveContributingFactors (Maybe ContributingFactorsId) (EverySet ContributingFactorsSign) (Maybe NextStepsTask)
     | SetFollowUpOption FollowUpOption
-    | SaveFollowUp (Maybe FollowUpId) FollowUpValue (Maybe NextStepsTask)
+    | SaveFollowUp (Maybe FollowUpId) NutritionFollowUpValue (Maybe NextStepsTask)
 
 
 emptyModel : Model
@@ -56,7 +54,7 @@ emptyModel =
     { sendToHCForm = emptySendToHCForm
     , healthEducationForm = emptyHealthEducationForm
     , contributingFactorsForm = emptyContributingFactorsForm
-    , followUpForm = emptyFollowUpForm
+    , followUpForm = emptyNutritionFollowUpForm
     , activeTask = Nothing
     , warningPopupState = []
     }

@@ -57,6 +57,66 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_anc_visits_dates'.
+  $field_bases['field_anc_visits_dates'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_anc_visits_dates',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
+  // Exported field_base: 'field_anemia_treatment'.
+  $field_bases['field_anemia_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_anemia_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'adverse-events-hospitalization' => 'Experienced adverse events - nurse referred to hospital',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_attended'.
   $field_bases['field_attended'] = array(
     'active' => 1,
@@ -109,6 +169,24 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_birth_weight'.
+  $field_bases['field_birth_weight'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_weight',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
   );
 
   // Exported field_base: 'field_bmi'.
@@ -164,6 +242,7 @@ function hedley_activity_field_default_field_bases() {
         'mass' => 'Mass',
         'discharge' => 'Discharge',
         'infection' => 'Infection',
+        'warmth' => 'Warmth',
         'normal' => 'Normal',
       ),
       'allowed_values_function' => '',
@@ -218,6 +297,7 @@ function hedley_activity_field_default_field_bases() {
         'failure-to-progress' => 'Failure To Progress',
         'none' => 'None',
         'other' => 'Other',
+        'previous-c-section' => 'Previous c-section',
       ),
       'allowed_values_function' => '',
     ),
@@ -392,6 +472,13 @@ function hedley_activity_field_default_field_bases() {
         'difficulty-breathing' => 'Difficulty breathing',
         'fever' => 'Fever',
         'extreme-weakness' => 'Extreme weakness',
+        'imminent-delivery' => 'Imminent delivery',
+        'labor' => 'Labor',
+        'looks-very-ill' => 'Looks very ill',
+        'severe-vomiting' => 'Severe vomiting',
+        'unconscious' => 'Unconscious',
+        'gush-leaking-vaginal-fluid' => 'Gush or leaking of vaginal fluid',
+        'premature-onset-contractions' => 'Premature onset of contractions',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',
@@ -448,6 +535,35 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_discharge_type'.
+  $field_bases['field_discharge_type'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_discharge_type',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'milky' => 'Milky',
+        'clear' => 'Clear',
+        'brown-bloody' => 'Brown or bloody',
+        'yellow' => 'Yellow',
+        'green' => 'Green',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_distributed_amount'.
@@ -586,8 +702,8 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        0 => 'No',
+        1 => 'Yes',
       ),
       'allowed_values_function' => '',
     ),
@@ -646,6 +762,7 @@ function hedley_activity_field_default_field_bases() {
         '1-m' => '1 Month',
         '2-m' => '2 Months',
         '3-m' => '3 Months',
+        'none' => 'Follow Up not needed',
       ),
       'allowed_values_function' => '',
     ),
@@ -668,6 +785,32 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_fundal_palpable'.
+  $field_bases['field_fundal_palpable'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_fundal_palpable',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => 'No',
+        1 => 'Yes',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
   );
 
   // Exported field_base: 'field_hands'.
@@ -714,6 +857,37 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'brittle-hair' => 'Brittle Hair',
         'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_health_education_signs_ph2'.
+  $field_bases['field_health_education_signs_ph2'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_health_education_signs_ph2',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'positive-hiv' => 'Positive HIV',
+        'safer-sex-hiv' => 'Safer sex HIV',
+        'partner-testing' => 'Partner testing',
+        'family-planning' => 'Family planning',
+        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
+        'diabetes' => 'Diabetes',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -802,6 +976,67 @@ function hedley_activity_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_hiv_treatment'.
+  $field_bases['field_hiv_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hiv_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'adverse-events-hospitalization' => 'Experienced adverse events - nurse referred to hospital',
+        'medicine-pmtct' => 'Medicine given by PMTCT',
+        'no-medicine-not-seen' => 'No Medicine - not seen at PMTCT',
+        'no-medicine-out-of-stock' => 'No Medicine - out of stock',
+        'no-medicine-patient-refused' => 'No Medicine - patient refused',
+        'no-medicine-other' => 'No Medicine - other',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_hypertension_treatment'.
+  $field_bases['field_hypertension_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_hypertension_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'adverse-events-hospitalization' => 'Experienced adverse events - nurse referred to hospital',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_lactation_signs'.
@@ -929,6 +1164,34 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_malaria_treatment'.
+  $field_bases['field_malaria_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_malaria_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'adverse-events-hospitalization' => 'Experienced adverse events - nurse referred to hospital',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_measurement_notes'.
   $field_bases['field_measurement_notes'] = array(
     'active' => 1,
@@ -1007,6 +1270,9 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'iron-and-folic-acid-supplement' => 'Iron and folic acid supplement',
         'deworming-pill' => 'Deworming pill',
+        'mebendezole' => 'Mebendazole',
+        'folic-acid' => 'Folic Acid',
+        'vitamin-a' => 'Vitamin A',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1032,6 +1298,59 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'number_float',
   );
 
+  // Exported field_base: 'field_ncda_signs'.
+  $field_bases['field_ncda_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ncda_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'appropriate-complementary-feeding' => 'Appropriate Complementary Feeding',
+        'born-with-birth-defect' => 'Born With Birth Defect',
+        'breastfed-for-six-months' => 'Breastfed for six months',
+        'conditional-food-items' => 'Conditional Food Items',
+        'five-food-groups' => 'Five Food Groups',
+        'has-clean-water' => 'Has Clean Water',
+        'has-handwashing-facility' => 'Has Handwashing Facility',
+        'has-toilets' => 'Has Toilets',
+        'has-kitchen-garden' => 'Has Kitchen Garden',
+        'ongera-mnp' => 'Ongera-MNP',
+        'none' => 'None',
+        'beneficiary-cash-transfer' => 'Beneficiary Cash Transfer',
+        'child-got-diarrhea' => 'Child got Diarrhea',
+        'child-receives-fbf' => 'Child receives FBF',
+        'child-taking-fbf' => 'Child Taking FBF',
+        'child-receives-vitamin-a' => 'Child receives Vitamin A',
+        'child-receives-dewormer' => 'Child receives dewormer',
+        'child-receives-ecd' => 'Child receives ECD',
+        'child-with-disability' => 'Child with Disability',
+        'insecticide-treated-bednets' => 'Insecticide Treated Bednets',
+        'meals-at-recommended-times' => 'Meals at recommended times',
+        'child-behind-on-vaccination' => 'Child behind on vaccination',
+        'receiving-cash-transfer' => 'Receiving Cash Transfer',
+        'receiving-support' => 'Receiving Support',
+        'supplements-during-pregnancy' => 'Supplements During Pregnancy',
+        'taken-supplements-per-guidance' => 'Taken Supplements per Guidance',
+        'taking-ongera-mnp' => 'Taking Ongera-MNP',
+        'treated-for-acute-malnutrition' => 'Treated for Acute Malnutrition',
+        'shows-edema-signs' => 'Shows Edema signs',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_neck'.
   $field_bases['field_neck'] = array(
     'active' => 1,
@@ -1051,6 +1370,33 @@ function hedley_activity_field_default_field_bases() {
         'enlarged-thyroid' => 'Enlarged Thyroid',
         'enlarged-lymph-nodes' => 'Enlarged Lymph Nodes',
         'normal' => 'Normal',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_not_confident_reason'.
+  $field_bases['field_not_confident_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_not_confident_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'irregular-menses' => 'Irregular Menses',
+        'on-family-planning-method' => 'On Family Planning method',
+        'can-not-remember-dates' => 'Can not remember dates',
       ),
       'allowed_values_function' => '',
     ),
@@ -1247,6 +1593,32 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_phase_recorded'.
+  $field_bases['field_phase_recorded'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_phase_recorded',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'initial' => 'Initial',
+        'recurrent' => 'Recurrent',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_postpartum_child'.
   $field_bases['field_postpartum_child'] = array(
     'active' => 1,
@@ -1366,6 +1738,23 @@ function hedley_activity_field_default_field_bases() {
         'breastfeeding' => 'Breastfeeding',
         'immunization' => 'Immunization',
         'hygiene' => 'Hygiene',
+        'positive-hiv' => 'Positive HIV',
+        'safer-sex-hiv' => 'Safer sex HIV',
+        'partner-testing' => 'Partner testing',
+        'nausea-vomiting' => 'Nausea and Vomiting',
+        'leg-cramps' => 'Leg Cramps',
+        'low-back-pain' => 'Lower Back Pain',
+        'constipation' => 'Constipation',
+        'heartburn' => 'Heartburn',
+        'varicose-veins' => 'Varicose Veins',
+        'leg-pain-redness' => 'Leg Pain Redness',
+        'pelvic-pain' => 'Pelvic Pain',
+        'safer-sex' => 'Safer sex',
+        'mental-health' => 'Mental Health',
+        'early-mastitis-engorgment' => 'Early Mastitis or Engorgment',
+        'mastitis' => 'Mastitis',
+        'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
+        'diabetes' => 'Diabetes',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1575,6 +1964,61 @@ function hedley_activity_field_default_field_bases() {
     'settings' => array(),
     'translatable' => 0,
     'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_stunting_level'.
+  $field_bases['field_stunting_level'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_stunting_level',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'green' => 'Green',
+        'yellow' => 'Yellow',
+        'red' => 'Red',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_syphilis_treatment'.
+  $field_bases['field_syphilis_treatment'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_types' => array(),
+    'field_name' => 'field_syphilis_treatment',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'still-taking' => 'Still taking medicine',
+        'missed-doses' => 'Missed any doses',
+        'adverse-events' => 'Experienced adverse events',
+        'adverse-events-hospitalization' => 'Experienced adverse events - nurse referred to hospital',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
   );
 
   // Exported field_base: 'field_sys'.

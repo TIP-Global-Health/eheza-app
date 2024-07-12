@@ -14,7 +14,7 @@ class RoboFile extends Tasks {
    * You need to fill this information for Robo to know what's the name of your
    * site.
    */
-  const PANTHEON_NAME = 'ihangane';
+  const PANTHEON_NAME = 'eheza-app';
 
   /**
    * Deploy to Pantheon.
@@ -26,10 +26,15 @@ class RoboFile extends Tasks {
    */
   public function deployPantheon($branchName = 'master') {
     if (empty(self::PANTHEON_NAME)) {
-      throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file. so it will know what is the name of your site.');
+      throw new Exception('You need to fill the "PANTHEON_NAME" const in the Robo file, so it will know what is the name of your site.');
     }
 
-    $pantheonDirectory = '.pantheon';
+    $site = getenv('EHEZA_SITE');
+    if (!$site) {
+      throw new Exception('Please specify EHEZA_SITE in your DDEV local config, so it will be possible to resolve pantheon directory.');
+    }
+
+    $pantheonDirectory = '.pantheon-' . $site;
 
     $result = $this
       ->taskExec('git status -s -uno')
@@ -71,10 +76,11 @@ class RoboFile extends Tasks {
       '.idea',
       '.pantheon',
       'sites/default',
-      'sites/all/vendor',
       'pantheon.yml',
       'pantheon.upstream.yml',
       'client',
+      'scalability-test',
+      'infrastructure_setup',
     ];
 
     $rsyncExcludeString = '--exclude=' . implode(' --exclude=', $rsyncExclude);
@@ -144,7 +150,13 @@ class RoboFile extends Tasks {
    * @throws \Robo\Exception\TaskException
    */
   public function deployPantheonSync(string $env = 'test', bool $doDeploy = TRUE) {
-    $pantheonName = self::PANTHEON_NAME;
+    if (getenv('PANTHEON_NAME')) {
+      $pantheonName = getenv('PANTHEON_NAME');
+    }
+    else {
+      $pantheonName = self::PANTHEON_NAME;
+    }
+
     $pantheonTerminusEnvironment = $pantheonName . '.' . $env;
 
     $task = $this->taskExecStack();
@@ -394,7 +406,7 @@ class RoboFile extends Tasks {
     $this->_exec("cd /var/www/html/server/www && drush scr profiles/hedley/modules/custom/hedley_admin/scripts/generate-demographics-report.php --limit_date=$limit_date --region=$region");
   }
 
-/**
+  /**
    * Generates the demographics report.
    */
   public function reportDemographicsHc($limit_date = NULL, $region = NULL) {
