@@ -2,6 +2,8 @@
 
 /**
  * @file
+ * Updates created field for nodes migrated into Person CT.
+ *
  * When Child and mother CT where migrated into to Person CT, we lost
  * original creation date. This script restores original 'created' value.
  *
