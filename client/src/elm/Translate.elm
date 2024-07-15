@@ -3021,12 +3021,12 @@ translationSet trans =
 
         AdoptionSurveyProgressImproving ->
             { english = "Congratulations; you've improved."
-            , kinyarwanda = Just "Wabikoze neza, Komereza aho,"
+            , kinyarwanda = Just "Wabikoze neza, Komereza aho."
             , kirundi = Nothing
             }
 
         AdoptionSurveyProgressNotImproving ->
-            { english = "You slid back compared to your last performance"
+            { english = "You slid back compared to your last performance."
             , kinyarwanda = Just "Wasubiye inyuma ugereranyije n'ubushize."
             , kirundi = Nothing
             }

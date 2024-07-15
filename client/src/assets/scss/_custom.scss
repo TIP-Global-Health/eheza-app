@@ -1392,11 +1392,6 @@ input::placeholder {
         text-align: center;
         text-transform: uppercase;
 
-        .summary {
-          text-align: left;
-          font-size: 25px;
-        }
-
         .message {
           display: flex;
           position: relative;
@@ -1408,6 +1403,10 @@ input::placeholder {
             margin-left: auto;
             right: 0;
           }
+        }
+        .summary {
+          text-align: left;
+          font-size: 25px;
         }
       }
 
