@@ -24094,7 +24094,7 @@ translateActivePage page =
                     , kirundi = Just "Igihande c'ubutumwa"
                     }
 
-                GuideMessagePage ->
+                MessagingGuide ->
                     translationSet GuideMessage
 
                 WellbeingPage ->

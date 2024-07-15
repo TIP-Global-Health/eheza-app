@@ -42,7 +42,6 @@ import Pages.EducationSession.Model
 import Pages.EducationSession.View
 import Pages.GlobalCaseManagement.View
 import Pages.GroupEncounterTypes.View
-import Pages.GuideMessage.View
 import Pages.HIV.Activity.Model
 import Pages.HIV.Activity.View
 import Pages.HIV.Encounter.Model
@@ -56,6 +55,7 @@ import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MessagingCenter.Model
 import Pages.MessagingCenter.View
+import Pages.MessagingGuide.View
 import Pages.MyAccount.View
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.View
@@ -1086,21 +1086,12 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper configured.config model
 
-                    GuideMessagePage ->
+                    MessagingGuide ->
                         let
                             ( nurseId, nurse ) =
                                 loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
                         in
-                        Pages.GuideMessage.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
+                        Pages.MessagingGuide.View.view model.language
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper configured.config model
 

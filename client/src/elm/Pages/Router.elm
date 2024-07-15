@@ -379,8 +379,8 @@ pageToFragment current =
                 WellbeingPage ->
                     Just "wellbeing"
 
-                GuideMessagePage ->
-                    Just "guide"
+                MessagingGuide ->
+                    Just "messaging-guide"
 
                 StockManagementPage ->
                     Just "stock-management"
@@ -453,7 +453,7 @@ parser =
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
         , map (UserPage WellbeingPage) (s "wellbeing")
-        , map (UserPage GuideMessagePage) (s "guide")
+        , map (UserPage MessagingGuide) (s "messaging-guide")
         , map (UserPage StockManagementPage) (s "stock-management")
 
         -- `top` represents the page without any segements ... i.e. the root page.

@@ -47,7 +47,7 @@ view language currentTime nurseId nurse db model =
         guideMessageButton =
             button
                 [ class "ui primary button"
-                , onClick <| SetActivePage <| UserPage GuideMessagePage
+                , onClick <| SetActivePage <| UserPage MessagingGuide
                 ]
                 [ span [ class "text" ] [ text <| translate language Translate.GuideMessage ]
                 ]

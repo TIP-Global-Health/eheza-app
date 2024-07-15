@@ -466,7 +466,7 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
-            UserPage GuideMessagePage ->
+            UserPage MessagingGuide ->
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->

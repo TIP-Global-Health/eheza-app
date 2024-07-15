@@ -1,4 +1,4 @@
-module Pages.GuideMessage.View exposing (..)
+module Pages.MessagingGuide.View exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
@@ -14,8 +14,8 @@ import Time
 import Translate exposing (Language, translate, translateText)
 
 
-view : Language -> Time.Posix -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-view language currentTime nurseId nurse db model =
+view : Language -> Html Msg
+view language =
     let
         header =
             div [ class "ui basic head segment" ]
@@ -29,7 +29,7 @@ view language currentTime nurseId nurse db model =
                     [ span [ class "icon-back" ] [] ]
                 ]
     in
-    div [ class "page-activity guideMessage" ]
+    div [ class "page-activity messaging-guide" ]
         [ header
         , viewGuide language
         ]
