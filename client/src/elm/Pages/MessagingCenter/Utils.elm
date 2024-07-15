@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyType(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
@@ -116,14 +116,39 @@ resolveSurveyScoreDialogState nurseId surveyType score db =
 
         ResilienceSurveyAdoption ->
             let
-                -- Ordered from first to last.
-                -- Also, making sure we don't include current survey score
-                -- and there are up to 2 surveys (which should be the case,
-                -- as there can be up to 3 surveys filled, but verification is
-                -- required nevertheless).
+                surveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map Dict.values
+                        |> Maybe.withDefault []
+
+                adoptionSurveys =
+                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
+
+                sortedSurveys =
+                    List.sortWith (\survey1 survey2 -> Date.compare survey1.dateMeasured survey2.dateMeasured) adoptionSurveys
+
+                toScore answer =
+                    case answer of
+                        ResilienceSurveyQuestionOption0 ->
+                            1
+
+                        ResilienceSurveyQuestionOption1 ->
+                            2
+
+                        ResilienceSurveyQuestionOption2 ->
+                            3
+
+                        ResilienceSurveyQuestionOption3 ->
+                            4
+
+                        ResilienceSurveyQuestionOption4 ->
+                            5
+
                 previousSurveysScores =
-                    -- @todo
-                    []
+                    sortedSurveys
+                        |> List.map (\survey -> survey.signs |> Dict.values |> List.map toScore |> List.sum)
+                        |> List.take 2
             in
             previousSurveysScores
                 ++ [ score ]

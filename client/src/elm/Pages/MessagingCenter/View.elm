@@ -142,7 +142,7 @@ view language currentTime nurseId nurse db model =
         [ header
         , content
         , viewModal <|
-            surveyScoreDialog language nurseId db model.surveyScoreDialogState
+            surveyScoreDialog language model.surveyScoreDialogState
         ]
 
 
@@ -369,67 +369,12 @@ viewAdoptionSurvey language currentDate nurseId form =
 
 surveyScoreDialog :
     Language
-    -> NurseId
-    -> ModelIndexedDb
     -> Maybe SurveyScoreDialogState
     -> Maybe (Html Msg)
-surveyScoreDialog language nurseId db =
+surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
             let
-                getScore answer =
-                    case answer of
-                        ResilienceSurveyQuestionOption0 ->
-                            1
-
-                        ResilienceSurveyQuestionOption1 ->
-                            2
-
-                        ResilienceSurveyQuestionOption2 ->
-                            3
-
-                        ResilienceSurveyQuestionOption3 ->
-                            4
-
-                        ResilienceSurveyQuestionOption4 ->
-                            5
-
-                surveys =
-                    Dict.get nurseId db.resilienceSurveysByNurse
-                        |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.values
-                        |> Maybe.withDefault []
-
-                adoptionSurveys =
-                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
-
-                sortedSurveys =
-                    List.sortWith (\survey1 survey2 -> Date.compare survey1.dateMeasured survey2.dateMeasured) adoptionSurveys
-
-                survey1Score =
-                    case List.head sortedSurveys of
-                        Just survey ->
-                            Dict.values survey.signs
-                                |> List.map getScore
-                                |> List.sum
-
-                        Nothing ->
-                            0
-
-                survey2Score =
-                    case List.drop 1 sortedSurveys |> List.head of
-                        Just survey ->
-                            Dict.values survey.signs
-                                |> List.map getScore
-                                |> List.sum
-
-                        Nothing ->
-                            0
-
-                adoptionSurveyCount =
-                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
-                        |> List.length
-
                 ( scoreText, interpretationFunction, additionalMessage ) =
                     case dialogState of
                         QuarterlySurveyScore score ->
@@ -439,48 +384,45 @@ surveyScoreDialog language nurseId db =
                             )
 
                         AdoptionSurveyScore scores ->
-                            -- @todo : delete
-                            -- let
-                            --     message =
-                            --         if adoptionSurveyCount == 2 then
-                            --             if score > survey1Score then
-                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
-                            --
-                            --             else if score < survey1Score then
-                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
-                            --
-                            --             else
-                            --                 Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
-                            --
-                            --         else if adoptionSurveyCount == 3 then
-                            --             Just <|
-                            --                 ul [ class "summary" ]
-                            --                     [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore survey1Score)) ]
-                            --                     , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore survey2Score)) ]
-                            --                     ]
-                            --
-                            --         else
-                            --             Nothing
-                            -- in
-                            -- ( String.fromInt score ++ "/60"
-                            -- , Translate.AdoptionSurveyScoreInterpretation score
-                            -- , message
-                            -- )
                             case scores of
                                 [ first ] ->
-                                    -- @todo
-                                    ( "", Translate.EmptyString, Nothing )
+                                    ( String.fromInt first ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation first
+                                    , Nothing
+                                    )
 
                                 [ first, second ] ->
-                                    -- @todo
-                                    ( "", Translate.EmptyString, Nothing )
+                                    let
+                                        message =
+                                            if first < second then
+                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+
+                                            else if first > second then
+                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+
+                                            else
+                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                    in
+                                    ( String.fromInt second ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation second
+                                    , message
+                                    )
 
                                 [ first, second, third ] ->
-                                    -- @todo
-                                    ( "", Translate.EmptyString, Nothing )
+                                    let
+                                        message =
+                                            Just <|
+                                                ul [ class "summary" ]
+                                                    [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore first)) ]
+                                                    , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore second)) ]
+                                                    ]
+                                    in
+                                    ( String.fromInt third ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation third
+                                    , message
+                                    )
 
                                 _ ->
-                                    -- We shold never get here.
                                     ( "", Translate.EmptyString, Nothing )
 
                 topMessage =
@@ -495,7 +437,7 @@ surveyScoreDialog language nurseId db =
                             msg
 
                         Nothing ->
-                            emptyNode
+                            text ""
 
                 dialogContent =
                     div []
