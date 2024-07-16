@@ -14598,11 +14598,11 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 					var startDateInput = function () {
 						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness)) {
 							var dateSelectorConfig = function () {
-								var sixYearsAgo = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
+								var launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 								return {
 									close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-									dateDefault: $elm$core$Maybe$Just(sixYearsAgo),
-									dateFrom: sixYearsAgo,
+									dateDefault: $elm$core$Maybe$Just(launchDate),
+									dateFrom: launchDate,
 									dateTo: currentDate,
 									select: $author$project$Pages$Reports$Model$SetStartDate
 								};

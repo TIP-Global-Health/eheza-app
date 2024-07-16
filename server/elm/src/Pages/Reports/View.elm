@@ -81,14 +81,16 @@ viewReportsData language currentDate themePath data model =
                                 let
                                     dateSelectorConfig =
                                         let
-                                            sixYearsAgo =
+                                            -- The date system became live, and
+                                            -- first content was uploaded.
+                                            launchDate =
                                                 Date.fromCalendarDate 2018 Jan 1
                                         in
                                         { select = SetStartDate
                                         , close = SetStartDateSelectorState Nothing
-                                        , dateFrom = sixYearsAgo
+                                        , dateFrom = launchDate
                                         , dateTo = currentDate
-                                        , dateDefault = Just sixYearsAgo
+                                        , dateDefault = Just launchDate
                                         }
 
                                     dateForView =
