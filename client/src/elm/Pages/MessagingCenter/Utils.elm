@@ -12,6 +12,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
 import RemoteData
 import Time exposing (posixToMillis)
+import Utils.NominalDate exposing (sortByDate)
 
 
 quarterlySurveyQuestions : List ResilienceSurveyQuestion
@@ -38,6 +39,25 @@ adoptionSurveyQuestions =
     , ResilienceSurveyQuestion11
     , ResilienceSurveyQuestion12
     ]
+
+
+toScore : ResilienceSurveyQuestionOption -> Int
+toScore answer =
+    case answer of
+        ResilienceSurveyQuestionOption0 ->
+            1
+
+        ResilienceSurveyQuestionOption1 ->
+            2
+
+        ResilienceSurveyQuestionOption2 ->
+            3
+
+        ResilienceSurveyQuestionOption3 ->
+            4
+
+        ResilienceSurveyQuestionOption4 ->
+            5
 
 
 generateInboxMessages : NominalDate -> NominalDate -> Dict String ResilienceMessage -> Dict String ResilienceMessage
@@ -108,8 +128,8 @@ surveyQuestionsAnswered surveyType surveyForm =
     Dict.size surveyForm == List.length surveyQuestions
 
 
-resolveSurveyScoreDialogState : NurseId -> ResilienceSurveyType -> Int -> ModelIndexedDb -> SurveyScoreDialogState
-resolveSurveyScoreDialogState nurseId surveyType score db =
+resolveSurveyScoreDialogState : NominalDate -> NurseId -> ResilienceSurveyType -> Int -> ModelIndexedDb -> SurveyScoreDialogState
+resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
     case surveyType of
         ResilienceSurveyQuarterly ->
             QuarterlySurveyScore score
@@ -121,34 +141,28 @@ resolveSurveyScoreDialogState nurseId surveyType score db =
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map Dict.values
                         |> Maybe.withDefault []
+                        |> List.filter (\survey -> survey.dateMeasured /= currentDate)
+                        |> List.filter (.surveyType >> (==) ResilienceSurveyAdoption)
 
-                adoptionSurveys =
-                    List.filter (\survey -> survey.surveyType == ResilienceSurveyAdoption) surveys
+                uniqueSurveys =
+                    List.foldl
+                        (\survey acc ->
+                            if List.any (\s -> s.dateMeasured == survey.dateMeasured) acc then
+                                acc
+
+                            else
+                                survey :: acc
+                        )
+                        []
+                        surveys
 
                 sortedSurveys =
-                    List.sortWith (\survey1 survey2 -> Date.compare survey1.dateMeasured survey2.dateMeasured) adoptionSurveys
-
-                toScore answer =
-                    case answer of
-                        ResilienceSurveyQuestionOption0 ->
-                            1
-
-                        ResilienceSurveyQuestionOption1 ->
-                            2
-
-                        ResilienceSurveyQuestionOption2 ->
-                            3
-
-                        ResilienceSurveyQuestionOption3 ->
-                            4
-
-                        ResilienceSurveyQuestionOption4 ->
-                            5
+                    List.sortWith (sortByDate .dateMeasured) uniqueSurveys
 
                 previousSurveysScores =
                     sortedSurveys
-                        |> List.map (\survey -> survey.signs |> Dict.values |> List.map toScore |> List.sum)
                         |> List.take 2
+                        |> List.map (\survey -> survey.signs |> Dict.values |> List.map toScore |> List.sum)
             in
             previousSurveysScores
                 ++ [ score ]

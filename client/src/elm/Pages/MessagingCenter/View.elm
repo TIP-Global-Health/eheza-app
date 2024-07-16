@@ -393,19 +393,19 @@ surveyScoreDialog language =
 
                                 [ first, second ] ->
                                     let
-                                        message =
+                                        messageContent =
                                             if first < second then
-                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
 
                                             else if first > second then
-                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
 
                                             else
-                                                Just <| p [ class "message" ] [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
                                     in
                                     ( String.fromInt second ++ "/60"
                                     , Translate.AdoptionSurveyScoreInterpretation second
-                                    , message
+                                    , Just <| p [ class "message" ] messageContent
                                     )
 
                                 [ first, second, third ] ->
@@ -425,29 +425,26 @@ surveyScoreDialog language =
                                 _ ->
                                     ( "", Translate.EmptyString, Nothing )
 
-                topMessage =
-                    p [ class "score" ] [ text scoreText ]
-
                 bottomMessage =
-                    p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
-
-                additionalMessageElement =
-                    case additionalMessage of
-                        Just msg ->
-                            msg
-
-                        Nothing ->
-                            text ""
-
-                dialogContent =
-                    div []
-                        [ topMessage
-                        , bottomMessage
-                        , additionalMessageElement
-                        ]
+                    let
+                        interpretation =
+                            p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    in
+                    Maybe.map
+                        (\message ->
+                            div []
+                                [ interpretation
+                                , message
+                                ]
+                        )
+                        additionalMessage
+                        |> Maybe.withDefault interpretation
 
                 dialogData =
-                    ( dialogContent, div [] [], SetSurveyScoreDialogState Nothing )
+                    ( p [ class "score" ] [ text scoreText ]
+                    , bottomMessage
+                    , SetSurveyScoreDialogState Nothing
+                    )
             in
             customPopup language False Translate.Continue "survey-score-popup blue" dialogData
         )

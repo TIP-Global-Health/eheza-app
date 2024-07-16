@@ -19,13 +19,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils
-    exposing
-        ( adoptionSurveyQuestions
-        , quarterlySurveyQuestions
-        , resolveSurveyScoreDialogState
-        , surveyQuestionsAnswered
-        )
+import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyQuestionsAnswered, toScore)
 import Time
 import Time.Extra
 
@@ -188,31 +182,14 @@ update currentTime currentDate db msg model =
 
                             surveyScore =
                                 Dict.values model.surveyForm
-                                    |> List.map
-                                        (\answer ->
-                                            case answer of
-                                                ResilienceSurveyQuestionOption0 ->
-                                                    1
-
-                                                ResilienceSurveyQuestionOption1 ->
-                                                    2
-
-                                                ResilienceSurveyQuestionOption2 ->
-                                                    3
-
-                                                ResilienceSurveyQuestionOption3 ->
-                                                    4
-
-                                                ResilienceSurveyQuestionOption4 ->
-                                                    5
-                                        )
+                                    |> List.map toScore
                                     |> List.sum
                         in
                         ( [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey
                                 |> Backend.Model.MsgResilienceSurvey nurseId
                                 |> App.Model.MsgIndexedDb
                           ]
-                        , [ resolveSurveyScoreDialogState nurseId surveyType surveyScore db
+                        , [ resolveSurveyScoreDialogState currentDate nurseId surveyType surveyScore db
                                 |> Just
                                 |> SetSurveyScoreDialogState
                           ]
