@@ -1087,12 +1087,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> flexPageWrapper configured.config model
 
                     MessagingGuide ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-                        in
                         Pages.MessagingGuide.View.view model.language
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->

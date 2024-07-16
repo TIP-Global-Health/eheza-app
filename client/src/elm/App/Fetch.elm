@@ -467,17 +467,7 @@ fetch model =
                     |> Maybe.withDefault []
 
             UserPage MessagingGuide ->
-                getLoggedInData model
-                    |> Maybe.map
-                        (\( _, loggedIn ) ->
-                            let
-                                nurseId =
-                                    Tuple.first loggedIn.nurse
-                            in
-                            Pages.MessagingCenter.Fetch.fetch currentDate nurseId model.indexedDb
-                                |> List.map MsgIndexedDb
-                        )
-                    |> Maybe.withDefault []
+                []
 
             UserPage StockManagementPage ->
                 getLoggedInData model

@@ -1,20 +1,14 @@
 module Pages.MessagingGuide.View exposing (..)
 
-import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb)
-import Backend.Nurse.Model exposing (Nurse)
-import Gizra.NominalDate exposing (fromLocalDateTime)
+import App.Model exposing (Msg(..))
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
-import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Time
 import Translate exposing (Language, translate, translateText)
 
 
-view : Language -> Html Msg
+view : Language -> Html App.Model.Msg
 view language =
     let
         header =
@@ -24,7 +18,7 @@ view language =
                     ]
                 , span
                     [ class "link-back"
-                    , onClick <| SetActivePage <| UserPage WellbeingPage
+                    , onClick <| App.Model.SetActivePage <| UserPage WellbeingPage
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
@@ -35,7 +29,7 @@ view language =
         ]
 
 
-viewGuide : Language -> Html Msg
+viewGuide : Language -> Html App.Model.Msg
 viewGuide language =
     div [ class "guide" ]
         [ p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection1Title ]
