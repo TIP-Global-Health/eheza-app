@@ -204,6 +204,7 @@ type UserPage
     | PatientRecordPage PatientRecordInitiator PersonId
     | MessagingCenterPage
     | WellbeingPage
+    | MessagingGuide
     | StockManagementPage
 
 

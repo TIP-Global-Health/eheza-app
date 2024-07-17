@@ -496,9 +496,6 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                         |> List.map viewMessage
             in
             case model.activeTab of
-                TabGuide ->
-                    viewGuide language nurse
-
                 TabUnread ->
                     List.map viewMessage unread
 
@@ -536,8 +533,7 @@ viewTabs : Language -> Model -> Html Msg
 viewTabs language model =
     let
         allTabs =
-            [ TabGuide
-            , TabUnread
+            [ TabUnread
             , TabFavorites
             , TabGrowth
             , TabConnecting
@@ -700,57 +696,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ]
             body
         ]
-
-
-viewGuide : Language -> Nurse -> List (Html Msg)
-viewGuide language nurse =
-    [ div [ class "guide" ]
-        [ p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection1Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet2 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection2Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection3Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
-            ]
-        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection3Note ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection4Title ]
-        , p [] [ text <| translate language Translate.ResilienceGuideSection4Text ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection6Bullet4
-                , ul []
-                    [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet5 ]
-                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet6 ]
-                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet7 ]
-                    ]
-                ]
-            ]
-        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection6Note ]
-        ]
-    ]
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )

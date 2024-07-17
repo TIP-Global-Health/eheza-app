@@ -466,6 +466,9 @@ fetch model =
                         )
                     |> Maybe.withDefault []
 
+            UserPage MessagingGuide ->
+                []
+
             UserPage StockManagementPage ->
                 getLoggedInData model
                     |> Maybe.map
