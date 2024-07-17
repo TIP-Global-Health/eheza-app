@@ -138,8 +138,10 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
                 surveys =
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
-                        -- Filter out surveys created today (currentDate) as they may not be fully processed yet.
-                        -- This ensures that the survey just saved doesn't cause duplicates in the dialog.
+                        -- This command is executed when new survey is saved.
+                        -- After save is completed, new survey will appear at db.resilienceSurveysByNurse.
+                        -- We can't be sure if it's there, when we display the dialog.
+                        -- Therefore, we filter out a survey, if it was created today.
                         |> Maybe.map
                             (Dict.values
                                 >> List.filter
@@ -151,6 +153,9 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
                         |> Maybe.withDefault []
 
                 uniqueSortedSurveys =
+                    -- In our system, sometimes we see that measurements are saved more than once.
+                    -- Therefore, we make sure taht take surveys we take got a unique dateMeasured.
+                    -- Use List.foldl.
                     List.foldl
                         (\survey acc ->
                             Dict.insert survey.dateMeasured survey acc
