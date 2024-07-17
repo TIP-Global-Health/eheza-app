@@ -19,7 +19,7 @@ import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
-import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyQuestionsAnswered, toScore)
+import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyAnswersToScore, surveyQuestionsAnswered)
 import Time
 import Time.Extra
 
@@ -182,7 +182,7 @@ update currentTime currentDate db msg model =
 
                             surveyScore =
                                 Dict.values model.surveyForm
-                                    |> List.map toScore
+                                    |> List.map surveyAnswersToScore
                                     |> List.sum
                         in
                         ( [ Backend.ResilienceSurvey.Model.CreateResilienceSurvey survey

@@ -7,7 +7,6 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
-import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
 import RemoteData
@@ -41,8 +40,8 @@ adoptionSurveyQuestions =
     ]
 
 
-toScore : ResilienceSurveyQuestionOption -> Int
-toScore answer =
+surveyAnswersToScore : ResilienceSurveyQuestionOption -> Int
+surveyAnswersToScore answer =
     case answer of
         ResilienceSurveyQuestionOption0 ->
             1
@@ -140,29 +139,24 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
                         |> Maybe.map Dict.values
+                        -- Filter out surveys created today (currentDate) as they may not be fully processed yet.
+                        -- This ensures that the survey just saved doesn't cause duplicates in the dialog.
+                        |> Maybe.map (List.filter (\survey -> survey.dateMeasured /= currentDate && survey.surveyType == ResilienceSurveyAdoption))
                         |> Maybe.withDefault []
-                        |> List.filter (\survey -> survey.dateMeasured /= currentDate)
-                        |> List.filter (.surveyType >> (==) ResilienceSurveyAdoption)
 
-                uniqueSurveys =
+                uniqueSortedSurveys =
                     List.foldl
                         (\survey acc ->
-                            if List.any (\s -> s.dateMeasured == survey.dateMeasured) acc then
-                                acc
-
-                            else
-                                survey :: acc
+                            Dict.insert survey.dateMeasured survey acc
                         )
-                        []
+                        Dict.empty
                         surveys
-
-                sortedSurveys =
-                    List.sortWith (sortByDate .dateMeasured) uniqueSurveys
+                        |> Dict.values
+                        |> List.sortWith (sortByDate .dateMeasured)
 
                 previousSurveysScores =
-                    sortedSurveys
-                        |> List.take 2
-                        |> List.map (\survey -> survey.signs |> Dict.values |> List.map toScore |> List.sum)
+                    List.take 2 uniqueSortedSurveys
+                        |> List.map (.signs >> Dict.values >> List.map surveyAnswersToScore >> List.sum)
             in
             previousSurveysScores
                 ++ [ score ]
