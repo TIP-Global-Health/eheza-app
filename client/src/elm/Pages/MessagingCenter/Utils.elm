@@ -140,7 +140,14 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
                         |> Maybe.andThen RemoteData.toMaybe
                         -- Filter out surveys created today (currentDate) as they may not be fully processed yet.
                         -- This ensures that the survey just saved doesn't cause duplicates in the dialog.
-                        |> Maybe.map (Dict.values >> List.filter (\survey -> survey.dateMeasured /= currentDate && survey.surveyType == ResilienceSurveyAdoption))
+                        |> Maybe.map
+                            (Dict.values
+                                >> List.filter
+                                    (\survey ->
+                                        (survey.dateMeasured /= currentDate)
+                                            && (survey.surveyType == ResilienceSurveyAdoption)
+                                    )
+                            )
                         |> Maybe.withDefault []
 
                 uniqueSortedSurveys =
