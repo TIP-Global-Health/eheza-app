@@ -28,6 +28,7 @@ import Pages.Reports.Utils exposing (..)
 import Pages.Utils exposing (generateReportsHeaderImage, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
+import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
 
@@ -80,14 +81,16 @@ viewReportsData language currentDate themePath data model =
                                 let
                                     dateSelectorConfig =
                                         let
-                                            sixYearsAgo =
-                                                Date.add Years -6 currentDate
+                                            -- The date system became live, and
+                                            -- first content was uploaded.
+                                            launchDate =
+                                                Date.fromCalendarDate 2018 Jan 1
                                         in
                                         { select = SetStartDate
                                         , close = SetStartDateSelectorState Nothing
-                                        , dateFrom = sixYearsAgo
+                                        , dateFrom = launchDate
                                         , dateTo = currentDate
-                                        , dateDefault = Just sixYearsAgo
+                                        , dateDefault = Just launchDate
                                         }
 
                                     dateForView =
