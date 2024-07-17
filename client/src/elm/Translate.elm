@@ -387,7 +387,12 @@ type TranslationId
     | AdministeredMedicationQuestion
     | AdministeredOneOfAboveMedicinesQuestion
     | AddressInformation
+    | AdoptionSurveyBaselineScore Int
+    | AdoptionSurvey3MonthScore Int
     | AdoptionSurveyScoreInterpretation Int
+    | AdoptionSurveyProgressImproving
+    | AdoptionSurveyProgressNotImproving
+    | AdoptionSurveyProgressSame
     | AdverseEventSinglePlural Int
     | AfterEachLiquidStool
     | AgeWord
@@ -2983,6 +2988,18 @@ translationSet trans =
                 AcuteIllnessDangerSigns ->
                     translationSet DangerSigns
 
+        AdoptionSurveyBaselineScore score ->
+            { english = "Baseline Score: " ++ String.fromInt score ++ "/60"
+            , kinyarwanda = Just <| "Amanota wagize bwambere: " ++ String.fromInt score ++ "/60"
+            , kirundi = Nothing
+            }
+
+        AdoptionSurvey3MonthScore score ->
+            { english = "Second Survey Score: " ++ String.fromInt score ++ "/60"
+            , kinyarwanda = Just <| "Amanota y'isuzuma rya kabiri: " ++ String.fromInt score ++ "/60"
+            , kirundi = Nothing
+            }
+
         AdoptionSurveyScoreInterpretation score ->
             if score < 36 then
                 { english = "Low effort to adopt resilience activities: Please, learn and integrate resilience activities in your daily life"
@@ -3001,6 +3018,24 @@ translationSet trans =
                 , kinyarwanda = Just "Ufite umuco wo gukora ibikorwa bigufasha kumererwa neza. Komereza aho."
                 , kirundi = Nothing
                 }
+
+        AdoptionSurveyProgressImproving ->
+            { english = "Congratulations; you've improved."
+            , kinyarwanda = Just "Wabikoze neza, Komereza aho."
+            , kirundi = Nothing
+            }
+
+        AdoptionSurveyProgressNotImproving ->
+            { english = "You slid back compared to your last performance."
+            , kinyarwanda = Just "Wasubiye inyuma ugereranyije n'ubushize."
+            , kirundi = Nothing
+            }
+
+        AdoptionSurveyProgressSame ->
+            { english = "You remained in the same category."
+            , kinyarwanda = Just "Wagumye mu cyiciro kimwe."
+            , kirundi = Nothing
+            }
 
         AdverseEventSinglePlural val ->
             if val == 1 then

@@ -6,12 +6,12 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyType(..))
-import Date exposing (Unit(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
 import RemoteData
 import Time exposing (posixToMillis)
+import Utils.NominalDate exposing (sortByDate)
 
 
 quarterlySurveyQuestions : List ResilienceSurveyQuestion
@@ -38,6 +38,25 @@ adoptionSurveyQuestions =
     , ResilienceSurveyQuestion11
     , ResilienceSurveyQuestion12
     ]
+
+
+surveyAnswerToScore : ResilienceSurveyQuestionOption -> Int
+surveyAnswerToScore answer =
+    case answer of
+        ResilienceSurveyQuestionOption0 ->
+            1
+
+        ResilienceSurveyQuestionOption1 ->
+            2
+
+        ResilienceSurveyQuestionOption2 ->
+            3
+
+        ResilienceSurveyQuestionOption3 ->
+            4
+
+        ResilienceSurveyQuestionOption4 ->
+            5
 
 
 generateInboxMessages : NominalDate -> NominalDate -> Dict String ResilienceMessage -> Dict String ResilienceMessage
@@ -108,11 +127,43 @@ surveyQuestionsAnswered surveyType surveyForm =
     Dict.size surveyForm == List.length surveyQuestions
 
 
-resolveSurveyScoreDialogState : ResilienceSurveyType -> Int -> SurveyScoreDialogState
-resolveSurveyScoreDialogState surveyType score =
+resolveSurveyScoreDialogState : NominalDate -> NurseId -> ResilienceSurveyType -> Int -> ModelIndexedDb -> SurveyScoreDialogState
+resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
     case surveyType of
         ResilienceSurveyQuarterly ->
             QuarterlySurveyScore score
 
         ResilienceSurveyAdoption ->
-            AdoptionSurveyScore score
+            let
+                surveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        -- Filter out surveys created today (currentDate) as they may not be fully processed yet.
+                        -- This ensures that the survey just saved doesn't cause duplicates in the dialog.
+                        |> Maybe.map
+                            (Dict.values
+                                >> List.filter
+                                    (\survey ->
+                                        (survey.dateMeasured /= currentDate)
+                                            && (survey.surveyType == ResilienceSurveyAdoption)
+                                    )
+                            )
+                        |> Maybe.withDefault []
+
+                uniqueSortedSurveys =
+                    List.foldl
+                        (\survey acc ->
+                            Dict.insert survey.dateMeasured survey acc
+                        )
+                        Dict.empty
+                        surveys
+                        |> Dict.values
+                        |> List.sortWith (sortByDate .dateMeasured)
+
+                previousSurveysScores =
+                    List.take 2 uniqueSortedSurveys
+                        |> List.map (.signs >> Dict.values >> List.map surveyAnswerToScore >> List.sum)
+            in
+            previousSurveysScores
+                ++ [ score ]
+                |> AdoptionSurveyScore
