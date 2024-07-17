@@ -40,8 +40,8 @@ adoptionSurveyQuestions =
     ]
 
 
-surveyAnswersToScore : ResilienceSurveyQuestionOption -> Int
-surveyAnswersToScore answer =
+surveyAnswerToScore : ResilienceSurveyQuestionOption -> Int
+surveyAnswerToScore answer =
     case answer of
         ResilienceSurveyQuestionOption0 ->
             1
@@ -138,10 +138,9 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
                 surveys =
                     Dict.get nurseId db.resilienceSurveysByNurse
                         |> Maybe.andThen RemoteData.toMaybe
-                        |> Maybe.map Dict.values
                         -- Filter out surveys created today (currentDate) as they may not be fully processed yet.
                         -- This ensures that the survey just saved doesn't cause duplicates in the dialog.
-                        |> Maybe.map (List.filter (\survey -> survey.dateMeasured /= currentDate && survey.surveyType == ResilienceSurveyAdoption))
+                        |> Maybe.map (Dict.values >> List.filter (\survey -> survey.dateMeasured /= currentDate && survey.surveyType == ResilienceSurveyAdoption))
                         |> Maybe.withDefault []
 
                 uniqueSortedSurveys =
@@ -156,7 +155,7 @@ resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
 
                 previousSurveysScores =
                     List.take 2 uniqueSortedSurveys
-                        |> List.map (.signs >> Dict.values >> List.map surveyAnswersToScore >> List.sum)
+                        |> List.map (.signs >> Dict.values >> List.map surveyAnswerToScore >> List.sum)
             in
             previousSurveysScores
                 ++ [ score ]
