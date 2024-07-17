@@ -1362,23 +1362,28 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             generateDangerSignsListForNurse assembled
 
         emergencyDiagnoses =
-            List.filter
-                (matchEmergencyReferalPrenatalDiagnosis
-                    egaInWeeks
-                    dangerSignsList
-                    assembled
-                )
-                emergencyReferralDiagnoses
-                |> EverySet.fromList
+            if assembled.encounter.encounterType == NursePostpartumEncounter then
+                -- There are not emergency diagnoses during Postpartum encounter.
+                EverySet.empty
+
+            else
+                List.filter
+                    (matchEmergencyReferalPrenatalDiagnosis
+                        egaInWeeks
+                        dangerSignsList
+                        assembled
+                    )
+                    emergencyReferralDiagnoses
+                    |> EverySet.fromList
 
         diagnosesByLabResultsAndExamination =
-            List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
-                labResultsAndExaminationDiagnoses
+            resolveLabResultsAndExaminationDiagnoses assembled.encounter.encounterType
+                |> List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 |> EverySet.fromList
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
-                symptomsDiagnoses
+            resolveSymptomsDiagnoses assembled.encounter.encounterType
+                |> List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
                 |> EverySet.fromList
 
         diagnosesByMentalHealth =
@@ -2682,85 +2687,95 @@ emergencyObstetricCareServicesDiagnoses =
     ]
 
 
-labResultsAndExaminationDiagnoses : List PrenatalDiagnosis
-labResultsAndExaminationDiagnoses =
-    [ DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisGestationalHypertensionAfterRecheck
-    , DiagnosisModeratePreeclampsiaInitialPhase
-    , DiagnosisModeratePreeclampsiaRecurrentPhase
-    , DiagnosisSeverePreeclampsiaInitialPhase
-    , DiagnosisSeverePreeclampsiaRecurrentPhase
-    , DiagnosisHIVInitialPhase
-    , DiagnosisHIVRecurrentPhase
-    , DiagnosisHIVDetectableViralLoadInitialPhase
-    , DiagnosisHIVDetectableViralLoadRecurrentPhase
-    , DiagnosisDiscordantPartnershipInitialPhase
-    , DiagnosisDiscordantPartnershipRecurrentPhase
-    , DiagnosisSyphilisInitialPhase
-    , DiagnosisSyphilisRecurrentPhase
-    , DiagnosisSyphilisWithComplicationsInitialPhase
-    , DiagnosisSyphilisWithComplicationsRecurrentPhase
-    , DiagnosisNeurosyphilisInitialPhase
-    , DiagnosisNeurosyphilisRecurrentPhase
-    , DiagnosisHepatitisBInitialPhase
-    , DiagnosisHepatitisBRecurrentPhase
-    , DiagnosisMalariaInitialPhase
-    , DiagnosisMalariaRecurrentPhase
-    , DiagnosisMalariaMedicatedContinuedInitialPhase
-    , DiagnosisMalariaMedicatedContinuedRecurrentPhase
-    , DiagnosisMalariaWithAnemiaInitialPhase
-    , DiagnosisMalariaWithAnemiaRecurrentPhase
-    , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
-    , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
-    , DiagnosisMalariaWithSevereAnemiaInitialPhase
-    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-    , DiagnosisModerateAnemiaInitialPhase
-    , DiagnosisModerateAnemiaRecurrentPhase
-    , DiagnosisSevereAnemiaInitialPhase
-    , DiagnosisSevereAnemiaRecurrentPhase
-    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
-    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
-    , DiagnosisRhesusNegativeInitialPhase
-    , DiagnosisRhesusNegativeRecurrentPhase
-    , DiagnosisPostpartumEarlyMastitisOrEngorgment
-    , DiagnosisPostpartumMastitis
-    , DiagnosisPostpartumInfection
-    , DiagnosisPostpartumExcessiveBleeding
-    ]
+resolveLabResultsAndExaminationDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
+resolveLabResultsAndExaminationDiagnoses encounterType =
+    case encounterType of
+        NursePostpartumEncounter ->
+            [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+            , DiagnosisPostpartumMastitis
+            , DiagnosisPostpartumInfection
+            , DiagnosisPostpartumExcessiveBleeding
+            ]
+
+        _ ->
+            [ DiagnosisChronicHypertensionImmediate
+            , DiagnosisChronicHypertensionAfterRecheck
+            , DiagnosisGestationalHypertensionImmediate
+            , DiagnosisGestationalHypertensionAfterRecheck
+            , DiagnosisModeratePreeclampsiaInitialPhase
+            , DiagnosisModeratePreeclampsiaRecurrentPhase
+            , DiagnosisSeverePreeclampsiaInitialPhase
+            , DiagnosisSeverePreeclampsiaRecurrentPhase
+            , DiagnosisHIVInitialPhase
+            , DiagnosisHIVRecurrentPhase
+            , DiagnosisHIVDetectableViralLoadInitialPhase
+            , DiagnosisHIVDetectableViralLoadRecurrentPhase
+            , DiagnosisDiscordantPartnershipInitialPhase
+            , DiagnosisDiscordantPartnershipRecurrentPhase
+            , DiagnosisSyphilisInitialPhase
+            , DiagnosisSyphilisRecurrentPhase
+            , DiagnosisSyphilisWithComplicationsInitialPhase
+            , DiagnosisSyphilisWithComplicationsRecurrentPhase
+            , DiagnosisNeurosyphilisInitialPhase
+            , DiagnosisNeurosyphilisRecurrentPhase
+            , DiagnosisHepatitisBInitialPhase
+            , DiagnosisHepatitisBRecurrentPhase
+            , DiagnosisMalariaInitialPhase
+            , DiagnosisMalariaRecurrentPhase
+            , DiagnosisMalariaMedicatedContinuedInitialPhase
+            , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+            , DiagnosisMalariaWithAnemiaInitialPhase
+            , DiagnosisMalariaWithAnemiaRecurrentPhase
+            , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+            , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+            , DiagnosisModerateAnemiaInitialPhase
+            , DiagnosisModerateAnemiaRecurrentPhase
+            , DiagnosisSevereAnemiaInitialPhase
+            , DiagnosisSevereAnemiaRecurrentPhase
+            , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+            , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+            , DiagnosisRhesusNegativeInitialPhase
+            , DiagnosisRhesusNegativeRecurrentPhase
+            ]
 
 
-symptomsDiagnoses : List PrenatalDiagnosis
-symptomsDiagnoses =
-    [ DiagnosisHyperemesisGravidumBySymptoms
-    , DiagnosisSevereVomitingBySymptoms
-    , DiagnosisHeartburn
-    , DiagnosisHeartburnPersistent
-    , DiagnosisDeepVeinThrombosis
-    , DiagnosisPelvicPainIntense
-    , DiagnosisPelvicPainContinued
-    , DiagnosisUrinaryTractInfection
-    , DiagnosisUrinaryTractInfectionContinued
-    , DiagnosisPyelonephritis
-    , DiagnosisCandidiasis
-    , DiagnosisCandidiasisContinued
-    , DiagnosisGonorrhea
-    , DiagnosisGonorrheaContinued
-    , DiagnosisTrichomonasOrBacterialVaginosis
-    , DiagnosisTrichomonasOrBacterialVaginosisContinued
-    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
-    , DiagnosisPostpartumAbdominalPain
-    , DiagnosisPostpartumUrinaryIncontinence
-    , DiagnosisPostpartumHeadache
-    , DiagnosisPostpartumFatigue
-    , DiagnosisPostpartumFever
-    , DiagnosisPostpartumPerinealPainOrDischarge
-    ]
+resolveSymptomsDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
+resolveSymptomsDiagnoses encounterType =
+    case encounterType of
+        NursePostpartumEncounter ->
+            [ DiagnosisPostpartumAbdominalPain
+            , DiagnosisPostpartumUrinaryIncontinence
+            , DiagnosisPostpartumHeadache
+            , DiagnosisPostpartumFatigue
+            , DiagnosisPostpartumFever
+            , DiagnosisPostpartumPerinealPainOrDischarge
+            ]
+
+        _ ->
+            [ DiagnosisHyperemesisGravidumBySymptoms
+            , DiagnosisSevereVomitingBySymptoms
+            , DiagnosisHeartburn
+            , DiagnosisHeartburnPersistent
+            , DiagnosisDeepVeinThrombosis
+            , DiagnosisPelvicPainIntense
+            , DiagnosisPelvicPainContinued
+            , DiagnosisUrinaryTractInfection
+            , DiagnosisUrinaryTractInfectionContinued
+            , DiagnosisPyelonephritis
+            , DiagnosisCandidiasis
+            , DiagnosisCandidiasisContinued
+            , DiagnosisGonorrhea
+            , DiagnosisGonorrheaContinued
+            , DiagnosisTrichomonasOrBacterialVaginosis
+            , DiagnosisTrichomonasOrBacterialVaginosisContinued
+            , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+            ]
 
 
 mentalHealthDiagnoses : List PrenatalDiagnosis
