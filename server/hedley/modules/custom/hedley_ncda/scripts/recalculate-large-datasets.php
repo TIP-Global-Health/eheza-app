@@ -66,7 +66,8 @@ drush_print('All calculations completed!');
  */
 function create_or_update_results_data_node($scope, $province, $district) {
   $before = time();
-  hedley_ncda_create_or_update_results_data_node($scope, $province, $district);
+  $data = hedley_ncda_generate_results_data($province, $district, NULL, NULL, NULL);
+  hedley_reports_create_or_update_results_data_node($data, 'aggregated-ncda', $scope, $province, $district);
   $after = time();
   // Free up memory.
   drupal_static_reset();

@@ -899,6 +899,10 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
 /**
  * Generates data in scope and creates/updates Report Data node.
  *
+ * @param array $data
+ *   Data to write into file.
+ * @param string $report_variant
+ *   Type of report to load.
  * @param string $scope
  *   Scope of data to generate.
  * @param string|null $province
@@ -907,12 +911,11 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
  *   District name.
  * @param int|null $health_center
  *   Health center ID.
+ *
+ * @throws Exception
  */
-function hedley_reports_create_or_update_results_data_node($scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $timestamp = time();
-  $report_variant = 'statistical-query';
-  $data = hedley_reports_generate_results_data($province, $district, NULL, NULL, NULL, $health_center);
-  $data_file_id = hedley_reports_create_data_file($data, $timestamp);
+function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $data_file_id = hedley_reports_create_data_file($data);
   $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
@@ -1008,16 +1011,14 @@ function hedley_reports_load_results_data_node($report_variant, $scope, $provinc
  *
  * @param array $data
  *   Data to write into file.
- * @param int $timestamp
- *   Time when data was generated (set as part of file name).
  *
  * @return int
  *   Created file ID.
  */
-function hedley_reports_create_data_file(array $data, $timestamp) {
+function hedley_reports_create_data_file(array $data) {
   // Create a temporary file with the content.
   $file_content = json_encode($data);
-  $file_path = 'private://report-data-' . $timestamp . '.txt.gz';
+  $file_path = 'private://report-data-' . time() . '.txt.gz';
   $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
   // Compress the content and save it to a .gz file.
   $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);

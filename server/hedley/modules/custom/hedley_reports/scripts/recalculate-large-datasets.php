@@ -87,7 +87,8 @@ drush_print('All calculations completed!');
  */
 function create_or_update_results_data_node($scope, $province, $district, $health_center) {
   $before = time();
-  hedley_reports_create_or_update_results_data_node($scope, $province, $district, $health_center);
+  $data = hedley_reports_generate_results_data($province, $district, NULL, NULL, NULL, $health_center);
+  hedley_reports_create_or_update_results_data_node($data, 'statistical-query', $scope, $province, $district, $health_center);
   $after = time();
   // Free up memory.
   drupal_static_reset();
