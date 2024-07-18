@@ -1108,12 +1108,15 @@ function hedley_reports_generate_results_data_node_title($report_variant, $scope
     case 'province':
       $suffix = "Province $province";
       break;
+
     case 'district':
       $suffix = "District $district";
       break;
+
     case 'health-center':
       $suffix = "Health Center ID $health_center";
       break;
+
     default:
       $suffix = 'Glodal';
   }
