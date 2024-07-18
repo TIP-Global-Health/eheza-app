@@ -8606,7 +8606,7 @@ var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (cur
 				$elm$core$Maybe$Nothing,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'edd',
+					'edd_date',
 					$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
