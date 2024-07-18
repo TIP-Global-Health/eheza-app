@@ -6,23 +6,16 @@
  *
  * Stores results at 'Report Data' nodes.
  * Large datasets are:
- *   - Global.
- *   - Province.
  *   - District.
- *   - Health center.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-large-datasets.php.
+ *   profiles/hedley/modules/custom/hedley_ncda/scripts/recalculate-large-datasets.php.
  */
 
 if (!drupal_is_cli()) {
   // Prevent execution from browser.
   return;
 }
-
-drush_print("Running calculation for Global scope.");
-$duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
-drush_print("Calculation completed within $duration seconds.");
 
 // Resolving unique provinces as they appear at DB.
 $query = db_select('field_data_field_province', 'fp')
@@ -40,10 +33,6 @@ foreach ($provinces as $province) {
     continue;
   }
 
-  drush_print("Running calculation for Province scope. Province: $province.");
-  $duration = create_or_update_results_data_node('province', $province, NULL, NULL);
-  drush_print("Calculation completed within $duration seconds.");
-
   // Resolving unique districts for the province, as they appear at DB.
   $districts = hedley_reports_get_unique_districts_by_province($province);
   foreach ($districts as $district) {
@@ -52,17 +41,9 @@ foreach ($provinces as $province) {
       continue;
     }
     drush_print("Running calculation for District scope. Province: $province, District: $district.");
-    $duration = create_or_update_results_data_node('district', $province, $district, NULL);
+    $duration = create_or_update_results_data_node('district', $province, $district);
     drush_print("Calculation completed within $duration seconds.");
   }
-}
-
-// Resolving all health centers.
-$health_center_ids = hedley_health_center_get_all_health_centers_ids();
-foreach ($health_center_ids as $health_center_id) {
-  drush_print("Running calculation for Health center scope. Health center ID: $health_center_id.");
-  $duration = create_or_update_results_data_node('health-center', NULL, NULL, $health_center_id);
-  drush_print("Calculation completed within $duration seconds.");
 }
 
 drush_print('');
@@ -79,15 +60,13 @@ drush_print('All calculations completed!');
  *   The province for the report data.
  * @param string $district
  *   The district for the report data.
- * @param string $health_center
- *   The health center for the report data.
  *
  * @return int
  *   The time taken for the operation in seconds.
  */
-function create_or_update_results_data_node($scope, $province, $district, $health_center) {
+function create_or_update_results_data_node($scope, $province, $district) {
   $before = time();
-  hedley_reports_create_or_update_results_data_node($scope, $province, $district, $health_center);
+  hedley_ncda_create_or_update_results_data_node($scope, $province, $district);
   $after = time();
   // Free up memory.
   drupal_static_reset();

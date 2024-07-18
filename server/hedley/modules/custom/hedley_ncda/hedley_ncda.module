@@ -184,10 +184,10 @@ function hedley_ncda_aggregated_callback_menu() {
 /**
  * Callback for aggregated NCDA elm application of district.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -199,12 +199,12 @@ function hedley_ncda_aggregated_callback_district($province, $district) {
 /**
  * Callback for aggregated NCDA elm application of sector.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -216,14 +216,14 @@ function hedley_ncda_aggregated_callback_sector($province, $district, $sector) {
 /**
  * Callback for aggregated NCDA elm application of cell.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -235,16 +235,16 @@ function hedley_ncda_aggregated_callback_cell($province, $district, $sector, $ce
 /**
  * Callback for aggregated NCDA elm application of village.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
- * @param int $village
- *   The village ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -259,16 +259,16 @@ function hedley_ncda_aggregated_callback_village($province, $district, $sector, 
  * Based on input fields, determines administrative divisions for which
  * data is provided.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int|null $sector
- *   The sector ID (optional).
- * @param int|null $cell
- *   The cell ID (optional).
- * @param int|null $village
- *   The village ID (optional).
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name (optional).
+ * @param string|null $cell
+ *   Cell name (optional).
+ * @param string|null $village
+ *   Village name (optional).
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -294,7 +294,14 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-  $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
+
+  if ($data['entity_type'] == 'district') {
+    $data['results'] = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
+  }
+  else {
+    // For smaller data sets, we generate results on fly.
+    $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
+  }
 
   return hedley_general_build_elm_app('ncda-results', $data);
 }
@@ -302,16 +309,16 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
 /**
  * Generate aggregated NCDA data which is stored on person nodes.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
- * @param int $village
- *   The village ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
  *
  * @return array
  *   An array of generated data.
@@ -1158,4 +1165,57 @@ function hedley_ncda_resolve_immunization_bundles() {
 function hedley_ncda_query_exclude_set_alter(QueryAlterableInterface $query) {
   $query->leftJoin('field_data_field_ncda_data', 'fnd', 'node.nid = fnd.entity_id');
   $query->isNull('fnd.field_ncda_data_value');
+}
+
+/**
+ * Generates data in scope and creates/updates Report Data node.
+ *
+ * @param string $scope
+ *   Scope of data to generate.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ */
+function hedley_ncda_create_or_update_results_data_node($scope, $province, $district) {
+  $timestamp = time();
+  $report_variant = 'aggregated-ncda';
+  $data = hedley_ncda_generate_results_data($province, $district, NULL, NULL, NULL);
+  $data_file_id = hedley_reports_create_data_file($data, $timestamp);
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district);
+  if (!$node_id) {
+    // Create the Report Data node.
+    $node = new stdClass();
+    $node->type = 'report_data';
+    node_object_prepare($node);
+    $node->title = hedley_reports_generate_results_data_node_title($report_variant, $scope, $province, $district);
+    $node->uid = 1;
+    $node->status = NODE_PUBLISHED;
+    $node->language = LANGUAGE_NONE;
+    $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
+    $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
+    // Attach the file to the node's file field.
+    $node->field_data_file[LANGUAGE_NONE][0] = [
+      'fid' => $data_file_id,
+      'display' => 1,
+    ];
+    $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
+    $node->field_district[LANGUAGE_NONE][0]['value'] = $district;
+  }
+  else {
+    // Update the Report Data node.
+    $node = node_load($node_id);
+    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+    if ($old_file) {
+      // Delete the old file.
+      file_delete($old_file, TRUE);
+    }
+    // Attach new file.
+    $node->field_data_file[LANGUAGE_NONE][0] = [
+      'fid' => $data_file_id,
+      'display' => 1,
+    ];
+  }
+  // Save the node.
+  node_save($node);
 }

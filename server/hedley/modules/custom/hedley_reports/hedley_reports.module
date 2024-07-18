@@ -591,8 +591,8 @@ function hedley_reports_aggregated_callback_global() {
 /**
  * Callback for aggregated Reports elm application of province.
  *
- * @param int $province
- *   The province ID.
+ * @param string $province
+ *   Province name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -604,10 +604,10 @@ function hedley_reports_aggregated_callback_province($province) {
 /**
  * Callback for aggregated Reports elm application of district.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -619,12 +619,12 @@ function hedley_reports_aggregated_callback_district($province, $district) {
 /**
  * Callback for aggregated Reports elm application of sector.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -636,14 +636,14 @@ function hedley_reports_aggregated_callback_sector($province, $district, $sector
 /**
  * Callback for aggregated Reports elm application of cell.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -655,16 +655,16 @@ function hedley_reports_aggregated_callback_cell($province, $district, $sector, 
 /**
  * Callback for aggregated Reports elm application of village.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
- * @param int $village
- *   The village ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -677,7 +677,7 @@ function hedley_reports_aggregated_callback_village($province, $district, $secto
  * Callback for aggregated Reports elm application of health center.
  *
  * @param int $health_center
- *   The health center ID.
+ *   Health center ID.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -692,18 +692,18 @@ function hedley_reports_aggregated_callback_health_center($health_center) {
  * Based on input fields, determines administrative divisions for which
  * data is provided.
  *
- * @param int|null $province
- *   The province ID (optional).
- * @param int|null $district
- *   The district ID (optional).
- * @param int|null $sector
- *   The sector ID (optional).
- * @param int|null $cell
- *   The cell ID (optional).
- * @param int|null $village
- *   The village ID (optional).
+ * @param string|null $province
+ *   Province name (optional).
+ * @param string|null $district
+ *   District name (optional).
+ * @param string|null $sector
+ *   Sector name (optional).
+ * @param string|null $cell
+ *   Cell name (optional).
+ * @param string|null $village
+ *   Village name (optional).
  * @param int|null $health_center
- *   The health center ID (optional).
+ *   Health center ID (optional).
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -750,7 +750,7 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
     $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
   }
   else {
-    $data['results'] = hedley_reports_load_results_data($data['entity_type'], $province, $district, $health_center);
+    $data['results'] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -759,18 +759,18 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
 /**
  * Generate aggregated Reports data which is stored on person nodes.
  *
- * @param int|null $province
- *   The province ID.
- * @param int|null $district
- *   The district ID.
- * @param int|null $sector
- *   The sector ID.
- * @param int|null $cell
- *   The cell ID.
- * @param int|null $village
- *   The village ID.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
  * @param int|null $health_center
- *   The health center ID.
+ *   Health center ID.
  *
  * @return array
  *   An array of generated data.
@@ -853,20 +853,22 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
 /**
  * Loads data in scope, stored at Report Data node.
  *
+ * @param string $report_variant
+ *   Type of report to load.
  * @param string $scope
  *   Scope of data to load.
- * @param int|null $province
- *   The province ID.
- * @param int|null $district
- *   The district ID.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
  * @param int|null $health_center
- *   The health center ID.
+ *   Health center ID.
  *
  * @return array
  *   Stored data.
  */
-function hedley_reports_load_results_data($scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $node_id = hedley_reports_load_results_data_node($scope, $province, $district, $health_center);
+function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     return [];
   }
@@ -899,27 +901,29 @@ function hedley_reports_load_results_data($scope, $province = NULL, $district = 
  *
  * @param string $scope
  *   Scope of data to generate.
- * @param int|null $province
- *   The province ID.
- * @param int|null $district
- *   The district ID.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
  * @param int|null $health_center
- *   The health center ID.
+ *   Health center ID.
  */
 function hedley_reports_create_or_update_results_data_node($scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $timestamp = time();
+  $report_variant = 'statistical-query';
   $data = hedley_reports_generate_results_data($province, $district, NULL, NULL, NULL, $health_center);
   $data_file_id = hedley_reports_create_data_file($data, $timestamp);
-  $node_id = hedley_reports_load_results_data_node($scope, $province, $district, $health_center);
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
   if (!$node_id) {
     // Create the Report Data node.
     $node = new stdClass();
     $node->type = 'report_data';
     node_object_prepare($node);
-    $node->title = "Report Data $timestamp";
+    $node->title = hedley_reports_generate_results_data_node_title($report_variant, $scope, $province, $district, $health_center);
     $node->uid = 1;
     $node->status = NODE_PUBLISHED;
     $node->language = LANGUAGE_NONE;
+    $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
     $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
     // Attach the file to the node's file field.
     $node->field_data_file[LANGUAGE_NONE][0] = [
@@ -955,26 +959,29 @@ function hedley_reports_create_or_update_results_data_node($scope, $province = N
 }
 
 /**
- * Loads Report Data node which stores data defined at scope.
+ * Loads Report Data node of provided variant, storing data defined at scope.
  *
+ * @param string $report_variant
+ *   Type of report to load.
  * @param string $scope
- *   Scope of data to generate.
- * @param int|null $province
- *   The province ID.
- * @param int|null $district
- *   The district ID.
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
  * @param int|null $health_center
- *   The health center ID.
+ *   Health center ID.
  *
  * @return int|false
  *   Report Data node ID, or False, if not found.
  */
-function hedley_reports_load_results_data_node($scope, $province = NULL, $district = NULL, $health_center = NULL) {
+function hedley_reports_load_results_data_node($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
   $query = new EntityFieldQuery();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'report_data')
     ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_report_variant', 'value', $report_variant)
     ->fieldCondition('field_data_scope', 'value', $scope)
     // There can be only single node.
     ->range(0, 1);
@@ -1075,4 +1082,66 @@ function hedley_reports_ai_diagnosis_mapping() {
     'tuberculosis-suspect' => 'o',
     'none' => 'z',
   ];
+}
+
+/**
+ * Generates Report Data node title for provided variant and scope.
+ *
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return string
+ *   Report Data node title.
+ */
+function hedley_reports_generate_results_data_node_title($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $prefix = ucwords(str_replace("-", " ", $report_variant));
+
+  switch ($scope) {
+    case 'province':
+      $suffix = "Province $province";
+      break;
+    case 'district':
+      $suffix = "District $district";
+      break;
+    case 'health-center':
+      $suffix = "Health Center ID $health_center";
+      break;
+    default:
+      $suffix = 'Glodal';
+  }
+
+  return "$prefix report data - $suffix";
+}
+
+/**
+ * Retrieves all unique districts for a given province.
+ *
+ * @param string $province
+ *   The province for which to retrieve the unique districts.
+ *
+ * @return array
+ *   An array of unique districts for the specified province.
+ */
+function hedley_reports_get_unique_districts_by_province($province) {
+  $query = db_select('field_data_field_district', 'fd')
+    ->fields('fd', ['field_district_value'])
+    ->distinct(TRUE)
+    ->condition('fp.field_province_value', $province);
+  $query->join('field_data_field_province', 'fp', 'fd.entity_id = fp.entity_id');
+  $result = $query->execute();
+
+  $districts = [];
+  foreach ($result as $record) {
+    $districts[] = $record->field_district_value;
+  }
+
+  return $districts;
 }
