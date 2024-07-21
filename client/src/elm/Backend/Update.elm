@@ -137,6 +137,7 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.Tuberculosis.Encounter.Utils
 import Pages.WellChild.Activity.Utils
 import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Utils
@@ -2345,6 +2346,25 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             )
                             encounterId
                             |> Maybe.withDefault []
+
+                processTuberculosisRevisionAndNavigateToProgressReport encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        generateTuberculosisEncounterCompletedMsgs currentDate newModel encounterId_
+                                    )
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -3563,6 +3583,76 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         extraMsgs =
                             Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
                                 |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisDOTRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisFollowUpRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisMedicationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisReferralRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisSymptomReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisTreatmentReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -8351,3 +8441,26 @@ generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw d
             ( programTypeFilter, selectedVillage )
             (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
     }
+
+
+generateTuberculosisEncounterCompletedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> TuberculosisEncounterId
+    -> List App.Model.Msg
+generateTuberculosisEncounterCompletedMsgs currentDate after id =
+    Pages.Tuberculosis.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    ( _, pendingActivities ) =
+                        Pages.Tuberculosis.Encounter.Utils.partitionActivities currentDate assembled
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <| UserPage <| TuberculosisProgressReportPage id ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []

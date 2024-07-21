@@ -6,12 +6,15 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
+import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
+import Backend.TuberculosisActivity.Utils exposing (allActivities)
 import Date
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.Tuberculosis.Encounter.Model exposing (..)
 import Pages.Utils
     exposing
