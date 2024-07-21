@@ -2048,7 +2048,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processVitalsRevisionAndUpdateLabsResults participantId encounterId value =
+                processVitalsRevisionAndUpdatePrenatalLabsResults participantId encounterId value =
                     if downloadingContent then
                         ( model, [] )
 
@@ -2126,7 +2126,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
+                processPrenatalRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
                     if downloadingContent then
                         ( model, [] )
 
@@ -2789,7 +2789,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
-                            processVitalsRevisionAndUpdateLabsResults
+                            processVitalsRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 data.value
@@ -2805,7 +2805,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ MalariaPreventionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2815,7 +2815,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalHealthEducationRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2825,7 +2825,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalSendToHCRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2835,7 +2835,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalMedicationDistributionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none

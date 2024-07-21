@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, partitionActivities, view)
+module Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -14,7 +14,7 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.Tuberculosis.Encounter.Model exposing (..)
-import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
+import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing
         ( viewEndEncounterButton
@@ -167,12 +167,6 @@ viewMainPageContent language currentDate db assembled model =
     [ tabs
     , content
     ]
-
-
-partitionActivities : NominalDate -> AssembledData -> ( List TuberculosisActivity, List TuberculosisActivity )
-partitionActivities currentDate assembled =
-    List.filter (expectActivity currentDate assembled) allActivities
-        |> List.partition (activityCompleted currentDate assembled)
 
 
 allowEndingEncounter : List TuberculosisActivity -> Bool

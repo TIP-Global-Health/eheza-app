@@ -100,3 +100,9 @@ generatePreviousEncountersData currentEncounterId participantId db =
             )
         -- Most recent date to least recent date.
         |> List.sortWith sortByStartDateDesc
+
+
+partitionActivities : NominalDate -> AssembledData -> ( List TuberculosisActivity, List TuberculosisActivity )
+partitionActivities currentDate assembled =
+    List.filter (expectActivity currentDate assembled) allActivities
+        |> List.partition (activityCompleted currentDate assembled)
