@@ -952,6 +952,8 @@ function hedley_reports_create_or_update_results_data_node($scope, $province = N
   }
   // Save the node.
   node_save($node);
+
+  $nutrition_report_data = hedley_reports_generate_nutrition_report_data($data);
 }
 
 /**
@@ -1075,4 +1077,214 @@ function hedley_reports_ai_diagnosis_mapping() {
     'tuberculosis-suspect' => 'o',
     'none' => 'z',
   ];
+}
+
+function hedley_reports_generate_nutrition_report_data($data) {
+  $impacted = [];
+  $nutrition_data = [];
+
+  foreach ($data as $patient_data) {
+    if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
+      continue;
+    }
+
+    $data_for_patient = [
+      'id' => $patient_data->id,
+      'encounters' => [],
+    ];
+
+    if (isset($patient_data->group_nutrition)) {
+      if (isset($patient_data->group_nutrition->pmtct)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->pmtct);
+      }
+      if (isset($patient_data->group_nutrition->fbf)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->fbf);
+      }
+      if (isset($patient_data->group_nutrition->sorwathe)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->sorwathe);
+      }
+      if (isset($patient_data->group_nutrition->chw)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->chw);
+      }
+      if (isset($patient_data->group_nutrition->achi)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->achi);
+      }
+    }
+
+    if (isset($patient_data->individual)) {
+      if (isset($patient_data->individual->nutrition)) {
+        foreach ($patient_data->individual->nutrition as $items) {
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+        }
+      }
+      if (isset($patient_data->individual->{"well-child"})) {
+        foreach ($patient_data->individual->{"well-child"} as $items) {
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+        }
+      }
+    }
+
+    $nutrition_data[] = $data_for_patient;
+
+    if (count($data_for_patient['encounters']) > 1) {
+      $impacted[] = $data_for_patient['id'];
+    }
+  }
+
+  // Filtering out encounters performed before Jan 01 of starting year.
+  // Starting year is current year, minus 3, as Nutrition report shows
+  // data from previous 2 years, and we need prior year as well, to
+  // compute Incidence.
+  $today = new DateTime();
+  $starting_year = $today->format('Y') - 3;
+  // Initialize the dictionary (associative array in PHP)
+  $encounters_by_month = [];
+  foreach ($nutrition_data as $nutrition_data_item) {
+    foreach ($nutrition_data_item['encounters'] as $index => $encounter_data) {
+      $parts = explode(' ', $encounter_data);
+      $start_date_as_string = $parts[0];
+      $start_date = DateTime::createFromFormat('Y-m-d', $start_date_as_string);
+      $start_date_year = $start_date->format('Y');
+      if ($start_date_year < $starting_year) {
+        unset($nutrition_data_item['encounters'][$index]);
+        continue;
+      }
+
+      $start_date_month = $start_date->format('m');
+      $encounter_zscores = explode(',', $parts[1]);
+      $nutrition_data = [
+        'stunting' => ($encounter_zscores[0] === '') ? NULL : (float) $encounter_zscores[0],
+        'wasting' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
+        'underweight' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
+      ];
+
+      $encounter_metrics =  hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
+      $key = "$start_date_year-$start_date_month";
+      if (isset($encounters_by_month[$key])) {
+        $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
+      } else {
+        $encounters_by_month[$key] = $encounter_metrics;
+      }
+    }
+  }
+  
+  $encounters_by_month_for_impacted = [];
+  foreach ($encounters_by_month as $key => $encounter) {
+    $encounters_by_month_for_impacted[$key] = [
+      'stunting_normal' => hedley_reports_filter_impacted_ids($encounter['stunting_normal'], $impacted),
+      'stunting_moderate' => hedley_reports_filter_impacted_ids($encounter['stunting_moderate'], $impacted),
+      'stunting_severe' => hedley_reports_filter_impacted_ids($encounter['stunting_severe'], $impacted),
+      'wasting_normal' => hedley_reports_filter_impacted_ids($encounter['wasting_normal'], $impacted),
+      'wasting_moderate' => hedley_reports_filter_impacted_ids($encounter['wasting_moderate'], $impacted),
+      'wasting_severe' => hedley_reports_filter_impacted_ids($encounter['wasting_severe'], $impacted),
+      'underweight_normal' => hedley_reports_filter_impacted_ids($encounter['underweight_normal'], $impacted),
+      'underweight_moderate' => hedley_reports_filter_impacted_ids($encounter['underweight_moderate'], $impacted),
+      'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted)
+    ];
+  }
+
+  return count($impacted);
+}
+
+function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
+  // Convert the from date string to a DateTime object
+  $fromDate = DateTime::createFromFormat('Y-m-d', $fromDateString);
+  if (!$fromDate) {
+    return "Invalid from date format.";
+  }
+
+  // Use the current date if to date is not provided
+  if ($toDateString === NULL) {
+    $toDate = new DateTime();
+  } else {
+    // Convert the to date string to a DateTime object
+    $toDate = DateTime::createFromFormat('Y-m-d', $toDateString);
+    if (!$toDate) {
+      return "Invalid to date format.";
+    }
+  }
+
+  // Calculate the difference between the two dates
+  $interval = $toDate->diff($fromDate);
+
+  // Determine the sign of the difference
+  $yearDifference = $interval->y;
+  if ($toDate < $fromDate) {
+    $yearDifference = -$yearDifference;
+  }
+
+  // Return the difference in years
+  return $yearDifference;
+}
+
+function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, $data) {
+  list($stunting_normal, $stunting_moderate, $stunting_severe) = hedley_reports_categorize_z_score($data['stunting'], $person_id);
+  list($wasting_normal, $wasting_moderate, $wasting_severe) = hedley_reports_categorize_z_score($data['wasting'], $person_id);
+  list($underweight_normal, $underweight_moderate, $underweight_severe) = hedley_reports_categorize_z_score($data['underweight'], $person_id);
+
+  return [
+    'stunting_normal' => $stunting_normal,
+    'stunting_moderate' => $stunting_moderate,
+    'stunting_severe' => $stunting_severe,
+    'wasting_normal' => $wasting_normal,
+    'wasting_moderate' => $wasting_moderate,
+    'wasting_severe' => $wasting_severe,
+    'underweight_normal' => $underweight_normal,
+    'underweight_moderate' => $underweight_moderate,
+    'underweight_severe' => $underweight_severe
+  ];
+}
+
+function hedley_reports_sum_nutrition_metrics($metrics_list) {
+  $result = hedley_reports_empty_nutrition_metrics();
+
+  foreach ($metrics_list as $metrics) {
+    $result['stunting_normal'] = array_merge($result['stunting_normal'], $metrics['stunting_normal']);
+    $result['stunting_moderate'] = array_merge($result['stunting_moderate'], $metrics['stunting_moderate']);
+    $result['stunting_severe'] = array_merge($result['stunting_severe'], $metrics['stunting_severe']);
+    $result['wasting_normal'] = array_merge($result['wasting_normal'], $metrics['wasting_normal']);
+    $result['wasting_moderate'] = array_merge($result['wasting_moderate'], $metrics['wasting_moderate']);
+    $result['wasting_severe'] = array_merge($result['wasting_severe'], $metrics['wasting_severe']);
+    $result['underweight_normal'] = array_merge($result['underweight_normal'], $metrics['underweight_normal']);
+    $result['underweight_moderate'] = array_merge($result['underweight_moderate'], $metrics['underweight_moderate']);
+    $result['underweight_severe'] = array_merge($result['underweight_severe'], $metrics['underweight_severe']);
+  }
+
+  return $result;
+}
+
+function hedley_reports_categorize_z_score($score, $person_id) {
+  if ($score === NULL) {
+    return [[], [], []];
+  }
+
+  if ($score <= -3) {
+    return [[], [], [$person_id]];
+  }
+
+  if ($score <= -2) {
+    return [[], [$person_id], []];
+  }
+
+  return [[$person_id], [], []];
+}
+
+function hedley_reports_empty_nutrition_metrics() {
+  return [
+    'stunting_normal' => [],
+    'stunting_moderate' => [],
+    'stunting_severe' => [],
+    'wasting_normal' => [],
+    'wasting_moderate' => [],
+    'wasting_severe' => [],
+    'underweight_normal' => [],
+    'underweight_moderate' => [],
+    'underweight_severe' => []
+  ];
+}
+
+function hedley_reports_filter_impacted_ids($ids, $impacted) {
+  return array_filter($ids, function($id) use ($impacted) {
+    return in_array($id, $impacted);
+  });
 }
