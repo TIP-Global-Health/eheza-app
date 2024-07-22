@@ -838,12 +838,12 @@ function hedley_reports_generate_results_data($province, $district, $sector, $ce
       }
 
       $data[] = json_decode($json_data);
-      // Explicitly unset large variables after use memory optimization.
+      // Explicitly unset large variables after use for memory optimization.
       unset($json_data);
     }
 
     $nid = end($ids);
-    // Explicitly unset large variables after use memory optimization.
+    // Explicitly unset large variables after use for memory optimization.
     unset($nodes);
   }
 
