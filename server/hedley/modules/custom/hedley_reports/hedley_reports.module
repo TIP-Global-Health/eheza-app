@@ -1183,7 +1183,47 @@ function hedley_reports_generate_nutrition_report_data($data) {
     ];
   }
 
-  return count($impacted);
+  $prevalence_by_month_one_visit_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month);
+  $prevalence_by_month_two_visits_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month_for_impacted);
+
+  return [$prevalence_by_month_one_visit_or_more_data, $prevalence_by_month_two_visits_or_more_data];
+}
+
+function hedley_reports_generate_monthly_prevalence_data($encounters_by_month) {
+  $result = [];
+  for ($index = 1; $index <= 12; $index++) {
+    $current_date = new DateTime();
+    $target_date = $current_date->modify("-$index month");
+    $target_date_year = $target_date->format('Y');
+    $target_date_month = $target_date->format('m');
+    $key = "$target_date_year-$target_date_month";
+    $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
+    $result[$key] = hedley_reports_generate_prevalence_nutrition_metrics_results($data_set);
+  }
+
+  return $result;
+}
+
+function hedley_reports_generate_prevalence_nutrition_metrics_results($metrics) {
+  $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
+  $wasting_total = array_unique(array_merge($metrics['wasting_moderate'], $metrics['wasting_severe'], $metrics['wasting_normal']));
+  $underweight_total = array_unique(array_merge($metrics['underweight_moderate'], $metrics['underweight_severe'], $metrics['underweight_normal']));
+
+  return [
+    'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
+    'stunting_severe' => hedley_reports_calculate_percentage($metrics['stunting_severe'], $stunting_total),
+    'wasting_moderate' => hedley_reports_calculate_percentage($metrics['wasting_moderate'], $wasting_total),
+    'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
+    'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
+    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total)
+  ];
+}
+
+function hedley_reports_calculate_percentage($nominator, $total) {
+  if (empty($total)) {
+    return 0;
+  }
+  return (count($nominator) / count($total)) * 100;
 }
 
 function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
