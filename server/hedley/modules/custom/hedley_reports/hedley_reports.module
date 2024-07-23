@@ -1323,7 +1323,18 @@ function hedley_reports_empty_nutrition_metrics() {
   ];
 }
 
-function hedley_reports_filter_impacted_ids($ids, $impacted) {
+/**
+ * Filters a list of IDs to only include those that are impacted.
+ *
+ * @param array $ids
+ *   An array of IDs to be filtered.
+ * @param array $impacted
+ *   An array of impacted IDs.
+ *
+ * @return array
+ *   An array of IDs that are present in the impacted list.
+ */
+function hedley_reports_filter_impacted_ids(array $ids, array $impacted) {
   return array_filter($ids, function($id) use ($impacted) {
     return in_array($id, $impacted);
   });
