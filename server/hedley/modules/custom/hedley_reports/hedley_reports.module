@@ -957,10 +957,16 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
       'display' => 1,
     ];
   }
+
+  if ($report_variant == 'statistical-query') {
+    $additional_data = [
+      'nutrition_report_data' => hedley_reports_generate_nutrition_report_data($data),
+    ];
+    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($additional_data);
+  }
+
   // Save the node.
   node_save($node);
-
-  $nutrition_report_data = hedley_reports_generate_nutrition_report_data($data);
 }
 
 /**
