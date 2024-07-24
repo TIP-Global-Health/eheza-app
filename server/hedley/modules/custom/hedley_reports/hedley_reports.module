@@ -1185,20 +1185,91 @@ function hedley_reports_generate_nutrition_report_data($data) {
 
   $prevalence_by_month_one_visit_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month);
   $prevalence_by_month_two_visits_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month_for_impacted);
+  $incidence_by_month_one_visit_or_more_data = hedley_reports_generate_monthly_incidence_data($encounters_by_month);
+  $incidence_by_month_two_visits_or_more_data = hedley_reports_generate_monthly_incidence_data($encounters_by_month_for_impacted);
+  $incidence_by_quarter_one_visit_or_more_data = hedley_reports_generate_quarterly_incidence_data($encounters_by_month);
+  $incidence_by_quarter_two_visits_or_more_data = hedley_reports_generate_quarterly_incidence_data($encounters_by_month_for_impacted);
 
-  return [$prevalence_by_month_one_visit_or_more_data, $prevalence_by_month_two_visits_or_more_data];
+
+//  return [$prevalence_by_month_one_visit_or_more_data, $prevalence_by_month_two_visits_or_more_data];
+//  return [$incidence_by_month_one_visit_or_more_data, $incidence_by_month_two_visits_or_more_data];
+  return [$incidence_by_quarter_one_visit_or_more_data, $incidence_by_quarter_two_visits_or_more_data];
 }
 
 function hedley_reports_generate_monthly_prevalence_data($encounters_by_month) {
   $result = [];
+  $current_timestamp = time();
   for ($index = 1; $index <= 12; $index++) {
-    $current_date = new DateTime();
-    $target_date = $current_date->modify("-$index month");
-    $target_date_year = $target_date->format('Y');
-    $target_date_month = $target_date->format('m');
+    $target_timestamp = strtotime("-$index month", $current_timestamp);
+    $target_date_year = date('Y', $target_timestamp);
+    $target_date_month = date('m', $target_timestamp);
     $key = "$target_date_year-$target_date_month";
     $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
     $result[$key] = hedley_reports_generate_prevalence_nutrition_metrics_results($data_set);
+  }
+
+  return $result;
+}
+
+function hedley_reports_generate_monthly_incidence_data($encounters_by_month) {
+  $result = [];
+  $current_timestamp = time();
+
+  for ($index = 1; $index <= 12; $index++) {
+    $target_timestamp = strtotime("-$index month", $current_timestamp);
+    $target_date_year = date('Y', $target_timestamp);
+    $target_date_month = date('m', $target_timestamp);
+    $key = "$target_date_year-$target_date_month";
+    $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
+
+    // Per definition, for month, previous data set contains data of 3 months that came prior.
+    $previous_data_set = hedley_reports_empty_nutrition_metrics();
+    for ($gap = 1; $gap <= 3; $gap++) {
+      $gap_timestamp = strtotime("-$gap month", $target_timestamp);
+      $gap_date_year = date('Y', $gap_timestamp);
+      $gap_date_month = date('m', $gap_timestamp);
+      $gap_key = "$gap_date_year-$gap_date_month";
+      $gap_data_set = (!empty($encounters_by_month[$gap_key]) ? $encounters_by_month[$gap_key] : hedley_reports_empty_nutrition_metrics());
+      $previous_data_set = hedley_reports_sum_nutrition_metrics([$previous_data_set, $gap_data_set]);
+    }
+    $result[$key] = hedley_reports_generate_incidence_nutrition_metrics_results($data_set, $previous_data_set);
+  }
+
+  return $result;
+}
+
+/**
+ * Generate quarterly incidence table data.
+ *
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values are Nutrition Metrics.
+ *
+ * @return array
+ *   An array containing the quarterly incidence table data.
+ */
+function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_month) {
+  $data_sets_by_quarter = [];
+  // We calculate data for the previous 5 quarters.
+  for ($index = 1; $index <= 5; $index++) {
+    $data_sets_by_quarter[] = hedley_reports_resolve_data_set_for_quarter($index, $encounters_by_month);
+  }
+
+  $result = [];
+  $current_timestamp = time();
+  // Showing data of the previous 4 quarters.
+  for ($index = 1; $index <= 4; $index++) {
+    $selected_date = strtotime("-" . (3 * $index) . " months", $current_timestamp);
+
+    $year = (int) date('Y', $selected_date);
+    $month = (int) date('n', $selected_date);
+    $quarter = ceil($month / 3);
+
+    $data_set = $data_sets_by_quarter[$index - 1];
+    $previous_data_set = $data_sets_by_quarter[$index];
+
+    $key = "$year-$quarter";
+
+    $result[$key] = hedley_reports_generate_incidence_nutrition_metrics_results($data_set, $previous_data_set);
   }
 
   return $result;
@@ -1219,11 +1290,132 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results($metrics) 
   ];
 }
 
+/**
+ * Generate incidence nutrition metrics results.
+ *
+ * @param array $current_period_metric
+ *   An associative array containing current period metrics.
+ * @param array $previous_period_metric
+ *   An associative array containing previous period metrics.
+ *
+ * @return array
+ *   An associative array containing the incidence nutrition metrics results.
+ */
+function hedley_reports_generate_incidence_nutrition_metrics_results($current_period_metric, $previous_period_metric) {
+  // STUNTING
+  $previous_period_stunting_moderate_severe = array_unique(array_merge($previous_period_metric['stunting_moderate'], $previous_period_metric['stunting_severe']));
+  $previous_period_stunting_total = array_unique(array_merge($previous_period_stunting_moderate_severe, $previous_period_metric['stunting_normal']));
+
+  $stunting_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['stunting_moderate']), $previous_period_stunting_total);
+  $stunting_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['stunting_moderate']), $previous_period_stunting_moderate_severe);
+
+  $stunting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['stunting_severe']), $previous_period_stunting_total);
+  $stunting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['stunting_severe']), array_unique($previous_period_metric['stunting_severe']));
+
+  // WASTING
+  $previous_period_wasting_moderate_severe = array_unique(array_merge($previous_period_metric['wasting_moderate'], $previous_period_metric['wasting_severe']));
+  $previous_period_wasting_total = array_unique(array_merge($previous_period_wasting_moderate_severe, $previous_period_metric['wasting_normal']));
+
+  $wasting_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['wasting_moderate']), $previous_period_wasting_total);
+  $wasting_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['wasting_moderate']), $previous_period_wasting_moderate_severe);
+
+  $wasting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['wasting_severe']), $previous_period_wasting_total);
+  $wasting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['wasting_severe']), array_unique($previous_period_metric['wasting_severe']));
+
+  // UNDERWEIGHT
+  $previous_period_underweight_moderate_severe = array_unique(array_merge($previous_period_metric['underweight_moderate'], $previous_period_metric['underweight_severe']));
+  $previous_period_underweight_total = array_unique(array_merge($previous_period_underweight_moderate_severe, $previous_period_metric['underweight_normal']));
+
+  $underweight_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_moderate']), $previous_period_underweight_total);
+  $underweight_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_moderate']), $previous_period_underweight_moderate_severe);
+
+  $underweight_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_severe']), $previous_period_underweight_total);
+  $underweight_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_severe']), array_unique($previous_period_metric['underweight_severe']));
+
+  return [
+    'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
+    'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
+    'wasting_moderate' => hedley_reports_calculate_percentage(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
+    'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
+    'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
+    'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+  ];
+}
+
 function hedley_reports_calculate_percentage($nominator, $total) {
   if (empty($total)) {
     return 0;
   }
-  return (count($nominator) / count($total)) * 100;
+  return round((count($nominator) / count($total)) * 100, 3);
+}
+
+/**
+ * Resolve data set for a quarter.
+ *
+ * @param int $quarter_index
+ *   The quarter index.
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values are NutritionMetrics.
+ *
+ * @return array
+ *   The aggregated nutrition metrics for the specified quarter.
+ */
+function hedley_reports_resolve_data_set_for_quarter($quarter_index, $encounters_by_month) {
+  // Calculate the selected date by subtracting months
+  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
+
+  list($year, $quarter) = hedley_reports_resolve_quarter_date_info($selected_date);
+
+  $months = hedley_reports_quarter_to_months($quarter);
+
+  $nutrition_metrics = [];
+  foreach ($months as $month) {
+    $month = $month < 10 ? "0" . $month : $month;
+
+    if (isset($encounters_by_month["$year-$month"])) {
+      $nutrition_metrics[] = $encounters_by_month["$year-$month"];
+    }
+  }
+
+  return hedley_reports_sum_nutrition_metrics($nutrition_metrics);
+}
+
+/**
+ * Resolve the previous quarter date information.
+ *
+ * @param int $timestamp
+ *   The timestamp.
+ *
+ * @return array
+ *   An array containing the year and the quarter.
+ */
+function hedley_reports_resolve_quarter_date_info($timestamp) {
+  $year = (int) date('Y', $timestamp);
+  $month = (int) date('n', $timestamp);
+  $quarter = ceil($month / 3);
+
+  if ($quarter == 1) {
+    return [$year - 1, 4];
+  } else {
+    return [$year, $quarter - 1];
+  }
+}
+
+/**
+ * Get the months for a given quarter.
+ *
+ * @param int $quarter
+ *   The quarter.
+ *
+ * @return array
+ *   An array of months in the quarter.
+ */
+function hedley_reports_quarter_to_months($quarter) {
+  $months = [];
+  for ($i = 1; $i <= 3; $i++) {
+    $months[] = 3 * ($quarter - 1) + $i;
+  }
+  return $months;
 }
 
 function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {

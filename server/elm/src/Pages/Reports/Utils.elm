@@ -198,7 +198,6 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
         previousPeriodStuntingTotal =
             previousPeriodStuntingModerateSevere
                 ++ previousPeriodMetric.stuntingNormal
-                |> unique
                 |> Set.fromList
 
         stuntingModerateTestedInPreviousPeriod =
@@ -222,7 +221,6 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
         previousPeriodWastingTotal =
             previousPeriodWastingModerateSevere
                 ++ previousPeriodMetric.wastingNormal
-                |> unique
                 |> Set.fromList
 
         wastingModerateTestedInPreviousPeriod =
@@ -246,7 +244,6 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
         previousPeriodUnderweightTotal =
             previousPeriodUnderweightModerateSevere
                 ++ previousPeriodMetric.underweightNormal
-                |> unique
                 |> Set.fromList
 
         underweightModerateTestedInPreviousPeriod =

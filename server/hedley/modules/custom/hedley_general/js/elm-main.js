@@ -13337,8 +13337,7 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 		var previousPeriodWastingModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.wastingModerate, previousPeriodMetric.wastingSevere));
 		var previousPeriodWastingTotal = $elm$core$Set$fromList(
-			$elm_community$list_extra$List$Extra$unique(
-				_Utils_ap(previousPeriodWastingModerateSevere, previousPeriodMetric.wastingNormal)));
+			_Utils_ap(previousPeriodWastingModerateSevere, previousPeriodMetric.wastingNormal));
 		var wastingModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
 			$elm$core$Set$fromList(currentPeriodMetric.wastingModerate),
@@ -13354,8 +13353,7 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 		var previousPeriodUnderweightModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.underweightModerate, previousPeriodMetric.underweightSevere));
 		var previousPeriodUnderweightTotal = $elm$core$Set$fromList(
-			$elm_community$list_extra$List$Extra$unique(
-				_Utils_ap(previousPeriodUnderweightModerateSevere, previousPeriodMetric.underweightNormal)));
+			_Utils_ap(previousPeriodUnderweightModerateSevere, previousPeriodMetric.underweightNormal));
 		var underweightModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
 			$elm$core$Set$fromList(currentPeriodMetric.underweightModerate),
@@ -13371,8 +13369,7 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 		var previousPeriodStuntingModerateSevere = $elm_community$list_extra$List$Extra$unique(
 			_Utils_ap(previousPeriodMetric.stuntingModerate, previousPeriodMetric.stuntingSevere));
 		var previousPeriodStuntingTotal = $elm$core$Set$fromList(
-			$elm_community$list_extra$List$Extra$unique(
-				_Utils_ap(previousPeriodStuntingModerateSevere, previousPeriodMetric.stuntingNormal)));
+			_Utils_ap(previousPeriodStuntingModerateSevere, previousPeriodMetric.stuntingNormal));
 		var stuntingModerateTestedInPreviousPeriod = A2(
 			$elm$core$Set$intersect,
 			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
