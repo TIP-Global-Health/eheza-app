@@ -1191,10 +1191,41 @@ function hedley_reports_generate_nutrition_report_data($data) {
   $incidence_by_quarter_two_visits_or_more_data = hedley_reports_generate_quarterly_incidence_data($encounters_by_month_for_impacted);
   $incidence_by_year_one_visit_or_more_data = hedley_reports_generate_yearly_incidence_data($encounters_by_month);
   $incidence_by_year_two_visits_or_more_data = hedley_reports_generate_yearly_incidence_data($encounters_by_month_for_impacted);
-  
-//  return [$prevalence_by_month_one_visit_or_more_data, $prevalence_by_month_two_visits_or_more_data];
-//  return [$incidence_by_month_one_visit_or_more_data, $incidence_by_month_two_visits_or_more_data];
-  return [$incidence_by_year_one_visit_or_more_data, $incidence_by_year_two_visits_or_more_data];
+
+  return [
+    'prevalence-1' => hedley_reports_nutrition_metrics_to_table_data($prevalence_by_month_one_visit_or_more_data),
+    'prevalence-2' => hedley_reports_nutrition_metrics_to_table_data($prevalence_by_month_two_visits_or_more_data),
+    'incidence-month-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_month_one_visit_or_more_data),
+    'incidence-month-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_month_two_visits_or_more_data),
+    'incidence-quarter-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_quarter_one_visit_or_more_data),
+    'incidence-quarter-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_quarter_two_visits_or_more_data),
+    'incidence-year-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_year_one_visit_or_more_data),
+    'incidence-year-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_year_two_visits_or_more_data),
+  ];
+}
+
+function hedley_reports_nutrition_metrics_to_table_data($metrics) {
+  $result = [
+    'period' => [],
+    'stunting_moderate' => [],
+    'stunting_severe' => [],
+    'wasting_moderate' => [],
+    'wasting_severe' => [],
+    'underweight_moderate' => [],
+    'underweight_severe' => [],
+  ];
+
+  foreach ($metrics as $key => $values) {
+    $result['period'][] = $key;
+    $result['stunting_moderate'][] = $values['stunting_moderate'];
+    $result['stunting_severe'][] = $values['stunting_severe'];
+    $result['wasting_moderate'][] = $values['wasting_moderate'];
+    $result['wasting_severe'][] = $values['wasting_severe'];
+    $result['underweight_moderate'][] = $values['underweight_moderate'];
+    $result['underweight_severe'][] = $values['underweight_severe'];
+  }
+
+  return $result;
 }
 
 function hedley_reports_generate_monthly_prevalence_data($encounters_by_month) {
