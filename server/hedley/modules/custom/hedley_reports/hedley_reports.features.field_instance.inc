@@ -291,6 +291,46 @@ function hedley_reports_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-report_data-field_reports_data'.
+  $field_instances['node-report_data-field_reports_data'] = array(
+    'bundle' => 'report_data',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reports_data',
+    'label' => 'Additional Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 10,
+    ),
+  );
+
   // Exported field_instance: 'node-report_data-field_sector'.
   $field_instances['node-report_data-field_sector'] = array(
     'bundle' => 'report_data',
@@ -373,6 +413,7 @@ function hedley_reports_field_default_field_instances() {
 
   // Translatables
   // Included for use with string extractors like potx.
+  t('Additional Data');
   t('Cell');
   t('Data File');
   t('Data Scope');
