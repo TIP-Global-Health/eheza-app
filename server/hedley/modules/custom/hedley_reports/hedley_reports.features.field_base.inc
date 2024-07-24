@@ -63,5 +63,31 @@ function hedley_reports_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_report_variant'.
+  $field_bases['field_report_variant'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_report_variant',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'aggregated-ncda' => 'Aggregated NCDA',
+        'statistical-query' => 'Statistical Query',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   return $field_bases;
 }

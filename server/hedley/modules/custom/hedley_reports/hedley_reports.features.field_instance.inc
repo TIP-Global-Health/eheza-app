@@ -47,7 +47,7 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -89,7 +89,7 @@ function hedley_reports_field_default_field_instances() {
         'progress_indicator' => 'throbber',
       ),
       'type' => 'file_generic',
-      'weight' => 8,
+      'weight' => 9,
     ),
   );
 
@@ -116,7 +116,7 @@ function hedley_reports_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_data_scope',
-    'label' => 'Data Variant',
+    'label' => 'Data Scope',
     'required' => 1,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -126,7 +126,7 @@ function hedley_reports_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_select',
-      'weight' => 1,
+      'weight' => 2,
     ),
   );
 
@@ -166,7 +166,7 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 3,
+      'weight' => 4,
     ),
   );
 
@@ -210,7 +210,7 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 7,
+      'weight' => 8,
     ),
   );
 
@@ -250,7 +250,44 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 2,
+      'weight' => 3,
+    ),
+  );
+
+  // Exported field_instance: 'node-report_data-field_report_variant'.
+  $field_instances['node-report_data-field_report_variant'] = array(
+    'bundle' => 'report_data',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_report_variant',
+    'label' => 'Report Variant',
+    'required' => 1,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 1,
     ),
   );
 
@@ -290,7 +327,7 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -330,7 +367,7 @@ function hedley_reports_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 6,
+      'weight' => 7,
     ),
   );
 
@@ -338,10 +375,11 @@ function hedley_reports_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Cell');
   t('Data File');
-  t('Data Variant');
+  t('Data Scope');
   t('District');
   t('Health Center');
   t('Province');
+  t('Report Variant');
   t('Sector');
   t('Village');
 
