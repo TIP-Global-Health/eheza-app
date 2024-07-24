@@ -750,7 +750,7 @@ function hedley_reports_build_results_app($province = NULL, $district = NULL, $s
     $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
   }
   else {
-    $data['results'] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+    list($data['results'], $data['additional']) = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -893,7 +893,9 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   }
   gzclose($gz_fp);
 
-  return json_decode($data);
+  $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+
+  return [json_decode($data), json_decode($additional_data)];
 }
 
 /**
@@ -1272,19 +1274,20 @@ function hedley_reports_generate_nutrition_report_data($data) {
   $incidence_by_year_two_visits_or_more_data = hedley_reports_generate_yearly_incidence_data($encounters_by_month_for_impacted);
 
   return [
-    'prevalence-1' => hedley_reports_nutrition_metrics_to_table_data($prevalence_by_month_one_visit_or_more_data),
-    'prevalence-2' => hedley_reports_nutrition_metrics_to_table_data($prevalence_by_month_two_visits_or_more_data),
-    'incidence-month-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_month_one_visit_or_more_data),
-    'incidence-month-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_month_two_visits_or_more_data),
-    'incidence-quarter-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_quarter_one_visit_or_more_data),
-    'incidence-quarter-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_quarter_two_visits_or_more_data),
-    'incidence-year-1' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_year_one_visit_or_more_data),
-    'incidence-year-2' => hedley_reports_nutrition_metrics_to_table_data($incidence_by_year_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('prevalence-1', $prevalence_by_month_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('prevalence-2', $prevalence_by_month_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-month-1', $incidence_by_month_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-month-2', $incidence_by_month_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-quarter-1', $incidence_by_quarter_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-quarter-2', $incidence_by_quarter_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-year-1', $incidence_by_year_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-year-2', $incidence_by_year_two_visits_or_more_data),
   ];
 }
 
-function hedley_reports_nutrition_metrics_to_table_data($metrics) {
+function hedley_reports_nutrition_metrics_to_table_data($type, $metrics) {
   $result = [
+    'type' => $type,
     'period' => [],
     'stunting_moderate' => [],
     'stunting_severe' => [],
@@ -1295,7 +1298,7 @@ function hedley_reports_nutrition_metrics_to_table_data($metrics) {
   ];
 
   foreach ($metrics as $key => $values) {
-    $result['period'][] = $key;
+    $result['period'][] = (string) $key;
     $result['stunting_moderate'][] = $values['stunting_moderate'];
     $result['stunting_severe'][] = $values['stunting_severe'];
     $result['wasting_moderate'][] = $values['wasting_moderate'];
@@ -1396,7 +1399,6 @@ function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_m
  *   An array containing the yearly incidence table data.
  */
 function hedley_reports_generate_yearly_incidence_data(array $encounters_by_month) {
-  $data_sets_by_quarter = [];
   // We show data of previous 2 years. So, if at 2024, we show
   // data for 2023 and 2022. We calculate set for 3 years (so claculating
   // 2021 as well), as for incidence each year requires a set of previous year.

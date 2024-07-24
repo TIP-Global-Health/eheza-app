@@ -20,6 +20,7 @@ decodeReportsData =
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "results" (list decodePatientData)
+        |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeNutritionTableData)) Nothing
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -283,6 +284,54 @@ nutritionDataFromString s =
 
         _ ->
             Nothing
+
+
+decodeNutritionTableData : Decoder NutritionTableData
+decodeNutritionTableData =
+    succeed NutritionTableData
+        |> required "type" decodeNutritionTableType
+        |> required "period" (list string)
+        |> required "stunting_moderate" (list decodeFloat)
+        |> required "stunting_severe" (list decodeFloat)
+        |> required "wasting_moderate" (list decodeFloat)
+        |> required "wasting_severe" (list decodeFloat)
+        |> required "underweight_moderate" (list decodeFloat)
+        |> required "underweight_severe" (list decodeFloat)
+
+
+decodeNutritionTableType : Decoder NutritionTableType
+decodeNutritionTableType =
+    string
+        |> andThen
+            (\tableType ->
+                case tableType of
+                    "prevalence-1" ->
+                        succeed NutritionTablePrevalanceOneOrMore
+
+                    "prevalence-2" ->
+                        succeed NutritionTablePrevalanceTwoOrMore
+
+                    "incidence-month-1" ->
+                        succeed NutritionTableIncidenceMonthOneOrMore
+
+                    "incidence-month-2" ->
+                        succeed NutritionTableIncidenceMonthTwoOrMore
+
+                    "incidence-quarter-1" ->
+                        succeed NutritionTableIncidenceQuarterOneOrMore
+
+                    "incidence-quarter-2" ->
+                        succeed NutritionTableIncidenceQuarterTwoOrMore
+
+                    "incidence-year-1" ->
+                        succeed NutritionTableIncidenceYearOneOrMore
+
+                    "incidence-year-2" ->
+                        succeed NutritionTableIncidenceYearTwoOrMore
+
+                    _ ->
+                        fail <| tableType ++ " is unknown NutritionTableType type"
+            )
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a

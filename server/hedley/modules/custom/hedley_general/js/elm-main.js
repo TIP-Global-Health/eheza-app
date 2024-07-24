@@ -6596,10 +6596,111 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Reports$Model$ReportsData = F4(
-	function (site, entityName, entityType, records) {
-		return {entityName: entityName, entityType: entityType, records: records, site: site};
+var $author$project$Backend$Reports$Model$ReportsData = F5(
+	function (site, entityName, entityType, records, nutritionReportData) {
+		return {entityName: entityName, entityType: entityType, nutritionReportData: nutritionReportData, records: records, site: site};
 	});
+var $author$project$Backend$Reports$Model$NutritionTableData = F8(
+	function (tableType, periods, stuntingModerate, stuntingSevere, wastingModerate, wastingSevere, underweightModerate, underweightSevere) {
+		return {periods: periods, stuntingModerate: stuntingModerate, stuntingSevere: stuntingSevere, tableType: tableType, underweightModerate: underweightModerate, underweightSevere: underweightSevere, wastingModerate: wastingModerate, wastingSevere: wastingSevere};
+	});
+var $elm$json$Json$Decode$fail = _Json_fail;
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $elm$core$String$toFloat = _String_toFloat;
+var $author$project$Gizra$Json$decodeFloat = $elm$json$Json$Decode$oneOf(
+	_List_fromArray(
+		[
+			$elm$json$Json$Decode$float,
+			A2(
+			$elm$json$Json$Decode$andThen,
+			function (s) {
+				var _v0 = $elm$core$String$toFloat(s);
+				if (_v0.$ === 'Just') {
+					var value = _v0.a;
+					return $elm$json$Json$Decode$succeed(value);
+				} else {
+					return $elm$json$Json$Decode$fail('Not a float');
+				}
+			},
+			$elm$json$Json$Decode$string)
+		]));
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore = {$: 'NutritionTableIncidenceMonthOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore = {$: 'NutritionTableIncidenceMonthTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore = {$: 'NutritionTableIncidenceQuarterOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore = {$: 'NutritionTableIncidenceQuarterTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore = {$: 'NutritionTableIncidenceYearOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore = {$: 'NutritionTableIncidenceYearTwoOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore = {$: 'NutritionTablePrevalanceOneOrMore'};
+var $author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore = {$: 'NutritionTablePrevalanceTwoOrMore'};
+var $author$project$Backend$Reports$Decoder$decodeNutritionTableType = A2(
+	$elm$json$Json$Decode$andThen,
+	function (tableType) {
+		switch (tableType) {
+			case 'prevalence-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceOneOrMore);
+			case 'prevalence-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTablePrevalanceTwoOrMore);
+			case 'incidence-month-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthOneOrMore);
+			case 'incidence-month-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceMonthTwoOrMore);
+			case 'incidence-quarter-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterOneOrMore);
+			case 'incidence-quarter-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceQuarterTwoOrMore);
+			case 'incidence-year-1':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearOneOrMore);
+			case 'incidence-year-2':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableIncidenceYearTwoOrMore);
+			default:
+				return $elm$json$Json$Decode$fail(tableType + ' is unknown NutritionTableType type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
+	function (key, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$field, key, valDecoder),
+			decoder);
+	});
+var $author$project$Backend$Reports$Decoder$decodeNutritionTableData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'underweight_severe',
+	$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'underweight_moderate',
+		$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'wasting_severe',
+			$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'wasting_moderate',
+				$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'stunting_severe',
+					$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'stunting_moderate',
+						$elm$json$Json$Decode$list($author$project$Gizra$Json$decodeFloat),
+						A3(
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+							'period',
+							$elm$json$Json$Decode$list($elm$json$Json$Decode$string),
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'type',
+								$author$project$Backend$Reports$Decoder$decodeNutritionTableType,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$NutritionTableData)))))))));
 var $author$project$Backend$Reports$Model$Female = {$: 'Female'};
 var $author$project$Backend$Reports$Model$PatientData = function (id) {
 	return function (created) {
@@ -6708,7 +6809,6 @@ var $author$project$Backend$Reports$Decoder$acuteIllnessEncounterTypeFromString 
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm$parser$Parser$Advanced$Bad = F2(
 	function (a, b) {
 		return {$: 'Bad', a: a, b: b};
@@ -7450,7 +7550,6 @@ var $justinmimbs$date$Date$fromIsoString = A2(
 				$elm$core$Basics$composeR,
 				$elm$core$Maybe$map($justinmimbs$date$Date$deadEndToString),
 				$elm$core$Maybe$withDefault('')))));
-var $elm$json$Json$Decode$string = _Json_decodeString;
 var $elm$core$Result$toMaybe = function (result) {
 	if (result.$ === 'Ok') {
 		var v = result.a;
@@ -7518,7 +7617,6 @@ var $author$project$Backend$Reports$Decoder$decodeGender = A2(
 	},
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$int = _Json_decodeInt;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
 var $author$project$Gizra$Json$decodeInt = $elm$json$Json$Decode$oneOf(
 	_List_fromArray(
 		[
@@ -7544,7 +7642,6 @@ var $author$project$Backend$Reports$Model$NutritionData = F3(
 	function (stunting, wasting, underweight) {
 		return {stunting: stunting, underweight: underweight, wasting: wasting};
 	});
-var $elm$core$String$toFloat = _String_toFloat;
 var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (s) {
 	var _v0 = A2($elm$core$String$split, ',', s);
 	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
@@ -7733,7 +7830,6 @@ var $author$project$Gizra$NominalDate$decodeYYYYMMDD = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeL, $elm_community$json_extra$Json$Decode$Extra$fromResult, $justinmimbs$date$Date$fromIsoString),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $elm$json$Json$Decode$nullable = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -7743,7 +7839,6 @@ var $elm$json$Json$Decode$nullable = function (decoder) {
 				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder)
 			]));
 };
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
 var $elm$json$Json$Decode$decodeValue = _Json_run;
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
@@ -7787,13 +7882,6 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
 				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
 				valDecoder,
 				fallback),
-			decoder);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required = F3(
-	function (key, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$field, key, valDecoder),
 			decoder);
 	});
 var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
@@ -8011,23 +8099,30 @@ var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Decoder$decodeReportsData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'results',
-	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
+var $author$project$Backend$Reports$Decoder$decodeReportsData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt,
+	_List_fromArray(
+		['additional', 'nutrition_report_data']),
+	$elm$json$Json$Decode$nullable(
+		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodeNutritionTableData)),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'entity_type',
-		$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
+		'results',
+		$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePatientData),
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_name',
-			$elm$json$Json$Decode$string,
+			'entity_type',
+			$author$project$Backend$Reports$Decoder$decodeSelectedEntity,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'site',
-				$author$project$Backend$Decoder$decodeSite,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData)))));
+				'entity_name',
+				$elm$json$Json$Decode$string,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'site',
+					$author$project$Backend$Decoder$decodeSite,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$ReportsData))))));
 var $author$project$Backend$Reports$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
