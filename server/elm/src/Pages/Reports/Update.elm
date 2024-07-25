@@ -30,7 +30,14 @@ update currentDate modelBackend msg model =
                     else
                         case ( modelBackend.reportsData, mReportType ) of
                             ( Just (Ok data), Just ReportNutrition ) ->
-                                ( Loading, performNutritionReportDataCalculation currentDate data.records )
+                                -- For large data sets, nutrition report is generated on
+                                -- backend. No need to generate proprietry data.
+                                if isWideScope data.entityType then
+                                    -- ( Loading, performNutritionReportDataCalculation currentDate data.records )
+                                    ( model.nutritionReportData, Cmd.none )
+
+                                else
+                                    ( Loading, performNutritionReportDataCalculation currentDate data.records )
 
                             _ ->
                                 ( model.nutritionReportData, Cmd.none )

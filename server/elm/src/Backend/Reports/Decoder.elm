@@ -20,7 +20,7 @@ decodeReportsData =
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> required "results" (list decodePatientData)
-        |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeNutritionTableData)) Nothing
+        |> optionalAt [ "additional", "nutrition_report_data" ] (nullable (list decodeBackendGeneratedNutritionReportTableDate)) Nothing
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -286,21 +286,21 @@ nutritionDataFromString s =
             Nothing
 
 
-decodeNutritionTableData : Decoder NutritionTableData
-decodeNutritionTableData =
-    succeed NutritionTableData
-        |> required "type" decodeNutritionTableType
+decodeBackendGeneratedNutritionReportTableDate : Decoder BackendGeneratedNutritionReportTableDate
+decodeBackendGeneratedNutritionReportTableDate =
+    succeed BackendGeneratedNutritionReportTableDate
+        |> required "type" decodeNutritionReportTableType
         |> required "period" (list string)
-        |> required "stunting_moderate" (list decodeFloat)
-        |> required "stunting_severe" (list decodeFloat)
-        |> required "wasting_moderate" (list decodeFloat)
-        |> required "wasting_severe" (list decodeFloat)
-        |> required "underweight_moderate" (list decodeFloat)
-        |> required "underweight_severe" (list decodeFloat)
+        |> required "stunting_moderate" (list string)
+        |> required "stunting_severe" (list string)
+        |> required "wasting_moderate" (list string)
+        |> required "wasting_severe" (list string)
+        |> required "underweight_moderate" (list string)
+        |> required "underweight_severe" (list string)
 
 
-decodeNutritionTableType : Decoder NutritionTableType
-decodeNutritionTableType =
+decodeNutritionReportTableType : Decoder NutritionReportTableType
+decodeNutritionReportTableType =
     string
         |> andThen
             (\tableType ->
@@ -330,7 +330,7 @@ decodeNutritionTableType =
                         succeed NutritionTableIncidenceYearTwoOrMore
 
                     _ ->
-                        fail <| tableType ++ " is unknown NutritionTableType type"
+                        fail <| tableType ++ " is unknown NutritionReportTableType type"
             )
 
 

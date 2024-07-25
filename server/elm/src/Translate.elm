@@ -5,8 +5,9 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..))
+import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
+import Date
 import Pages.Reports.Model exposing (ReportType(..))
 import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
 import Pages.Scoreboard.Model exposing (..)
@@ -94,7 +95,7 @@ type TranslationId
     | Male
     | Month Month
     | MonthLabel
-    | MonthYear Month Int Bool
+    | MonthYear Int Int Bool
     | NCD
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
@@ -111,6 +112,7 @@ type TranslationId
     | NumberOfVisits Int
     | NumberOfVisitsLabel
     | NutritionBehavior
+    | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | PleaseWaitMessage
     | PMTCT
@@ -773,6 +775,32 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        NutritionReportTableType tableType ->
+            case tableType of
+                NutritionTablePrevalanceOneOrMore ->
+                    translationSet PrevalenceByMonthOneVisitOrMore
+
+                NutritionTablePrevalanceTwoOrMore ->
+                    translationSet PrevalenceByMonthTwoVisitsOrMore
+
+                NutritionTableIncidenceMonthOneOrMore ->
+                    translationSet IncidenceByMonthOneVisitOrMore
+
+                NutritionTableIncidenceMonthTwoOrMore ->
+                    translationSet IncidenceByMonthTwoVisitsOrMore
+
+                NutritionTableIncidenceQuarterOneOrMore ->
+                    translationSet IncidenceByQuarterOneVisitOrMore
+
+                NutritionTableIncidenceQuarterTwoOrMore ->
+                    translationSet IncidenceByQuarterTwoVisitsOrMore
+
+                NutritionTableIncidenceYearOneOrMore ->
+                    translationSet IncidenceByYearOneVisitOrMore
+
+                NutritionTableIncidenceYearTwoOrMore ->
+                    translationSet IncidenceByYearTwoVisitsOrMore
+
         NutritionTotal ->
             { english = "Nutrition (total)"
             , kinyarwanda = Nothing
@@ -1146,9 +1174,9 @@ translateHttpError transId =
             }
 
 
-translateMonthYY : Month -> Int -> Bool -> TranslationSet
+translateMonthYY : Int -> Int -> Bool -> TranslationSet
 translateMonthYY month year short =
-    translateMonth month short
+    translateMonth (Date.numberToMonth month) short
         |> (\set ->
                 { english = String.fromInt year ++ " " ++ set.english
                 , kinyarwanda = Maybe.map (\kinyarwanda -> String.fromInt year ++ " " ++ kinyarwanda) set.kinyarwanda
