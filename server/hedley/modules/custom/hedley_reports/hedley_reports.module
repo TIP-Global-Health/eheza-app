@@ -1160,7 +1160,20 @@ function hedley_reports_get_unique_districts_by_province($province) {
   return $districts;
 }
 
-function hedley_reports_generate_nutrition_report_data($data) {
+/**
+ * Generates nutrition report data from the given patient reports data.
+ *
+ * This function processes patients reports data to generate various
+ * nutritional metrics such as prevalence and incidence of stunting,
+ * wasting, and underweight.
+ *
+ * @param array $data
+ *   An array of patient data objects.
+ *
+ * @return array
+ *   An array containing various metrics and data tables.
+ */
+function hedley_reports_generate_nutrition_report_data(array $data) {
   $impacted = [];
   $nutrition_data = [];
 
@@ -1239,16 +1252,17 @@ function hedley_reports_generate_nutrition_report_data($data) {
         'underweight' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
       ];
 
-      $encounter_metrics =  hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
+      $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
       $key = "$start_date_year-$start_date_month";
       if (isset($encounters_by_month[$key])) {
         $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
-      } else {
+      }
+      else {
         $encounters_by_month[$key] = $encounter_metrics;
       }
     }
   }
-  
+
   $encounters_by_month_for_impacted = [];
   foreach ($encounters_by_month as $key => $encounter) {
     $encounters_by_month_for_impacted[$key] = [
@@ -1260,7 +1274,7 @@ function hedley_reports_generate_nutrition_report_data($data) {
       'wasting_severe' => hedley_reports_filter_impacted_ids($encounter['wasting_severe'], $impacted),
       'underweight_normal' => hedley_reports_filter_impacted_ids($encounter['underweight_normal'], $impacted),
       'underweight_moderate' => hedley_reports_filter_impacted_ids($encounter['underweight_moderate'], $impacted),
-      'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted)
+      'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted),
     ];
   }
 
@@ -1285,7 +1299,18 @@ function hedley_reports_generate_nutrition_report_data($data) {
   ];
 }
 
-function hedley_reports_nutrition_metrics_to_table_data($type, $metrics) {
+/**
+ * Converts nutrition metrics to table data format.
+ *
+ * @param string $type
+ *   The type of the table data.
+ * @param array $metrics
+ *   The metrics to be converted.
+ *
+ * @return array
+ *   The formatted table data.
+ */
+function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
   $result = [
     'type' => $type,
     'period' => [],
@@ -1310,7 +1335,16 @@ function hedley_reports_nutrition_metrics_to_table_data($type, $metrics) {
   return $result;
 }
 
-function hedley_reports_generate_monthly_prevalence_data($encounters_by_month) {
+/**
+ * Generates monthly prevalence data from encounters metrics grouped by month.
+ *
+ * @param array $encounters_by_month
+ *   Encounters metrics data grouped by month.
+ *
+ * @return array
+ *   Monthly prevalence data.
+ */
+function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_month) {
   $result = [];
   $current_timestamp = time();
   for ($index = 1; $index <= 12; $index++) {
@@ -1325,7 +1359,16 @@ function hedley_reports_generate_monthly_prevalence_data($encounters_by_month) {
   return $result;
 }
 
-function hedley_reports_generate_monthly_incidence_data($encounters_by_month) {
+/**
+ * Generates monthly incidence data from encounters metrics grouped  by month.
+ *
+ * @param array $encounters_by_month
+ *   Encounters metrics data grouped by month.
+ *
+ * @return array
+ *   Monthly incidence data.
+ */
+function hedley_reports_generate_monthly_incidence_data(array $encounters_by_month) {
   $result = [];
   $current_timestamp = time();
 
@@ -1336,7 +1379,8 @@ function hedley_reports_generate_monthly_incidence_data($encounters_by_month) {
     $key = "$target_date_year-$target_date_month";
     $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
 
-    // Per definition, for month, previous data set contains data of 3 months that came prior.
+    // Per definition, for month, previous data set contains data
+    // of 3 months that came prior.
     $previous_data_set = hedley_reports_empty_nutrition_metrics();
     for ($gap = 1; $gap <= 3; $gap++) {
       $gap_timestamp = strtotime("-$gap month", $target_timestamp);
@@ -1356,7 +1400,8 @@ function hedley_reports_generate_monthly_incidence_data($encounters_by_month) {
  * Generate quarterly incidence table data.
  *
  * @param array $encounters_by_month
- *   An associative array where keys are tuples (year, month) and values are Nutrition Metrics.
+ *   An associative array where keys are tuples (year, month) and values
+ *   are Nutrition Metrics.
  *
  * @return array
  *   An array containing the quarterly incidence table data.
@@ -1393,7 +1438,8 @@ function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_m
  * Generate yearly incidence table data.
  *
  * @param array $encounters_by_month
- *   An associative array where keys are tuples (year, month) and values are Nutrition Metrics.
+ *   An associative array where keys are tuples (year, month) and values
+ *   are Nutrition Metrics.
  *
  * @return array
  *   An array containing the yearly incidence table data.
@@ -1422,7 +1468,20 @@ function hedley_reports_generate_yearly_incidence_data(array $encounters_by_mont
   return $result;
 }
 
-function hedley_reports_generate_prevalence_nutrition_metrics_results($metrics) {
+/**
+ * Generates prevalence nutrition metrics results.
+ *
+ * This function calculates the prevalence percentages for stunting, wasting,
+ * and underweight categories based on the provided metrics.
+ *
+ * @param array $metrics
+ *   An array containing nutritional metrics grouped by categories.
+ *
+ * @return array
+ *   An array containing the calculated prevalence percentages for
+ *   each category.
+ */
+function hedley_reports_generate_prevalence_nutrition_metrics_results(array $metrics) {
   $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
   $wasting_total = array_unique(array_merge($metrics['wasting_moderate'], $metrics['wasting_severe'], $metrics['wasting_normal']));
   $underweight_total = array_unique(array_merge($metrics['underweight_moderate'], $metrics['underweight_severe'], $metrics['underweight_normal']));
@@ -1433,7 +1492,7 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results($metrics) 
     'wasting_moderate' => hedley_reports_calculate_percentage($metrics['wasting_moderate'], $wasting_total),
     'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
     'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
-    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total)
+    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
   ];
 }
 
@@ -1448,8 +1507,8 @@ function hedley_reports_generate_prevalence_nutrition_metrics_results($metrics) 
  * @return array
  *   An associative array containing the incidence nutrition metrics results.
  */
-function hedley_reports_generate_incidence_nutrition_metrics_results($current_period_metric, $previous_period_metric) {
-  // STUNTING
+function hedley_reports_generate_incidence_nutrition_metrics_results(array $current_period_metric, array $previous_period_metric) {
+  // STUNTING.
   $previous_period_stunting_moderate_severe = array_unique(array_merge($previous_period_metric['stunting_moderate'], $previous_period_metric['stunting_severe']));
   $previous_period_stunting_total = array_unique(array_merge($previous_period_stunting_moderate_severe, $previous_period_metric['stunting_normal']));
 
@@ -1459,7 +1518,7 @@ function hedley_reports_generate_incidence_nutrition_metrics_results($current_pe
   $stunting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['stunting_severe']), $previous_period_stunting_total);
   $stunting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['stunting_severe']), array_unique($previous_period_metric['stunting_severe']));
 
-  // WASTING
+  // WASTING.
   $previous_period_wasting_moderate_severe = array_unique(array_merge($previous_period_metric['wasting_moderate'], $previous_period_metric['wasting_severe']));
   $previous_period_wasting_total = array_unique(array_merge($previous_period_wasting_moderate_severe, $previous_period_metric['wasting_normal']));
 
@@ -1469,7 +1528,7 @@ function hedley_reports_generate_incidence_nutrition_metrics_results($current_pe
   $wasting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['wasting_severe']), $previous_period_wasting_total);
   $wasting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['wasting_severe']), array_unique($previous_period_metric['wasting_severe']));
 
-  // UNDERWEIGHT
+  // UNDERWEIGHT.
   $previous_period_underweight_moderate_severe = array_unique(array_merge($previous_period_metric['underweight_moderate'], $previous_period_metric['underweight_severe']));
   $previous_period_underweight_total = array_unique(array_merge($previous_period_underweight_moderate_severe, $previous_period_metric['underweight_normal']));
 
@@ -1489,7 +1548,22 @@ function hedley_reports_generate_incidence_nutrition_metrics_results($current_pe
   ];
 }
 
-function hedley_reports_calculate_percentage($nominator, $total) {
+/**
+ * Calculates the percentage of the nominator over the total.
+ *
+ * This function calculates the percentage value of the nominator divided
+ * by the total. It returns the result as a string rounded to three
+ * decimal places.
+ *
+ * @param array $nominator
+ *   The subset of items for which the percentage is to be calculated.
+ * @param array $total
+ *   The total set of items used as the base for the percentage calculation.
+ *
+ * @return string
+ *   The percentage value as a string, rounded to three decimal places.
+ */
+function hedley_reports_calculate_percentage(array $nominator, array $total) {
   if (empty($total)) {
     return "0";
   }
@@ -1502,15 +1576,16 @@ function hedley_reports_calculate_percentage($nominator, $total) {
  * @param int $year_index
  *   The year index.
  * @param array $encounters_by_month
- *   An associative array where keys are tuples (year, month) and values are NutritionMetrics.
+ *   An associative array where keys are tuples (year, month) and values are
+ *   Nutrition Metrics.
  *
  * @return array
  *   The aggregated nutrition metrics for the specified year.
  */
-function hedley_reports_resolve_data_set_for_year($year_index, $encounters_by_month) {
-  // Calculate the selected date by subtracting months
+function hedley_reports_resolve_data_set_for_year($year_index, array $encounters_by_month) {
+  // Calculate the selected date by subtracting months.
   $selected_date = strtotime("-$year_index years", time());
-  $selected_year =  (int) date('Y', $selected_date);
+  $selected_year = (int) date('Y', $selected_date);
 
   $nutrition_metrics = [];
   foreach ($encounters_by_month as $key => $encounter) {
@@ -1530,13 +1605,14 @@ function hedley_reports_resolve_data_set_for_year($year_index, $encounters_by_mo
  * @param int $quarter_index
  *   The quarter index.
  * @param array $encounters_by_month
- *   An associative array where keys are tuples (year, month) and values are NutritionMetrics.
+ *   An associative array where keys are tuples (year, month) and values are
+ *   Nutrition Metrics.
  *
  * @return array
  *   The aggregated nutrition metrics for the specified quarter.
  */
-function hedley_reports_resolve_data_set_for_quarter($quarter_index, $encounters_by_month) {
-  // Calculate the selected date by subtracting months
+function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $encounters_by_month) {
+  // Calculate the selected date by subtracting months.
   $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
 
   list($year, $quarter) = hedley_reports_resolve_quarter_date_info($selected_date);
@@ -1571,9 +1647,9 @@ function hedley_reports_resolve_quarter_date_info($timestamp) {
 
   if ($quarter == 1) {
     return [$year - 1, 4];
-  } else {
-    return [$year, $quarter - 1];
   }
+
+  return [$year, $quarter - 1];
 }
 
 /**
@@ -1593,38 +1669,69 @@ function hedley_reports_quarter_to_months($quarter) {
   return $months;
 }
 
+/**
+ * Calculates the year difference between two dates.
+ *
+ * This function calculates the difference in years between two dates.
+ * If the second date is not provided, the current date is used.
+ *
+ * @param string $fromDateString
+ *   The starting date in 'Y-m-d' format.
+ * @param string|null $toDateString
+ *   The ending date in 'Y-m-d' format. Defaults to the current date
+ *   if not provided.
+ *
+ * @return int|string
+ *   The difference in years as an integer, or an error message if the date
+ *   format is invalid.
+ */
 function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
-  // Convert the from date string to a DateTime object
+  // Convert the from date string to a DateTime object.
   $fromDate = DateTime::createFromFormat('Y-m-d', $fromDateString);
   if (!$fromDate) {
     return "Invalid from date format.";
   }
 
-  // Use the current date if to date is not provided
+  // Use the current date if to date is not provided.
   if ($toDateString === NULL) {
     $toDate = new DateTime();
-  } else {
-    // Convert the to date string to a DateTime object
+  }
+  else {
+    // Convert the to date string to a DateTime object.
     $toDate = DateTime::createFromFormat('Y-m-d', $toDateString);
     if (!$toDate) {
       return "Invalid to date format.";
     }
   }
 
-  // Calculate the difference between the two dates
+  // Calculate the difference between the two dates.
   $interval = $toDate->diff($fromDate);
 
-  // Determine the sign of the difference
+  // Determine the sign of the difference.
   $yearDifference = $interval->y;
   if ($toDate < $fromDate) {
     $yearDifference = -$yearDifference;
   }
 
-  // Return the difference in years
+  // Return the difference in years.
   return $yearDifference;
 }
 
-function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, $data) {
+/**
+ * Converts nutrition encounter data to nutrition metrics.
+ *
+ * This function processes encounter data to categorize nutritional status
+ * (normal, moderate, severe) for stunting, wasting, and underweight.
+ *
+ * @param int $person_id
+ *   The ID of the person whose data is being processed.
+ * @param array $data
+ *   The nutritional data with keys 'stunting', 'wasting', and 'underweight'.
+ *
+ * @return array
+ *   An array containing categorized nutritional metrics.
+ */
+function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
   list($stunting_normal, $stunting_moderate, $stunting_severe) = hedley_reports_categorize_z_score($data['stunting'], $person_id);
   list($wasting_normal, $wasting_moderate, $wasting_severe) = hedley_reports_categorize_z_score($data['wasting'], $person_id);
   list($underweight_normal, $underweight_moderate, $underweight_severe) = hedley_reports_categorize_z_score($data['underweight'], $person_id);
@@ -1638,11 +1745,22 @@ function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id
     'wasting_severe' => $wasting_severe,
     'underweight_normal' => $underweight_normal,
     'underweight_moderate' => $underweight_moderate,
-    'underweight_severe' => $underweight_severe
+    'underweight_severe' => $underweight_severe,
   ];
 }
 
-function hedley_reports_sum_nutrition_metrics($metrics_list) {
+/**
+ * Sums multiple sets of nutrition metrics.
+ *
+ * This function combines multiple sets of nutrition metrics into a single set.
+ *
+ * @param array $metrics_list
+ *   An array of nutrition metrics to be summed.
+ *
+ * @return array
+ *   The combined nutrition metrics.
+ */
+function hedley_reports_sum_nutrition_metrics(array $metrics_list) {
   $result = hedley_reports_empty_nutrition_metrics();
 
   foreach ($metrics_list as $metrics) {
@@ -1660,6 +1778,21 @@ function hedley_reports_sum_nutrition_metrics($metrics_list) {
   return $result;
 }
 
+/**
+ * Categorizes a z-score into nutritional status categories.
+ *
+ * This function categorizes a given z-score into normal, moderate, or severe
+ * nutritional status for a person.
+ *
+ * @param float|null $score
+ *   The z-score to be categorized.
+ * @param int $person_id
+ *   The ID of the person whose z-score is being categorized.
+ *
+ * @return array
+ *   An array containing three sub-arrays for normal, moderate,
+ *   and severe categories.
+ */
 function hedley_reports_categorize_z_score($score, $person_id) {
   if ($score === NULL) {
     return [[], [], []];
@@ -1676,6 +1809,16 @@ function hedley_reports_categorize_z_score($score, $person_id) {
   return [[$person_id], [], []];
 }
 
+/**
+ * Creates an empty set of nutrition metrics.
+ *
+ * This function generates an empty array structure for nutrition metrics,
+ * with keys for normal, moderate, and severe categories of stunting,
+ * wasting, and underweight.
+ *
+ * @return array
+ *   An empty set of nutrition metrics.
+ */
 function hedley_reports_empty_nutrition_metrics() {
   return [
     'stunting_normal' => [],
@@ -1686,7 +1829,7 @@ function hedley_reports_empty_nutrition_metrics() {
     'wasting_severe' => [],
     'underweight_normal' => [],
     'underweight_moderate' => [],
-    'underweight_severe' => []
+    'underweight_severe' => [],
   ];
 }
 
@@ -1706,4 +1849,3 @@ function hedley_reports_filter_impacted_ids(array $ids, array $impacted) {
     return in_array($id, $impacted);
   });
 }
-
