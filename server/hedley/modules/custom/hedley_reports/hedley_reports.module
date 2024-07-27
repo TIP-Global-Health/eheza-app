@@ -893,7 +893,10 @@ function hedley_reports_load_results_data($report_variant, $scope, $province = N
   }
   gzclose($gz_fp);
 
-  $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+  $additional_data = '';
+  if (!empty($node->field_reports_data)) {
+    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+  }
 
   return [json_decode($data), json_decode($additional_data)];
 }
