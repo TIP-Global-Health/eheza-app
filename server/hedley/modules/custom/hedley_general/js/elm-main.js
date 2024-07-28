@@ -9858,7 +9858,7 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 				}
 			case 'SelectLimitDate':
-				return {english: 'Limit date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'End date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectStartDate':
 				return {english: 'Start date', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectScope':
@@ -10774,6 +10774,26 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
+var $elm$core$Maybe$map3 = F4(
+	function (func, ma, mb, mc) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				if (mc.$ === 'Nothing') {
+					return $elm$core$Maybe$Nothing;
+				} else {
+					var c = mc.a;
+					return $elm$core$Maybe$Just(
+						A3(func, a, b, c));
+				}
+			}
+		}
+	});
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -10828,22 +10848,14 @@ var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
 						$elm$core$String$fromInt(value)
 					]);
 			});
-		var acuteIllnessDataRecords = $elm_community$maybe_extra$Maybe$Extra$values(
-			A2(
-				$elm$core$List$map,
-				function ($) {
-					return $.acuteIllnessData;
-				},
-				records));
-		var filtered = A2(
-			$elm$core$List$filter,
-			function (encounter) {
-				return !_Utils_eq(
-					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
-					$elm$core$Basics$LT);
-			},
-			$elm$core$List$concat(
-				$elm$core$List$concat(acuteIllnessDataRecords)));
+		var acuteIllnessParticipantRecords = $elm$core$List$concat(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.acuteIllnessData;
+					},
+					records)));
 		var diagnosesCountDict = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -10865,7 +10877,7 @@ var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
 					function ($) {
 						return $.diagnosis;
 					},
-					filtered)));
+					$elm$core$List$concat(acuteIllnessParticipantRecords))));
 		var rows = A2(
 			$elm$core$List$map,
 			function (diagnosis) {
@@ -10906,7 +10918,7 @@ var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
 										}),
 									encountersList))));
 				},
-				$elm$core$List$concat(acuteIllnessDataRecords)));
+				acuteIllnessParticipantRecords));
 		var noneRow = A2(generateRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
 		return {
 			captions: _List_fromArray(
@@ -14788,8 +14800,8 @@ var $author$project$Pages$Utils$wrapSelectListInput = F4(
 var $author$project$Pages$Reports$View$viewReportsData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var scopeLabel = function () {
-			var _v1 = data.entityType;
-			switch (_v1.$) {
+			var _v2 = data.entityType;
+			switch (_v2.$) {
 				case 'EntityGlobal':
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				case 'EntityHealthCenter':
@@ -14848,27 +14860,24 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
 						]))
 				]));
-		var limitDateByReportType = _Utils_eq(
-			model.reportType,
-			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? $elm$core$Maybe$Just(currentDate) : model.limitDate;
+		var launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 		var dateInputs = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
 			A2(
 				$elm$core$Maybe$map,
 				function (reportType) {
-					var startDateInput = function () {
-						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness)) {
-							var dateSelectorConfig = function () {
-								var launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
-								return {
-									close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-									dateDefault: $elm$core$Maybe$Just(launchDate),
-									dateFrom: launchDate,
-									dateTo: currentDate,
-									select: $author$project$Pages$Reports$Model$SetStartDate
-								};
-							}();
+					if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition)) {
+						return _List_Nil;
+					} else {
+						var startDateInput = function () {
+							var dateSelectorConfig = {
+								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+								dateDefault: $elm$core$Maybe$Just(launchDate),
+								dateFrom: launchDate,
+								dateTo: currentDate,
+								select: $author$project$Pages$Reports$Model$SetStartDate
+							};
 							var dateForView = A2(
 								$elm$core$Maybe$withDefault,
 								'',
@@ -14891,82 +14900,93 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 										[
 											$elm$html$Html$text(dateForView)
 										])));
-						} else {
-							return $author$project$Gizra$Html$emptyNode;
-						}
-					}();
-					var limitDateInput = function () {
-						if (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportNutrition) || (_Utils_eq(reportType, $author$project$Pages$Reports$Model$ReportAcuteIllness) && $elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate))) {
-							return $author$project$Gizra$Html$emptyNode;
-						} else {
-							var limitDateForView = A2(
-								$elm$core$Maybe$withDefault,
-								'',
-								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-							var dateFrom = A2(
-								$elm$core$Maybe$withDefault,
-								A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-								model.startDate);
-							var dateSelectorConfig = {
-								close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just(currentDate),
-								dateFrom: dateFrom,
-								dateTo: currentDate,
-								select: $author$project$Pages$Reports$Model$SetLimitDate
-							};
-							return A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
-								language,
-								$author$project$Translate$SelectLimitDate,
-								false,
-								A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('form-input date'),
-											$elm$html$Html$Events$onClick(
-											$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
-												$elm$core$Maybe$Just(dateSelectorConfig)))
-										]),
-									_List_fromArray(
-										[
-											$elm$html$Html$text(limitDateForView)
-										])));
-						}
-					}();
-					return _List_fromArray(
-						[startDateInput, limitDateInput]);
+						}();
+						var limitDateInput = function () {
+							if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+								return $author$project$Gizra$Html$emptyNode;
+							} else {
+								var limitDateForView = A2(
+									$elm$core$Maybe$withDefault,
+									'',
+									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+								var dateFrom = A2(
+									$elm$core$Maybe$withDefault,
+									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
+									model.startDate);
+								var dateSelectorConfig = {
+									close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+									dateDefault: $elm$core$Maybe$Just(currentDate),
+									dateFrom: dateFrom,
+									dateTo: currentDate,
+									select: $author$project$Pages$Reports$Model$SetLimitDate
+								};
+								return A4(
+									$author$project$Pages$Utils$wrapSelectListInput,
+									language,
+									$author$project$Translate$SelectLimitDate,
+									false,
+									A2(
+										$elm$html$Html$div,
+										_List_fromArray(
+											[
+												$elm$html$Html$Attributes$class('form-input date'),
+												$elm$html$Html$Events$onClick(
+												$author$project$Pages$Reports$Model$SetLimitDateSelectorState(
+													$elm$core$Maybe$Just(dateSelectorConfig)))
+											]),
+										_List_fromArray(
+											[
+												$elm$html$Html$text(limitDateForView)
+											])));
+							}
+						}();
+						return _List_fromArray(
+							[startDateInput, limitDateInput]);
+					}
 				},
 				model.reportType));
+		var _v0 = _Utils_eq(
+			model.reportType,
+			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
+			$elm$core$Maybe$Just(launchDate),
+			$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
+		var startDateByReportType = _v0.a;
+		var limitDateByReportType = _v0.b;
 		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Pages$Reports$Utils$isWideScope(data.entityType) ? A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$WideScopeNote, '', 'label wide-scope') : $author$project$Gizra$Html$emptyNode,
-			A3(
-				$elm$core$Maybe$map2,
-				F2(
-					function (reportType, limitDate) {
-						var recordsTillLimitDate = _Utils_eq(
+			A4(
+				$elm$core$Maybe$map3,
+				F3(
+					function (reportType, startDate, limitDate) {
+						var recordsTillLimitDate = (_Utils_eq(
+							A2($justinmimbs$date$Date$compare, startDate, launchDate),
+							$elm$core$Basics$EQ) && _Utils_eq(
 							A2($justinmimbs$date$Date$compare, limitDate, currentDate),
-							$elm$core$Basics$EQ) ? data.records : A2(
+							$elm$core$Basics$EQ)) ? data.records : A2(
 							$elm$core$List$filterMap,
 							function (record) {
-								if (_Utils_eq(
+								if ((!_Utils_eq(
+									A2($justinmimbs$date$Date$compare, record.created, startDate),
+									$elm$core$Basics$LT)) && (!_Utils_eq(
 									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$LT)) {
+									$elm$core$Basics$GT))) {
 									var filterPrenatalData = $elm$core$Maybe$map(
 										$elm$core$List$filterMap(
 											function (participantData) {
 												if (_Utils_eq(
 													A2($justinmimbs$date$Date$compare, participantData.created, limitDate),
-													$elm$core$Basics$LT)) {
+													$elm$core$Basics$GT)) {
 													return $elm$core$Maybe$Nothing;
 												} else {
 													var filteredEncounters = A2(
 														$elm$core$List$filter,
 														function (encounterData) {
-															return _Utils_eq(
+															return (!_Utils_eq(
+																A2($justinmimbs$date$Date$compare, encounterData.startDate, startDate),
+																$elm$core$Basics$LT)) && (!_Utils_eq(
 																A2($justinmimbs$date$Date$compare, encounterData.startDate, limitDate),
-																$elm$core$Basics$LT);
+																$elm$core$Basics$GT));
 														},
 														participantData.encounters);
 													var dateConcluded = A2(
@@ -14977,7 +14997,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 																$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
 														},
 														participantData.dateConcluded);
-													return $elm$core$Maybe$Just(
+													return $elm$core$List$isEmpty(filteredEncounters) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
 														_Utils_update(
 															participantData,
 															{dateConcluded: dateConcluded, encounters: filteredEncounters}));
@@ -14988,24 +15008,24 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 											$elm$core$List$map(
 												$elm$core$List$filter(
 													function (encounterData) {
-														return _Utils_eq(
-															A2(
-																$justinmimbs$date$Date$compare,
-																resolveDateFunc(encounterData),
-																limitDate),
-															$elm$core$Basics$LT);
+														var encounterDate = resolveDateFunc(encounterData);
+														return (!_Utils_eq(
+															A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+															$elm$core$Basics$LT)) && (!_Utils_eq(
+															A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+															$elm$core$Basics$GT));
 													})));
 									};
 									var filterGroupBy = function (resolveDateFunc) {
 										return $elm$core$Maybe$map(
 											$elm$core$List$filter(
 												function (encounterData) {
-													return _Utils_eq(
-														A2(
-															$justinmimbs$date$Date$compare,
-															resolveDateFunc(encounterData),
-															limitDate),
-														$elm$core$Basics$LT);
+													var encounterDate = resolveDateFunc(encounterData);
+													return (!_Utils_eq(
+														A2($justinmimbs$date$Date$compare, encounterDate, startDate),
+														$elm$core$Basics$LT)) && (!_Utils_eq(
+														A2($justinmimbs$date$Date$compare, encounterDate, limitDate),
+														$elm$core$Basics$GT));
 												}));
 									};
 									return $elm$core$Maybe$Just(
@@ -15074,15 +15094,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							data.records);
 						switch (reportType.$) {
 							case 'ReportAcuteIllness':
-								return A2(
-									$elm$core$Maybe$withDefault,
-									$author$project$Gizra$Html$emptyNode,
-									A2(
-										$elm$core$Maybe$map,
-										function (startDate) {
-											return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
-										},
-										model.startDate));
+								return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportDemographics':
 								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
@@ -15092,6 +15104,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 						}
 					}),
 				model.reportType,
+				startDateByReportType,
 				limitDateByReportType));
 		return A2(
 			$elm$html$Html$div,
