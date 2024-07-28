@@ -12,6 +12,7 @@ type alias ReportsData =
     , entityName : String
     , entityType : SelectedEntity
     , records : List PatientData
+    , nutritionReportData : Maybe (List BackendGeneratedNutritionReportTableDate)
     }
 
 
@@ -141,6 +142,29 @@ type alias HIVEncounterData =
 
 type alias TuberculosisEncounterData =
     NominalDate
+
+
+type alias BackendGeneratedNutritionReportTableDate =
+    { tableType : NutritionReportTableType
+    , captions : List String
+    , stuntingModerate : List String
+    , stuntingSevere : List String
+    , wastingModerate : List String
+    , wastingSevere : List String
+    , underweightModerate : List String
+    , underweightSevere : List String
+    }
+
+
+type NutritionReportTableType
+    = NutritionTablePrevalanceOneOrMore
+    | NutritionTablePrevalanceTwoOrMore
+    | NutritionTableIncidenceMonthOneOrMore
+    | NutritionTableIncidenceMonthTwoOrMore
+    | NutritionTableIncidenceQuarterOneOrMore
+    | NutritionTableIncidenceQuarterTwoOrMore
+    | NutritionTableIncidenceYearOneOrMore
+    | NutritionTableIncidenceYearTwoOrMore
 
 
 type Msg

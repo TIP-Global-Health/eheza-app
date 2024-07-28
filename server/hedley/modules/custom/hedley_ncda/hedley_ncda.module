@@ -296,7 +296,7 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   $data['site'] = variable_get('hedley_general_site_name', '');
 
   if ($data['entity_type'] == 'district') {
-    $data['results'] = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
+    list($data['results'], $data['additional']) = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
   }
   else {
     // For smaller data sets, we generate results on fly.

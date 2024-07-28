@@ -6,7 +6,9 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
     exposing
         ( AcuteIllnessEncounterType(..)
+        , BackendGeneratedNutritionReportTableDate
         , Gender(..)
+        , NutritionReportTableType(..)
         , PatientData
         , PrenatalEncounterType(..)
         , PrenatalParticipantData
@@ -265,7 +267,7 @@ viewReportsData language currentDate themePath data model =
                                 viewDemographicsReport language limitDate scopeLabel recordsTillLimitDate
 
                             ReportNutrition ->
-                                viewNutritionReport language limitDate scopeLabel model.nutritionReportData
+                                viewNutritionReport language limitDate scopeLabel data.nutritionReportData model.nutritionReportData
 
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
@@ -980,8 +982,36 @@ demographicsReportEncountersDataToCSV data =
         |> String.join "\n"
 
 
-viewNutritionReport : Language -> NominalDate -> String -> RemoteData String NutritionReportData -> Html Msg
-viewNutritionReport language currentDate scopeLabel reportData =
+viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
+viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
+    let
+        generatedData =
+            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
+                |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
+
+        csvFileName =
+            "nutrition-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" currentDate
+                ++ ".csv"
+
+        csvContent =
+            reportTablesDataToCSV generatedData
+    in
+    div [ class "report nutrition" ] <|
+        (List.map viewNutritionMetricsResultsTable generatedData
+            |> List.concat
+        )
+            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+
+
+generareNutritionReportDataFromRawData :
+    Language
+    -> NominalDate
+    -> RemoteData String NutritionReportData
+    -> List MetricsResultsTableData
+generareNutritionReportDataFromRawData language currentDate reportData =
     case reportData of
         Success data ->
             let
@@ -1025,37 +1055,100 @@ viewNutritionReport language currentDate scopeLabel reportData =
 
                 incidenceByYearTwoVisitsOrMore =
                     generateYearlyIncidenceTableData language currentDate Translate.IncidenceByYearTwoVisitsOrMore encountersByMonthForImpacted
-
-                generatedData =
-                    [ prevalenceByMonthOneVisitOrMoreData
-                    , prevalenceByMonthTwoVisitsOrMoreData
-                    , incidenceByMonthOneVisitOrMoreData
-                    , incidenceByMonthTwoVisitsOrMoreData
-                    , incidenceByQuarterOneVisitOrMoreData
-                    , incidenceByQuarterTwoVisitsOrMoreData
-                    , incidenceByYearOneVisitOrMoreData
-                    , incidenceByYearTwoVisitsOrMore
-                    ]
-
-                csvFileName =
-                    "nutrition-report-"
-                        ++ (String.toLower <| String.replace " " "-" scopeLabel)
-                        ++ "-"
-                        ++ customFormatDDMMYYYY "-" currentDate
-                        ++ ".csv"
-
-                csvContent =
-                    reportTablesDataToCSV generatedData
             in
-            div [ class "report nutrition" ] <|
-                (List.map viewNutritionMetricsResultsTable generatedData
-                    |> List.concat
-                )
-                    ++ [ viewDownloadCSVButton language csvFileName csvContent ]
+            [ prevalenceByMonthOneVisitOrMoreData
+            , prevalenceByMonthTwoVisitsOrMoreData
+            , incidenceByMonthOneVisitOrMoreData
+            , incidenceByMonthTwoVisitsOrMoreData
+            , incidenceByQuarterOneVisitOrMoreData
+            , incidenceByQuarterTwoVisitsOrMoreData
+            , incidenceByYearOneVisitOrMoreData
+            , incidenceByYearTwoVisitsOrMore
+            ]
 
         _ ->
-            div [ class "report nutrition" ]
-                [ viewCustomLabel language Translate.PrevalenceByMonthOneVisitOrMore ":" "section heading" ]
+            []
+
+
+generareNutritionReportDataFromBackendGeneratedData :
+    Language
+    -> NominalDate
+    -> List BackendGeneratedNutritionReportTableDate
+    -> List MetricsResultsTableData
+generareNutritionReportDataFromBackendGeneratedData language currentDate data =
+    let
+        nutritionTableTypeToNumber tableType =
+            case tableType of
+                NutritionTablePrevalanceOneOrMore ->
+                    1
+
+                NutritionTablePrevalanceTwoOrMore ->
+                    2
+
+                NutritionTableIncidenceMonthOneOrMore ->
+                    3
+
+                NutritionTableIncidenceMonthTwoOrMore ->
+                    4
+
+                NutritionTableIncidenceQuarterOneOrMore ->
+                    5
+
+                NutritionTableIncidenceQuarterTwoOrMore ->
+                    6
+
+                NutritionTableIncidenceYearOneOrMore ->
+                    7
+
+                NutritionTableIncidenceYearTwoOrMore ->
+                    8
+    in
+    List.sortBy (.tableType >> nutritionTableTypeToNumber) data
+        |> List.map (backendGeneratedNutritionReportTableDateToMetricsResultsTableData language)
+
+
+backendGeneratedNutritionReportTableDateToMetricsResultsTableData : Language -> BackendGeneratedNutritionReportTableDate -> MetricsResultsTableData
+backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backendTableData =
+    let
+        translateCaption caption =
+            if List.member backendTableData.tableType [ NutritionTableIncidenceQuarterOneOrMore, NutritionTableIncidenceQuarterTwoOrMore ] then
+                case String.split "-" caption of
+                    [ year, quarter ] ->
+                        Maybe.map2 (\q y -> Translate.QuarterYear q y |> translate language)
+                            (String.toInt quarter)
+                            (String.toInt year)
+                            |> Maybe.withDefault ""
+
+                    _ ->
+                        ""
+
+            else if List.member backendTableData.tableType [ NutritionTableIncidenceYearOneOrMore, NutritionTableIncidenceYearTwoOrMore ] then
+                String.toInt caption
+                    |> Maybe.map (Translate.Year >> translate language)
+                    |> Maybe.withDefault ""
+
+            else
+                case String.split "-" caption of
+                    [ year, month ] ->
+                        Maybe.map2 (\m y -> Translate.MonthYear m y True |> translate language)
+                            (String.toInt month)
+                            (String.toInt year)
+                            |> Maybe.withDefault ""
+
+                    _ ->
+                        ""
+    in
+    { heading = translate language <| Translate.NutritionReportTableType backendTableData.tableType
+    , captions = "" :: List.map translateCaption backendTableData.captions
+    , rows =
+        [ translate language Translate.StuntingModerate :: backendTableData.stuntingModerate
+        , translate language Translate.StuntingSevere :: backendTableData.stuntingSevere
+        , translate language Translate.WastingModerate :: backendTableData.stuntingModerate
+        , translate language Translate.WastingSevere :: backendTableData.stuntingSevere
+        , translate language Translate.UnderweightModerate :: backendTableData.stuntingModerate
+        , translate language Translate.UnderweightSevere :: backendTableData.stuntingSevere
+        ]
+    }
 
 
 generateMonthlyPrevalenceTableData :
@@ -1063,7 +1156,7 @@ generateMonthlyPrevalenceTableData :
     -> NominalDate
     -> TranslationId
     -> Dict ( Int, Int ) NutritionMetrics
-    -> { heading : String, captions : List String, rows : List (List String) }
+    -> MetricsResultsTableData
 generateMonthlyPrevalenceTableData language currentDate heading encountersByMonth =
     List.range 1 12
         |> List.map
@@ -1075,18 +1168,15 @@ generateMonthlyPrevalenceTableData language currentDate heading encountersByMont
                     year =
                         Date.year selectedDate
 
-                    month =
-                        Date.month selectedDate
-
                     monthNumber =
                         Date.monthNumber selectedDate
                 in
-                ( Translate.MonthYear month year True
+                ( Translate.MonthYear monthNumber year True
                 , resolveDataSetForMonth currentDate index encountersByMonth
                     |> generatePrevalenceNutritionMetricsResults
                 )
             )
-        |> toNutritionMetricsResultsTableData language heading
+        |> toMetricsResultsTableData language heading
 
 
 generateMonthlyIncidenceTableData :
@@ -1094,7 +1184,7 @@ generateMonthlyIncidenceTableData :
     -> NominalDate
     -> TranslationId
     -> Dict ( Int, Int ) NutritionMetrics
-    -> { heading : String, captions : List String, rows : List (List String) }
+    -> MetricsResultsTableData
 generateMonthlyIncidenceTableData language currentDate heading encountersByMonth =
     List.range 1 12
         |> List.map
@@ -1106,10 +1196,10 @@ generateMonthlyIncidenceTableData language currentDate heading encountersByMonth
                     year =
                         Date.year selectedDate
 
-                    month =
-                        Date.month selectedDate
+                    monthNumber =
+                        Date.monthNumber selectedDate
                 in
-                ( Translate.MonthYear month year True
+                ( Translate.MonthYear monthNumber year True
                 , generateIncidenceNutritionMetricsResults
                     (resolveDataSetForMonth currentDate index encountersByMonth)
                     -- Per definition, for month, previous data set contains
@@ -1117,7 +1207,7 @@ generateMonthlyIncidenceTableData language currentDate heading encountersByMonth
                     (resolvePreviousDataSetForMonth currentDate index encountersByMonth)
                 )
             )
-        |> toNutritionMetricsResultsTableData language heading
+        |> toMetricsResultsTableData language heading
 
 
 generateQuarterlyIncidenceTableData :
@@ -1125,7 +1215,7 @@ generateQuarterlyIncidenceTableData :
     -> NominalDate
     -> TranslationId
     -> Dict ( Int, Int ) NutritionMetrics
-    -> { heading : String, captions : List String, rows : List (List String) }
+    -> MetricsResultsTableData
 generateQuarterlyIncidenceTableData language currentDate heading encountersByMonth =
     let
         dataSetsByQuarter =
@@ -1165,7 +1255,7 @@ generateQuarterlyIncidenceTableData language currentDate heading encountersByMon
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toNutritionMetricsResultsTableData language heading
+        |> toMetricsResultsTableData language heading
 
 
 generateYearlyIncidenceTableData :
@@ -1173,7 +1263,7 @@ generateYearlyIncidenceTableData :
     -> NominalDate
     -> TranslationId
     -> Dict ( Int, Int ) NutritionMetrics
-    -> { heading : String, captions : List String, rows : List (List String) }
+    -> MetricsResultsTableData
 generateYearlyIncidenceTableData language currentDate heading encountersByMonth =
     let
         dataSetsByYear =
@@ -1209,15 +1299,15 @@ generateYearlyIncidenceTableData language currentDate heading encountersByMonth 
                 , generateIncidenceNutritionMetricsResults dataSet previousDataSet
                 )
             )
-        |> toNutritionMetricsResultsTableData language heading
+        |> toMetricsResultsTableData language heading
 
 
-toNutritionMetricsResultsTableData :
+toMetricsResultsTableData :
     Language
     -> TranslationId
     -> List ( TranslationId, NutritionMetricsResults )
-    -> { heading : String, captions : List String, rows : List (List String) }
-toNutritionMetricsResultsTableData language heading data =
+    -> MetricsResultsTableData
+toMetricsResultsTableData language heading data =
     let
         captions =
             List.map
@@ -1253,9 +1343,7 @@ toNutritionMetricsResultsTableData language heading data =
     }
 
 
-viewNutritionMetricsResultsTable :
-    { heading : String, captions : List String, rows : List (List String) }
-    -> List (Html Msg)
+viewNutritionMetricsResultsTable : MetricsResultsTableData -> List (Html Msg)
 viewNutritionMetricsResultsTable data =
     let
         captionsRow =
@@ -1309,7 +1397,7 @@ generatePrenatalReportData :
     Language
     -> NominalDate
     -> List PatientData
-    -> List { heading : String, captions : List String, rows : List (List String) }
+    -> List MetricsResultsTableData
 generatePrenatalReportData language limitDate records =
     let
         filtered =
@@ -1566,7 +1654,7 @@ generateAcuteIllnessReportData :
     Language
     -> NominalDate
     -> List PatientData
-    -> { heading : String, captions : List String, rows : List (List String) }
+    -> MetricsResultsTableData
 generateAcuteIllnessReportData language startDate records =
     let
         acuteIllnessDataRecords =
@@ -1682,13 +1770,13 @@ viewDownloadCSVButton language csvFileName csvContent =
         ]
 
 
-reportTablesDataToCSV : List { heading : String, captions : List String, rows : List (List String) } -> String
+reportTablesDataToCSV : List MetricsResultsTableData -> String
 reportTablesDataToCSV =
     List.map reportTableDataToCSV
         >> String.join "\n\n"
 
 
-reportTableDataToCSV : { heading : String, captions : List String, rows : List (List String) } -> String
+reportTableDataToCSV : MetricsResultsTableData -> String
 reportTableDataToCSV tableData =
     [ tableData.heading
     , String.join "," tableData.captions

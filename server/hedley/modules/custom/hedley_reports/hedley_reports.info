@@ -25,6 +25,7 @@ features[field_instance][] = node-report_data-field_district
 features[field_instance][] = node-report_data-field_health_center
 features[field_instance][] = node-report_data-field_province
 features[field_instance][] = node-report_data-field_report_variant
+features[field_instance][] = node-report_data-field_reports_data
 features[field_instance][] = node-report_data-field_sector
 features[field_instance][] = node-report_data-field_village
 features[node][] = report_data
