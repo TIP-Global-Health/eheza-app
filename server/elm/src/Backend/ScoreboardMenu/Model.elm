@@ -1,4 +1,4 @@
-module Backend.Menu.Model exposing (..)
+module Backend.ScoreboardMenu.Model exposing (..)
 
 import App.Types exposing (Site)
 import Json.Encode exposing (Value)

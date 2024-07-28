@@ -478,3 +478,56 @@ function hedley_general_file_insert($file) {
   $file->uri = 'private://' . $file->filename;
   file_move($file, $destination);
 }
+
+/**
+ * Build Elm application for aggregated NCDA.
+ *
+ * @param string $page
+ *   The page name.
+ * @param array $data
+ *   The data array to be used by Elm application.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_general_build_elm_app($page, array $data) {
+  $path_hedley_general = drupal_get_path('module', 'hedley_general');
+
+  // Add scripts.
+  drupal_add_js($path_hedley_general . '/js/elm-main.js');
+  drupal_add_js($path_hedley_general . '/js/elm.js');
+
+  // Add CSS for all pages.
+  drupal_add_css($path_hedley_general . '/css/elm.css', 'file');
+  drupal_add_css($path_hedley_general . '/css/date-selector.css', 'file');
+
+  if (in_array($page, ['ncda-results', 'reports-results'])) {
+    // Add CSS for results pages.
+    $path_system = drupal_get_path('module', 'system');
+    drupal_add_css($path_system . '/system.base.css', 'file');
+    drupal_add_css($path_system . '/system.menus.css', 'file');
+    $default_theme = variable_get('theme_default', 'bartik');
+    $path_theme = drupal_get_path('theme', $default_theme);
+    drupal_add_css($path_theme . '/css/style.css', 'file');
+    drupal_add_css($path_theme . '/css/layout.css', 'file');
+    drupal_add_css($path_theme . '/css/colors.css', 'file');
+  }
+
+  // Getting a unique ID for the app.
+  $app_id = drupal_html_id('elm-app');
+
+  // Add settings.
+  $settings = [
+    'elm_apps' => [
+      $app_id => [
+        'page' => $page,
+        'data' => $data,
+        'theme_path' => $path_hedley_general,
+      ],
+    ],
+  ];
+  drupal_add_js($settings, 'setting');
+
+  // Return the HTML markup for the Elm application.
+  return '<div id="' . $app_id . '"></div>';
+}

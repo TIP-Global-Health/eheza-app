@@ -72,3 +72,22 @@ function hedley_health_center_get_villages_by_health_center($health_center_id, $
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
 }
+
+/**
+ * Retrieves all health center node IDs.
+ *
+ * @return array
+ *   An array of health center node IDs. If no health centers are found,
+ *   an empty array is returned.
+ */
+function hedley_health_center_get_all_health_centers_ids() {
+  $query = new EntityFieldQuery();
+
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'health_center')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
