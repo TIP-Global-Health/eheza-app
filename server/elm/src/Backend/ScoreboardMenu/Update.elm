@@ -1,8 +1,8 @@
-module Backend.Menu.Update exposing (update)
+module Backend.ScoreboardMenu.Update exposing (update)
 
-import Backend.Menu.Decoder exposing (decodeMenuData)
-import Backend.Menu.Model exposing (Msg(..))
 import Backend.Model exposing (ModelBackend)
+import Backend.ScoreboardMenu.Decoder exposing (decodeMenuData)
+import Backend.ScoreboardMenu.Model exposing (Msg(..))
 import Backend.Types exposing (BackendReturn)
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
@@ -15,7 +15,7 @@ update currentDate msg model =
         SetData value ->
             let
                 modelUpdated =
-                    { model | menuData = Just <| decodeValue decodeMenuData value }
+                    { model | scoreboardMenuData = Just <| decodeValue decodeMenuData value }
             in
             BackendReturn
                 modelUpdated

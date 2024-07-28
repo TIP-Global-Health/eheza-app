@@ -1,0 +1,1855 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Reports feature.
+ */
+
+include_once 'hedley_reports.features.inc';
+
+/**
+ * @file
+ * Code for the Hedley Reports feature.
+ */
+
+define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
+
+/**
+ * Implements hook_menu().
+ */
+function hedley_reports_menu() {
+  $items['admin/reports/statistical-queries'] = array(
+    'title' => 'Statistical Queries',
+    'description' => 'View Statistical Queries',
+    'page callback' => 'hedley_reports_aggregated_callback_menu',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/all'] = array(
+    'title' => 'Entire Population',
+    'description' => 'View report for Entire Population',
+    'page callback' => 'hedley_reports_aggregated_callback_global',
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/demographics/%'] = array(
+    'title' => 'Province',
+    'description' => 'View report for province',
+    'page callback' => 'hedley_reports_aggregated_callback_province',
+    'page arguments' => [4],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/demographics/%/%'] = array(
+    'title' => 'District',
+    'description' => 'View report for district',
+    'page callback' => 'hedley_reports_aggregated_callback_district',
+    'page arguments' => [4, 5],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
+    'title' => 'Sector',
+    'description' => 'View report for sector',
+    'page callback' => 'hedley_reports_aggregated_callback_sector',
+    'page arguments' => [4, 5, 6],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
+    'title' => 'Cell',
+    'description' => 'View report for cell',
+    'page callback' => 'hedley_reports_aggregated_callback_cell',
+    'page arguments' => [4, 5, 6, 7],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
+    'title' => 'Village',
+    'description' => 'View report for village',
+    'page callback' => 'hedley_reports_aggregated_callback_village',
+    'page arguments' => [4, 5, 6, 7, 8],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/statistical-queries/health-center/%'] = array(
+    'title' => 'Health center',
+    'description' => 'View report for health center',
+    'page callback' => 'hedley_reports_aggregated_callback_health_center',
+    'page arguments' => [4],
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  return $items;
+}
+
+/**
+ * Grants access to Statistical Queries viewers, superuser and administrators.
+ *
+ * @return bool
+ *   TRUE if the user has access, FALSE otherwise.
+ */
+function hedley_reports_statistical_queries_report_access() {
+  $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+
+  return user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
+}
+
+/**
+ * Implements hook_node_insert().
+ */
+function hedley_reports_node_insert($node) {
+  // Generate initial Reports data for newly created person.
+  if ($node->type == 'person') {
+    hedley_reports_trigger_recalculation_for_created_person($node);
+    return;
+  }
+
+  hedley_reports_trigger_recalculation_by_new_content($node);
+}
+
+/**
+ * Implements hook_node_update().
+ */
+function hedley_reports_node_update($node) {
+  if ($node->type == 'person') {
+    hedley_reports_trigger_recalculation_for_edited_person($node);
+  }
+}
+
+/**
+ * Implements hook_advanced_queue_info().
+ */
+function hedley_reports_advanced_queue_info() {
+  $items[HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA] = [
+    'label' => t('Calculate Statistical Queries data'),
+    'worker callback' => 'hedley_reports_calculate_aggregated_data_worker',
+    'groups' => [
+      'hedley',
+    ],
+    // The number of seconds to retry after.
+    'retry after' => 120,
+    // The maximum number of attempts after a failure.
+    'max attempts' => 3,
+  ];
+
+  return $items;
+}
+
+/**
+ * Advanced queue worker; Calculate aggregated Reports data for person.
+ *
+ * @param object $queue_item
+ *   The item object to process.
+ *
+ * @return array
+ *   Array indicating if the process succeeded, or an array with
+ *   "status" and "result" keys.
+ */
+function hedley_reports_calculate_aggregated_data_worker($queue_item) {
+  if (!$person_id = $queue_item->data['person_id']) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE,
+      'result' => t('Does not have Person Node ID.'),
+    ];
+  }
+
+  try {
+    $person = node_load($person_id);
+    hedley_reports_calculate_aggregated_data_for_person($person);
+  }
+  catch (Exception $e) {
+    return [
+      'status' => ADVANCEDQUEUE_STATUS_FAILURE_RETRY,
+      'result' => $e->getMessage(),
+    ];
+  }
+
+  $params = [
+    '@nid' => $person_id,
+  ];
+  return [
+    'status' => ADVANCEDQUEUE_STATUS_SUCCESS,
+    'result' => t('Statistical Queries data has been calculated for person ID: @nid', $params),
+  ];
+}
+
+/**
+ * Callback for Elm application of administrative division selection.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_menu() {
+  $site = variable_get('hedley_general_site_name', '');
+
+  $health_centers_data = [];
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+  $nodes = node_load_multiple($health_center_ids);
+  foreach ($nodes as $node) {
+    $health_centers_data[] = [
+      'id' => $node->nid,
+      'name' => $node->title,
+    ];
+  }
+
+  return hedley_general_build_elm_app('reports-menu', [
+    'site' => $site,
+    'health_centers' => $health_centers_data,
+  ]);
+}
+
+/**
+ * Triggers calculation of Reports data, for newly created person.
+ *
+ * @param object $node
+ *   The node object of a person.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_for_created_person($node) {
+  // If we got this far, schedule generating NCDA data using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
+
+/**
+ * Triggers recalculation of person's Reports data, when edited.
+ *
+ * Recalculation is required only when birthdate is edited.
+ * Note: Currently, editing geo fields of person is not allowed.
+ *
+ * @param object $node
+ *   The node object of a person.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_for_edited_person($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $wrapper_orig = entity_metadata_wrapper('node', $node->original);
+
+  $birth_date = $wrapper->field_birth_date->value();
+  $birth_date_orig = $wrapper_orig->field_birth_date->value();
+
+  if ($birth_date == $birth_date_orig) {
+    return;
+  }
+
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $node->nid, [
+    'person_id' => $node->nid,
+  ]);
+}
+
+/**
+ * Triggers recalculation of person's NCDA data based on it's measurement node.
+ *
+ * @param object $node
+ *   The node object of a measurement.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_by_new_content($node) {
+  $triggering_encounters = [
+    HEDLEY_ACTIVITY_ACUTE_ILLNESS_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE,
+    HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE,
+  ];
+  $triggering_measurements = hedley_reports_get_triggering_measurement_types();
+
+  if (!in_array($node->type, array_merge($triggering_encounters, $triggering_measurements))) {
+    // Not a triggering content.
+    return;
+  }
+
+  if (in_array($node->type, $triggering_encounters)) {
+    // For encounters, resolving person ID through individual participant.
+    $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    if (empty($participant_id)) {
+      // Can't resolve to which participant encounter belongs.
+      return;
+    }
+    $wrapper = entity_metadata_wrapper('node', $participant_id);
+  }
+  else {
+    // For measurements, resolving person ID directly from measurement.
+    $wrapper = entity_metadata_wrapper('node', $node);
+  }
+
+  if (!$wrapper->__isset('field_person')) {
+    // Can't resolve to which person measurement belongs.
+    return;
+  }
+
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  // Trigger recalculation using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+/**
+ * Retrieves measurement types that trigger Reports data recalculation.
+ *
+ * @return array
+ *   The array of triggering measurement types.
+ */
+function hedley_reports_get_triggering_measurement_types() {
+  return array_unique(array_merge(
+    HEDLEY_ACTIVITY_HEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_WEIGHT_BUNDLES,
+    HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES,
+  ));
+}
+
+/**
+ * Generate raw data for reports, and store in field on person node.
+ *
+ * @param object $person
+ *   Person node for which Reports data is generated.
+ *
+ * @return bool
+ *   True, if data was calculated for person.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_calculate_aggregated_data_for_person($person) {
+  $birth_date = strtotime($person->field_birth_date[LANGUAGE_NONE][0]['value']);
+  if (empty($birth_date)) {
+    // We must know the birthdate to be able to present reports data.
+    return FALSE;
+  }
+  $data = [
+    'id' => $person->nid,
+    'created' => date("Y-m-d", $person->created),
+    'birth_date' => date("Y-m-d", $birth_date),
+    'gender' => $person->field_gender[LANGUAGE_NONE][0]['value'],
+  ];
+
+  $sessions_ids = $zscores_by_encounter = [];
+  $measurements_bundles = hedley_reports_get_triggering_measurement_types();
+  $measurements_ids = hedley_general_get_person_measurements($person->nid, $measurements_bundles);
+  $measurements = node_load_multiple($measurements_ids);
+  foreach ($measurements as $measurement) {
+    switch ($measurement->type) {
+      case HEDLEY_ACTIVITY_NUTRITION_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_nutrition_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_well_child_encounter[LANGUAGE_NONE][0]['target_id'];
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['s' => $zscore_age];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['s'] = $zscore_age;
+          }
+        }
+        break;
+
+      case HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+        $zscore_age = $measurement->field_zscore_age[LANGUAGE_NONE][0]['value'];
+        $zscore_length = $measurement->field_zscore_length[LANGUAGE_NONE][0]['value'];
+        if (!empty($zscore_age)) {
+          if (empty($zscores_by_encounter[$encounter_id])) {
+            $zscores_by_encounter[$encounter_id] = ['w' => $zscore_age, 'u' => $zscore_length];
+          }
+          else {
+            $zscores_by_encounter[$encounter_id]['w'] = $zscore_age;
+            $zscores_by_encounter[$encounter_id]['u'] = $zscore_length;
+          }
+        }
+        break;
+
+      default:
+        $encounter_id = $measurement->field_session[LANGUAGE_NONE][0]['target_id'];
+        $sessions_ids[] = $encounter_id;
+    }
+  }
+
+  $encounters_data = [];
+  $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
+  $encounter_types_to_load = [
+    HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
+    HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HIV_ENCOUNTER_TYPE,
+    HEDLEY_STATS_HOME_VISIT_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NCD_ENCOUNTER_TYPE,
+    HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE,
+    HEDLEY_STATS_TUBERCULOSIS_ENCOUNTER_TYPE,
+    HEDLEY_STATS_SPV_ENCOUNTER_TYPE,
+  ];
+  $individual_participants_ids = hedley_person_individual_participants_for_person($person->nid, $encounter_types_to_load);
+  $individual_participants = node_load_multiple($individual_participants_ids);
+  foreach ($individual_participants as $individual_participant) {
+    $encounters_ids = hedley_person_encounters_for_individual_participant($individual_participant->nid);
+    if (empty($encounters_ids)) {
+      continue;
+    }
+    $participant_type = $individual_participant->field_encounter_type[LANGUAGE_NONE][0]['value'];
+    $encounters = node_load_multiple($encounters_ids);
+    foreach ($encounters as $encounter) {
+      $encounter_date = date("Y-m-d", strtotime($encounter->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+      switch ($participant_type) {
+        case HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE:
+          $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
+          $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+          $mapped_diagnosis = !empty($ai_diagnosis_mapping[$diagnosis]) ? $ai_diagnosis_mapping[$diagnosis] : '';
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnosis";
+          break;
+
+        case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
+          $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+          $encounter_data = "$encounter_date $encounter_type";
+          break;
+
+        case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
+        case HEDLEY_STATS_SPV_ENCOUNTER_TYPE:
+          $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$encounter->nid]);
+          $encounter_data = "$encounter_date $nutrition";
+          break;
+
+        // For remaining types recording only encounter date.
+        default:
+          $encounter_data = $encounter_date;
+      }
+
+      if (empty($encounters_data[$participant_type][$individual_participant->nid])) {
+        $encounters_data[$participant_type][$individual_participant->nid] = [$encounter_data];
+      }
+      else {
+        $encounters_data[$participant_type][$individual_participant->nid][] = $encounter_data;
+      }
+    }
+
+    // Adding participant data for pregnancies.
+    if ($participant_type == HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE) {
+      $participant_data = [
+        'created' => date("Y-m-d", $individual_participant->created),
+      ];
+      $edd_date = $individual_participant->field_expected_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($edd_date)) {
+        $participant_data['edd'] = date("Y-m-d", strtotime($edd_date));
+      }
+      $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
+      if (!empty($date_concluded)) {
+        $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
+      }
+      $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
+      $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
+    }
+  }
+
+  if (!empty($encounters_data)) {
+    foreach ($encounters_data as $key => $data_type) {
+      $encounters_data[$key] = array_values($data_type);
+    }
+    $data['individual'] = $encounters_data;
+  }
+
+  // Load group data.
+  $sessions_ids = array_unique($sessions_ids);
+  $sessions = node_load_multiple($sessions_ids);
+  $clinics_ids = [];
+  foreach ($sessions as $session) {
+    $clinics_ids[] = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+  }
+  $clinics_ids = array_unique($clinics_ids);
+  $clinics = node_load_multiple($clinics_ids);
+  $group_type_by_clinic = [];
+  foreach ($clinics as $clinic) {
+    $group_type_by_clinic[$clinic->nid] = $clinic->field_group_type[LANGUAGE_NONE][0]['value'];
+  }
+
+  $sessions_data = [];
+  foreach ($sessions as $session) {
+    $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
+    $group_type = $group_type_by_clinic[$clinic_id];
+    $encounter_date = date("Y-m-d", strtotime($session->field_scheduled_date[LANGUAGE_NONE][0]['value']));
+    $nutrition = hedley_reports_nutrition_metrics_to_string($zscores_by_encounter[$session->nid]);
+    $session_data = "$encounter_date $nutrition";
+
+    if (empty($sessions_data[$group_type])) {
+      $sessions_data[$group_type] = [$session_data];
+    }
+    else {
+      $sessions_data[$group_type][] = $session_data;
+    }
+  }
+  if (!empty($sessions_data)) {
+    $data['group_nutrition'] = $sessions_data;
+  }
+
+  $encoded_data = json_encode($data);
+  $person->field_reports_data[LANGUAGE_NONE][0]['value'] = $encoded_data;
+  node_save($person);
+
+  return TRUE;
+}
+
+/**
+ * Converts nutrition metrics values to a comma-separated string.
+ *
+ * This function takes an associative array of nutrition metrics and
+ * converts it into a string where the values are separated by commas.
+ * The keys for the array should be 's' for stunting, 'w' for wasting,
+ * and 'u' for underweight. If a key is missing or its value is empty,
+ * an empty string is used in its place.
+ *
+ * @param array|null $values
+ *   An associative array of nutrition metrics with the following possible keys:
+ *   - 's': The stunting metric.
+ *   - 'w': The wasting metric.
+ *   - 'u': The underweight metric.
+ *
+ * @return string
+ *   A string with the stunting, wasting, and underweight metrics separated
+ *   by commas. If the input array is empty, returns ',,'.
+ */
+function hedley_reports_nutrition_metrics_to_string($values) {
+  if (empty($values)) {
+    return ',,';
+  }
+
+  $stunting = !empty($values['s']) ? $values['s'] : '';
+  $wasting = !empty($values['w']) ? $values['w'] : '';
+  $underweight = !empty($values['u']) ? $values['u'] : '';
+
+  return "$stunting,$wasting,$underweight";
+}
+
+/**
+ * Callback for aggregated Reports elm application of all patients.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_global() {
+  return hedley_reports_build_results_app();
+}
+
+/**
+ * Callback for aggregated Reports elm application of province.
+ *
+ * @param string $province
+ *   Province name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_province($province) {
+  return hedley_reports_build_results_app($province);
+}
+
+/**
+ * Callback for aggregated Reports elm application of district.
+ *
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_district($province, $district) {
+  return hedley_reports_build_results_app($province, $district);
+}
+
+/**
+ * Callback for aggregated Reports elm application of sector.
+ *
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_sector($province, $district, $sector) {
+  return hedley_reports_build_results_app($province, $district, $sector);
+}
+
+/**
+ * Callback for aggregated Reports elm application of cell.
+ *
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_cell($province, $district, $sector, $cell) {
+  return hedley_reports_build_results_app($province, $district, $sector, $cell);
+}
+
+/**
+ * Callback for aggregated Reports elm application of village.
+ *
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_village($province, $district, $sector, $cell, $village) {
+  return hedley_reports_build_results_app($province, $district, $sector, $cell, $village);
+}
+
+/**
+ * Callback for aggregated Reports elm application of health center.
+ *
+ * @param int $health_center
+ *   Health center ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_aggregated_callback_health_center($health_center) {
+  return hedley_reports_build_results_app(NULL, NULL, NULL, NULL, NULL, $health_center);
+}
+
+/**
+ * Build results app for aggregated Reports.
+ *
+ * Based on input fields, determines administrative divisions for which
+ * data is provided.
+ *
+ * @param string|null $province
+ *   Province name (optional).
+ * @param string|null $district
+ *   District name (optional).
+ * @param string|null $sector
+ *   Sector name (optional).
+ * @param string|null $cell
+ *   Cell name (optional).
+ * @param string|null $village
+ *   Village name (optional).
+ * @param int|null $health_center
+ *   Health center ID (optional).
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_build_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
+  $data = [];
+
+  if (empty($province)) {
+    if (empty($health_center)) {
+      $data['entity_name'] = 'Global';
+      $data['entity_type'] = 'global';
+    }
+    else {
+      $wrapper = entity_metadata_wrapper('node', $health_center);
+      $data['entity_name'] = $wrapper->label();
+      $data['entity_type'] = 'health-center';
+    }
+  }
+  elseif (empty($district)) {
+    $data['entity_name'] = $province;
+    $data['entity_type'] = 'province';
+  }
+  elseif (empty($sector)) {
+    $data['entity_name'] = $district;
+    $data['entity_type'] = 'district';
+  }
+  elseif (empty($cell)) {
+    $data['entity_name'] = $sector;
+    $data['entity_type'] = 'sector';
+  }
+  elseif (empty($village)) {
+    $data['entity_name'] = $cell;
+    $data['entity_type'] = 'cell';
+  }
+  else {
+    $data['entity_name'] = $village;
+    $data['entity_type'] = 'village';
+  }
+
+  $data['site'] = variable_get('hedley_general_site_name', '');
+
+  if (in_array($data['entity_type'], ['sector', 'cell', 'village'])) {
+    // For smaller data sets, we generate results on fly.
+    $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
+  }
+  else {
+    list($data['results'], $data['additional']) = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+  }
+
+  return hedley_general_build_elm_app('reports-results', $data);
+}
+
+/**
+ * Generate aggregated Reports data which is stored on person nodes.
+ *
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name.
+ * @param string|null $cell
+ *   Cell name.
+ * @param string|null $village
+ *   Village name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center) {
+  $base_query = new EntityFieldQuery();
+  $base_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'person')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
+    ->addTag('exclude_deleted');
+
+  if (!empty($province)) {
+    $base_query->fieldCondition('field_province', 'value', $province);
+  }
+
+  if (!empty($district)) {
+    $base_query->fieldCondition('field_district', 'value', $district);
+  }
+
+  if (!empty($sector)) {
+    $base_query->fieldCondition('field_sector', 'value', $sector);
+  }
+
+  if (!empty($cell)) {
+    $base_query->fieldCondition('field_cell', 'value', $cell);
+  }
+
+  if (!empty($village)) {
+    $base_query->fieldCondition('field_village', 'value', $village);
+  }
+
+  if (!empty($health_center)) {
+    $base_query->fieldCondition('field_shards', 'target_id', $health_center);
+  }
+
+  $data = [];
+  $nid = 0;
+  $batch = 400;
+  while (TRUE) {
+    // Free up memory.
+    drupal_static_reset();
+
+    $query = clone $base_query;
+    if ($nid) {
+      $query->propertyCondition('nid', $nid, '>');
+    }
+
+    $result = $query
+      ->range(0, $batch)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // No more items left.
+      break;
+    }
+
+    $ids = array_keys($result['node']);
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+      if (empty($json_data)) {
+        continue;
+      }
+
+      $data[] = json_decode($json_data);
+      // Explicitly unset large variables after use for memory optimization.
+      unset($json_data);
+    }
+
+    $nid = end($ids);
+    // Explicitly unset large variables after use for memory optimization.
+    unset($nodes);
+  }
+
+  return $data;
+}
+
+/**
+ * Loads data in scope, stored at Report Data node.
+ *
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   Stored data.
+ */
+function hedley_reports_load_results_data($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
+  if (!$node_id) {
+    return [];
+  }
+
+  $node = node_load($node_id);
+  $file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+  if (!$file) {
+    return [];
+  }
+
+  // Get the real path of the file.
+  $file_path = drupal_realpath($file->uri);
+  // Open the gzipped file and read its contents.
+  $gz_fp = gzopen($file_path, 'r');
+  if (!$gz_fp) {
+    return [];
+  }
+
+  $data = '';
+  while (!gzeof($gz_fp)) {
+    $data .= gzread($gz_fp, 4096);
+  }
+  gzclose($gz_fp);
+
+  $additional_data = '';
+  if (!empty($node->field_reports_data)) {
+    $additional_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+  }
+
+  return [json_decode($data), json_decode($additional_data)];
+}
+
+/**
+ * Generates data in scope and creates/updates Report Data node.
+ *
+ * @param array $data
+ *   Data to write into file.
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to generate.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @throws Exception
+ */
+function hedley_reports_create_or_update_results_data_node(array $data, $report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $data_file_id = hedley_reports_create_data_file($data);
+  $node_id = hedley_reports_load_results_data_node($report_variant, $scope, $province, $district, $health_center);
+  if (!$node_id) {
+    // Create the Report Data node.
+    $node = new stdClass();
+    $node->type = 'report_data';
+    node_object_prepare($node);
+    $node->title = hedley_reports_generate_results_data_node_title($report_variant, $scope, $province, $district, $health_center);
+    $node->uid = 1;
+    $node->status = NODE_PUBLISHED;
+    $node->language = LANGUAGE_NONE;
+    $node->field_report_variant[LANGUAGE_NONE][0]['value'] = $report_variant;
+    $node->field_data_scope[LANGUAGE_NONE][0]['value'] = $scope;
+    // Attach the file to the node's file field.
+    $node->field_data_file[LANGUAGE_NONE][0] = [
+      'fid' => $data_file_id,
+      'display' => 1,
+    ];
+    if (!empty($province)) {
+      $node->field_province[LANGUAGE_NONE][0]['value'] = $province;
+    }
+    if (!empty($district)) {
+      $node->field_district[LANGUAGE_NONE][0]['value'] = $district;
+    }
+    if (!empty($health_center)) {
+      $node->field_health_center[LANGUAGE_NONE][0]['target_id'] = $health_center;
+    }
+  }
+  else {
+    // Update the Report Data node.
+    $node = node_load($node_id);
+    $old_file = file_load($node->field_data_file[LANGUAGE_NONE][0]['fid']);
+    if ($old_file) {
+      // Delete the old file.
+      file_delete($old_file, TRUE);
+    }
+    // Attach new file.
+    $node->field_data_file[LANGUAGE_NONE][0] = [
+      'fid' => $data_file_id,
+      'display' => 1,
+    ];
+  }
+
+  if ($report_variant == 'statistical-query') {
+    $additional_data = [
+      'nutrition_report_data' => hedley_reports_generate_nutrition_report_data($data),
+    ];
+    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($additional_data);
+  }
+
+  // Save the node.
+  node_save($node);
+}
+
+/**
+ * Loads Report Data node of provided variant, storing data defined at scope.
+ *
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return int|false
+ *   Report Data node ID, or False, if not found.
+ */
+function hedley_reports_load_results_data_node($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'report_data')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_report_variant', 'value', $report_variant)
+    ->fieldCondition('field_data_scope', 'value', $scope)
+    // There can be only single node.
+    ->range(0, 1);
+
+  if (!empty($province)) {
+    $query->fieldCondition('field_province', 'value', $province);
+  }
+
+  if (!empty($district)) {
+    $query->fieldCondition('field_district', 'value', $district);
+  }
+
+  if (!empty($health_center)) {
+    $query->fieldCondition('field_health_center', 'target_id', $health_center);
+  }
+
+  $result = $query->execute();
+
+  return empty($result['node']) ? FALSE : key($result['node']);
+}
+
+/**
+ * Creates a file with provided data as a content.
+ *
+ * @param array $data
+ *   Data to write into file.
+ *
+ * @return int
+ *   Created file ID.
+ */
+function hedley_reports_create_data_file(array $data) {
+  // Create a temporary file with the content.
+  $file_content = json_encode($data);
+  $file_path = 'private://report-data-' . time() . '.txt.gz';
+  $file_uri = file_unmanaged_save_data($file_content, $file_path, FILE_EXISTS_REPLACE);
+  // Compress the content and save it to a .gz file.
+  $gz_file_path = hedley_reports_gz_compress_file($file_content, $file_path);
+  // Create the file object and save it.
+  $file = (object) array(
+    'uid' => 1,
+    'filename' => drupal_basename($file_uri),
+    'uri' => $gz_file_path,
+    'filemime' => 'application/gzip',
+    'status' => NODE_PUBLISHED,
+    'display' => 1,
+    'timestamp' => REQUEST_TIME,
+  );
+  file_save($file);
+
+  return $file->fid;
+}
+
+/**
+ * Helper function to compress file content using gzip.
+ *
+ * @param string $data
+ *   The data to be compressed.
+ * @param string $file_path
+ *   The file path where the compressed data will be saved.
+ *
+ * @return string
+ *   The path to the gzipped file.
+ */
+function hedley_reports_gz_compress_file($data, $file_path) {
+  $gz_fp = gzopen($file_path, 'w9');
+  gzwrite($gz_fp, $data);
+  gzclose($gz_fp);
+  return $file_path;
+}
+
+/**
+ * Provides a mapping for AI diagnosis codes.
+ *
+ * This function returns an associative array where the keys are diagnosis
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping diagnosis identifiers to their codes.
+ */
+function hedley_reports_ai_diagnosis_mapping() {
+  return [
+    'covid19' => 'a',
+    'covid19-severe' => 'b',
+    'covid19-pneumonia' => 'c',
+    'covid19-low-risk' => 'd',
+    'malaria-complicated' => 'e',
+    'malaria-uncomplicated' => 'f',
+    'malaria-uncomplicated-pregnant' => 'g',
+    'gi-complicated' => 'h',
+    'gi-uncomplicated' => 'i',
+    'ri-complicated' => 'j',
+    'ri-uncomplicated' => 'k',
+    'cough-and-cold' => 'l',
+    'fever-of-unknown-origin' => 'm',
+    'undetermined' => 'n',
+    'tuberculosis-suspect' => 'o',
+    'none' => 'z',
+  ];
+}
+
+/**
+ * Generates Report Data node title for provided variant and scope.
+ *
+ * @param string $report_variant
+ *   Type of report to load.
+ * @param string $scope
+ *   Scope of data to load.
+ * @param string|null $province
+ *   Province name.
+ * @param string|null $district
+ *   District name.
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return string
+ *   Report Data node title.
+ */
+function hedley_reports_generate_results_data_node_title($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
+  $prefix = ucwords(str_replace("-", " ", $report_variant));
+
+  switch ($scope) {
+    case 'province':
+      $suffix = "Province $province";
+      break;
+
+    case 'district':
+      $suffix = "District $district";
+      break;
+
+    case 'health-center':
+      $suffix = "Health Center ID $health_center";
+      break;
+
+    default:
+      $suffix = 'Glodal';
+  }
+
+  return "$prefix report data - $suffix";
+}
+
+/**
+ * Retrieves all unique districts for a given province.
+ *
+ * @param string $province
+ *   The province for which to retrieve the unique districts.
+ *
+ * @return array
+ *   An array of unique districts for the specified province.
+ */
+function hedley_reports_get_unique_districts_by_province($province) {
+  $query = db_select('field_data_field_district', 'fd')
+    ->fields('fd', ['field_district_value'])
+    ->distinct(TRUE)
+    ->condition('fp.field_province_value', $province);
+  $query->join('field_data_field_province', 'fp', 'fd.entity_id = fp.entity_id');
+  $result = $query->execute();
+
+  $districts = [];
+  foreach ($result as $record) {
+    $districts[] = $record->field_district_value;
+  }
+
+  return $districts;
+}
+
+/**
+ * Generates nutrition report data from the given patient reports data.
+ *
+ * This function processes patients reports data to generate various
+ * nutritional metrics such as prevalence and incidence of stunting,
+ * wasting, and underweight.
+ *
+ * @param array $data
+ *   An array of patient data objects.
+ *
+ * @return array
+ *   An array containing various metrics and data tables.
+ */
+function hedley_reports_generate_nutrition_report_data(array $data) {
+  $impacted = [];
+  $nutrition_data = [];
+
+  foreach ($data as $patient_data) {
+    if (hedley_reports_calculate_year_difference($patient_data->birth_date) > 5) {
+      continue;
+    }
+
+    $data_for_patient = [
+      'id' => $patient_data->id,
+      'encounters' => [],
+    ];
+
+    if (isset($patient_data->group_nutrition)) {
+      if (isset($patient_data->group_nutrition->pmtct)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->pmtct);
+      }
+      if (isset($patient_data->group_nutrition->fbf)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->fbf);
+      }
+      if (isset($patient_data->group_nutrition->sorwathe)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->sorwathe);
+      }
+      if (isset($patient_data->group_nutrition->chw)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->chw);
+      }
+      if (isset($patient_data->group_nutrition->achi)) {
+        $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $patient_data->group_nutrition->achi);
+      }
+    }
+
+    if (isset($patient_data->individual)) {
+      if (isset($patient_data->individual->nutrition)) {
+        foreach ($patient_data->individual->nutrition as $items) {
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+        }
+      }
+      if (isset($patient_data->individual->{"well-child"})) {
+        foreach ($patient_data->individual->{"well-child"} as $items) {
+          $data_for_patient['encounters'] = array_merge($data_for_patient['encounters'], $items);
+        }
+      }
+    }
+
+    $nutrition_data[] = $data_for_patient;
+
+    if (count($data_for_patient['encounters']) > 1) {
+      $impacted[] = $data_for_patient['id'];
+    }
+  }
+
+  // Filtering out encounters performed before Jan 01 of starting year.
+  // Starting year is current year, minus 3, as Nutrition report shows
+  // data from previous 2 years, and we need prior year as well, to
+  // compute Incidence.
+  $today = new DateTime();
+  $starting_year = $today->format('Y') - 3;
+  // Initialize the dictionary (associative array in PHP)
+  $encounters_by_month = [];
+  foreach ($nutrition_data as $nutrition_data_item) {
+    foreach ($nutrition_data_item['encounters'] as $index => $encounter_data) {
+      $parts = explode(' ', $encounter_data);
+      $start_date_as_string = $parts[0];
+      $start_date = DateTime::createFromFormat('Y-m-d', $start_date_as_string);
+      $start_date_year = $start_date->format('Y');
+      if ($start_date_year < $starting_year) {
+        unset($nutrition_data_item['encounters'][$index]);
+        continue;
+      }
+
+      $start_date_month = $start_date->format('m');
+      $encounter_zscores = explode(',', $parts[1]);
+      $nutrition_data = [
+        'stunting' => ($encounter_zscores[0] === '') ? NULL : (float) $encounter_zscores[0],
+        'wasting' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
+        'underweight' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
+      ];
+
+      $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
+      $key = "$start_date_year-$start_date_month";
+      if (isset($encounters_by_month[$key])) {
+        $encounters_by_month[$key] = hedley_reports_sum_nutrition_metrics([$encounters_by_month[$key], $encounter_metrics]);
+      }
+      else {
+        $encounters_by_month[$key] = $encounter_metrics;
+      }
+    }
+  }
+
+  $encounters_by_month_for_impacted = [];
+  foreach ($encounters_by_month as $key => $encounter) {
+    $encounters_by_month_for_impacted[$key] = [
+      'stunting_normal' => hedley_reports_filter_impacted_ids($encounter['stunting_normal'], $impacted),
+      'stunting_moderate' => hedley_reports_filter_impacted_ids($encounter['stunting_moderate'], $impacted),
+      'stunting_severe' => hedley_reports_filter_impacted_ids($encounter['stunting_severe'], $impacted),
+      'wasting_normal' => hedley_reports_filter_impacted_ids($encounter['wasting_normal'], $impacted),
+      'wasting_moderate' => hedley_reports_filter_impacted_ids($encounter['wasting_moderate'], $impacted),
+      'wasting_severe' => hedley_reports_filter_impacted_ids($encounter['wasting_severe'], $impacted),
+      'underweight_normal' => hedley_reports_filter_impacted_ids($encounter['underweight_normal'], $impacted),
+      'underweight_moderate' => hedley_reports_filter_impacted_ids($encounter['underweight_moderate'], $impacted),
+      'underweight_severe' => hedley_reports_filter_impacted_ids($encounter['underweight_severe'], $impacted),
+    ];
+  }
+
+  $prevalence_by_month_one_visit_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month);
+  $prevalence_by_month_two_visits_or_more_data = hedley_reports_generate_monthly_prevalence_data($encounters_by_month_for_impacted);
+  $incidence_by_month_one_visit_or_more_data = hedley_reports_generate_monthly_incidence_data($encounters_by_month);
+  $incidence_by_month_two_visits_or_more_data = hedley_reports_generate_monthly_incidence_data($encounters_by_month_for_impacted);
+  $incidence_by_quarter_one_visit_or_more_data = hedley_reports_generate_quarterly_incidence_data($encounters_by_month);
+  $incidence_by_quarter_two_visits_or_more_data = hedley_reports_generate_quarterly_incidence_data($encounters_by_month_for_impacted);
+  $incidence_by_year_one_visit_or_more_data = hedley_reports_generate_yearly_incidence_data($encounters_by_month);
+  $incidence_by_year_two_visits_or_more_data = hedley_reports_generate_yearly_incidence_data($encounters_by_month_for_impacted);
+
+  return [
+    hedley_reports_nutrition_metrics_to_table_data('prevalence-1', $prevalence_by_month_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('prevalence-2', $prevalence_by_month_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-month-1', $incidence_by_month_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-month-2', $incidence_by_month_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-quarter-1', $incidence_by_quarter_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-quarter-2', $incidence_by_quarter_two_visits_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-year-1', $incidence_by_year_one_visit_or_more_data),
+    hedley_reports_nutrition_metrics_to_table_data('incidence-year-2', $incidence_by_year_two_visits_or_more_data),
+  ];
+}
+
+/**
+ * Converts nutrition metrics to table data format.
+ *
+ * @param string $type
+ *   The type of the table data.
+ * @param array $metrics
+ *   The metrics to be converted.
+ *
+ * @return array
+ *   The formatted table data.
+ */
+function hedley_reports_nutrition_metrics_to_table_data($type, array $metrics) {
+  $result = [
+    'type' => $type,
+    'period' => [],
+    'stunting_moderate' => [],
+    'stunting_severe' => [],
+    'wasting_moderate' => [],
+    'wasting_severe' => [],
+    'underweight_moderate' => [],
+    'underweight_severe' => [],
+  ];
+
+  foreach ($metrics as $key => $values) {
+    $result['period'][] = (string) $key;
+    $result['stunting_moderate'][] = $values['stunting_moderate'];
+    $result['stunting_severe'][] = $values['stunting_severe'];
+    $result['wasting_moderate'][] = $values['wasting_moderate'];
+    $result['wasting_severe'][] = $values['wasting_severe'];
+    $result['underweight_moderate'][] = $values['underweight_moderate'];
+    $result['underweight_severe'][] = $values['underweight_severe'];
+  }
+
+  return $result;
+}
+
+/**
+ * Generates monthly prevalence data from encounters metrics grouped by month.
+ *
+ * @param array $encounters_by_month
+ *   Encounters metrics data grouped by month.
+ *
+ * @return array
+ *   Monthly prevalence data.
+ */
+function hedley_reports_generate_monthly_prevalence_data(array $encounters_by_month) {
+  $result = [];
+  $current_timestamp = time();
+  for ($index = 1; $index <= 12; $index++) {
+    $target_timestamp = strtotime("-$index month", $current_timestamp);
+    $target_date_year = date('Y', $target_timestamp);
+    $target_date_month = date('m', $target_timestamp);
+    $key = "$target_date_year-$target_date_month";
+    $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
+    $result[$key] = hedley_reports_generate_prevalence_nutrition_metrics_results($data_set);
+  }
+
+  return $result;
+}
+
+/**
+ * Generates monthly incidence data from encounters metrics grouped  by month.
+ *
+ * @param array $encounters_by_month
+ *   Encounters metrics data grouped by month.
+ *
+ * @return array
+ *   Monthly incidence data.
+ */
+function hedley_reports_generate_monthly_incidence_data(array $encounters_by_month) {
+  $result = [];
+  $current_timestamp = time();
+
+  for ($index = 1; $index <= 12; $index++) {
+    $target_timestamp = strtotime("-$index month", $current_timestamp);
+    $target_date_year = date('Y', $target_timestamp);
+    $target_date_month = date('m', $target_timestamp);
+    $key = "$target_date_year-$target_date_month";
+    $data_set = (!empty($encounters_by_month[$key]) ? $encounters_by_month[$key] : hedley_reports_empty_nutrition_metrics());
+
+    // Per definition, for month, previous data set contains data
+    // of 3 months that came prior.
+    $previous_data_set = hedley_reports_empty_nutrition_metrics();
+    for ($gap = 1; $gap <= 3; $gap++) {
+      $gap_timestamp = strtotime("-$gap month", $target_timestamp);
+      $gap_date_year = date('Y', $gap_timestamp);
+      $gap_date_month = date('m', $gap_timestamp);
+      $gap_key = "$gap_date_year-$gap_date_month";
+      $gap_data_set = (!empty($encounters_by_month[$gap_key]) ? $encounters_by_month[$gap_key] : hedley_reports_empty_nutrition_metrics());
+      $previous_data_set = hedley_reports_sum_nutrition_metrics([$previous_data_set, $gap_data_set]);
+    }
+    $result[$key] = hedley_reports_generate_incidence_nutrition_metrics_results($data_set, $previous_data_set);
+  }
+
+  return $result;
+}
+
+/**
+ * Generate quarterly incidence table data.
+ *
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values
+ *   are Nutrition Metrics.
+ *
+ * @return array
+ *   An array containing the quarterly incidence table data.
+ */
+function hedley_reports_generate_quarterly_incidence_data(array $encounters_by_month) {
+  $data_sets_by_quarter = [];
+  // We calculate data for the previous 5 quarters.
+  for ($index = 1; $index <= 5; $index++) {
+    $data_sets_by_quarter[] = hedley_reports_resolve_data_set_for_quarter($index, $encounters_by_month);
+  }
+
+  $result = [];
+  $current_timestamp = time();
+  // Showing data of the previous 4 quarters.
+  for ($index = 1; $index <= 4; $index++) {
+    $selected_date = strtotime("-" . (3 * $index) . " months", $current_timestamp);
+
+    $year = (int) date('Y', $selected_date);
+    $month = (int) date('n', $selected_date);
+    $quarter = ceil($month / 3);
+
+    $data_set = $data_sets_by_quarter[$index - 1];
+    $previous_data_set = $data_sets_by_quarter[$index];
+
+    $key = "$year-$quarter";
+
+    $result[$key] = hedley_reports_generate_incidence_nutrition_metrics_results($data_set, $previous_data_set);
+  }
+
+  return $result;
+}
+
+/**
+ * Generate yearly incidence table data.
+ *
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values
+ *   are Nutrition Metrics.
+ *
+ * @return array
+ *   An array containing the yearly incidence table data.
+ */
+function hedley_reports_generate_yearly_incidence_data(array $encounters_by_month) {
+  // We show data of previous 2 years. So, if at 2024, we show
+  // data for 2023 and 2022. We calculate set for 3 years (so claculating
+  // 2021 as well), as for incidence each year requires a set of previous year.
+  for ($index = 1; $index <= 3; $index++) {
+    $data_sets_by_year[] = hedley_reports_resolve_data_set_for_year($index, $encounters_by_month);
+  }
+
+  $result = [];
+  $current_timestamp = time();
+  // Showing data of previous 2 years.
+  for ($index = 1; $index <= 2; $index++) {
+    $selected_date = strtotime("-$index years", $current_timestamp);
+    $year = (int) date('Y', $selected_date);
+
+    $data_set = $data_sets_by_year[$index - 1];
+    $previous_data_set = $data_sets_by_year[$index];
+
+    $result[$year] = hedley_reports_generate_incidence_nutrition_metrics_results($data_set, $previous_data_set);
+  }
+
+  return $result;
+}
+
+/**
+ * Generates prevalence nutrition metrics results.
+ *
+ * This function calculates the prevalence percentages for stunting, wasting,
+ * and underweight categories based on the provided metrics.
+ *
+ * @param array $metrics
+ *   An array containing nutritional metrics grouped by categories.
+ *
+ * @return array
+ *   An array containing the calculated prevalence percentages for
+ *   each category.
+ */
+function hedley_reports_generate_prevalence_nutrition_metrics_results(array $metrics) {
+  $stunting_total = array_unique(array_merge($metrics['stunting_moderate'], $metrics['stunting_severe'], $metrics['stunting_normal']));
+  $wasting_total = array_unique(array_merge($metrics['wasting_moderate'], $metrics['wasting_severe'], $metrics['wasting_normal']));
+  $underweight_total = array_unique(array_merge($metrics['underweight_moderate'], $metrics['underweight_severe'], $metrics['underweight_normal']));
+
+  return [
+    'stunting_moderate' => hedley_reports_calculate_percentage($metrics['stunting_moderate'], $stunting_total),
+    'stunting_severe' => hedley_reports_calculate_percentage($metrics['stunting_severe'], $stunting_total),
+    'wasting_moderate' => hedley_reports_calculate_percentage($metrics['wasting_moderate'], $wasting_total),
+    'wasting_severe' => hedley_reports_calculate_percentage($metrics['wasting_severe'], $wasting_total),
+    'underweight_moderate' => hedley_reports_calculate_percentage($metrics['underweight_moderate'], $underweight_total),
+    'underweight_severe' => hedley_reports_calculate_percentage($metrics['underweight_severe'], $underweight_total),
+  ];
+}
+
+/**
+ * Generate incidence nutrition metrics results.
+ *
+ * @param array $current_period_metric
+ *   An associative array containing current period metrics.
+ * @param array $previous_period_metric
+ *   An associative array containing previous period metrics.
+ *
+ * @return array
+ *   An associative array containing the incidence nutrition metrics results.
+ */
+function hedley_reports_generate_incidence_nutrition_metrics_results(array $current_period_metric, array $previous_period_metric) {
+  // STUNTING.
+  $previous_period_stunting_moderate_severe = array_unique(array_merge($previous_period_metric['stunting_moderate'], $previous_period_metric['stunting_severe']));
+  $previous_period_stunting_total = array_unique(array_merge($previous_period_stunting_moderate_severe, $previous_period_metric['stunting_normal']));
+
+  $stunting_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['stunting_moderate']), $previous_period_stunting_total);
+  $stunting_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['stunting_moderate']), $previous_period_stunting_moderate_severe);
+
+  $stunting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['stunting_severe']), $previous_period_stunting_total);
+  $stunting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['stunting_severe']), array_unique($previous_period_metric['stunting_severe']));
+
+  // WASTING.
+  $previous_period_wasting_moderate_severe = array_unique(array_merge($previous_period_metric['wasting_moderate'], $previous_period_metric['wasting_severe']));
+  $previous_period_wasting_total = array_unique(array_merge($previous_period_wasting_moderate_severe, $previous_period_metric['wasting_normal']));
+
+  $wasting_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['wasting_moderate']), $previous_period_wasting_total);
+  $wasting_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['wasting_moderate']), $previous_period_wasting_moderate_severe);
+
+  $wasting_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['wasting_severe']), $previous_period_wasting_total);
+  $wasting_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['wasting_severe']), array_unique($previous_period_metric['wasting_severe']));
+
+  // UNDERWEIGHT.
+  $previous_period_underweight_moderate_severe = array_unique(array_merge($previous_period_metric['underweight_moderate'], $previous_period_metric['underweight_severe']));
+  $previous_period_underweight_total = array_unique(array_merge($previous_period_underweight_moderate_severe, $previous_period_metric['underweight_normal']));
+
+  $underweight_moderate_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_moderate']), $previous_period_underweight_total);
+  $underweight_moderate_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_moderate']), $previous_period_underweight_moderate_severe);
+
+  $underweight_severe_tested_in_previous_period = array_intersect(array_unique($current_period_metric['underweight_severe']), $previous_period_underweight_total);
+  $underweight_severe_not_identified_in_previous_period = array_diff(array_unique($current_period_metric['underweight_severe']), array_unique($previous_period_metric['underweight_severe']));
+
+  return [
+    'stunting_moderate' => hedley_reports_calculate_percentage(array_intersect($stunting_moderate_tested_in_previous_period, $stunting_moderate_not_identified_in_previous_period), $previous_period_stunting_total),
+    'stunting_severe' => hedley_reports_calculate_percentage(array_intersect($stunting_severe_tested_in_previous_period, $stunting_severe_not_identified_in_previous_period), $previous_period_stunting_total),
+    'wasting_moderate' => hedley_reports_calculate_percentage(array_intersect($wasting_moderate_tested_in_previous_period, $wasting_moderate_not_identified_in_previous_period), $previous_period_wasting_total),
+    'wasting_severe' => hedley_reports_calculate_percentage(array_intersect($wasting_severe_tested_in_previous_period, $wasting_severe_not_identified_in_previous_period), $previous_period_wasting_total),
+    'underweight_moderate' => hedley_reports_calculate_percentage(array_intersect($underweight_moderate_tested_in_previous_period, $underweight_moderate_not_identified_in_previous_period), $previous_period_underweight_total),
+    'underweight_severe' => hedley_reports_calculate_percentage(array_intersect($underweight_severe_tested_in_previous_period, $underweight_severe_not_identified_in_previous_period), $previous_period_underweight_total),
+  ];
+}
+
+/**
+ * Calculates the percentage of the nominator over the total.
+ *
+ * This function calculates the percentage value of the nominator divided
+ * by the total. It returns the result as a string rounded to three
+ * decimal places.
+ *
+ * @param array $nominator
+ *   The subset of items for which the percentage is to be calculated.
+ * @param array $total
+ *   The total set of items used as the base for the percentage calculation.
+ *
+ * @return string
+ *   The percentage value as a string, rounded to three decimal places.
+ */
+function hedley_reports_calculate_percentage(array $nominator, array $total) {
+  if (empty($total)) {
+    return "0%";
+  }
+  $result = (string) round((count($nominator) / count($total)) * 100, 3);
+  return "$result%";
+}
+
+/**
+ * Resolve data set for a year.
+ *
+ * @param int $year_index
+ *   The year index.
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values are
+ *   Nutrition Metrics.
+ *
+ * @return array
+ *   The aggregated nutrition metrics for the specified year.
+ */
+function hedley_reports_resolve_data_set_for_year($year_index, array $encounters_by_month) {
+  // Calculate the selected date by subtracting months.
+  $selected_date = strtotime("-$year_index years", time());
+  $selected_year = (int) date('Y', $selected_date);
+
+  $nutrition_metrics = [];
+  foreach ($encounters_by_month as $key => $encounter) {
+    $year = (int) explode('-', $key)[0];
+
+    if ($year == $selected_year) {
+      $nutrition_metrics[] = $encounter;
+    }
+  }
+
+  return hedley_reports_sum_nutrition_metrics($nutrition_metrics);
+}
+
+/**
+ * Resolve data set for a quarter.
+ *
+ * @param int $quarter_index
+ *   The quarter index.
+ * @param array $encounters_by_month
+ *   An associative array where keys are tuples (year, month) and values are
+ *   Nutrition Metrics.
+ *
+ * @return array
+ *   The aggregated nutrition metrics for the specified quarter.
+ */
+function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $encounters_by_month) {
+  // Calculate the selected date by subtracting months.
+  $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
+
+  list($year, $quarter) = hedley_reports_resolve_quarter_date_info($selected_date);
+
+  $months = hedley_reports_quarter_to_months($quarter);
+
+  $nutrition_metrics = [];
+  foreach ($months as $month) {
+    $month = $month < 10 ? "0" . $month : $month;
+
+    if (isset($encounters_by_month["$year-$month"])) {
+      $nutrition_metrics[] = $encounters_by_month["$year-$month"];
+    }
+  }
+
+  return hedley_reports_sum_nutrition_metrics($nutrition_metrics);
+}
+
+/**
+ * Resolve the previous quarter date information.
+ *
+ * @param int $timestamp
+ *   The timestamp.
+ *
+ * @return array
+ *   An array containing the year and the quarter.
+ */
+function hedley_reports_resolve_quarter_date_info($timestamp) {
+  $year = (int) date('Y', $timestamp);
+  $month = (int) date('n', $timestamp);
+  $quarter = ceil($month / 3);
+
+  if ($quarter == 1) {
+    return [$year - 1, 4];
+  }
+
+  return [$year, $quarter - 1];
+}
+
+/**
+ * Get the months for a given quarter.
+ *
+ * @param int $quarter
+ *   The quarter.
+ *
+ * @return array
+ *   An array of months in the quarter.
+ */
+function hedley_reports_quarter_to_months($quarter) {
+  $months = [];
+  for ($i = 1; $i <= 3; $i++) {
+    $months[] = 3 * ($quarter - 1) + $i;
+  }
+  return $months;
+}
+
+/**
+ * Calculates the year difference between two dates.
+ *
+ * This function calculates the difference in years between two dates.
+ * If the second date is not provided, the current date is used.
+ *
+ * @param string $fromDateString
+ *   The starting date in 'Y-m-d' format.
+ * @param string|null $toDateString
+ *   The ending date in 'Y-m-d' format. Defaults to the current date
+ *   if not provided.
+ *
+ * @return int|string
+ *   The difference in years as an integer, or an error message if the date
+ *   format is invalid.
+ */
+function hedley_reports_calculate_year_difference($fromDateString, $toDateString = NULL) {
+  // Convert the from date string to a DateTime object.
+  $fromDate = DateTime::createFromFormat('Y-m-d', $fromDateString);
+  if (!$fromDate) {
+    return "Invalid from date format.";
+  }
+
+  // Use the current date if to date is not provided.
+  if ($toDateString === NULL) {
+    $toDate = new DateTime();
+  }
+  else {
+    // Convert the to date string to a DateTime object.
+    $toDate = DateTime::createFromFormat('Y-m-d', $toDateString);
+    if (!$toDate) {
+      return "Invalid to date format.";
+    }
+  }
+
+  // Calculate the difference between the two dates.
+  $interval = $toDate->diff($fromDate);
+
+  // Determine the sign of the difference.
+  $yearDifference = $interval->y;
+  if ($toDate < $fromDate) {
+    $yearDifference = -$yearDifference;
+  }
+
+  // Return the difference in years.
+  return $yearDifference;
+}
+
+/**
+ * Converts nutrition encounter data to nutrition metrics.
+ *
+ * This function processes encounter data to categorize nutritional status
+ * (normal, moderate, severe) for stunting, wasting, and underweight.
+ *
+ * @param int $person_id
+ *   The ID of the person whose data is being processed.
+ * @param array $data
+ *   The nutritional data with keys 'stunting', 'wasting', and 'underweight'.
+ *
+ * @return array
+ *   An array containing categorized nutritional metrics.
+ */
+function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
+  list($stunting_normal, $stunting_moderate, $stunting_severe) = hedley_reports_categorize_z_score($data['stunting'], $person_id);
+  list($wasting_normal, $wasting_moderate, $wasting_severe) = hedley_reports_categorize_z_score($data['wasting'], $person_id);
+  list($underweight_normal, $underweight_moderate, $underweight_severe) = hedley_reports_categorize_z_score($data['underweight'], $person_id);
+
+  return [
+    'stunting_normal' => $stunting_normal,
+    'stunting_moderate' => $stunting_moderate,
+    'stunting_severe' => $stunting_severe,
+    'wasting_normal' => $wasting_normal,
+    'wasting_moderate' => $wasting_moderate,
+    'wasting_severe' => $wasting_severe,
+    'underweight_normal' => $underweight_normal,
+    'underweight_moderate' => $underweight_moderate,
+    'underweight_severe' => $underweight_severe,
+  ];
+}
+
+/**
+ * Sums multiple sets of nutrition metrics.
+ *
+ * This function combines multiple sets of nutrition metrics into a single set.
+ *
+ * @param array $metrics_list
+ *   An array of nutrition metrics to be summed.
+ *
+ * @return array
+ *   The combined nutrition metrics.
+ */
+function hedley_reports_sum_nutrition_metrics(array $metrics_list) {
+  $result = hedley_reports_empty_nutrition_metrics();
+
+  foreach ($metrics_list as $metrics) {
+    $result['stunting_normal'] = array_merge($result['stunting_normal'], $metrics['stunting_normal']);
+    $result['stunting_moderate'] = array_merge($result['stunting_moderate'], $metrics['stunting_moderate']);
+    $result['stunting_severe'] = array_merge($result['stunting_severe'], $metrics['stunting_severe']);
+    $result['wasting_normal'] = array_merge($result['wasting_normal'], $metrics['wasting_normal']);
+    $result['wasting_moderate'] = array_merge($result['wasting_moderate'], $metrics['wasting_moderate']);
+    $result['wasting_severe'] = array_merge($result['wasting_severe'], $metrics['wasting_severe']);
+    $result['underweight_normal'] = array_merge($result['underweight_normal'], $metrics['underweight_normal']);
+    $result['underweight_moderate'] = array_merge($result['underweight_moderate'], $metrics['underweight_moderate']);
+    $result['underweight_severe'] = array_merge($result['underweight_severe'], $metrics['underweight_severe']);
+  }
+
+  return $result;
+}
+
+/**
+ * Categorizes a z-score into nutritional status categories.
+ *
+ * This function categorizes a given z-score into normal, moderate, or severe
+ * nutritional status for a person.
+ *
+ * @param float|null $score
+ *   The z-score to be categorized.
+ * @param int $person_id
+ *   The ID of the person whose z-score is being categorized.
+ *
+ * @return array
+ *   An array containing three sub-arrays for normal, moderate,
+ *   and severe categories.
+ */
+function hedley_reports_categorize_z_score($score, $person_id) {
+  if ($score === NULL) {
+    return [[], [], []];
+  }
+
+  if ($score <= -3) {
+    return [[], [], [$person_id]];
+  }
+
+  if ($score <= -2) {
+    return [[], [$person_id], []];
+  }
+
+  return [[$person_id], [], []];
+}
+
+/**
+ * Creates an empty set of nutrition metrics.
+ *
+ * This function generates an empty array structure for nutrition metrics,
+ * with keys for normal, moderate, and severe categories of stunting,
+ * wasting, and underweight.
+ *
+ * @return array
+ *   An empty set of nutrition metrics.
+ */
+function hedley_reports_empty_nutrition_metrics() {
+  return [
+    'stunting_normal' => [],
+    'stunting_moderate' => [],
+    'stunting_severe' => [],
+    'wasting_normal' => [],
+    'wasting_moderate' => [],
+    'wasting_severe' => [],
+    'underweight_normal' => [],
+    'underweight_moderate' => [],
+    'underweight_severe' => [],
+  ];
+}
+
+/**
+ * Filters a list of IDs to only include those that are impacted.
+ *
+ * @param array $ids
+ *   An array of IDs to be filtered.
+ * @param array $impacted
+ *   An array of impacted IDs.
+ *
+ * @return array
+ *   An array of IDs that are present in the impacted list.
+ */
+function hedley_reports_filter_impacted_ids(array $ids, array $impacted) {
+  return array_filter($ids, function ($id) use ($impacted) {
+    return in_array($id, $impacted);
+  });
+}

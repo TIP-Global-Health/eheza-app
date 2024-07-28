@@ -1504,8 +1504,7 @@ subscriptions model =
     let
         checkDataWanted =
             if model.scheduleDataWantedCheck then
-                [ Time.every 50 (always CheckDataWanted)
-                ]
+                [ Time.every 50 (always CheckDataWanted) ]
 
             else
                 []

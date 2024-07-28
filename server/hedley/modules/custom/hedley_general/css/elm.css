@@ -1,0 +1,431 @@
+#main #content .section {
+  padding: unset;
+}
+
+body.admin-menu #page-wrapper #header {
+  display: none;
+}
+
+#skip-link {
+  visibility: hidden;
+}
+
+#page-wrapper #header #logo,
+#page-wrapper #header #name-and-slogan,
+#page-wrapper #header #main-menu,
+#page-wrapper #header #secondary-menu h2,
+#page-wrapper #header #secondary-menu #secondary-menu-links .first,
+#page-wrapper #main-wrapper #content .section .tabs,
+#page-wrapper #footer-wrapper,
+#main-wrapper #breadcrumb,
+#main-wrapper #sidebar-first,
+#main-wrapper #page-title {
+  display: none;
+}
+
+#page-wrapper #header #secondary-menu {
+  z-index: 1;
+}
+
+#main-wrapper #main {
+  margin: unset;
+  width: 100%;
+}
+
+#main-wrapper #main #content {
+  width: 100%;
+}
+
+#main-wrapper #main #content .page-content img {
+  width: 100%;
+  margin-top: -10px;
+  margin-right: 0;
+}
+
+.overlay .ui.modal.calendar-popup {
+  transform: scale(.8);
+  margin-top: -3%;
+}
+
+.page-content {
+  background: #0393db;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  margin-top: -10px;
+  min-height: 768px;
+  padding-top: 20px;
+}
+
+.page-content .header {
+  font-size: 30px;
+  margin-bottom: 30px;
+  margin-left: 40px;
+  padding: 20px;
+}
+
+.page-content .inputs {
+  width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: 380px;
+}
+
+.page-content .select-input-wrapper {
+  align-items: center;
+  display: flex;
+  margin-bottom: 20px;
+}
+
+.page-content .select-input-wrapper.disabled {
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.page-content .select-input-wrapper .label {
+  font-size: 26px;
+  width: 40%;
+}
+
+.page-content .select-input-wrapper .select-input {
+  background: none;
+  border: 2px solid white;
+  color: #3b3b3b;
+  font-size: 2rem;
+  height: 50px;
+  line-height: 0.5;
+  text-align: left;
+  padding: 0 0.5em;
+  width: 60%;
+}
+
+.page-content .select-input-wrapper .select-input:focus {
+  outline-color: white;
+}
+
+.page-content .top-bar {
+  display: flex;
+  height: 60px;
+  margin-bottom: 20px;
+}
+
+.page-content .top-bar .new-selection {
+  width: 35%;
+}
+
+.page-content .top-bar .scope {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.page-content .top-bar .year-selector {
+  display: flex;
+  justify-content: space-evenly;
+  width: 30%;
+}
+
+.page-content .top-bar .year-selector span.label {
+  color: white;
+  font-size: 24px;
+}
+
+.page-content .top-bar .year-selector svg {
+  cursor: pointer;
+}
+
+.page-content .top-bar .year-selector svg.hidden {
+  visibility: hidden;
+}
+
+.page-content .top-bar .new-selection a button,
+.page-content .inputs .report button.download-csv {
+  background-color: #0393db;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  height: 35px;
+}
+
+.page-content .top-bar .new-selection a button {
+  margin-left: 20px;
+}
+
+.page-content .inputs .report button.download-csv {
+  float: right;
+}
+
+.page-content .top-bar .values-percents {
+  align-items: baseline;
+  display: flex;
+  justify-content: flex-end;
+  width: 33%;
+}
+
+.page-content .top-bar .values-percents .item {
+  background-color: white;
+  border: 1px solid white;
+  color: #07b9ff;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  width: 40px;
+}
+
+.page-content .top-bar .values-percents .item.selected {
+  background-color: #07b9ff;
+  color: white;
+}
+
+.page-content .top-bar .values-percents .item:last-child {
+  border-left: none;
+}
+
+.page-content .actions {
+  color: white;
+  font-size: 24px;
+  text-align: center;
+}
+
+.page-content .actions a button {
+  background: #0393db;
+  border: 2px solid white;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 24px;
+  height: 50px;
+  width: 30%;
+}
+
+.page-content .pane .pane-heading {
+  background-color: #06b9ff;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  padding: 10px 15px;
+  text-align: center;
+}
+
+.page-content .pane.cyan .pane-heading {
+  background-color: #03b5aa;
+}
+
+.page-content .pane.orange .pane-heading {
+  background-color: #fbb03b;
+}
+
+.page-content .pane.velvet .pane-heading {
+  background-color: #d3145a;
+}
+
+.page-content .pane-content {
+  background: white;
+  color: #808080;
+  font-size: 24px;
+  text-align: center;
+}
+
+.page-content .pane-content span.selected-entity {
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.page-content .pane-content .table-header,
+.page-content .pane-content .table-row {
+  border-bottom: 1px solid #808080;
+  display: flex;
+  font-size: 14px;
+  justify-content: space-between;
+  text-align: center;
+}
+
+.page-content .pane-content .table-header {
+  border-bottom: 2px solid #808080;
+}
+
+.page-content .pane-content .cell {
+  border-right: 1px solid #808080;
+  padding-bottom: 5px;
+  padding-top: 5px;
+  text-align: center;
+  width: 6.7%;
+}
+
+.page-content .pane-content .table-header .cell.activity,
+.page-content .pane-content .table-row .cell.activity {
+  padding-left: 20px;
+  line-height: 24px;
+  text-align: left;
+  width: 20%;
+}
+
+.page-content .pane-content .table-row .cell.value {
+  color: #06b9ff;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.page-content .pane-content .table-header .cell:last-child,
+.page-content .pane-content .table-row .cell:last-child {
+  border-right: none;
+}
+
+.page-content .inputs .form-input.date {
+  background: none;
+  border: 2px solid white;
+  color: #3b3b3b;
+  font-size: 2rem;
+  height: 50px;
+  text-align: center;
+  padding: 0 0.5em;
+  width: 58%;
+}
+
+.page-content .inputs .label.wide-scope {
+  margin-top: 120px;
+  color: #3b3b3b;
+  font-size: 25px;
+}
+
+.page-content.reports,
+.page-content.reports-menu {
+  background: white;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.page-content.reports .select-input-wrapper .select-input,
+.page-content.reports-menu .select-input-wrapper .select-input {
+  border: 2px solid #3b3b3b;
+}
+
+.page-content.reports .select-input-wrapper .select-input:focus,
+.page-content.reports-menu .select-input-wrapper .select-input:focus {
+  outline-color: #3b3b3b;
+}
+
+.page-content.reports .inputs .form-input.date {
+  border: 2px solid #3b3b3b;
+}
+
+.page-content .inputs .report .section.heading {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  margin-top: 60px;
+  text-transform: uppercase;
+}
+
+.page-content .inputs .report .table {
+  border: 2px solid #3b3b3b;
+  margin-bottom: 20px;
+  padding: 15px;
+}
+
+.page-content .inputs .report .table .row {
+  border-bottom: 1px solid #3b3b3b;
+  display: flex;
+  justify-content: space-between;
+  margin-left: 20px;
+  margin-right: 20px;
+  text-align: left;
+  font-size: 1.5rem;
+}
+
+.page-content .inputs .report .table .row.totals {
+  font-weight: bold;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 20px;
+  width: 50%;
+}
+
+.page-content .inputs .report .table .row.encounters-totals {
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.page-content .inputs .report .table .row:last-child {
+  border-bottom: none;
+}
+
+.page-content .inputs .report .table .row .item {
+  padding: 10px;
+}
+
+.page-content .inputs .report .table .row.captions .item {
+  font-weight: bold;
+}
+
+.page-content .inputs .report .table .row .item.label {
+  width: 40%;
+}
+
+.page-content .inputs .report .table .row .item.label.ml-5 {
+  margin-left: 2%;
+  width: 38%;
+}
+
+.page-content .inputs .report .table .row .item.value {
+  margin-bottom: auto;
+  margin-top: auto;
+  width: 30%;
+}
+
+.page-content .inputs .report.nutrition {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.page-content .inputs .report.nutrition .table.wide,
+.page-content .inputs .report.nutrition .section.heading {
+  font-size: 24px;
+  margin-left: -12%;
+  width: 120%;
+}
+
+.page-content .inputs .report .download-csv-wrapper {
+  height: 50px;
+}
+
+.page-content .inputs .report.nutrition .download-csv-wrapper {
+  margin-left: -12%;
+  padding-left: 35px;
+  width: 120%;
+}
+
+.page-content.reports-menu .actions a button,
+.page-content.reports .top-bar .new-selection a button,
+.page-content.reports .inputs .report button.download-csv {
+  background-color: white;
+  border: 2px solid #3b3b3b;
+  color: #3b3b3b;
+}
+
+.page-content .inputs .report button.download-csv {
+  float: right;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.heading,
+.page-content .inputs .report.nutrition .table .row .item.row-label,
+.page-content .inputs .report.nutrition .table .row .item.value {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: auto;
+  margin-top: auto;
+  text-align: center;
+  width: 7%;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.heading,
+.page-content .inputs .report.nutrition .table .row .item.row-label {
+  font-weight: normal;
+}
+
+.page-content .inputs .report.nutrition .table .row .item.row-label {
+  text-align: left;
+  width: 10%;
+}
