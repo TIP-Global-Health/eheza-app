@@ -10,8 +10,3 @@ fetch nurseId =
     , FetchClinics
     , FetchVillages
     ]
-        ++ -- Need to fetch resilience messages to be able to
-           -- display number of unread messages on Wellbeing activity.
-           (Maybe.map (FetchResilienceMessagesForNurse >> List.singleton) nurseId
-                |> Maybe.withDefault []
-           )

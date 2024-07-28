@@ -5,12 +5,13 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyType(..))
-import Date exposing (Unit(..))
+import Backend.ResilienceMessage.Utils exposing (emptyMessagesDict, generateEmptyMessagesByProgramStartDate)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.MessagingCenter.Model exposing (SurveyForm, SurveyScoreDialogState(..))
 import RemoteData
 import Time exposing (posixToMillis)
+import Utils.NominalDate exposing (sortByDate)
 
 
 quarterlySurveyQuestions : List ResilienceSurveyQuestion
@@ -39,21 +40,51 @@ adoptionSurveyQuestions =
     ]
 
 
-resolveNumberOfUnreadMessages : Time.Posix -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Int
-resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db =
-    resolveUnreadMessages currentTime currentDate nurseId nurse db
-        |> Dict.size
+surveyAnswerToScore : ResilienceSurveyQuestionOption -> Int
+surveyAnswerToScore answer =
+    case answer of
+        ResilienceSurveyQuestionOption0 ->
+            1
+
+        ResilienceSurveyQuestionOption1 ->
+            2
+
+        ResilienceSurveyQuestionOption2 ->
+            3
+
+        ResilienceSurveyQuestionOption3 ->
+            4
+
+        ResilienceSurveyQuestionOption4 ->
+            5
 
 
-resolveUnreadMessages : Time.Posix -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveUnreadMessages currentTime currentDate nurseId nurse db =
+generateInboxMessages : NominalDate -> NominalDate -> Dict String ResilienceMessage -> Dict String ResilienceMessage
+generateInboxMessages currentDate programStartDate recordedMessage =
+    generateEmptyMessagesByProgramStartDate currentDate programStartDate
+        |> Dict.foldl
+            (\key value accum ->
+                Dict.get key recordedMessage
+                    |> Maybe.map
+                        (\recordedValue ->
+                            Dict.insert key recordedValue accum
+                        )
+                    |> Maybe.withDefault (Dict.insert key value accum)
+            )
+            Dict.empty
+
+
+resolveNumberOfUnreadMessages : Time.Posix -> NominalDate -> Nurse -> Int
+resolveNumberOfUnreadMessages currentTime currentDate nurse =
     Maybe.map
         (\programStartDate ->
-            resolveInboxMessages currentDate programStartDate nurseId db
+            generateInboxMessages currentDate programStartDate nurse.resilienceMessages
                 |> Dict.filter (\_ message -> isMessageUnread currentTime message)
         )
         nurse.resilienceProgramStartDate
-        |> Maybe.withDefault (resolveInboxMessagesProgramNotStarted currentDate nurseId db)
+        |> Maybe.withDefault
+            (Dict.filter (\_ message -> message.displayDay == 0) emptyMessagesDict)
+        |> Dict.size
 
 
 isMessageUnread : Time.Posix -> ResilienceMessage -> Bool
@@ -82,27 +113,6 @@ isMessageUnread currentTime message =
                    Maybe.withDefault False
 
 
-resolveInboxMessages : NominalDate -> NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveInboxMessages currentDate programStartDate nurseId db =
-    Dict.get nurseId db.resilienceMessagesByNurse
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map
-            (Dict.filter
-                (\_ message ->
-                    Date.compare currentDate (Date.add Days (message.displayDay - 1) programStartDate) == GT
-                )
-            )
-        |> Maybe.withDefault Dict.empty
-
-
-resolveInboxMessagesProgramNotStarted : NominalDate -> NurseId -> ModelIndexedDb -> Dict ResilienceMessageId ResilienceMessage
-resolveInboxMessagesProgramNotStarted currentDate nurseId db =
-    Dict.get nurseId db.resilienceMessagesByNurse
-        |> Maybe.andThen RemoteData.toMaybe
-        |> Maybe.map (Dict.filter (\_ message -> message.displayDay == 0))
-        |> Maybe.withDefault Dict.empty
-
-
 surveyQuestionsAnswered : ResilienceSurveyType -> SurveyForm -> Bool
 surveyQuestionsAnswered surveyType surveyForm =
     let
@@ -117,11 +127,48 @@ surveyQuestionsAnswered surveyType surveyForm =
     Dict.size surveyForm == List.length surveyQuestions
 
 
-resolveSurveyScoreDialogState : ResilienceSurveyType -> Int -> SurveyScoreDialogState
-resolveSurveyScoreDialogState surveyType score =
+resolveSurveyScoreDialogState : NominalDate -> NurseId -> ResilienceSurveyType -> Int -> ModelIndexedDb -> SurveyScoreDialogState
+resolveSurveyScoreDialogState currentDate nurseId surveyType score db =
     case surveyType of
         ResilienceSurveyQuarterly ->
             QuarterlySurveyScore score
 
         ResilienceSurveyAdoption ->
-            AdoptionSurveyScore score
+            let
+                surveys =
+                    Dict.get nurseId db.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+                        -- This command is executed when new survey is saved.
+                        -- After save is completed, new survey will appear at db.resilienceSurveysByNurse.
+                        -- We can't be sure if it's there, when we display the dialog.
+                        -- Therefore, we filter out a survey, if it was created today.
+                        |> Maybe.map
+                            (Dict.values
+                                >> List.filter
+                                    (\survey ->
+                                        (survey.dateMeasured /= currentDate)
+                                            && (survey.surveyType == ResilienceSurveyAdoption)
+                                    )
+                            )
+                        |> Maybe.withDefault []
+
+                uniqueSortedSurveys =
+                    -- In our system, sometimes we see that measurements are saved more than once.
+                    -- Therefore, we make sure taht take surveys we take got a unique dateMeasured.
+                    -- Use List.foldl.
+                    List.foldl
+                        (\survey acc ->
+                            Dict.insert survey.dateMeasured survey acc
+                        )
+                        Dict.empty
+                        surveys
+                        |> Dict.values
+                        |> List.sortWith (sortByDate .dateMeasured)
+
+                previousSurveysScores =
+                    List.take 2 uniqueSortedSurveys
+                        |> List.map (.signs >> Dict.values >> List.map surveyAnswerToScore >> List.sum)
+            in
+            previousSurveysScores
+                ++ [ score ]
+                |> AdoptionSurveyScore

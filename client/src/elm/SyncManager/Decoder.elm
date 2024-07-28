@@ -355,9 +355,6 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "village" ->
                         doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
 
-                    "resilience_message" ->
-                        doDecode Backend.ResilienceMessage.Decoder.decodeResilienceMessage BackendGeneralResilienceMessage
-
                     "resilience_survey" ->
                         doDecode Backend.ResilienceSurvey.Decoder.decodeResilienceSurvey BackendGeneralResilienceSurvey
 

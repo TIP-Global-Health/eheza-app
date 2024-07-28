@@ -462,9 +462,6 @@ decodeRevision =
                     "relationship" ->
                         decodeWithUuid RelationshipRevision decodeRelationship
 
-                    "resilience_message" ->
-                        decodeWithUuid ResilienceMessageRevision decodeResilienceMessage
-
                     "resilience_survey" ->
                         decodeWithUuid ResilienceSurveyRevision decodeResilienceSurvey
 

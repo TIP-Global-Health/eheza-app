@@ -10,13 +10,10 @@ import Utils.Json exposing (encodeNullable)
 
 encodeResilienceMessage : ResilienceMessage -> List ( String, Value )
 encodeResilienceMessage message =
-    [ ( "nurse", encodeEntityUuid message.nurse )
-    , ( "resilience_category", encodeResilienceCategory message.category )
+    [ ( "resilience_category", encodeResilienceCategory message.category )
     , ( "resilience_order", encodeResilienceMessageOrder message.order )
     , ( "display_day", int message.displayDay )
     , ( "favorite_message", bool message.isFavorite )
-    , ( "deleted", bool False )
-    , ( "type", string "resilience_message" )
     ]
         ++ encodeNullable "time_read" message.timeRead encodePosixAsSeconds
         ++ encodeNullable "next_reminder" message.nextReminder encodePosixAsSeconds

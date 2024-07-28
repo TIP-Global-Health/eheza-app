@@ -52,7 +52,6 @@ type BackendGeneralEntity
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
     | BackendGeneralVillage (BackendEntity Village)
-    | BackendGeneralResilienceMessage (BackendEntity ResilienceMessage)
     | BackendGeneralResilienceSurvey (BackendEntity ResilienceSurvey)
 
 
