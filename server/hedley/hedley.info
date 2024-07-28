@@ -57,6 +57,7 @@ dependencies[] = hedley_nutrition
 dependencies[] = hedley_patient
 dependencies[] = hedley_person
 dependencies[] = hedley_prenatal
+dependencies[] = hedley_reports
 dependencies[] = hedley_resilience
 dependencies[] = hedley_restful
 dependencies[] = hedley_schedule
