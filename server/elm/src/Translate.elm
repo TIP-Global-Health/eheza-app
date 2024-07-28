@@ -990,7 +990,7 @@ translationSet transId =
                     translationSet Village
 
         SelectLimitDate ->
-            { english = "Limit date"
+            { english = "End date"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

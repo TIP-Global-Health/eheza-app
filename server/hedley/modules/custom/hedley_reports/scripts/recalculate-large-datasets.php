@@ -87,7 +87,9 @@ drush_print('All calculations completed!');
  */
 function create_or_update_results_data_node($scope, $province, $district, $health_center) {
   $before = time();
+  drush_print('Loading data...');
   $data = hedley_reports_generate_results_data($province, $district, NULL, NULL, NULL, $health_center);
+  drush_print('Data loaded. Generating Nutrition report...');
   hedley_reports_create_or_update_results_data_node($data, 'statistical-query', $scope, $province, $district, $health_center);
   $after = time();
   // Free up memory.

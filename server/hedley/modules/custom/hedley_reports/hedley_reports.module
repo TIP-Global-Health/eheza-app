@@ -1568,9 +1568,10 @@ function hedley_reports_generate_incidence_nutrition_metrics_results(array $curr
  */
 function hedley_reports_calculate_percentage(array $nominator, array $total) {
   if (empty($total)) {
-    return "0";
+    return "0%";
   }
-  return (string) round((count($nominator) / count($total)) * 100, 3);
+  $result = (string) round((count($nominator) / count($total)) * 100, 3);
+  return "$result%";
 }
 
 /**
