@@ -54,6 +54,7 @@ fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related db =
     [ FetchHealthCenters
     , FetchVillages
+    , FetchClinics
     ]
         ++ (related
                 |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)

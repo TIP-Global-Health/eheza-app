@@ -25,10 +25,13 @@ define('HEDLEY_STATS_SEVERE', '3');
 // Encounter types.
 define('HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE', 'antenatal');
 define('HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE', 'acute-illness');
-define('HEDLEY_STATS_NCD_ENCOUNTER_TYPE', 'ncd');
-define('HEDLEY_STATS_SPV_ENCOUNTER_TYPE', 'well-child');
 define('HEDLEY_STATS_CHILD_SCOREBOARD_ENCOUNTER_TYPE', 'child-scoreboard');
+define('HEDLEY_STATS_HIV_ENCOUNTER_TYPE', 'hiv');
+define('HEDLEY_STATS_HOME_VISIT_ENCOUNTER_TYPE', 'home-visit');
+define('HEDLEY_STATS_NCD_ENCOUNTER_TYPE', 'ncd');
 define('HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE', 'nutrition');
+define('HEDLEY_STATS_TUBERCULOSIS_ENCOUNTER_TYPE', 'tuberculosis');
+define('HEDLEY_STATS_SPV_ENCOUNTER_TYPE', 'well-child');
 
 // Statistics cache types.
 define('HEDLEY_STATS_NUTRITION', 'sync_stats_nutrition');

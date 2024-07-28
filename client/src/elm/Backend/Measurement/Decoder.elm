@@ -314,7 +314,7 @@ decodeTuberculosisMeasurements =
     succeed TuberculosisMeasurements
         |> optional "tuberculosis_diagnostics" (decodeHead decodeTuberculosisDiagnostics) Nothing
         |> optional "tuberculosis_dot" (decodeHead decodeTuberculosisDOT) Nothing
-        |> optional "tuberculosis_followUp" (decodeHead decodeTuberculosisFollowUp) Nothing
+        |> optional "tuberculosis_follow_up" (decodeHead decodeTuberculosisFollowUp) Nothing
         |> optional "tuberculosis_health_education" (decodeHead decodeTuberculosisHealthEducation) Nothing
         |> optional "tuberculosis_medication" (decodeHead decodeTuberculosisMedication) Nothing
         |> optional "tuberculosis_referral" (decodeHead decodeTuberculosisReferral) Nothing

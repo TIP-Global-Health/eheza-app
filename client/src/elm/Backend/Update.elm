@@ -6883,53 +6883,62 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                (\value ->
-                                    { value
-                                        | performedTests =
-                                            if testExecuted then
-                                                EverySet.insert test value.performedTests
+                if
+                    -- We allow Vitals recheck only during initial encounter.
+                    -- At subsequent encounter, no need to retake blood preasure.
+                    (test == Backend.Measurement.Model.TestVitalsRecheck)
+                        && (not <| List.isEmpty assembled.nursePreviousEncountersData)
+                then
+                    []
 
-                                            else
-                                                EverySet.remove test value.performedTests
-
-                                        -- When we have universal form, it's possible to change if test is performed
-                                        -- at lab, or at point of care.
-                                        -- Therefore, we need to make sure that test does not appear as completed,
-                                        -- which can happen, when nurse switches from point of care to lab.
-                                        , completedTests = EverySet.remove test value.completedTests
-                                        , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                    }
-                                )
-                                    measurement.value
-                        in
-                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                    )
-                    assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
+                else
+                    let
+                        testExecuted =
+                            testPerformedByExecutionNote executionNote
+                    in
+                    Maybe.map
+                        (\( resultsId, measurement ) ->
                             let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+                                updatedValue =
+                                    (\value ->
+                                        { value
+                                            | performedTests =
+                                                if testExecuted then
+                                                    EverySet.insert test value.performedTests
 
-                         else
-                            []
+                                                else
+                                                    EverySet.remove test value.performedTests
+
+                                            -- When we have universal form, it's possible to change if test is performed
+                                            -- at lab, or at point of care.
+                                            -- Therefore, we need to make sure that test does not appear as completed,
+                                            -- which can happen, when nurse switches from point of care to lab.
+                                            , completedTests = EverySet.remove test value.completedTests
+                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                        }
+                                    )
+                                        measurement.value
+                            in
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                         )
+                        assembled.measurements.labsResults
+                        |> Maybe.withDefault
+                            (if testExecuted then
+                                let
+                                    resultsValue =
+                                        Backend.Measurement.Model.LabsResultsValue
+                                            (EverySet.singleton test)
+                                            EverySet.empty
+                                            (Date.add Days labExpirationPeriod currentDate)
+                                            False
+                                            Nothing
+                                            Nothing
+                                in
+                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+
+                             else
+                                []
+                            )
             )
         |> Maybe.withDefault []
 
@@ -6992,12 +7001,20 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 
                                             else
                                                 value.reviewState
+
+                                        resolutionDate =
+                                            if not isLabTech && allLabsCompleted then
+                                                currentDate
+
+                                            else
+                                                value.resolutionDate
                                     in
                                     { value
                                         | performedTests = updatedPerformedTests
                                         , completedTests = updatedCompletedTests
                                         , testsWithFollowUp = updatedTestsWithFollowUp
                                         , reviewState = reviewState
+                                        , resolutionDate = resolutionDate
                                     }
                                 )
                                     results.value

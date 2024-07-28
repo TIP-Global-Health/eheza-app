@@ -948,15 +948,15 @@ viewExaminationContent language currentDate assembled data =
             List.map
                 (\task ->
                     case task of
-                        ObstetricalExam ->
-                            ( ObstetricalExam
+                        BreastExam ->
+                            ( BreastExam
                             , ( Maybe.Extra.values breastExamTasks
                                     |> List.length
                               , List.length breastExamTasks
                               )
                             )
 
-                        BreastExam ->
+                        ObstetricalExam ->
                             ( ObstetricalExam
                             , ( Maybe.Extra.values obstetricalExamTasks
                                     |> List.length
