@@ -22432,6 +22432,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                TuberculosisMedicationNotChanged ->
+                    { english = "Medication not Changed"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoTuberculosisPrescribedMedications ->
                     translationSet EmptyString
 
