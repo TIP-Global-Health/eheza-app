@@ -595,21 +595,6 @@ dotInputsAndTasks language currentDate assembled form =
 
         ( distributeMedicationsInputs, distributeMedicationsTasks ) =
             let
-                prescribedMedications =
-                    let
-                        medicationMeasurement =
-                            if assembled.initialEncounter then
-                                assembled.measurements.medication
-
-                            else
-                                List.filterMap (.measurements >> .medication)
-                                    assembled.previousEncountersData
-                                    |> List.head
-                    in
-                    getMeasurementValueFunc medicationMeasurement
-                        |> Maybe.map (EverySet.remove NoTuberculosisPrescribedMedications)
-                        |> Maybe.withDefault EverySet.empty
-
                 prescribedMedicationsForView =
                     generateAllEncountersData assembled
                         |> resolvePrescribedMedicationSets TuberculosisMedicationsNotChanged
