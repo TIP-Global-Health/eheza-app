@@ -2946,7 +2946,7 @@ type TuberculosisPrescribedMedication
     = MedicationRHZE
     | MedicationRH
     | MedicationOther
-    | TuberculosisMedicationNotChanged
+    | TuberculosisMedicationsNotChanged
     | NoTuberculosisPrescribedMedications
 
 

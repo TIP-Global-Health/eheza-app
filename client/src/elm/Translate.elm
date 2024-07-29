@@ -770,9 +770,6 @@ type TranslationId
     | HIVPositiveDiagnosedQuestion
     | HIVPositiveTestDateQuestion
     | HIVPrescribedMedication HIVPrescribedMedication
-    | HIVPrescribedMedicationsChangedQuestion
-    | HIVPrescribedMedicationsQuestion
-    | HIVPrescribedMedicationsTakenQuestion
     | HIVStatus HIVStatus
     | HIVStatusLabel
     | HIVSuggestTakingTestQuestion
@@ -1274,11 +1271,15 @@ type TranslationId
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
     | PregnancyOutcome PregnancyOutcome
+    | PrescribedMedicationsChangedQuestion
+    | PrescribedMedicationsQuestion
+    | PrescribedMedicationsTakenQuestion
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
     | PreviousFloatMeasurement Float
     | PreviousMeasurementNotFound
+    | PreviousMedication
     | PriorTreatmentTask Pages.AcuteIllness.Activity.Types.PriorTreatmentTask
     | Programs
     | ProgressPhotos
@@ -7043,24 +7044,6 @@ translationSet trans =
 
                 NoHIVPrescribedMedications ->
                     translationSet EmptyString
-
-        HIVPrescribedMedicationsChangedQuestion ->
-            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        HIVPrescribedMedicationsQuestion ->
-            { english = "What are the medications that were prescribed"
-            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Nothing
-            }
-
-        HIVPrescribedMedicationsTakenQuestion ->
-            { english = "What are the medications being taken"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         HIVStatus status ->
             case status of
@@ -16913,6 +16896,24 @@ translationSet trans =
                     , kirundi = Just "Ugukoroka kw'imbanyi (imbere y'indwi 24 ugereranije nigihe imbanyi imaze)"
                     }
 
+        PrescribedMedicationsChangedQuestion ->
+            { english = "Please check the medications that were prescribed. Is the patient still taking the medications listed above"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrescribedMedicationsQuestion ->
+            { english = "What are the medications that were prescribed"
+            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
+            , kirundi = Nothing
+            }
+
+        PrescribedMedicationsTakenQuestion ->
+            { english = "What are the medications being taken"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PreviousCSectionScar ->
             { english = "Previous C-section scar"
             , kinyarwanda = Just "Inkovu yaho babaze ubushize"
@@ -16955,6 +16956,12 @@ translationSet trans =
             { english = "No previous measurement on record"
             , kinyarwanda = Just "Nta gipimo cy'ubushize cyanditswe"
             , kirundi = Just "Nta bipimo vyafashwe ubuherutse"
+            }
+
+        PreviousMedication ->
+            { english = "Previous Medication"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PriorTreatmentTask task ->
@@ -22432,7 +22439,7 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                TuberculosisMedicationNotChanged ->
+                TuberculosisMedicationsNotChanged ->
                     { english = "Medication not Changed"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing

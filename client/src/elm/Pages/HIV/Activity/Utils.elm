@@ -553,7 +553,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                 |> List.head
 
         ( recordMedicationsInputs, recordMedicationsTasks ) =
-            recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsTakenQuestion form
+            recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
     Maybe.map
         (\prescribedMedication ->
@@ -575,7 +575,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
             in
             ( [ viewLabel language Translate.PrescribedMedication
               , prescribedMedicationForView
-              , viewQuestionLabel language Translate.HIVPrescribedMedicationsChangedQuestion
+              , viewQuestionLabel language Translate.PrescribedMedicationsChangedQuestion
               , viewBoolInput
                     language
                     form.medicationsNotChanged
@@ -590,7 +590,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
             )
         )
         mPrescribedMedications
-        |> Maybe.withDefault (recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsQuestion form)
+        |> Maybe.withDefault (recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsQuestion form)
 
 
 recordMedicationsInputsAndTasks :
