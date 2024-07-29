@@ -395,6 +395,7 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                                     Nothing
                             )
                             allEncountersData
+                            |> List.filter (not << EverySet.member TuberculosisMedicationsNotChanged)
                             |> List.head
 
                     currentMedicationsForView =
