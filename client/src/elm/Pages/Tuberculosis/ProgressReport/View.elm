@@ -247,13 +247,14 @@ viewSummaryPane language currentDate allEncountersData firstEncounterData initia
             Maybe.map formatDDMMYYYY completionDate
                 |> Maybe.withDefault ""
 
-        viewMedicationsFunc =
+        viewMedicationsEntry label =
             Maybe.map
                 (EverySet.toList
                     >> List.map (Translate.TuberculosisPrescribedMedication >> translate language)
                     >> String.join ", "
+                    >> viewEntry label
                 )
-                >> Maybe.withDefault ""
+                >> Maybe.withDefault emptyNode
 
         viewEntry label value =
             div [ class "entry" ]
@@ -268,8 +269,8 @@ viewSummaryPane language currentDate allEncountersData firstEncounterData initia
             , viewEntry Translate.InitiationDate initiationDateForView
             , viewEntry Translate.MissedDoses (String.fromInt missedDoses)
             , viewEntry Translate.CompletionDate completionDateForView
-            , viewEntry Translate.CurrentMedication (viewMedicationsFunc currentMedications)
-            , viewEntry Translate.PreviousMedication (viewMedicationsFunc previousMedications)
+            , viewMedicationsEntry Translate.CurrentMedication currentMedications
+            , viewMedicationsEntry Translate.PreviousMedication previousMedications
             ]
         ]
 
