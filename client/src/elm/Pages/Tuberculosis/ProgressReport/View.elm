@@ -11,6 +11,7 @@ import Backend.Measurement.Model
         , TreatmentOngoingSign(..)
         , TuberculosisDOTSign(..)
         , TuberculosisHealthEducationSign(..)
+        , TuberculosisPrescribedMedication(..)
         , TuberculosisSymptom(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
@@ -30,6 +31,7 @@ import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
 import Measurement.Model exposing (LaboratoryTask(..))
 import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Tuberculosis.Activity.Utils exposing (generateAllEncountersData, resolvePrescribedMedicationSets)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
@@ -121,11 +123,7 @@ viewContent :
 viewContent language currentDate site features model assembled =
     let
         allEncountersData =
-            { id = assembled.id
-            , startDate = assembled.encounter.startDate
-            , measurements = assembled.measurements
-            }
-                :: assembled.previousEncountersData
+            generateAllEncountersData assembled
 
         panes =
             case model.viewMode of
@@ -234,10 +232,8 @@ viewSummaryPane language currentDate allEncountersData firstEncounterData initia
                 allEncountersData
                 |> List.sum
 
-        currentMedications =
-            List.filter (.measurements >> .medication >> isJust) allEncountersData
-                |> List.head
-                |> Maybe.andThen (.measurements >> .medication >> getMeasurementValueFunc)
+        ( currentMedications, previousMedications ) =
+            resolvePrescribedMedicationSets TuberculosisMedicationsNotChanged allEncountersData
 
         diagnosisForView =
             Maybe.map (Translate.TuberculosisDiagnosis >> translate language) diagnosis
@@ -251,14 +247,14 @@ viewSummaryPane language currentDate allEncountersData firstEncounterData initia
             Maybe.map formatDDMMYYYY completionDate
                 |> Maybe.withDefault ""
 
-        currentMedicationsForView =
+        viewMedicationsEntry label =
             Maybe.map
                 (EverySet.toList
                     >> List.map (Translate.TuberculosisPrescribedMedication >> translate language)
                     >> String.join ", "
+                    >> viewEntry label
                 )
-                currentMedications
-                |> Maybe.withDefault ""
+                >> Maybe.withDefault emptyNode
 
         viewEntry label value =
             div [ class "entry" ]
@@ -273,7 +269,8 @@ viewSummaryPane language currentDate allEncountersData firstEncounterData initia
             , viewEntry Translate.InitiationDate initiationDateForView
             , viewEntry Translate.MissedDoses (String.fromInt missedDoses)
             , viewEntry Translate.CompletionDate completionDateForView
-            , viewEntry Translate.CurrentMedication currentMedicationsForView
+            , viewMedicationsEntry Translate.CurrentMedication currentMedications
+            , viewMedicationsEntry Translate.PreviousMedication previousMedications
             ]
         ]
 
@@ -399,6 +396,7 @@ viewEncounterDetailsContent language currentDate encounterId model allEncounters
                                     Nothing
                             )
                             allEncountersData
+                            |> List.filter (not << EverySet.member TuberculosisMedicationsNotChanged)
                             |> List.head
 
                     currentMedicationsForView =
