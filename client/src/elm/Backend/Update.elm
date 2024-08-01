@@ -34,7 +34,7 @@ import Backend.Measurement.Model
         , LabsResultsReviewState(..)
         , Measurements
         , TestExecutionNote(..)
-        , TestPrerequisite(..)
+        , TestPrerequisite
         , WellChildSymptom(..)
         )
 import Backend.Measurement.Utils

@@ -26,7 +26,6 @@ import Backend.Measurement.Model
     exposing
         ( Call114Sign(..)
         , DangerSign(..)
-        , ECDSign(..)
         , HCContactSign(..)
         , HCRecommendation(..)
         , IsolationSign(..)
@@ -45,7 +44,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounterType)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
 import Dict as LegacyDict
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (..)

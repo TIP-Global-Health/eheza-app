@@ -8,8 +8,6 @@ import Backend.Measurement.Model exposing (AdverseEvent(..), TuberculosisPrescri
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisEncounter.Model
-import Date
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
@@ -18,7 +16,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Activity.Utils exposing (..)
 import Pages.Utils exposing (setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 update : NominalDate -> TuberculosisEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -36,9 +34,6 @@ update currentDate id db msg model =
 
         diagnosticsForm =
             resolveFormWithDefaults .diagnostics diagnosticsFormWithDefault model.diagnosticsData.form
-
-        medicationForm =
-            resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
 
         dotForm =
             resolveFormWithDefaults .dot dotFormWithDefault model.medicationData.dotForm
@@ -145,6 +140,9 @@ update currentDate id db msg model =
 
         SetPrescribedMedication medication ->
             let
+                medicationForm =
+                    resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
+
                 form =
                     medicationForm
 

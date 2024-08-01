@@ -12,7 +12,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))

@@ -12,7 +12,7 @@ import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
-import Http exposing (Error(..))
+import Http exposing (Error)
 import HttpBuilder exposing (..)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode

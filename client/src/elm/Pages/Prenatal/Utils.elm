@@ -2963,7 +2963,7 @@ resolveARVReferralDiagnosis nursePreviousEncountersData =
             if EverySet.member DiagnosisHIVInitialPhase data.diagnoses || knownAsHIVPositive data.measurements then
                 Just DiagnosisHIVInitialPhase
 
-            else if EverySet.member DiagnosisHIVRecurrentPhase data.diagnoses || knownAsHIVPositive data.measurements then
+            else if EverySet.member DiagnosisHIVRecurrentPhase data.diagnoses then
                 Just DiagnosisHIVRecurrentPhase
 
             else if EverySet.member DiagnosisDiscordantPartnershipInitialPhase data.diagnoses then

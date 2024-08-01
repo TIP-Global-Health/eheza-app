@@ -1,7 +1,6 @@
 module Pages.Clinical.View exposing (view)
 
 import App.Model exposing (Msg(..))
-import AssocList as Dict
 import Backend.Entities exposing (..)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

@@ -1,4 +1,4 @@
-module Pages.Person.Fetch exposing (fetch, fetchFamilyMembers, fetchForCreateOrEdit)
+module Pages.Person.Fetch exposing (fetch, fetchForCreateOrEdit)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)

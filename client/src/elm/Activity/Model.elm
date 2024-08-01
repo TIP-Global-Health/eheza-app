@@ -42,9 +42,7 @@ show mothers and caregivers in very similar ways in the UI.
 -}
 type MotherActivity
     = FamilyPlanning
-    | Lactation
     | MotherFbf
-    | ParticipantConsent
 
 
 {-| This is basically a tuple, but it's nice to have meaningful names for the

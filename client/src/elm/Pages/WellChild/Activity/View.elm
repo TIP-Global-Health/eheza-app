@@ -2576,9 +2576,6 @@ viewHomeVisitContent :
     -> List (Html Msg)
 viewHomeVisitContent language currentDate site assembled data db =
     let
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskFeeding, TaskCaring, TaskHygiene, TaskFoodSecurity ]
 
@@ -2720,6 +2717,9 @@ viewHomeVisitContent language currentDate site assembled data db =
             Maybe.map
                 (\task ->
                     let
+                        measurements =
+                            assembled.measurements
+
                         personId =
                             assembled.participant.person
 

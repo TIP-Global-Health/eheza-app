@@ -14,20 +14,15 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
-        , getHeightValue
         , getMeasurementValueFunc
         , mapMeasurementData
         , muacIndication
-        , muacValueFunc
         , nutritionSignToString
-        , receiveOptionToString
-        , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
-        ( calculateZScoreWeightForAge
-        , getNewbornExamPregnancySummary
+        ( getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
         , resolveAllWeightMeasurementsForChild
         , resolveNCDANeverFilled
@@ -2493,9 +2488,6 @@ viewNCDAContent language currentDate zscores site personId person config helperS
                                                 ]
                                                 [ text <| ("< " ++ translate language Translate.Back) ]
 
-                                        totalSteps =
-                                            List.length steps
-
                                         previousStep =
                                             List.Extra.getAt (stepIndex - 1) steps
 
@@ -3820,10 +3812,10 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                     Nothing
               ]
                 ++ derivedReceiveSupplementInputs
-            , [ form.receiveSupplement ] ++ derivedReceiveSupplementTasks
+            , form.receiveSupplement :: derivedReceiveSupplementTasks
             )
 
-        ( ( sachetsPerDayInput, sachetsPerDayTask ), ( eatenWithWaterInput, eatenWithWaterTask ) ) =
+        ( ( sachetsPerDayInput, sachetsPerDayTask ), _ ) =
             if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
                 let
                     sachetsPerDayHelper =

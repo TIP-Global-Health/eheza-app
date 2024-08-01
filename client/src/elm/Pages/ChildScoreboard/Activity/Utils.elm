@@ -7,13 +7,12 @@ import Backend.Measurement.Model
         ( ChildScoreboardMeasurements
         , NCDASign(..)
         , VaccinationValue
-        , VaccineDose(..)
         , WellChildVaccineType(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import Date exposing (Unit(..))
+import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
@@ -118,17 +117,10 @@ expectImmunisationTask currentDate site person vaccinationHistory task =
             generateFutureVaccinationsData currentDate site person.birthDate person.gender False vaccinationHistory
                 |> Dict.fromList
 
-        ageInWeeks =
-            Maybe.map
-                (\birthDate ->
-                    Date.diff Weeks birthDate currentDate
-                )
-                person.birthDate
-
         isTaskExpected vaccineType =
             Dict.get vaccineType futureVaccinations
                 |> Maybe.Extra.join
-                |> Maybe.map (\( dose, date ) -> not <| Date.compare date currentDate == GT)
+                |> Maybe.map (\( _, date ) -> not <| Date.compare date currentDate == GT)
                 |> Maybe.withDefault False
     in
     immunisationTaskToVaccineType task

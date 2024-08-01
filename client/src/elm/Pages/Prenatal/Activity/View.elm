@@ -29,9 +29,7 @@ import Maybe.Extra exposing (isJust, isNothing, unwrap)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Measurement.Model
     exposing
-        ( ContentAndTasksForPerformedLaboratoryTestConfig
-        , ContentAndTasksForPerformedLaboratoryUniversalTestConfig
-        , ContentAndTasksLaboratoryTestInitialConfig
+        ( ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
         , InvokationModule(..)
@@ -45,9 +43,7 @@ import Measurement.Utils
     exposing
         ( bloodGpRsTestFormWithDefault
         , corePhysicalExamFormWithDefault
-        , emptyContentAndTasksForPerformedLaboratoryTestConfig
         , emptyContentAndTasksForPerformedLaboratoryUniversalTestConfig
-        , emptyContentAndTasksLaboratoryTestInitialConfig
         , emptyContentAndTasksLaboratoryUniversalTestInitialConfig
         , familyPlanningFormWithDefault
         , hemoglobinTestFormWithDefault
@@ -56,11 +52,9 @@ import Measurement.Utils
         , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
-        , nonRDTFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
-        , randomBloodSugarFormWithDefault
         , randomBloodSugarUniversalFormWithDefault
         , syphilisTestFormWithDefault
         , urineDipstickUniversalFormWithDefault
@@ -71,8 +65,6 @@ import Measurement.Utils
         , viewHemoglobinTestForm
         , viewHepatitisBTestForm
         , viewMalariaTestForm
-        , viewNonRDTForm
-        , viewNonRDTFormCheckKnownAsPositive
         , viewPartnerHIVTestForm
         , viewRandomBloodSugarTestUniversalForm
         , viewSyphilisTestForm

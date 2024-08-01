@@ -2,11 +2,9 @@ module Pages.Tuberculosis.Encounter.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.TuberculosisActivity.Utils exposing (allActivities, getActivityIcon)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -20,7 +18,6 @@ import Pages.Utils
         ( viewEndEncounterButton
         , viewEndEncounterDialog
         , viewPersonDetailsExtended
-        , viewReportLink
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)

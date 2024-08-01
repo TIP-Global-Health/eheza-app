@@ -4,7 +4,6 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
-import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
     exposing
         ( FollowUpForm

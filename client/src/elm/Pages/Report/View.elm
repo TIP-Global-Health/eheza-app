@@ -778,6 +778,19 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
             case mode of
                 LabResultsCurrentMain ->
                     let
+                        dipstickEntries =
+                            if viewForConfirmation then
+                                -- Confirmation view shows results only of current encounter.
+                                -- Therefore, we should show either short or long entry instead of both.
+                                if List.isEmpty longUrineDipstickTestResults then
+                                    [ dipstickShortEntry ]
+
+                                else
+                                    [ dipstickLongEntry ]
+
+                            else
+                                [ dipstickShortEntry, dipstickLongEntry ]
+
                         hivTestResults =
                             getTestResultsKnownAsPositive .hiv .testResult
 
@@ -876,19 +889,6 @@ viewLabResultsPane language currentDate viewForConfirmation mode setLabResultsMo
 
         glucoseEntry =
             viewLabResultsEntry language currentDate viewForConfirmation setLabResultsModeMsg (LabResultsHistoryGlucose glucoseResults)
-
-        dipstickEntries =
-            if viewForConfirmation then
-                -- Confirmation view shows results only of current encounter.
-                -- Therefore, we should show either short or long entry instead of both.
-                if List.isEmpty longUrineDipstickTestResults then
-                    [ dipstickShortEntry ]
-
-                else
-                    [ dipstickLongEntry ]
-
-            else
-                [ dipstickShortEntry, dipstickLongEntry ]
 
         dipstickShortEntry =
             let

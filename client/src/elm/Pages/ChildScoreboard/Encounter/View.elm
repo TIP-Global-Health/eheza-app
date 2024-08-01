@@ -1,4 +1,4 @@
-module Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, view, viewEndEncounterButton)
+module Pages.ChildScoreboard.Encounter.View exposing (view)
 
 import Backend.ChildScoreboardActivity.Utils exposing (..)
 import Backend.Entities exposing (..)

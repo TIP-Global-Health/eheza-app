@@ -255,9 +255,6 @@ update msg model =
 
         features =
             model.syncManager.syncInfoGeneral.features
-
-        reverseGeoInfo =
-            model.syncManager.reverseGeoInfo
     in
     case msg of
         NoOp ->
@@ -301,6 +298,10 @@ update msg model =
                 |> sequence update (extraMsgs ++ revisionMsgs)
 
         MsgLoggedIn loggedInMsg ->
+            let
+                reverseGeoInfo =
+                    model.syncManager.reverseGeoInfo
+            in
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of

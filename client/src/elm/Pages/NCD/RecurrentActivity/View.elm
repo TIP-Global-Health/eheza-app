@@ -10,7 +10,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, LaboratoryTask(..))
 import Measurement.Utils
     exposing

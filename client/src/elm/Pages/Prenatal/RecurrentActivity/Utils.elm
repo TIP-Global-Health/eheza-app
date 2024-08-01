@@ -16,7 +16,6 @@ import Measurement.Utils
         , expectUniversalTestResultTask
         , testNotPerformedByWhyNotAtExecutionNote
         , testPerformedByExecutionNote
-        , testPerformedByValue
         , vitalsFormWithDefault
         )
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
@@ -29,11 +28,7 @@ import Pages.Utils
         , ifNullableTrue
         , taskAllCompleted
         , taskCompleted
-        , viewBoolInput
-        , viewCustomLabel
-        , viewQuestionLabel
         )
-import Translate
 import Translate.Model exposing (Language(..))
 
 

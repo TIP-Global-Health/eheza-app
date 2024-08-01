@@ -9,7 +9,6 @@ at a session.
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (Nurse)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)

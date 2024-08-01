@@ -684,17 +684,10 @@ expectImmunisationTask currentDate site isChw assembled task =
                 assembled.vaccinationHistory
                 |> Dict.fromList
 
-        ageInWeeks =
-            Maybe.map
-                (\birthDate ->
-                    Date.diff Weeks birthDate currentDate
-                )
-                assembled.person.birthDate
-
         isTaskExpected vaccineType =
             Dict.get vaccineType futureVaccinations
                 |> Maybe.Extra.join
-                |> Maybe.map (\( dose, date ) -> not <| Date.compare date currentDate == GT)
+                |> Maybe.map (\( _, date ) -> not <| Date.compare date currentDate == GT)
                 |> Maybe.withDefault False
     in
     immunisationTaskToVaccineType task

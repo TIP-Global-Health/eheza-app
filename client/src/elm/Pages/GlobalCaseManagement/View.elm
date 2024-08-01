@@ -894,7 +894,7 @@ generateTuberculosisFollowUpEntryData language currentDate limitDate db ( partic
         in
         List.head allEncountersWithIds
             |> Maybe.andThen
-                (\( encounterId, encounter ) ->
+                (\( encounterId, _ ) ->
                     -- Follow up belongs to last encounter, which indicates that
                     -- there was no other encounter that has resolved this follow up.
                     if item.encounterId == Just encounterId then
@@ -1015,7 +1015,7 @@ generateHIVFollowUpEntryData language currentDate limitDate db ( mParticipantId,
                 in
                 List.head allEncountersWithIds
                     |> Maybe.andThen
-                        (\( encounterId, encounter ) ->
+                        (\( encounterId, _ ) ->
                             -- Follow up belongs to last encounter, which indicates that
                             -- there was no other encounter that has resolved this follow up.
                             if item.encounterId == Just encounterId then
@@ -1040,8 +1040,7 @@ generateHIVFollowUpEntryData language currentDate limitDate db ( mParticipantId,
                 -- Resolve date of last HIV encounter.
                 mDateOfLastHIVEncounter =
                     resolveIndividualParticipantsForPerson personId HIVEncounter db
-                        |> List.map (getHIVEncountersForParticipant db)
-                        |> List.concat
+                        |> List.concatMap (getHIVEncountersForParticipant db)
                         |> List.map (Tuple.second >> .startDate)
                         |> List.sortWith sortDatesDesc
                         |> List.head

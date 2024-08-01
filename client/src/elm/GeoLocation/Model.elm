@@ -1,7 +1,7 @@
 module GeoLocation.Model exposing (..)
 
 import AssocList as Dict exposing (Dict)
-import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
+import Restful.Endpoint exposing (EntityId)
 
 
 {-| This is here to have a partially type-safe key for the Dict.

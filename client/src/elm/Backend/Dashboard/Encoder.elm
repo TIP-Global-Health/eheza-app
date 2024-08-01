@@ -30,7 +30,7 @@ import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.WellChildEncounter.Encoder exposing (encodeEncounterWarning, encodeWellChildEncounterType)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Dict as LegacyDict
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)

@@ -1,17 +1,14 @@
 module Pages.Tuberculosis.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
-import Backend.TuberculosisActivity.Utils exposing (allActivities)
-import Date
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
@@ -25,19 +22,15 @@ import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskCompleted
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewNumberInput
         , viewQuestionLabel
         )
 import Translate exposing (translate)
-import Translate.Model exposing (Language(..))
+import Translate.Model exposing (Language)
 
 
 expectActivity : NominalDate -> AssembledData -> TuberculosisActivity -> Bool

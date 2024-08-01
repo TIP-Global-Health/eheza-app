@@ -9,7 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -64,9 +64,6 @@ view language currentTime nurseId nurse db model =
             Maybe.map
                 (\programStartDate ->
                     let
-                        messagingCenterView =
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
-
                         surveys =
                             Dict.get nurseId db.resilienceSurveysByNurse
                                 |> Maybe.andThen RemoteData.toMaybe
@@ -85,13 +82,6 @@ view language currentTime nurseId nurse db model =
                                     List.length filteredSurveys
 
                                 filterCondition survey =
-                                    let
-                                        diffMonthsLastSurveyCurrent =
-                                            Date.diff Months survey.dateMeasured currentDate
-
-                                        diffMonthsProgramStartLastSurvey =
-                                            Date.diff Months programStartDate survey.dateMeasured
-                                    in
                                     if surveyCount == 0 then
                                         -- We need to have at least one survey completed.
                                         True
@@ -102,26 +92,27 @@ view language currentTime nurseId nurse db model =
                                         -- So, if we have 3 surveys already, there's no need to another one,
                                         False
 
-                                    else if diffMonthsProgramStartLastSurvey >= 6 then
-                                        -- Last survey run after 6 months from programstart date.
-                                        -- It means that program has alreqady ended there.
-                                        -- No need to run another one.
-                                        False
-
-                                    else if diffMonthsLastSurveyCurrent >= 3 then
-                                        -- If we got so far, and interval from last survey
-                                        -- is 3 months or more, we should run the survey.
-                                        True
-
                                     else
-                                        False
+                                        let
+                                            diffMonthsProgramStartLastSurvey =
+                                                Date.diff Months programStartDate survey.dateMeasured
+                                        in
+                                        if diffMonthsProgramStartLastSurvey >= 6 then
+                                            -- Last survey run after 6 months from programstart date.
+                                            -- It means that program has alreqady ended there.
+                                            -- No need to run another one.
+                                            False
+
+                                        else
+                                            let
+                                                diffMonthsLastSurveyCurrent =
+                                                    Date.diff Months survey.dateMeasured currentDate
+                                            in
+                                            diffMonthsLastSurveyCurrent >= 3
                             in
                             List.head filteredSurveys
                                 |> Maybe.map filterCondition
                                 |> Maybe.withDefault True
-
-                        runAdoptionSurvey =
-                            runSurvey ResilienceSurveyAdoption
 
                         runQuarterlySurvey =
                             runSurvey ResilienceSurveyQuarterly
@@ -129,11 +120,16 @@ view language currentTime nurseId nurse db model =
                     if runQuarterlySurvey then
                         viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                    else if runAdoptionSurvey then
-                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
-
                     else
-                        messagingCenterView
+                        let
+                            runAdoptionSurvey =
+                                runSurvey ResilienceSurveyAdoption
+                        in
+                        if runAdoptionSurvey then
+                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                        else
+                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)

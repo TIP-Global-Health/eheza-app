@@ -5,19 +5,17 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString, testResultToString)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (OngoingTreatmentReviewForm)
 import Measurement.Utils
@@ -41,14 +39,12 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
-        , maybeToBoolTask
         , resolveActiveTask
         , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxMultipleSelectSectionsInput
         , viewEndEncounterDialog
         , viewLabel
         , viewPersonDetailsExtended
@@ -56,7 +52,6 @@ import Pages.Utils
         , viewSaveAction
         )
 import RemoteData
-import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -143,12 +138,10 @@ viewDiagnosticsContent language currentDate assembled db data =
             resolveIndividualParticipantsForPerson personId AntenatalEncounter db
 
         ncdEncountersIds =
-            List.map (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
-                |> List.concat
+            List.concatMap (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
 
         prenatalEncountersIds =
-            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
-                |> List.concat
+            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
 
         resolvePositiveHIVResultDates getMeasurementsFunc =
             List.filterMap

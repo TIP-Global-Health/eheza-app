@@ -5,7 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticip
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterNote(..))
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))

@@ -5,8 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb)
 import Pages.AcuteIllness.Participant.Fetch
 import Pages.Nutrition.Encounter.Fetch
-import Pages.Person.Fetch exposing (fetchFamilyMembers)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 fetch : NutritionEncounterId -> ModelIndexedDb -> List MsgIndexedDb

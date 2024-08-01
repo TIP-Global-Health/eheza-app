@@ -126,37 +126,37 @@ viewMainPageContent language currentDate nurse assembled model =
                 Reports ->
                     ( [], "" )
 
-        innerContent =
-            if model.selectedTab == Reports then
-                div [ class "reports-wrapper" ]
-                    [ viewReportLink language
-                        Translate.ClinicalProgressReport
-                        (SetActivePage <|
-                            UserPage <|
-                                ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id
-                        )
-                    , viewReportLink language
-                        Translate.DemographicsReport
-                        (SetActivePage <|
-                            UserPage <|
-                                DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person
-                        )
-                    ]
-
-            else
-                div [ class "full content" ]
-                    [ div [ class "wrap-cards" ]
-                        [ div [ class "ui four cards" ] <|
-                            if List.isEmpty selectedActivities then
-                                [ span [] [ text emptySectionMessage ] ]
-
-                            else
-                                List.map viewCard selectedActivities
-                        ]
-                    ]
-
         content =
             let
+                innerContent =
+                    if model.selectedTab == Reports then
+                        div [ class "reports-wrapper" ]
+                            [ viewReportLink language
+                                Translate.ClinicalProgressReport
+                                (SetActivePage <|
+                                    UserPage <|
+                                        ClinicalProgressReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.id
+                                )
+                            , viewReportLink language
+                                Translate.DemographicsReport
+                                (SetActivePage <|
+                                    UserPage <|
+                                        DemographicsReportPage (InitiatorRecurrentEncounterPage assembled.id) assembled.participant.person
+                                )
+                            ]
+
+                    else
+                        div [ class "full content" ]
+                            [ div [ class "wrap-cards" ]
+                                [ div [ class "ui four cards" ] <|
+                                    if List.isEmpty selectedActivities then
+                                        [ span [] [ text emptySectionMessage ] ]
+
+                                    else
+                                        List.map viewCard selectedActivities
+                                ]
+                            ]
+
                 ( label, action ) =
                     let
                         leaveEncounterTuple =

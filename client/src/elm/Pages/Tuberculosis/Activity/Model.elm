@@ -2,7 +2,6 @@ module Pages.Tuberculosis.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (FollowUpForm, OngoingTreatmentReviewForm, SendToHCForm, emptyFollowUpForm, emptyOngoingTreatmentReviewForm, emptySendToHCForm)
 import Pages.Page exposing (Page)
 

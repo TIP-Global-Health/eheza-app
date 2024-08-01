@@ -5,14 +5,12 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
         ( AcuteIllnessFollowUpValue
-        , FollowUpOption
         , FollowUpValue
         , NutritionFollowUpValue
         , PrenatalFollowUpValue
         )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 

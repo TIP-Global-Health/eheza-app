@@ -74,7 +74,7 @@ import Pages.Nutrition.Encounter.View
 import Pages.Nutrition.Participant.View
 import Pages.Nutrition.ProgressReport.Model
 import Pages.Nutrition.ProgressReport.View
-import Pages.Page exposing (DashboardPage(..), Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.PageNotFound.View
 import Pages.PatientRecord.Model
 import Pages.PatientRecord.View
@@ -267,10 +267,6 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
-    let
-        features =
-            model.syncManager.syncInfoGeneral.features
-    in
     if not model.serviceWorker.active then
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
@@ -295,6 +291,9 @@ viewConfiguredModel model configured =
 
     else
         let
+            features =
+                model.syncManager.syncInfoGeneral.features
+
             deviceName =
                 if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
                     Nothing

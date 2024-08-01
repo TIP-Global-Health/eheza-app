@@ -14,8 +14,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
-        ( followUpFormWithDefault
-        , fromListWithDefaultValue
+        ( fromListWithDefaultValue
         , healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault

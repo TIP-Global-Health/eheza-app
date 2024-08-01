@@ -54,10 +54,8 @@ import Measurement.Utils
         , toOutsideCareValueWithDefault
         , toPartnerHIVTestValueWithDefault
         , toRandomBloodSugarTestValueUniversalWithDefault
-        , toRandomBloodSugarTestValueWithDefault
         , toSyphilisTestValueWithDefault
         , toUrineDipstickTestValueUniversalWithDefault
-        , toUrineDipstickTestValueWithDefault
         , toVaccinationValueWithDefault
         , toVitalsValueWithDefault
         , vaccinationFormWithDefault

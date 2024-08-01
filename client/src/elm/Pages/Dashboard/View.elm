@@ -53,7 +53,6 @@ import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
-import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -80,7 +79,7 @@ import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate, translateText, translationSet)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -1000,16 +999,6 @@ viewCovid19Page language isChw encounters managedCovid model =
         ]
 
     else
-        let
-            -- Not viewd for now, as https://github.com/TIP-Global-Health/eheza-app/issues/959 is on hold.
-            hospitalReferralsCard =
-                let
-                    -- @todo: implement once issue is off hold.
-                    sentToHospital =
-                        0
-                in
-                chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
-        in
         [ div [ class "ui grid" ]
             [ div [ class "two column row center" ]
                 [ chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
@@ -1197,8 +1186,7 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
             List.filter (.startDate >> withinSelectedMonth dateLastDayOfSelectedMonth) assembled.groupEducationData
 
         attendeesDuringSelectedMonth =
-            List.map (.participants >> EverySet.toList) sessionsDuringSelectedMonth
-                |> List.concat
+            List.concatMap (.participants >> EverySet.toList) sessionsDuringSelectedMonth
 
         uniqueAttendeesDuringSelectedMonth =
             EverySet.fromList attendeesDuringSelectedMonth

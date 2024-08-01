@@ -3,7 +3,6 @@ module Pages.EducationSession.Model exposing (..)
 import Backend.EducationSession.Model exposing (..)
 import Backend.Entities exposing (..)
 import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
 
 

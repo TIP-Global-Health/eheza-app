@@ -1,6 +1,5 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( view
-    , viewNCDAScorecard
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane

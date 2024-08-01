@@ -1,17 +1,13 @@
 module Pages.HIV.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
-import Backend.HIVActivity.Utils exposing (allActivities)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Date
-import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
@@ -25,21 +21,15 @@ import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
-        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
         , taskCompleted
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxMultipleSelectSectionsInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
         , viewLabel
-        , viewNumberInput
         , viewQuestionLabel
         )
 import Translate exposing (TranslationId, translate)
-import Translate.Model exposing (Language(..))
+import Translate.Model exposing (Language)
 
 
 expectActivity : NominalDate -> AssembledData -> HIVActivity -> Bool
@@ -599,10 +589,6 @@ recordMedicationsInputsAndTasks :
     -> PrescribedMedicationForm
     -> ( List (Html Msg), ( Int, Int ) )
 recordMedicationsInputsAndTasks language questionTransId form =
-    let
-        mandatoryGroup =
-            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
-    in
     ( [ div [ class "ui form prescribed-medication" ]
             [ viewQuestionLabel language questionTransId
             , viewCheckBoxMultipleSelectSectionsInput language
@@ -617,6 +603,10 @@ recordMedicationsInputsAndTasks language questionTransId form =
       ]
     , ( Maybe.map
             (\medications ->
+                let
+                    mandatoryGroup =
+                        mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
+                in
                 if List.any (\medication -> List.member medication medications) mandatoryGroup then
                     1
 

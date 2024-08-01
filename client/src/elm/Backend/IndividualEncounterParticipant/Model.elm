@@ -6,7 +6,6 @@ import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
 import Backend.PatientRecord.Model exposing (PatientRecordInitiator)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType)
-import Date exposing (Date)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
 

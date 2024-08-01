@@ -7,7 +7,6 @@ module Translate exposing
     , ValidationError(..)
     , translate
     , translateText
-    , translationSet
     )
 
 {-| This module has just the translations ... for types and
@@ -23,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
@@ -963,7 +962,6 @@ type TranslationId
     | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
-    | MedicationDistributionHelperEarlyMastitisOrEngorgment
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
@@ -1413,7 +1411,6 @@ type TranslationId
     | ResilienceGuideSection3Note
     | ResilienceGuideSection4Title
     | ResilienceGuideSection4Text
-    | ResilienceGuideSection5Title
     | ResilienceGuideSection5Bullet1
     | ResilienceGuideSection5Bullet2
     | ResilienceGuideSection5Bullet3
@@ -10388,12 +10385,6 @@ translationSet trans =
             , kirundi = Just "Umwana ufite abavyeyi bafite umugera wa SIDA"
             }
 
-        MedicationDistributionHelperEarlyMastitisOrEngorgment ->
-            { english = "This patient has signs of Early Mastitis or Engorgement"
-            , kinyarwanda = Just "Uyu mubyeyi afite ibimenyetso by'uburwayi bwo kubyimba amabere bwaje kare cyane"
-            , kirundi = Just "Uyu muvyeyi afise ibimenyetso vy'ingwara yo mu mamoko ikiri nshasha (ukuvyimba amabere)"
-            }
-
         MedicationDistributionHelperHIV ->
             { english = "This patient is HIV positive"
             , kinyarwanda = Just "Uyu murwayi afite ubwandu bute"
@@ -18793,12 +18784,6 @@ translationSet trans =
         ResilienceGuideSection4Text ->
             { english = "Locate unread messages in that section. Click twice on the message to increase its visibility, and after that it will be removed from unread messages"
             , kinyarwanda = Just "Shakira ubutumwa utarasoma muri icyo gice. Kanda inshuro ebyili ku butumwa uri gusoma kugirango ubusome neza. maze buhite buva ku rutonde rw'ubutumwa utarasoma"
-            , kirundi = Nothing
-            }
-
-        ResilienceGuideSection5Title ->
-            { english = "e. Saving your Favourite Messages: (If a message resonates positively with you, you can designate it as a favourite)"
-            , kinyarwanda = Just "e. Kubika Ubutumwa wakunze: (Niba hari ubutumwa wasomye ukabwishimira/ukabukunda, ushobora kubushyira muri iki gice) Uko bikorwa"
             , kirundi = Nothing
             }
 

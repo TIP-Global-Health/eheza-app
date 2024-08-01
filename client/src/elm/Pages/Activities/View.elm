@@ -4,10 +4,8 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByA
 import Activity.Utils exposing (getActivityIcon, getAllChildActivitiesExcludingNextSteps, getParticipantCountForActivity)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
-import EverySet exposing (EverySet)
+import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)

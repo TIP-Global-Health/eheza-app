@@ -1,10 +1,6 @@
 module Backend.TuberculosisActivity.Utils exposing (..)
 
 import Backend.TuberculosisActivity.Model exposing (..)
-import EverySet
-import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
-import Translate exposing (Language, translate)
 
 
 activityToString : TuberculosisActivity -> String
