@@ -1,17 +1,12 @@
 module Pages.ReportsMenu.View exposing (view)
 
 import App.Types exposing (Language)
-import AssocList as Dict
-import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
 import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import List.Extra
 import Maybe.Extra exposing (isJust)
-import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
 import Pages.ReportsMenu.Model exposing (..)
 import Pages.ReportsMenu.Types exposing (..)
@@ -21,13 +16,11 @@ import Pages.Utils
         ( generateReportsHeaderImage
         , viewCustomLabel
         , viewCustomSelectListInput
-        , viewGeoLocationSelectListInput
         , viewLoadDataButton
         , viewSelectListInput
         , wrapSelectListInput
         )
-import Translate exposing (TranslationId, translate)
-import Utils.GeoLocation exposing (..)
+import Translate exposing (translate)
 
 
 view : Language -> String -> ModelBackend -> Model -> Html Msg

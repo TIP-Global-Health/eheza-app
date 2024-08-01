@@ -3,25 +3,17 @@ module Pages.Components.View exposing (..)
 import App.Types exposing (Language, Site)
 import AssocList as Dict
 import Backend.Entities exposing (fromEntityId, toEntityId)
-import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
-import Pages.ReportsMenu.Model exposing (..)
-import Pages.ReportsMenu.Types exposing (..)
-import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
-        ( viewCustomLabel
-        , viewCustomSelectListInput
-        , viewGeoLocationSelectListInput
+        ( viewGeoLocationSelectListInput
         , viewMenuActionButton
-        , viewSelectListInput
         )
-import Translate exposing (TranslationId, translate)
+import Translate exposing (TranslationId)
 import Utils.GeoLocation exposing (..)
 
 

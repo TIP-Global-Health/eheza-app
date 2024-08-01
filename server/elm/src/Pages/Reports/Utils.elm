@@ -1,6 +1,5 @@
 module Pages.Reports.Utils exposing (..)
 
-import App.Types exposing (Site(..))
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (..)
 import Date exposing (Unit(..))
@@ -8,7 +7,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import List.Extra exposing (unique)
 import Maybe.Extra
 import Pages.Reports.Model exposing (..)
-import Set exposing (Set)
+import Set
 
 
 reportTypeToString : ReportType -> String
@@ -294,9 +293,6 @@ resolveDataSetForMonth date monthIndex encountersByMonth =
         year =
             Date.year selectedDate
 
-        month =
-            Date.month selectedDate
-
         monthNumber =
             Date.monthNumber selectedDate
     in
@@ -365,7 +361,7 @@ resolveDataSetForYear date yearIndex encountersByMonth =
             Date.year date - yearIndex
     in
     Dict.filter
-        (\( year, month ) _ ->
+        (\( year, _ ) _ ->
             year == selectedYear
         )
         encountersByMonth

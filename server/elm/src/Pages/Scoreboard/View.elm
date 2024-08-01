@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
 import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY, toLastDayOfMonth)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -455,11 +455,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                             targetDateForMonth =
                                                 resolveTargetDateForMonth gapInMonths currentDate
 
-                                            ageInMonths =
-                                                -- Using EDD date to properly resolve the month of
-                                                -- prgnancy (as child may have been borm premature).
-                                                diffMonths (Date.floor Month record.eddDate) targetDateForMonth
-
                                             row1AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.ancNewborn.row1
@@ -476,6 +471,11 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
 
                                             row2 =
                                                 let
+                                                    ageInMonths =
+                                                        -- Using EDD date to properly resolve the month of
+                                                        -- prgnancy (as child may have been borm premature).
+                                                        diffMonths (Date.floor Month record.eddDate) targetDateForMonth
+
                                                     gap =
                                                         gapInMonths - ageInMonths
                                                 in
@@ -1050,9 +1050,6 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                             existedDuringExaminationMonth =
                                                 -- Making sure patient was already created during examination month.
                                                 Date.compare record.created targetDateForMonth == LT
-
-                                            ageInMonths =
-                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
 
                                             row1AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
