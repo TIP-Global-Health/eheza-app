@@ -273,14 +273,6 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.nutrition.muac.severe
 
-                                            muacModerateAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.muac.moderate
-
-                                            muacNormalAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.muac.normal
-
                                             ( row1, row2, row3 ) =
                                                 if
                                                     existedDuringExaminationMonth
@@ -288,20 +280,32 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
-                                                else if
-                                                    existedDuringExaminationMonth
-                                                        && (not <| List.isEmpty muacModerateAsAgeInMonths)
-                                                then
-                                                    ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
-
-                                                else if
-                                                    existedDuringExaminationMonth
-                                                        && (not <| List.isEmpty muacNormalAsAgeInMonths)
-                                                then
-                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
-
                                                 else
-                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 )
+                                                    let
+                                                        muacModerateAsAgeInMonths =
+                                                            List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                                record.nutrition.muac.moderate
+                                                    in
+                                                    if
+                                                        existedDuringExaminationMonth
+                                                            && (not <| List.isEmpty muacModerateAsAgeInMonths)
+                                                    then
+                                                        ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
+
+                                                    else
+                                                        let
+                                                            muacNormalAsAgeInMonths =
+                                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                                    record.nutrition.muac.normal
+                                                        in
+                                                        if
+                                                            existedDuringExaminationMonth
+                                                                && (not <| List.isEmpty muacNormalAsAgeInMonths)
+                                                        then
+                                                            ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
+
+                                                        else
+                                                            ( accumValue.row1, accumValue.row2, accumValue.row3 )
                                         in
                                         { row1 = row1
                                         , row2 = row2

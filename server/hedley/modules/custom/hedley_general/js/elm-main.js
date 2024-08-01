@@ -12582,118 +12582,116 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
-	function (language, data) {
-		var viewRow = function (_v0) {
-			var cells = _v0.a;
-			var shiftLeft = _v0.b;
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('row')
-					]),
-				A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (index, cellText) {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$classList(
-										_List_fromArray(
-											[
-												_Utils_Tuple2('item', true),
-												_Utils_Tuple2('label', !index),
-												_Utils_Tuple2('ml-5', (!index) && shiftLeft),
-												_Utils_Tuple2('value', !(!index))
-											]))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(cellText)
-									]));
-						}),
-					cells));
-		};
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('section heading')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(data.heading)
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('table encounters')
-					]),
-				A2(
-					$elm$core$List$cons,
-					A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('row captions')
-							]),
-						$author$project$Pages$Reports$View$viewStandardCells(data.captions)),
-					_Utils_ap(
-						A2($elm$core$List$map, viewRow, data.rows),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('row encounters-totals')
-									]),
-								$author$project$Pages$Reports$View$viewStandardCells(
-									_List_fromArray(
-										[data.totals.label, data.totals.total, data.totals.unique])))
-							]))))
-			]);
-	});
-var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
-	function (language, limitDate, data) {
-		var viewTable = function (tableData) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('table ' + tableData.name)
-					]),
-				A2(
-					$elm$core$List$cons,
-					A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('row captions')
-							]),
-						$author$project$Pages$Reports$View$viewStandardCells(tableData.captions)),
-					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)));
-		};
+var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = function (data) {
+	var viewRow = function (_v0) {
+		var cells = _v0.a;
+		var shiftLeft = _v0.b;
 		return A2(
-			$elm$core$List$cons,
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
 			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('section heading')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(data.heading)
-					])),
-			A2($elm$core$List$map, viewTable, data.tables));
-	});
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, cellText) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2('label', !index),
+											_Utils_Tuple2('ml-5', (!index) && shiftLeft),
+											_Utils_Tuple2('value', !(!index))
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(cellText)
+								]));
+					}),
+				cells));
+	};
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table encounters')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row captions')
+						]),
+					$author$project$Pages$Reports$View$viewStandardCells(data.captions)),
+				_Utils_ap(
+					A2($elm$core$List$map, viewRow, data.rows),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row encounters-totals')
+								]),
+							$author$project$Pages$Reports$View$viewStandardCells(
+								_List_fromArray(
+									[data.totals.label, data.totals.total, data.totals.unique])))
+						]))))
+		]);
+};
+var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function (data) {
+	var viewTable = function (tableData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table ' + tableData.name)
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row captions')
+						]),
+					$author$project$Pages$Reports$View$viewStandardCells(tableData.captions)),
+				A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)));
+	};
+	return A2(
+		$elm$core$List$cons,
+		A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+		A2($elm$core$List$map, viewTable, data.tables));
+};
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
@@ -12708,9 +12706,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 					$elm$html$Html$Attributes$class('report demographics')
 				]),
 			_Utils_ap(
-				A3($author$project$Pages$Reports$View$viewDemographicsReportPatients, language, limitDate, demographicsReportPatientsData),
+				$author$project$Pages$Reports$View$viewDemographicsReportPatients(demographicsReportPatientsData),
 				_Utils_ap(
-					A2($author$project$Pages$Reports$View$viewDemographicsReportEncounters, language, demographicsReportEncountersData),
+					$author$project$Pages$Reports$View$viewDemographicsReportEncounters(demographicsReportEncountersData),
 					_List_fromArray(
 						[
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
@@ -14947,18 +14945,22 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 																$elm$core$Basics$GT));
 														},
 														participantData.encounters);
-													var dateConcluded = A2(
-														$elm$core$Maybe$andThen,
-														function (date) {
-															return _Utils_eq(
-																A2($justinmimbs$date$Date$compare, limitDate, date),
-																$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
-														},
-														participantData.dateConcluded);
-													return $elm$core$List$isEmpty(filteredEncounters) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-														_Utils_update(
-															participantData,
-															{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+													if ($elm$core$List$isEmpty(filteredEncounters)) {
+														return $elm$core$Maybe$Nothing;
+													} else {
+														var dateConcluded = A2(
+															$elm$core$Maybe$andThen,
+															function (date) {
+																return _Utils_eq(
+																	A2($justinmimbs$date$Date$compare, limitDate, date),
+																	$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+															},
+															participantData.dateConcluded);
+														return $elm$core$Maybe$Just(
+															_Utils_update(
+																participantData,
+																{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+													}
 												}
 											}));
 									var filterIndividualBy = function (resolveDateFunc) {
@@ -35170,22 +35172,32 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
 												},
 												record.nutrition.muac.severe);
-											var muacNormalAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.muac.normal);
-											var muacModerateAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.muac.moderate);
 											var existedDuringExaminationMonth = _Utils_eq(
 												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 												$elm$core$Basics$LT);
-											var _v0 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var _v0 = function () {
+												if (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths))) {
+													return _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3);
+												} else {
+													var muacModerateAsAgeInMonths = A2(
+														$elm$core$List$filter,
+														function (date) {
+															return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
+														},
+														record.nutrition.muac.moderate);
+													if (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths))) {
+														return _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3);
+													} else {
+														var muacNormalAsAgeInMonths = A2(
+															$elm$core$List$filter,
+															function (date) {
+																return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
+															},
+															record.nutrition.muac.normal);
+														return (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3);
+													}
+												}
+											}();
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;

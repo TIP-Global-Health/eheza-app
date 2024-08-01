@@ -192,19 +192,6 @@ viewReportsData language currentDate themePath data model =
 
                                                                     else
                                                                         let
-                                                                            dateConcluded =
-                                                                                -- If pregnancy was concluded, but conclusion date is
-                                                                                -- after TO date, we mark pregnancy as not concluded.
-                                                                                Maybe.andThen
-                                                                                    (\date ->
-                                                                                        if Date.compare limitDate date == LT then
-                                                                                            Nothing
-
-                                                                                        else
-                                                                                            Just date
-                                                                                    )
-                                                                                    participantData.dateConcluded
-
                                                                             filteredEncounters =
                                                                                 List.filter
                                                                                     (\encounterData ->
@@ -219,6 +206,20 @@ viewReportsData language currentDate themePath data model =
                                                                             Nothing
 
                                                                         else
+                                                                            let
+                                                                                dateConcluded =
+                                                                                    -- If pregnancy was concluded, but conclusion date is
+                                                                                    -- after TO date, we mark pregnancy as not concluded.
+                                                                                    Maybe.andThen
+                                                                                        (\date ->
+                                                                                            if Date.compare limitDate date == LT then
+                                                                                                Nothing
+
+                                                                                            else
+                                                                                                Just date
+                                                                                        )
+                                                                                        participantData.dateConcluded
+                                                                            in
                                                                             Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
                                                                 )
                                                             )
@@ -344,8 +345,8 @@ viewDemographicsReport language limitDate scopeLabel records =
                 ++ demographicsReportEncountersDataToCSV demographicsReportEncountersData
     in
     div [ class "report demographics" ] <|
-        viewDemographicsReportPatients language limitDate demographicsReportPatientsData
-            ++ viewDemographicsReportEncounters language demographicsReportEncountersData
+        viewDemographicsReportPatients demographicsReportPatientsData
+            ++ viewDemographicsReportEncounters demographicsReportEncountersData
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -577,20 +578,17 @@ generateDemographicsReportPatientsData language limitDate records =
 
 
 viewDemographicsReportPatients :
-    Language
-    -> NominalDate
-    ->
-        { heading : String
-        , tables :
-            List
-                { captions : List String
-                , name : String
-                , rows : List (List String)
-                , totals : ( String, String )
-                }
-        }
+    { heading : String
+    , tables :
+        List
+            { captions : List String
+            , name : String
+            , rows : List (List String)
+            , totals : ( String, String )
+            }
+    }
     -> List (Html Msg)
-viewDemographicsReportPatients language limitDate data =
+viewDemographicsReportPatients data =
     let
         viewTable tableData =
             div [ class <| "table " ++ tableData.name ] <|
@@ -940,15 +938,13 @@ generateDemographicsReportEncountersData language records =
 
 
 viewDemographicsReportEncounters :
-    Language
-    ->
-        { heading : String
-        , captions : List String
-        , rows : List ( List String, Bool )
-        , totals : { label : String, total : String, unique : String }
-        }
+    { heading : String
+    , captions : List String
+    , rows : List ( List String, Bool )
+    , totals : { label : String, total : String, unique : String }
+    }
     -> List (Html Msg)
-viewDemographicsReportEncounters language data =
+viewDemographicsReportEncounters data =
     let
         viewRow ( cells, shiftLeft ) =
             div [ class "row" ] <|
