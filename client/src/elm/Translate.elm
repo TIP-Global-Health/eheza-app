@@ -4027,7 +4027,7 @@ translationSet trans =
 
         ChooseOne ->
             { english = "Choose one"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Hitamo kimwe"
             , kirundi = Just "Hitamwo kimwe"
             }
 
@@ -17111,19 +17111,19 @@ translationSet trans =
         QuarterlySurveyScoreInterpretation score ->
             if score < 14 then
                 { english = "Low resilient copers"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ugira imbaraga nke mu gushakisha ibisubizo no kwihangana"
                 , kirundi = Nothing
                 }
 
             else if score < 17 then
                 { english = "Medium resilient copers"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Uragerageza mu gushakisha ibisubizo no kwihangana"
                 , kirundi = Nothing
                 }
 
             else
                 { english = "High resilient copers"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Ufite ubushobozi bwinshi mu gushaka ibisubizo no kwihangana"
                 , kirundi = Nothing
                 }
 
@@ -19741,7 +19741,7 @@ translationSet trans =
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
+                            { english = "Almost everyday (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
@@ -19770,7 +19770,7 @@ translationSet trans =
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
+                            { english = "Almost everyday (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
@@ -19794,7 +19794,7 @@ translationSet trans =
 
                         ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
                             , kirundi = Nothing
                             }
 
@@ -19828,7 +19828,7 @@ translationSet trans =
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
+                            { english = "Almost everyday (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
@@ -19857,7 +19857,7 @@ translationSet trans =
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
+                            { english = "Almost everyday (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
@@ -19881,7 +19881,7 @@ translationSet trans =
 
                         ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
                             , kirundi = Nothing
                             }
 
@@ -19910,7 +19910,7 @@ translationSet trans =
 
                         ResilienceSurveyQuestionOption3 ->
                             { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
                             , kirundi = Nothing
                             }
 
@@ -19944,7 +19944,7 @@ translationSet trans =
                             }
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Every day (6-7 days)"
+                            { english = "Almost everyday (6-7 days)"
                             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
                             , kirundi = Nothing
                             }
@@ -20157,7 +20157,7 @@ translationSet trans =
             case option of
                 ResilienceSurveyQuestionOption0 ->
                     { english = "Does not describe me at all"
-                    , kinyarwanda = Just "Ntabwo mbikora na namba"
+                    , kinyarwanda = Just "Ntabwo mbikora namba"
                     , kirundi = Nothing
                     }
 
