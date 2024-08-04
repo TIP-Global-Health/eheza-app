@@ -413,6 +413,7 @@ type TranslationId
     | AILaboratoryTask AILaboratoryTask
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
+    | AlmostEverydayOption
     | AmbulancArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
     | ANCIndicateVisitsMonthsPhrase
@@ -699,6 +700,7 @@ type TranslationId
     | ForIllustrativePurposesOnly
     | FormError (ErrorValue ValidationError)
     | FormField String
+    | FourToFiveDaysAWeek
     | FundalHeight
     | FundalPalpableQuestion
     | FundalPalpableWarning
@@ -1128,6 +1130,11 @@ type TranslationId
     | OK
     | On
     | OneVisit
+    | OnceAMonth
+    | OnceAWeekOption
+    | OnceInLastSixMonthsOption
+    | OnceInLastThreeMonthsOption
+    | OnceInTheLastTwoMonthsOption
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
@@ -1792,6 +1799,9 @@ type TranslationId
     | TuberculosisSuspect
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
+    | TwiceAMonthOption
+    | TwoAndMoreDaysAWeekOption
+    | TwoToThreeDaysAWeeksOption
     | TwoVisits
     | Type
     | UbudeheLabel
@@ -3158,6 +3168,12 @@ translationSet trans =
             { english = "Antenatal Visits History"
             , kinyarwanda = Just "Amakuru ku isurwa ry'umugore utwite"
             , kirundi = Just "Akahise ko kugenderwa imbere yo kuvyara"
+            }
+
+        AlmostEverydayOption ->
+            { english = "Almost everyday (6-7 days)"
+            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
+            , kirundi = Nothing
             }
 
         AmbulancArrivalPeriodQuestion ->
@@ -6244,6 +6260,12 @@ translationSet trans =
 
         FormField field ->
             translateFormField field
+
+        FourToFiveDaysAWeek ->
+            { english = "4 to 5 days a week"
+            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
+            , kirundi = Nothing
+            }
 
         FundalHeight ->
             { english = "Fundal Height"
@@ -13066,6 +13088,36 @@ translationSet trans =
             , kirundi = Just "Urugendo rumwe"
             }
 
+        OnceAMonth ->
+            { english = "Once a month"
+            , kinyarwanda = Just "Rimwe mu kwezi"
+            , kirundi = Nothing
+            }
+
+        OnceAWeekOption ->
+            { english = "Once a week"
+            , kinyarwanda = Just "Rimwe mu cyumweru"
+            , kirundi = Nothing
+            }
+
+        OnceInLastSixMonthsOption ->
+            { english = "Once in last six months"
+            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
+            , kirundi = Nothing
+            }
+
+        OnceInLastThreeMonthsOption ->
+            { english = "Once in last three months"
+            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
+            , kirundi = Nothing
+            }
+
+        OnceInTheLastTwoMonthsOption ->
+            { english = "Once in the last two months"
+            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
+            , kirundi = Nothing
+            }
+
         OnceYouEndTheEncounter ->
             { english = "Once you end the Encounter, you will no longer be able to edit or add data."
             , kinyarwanda = Just "Igihe cyose urangije igikorwa ,nta bushobozi wongera kugira bwo guhindura ibyo winjije cyangwa amakuru."
@@ -19723,28 +19775,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoToThreeDaysAWeeksOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Almost everyday (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
+                            translationSet AlmostEverydayOption
 
                 ResilienceSurveyQuestion2 ->
                     case option of
@@ -19752,28 +19792,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoToThreeDaysAWeeksOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Almost everyday (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
+                            translationSet AlmostEverydayOption
 
                 ResilienceSurveyQuestion3 ->
                     case option of
@@ -19781,28 +19809,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once in last six months"
-                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastSixMonthsOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Once in last three months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastThreeMonthsOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInTheLastTwoMonthsOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Once every month"
-                            , kinyarwanda = Just "Rimwe buri kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                 ResilienceSurveyQuestion4 ->
                     case option of
@@ -19810,28 +19826,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoToThreeDaysAWeeksOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Almost everyday (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
+                            translationSet AlmostEverydayOption
 
                 ResilienceSurveyQuestion5 ->
                     case option of
@@ -19839,28 +19843,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoToThreeDaysAWeeksOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Almost everyday (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
+                            translationSet AlmostEverydayOption
 
                 ResilienceSurveyQuestion6 ->
                     case option of
@@ -19868,28 +19860,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once in last six months"
-                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastSixMonthsOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Once in last three months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastThreeMonthsOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInTheLastTwoMonthsOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Once every month"
-                            , kinyarwanda = Just "Rimwe buri kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                 ResilienceSurveyQuestion7 ->
                     case option of
@@ -19897,22 +19877,13 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once in last six months"
-                            , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastSixMonthsOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Once in last three months"
-                            , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInLastThreeMonthsOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once in the last two months"
-                            , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceInTheLastTwoMonthsOption
 
                         ResilienceSurveyQuestionOption4 ->
                             { english = "Once every month"
@@ -19926,28 +19897,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "2 to 3 days a week"
-                            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoToThreeDaysAWeeksOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "4 to 5 days a week"
-                            , kinyarwanda = Just "Kane kugera kuri gatanu mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "Almost everyday (6-7 days)"
-                            , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
-                            , kirundi = Nothing
-                            }
+                            translationSet AlmostEverydayOption
 
                 ResilienceSurveyQuestion9 ->
                     case option of
@@ -19955,28 +19914,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwiceAMonthOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoAndMoreDaysAWeekOption
 
                 ResilienceSurveyQuestion10 ->
                     case option of
@@ -19984,28 +19931,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwiceAMonthOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoAndMoreDaysAWeekOption
 
                 ResilienceSurveyQuestion11 ->
                     case option of
@@ -20013,28 +19948,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwiceAMonthOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoAndMoreDaysAWeekOption
 
                 ResilienceSurveyQuestion12 ->
                     case option of
@@ -20042,28 +19965,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            { english = "Once a month"
-                            , kinyarwanda = Just "Rimwe mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            { english = "Twice a month"
-                            , kinyarwanda = Just "Kabiri mu kwezi"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwiceAMonthOption
 
                         ResilienceSurveyQuestionOption3 ->
-                            { english = "Once a week"
-                            , kinyarwanda = Just "Rimwe mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet OnceAWeekOption
 
                         ResilienceSurveyQuestionOption4 ->
-                            { english = "2 and more days a week"
-                            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
-                            , kirundi = Nothing
-                            }
+                            translationSet TwoAndMoreDaysAWeekOption
 
         ResilienceReminderHeader name reminderType ->
             case reminderType of
@@ -22395,6 +22306,24 @@ translationSet trans =
             { english = "Patient is high risk for active Tuberculosis"
             , kinyarwanda = Just "Umubyeyi afite ibyago byinshi byo kuba afite igituntu"
             , kirundi = Just "Umugwayi afise ingorane iri hejuru y'ingwara y'igituntu"
+            }
+
+        TwiceAMonthOption ->
+            { english = "Twice a month"
+            , kinyarwanda = Just "Kabiri mu kwezi"
+            , kirundi = Nothing
+            }
+
+        TwoAndMoreDaysAWeekOption ->
+            { english = "2 and more days a week"
+            , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
+            , kirundi = Nothing
+            }
+
+        TwoToThreeDaysAWeeksOption ->
+            { english = "2 to 3 days a week"
+            , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
+            , kirundi = Nothing
             }
 
         TwoVisits ->
