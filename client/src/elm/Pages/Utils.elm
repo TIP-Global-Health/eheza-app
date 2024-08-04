@@ -61,11 +61,6 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
-
         ( thumbnailClass, maybeAge ) =
             if isAdult then
                 ( "mother"
@@ -80,7 +75,7 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                         (\birthDate ->
                             let
                                 renderAgeFunc =
-                                    if isAboveAgeOf2Years then
+                                    if isAboveAgeOf2Years currentDate person then
                                         renderAgeYearsMonths
 
                                     else
@@ -122,17 +117,19 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
     ]
 
 
+isAboveAgeOf2Years : NominalDate -> Person -> Bool
+isAboveAgeOf2Years currentDate person =
+    ageInYears currentDate person
+        |> Maybe.map (\age -> age >= 2)
+        |> Maybe.withDefault False
+
+
 viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
 viewPersonDetailsExtended language currentDate person =
     let
         isAdult =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
-
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
 
         ( thumbnailClass, ageEntry ) =
             if isAdult then
@@ -149,7 +146,7 @@ viewPersonDetailsExtended language currentDate person =
                         (\birthDate ->
                             let
                                 renderAgeFunc =
-                                    if isAboveAgeOf2Years then
+                                    if isAboveAgeOf2Years currentDate person then
                                         renderAgeYearsMonths
 
                                     else

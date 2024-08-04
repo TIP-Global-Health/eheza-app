@@ -1214,20 +1214,21 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             let
                                                 currentZipper =
                                                     Zipper.current zipper
-
-                                                zipperUpdated =
-                                                    if currentZipper.status == Uploading then
-                                                        zipper
-
-                                                    else
-                                                        Zipper.mapCurrent
-                                                            (\old -> { old | status = Uploading })
-                                                            zipper
                                             in
                                             if currentZipper.status == Uploading then
                                                 ( model.syncInfoAuthorities, Cmd.none )
 
                                             else
+                                                let
+                                                    zipperUpdated =
+                                                        if currentZipper.status == Uploading then
+                                                            zipper
+
+                                                        else
+                                                            Zipper.mapCurrent
+                                                                (\old -> { old | status = Uploading })
+                                                                zipper
+                                                in
                                                 ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipper )
                                         )
                                     |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )

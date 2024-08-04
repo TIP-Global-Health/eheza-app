@@ -524,7 +524,6 @@ update msg model =
                                         |> Pages.WellChild.Encounter.Update.update currentDate
                                             model.zscores
                                             site
-                                            isChw
                                             model.indexedDb
                                             subMsg
                             in

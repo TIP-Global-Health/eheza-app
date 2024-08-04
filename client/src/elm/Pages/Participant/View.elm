@@ -25,7 +25,7 @@ import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Session.Model
-import Pages.Utils exposing (viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, viewSkipNCDADialog)
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -108,18 +108,13 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                 |> translate language
                 |> text
 
-        isAboveAgeOf2Years =
-            ageInYears currentDate child
-                |> Maybe.map (\years -> years >= 2)
-                |> Maybe.withDefault False
-
         age =
             child.birthDate
                 |> Maybe.map
                     (\birthDate ->
                         let
                             renderAgeFunc =
-                                if isAboveAgeOf2Years then
+                                if isAboveAgeOf2Years currentDate child then
                                     renderAgeYearsMonths
 
                                 else

@@ -57,10 +57,12 @@ rules =
     , NoUnused.CustomTypeConstructorArgs.rule
     , NoUnused.Dependencies.rule
     , NoUnused.Exports.rule
-    , NoUnused.Parameters.rule
+
+    -- , NoUnused.Parameters.rule
     , NoUnused.Patterns.rule
     , NoUnused.Variables.rule
-    , Simplify.rule Simplify.defaults
+
+    -- , Simplify.rule Simplify.defaults
     ]
 
 

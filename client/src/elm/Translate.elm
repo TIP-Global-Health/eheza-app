@@ -962,6 +962,7 @@ type TranslationId
     | MedicationDistributionHelperAnemia
     | MedicationDistributionHelperDiscordantPartnership
     | MedicationDistributionHelperDiscordantPartnershipNoARVs
+    | MedicationDistributionHelperEarlyMastitisOrEngorgment
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
@@ -10384,6 +10385,12 @@ translationSet trans =
             , kinyarwanda = Just "Uwo babana afite ubwandu bwa Virusi itera SIDA ariko umubyeyi we ntabwo afite kandi ntago afata imiti igabanya ubukana"
             , kirundi = Just "Umwana ufite abavyeyi bafite umugera wa SIDA"
             }
+
+        MedicationDistributionHelperEarlyMastitisOrEngorgment ->
+            { english = "This patient has signs of Early Mastitis or Engorgement"
+            , kinyarwanda = Just "Uyu mubyeyi afite ibimenyetso by'uburwayi bwo kubyimba amabere bwaje kare cyane"
+            , kirundi = Just "Uyu muvyeyi afise ibimenyetso vy'ingwara yo mu mamoko ikiri nshasha (ukuvyimba amabere)"
+            }            
 
         MedicationDistributionHelperHIV ->
             { english = "This patient is HIV positive"
