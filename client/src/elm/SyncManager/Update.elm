@@ -1221,13 +1221,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             else
                                                 let
                                                     zipperUpdated =
-                                                        if currentZipper.status == Uploading then
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = Uploading })
                                                             zipper
-
-                                                        else
-                                                            Zipper.mapCurrent
-                                                                (\old -> { old | status = Uploading })
-                                                                zipper
                                                 in
                                                 ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipper )
                                         )
