@@ -20,6 +20,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -274,19 +275,13 @@ viewStepRecordSymptoms language currentDate contact data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
                         saveMsg =
                             case task of
                                 SymptomsGeneral ->

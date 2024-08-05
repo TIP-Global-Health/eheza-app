@@ -63,6 +63,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewCheckBoxMultipleSelectInput
@@ -867,50 +868,44 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    NextStepsHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        saveMsg =
+                            case task of
+                                NextStepsSendToHC ->
+                                    SaveSendToHC personId measurements.sendToHC nextTask
 
-                                    NextStepContributingFactors ->
-                                        SaveContributingFactors personId measurements.contributingFactors nextTask
+                                NextStepsHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    NextStepFollowUp ->
-                                        let
-                                            assesment =
-                                                generateNutritionAssessment currentDate zscores db assembled
-                                                    |> nutritionAssessmentForBackend
-                                        in
-                                        SaveFollowUp personId measurements.followUp assesment nextTask
-                        in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
+                                NextStepContributingFactors ->
+                                    SaveContributingFactors personId measurements.contributingFactors nextTask
+
+                                NextStepFollowUp ->
+                                    let
+                                        assesment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveFollowUp personId measurements.followUp assesment nextTask
+                    in
+                    div [ class "actions next-steps" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
                             ]
-                    )
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]

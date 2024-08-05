@@ -1805,97 +1805,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                 Nothing ->
                     emptyNode
 
-        tasksAfterSave =
-            case activeTask of
-                -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
-                Just NextStepsCall114 ->
-                    if assembled.initialEncounter then
-                        if call114Form.called114 == Just False then
-                            [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
-
-                        else if call114Form.called114 == Just True then
-                            [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
-
-                        else
-                            tasks
-
-                    else
-                        tasks
-
-                -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
-                -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
-                Just NextStepsContactHC ->
-                    if assembled.initialEncounter then
-                        tasks
-
-                    else
-                        let
-                            hcContactForm =
-                                measurements.hcContact
-                                    |> getMeasurementValueFunc
-                                    |> hcContactFormWithDefault data.hcContactForm
-                        in
-                        if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                        else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                            [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                        else
-                            tasks
-
-                -- If medication is prescribed, but it's out of stock, or partient
-                -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
-                -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
-                -- where the patient is monitored at home.
-                Just NextStepsMedicationDistribution ->
-                    let
-                        medicationDistributionForm =
-                            measurements.medicationDistribution
-                                |> getMeasurementValueFunc
-                                |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                    in
-                    if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
-                        tasks
-
-                    else
-                        let
-                            medicationOutOfStockOrPatientAlergic =
-                                medicationDistributionForm.nonAdministrationSigns
-                                    |> Maybe.map
-                                        (\signs ->
-                                            [ MedicationAmoxicillin NonAdministrationLackOfStock
-                                            , MedicationAmoxicillin NonAdministrationKnownAllergy
-                                            , MedicationCoartem NonAdministrationLackOfStock
-                                            , MedicationCoartem NonAdministrationKnownAllergy
-                                            , MedicationORS NonAdministrationLackOfStock
-                                            , MedicationORS NonAdministrationKnownAllergy
-                                            , MedicationZinc NonAdministrationLackOfStock
-                                            , MedicationZinc NonAdministrationKnownAllergy
-                                            ]
-                                                |> List.any (\option -> EverySet.member option signs)
-                                        )
-                                    |> Maybe.withDefault False
-                        in
-                        if medicationOutOfStockOrPatientAlergic then
-                            [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
-
-                        else
-                            [ NextStepsMedicationDistribution, NextStepsFollowUp ]
-
-                _ ->
-                    tasks
-
-        nextTask =
-            tasksAfterSave
-                |> List.filter
-                    (\task ->
-                        (Just task /= activeTask)
-                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                    )
-                |> List.head
-
         contactsTracingFinished =
             isJust assembled.measurements.contactsTracing || data.contactsTracingForm.finished
 
@@ -1909,6 +1818,91 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                         let
                             personId =
                                 assembled.participant.person
+
+                            nextTask =
+                                resolveNextTask task tasksCompletedFromTotalDict tasksAfterSave
+
+                            tasksAfterSave =
+                                case task of
+                                    -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
+                                    -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
+                                    NextStepsCall114 ->
+                                        if assembled.initialEncounter then
+                                            if call114Form.called114 == Just False then
+                                                [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
+
+                                            else if call114Form.called114 == Just True then
+                                                [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
+
+                                            else
+                                                tasks
+
+                                        else
+                                            tasks
+
+                                    -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
+                                    -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
+                                    NextStepsContactHC ->
+                                        if assembled.initialEncounter then
+                                            tasks
+
+                                        else
+                                            let
+                                                hcContactForm =
+                                                    measurements.hcContact
+                                                        |> getMeasurementValueFunc
+                                                        |> hcContactFormWithDefault data.hcContactForm
+                                            in
+                                            if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
+                                                [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ]
+
+                                            else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
+                                                [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
+
+                                            else
+                                                tasks
+
+                                    -- If medication is prescribed, but it's out of stock, or partient
+                                    -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
+                                    -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
+                                    -- where the patient is monitored at home.
+                                    NextStepsMedicationDistribution ->
+                                        let
+                                            medicationDistributionForm =
+                                                measurements.medicationDistribution
+                                                    |> getMeasurementValueFunc
+                                                    |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                                        in
+                                        if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
+                                            tasks
+
+                                        else
+                                            let
+                                                medicationOutOfStockOrPatientAlergic =
+                                                    medicationDistributionForm.nonAdministrationSigns
+                                                        |> Maybe.map
+                                                            (\signs ->
+                                                                [ MedicationAmoxicillin NonAdministrationLackOfStock
+                                                                , MedicationAmoxicillin NonAdministrationKnownAllergy
+                                                                , MedicationCoartem NonAdministrationLackOfStock
+                                                                , MedicationCoartem NonAdministrationKnownAllergy
+                                                                , MedicationORS NonAdministrationLackOfStock
+                                                                , MedicationORS NonAdministrationKnownAllergy
+                                                                , MedicationZinc NonAdministrationLackOfStock
+                                                                , MedicationZinc NonAdministrationKnownAllergy
+                                                                ]
+                                                                    |> List.any (\option -> EverySet.member option signs)
+                                                            )
+                                                        |> Maybe.withDefault False
+                                            in
+                                            if medicationOutOfStockOrPatientAlergic then
+                                                [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+
+                                            else
+                                                [ NextStepsMedicationDistribution, NextStepsFollowUp ]
+
+                                    _ ->
+                                        tasks
 
                             saveMsg =
                                 case task of

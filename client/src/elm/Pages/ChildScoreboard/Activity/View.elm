@@ -52,6 +52,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , resolveActiveTask
+        , resolveNextTask
         , tasksBarId
         , viewLabel
         , viewPersonDetailsExtended
@@ -333,15 +334,6 @@ viewImmunisationContent language currentDate site assembled db data =
                     )
                 |> Maybe.withDefault ( emptyNode, True, True )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             activeTask
                 |> Maybe.map
@@ -349,6 +341,9 @@ viewImmunisationContent language currentDate site assembled db data =
                         let
                             personId =
                                 assembled.participant.person
+
+                            nextTask =
+                                resolveNextTask task tasksCompletedFromTotalDict tasks
 
                             saveMsg =
                                 case task of

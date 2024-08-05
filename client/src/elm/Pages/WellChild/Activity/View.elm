@@ -60,6 +60,7 @@ import Pages.Utils
         ( isTaskCompleted
         , maybeToBoolTask
         , resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -666,36 +667,30 @@ viewDangerSignsContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskSymptomsReview ->
-                                        SaveSymptomsReview personId measurements.symptomsReview nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskVitals ->
-                                        SaveVitals personId measurements.vitals nextTask
+                        saveMsg =
+                            case task of
+                                TaskSymptomsReview ->
+                                    SaveSymptomsReview personId measurements.symptomsReview nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskVitals ->
+                                    SaveVitals personId measurements.vitals nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue" ]
@@ -912,50 +907,44 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskHeight ->
-                                        SaveHeight personId measurements.height nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskHeadCircumference ->
-                                        PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
+                        saveMsg =
+                            case task of
+                                TaskHeight ->
+                                    SaveHeight personId measurements.height nextTask
 
-                                    TaskMuac ->
-                                        SaveMuac personId measurements.muac nextTask
+                                TaskHeadCircumference ->
+                                    PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
-                                    TaskNutrition ->
-                                        let
-                                            assessment =
-                                                generateNutritionAssessment currentDate zscores db assembled
-                                                    |> nutritionAssessmentForBackend
-                                        in
-                                        SaveNutrition personId measurements.nutrition assessment nextTask
+                                TaskMuac ->
+                                    SaveMuac personId measurements.muac nextTask
 
-                                    TaskWeight ->
-                                        SaveWeight personId measurements.weight nextTask
+                                TaskNutrition ->
+                                    let
+                                        assessment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveNutrition personId measurements.nutrition assessment nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskWeight ->
+                                    SaveWeight personId measurements.weight nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
@@ -1201,60 +1190,54 @@ viewImmunisationContent language currentDate site isChw assembled db data =
                     , True
                     )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskBCG ->
-                                        SaveBCGImmunisation personId measurements.bcgImmunisation nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskDTP ->
-                                        SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
+                        saveMsg =
+                            case task of
+                                TaskBCG ->
+                                    SaveBCGImmunisation personId measurements.bcgImmunisation nextTask
 
-                                    TaskDTPStandalone ->
-                                        SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
+                                TaskDTP ->
+                                    SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
 
-                                    TaskHPV ->
-                                        SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
+                                TaskDTPStandalone ->
+                                    SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
 
-                                    TaskIPV ->
-                                        SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
+                                TaskHPV ->
+                                    SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
 
-                                    TaskMR ->
-                                        SaveMRImmunisation personId measurements.mrImmunisation nextTask
+                                TaskIPV ->
+                                    SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
 
-                                    TaskOPV ->
-                                        SaveOPVImmunisation personId measurements.opvImmunisation nextTask
+                                TaskMR ->
+                                    SaveMRImmunisation personId measurements.mrImmunisation nextTask
 
-                                    TaskPCV13 ->
-                                        SavePCV13Immunisation personId measurements.pcv13Immunisation nextTask
+                                TaskOPV ->
+                                    SaveOPVImmunisation personId measurements.opvImmunisation nextTask
 
-                                    TaskRotarix ->
-                                        SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
+                                TaskPCV13 ->
+                                    SavePCV13Immunisation personId measurements.pcv13Immunisation nextTask
 
-                                    TaskOverview ->
-                                        SetActivePage <| UserPage <| WellChildEncounterPage assembled.id
+                                TaskRotarix ->
+                                    SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskOverview ->
+                                    SetActivePage <| UserPage <| WellChildEncounterPage assembled.id
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
                 |> showIf allowSave
     in
@@ -2090,39 +2073,33 @@ viewMedicationContent language currentDate site isChw assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskAlbendazole ->
-                                        SaveAlbendazole personId measurements.albendazole nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskMebendezole ->
-                                        SaveMebendezole personId measurements.mebendezole nextTask
+                        saveMsg =
+                            case task of
+                                TaskAlbendazole ->
+                                    SaveAlbendazole personId measurements.albendazole nextTask
 
-                                    TaskVitaminA ->
-                                        SaveVitaminA personId measurements.vitaminA nextTask
+                                TaskMebendezole ->
+                                    SaveMebendezole personId measurements.mebendezole nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskVitaminA ->
+                                    SaveVitaminA personId measurements.vitaminA nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue" ]
@@ -2348,66 +2325,60 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskContributingFactors ->
-                                        SaveContributingFactors personId measurements.contributingFactors nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        saveMsg =
+                            case task of
+                                TaskContributingFactors ->
+                                    SaveContributingFactors personId measurements.contributingFactors nextTask
 
-                                    TaskFollowUp ->
-                                        let
-                                            assesment =
-                                                generateNutritionAssessment currentDate zscores db assembled
-                                                    |> nutritionAssessmentForBackend
-                                        in
-                                        SaveFollowUp personId measurements.followUp assesment nextTask
+                                TaskHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    TaskSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                                TaskFollowUp ->
+                                    let
+                                        assesment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveFollowUp personId measurements.followUp assesment nextTask
 
-                                    TaskNextVisit ->
-                                        let
-                                            ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-                                                resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
+                                TaskSendToHC ->
+                                    SaveSendToHC personId measurements.sendToHC nextTask
 
-                                            asapImmunisationDate =
-                                                generateASAPImmunisationDate currentDate site assembled
-                                        in
-                                        SaveNextVisit personId
-                                            measurements.nextVisit
-                                            nextDateForImmunisationVisit
-                                            nextDateForPediatricVisit
-                                            asapImmunisationDate
-                                            nextTask
+                                TaskNextVisit ->
+                                    let
+                                        ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+                                            resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
 
-                            disabled =
-                                if task == TaskNextVisit then
-                                    False
+                                        asapImmunisationDate =
+                                            generateASAPImmunisationDate currentDate site assembled
+                                    in
+                                    SaveNextVisit personId
+                                        measurements.nextVisit
+                                        nextDateForImmunisationVisit
+                                        nextDateForPediatricVisit
+                                        asapImmunisationDate
+                                        nextTask
 
-                                else
-                                    tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                        disabled =
+                            if task == TaskNextVisit then
+                                False
+
+                            else
+                                tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
@@ -2701,15 +2672,6 @@ viewHomeVisitContent language currentDate site assembled data db =
                 activeTask
                 |> Maybe.withDefault ( [], 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
@@ -2719,6 +2681,9 @@ viewHomeVisitContent language currentDate site assembled data db =
 
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of

@@ -33,6 +33,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , resolveActiveTask
+        , resolveNextTask
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -290,32 +291,25 @@ viewMedicationContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            let
-                tasksAfterSave =
-                    case activeTask of
-                        Just TaskPrescribedMedication ->
-                            -- DOT and Treatment Review review appear only after
-                            -- Prescribed Medication task is saved.
-                            [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
-
-                        _ ->
-                            tasks
-            in
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasksAfterSave
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasksAfterSave
+
+                        tasksAfterSave =
+                            case task of
+                                TaskPrescribedMedication ->
+                                    -- DOT and Treatment Review review appear only after
+                                    -- Prescribed Medication task is saved.
+                                    [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
+
+                                _ ->
+                                    tasks
 
                         saveMsg =
                             case task of
@@ -554,39 +548,33 @@ viewNextStepsContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                        saveMsg =
+                            case task of
+                                TaskHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    TaskReferral ->
-                                        SaveReferral personId measurements.referral nextTask
+                                TaskFollowUp ->
+                                    SaveFollowUp personId measurements.followUp nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskReferral ->
+                                    SaveReferral personId measurements.referral nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]

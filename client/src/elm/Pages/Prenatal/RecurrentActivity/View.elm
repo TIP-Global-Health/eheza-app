@@ -57,6 +57,7 @@ import Pages.Utils
     exposing
         ( isTaskCompleted
         , resolveActiveTask
+        , resolveNextTask
         , tasksBarId
         , viewSaveAction
         )
@@ -318,21 +319,15 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                 activeTask
                 |> Maybe.withDefault ( emptyNode, 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.andThen
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of
@@ -489,42 +484,36 @@ viewNextStepsContent language currentDate assembled data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            tasks
-                |> List.filter
-                    (\task ->
-                        (Just task /= activeTask)
-                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                    )
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+                        saveMsg =
+                            case task of
+                                NextStepsSendToHC ->
+                                    SaveSendToHC personId measurements.sendToHC nextTask
 
-                                    NextStepsHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
-                        in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
+                                NextStepsMedicationDistribution ->
+                                    SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                NextStepsHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
+                    in
+                    div [ class "actions next-steps" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
                             ]
-                    )
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
@@ -766,21 +755,15 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                 activeTask
                 |> Maybe.withDefault ( emptyNode, 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.andThen
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of

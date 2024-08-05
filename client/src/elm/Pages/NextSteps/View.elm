@@ -29,7 +29,7 @@ import Measurement.View
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Activity.View exposing (warningPopup)
-import Pages.Utils exposing (isTaskCompleted, tasksBarId, viewPersonDetails)
+import Pages.Utils exposing (isTaskCompleted, resolveNextTask, tasksBarId, viewPersonDetails)
 import RemoteData
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -200,84 +200,78 @@ viewNextStepsContent language currentDate zscores childId child session db model
                             Nothing ->
                                 emptyNode
 
-                    nextTask =
-                        List.filter
-                            (\task ->
-                                (Just task /= activeTask)
-                                    && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                            )
-                            tasks
-                            |> List.head
-
                     actions =
-                        activeTask
-                            |> Maybe.map
-                                (\task ->
-                                    let
-                                        saveAction =
-                                            case task of
-                                                NextStepsSendToHC ->
-                                                    toSendToHCValueWithDefault sendToHCValue model.sendToHCForm
-                                                        |> Maybe.map
-                                                            (\value ->
-                                                                let
-                                                                    sendToHCId =
-                                                                        Maybe.map Tuple.first sendToHC
-                                                                in
-                                                                SaveSendToHC sendToHCId value nextTask |> onClick |> List.singleton
-                                                            )
-                                                        |> Maybe.withDefault []
+                        Maybe.map
+                            (\task ->
+                                let
+                                    nextTask =
+                                        resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                                NextStepsHealthEducation ->
-                                                    toHealthEducationValueWithDefault healthEducationValue model.healthEducationForm
-                                                        |> Maybe.map
-                                                            (\value ->
-                                                                let
-                                                                    healthEducationId =
-                                                                        Maybe.map Tuple.first healthEducation
-                                                                in
-                                                                SaveHealthEducation healthEducationId value nextTask |> onClick |> List.singleton
-                                                            )
-                                                        |> Maybe.withDefault []
+                                    saveAction =
+                                        case task of
+                                            NextStepsSendToHC ->
+                                                toSendToHCValueWithDefault sendToHCValue model.sendToHCForm
+                                                    |> Maybe.map
+                                                        (\value ->
+                                                            let
+                                                                sendToHCId =
+                                                                    Maybe.map Tuple.first sendToHC
+                                                            in
+                                                            SaveSendToHC sendToHCId value nextTask |> onClick |> List.singleton
+                                                        )
+                                                    |> Maybe.withDefault []
 
-                                                NextStepContributingFactors ->
-                                                    toContributingFactorsValueWithDefault contributingFactorsValue model.contributingFactorsForm
-                                                        |> Maybe.map
-                                                            (\value ->
-                                                                let
-                                                                    contributingFactorsId =
-                                                                        Maybe.map Tuple.first contributingFactors
-                                                                in
-                                                                SaveContributingFactors contributingFactorsId value nextTask |> onClick |> List.singleton
-                                                            )
-                                                        |> Maybe.withDefault []
+                                            NextStepsHealthEducation ->
+                                                toHealthEducationValueWithDefault healthEducationValue model.healthEducationForm
+                                                    |> Maybe.map
+                                                        (\value ->
+                                                            let
+                                                                healthEducationId =
+                                                                    Maybe.map Tuple.first healthEducation
+                                                            in
+                                                            SaveHealthEducation healthEducationId value nextTask |> onClick |> List.singleton
+                                                        )
+                                                    |> Maybe.withDefault []
 
-                                                NextStepFollowUp ->
-                                                    let
-                                                        assesment =
-                                                            generateNutritionAssessment currentDate zscores childId db session.offlineSession
-                                                                |> nutritionAssessmentForBackend
+                                            NextStepContributingFactors ->
+                                                toContributingFactorsValueWithDefault contributingFactorsValue model.contributingFactorsForm
+                                                    |> Maybe.map
+                                                        (\value ->
+                                                            let
+                                                                contributingFactorsId =
+                                                                    Maybe.map Tuple.first contributingFactors
+                                                            in
+                                                            SaveContributingFactors contributingFactorsId value nextTask |> onClick |> List.singleton
+                                                        )
+                                                    |> Maybe.withDefault []
 
-                                                        form =
-                                                            model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })
-                                                    in
-                                                    toNutritionFollowUpValueWithDefault followUpValue form
-                                                        |> Maybe.map
-                                                            (\value ->
-                                                                let
-                                                                    followUpId =
-                                                                        Maybe.map Tuple.first followUp
-                                                                in
-                                                                SaveFollowUp followUpId value nextTask |> onClick |> List.singleton
-                                                            )
-                                                        |> Maybe.withDefault []
-                                    in
-                                    div [ class "actions next-steps" ]
-                                        [ button
-                                            (classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ] :: saveAction)
-                                            [ text <| translate language Translate.Save ]
-                                        ]
-                                )
+                                            NextStepFollowUp ->
+                                                let
+                                                    assesment =
+                                                        generateNutritionAssessment currentDate zscores childId db session.offlineSession
+                                                            |> nutritionAssessmentForBackend
+
+                                                    form =
+                                                        model.followUpForm |> (\form_ -> { form_ | assesment = Just assesment })
+                                                in
+                                                toNutritionFollowUpValueWithDefault followUpValue form
+                                                    |> Maybe.map
+                                                        (\value ->
+                                                            let
+                                                                followUpId =
+                                                                    Maybe.map Tuple.first followUp
+                                                            in
+                                                            SaveFollowUp followUpId value nextTask |> onClick |> List.singleton
+                                                        )
+                                                    |> Maybe.withDefault []
+                                in
+                                div [ class "actions next-steps" ]
+                                    [ button
+                                        (classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ] :: saveAction)
+                                        [ text <| translate language Translate.Save ]
+                                    ]
+                            )
+                            activeTask
                             |> Maybe.withDefault emptyNode
                 in
                 [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
