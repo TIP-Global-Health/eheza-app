@@ -10390,7 +10390,7 @@ translationSet trans =
             { english = "This patient has signs of Early Mastitis or Engorgement"
             , kinyarwanda = Just "Uyu mubyeyi afite ibimenyetso by'uburwayi bwo kubyimba amabere bwaje kare cyane"
             , kirundi = Just "Uyu muvyeyi afise ibimenyetso vy'ingwara yo mu mamoko ikiri nshasha (ukuvyimba amabere)"
-            }            
+            }
 
         MedicationDistributionHelperHIV ->
             { english = "This patient is HIV positive"
