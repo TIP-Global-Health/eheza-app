@@ -1240,6 +1240,9 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
         tasks =
             [ ExposureTravel, ExposureExposure ]
 
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -1255,7 +1258,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -1274,63 +1277,59 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, exposureTasksCompletedFromTotal measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, exposureTasksCompletedFromTotal measurements data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                ExposureTravel ->
+            case activeTask of
+                Just ExposureTravel ->
                     measurements.travelHistory
                         |> getMeasurementValueFunc
                         |> travelHistoryFormWithDefault data.travelHistoryForm
                         |> viewTravelHistoryForm language currentDate measurements
 
-                ExposureExposure ->
+                Just ExposureExposure ->
                     measurements.exposure
                         |> getMeasurementValueFunc
                         |> exposureFormWithDefault data.exposureForm
                         |> viewExposureForm language currentDate measurements
 
-        getNextTask currentTask =
-            case data.activeTask of
-                ExposureTravel ->
-                    [ ExposureExposure ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
-
-                ExposureExposure ->
-                    [ ExposureTravel ]
-                        |> List.filter (isTaskCompleted tasksCompletedFromTotalDict >> not)
-                        |> List.head
+                _ ->
+                    emptyNode
 
         actions =
-            let
-                nextTask =
-                    getNextTask data.activeTask
+            Maybe.map
+                (\task ->
+                    let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                saveMsg =
-                    case data.activeTask of
-                        ExposureTravel ->
-                            SaveTravelHistory personId measurements.travelHistory nextTask
+                        saveMsg =
+                            case task of
+                                ExposureTravel ->
+                                    SaveTravelHistory personId measurements.travelHistory nextTask
 
-                        ExposureExposure ->
-                            SaveExposure personId measurements.exposure nextTask
-            in
-            div [ class "actions exposure" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+                                ExposureExposure ->
+                                    SaveExposure personId measurements.exposure nextTask
+                    in
+                    div [ class "actions exposure" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
@@ -1407,6 +1406,9 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
         tasks =
             [ TreatmentReview ]
 
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -1417,7 +1419,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -1436,39 +1438,47 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, treatmentTasksCompletedFromTotal measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, treatmentTasksCompletedFromTotal measurements data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                TreatmentReview ->
+            case activeTask of
+                Just TreatmentReview ->
                     measurements.treatmentReview
                         |> getMeasurementValueFunc
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewTreatmentReviewForm language currentDate measurements
 
+                _ ->
+                    emptyNode
+
         actions =
-            let
-                saveMsg =
-                    case data.activeTask of
-                        TreatmentReview ->
-                            SaveTreatmentReview personId measurements.treatmentReview
-            in
-            div [ class "actions malaria-testing" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                TreatmentReview ->
+                                    SaveTreatmentReview personId measurements.treatmentReview
+                    in
+                    div [ class "actions malaria-testing" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -2561,6 +2571,9 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
         tasks =
             [ OngoingTreatmentReview ]
 
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -2571,7 +2584,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -2590,39 +2603,47 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                OngoingTreatmentReview ->
+            case activeTask of
+                Just OngoingTreatmentReview ->
                     measurements.treatmentOngoing
                         |> getMeasurementValueFunc
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate
 
+                _ ->
+                    emptyNode
+
         actions =
-            let
-                saveMsg =
-                    case data.activeTask of
-                        OngoingTreatmentReview ->
-                            SaveOngoingTreatmentReview personId measurements.treatmentOngoing
-            in
-            div [ class "actions treatment-ongoing" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                OngoingTreatmentReview ->
+                                    SaveOngoingTreatmentReview personId measurements.treatmentOngoing
+                    in
+                    div [ class "actions treatment-ongoing" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
@@ -2660,6 +2681,9 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
         tasks =
             [ ReviewDangerSigns ]
 
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
         viewTask task =
             let
                 ( iconClass, isCompleted ) =
@@ -2670,7 +2694,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                             )
 
                 isActive =
-                    task == data.activeTask
+                    activeTask == Just task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -2689,39 +2713,47 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, dangerSignsTasksCompletedFromTotal measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, dangerSignsTasksCompletedFromTotal measurements data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            Dict.get data.activeTask tasksCompletedFromTotalDict
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
-            case data.activeTask of
-                ReviewDangerSigns ->
+            case activeTask of
+                Just ReviewDangerSigns ->
                     measurements.dangerSigns
                         |> getMeasurementValueFunc
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
                         |> viewReviewDangerSignsForm language currentDate measurements
 
+                _ ->
+                    emptyNode
+
         actions =
-            let
-                saveMsg =
-                    case data.activeTask of
-                        ReviewDangerSigns ->
-                            SaveReviewDangerSigns personId measurements.dangerSigns
-            in
-            div [ class "actions treatment-ongoing" ]
-                [ button
-                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                    , onClick saveMsg
-                    ]
-                    [ text <| translate language Translate.Save ]
-                ]
+            Maybe.map
+                (\task ->
+                    let
+                        saveMsg =
+                            case task of
+                                ReviewDangerSigns ->
+                                    SaveReviewDangerSigns personId measurements.dangerSigns
+                    in
+                    div [ class "actions treatment-ongoing" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
+                            ]
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui three column grid" ] <|
