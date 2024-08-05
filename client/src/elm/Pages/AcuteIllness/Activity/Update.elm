@@ -1440,14 +1440,14 @@ update currentDate site selectedHealthCenter id db msg model =
 
         SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
-                form =
-                    model.nextStepsData.medicationDistributionForm
-
-                updatedValue =
-                    nonAdministrationReasonToSign medication reason
-
                 updatedData =
                     let
+                        form =
+                            model.nextStepsData.medicationDistributionForm
+
+                        updatedValue =
+                            nonAdministrationReasonToSign medication reason
+
                         updatedNonAdministrationSigns =
                             form.nonAdministrationSigns
                                 |> Maybe.map

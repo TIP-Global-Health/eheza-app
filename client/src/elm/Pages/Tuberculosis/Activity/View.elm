@@ -31,8 +31,7 @@ import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , saveButton
         , taskCompleted

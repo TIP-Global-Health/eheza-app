@@ -55,8 +55,7 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , tasksBarId
         , viewSaveAction

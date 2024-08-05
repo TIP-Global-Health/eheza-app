@@ -64,7 +64,6 @@ import Pages.Person.View
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration
-        , isTaskCompleted
         , nonAdministrationReasonToSign
         , resolveActiveTask
         , resolveNextTask
@@ -1867,17 +1866,16 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                                     -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
                                     -- where the patient is monitored at home.
                                     NextStepsMedicationDistribution ->
-                                        let
-                                            medicationDistributionForm =
-                                                measurements.medicationDistribution
-                                                    |> getMeasurementValueFunc
-                                                    |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                                        in
                                         if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
                                             tasks
 
                                         else
                                             let
+                                                medicationDistributionForm =
+                                                    measurements.medicationDistribution
+                                                        |> getMeasurementValueFunc
+                                                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+
                                                 medicationOutOfStockOrPatientAlergic =
                                                     medicationDistributionForm.nonAdministrationSigns
                                                         |> Maybe.map

@@ -38,8 +38,7 @@ import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , saveButton
         , taskCompleted

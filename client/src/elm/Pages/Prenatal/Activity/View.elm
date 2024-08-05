@@ -94,7 +94,6 @@ import Pages.Prenatal.View
 import Pages.Utils
     exposing
         ( customSaveButton
-        , isTaskCompleted
         , maybeToBoolTask
         , resolveActiveTask
         , resolveNextTask

@@ -18,8 +18,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , taskCompleted
         , tasksBarId

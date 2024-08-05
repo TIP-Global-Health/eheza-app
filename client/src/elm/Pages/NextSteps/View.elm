@@ -29,7 +29,7 @@ import Measurement.View
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Activity.View exposing (warningPopup)
-import Pages.Utils exposing (isTaskCompleted, resolveNextTask, tasksBarId, viewPersonDetails)
+import Pages.Utils exposing (resolveNextTask, tasksBarId, viewPersonDetails)
 import RemoteData
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)

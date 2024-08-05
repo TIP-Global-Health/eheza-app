@@ -851,12 +851,12 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 Nothing
 
             else
-                let
-                    person =
-                        assembled.person
-                in
                 Maybe.andThen
                     (\headCircumference ->
+                        let
+                            person =
+                                assembled.person
+                        in
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
                             person.birthDate

@@ -35,8 +35,7 @@ import Pages.NCD.View exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
         , resolveNextTask
         , tasksBarId
         , viewPersonDetailsExtended

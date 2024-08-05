@@ -439,17 +439,18 @@ viewActivityCards :
     -> List ( String, Html (Msg activity any) )
 viewActivityCards config language offlineSession personId activities selectedTab selectedActivity =
     let
-        clinicType =
-            offlineSession.session.clinicType
-
-        adultIsCaregiver =
-            isCaregiver personId offlineSession
-
         activeView =
             if selectedTab == ProgressReport then
                 emptyNode
 
             else
+                let
+                    clinicType =
+                        offlineSession.session.clinicType
+
+                    adultIsCaregiver =
+                        isCaregiver personId offlineSession
+                in
                 div [ class "ui task segment" ]
                     [ div [ class "ui five column grid" ] <|
                         if selectedTab == Pending then

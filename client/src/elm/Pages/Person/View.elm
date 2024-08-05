@@ -1073,18 +1073,6 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                         ""
                    )
 
-        district =
-            Form.getFieldAsString Backend.Person.Form.district personForm
-
-        sector =
-            Form.getFieldAsString Backend.Person.Form.sector personForm
-
-        cell =
-            Form.getFieldAsString Backend.Person.Form.cell personForm
-
-        village =
-            Form.getFieldAsString Backend.Person.Form.village personForm
-
         isEditOperation =
             case operation of
                 CreatePerson _ ->
@@ -1099,6 +1087,18 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
 
             else
                 let
+                    district =
+                        Form.getFieldAsString Backend.Person.Form.district personForm
+
+                    sector =
+                        Form.getFieldAsString Backend.Person.Form.sector personForm
+
+                    cell =
+                        Form.getFieldAsString Backend.Person.Form.cell personForm
+
+                    village =
+                        Form.getFieldAsString Backend.Person.Form.village personForm
+
                     viewProvince =
                         let
                             options =
