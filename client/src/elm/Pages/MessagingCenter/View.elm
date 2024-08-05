@@ -578,18 +578,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         messageClickedAction =
             ResilienceMessageClicked nurseId messageId message updateTimeRead
 
-        sentDate =
-            Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
-
-        dateSent =
-            sentDate
-                |> Maybe.map
-                    (\date ->
-                        span [ class "date-sent" ]
-                            [ text <| renderDate language date ]
-                    )
-                |> Maybe.withDefault emptyNode
-
         title =
             let
                 messageCategory =
@@ -605,6 +593,15 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
                         _ ->
                             "blue"
+
+                dateSent =
+                    Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
+                        |> Maybe.map
+                            (\date ->
+                                span [ class "date-sent" ]
+                                    [ text <| renderDate language date ]
+                            )
+                        |> Maybe.withDefault emptyNode
 
                 plainTitle =
                     div [ class <| "header", onClick messageClickedAction ]
