@@ -7558,12 +7558,12 @@ generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId 
                         assessmentForBackend =
                             nutritionAssessmentForBackend assessmentAfter
 
-                        measurementsAfter =
-                            getChildMeasurementData2 childId offlineSessionAfter
-
                         updateAssesmentMsgs =
                             if assessmentChanged then
                                 let
+                                    measurementsAfter =
+                                        getChildMeasurementData2 childId offlineSessionAfter
+
                                     updateAssesmentOnFollowUpMsg =
                                         measurementsAfter
                                             |> LocalData.unwrap

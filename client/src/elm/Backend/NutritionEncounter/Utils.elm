@@ -660,17 +660,13 @@ calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> May
 calculateZScoreWeightForAge currentDate zscores person =
     Maybe.andThen
         (\weight ->
-            let
-                maybeAgeInDays =
-                    Maybe.map
-                        (\birthDate -> diffDays birthDate currentDate)
-                        person.birthDate
-            in
-            Maybe.andThen
-                (\ageInDays ->
-                    zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
-                )
-                maybeAgeInDays
+            Maybe.map
+                (\birthDate -> diffDays birthDate currentDate)
+                person.birthDate
+                |> Maybe.andThen
+                    (\ageInDays ->
+                        zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
+                    )
         )
 
 

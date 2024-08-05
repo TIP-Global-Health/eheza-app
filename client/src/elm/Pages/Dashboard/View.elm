@@ -1281,27 +1281,25 @@ viewPrenatalPage language currentDate isChw assembled db model =
                 , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt hospitalReferrals)
                 ]
 
-        dataForNurses =
-            List.filterMap
-                (\pregnancy ->
-                    let
-                        nurseEncounters =
-                            List.filter isNurseEncounter pregnancy.encounters
-                    in
-                    if List.isEmpty nurseEncounters then
-                        Nothing
-
-                    else
-                        Just { pregnancy | encounters = nurseEncounters }
-                )
-                assembled.prenatalData
-
         prenatalDiagnosesSection =
             if isChw then
                 []
 
             else
-                viewPrenatalDiagnosesSection language dateLastDayOfSelectedMonth currentlyPregnantWithDangerSigns dataForNurses
+                List.filterMap
+                    (\pregnancy ->
+                        let
+                            nurseEncounters =
+                                List.filter isNurseEncounter pregnancy.encounters
+                        in
+                        if List.isEmpty nurseEncounters then
+                            Nothing
+
+                        else
+                            Just { pregnancy | encounters = nurseEncounters }
+                    )
+                    assembled.prenatalData
+                    |> viewPrenatalDiagnosesSection language dateLastDayOfSelectedMonth currentlyPregnantWithDangerSigns
     in
     [ monthSelector language dateLastDayOfSelectedMonth model
     , div [ class "ui grid" ]

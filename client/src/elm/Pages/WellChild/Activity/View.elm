@@ -869,7 +869,6 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                                 (\ageInDays ->
                                     zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
                                 )
-                                maybeAgeInDays
                     )
                     headCircumferenceForm.headCircumference
 

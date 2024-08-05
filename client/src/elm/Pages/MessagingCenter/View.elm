@@ -1081,21 +1081,22 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                         favoriteUnfavorite ++ reminder
 
                     else
+                        let
+                            readUnread =
+                                let
+                                    isRead =
+                                        tab /= TabUnread
+                                in
+                                [ button
+                                    [ class "ui fluid button cyan"
+                                    , onClick <| ToggleMessageRead nurseId messageId message isRead
+                                    ]
+                                    [ img [ src "assets/images/envelope.svg" ] []
+                                    , text <| translate language <| Translate.ReadToggle isRead
+                                    ]
+                                ]
+                        in
                         readUnread ++ favoriteUnfavorite ++ reminder
-
-                readUnread =
-                    let
-                        isRead =
-                            tab /= TabUnread
-                    in
-                    [ button
-                        [ class "ui fluid button cyan"
-                        , onClick <| ToggleMessageRead nurseId messageId message isRead
-                        ]
-                        [ img [ src "assets/images/envelope.svg" ] []
-                        , text <| translate language <| Translate.ReadToggle isRead
-                        ]
-                    ]
 
                 favoriteUnfavorite =
                     [ button
