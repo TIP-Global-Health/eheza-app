@@ -184,33 +184,34 @@ diagnosesCausingHospitalReferralByOtherReasons phase assembled =
 
             else
                 []
-
-        hypertension =
-            let
-                moderatePreeclampsiaAsCurrent =
-                    moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-            in
-            if updateHypertensionTreatmentWithHospitalization assembled then
-                List.singleton <|
-                    if moderatePreeclampsiaAsCurrent then
-                        DiagnosisModeratePreeclampsiaInitialPhase
-
-                    else
-                        DiagnosisChronicHypertensionImmediate
-
-            else
-                let
-                    bloodPressureRequiresHospitalization =
-                        bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled
-                in
-                if moderatePreeclampsiaAsCurrent && bloodPressureRequiresHospitalization then
-                    [ DiagnosisModeratePreeclampsiaInitialPhase ]
-
-                else
-                    []
     in
     case phase of
         PrenatalEncounterPhaseInitial ->
+            let
+                hypertension =
+                    let
+                        moderatePreeclampsiaAsCurrent =
+                            moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                    in
+                    if updateHypertensionTreatmentWithHospitalization assembled then
+                        List.singleton <|
+                            if moderatePreeclampsiaAsCurrent then
+                                DiagnosisModeratePreeclampsiaInitialPhase
+
+                            else
+                                DiagnosisChronicHypertensionImmediate
+
+                    else
+                        let
+                            bloodPressureRequiresHospitalization =
+                                bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled
+                        in
+                        if moderatePreeclampsiaAsCurrent && bloodPressureRequiresHospitalization then
+                            [ DiagnosisModeratePreeclampsiaInitialPhase ]
+
+                        else
+                            []
+            in
             malaria ++ hypertension
 
         PrenatalEncounterPhaseRecurrent ->
@@ -592,21 +593,23 @@ medicationDistributionResolveFromValue allowedSigns value sign =
     let
         valueSetForSign =
             EverySet.member sign value.distributionSigns
-
-        nonAdministrationNoteSetForSign =
-            Measurement.Utils.resolveMedicationsNonAdministrationReasons value
-                |> Dict.filter (\medicationDistributionSign _ -> medicationDistributionSign == sign)
-                |> Dict.isEmpty
-                |> not
     in
     if valueSetForSign then
         Just True
 
-    else if nonAdministrationNoteSetForSign then
-        Just False
-
     else
-        Nothing
+        let
+            nonAdministrationNoteSetForSign =
+                Measurement.Utils.resolveMedicationsNonAdministrationReasons value
+                    |> Dict.filter (\medicationDistributionSign _ -> medicationDistributionSign == sign)
+                    |> Dict.isEmpty
+                    |> not
+        in
+        if nonAdministrationNoteSetForSign then
+            Just False
+
+        else
+            Nothing
 
 
 toMedicationDistributionValueWithDefaultInitialPhase :
@@ -4307,20 +4310,6 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                 Nothing
             ]
 
-        partnerSurpressedViralLoad =
-            getMeasurementValueFunc assembled.measurements.hivTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is HIV positive.
-                        EverySet.member PartnerHIVPositive hivSigns
-                            -- Partner is taking ARVs.
-                            && EverySet.member PartnerTakingARV hivSigns
-                            -- Partner reached surpressed viral load.
-                            && EverySet.member PartnerSurpressedViralLoad hivSigns
-                    )
-                |> Maybe.withDefault False
-
         header =
             viewCustomLabel language Translate.HIV "" "label header"
 
@@ -4350,15 +4339,31 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
         , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
         )
 
-    else if partnerSurpressedViralLoad then
-        ( header :: saferSexHIVInput
-        , [ form.saferSexHIV ]
-        )
-
     else
-        ( header :: saferSexHIVInput ++ partnerTestingInput
-        , [ form.saferSexHIV, form.partnerTesting ]
-        )
+        let
+            partnerSurpressedViralLoad =
+                getMeasurementValueFunc assembled.measurements.hivTest
+                    |> Maybe.andThen .hivSigns
+                    |> Maybe.map
+                        (\hivSigns ->
+                            -- Partner is HIV positive.
+                            EverySet.member PartnerHIVPositive hivSigns
+                                -- Partner is taking ARVs.
+                                && EverySet.member PartnerTakingARV hivSigns
+                                -- Partner reached surpressed viral load.
+                                && EverySet.member PartnerSurpressedViralLoad hivSigns
+                        )
+                    |> Maybe.withDefault False
+        in
+        if partnerSurpressedViralLoad then
+            ( header :: saferSexHIVInput
+            , [ form.saferSexHIV ]
+            )
+
+        else
+            ( header :: saferSexHIVInput ++ partnerTestingInput
+            , [ form.saferSexHIV, form.partnerTesting ]
+            )
 
 
 healthEducationFormFamilyPlanningInput :

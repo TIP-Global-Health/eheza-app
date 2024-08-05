@@ -908,24 +908,11 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         allDosesGiven =
             List.map Tuple.first allDosesGivenData
 
-        dosesMissing =
-            List.filter (\dose -> not <| List.member dose allDosesGiven)
-                expectedDoses
-
         lastDoseData =
             List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
                 |> List.reverse
                 |> List.head
-
-        doseGivenToday =
-            List.filter
-                (\( _, date ) ->
-                    date == currentDate
-                )
-                dosesFromCurrentEncounterData
-                |> List.head
-                |> Maybe.map Tuple.first
 
         historySection =
             case form.viewMode of
@@ -1018,6 +1005,20 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         ( inputs, tasksCompleted, tasksActive ) =
             case form.viewMode of
                 ViewModeInitial ->
+                    let
+                        doseGivenToday =
+                            List.filter
+                                (\( _, date ) ->
+                                    date == currentDate
+                                )
+                                dosesFromCurrentEncounterData
+                                |> List.head
+                                |> Maybe.map Tuple.first
+
+                        dosesMissing =
+                            List.filter (\dose -> not <| List.member dose allDosesGiven)
+                                expectedDoses
+                    in
                     Maybe.Extra.or doseGivenToday (List.head dosesMissing)
                         |> Maybe.map
                             (\nextDose ->

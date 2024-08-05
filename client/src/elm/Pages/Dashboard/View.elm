@@ -802,42 +802,38 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        dataForNurses =
-            List.filterMap
-                (\illness ->
-                    let
-                        nurseEncounters =
-                            List.filter isAcuteIllnessNurseEncounter illness.encounters
-                    in
-                    if List.isEmpty nurseEncounters then
-                        Nothing
-
-                    else
-                        Just { illness | encounters = nurseEncounters }
-                )
-                assembled.acuteIllnessData
-
-        dataForChws =
-            List.filterMap
-                (\illness ->
-                    let
-                        chwEncounters =
-                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
-                    in
-                    if List.isEmpty chwEncounters then
-                        Nothing
-
-                    else
-                        Just { illness | encounters = chwEncounters }
-                )
-                assembled.acuteIllnessData
-
         encountersForSelectedMonth =
             if isChw then
-                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForChws
+                List.filterMap
+                    (\illness ->
+                        let
+                            chwEncounters =
+                                List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                        in
+                        if List.isEmpty chwEncounters then
+                            Nothing
+
+                        else
+                            Just { illness | encounters = chwEncounters }
+                    )
+                    assembled.acuteIllnessData
+                    |> getEncountersForSelectedMonth dateLastDayOfSelectedMonth
 
             else
-                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForNurses
+                List.filterMap
+                    (\illness ->
+                        let
+                            nurseEncounters =
+                                List.filter isAcuteIllnessNurseEncounter illness.encounters
+                        in
+                        if List.isEmpty nurseEncounters then
+                            Nothing
+
+                        else
+                            Just { illness | encounters = nurseEncounters }
+                    )
+                    assembled.acuteIllnessData
+                    |> getEncountersForSelectedMonth dateLastDayOfSelectedMonth
 
         limitDate =
             Date.ceiling Date.Month dateLastDayOfSelectedMonth

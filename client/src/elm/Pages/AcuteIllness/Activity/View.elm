@@ -67,6 +67,7 @@ import Pages.Utils
         , isTaskCompleted
         , nonAdministrationReasonToSign
         , resolveActiveTask
+        , resolveNextTask
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -490,49 +491,36 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, symptomsTasksCompletedFromTotal measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, symptomsTasksCompletedFromTotal measurements data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
             case activeTask of
                 Just SymptomsGeneral ->
-                    measurements.symptomsGeneral
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsGeneral
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
                         |> viewSymptomsGeneralForm language currentDate measurements
 
                 Just SymptomsRespiratory ->
-                    measurements.symptomsRespiratory
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsRespiratory
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
                         |> viewSymptomsRespiratoryForm language currentDate measurements
 
                 Just SymptomsGI ->
-                    measurements.symptomsGI
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsGI
                         |> symptomsGIFormWithDefault data.symptomsGIForm
                         |> viewSymptomsGIForm language currentDate measurements
 
                 Nothing ->
                     emptyNode
-
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
 
         actions =
             Maybe.map
@@ -548,6 +536,9 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
                                 SymptomsGI ->
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
                     in
                     div [ class "actions symptoms" ]
                         [ button
@@ -829,15 +820,6 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             activeTask
                 |> Maybe.map
@@ -862,6 +844,9 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
 
                                     PhysicalExamNutrition ->
                                         SaveNutrition personId measurements.nutrition nextTask
+
+                            nextTask =
+                                resolveNextTask task tasksCompletedFromTotalDict tasks
                         in
                         div [ class "actions symptoms" ]
                             [ button
@@ -1073,15 +1058,6 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
@@ -1113,6 +1089,9 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
                                                     Nothing
                                     in
                                     SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
                     in
                     div [ class "actions malaria-testing" ]
                         [ button
@@ -1171,16 +1150,17 @@ viewMalariaTestingForm language currentDate person form =
 viewCovidTestingForm : Language -> NominalDate -> Person -> CovidTestingForm -> Html Msg
 viewCovidTestingForm language currentDate person form =
     let
-        isPregnantInputForView =
-            if isPersonAFertileWoman currentDate person then
-                viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
-
-            else
-                []
-
         derivedInputs =
             Maybe.map
                 (\testPerformed ->
+                    let
+                        isPregnantInputForView =
+                            if isPersonAFertileWoman currentDate person then
+                                viewIsPregnantInput language (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value })) form.isPregnant
+
+                            else
+                                []
+                    in
                     if testPerformed then
                         let
                             isPregnantInput =
@@ -1865,32 +1845,34 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                             measurements.medicationDistribution
                                 |> getMeasurementValueFunc
                                 |> medicationDistributionFormWithDefault data.medicationDistributionForm
-
-                        medicationOutOfStockOrPatientAlergic =
-                            medicationDistributionForm.nonAdministrationSigns
-                                |> Maybe.map
-                                    (\signs ->
-                                        [ MedicationAmoxicillin NonAdministrationLackOfStock
-                                        , MedicationAmoxicillin NonAdministrationKnownAllergy
-                                        , MedicationCoartem NonAdministrationLackOfStock
-                                        , MedicationCoartem NonAdministrationKnownAllergy
-                                        , MedicationORS NonAdministrationLackOfStock
-                                        , MedicationORS NonAdministrationKnownAllergy
-                                        , MedicationZinc NonAdministrationLackOfStock
-                                        , MedicationZinc NonAdministrationKnownAllergy
-                                        ]
-                                            |> List.any (\option -> EverySet.member option signs)
-                                    )
-                                |> Maybe.withDefault False
                     in
                     if List.member diagnosis [ Just DiagnosisPneuminialCovid19, Just DiagnosisLowRiskCovid19 ] then
                         tasks
 
-                    else if medicationOutOfStockOrPatientAlergic then
-                        [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
-
                     else
-                        [ NextStepsMedicationDistribution, NextStepsFollowUp ]
+                        let
+                            medicationOutOfStockOrPatientAlergic =
+                                medicationDistributionForm.nonAdministrationSigns
+                                    |> Maybe.map
+                                        (\signs ->
+                                            [ MedicationAmoxicillin NonAdministrationLackOfStock
+                                            , MedicationAmoxicillin NonAdministrationKnownAllergy
+                                            , MedicationCoartem NonAdministrationLackOfStock
+                                            , MedicationCoartem NonAdministrationKnownAllergy
+                                            , MedicationORS NonAdministrationLackOfStock
+                                            , MedicationORS NonAdministrationKnownAllergy
+                                            , MedicationZinc NonAdministrationLackOfStock
+                                            , MedicationZinc NonAdministrationKnownAllergy
+                                            ]
+                                                |> List.any (\option -> EverySet.member option signs)
+                                        )
+                                    |> Maybe.withDefault False
+                        in
+                        if medicationOutOfStockOrPatientAlergic then
+                            [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsFollowUp ]
+
+                        else
+                            [ NextStepsMedicationDistribution, NextStepsFollowUp ]
 
                 _ ->
                     tasks
@@ -2788,11 +2770,11 @@ viewReviewDangerSignsForm language currentDate measurements form =
 
 viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate maybeDiagnosis form =
-    let
-        healthEducationSection =
-            maybeDiagnosis
-                |> Maybe.map
-                    (\diagnosis ->
+    maybeDiagnosis
+        |> Maybe.map
+            (\diagnosis ->
+                let
+                    healthEducationSection =
                         let
                             providedHealthEducation =
                                 form.educationForDiagnosis
@@ -2833,12 +2815,7 @@ viewHealthEducationForm language currentDate maybeDiagnosis form =
                                 Nothing
                             ]
                             :: reasonForNotProvidingHealthEducation
-                    )
-                |> Maybe.withDefault [ emptyNode ]
-    in
-    maybeDiagnosis
-        |> Maybe.map
-            (\diagnosis ->
+                in
                 div [ class "ui form health-education" ] <|
                     [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                     , div [ class "instructions" ]
@@ -3339,42 +3316,42 @@ viewCreateContactForm language currentDate site geoInfo db data =
 
                         _ ->
                             [ firstNameInput, secondNameInput ]
+
+                genderInput =
+                    let
+                        genderField =
+                            Form.getFieldAsString Backend.Person.Form.gender data
+
+                        label =
+                            div [ class "six wide column required" ]
+                                [ text <| translate language Translate.GenderLabel ++ ":" ]
+
+                        maleOption =
+                            [ Form.Input.radioInput "male"
+                                genderField
+                                [ class "one wide column gender-input" ]
+                            , div
+                                [ class "three wide column" ]
+                                [ text <| translate language (Translate.Gender Male) ]
+                            ]
+
+                        femaleOption =
+                            [ Form.Input.radioInput "female"
+                                genderField
+                                [ class "one wide column gender-input" ]
+                            , div
+                                [ class "three wide column" ]
+                                [ text <| translate language (Translate.Gender Female) ]
+                            ]
+                    in
+                    div [ class "ui grid" ] <|
+                        label
+                            :: maleOption
+                            ++ femaleOption
             in
             List.map (Html.map RegisterContactMsgForm) <|
                 nameInputs
                     ++ [ genderInput ]
-
-        genderInput =
-            let
-                genderField =
-                    Form.getFieldAsString Backend.Person.Form.gender data
-
-                label =
-                    div [ class "six wide column required" ]
-                        [ text <| translate language Translate.GenderLabel ++ ":" ]
-
-                maleOption =
-                    [ Form.Input.radioInput "male"
-                        genderField
-                        [ class "one wide column gender-input" ]
-                    , div
-                        [ class "three wide column" ]
-                        [ text <| translate language (Translate.Gender Male) ]
-                    ]
-
-                femaleOption =
-                    [ Form.Input.radioInput "female"
-                        genderField
-                        [ class "one wide column gender-input" ]
-                    , div
-                        [ class "three wide column" ]
-                        [ text <| translate language (Translate.Gender Female) ]
-                    ]
-            in
-            div [ class "ui grid" ] <|
-                label
-                    :: maleOption
-                    ++ femaleOption
 
         geoLocationInputClass isDisabled =
             "select-input"

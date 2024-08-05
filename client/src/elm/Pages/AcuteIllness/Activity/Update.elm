@@ -1464,22 +1464,22 @@ update currentDate site selectedHealthCenter id db msg model =
                 updatedValue =
                     nonAdministrationReasonToSign medication reason
 
-                updatedNonAdministrationSigns =
-                    form.nonAdministrationSigns
-                        |> Maybe.map
-                            (\nonAdministrationSigns ->
-                                case currentValue of
-                                    Just value ->
-                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
-                                            |> EverySet.insert updatedValue
-
-                                    Nothing ->
-                                        EverySet.insert updatedValue nonAdministrationSigns
-                            )
-                        |> Maybe.withDefault (EverySet.singleton updatedValue)
-
                 updatedData =
                     let
+                        updatedNonAdministrationSigns =
+                            form.nonAdministrationSigns
+                                |> Maybe.map
+                                    (\nonAdministrationSigns ->
+                                        case currentValue of
+                                            Just value ->
+                                                EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
+                                                    |> EverySet.insert updatedValue
+
+                                            Nothing ->
+                                                EverySet.insert updatedValue nonAdministrationSigns
+                                    )
+                                |> Maybe.withDefault (EverySet.singleton updatedValue)
+
                         updatedForm =
                             { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
                     in

@@ -1257,6 +1257,17 @@ maybeToBoolTask maybe =
         Nothing
 
 
+resolveNextTask : t -> Dict t ( Int, Int ) -> List t -> Maybe t
+resolveNextTask activeTask completedFromTotalDict allTasks =
+    List.filter
+        (\task ->
+            (task /= activeTask)
+                && (not <| isTaskCompleted completedFromTotalDict task)
+        )
+        allTasks
+        |> List.head
+
+
 tasksBarId : String
 tasksBarId =
     "tasks-bar"

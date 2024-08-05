@@ -304,21 +304,18 @@ viewHeightForm language currentDate zscores person previousValue setHeightMsg fo
         activity =
             Height
 
-        maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
-
         zScoreText =
-            form.height
-                |> Maybe.andThen
-                    (\height ->
-                        Maybe.andThen
+            Maybe.andThen
+                (\height ->
+                    Maybe.map
+                        (\birthDate -> diffDays birthDate currentDate)
+                        person.birthDate
+                        |> Maybe.andThen
                             (\ageInDays ->
                                 zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
                             )
-                            maybeAgeInDays
-                    )
+                )
+                form.height
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
@@ -653,30 +650,27 @@ viewWeightForm language currentDate zscores person heightValue previousValue sho
         activity =
             Weight
 
-        maybeAgeInDays =
-            Maybe.map
-                (\birthDate -> diffDays birthDate currentDate)
-                person.birthDate
-
         zScoreForAgeText =
             calculateZScoreWeightForAge currentDate zscores person form.weight
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 
         zScoreForHeightText =
-            heightValue
-                |> Maybe.andThen
-                    (\(HeightInCm height) ->
+            Maybe.andThen
+                (\(HeightInCm height) ->
+                    Maybe.andThen
+                        (\weight ->
+                            Maybe.map
+                                (\birthDate -> diffDays birthDate currentDate)
+                                person.birthDate
+                                |> Maybe.andThen
+                                    (\ageInDays ->
+                                        zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                    )
+                        )
                         form.weight
-                            |> Maybe.andThen
-                                (\weight ->
-                                    Maybe.andThen
-                                        (\ageInDays ->
-                                            zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
-                                        )
-                                        maybeAgeInDays
-                                )
-                    )
+                )
+                heightValue
                 |> Maybe.map viewZScore
                 |> Maybe.withDefault (translate language Translate.NotAvailable)
 

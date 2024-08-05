@@ -1432,59 +1432,6 @@ viewVitalsForm language currentDate config form =
                 ageInYears
                 |> Maybe.withDefault []
 
-        heartRateSection =
-            let
-                ( redAlerts, yellowAlerts ) =
-                    case config.invokationModule of
-                        InvokationModulePrenatal ->
-                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
-                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
-                            )
-
-                        _ ->
-                            Maybe.map
-                                (\ageYears ->
-                                    let
-                                        ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears < 1 then
-                                                ( 110, 160 )
-
-                                            else if ageYears < 2 then
-                                                ( 100, 150 )
-
-                                            else if ageYears < 5 then
-                                                ( 95, 140 )
-
-                                            else if ageYears < 12 then
-                                                ( 80, 120 )
-
-                                            else
-                                                ( 60, 100 )
-                                    in
-                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                )
-                                ageInYears
-                                |> Maybe.withDefault ( [], [] )
-            in
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.HeartRate ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.heartRate
-                        redAlerts
-                        yellowAlerts
-                    ]
-                ]
-            , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.heartRate)
-                (config.setIntInputMsg heartRateUpdateFunc)
-                "heart-rate"
-                Translate.BeatsPerMinuteUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
-            , separator
-            ]
-
         respiratoryRateSection =
             let
                 ( redAlerts, yellowAlerts ) =
@@ -1571,6 +1518,59 @@ viewVitalsForm language currentDate config form =
                                 config.sysBloodPressurePreviousValue
                                 config.diaBloodPressurePreviousValue
                                 True
+
+                        heartRateSection =
+                            let
+                                ( redAlerts, yellowAlerts ) =
+                                    case config.invokationModule of
+                                        InvokationModulePrenatal ->
+                                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
+                                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                                            )
+
+                                        _ ->
+                                            Maybe.map
+                                                (\ageYears ->
+                                                    let
+                                                        ( redAlertMinValue, redAlertMaxValue ) =
+                                                            if ageYears < 1 then
+                                                                ( 110, 160 )
+
+                                                            else if ageYears < 2 then
+                                                                ( 100, 150 )
+
+                                                            else if ageYears < 5 then
+                                                                ( 95, 140 )
+
+                                                            else if ageYears < 12 then
+                                                                ( 80, 120 )
+
+                                                            else
+                                                                ( 60, 100 )
+                                                    in
+                                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                                )
+                                                ageInYears
+                                                |> Maybe.withDefault ( [], [] )
+                            in
+                            [ div [ class "ui grid" ]
+                                [ div [ class "twelve wide column" ]
+                                    [ viewLabel language Translate.HeartRate ]
+                                , div [ class "four wide column" ]
+                                    [ viewConditionalAlert form.heartRate
+                                        redAlerts
+                                        yellowAlerts
+                                    ]
+                                ]
+                            , viewMeasurementInput
+                                language
+                                (Maybe.map toFloat form.heartRate)
+                                (config.setIntInputMsg heartRateUpdateFunc)
+                                "heart-rate"
+                                Translate.BeatsPerMinuteUnitLabel
+                            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+                            , separator
+                            ]
                     in
                     bloodPressureSection
                         ++ heartRateSection
@@ -3187,10 +3187,6 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                       ]
                     )
 
-                weightAsFloat =
-                    Maybe.map (\(WeightInKg weight) -> weight)
-                        form.weight
-
                 ( weightInput, weightTask ) =
                     let
                         measurementNotTakenChecked =
@@ -3208,6 +3204,11 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                 []
 
                             else
+                                let
+                                    weightAsFloat =
+                                        Maybe.map (\(WeightInKg weight) -> weight)
+                                            form.weight
+                                in
                                 [ viewMeasurementInput
                                     language
                                     weightAsFloat
@@ -3246,10 +3247,6 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                             (\ageMonths ->
                                 if ageMonths >= 6 then
                                     let
-                                        muacAsFloat =
-                                            Maybe.map (\(MuacInCm muac) -> muac)
-                                                form.muac
-
                                         measurementNotTakenChecked =
                                             form.muacNotTaken == Just True
 
@@ -3265,6 +3262,11 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                                 []
 
                                             else
+                                                let
+                                                    muacAsFloat =
+                                                        Maybe.map (\(MuacInCm muac) -> muac)
+                                                            form.muac
+                                                in
                                                 [ div [ class "ui grid" ]
                                                     [ div [ class "eleven wide column" ]
                                                         [ viewMeasurementInput

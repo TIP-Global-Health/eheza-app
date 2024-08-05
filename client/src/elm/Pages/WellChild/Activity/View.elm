@@ -859,21 +859,19 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 let
                     person =
                         assembled.person
-
-                    maybeAgeInDays =
+                in
+                Maybe.andThen
+                    (\headCircumference ->
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
                             person.birthDate
-                in
-                headCircumferenceForm.headCircumference
-                    |> Maybe.andThen
-                        (\headCircumference ->
-                            Maybe.andThen
+                            |> Maybe.andThen
                                 (\ageInDays ->
                                     zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
                                 )
                                 maybeAgeInDays
-                        )
+                    )
+                    headCircumferenceForm.headCircumference
 
         viewForm =
             case activeTask of
