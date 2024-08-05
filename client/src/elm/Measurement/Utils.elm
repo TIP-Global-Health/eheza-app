@@ -892,9 +892,6 @@ vaccinationFormDynamicContentAndTasks :
     -> ( List (Html msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate site config vaccineType form =
     let
-        expectedDoses =
-            config.expectedDoses
-
         dosesFromPreviousEncountersData =
             config.dosesFromPreviousEncountersData
 
@@ -904,9 +901,6 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         allDosesGivenData =
             dosesFromPreviousEncountersData
                 ++ dosesFromCurrentEncounterData
-
-        allDosesGiven =
-            List.map Tuple.first allDosesGivenData
 
         lastDoseData =
             List.filter (\( _, date ) -> date /= currentDate)
@@ -1006,6 +1000,9 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             case form.viewMode of
                 ViewModeInitial ->
                     let
+                        allDosesGiven =
+                            List.map Tuple.first allDosesGivenData
+
                         doseGivenToday =
                             List.filter
                                 (\( _, date ) ->
@@ -1017,7 +1014,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
 
                         dosesMissing =
                             List.filter (\dose -> not <| List.member dose allDosesGiven)
-                                expectedDoses
+                                config.expectedDoses
                     in
                     Maybe.Extra.or doseGivenToday (List.head dosesMissing)
                         |> Maybe.map
