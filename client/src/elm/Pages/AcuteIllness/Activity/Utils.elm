@@ -13,6 +13,7 @@ import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
+import Measurement.Model exposing (InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( fromListWithDefaultValue
@@ -23,6 +24,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
@@ -273,50 +275,27 @@ physicalExamTasksCompletedFromTotal :
     NominalDate
     -> Bool
     -> Person
-    -> AcuteIllnessMeasurements
+    -> AssembledData
     -> PhysicalExamData
     -> PhysicalExamTask
     -> ( Int, Int )
-physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task =
+physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task =
+    let
+        measurements =
+            assembled.measurements
+    in
     case task of
         PhysicalExamVitals ->
             let
-                form =
-                    measurements.vitals
-                        |> getMeasurementValueFunc
+                formConfig =
+                    generateVitalsFormConfig isChw assembled
+
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormInputsAndTasks English currentDate formConfig
             in
-            if isChw then
-                ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
-                , 2
-                )
-
-            else
-                Maybe.map
-                    (\birthDate ->
-                        let
-                            ageYears =
-                                Gizra.NominalDate.diffYears birthDate currentDate
-
-                            ( ageDependentInputsCompleted, ageDependentInputsActive ) =
-                                if ageYears < 12 then
-                                    ( 0, 0 )
-
-                                else
-                                    ( taskCompleted form.sysBloodPressure
-                                        + taskCompleted form.diaBloodPressure
-                                    , 2
-                                    )
-                        in
-                        ( taskCompleted form.heartRate
-                            + taskCompleted form.respiratoryRate
-                            + taskCompleted form.bodyTemperature
-                            + ageDependentInputsCompleted
-                        , 3 + ageDependentInputsActive
-                        )
-                    )
-                    person.birthDate
-                    |> Maybe.withDefault ( 0, 0 )
+            resolveTasksCompletedFromTotal tasks
 
         PhysicalExamCoreExam ->
             let
@@ -359,6 +338,31 @@ physicalExamTasksCompletedFromTotal currentDate isChw person measurements data t
                         |> nutritionFormInutsAndTasks English currentDate
             in
             resolveTasksCompletedFromTotal tasks
+
+
+generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig isChw assembled =
+    { setIntInputMsg = SetVitalsIntInput
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+    , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+    , heartRatePreviousValue =
+        resolvePreviousMaybeValue assembled .vitals .heartRate
+            |> Maybe.map toFloat
+    , respiratoryRatePreviousValue =
+        resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.map toFloat
+    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , birthDate = assembled.person.birthDate
+    , formClass = "vitals"
+    , mode =
+        if isChw then
+            VitalsFormBasic
+
+        else
+            VitalsFormFull
+    , invokationModule = InvokationModuleAcuteIllness
+    }
 
 
 nutritionFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessNutritionForm -> ( List (Html Msg), List (Maybe Bool) )

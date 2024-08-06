@@ -64,7 +64,6 @@ import Pages.Person.View
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration
-        , maybeToBoolTask
         , nonAdministrationReasonToSign
         , resolveActiveTask
         , resolveNextTask
@@ -764,23 +763,21 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
             case activeTask of
                 Just PhysicalExamVitals ->
-                    measurements.vitals
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
                         |> viewVitalsForm language
                             currentDate
@@ -789,8 +786,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                         |> List.singleton
 
                 Just PhysicalExamCoreExam ->
-                    measurements.coreExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
                         |> viewCoreExamForm language currentDate assembled
                         |> List.singleton
@@ -800,14 +796,12 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                         previousValue =
                             resolvePreviousValue assembled .muac muacValueFunc
                     in
-                    measurements.muac
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
-                    measurements.acuteFindings
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.acuteFindings
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
                         |> viewAcuteFindingsForm language currentDate
 
@@ -873,27 +867,7 @@ viewVitalsForm : Language -> NominalDate -> Bool -> AssembledData -> VitalsForm 
 viewVitalsForm language currentDate isChw assembled form =
     let
         formConfig =
-            { setIntInputMsg = SetVitalsIntInput
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
-            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
-            , heartRatePreviousValue =
-                resolvePreviousMaybeValue assembled .vitals .heartRate
-                    |> Maybe.map toFloat
-            , respiratoryRatePreviousValue =
-                resolvePreviousValue assembled .vitals .respiratoryRate
-                    |> Maybe.map toFloat
-            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
-            , birthDate = assembled.person.birthDate
-            , formClass = "vitals"
-            , mode =
-                if isChw then
-                    VitalsFormBasic
-
-                else
-                    VitalsFormFull
-            , invokationModule = InvokationModuleAcuteIllness
-            }
+            generateVitalsFormConfig isChw assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 

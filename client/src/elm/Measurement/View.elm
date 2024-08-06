@@ -1337,6 +1337,16 @@ viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setRe
 viewVitalsForm : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> Html msg
 viewVitalsForm language currentDate config form =
     let
+        ( inputs, _ ) =
+            vitalsFormInputsAndTasks language currentDate config form
+    in
+    div [ class <| "ui form " ++ config.formClass ]
+        inputs
+
+
+vitalsFormInputsAndTasks : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> ( List (Html msg), List (Maybe Bool) )
+vitalsFormInputsAndTasks language currentDate config form =
+    let
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
 
@@ -1369,7 +1379,7 @@ viewVitalsForm language currentDate config form =
                     if ageYears < 12 then
                         -- Blood presure is taken for patients that are
                         -- 12 years old, or older.
-                        []
+                        ( [], [] )
 
                     else
                         let
@@ -1390,47 +1400,49 @@ viewVitalsForm language currentDate config form =
                                   ]
                                 )
                         in
-                        [ div [ class "ui grid" ]
-                            [ div [ class "eleven wide column" ]
-                                [ viewLabel language Translate.BloodPressure ]
-                            ]
-                        , div [ class "ui grid systolic" ]
-                            [ div [ class "twelve wide column" ]
-                                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert sys
-                                    redAlertsSys
-                                    []
+                        ( [ div [ class "ui grid" ]
+                                [ div [ class "eleven wide column" ]
+                                    [ viewLabel language Translate.BloodPressure ]
                                 ]
-                            ]
-                        , viewMeasurementInput
-                            language
-                            sys
-                            (config.setFloatInputMsg sysUpdateFunc)
-                            "sys-blood-pressure"
-                            Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
-                        , div [ class "ui grid" ]
-                            [ div [ class "twelve wide column" ]
-                                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert dia
-                                    redAlertsDia
-                                    []
+                          , div [ class "ui grid systolic" ]
+                                [ div [ class "twelve wide column" ]
+                                    [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+                                , div [ class "four wide column" ]
+                                    [ viewConditionalAlert sys
+                                        redAlertsSys
+                                        []
+                                    ]
                                 ]
-                            ]
-                        , viewMeasurementInput
-                            language
-                            dia
-                            (config.setFloatInputMsg diaUpdateFunc)
-                            "dia-blood-pressure"
-                            Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
-                        , separator |> showIf addSeparator
-                        ]
+                          , viewMeasurementInput
+                                language
+                                sys
+                                (config.setFloatInputMsg sysUpdateFunc)
+                                "sys-blood-pressure"
+                                Translate.MMHGUnit
+                          , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
+                          , div [ class "ui grid" ]
+                                [ div [ class "twelve wide column" ]
+                                    [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+                                , div [ class "four wide column" ]
+                                    [ viewConditionalAlert dia
+                                        redAlertsDia
+                                        []
+                                    ]
+                                ]
+                          , viewMeasurementInput
+                                language
+                                dia
+                                (config.setFloatInputMsg diaUpdateFunc)
+                                "dia-blood-pressure"
+                                Translate.MMHGUnit
+                          , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
+                          , separator |> showIf addSeparator
+                          ]
+                        , [ maybeToBoolTask sys, maybeToBoolTask dia ]
+                        )
                 )
                 ageInYears
-                |> Maybe.withDefault []
+                |> Maybe.withDefault ( [], [] )
 
         respiratoryRateSection =
             let
@@ -1460,135 +1472,143 @@ viewVitalsForm language currentDate config form =
                                 ageInYears
                                 |> Maybe.withDefault ( [], [] )
             in
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.RespiratoryRate ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.respiratoryRate
-                        redAlerts
-                        yellowAlerts
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.RespiratoryRate ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.respiratoryRate
+                            redAlerts
+                            yellowAlerts
+                        ]
                     ]
-                ]
-            , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.respiratoryRate)
-                (config.setIntInputMsg respiratoryRateUpdateFunc)
-                "respiratory-rate"
-                Translate.BreathsPerMinuteUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
-            , separator
-            ]
+              , viewMeasurementInput
+                    language
+                    (Maybe.map toFloat form.respiratoryRate)
+                    (config.setIntInputMsg respiratoryRateUpdateFunc)
+                    "respiratory-rate"
+                    Translate.BreathsPerMinuteUnitLabel
+              , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
+              , separator
+              ]
+            , [ maybeToBoolTask form.respiratoryRate ]
+            )
 
         bodyTemperatureSection =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.BodyTemperature ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.bodyTemperature
-                        [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                        []
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.BodyTemperature ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.bodyTemperature
+                            [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                            []
+                        ]
                     ]
-                ]
-            , viewMeasurementInput
-                language
-                form.bodyTemperature
-                (config.setFloatInputMsg bodyTemperatureUpdateFunc)
-                "body-temperature"
-                Translate.Celsius
-            , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
-            ]
+              , viewMeasurementInput
+                    language
+                    form.bodyTemperature
+                    (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                    "body-temperature"
+                    Translate.Celsius
+              , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+              ]
+            , [ maybeToBoolTask form.bodyTemperature ]
+            )
 
         separator =
             div [ class "separator" ] []
 
-        content =
-            case config.mode of
-                VitalsFormBasic ->
-                    respiratoryRateSection
-                        ++ bodyTemperatureSection
+        concatSections sections =
+            ( List.map Tuple.first sections |> List.concat
+            , List.map Tuple.second sections |> List.concat
+            )
+    in
+    case config.mode of
+        VitalsFormBasic ->
+            concatSections [ respiratoryRateSection, bodyTemperatureSection ]
 
-                VitalsFormFull ->
-                    let
-                        bloodPressureSection =
-                            viewBloodPressureSection
-                                form.sysBloodPressure
-                                form.diaBloodPressure
-                                sysBloodPressureUpdateFunc
-                                diaBloodPressureUpdateFunc
-                                config.sysBloodPressurePreviousValue
-                                config.diaBloodPressurePreviousValue
-                                True
-
-                        heartRateSection =
-                            let
-                                ( redAlerts, yellowAlerts ) =
-                                    case config.invokationModule of
-                                        InvokationModulePrenatal ->
-                                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
-                                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
-                                            )
-
-                                        _ ->
-                                            Maybe.map
-                                                (\ageYears ->
-                                                    let
-                                                        ( redAlertMinValue, redAlertMaxValue ) =
-                                                            if ageYears < 1 then
-                                                                ( 110, 160 )
-
-                                                            else if ageYears < 2 then
-                                                                ( 100, 150 )
-
-                                                            else if ageYears < 5 then
-                                                                ( 95, 140 )
-
-                                                            else if ageYears < 12 then
-                                                                ( 80, 120 )
-
-                                                            else
-                                                                ( 60, 100 )
-                                                    in
-                                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                                )
-                                                ageInYears
-                                                |> Maybe.withDefault ( [], [] )
-                            in
-                            [ div [ class "ui grid" ]
-                                [ div [ class "twelve wide column" ]
-                                    [ viewLabel language Translate.HeartRate ]
-                                , div [ class "four wide column" ]
-                                    [ viewConditionalAlert form.heartRate
-                                        redAlerts
-                                        yellowAlerts
-                                    ]
-                                ]
-                            , viewMeasurementInput
-                                language
-                                (Maybe.map toFloat form.heartRate)
-                                (config.setIntInputMsg heartRateUpdateFunc)
-                                "heart-rate"
-                                Translate.BeatsPerMinuteUnitLabel
-                            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
-                            , separator
-                            ]
-                    in
-                    bloodPressureSection
-                        ++ heartRateSection
-                        ++ respiratoryRateSection
-                        ++ bodyTemperatureSection
-
-                VitalsFormRepeated ->
+        VitalsFormFull ->
+            let
+                bloodPressureSection =
                     viewBloodPressureSection
-                        form.sysRepeated
-                        form.diaRepeated
-                        sysRepeatedUpdateFunc
-                        diaRepeatedUpdateFunc
                         form.sysBloodPressure
                         form.diaBloodPressure
-                        False
-    in
-    div [ class <| "ui form " ++ config.formClass ]
-        content
+                        sysBloodPressureUpdateFunc
+                        diaBloodPressureUpdateFunc
+                        config.sysBloodPressurePreviousValue
+                        config.diaBloodPressurePreviousValue
+                        True
+
+                heartRateSection =
+                    let
+                        ( redAlerts, yellowAlerts ) =
+                            case config.invokationModule of
+                                InvokationModulePrenatal ->
+                                    ( [ [ (>) 40 ], [ (<=) 120 ] ]
+                                    , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                                    )
+
+                                _ ->
+                                    Maybe.map
+                                        (\ageYears ->
+                                            let
+                                                ( redAlertMinValue, redAlertMaxValue ) =
+                                                    if ageYears < 1 then
+                                                        ( 110, 160 )
+
+                                                    else if ageYears < 2 then
+                                                        ( 100, 150 )
+
+                                                    else if ageYears < 5 then
+                                                        ( 95, 140 )
+
+                                                    else if ageYears < 12 then
+                                                        ( 80, 120 )
+
+                                                    else
+                                                        ( 60, 100 )
+                                            in
+                                            ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                        )
+                                        ageInYears
+                                        |> Maybe.withDefault ( [], [] )
+                    in
+                    ( [ div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ viewLabel language Translate.HeartRate ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.heartRate
+                                    redAlerts
+                                    yellowAlerts
+                                ]
+                            ]
+                      , viewMeasurementInput
+                            language
+                            (Maybe.map toFloat form.heartRate)
+                            (config.setIntInputMsg heartRateUpdateFunc)
+                            "heart-rate"
+                            Translate.BeatsPerMinuteUnitLabel
+                      , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+                      , separator
+                      ]
+                    , [ maybeToBoolTask form.heartRate ]
+                    )
+            in
+            concatSections
+                [ bloodPressureSection
+                , heartRateSection
+                , respiratoryRateSection
+                , bodyTemperatureSection
+                ]
+
+        VitalsFormRepeated ->
+            viewBloodPressureSection
+                form.sysRepeated
+                form.diaRepeated
+                sysRepeatedUpdateFunc
+                diaRepeatedUpdateFunc
+                form.sysBloodPressure
+                form.diaBloodPressure
+                False
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
