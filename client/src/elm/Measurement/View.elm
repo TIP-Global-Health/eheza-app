@@ -49,7 +49,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( concatInputsAndTasksSections
+        , isTaskCompleted
         , maybeToBoolTask
         , taskCompleted
         , tasksBarId
@@ -1517,15 +1518,10 @@ vitalsFormInputsAndTasks language currentDate config form =
 
         separator =
             div [ class "separator" ] []
-
-        concatSections sections =
-            ( List.map Tuple.first sections |> List.concat
-            , List.map Tuple.second sections |> List.concat
-            )
     in
     case config.mode of
         VitalsFormBasic ->
-            concatSections [ respiratoryRateSection, bodyTemperatureSection ]
+            concatInputsAndTasksSections [ respiratoryRateSection, bodyTemperatureSection ]
 
         VitalsFormFull ->
             let
@@ -1594,7 +1590,7 @@ vitalsFormInputsAndTasks language currentDate config form =
                     , [ maybeToBoolTask form.heartRate ]
                     )
             in
-            concatSections
+            concatInputsAndTasksSections
                 [ bloodPressureSection
                 , heartRateSection
                 , respiratoryRateSection

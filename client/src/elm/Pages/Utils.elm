@@ -1411,3 +1411,10 @@ resolveActiveTask options selected =
         )
         selected
         |> Maybe.withDefault (List.head options)
+
+
+concatInputsAndTasksSections : List ( List (Html msg), List (Maybe Bool) ) -> ( List (Html msg), List (Maybe Bool) )
+concatInputsAndTasksSections sections =
+    ( List.map Tuple.first sections |> List.concat
+    , List.map Tuple.second sections |> List.concat
+    )

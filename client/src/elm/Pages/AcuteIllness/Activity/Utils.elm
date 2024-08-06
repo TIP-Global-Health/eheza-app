@@ -31,7 +31,8 @@ import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.Utils
     exposing
-        ( getCurrentReasonForMedicationNonAdministration
+        ( concatInputsAndTasksSections
+        , getCurrentReasonForMedicationNonAdministration
         , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
@@ -40,6 +41,7 @@ import Pages.Utils
         , resolveTasksCompletedFromTotal
         , taskCompleted
         , valueConsideringIsDirtyField
+        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
@@ -534,67 +536,169 @@ exposureTasksCompletedFromTotal measurements data task =
             )
 
 
-treatmentTasksCompletedFromTotal : AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )
-treatmentTasksCompletedFromTotal measurements data task =
+treatmentTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )
+treatmentTasksCompletedFromTotal currentDate measurements data task =
     case task of
         TreatmentReview ->
             let
-                form =
-                    measurements.treatmentReview
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.treatmentReview
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
-
-                ( feverActive, feverCompleted ) =
-                    form.feverPast6Hours
-                        |> Maybe.map
-                            (\receivedTreatment ->
-                                if receivedTreatment then
-                                    if isJust form.feverPast6HoursHelped then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( malariaTodayActive, malariaTodayCompleted ) =
-                    form.malariaToday
-                        |> Maybe.map
-                            (\receivedTreatment ->
-                                if receivedTreatment then
-                                    if isJust form.malariaTodayHelped then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-
-                ( malariaWithinPastMonth, malariaWithinPastMonthCompleted ) =
-                    form.malariaWithinPastMonth
-                        |> Maybe.map
-                            (\receivedTreatment ->
-                                if receivedTreatment then
-                                    if isJust form.malariaWithinPastMonthHelped then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                        |> treatmentReviewFormInutsAndTasks English currentDate
             in
-            ( feverActive + malariaTodayActive + malariaWithinPastMonth
-            , feverCompleted + malariaTodayCompleted + malariaWithinPastMonthCompleted
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+treatmentReviewFormInutsAndTasks : Language -> NominalDate -> TreatmentReviewForm -> ( List (Html Msg), List (Maybe Bool) )
+treatmentReviewFormInutsAndTasks language currentDate form =
+    let
+        feverPast6HoursUpdateFunc value form_ =
+            if value then
+                { form_ | feverPast6Hours = Just True }
+
+            else
+                { form_ | feverPast6Hours = Just False, feverPast6HoursHelped = Nothing }
+
+        feverPast6HoursHelpedUpdateFunc value form_ =
+            { form_ | feverPast6HoursHelped = Just value }
+
+        malariaTodayUpdateFunc value form_ =
+            if value then
+                { form_ | malariaToday = Just True }
+
+            else
+                { form_ | malariaToday = Just False, malariaTodayHelped = Nothing }
+
+        malariaTodayHelpedUpdateFunc value form_ =
+            { form_ | malariaTodayHelped = Just value }
+
+        malariaWithinPastMonthUpdateFunc value form_ =
+            if value then
+                { form_ | malariaWithinPastMonth = Just True }
+
+            else
+                { form_ | malariaWithinPastMonth = Just False, malariaWithinPastMonthHelped = Nothing }
+
+        malariaWithinPastMonthHelpedUpdateFunc value form_ =
+            { form_ | malariaWithinPastMonthHelped = Just value }
+
+        medicationHelpedQuestion =
+            div [ class "ui grid" ]
+                [ div [ class "one wide column" ] []
+                , div [ class "fifteen wide column" ]
+                    [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
+                ]
+
+        feverPast6HoursSection =
+            let
+                feverPast6HoursPositive =
+                    Maybe.withDefault False form.feverPast6Hours
+
+                feverPast6HoursHelpedSection =
+                    if feverPast6HoursPositive then
+                        ( [ medicationHelpedQuestion
+                          , viewBoolInput
+                                language
+                                form.feverPast6HoursHelped
+                                (SetTreatmentReviewBoolInput feverPast6HoursHelpedUpdateFunc)
+                                "fever-past-6-hours-helped derived"
+                                Nothing
+                          ]
+                        , [ form.feverPast6HoursHelped ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            concatInputsAndTasksSections
+                [ ( [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion
+                    , viewBoolInput
+                        language
+                        form.feverPast6Hours
+                        (SetTreatmentReviewBoolInput feverPast6HoursUpdateFunc)
+                        "fever-past-6-hours"
+                        Nothing
+                    ]
+                  , [ form.feverPast6Hours ]
+                  )
+                , feverPast6HoursHelpedSection
+                ]
+
+        malariaTodaySection =
+            let
+                malariaTodayPositive =
+                    Maybe.withDefault False form.malariaToday
+
+                malariaTodayHelpedSection =
+                    if malariaTodayPositive then
+                        ( [ medicationHelpedQuestion
+                          , viewBoolInput
+                                language
+                                form.malariaTodayHelped
+                                (SetTreatmentReviewBoolInput malariaTodayHelpedUpdateFunc)
+                                "malaria-today-helped derived"
+                                Nothing
+                          ]
+                        , [ form.malariaTodayHelped ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            concatInputsAndTasksSections
+                [ ( [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion
+                    , viewBoolInput
+                        language
+                        form.malariaToday
+                        (SetTreatmentReviewBoolInput malariaTodayUpdateFunc)
+                        "malaria-today"
+                        Nothing
+                    ]
+                  , [ form.malariaToday ]
+                  )
+                , malariaTodayHelpedSection
+                ]
+
+        malariaWithinPastMonthSection =
+            let
+                malariaWithinPastMonthPositive =
+                    Maybe.withDefault False form.malariaWithinPastMonth
+
+                malariaWithinPastMonthHelpedSection =
+                    if malariaWithinPastMonthPositive then
+                        ( [ medicationHelpedQuestion
+                          , viewBoolInput
+                                language
+                                form.malariaWithinPastMonthHelped
+                                (SetTreatmentReviewBoolInput malariaWithinPastMonthHelpedUpdateFunc)
+                                "malaria-within-past-month-helped derived"
+                                Nothing
+                          ]
+                        , [ form.malariaWithinPastMonthHelped ]
+                        )
+
+                    else
+                        ( [], [] )
+            in
+            concatInputsAndTasksSections
+                [ ( [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion
+                    , viewBoolInput
+                        language
+                        form.malariaWithinPastMonth
+                        (SetTreatmentReviewBoolInput malariaWithinPastMonthUpdateFunc)
+                        "malaria-within-past-month"
+                        Nothing
+                    ]
+                  , [ form.malariaWithinPastMonth ]
+                  )
+                , malariaWithinPastMonthHelpedSection
+                ]
+    in
+    concatInputsAndTasksSections
+        [ feverPast6HoursSection
+        , malariaTodaySection
+        , malariaWithinPastMonthSection
+        ]
 
 
 nextStepsTasksCompletedFromTotal :

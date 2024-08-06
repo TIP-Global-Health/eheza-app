@@ -803,11 +803,13 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                     getMeasurementValueFunc measurements.acuteFindings
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
                         |> viewAcuteFindingsForm language currentDate
+                        |> List.singleton
 
                 Just PhysicalExamNutrition ->
                     getMeasurementValueFunc measurements.nutrition
                         |> Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
+                        |> List.singleton
 
                 Nothing ->
                     []
@@ -881,26 +883,24 @@ viewCoreExamForm language currentDate form =
         inputs
 
 
-viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)
+viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> Html Msg
 viewAcuteFindingsForm language currentDate form =
     let
         ( inputs, _ ) =
             acuteFindingsFormInutsAndTasks language currentDate form
     in
-    [ div [ class "ui form physical-exam acute-findings" ]
+    div [ class "ui form physical-exam acute-findings" ]
         inputs
-    ]
 
 
-viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> List (Html Msg)
+viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> Html Msg
 viewNutritionForm language currentDate form =
     let
         ( inputs, _ ) =
             nutritionFormInutsAndTasks language currentDate form
     in
-    [ div [ class "ui form physical-exam nutrition" ]
+    div [ class "ui form physical-exam nutrition" ]
         inputs
-    ]
 
 
 viewAcuteIllnessLaboratory :
@@ -1365,7 +1365,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, treatmentTasksCompletedFromTotal measurements data task )
+                    ( task, treatmentTasksCompletedFromTotal currentDate measurements data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -1380,7 +1380,7 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
                     measurements.treatmentReview
                         |> getMeasurementValueFunc
                         |> treatmentReviewFormWithDefault data.treatmentReviewForm
-                        |> viewTreatmentReviewForm language currentDate measurements
+                        |> viewTreatmentReviewForm language currentDate
 
                 _ ->
                     emptyNode
@@ -1419,140 +1419,14 @@ viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements 
     ]
 
 
-viewTreatmentReviewForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TreatmentReviewForm -> Html Msg
-viewTreatmentReviewForm language currentDate measurements form =
+viewTreatmentReviewForm : Language -> NominalDate -> TreatmentReviewForm -> Html Msg
+viewTreatmentReviewForm language currentDate form =
     let
-        feverPast6HoursUpdateFunc value form_ =
-            if value then
-                { form_ | feverPast6Hours = Just True }
-
-            else
-                { form_ | feverPast6Hours = Just False, feverPast6HoursHelped = Nothing }
-
-        feverPast6HoursHelpedUpdateFunc value form_ =
-            { form_ | feverPast6HoursHelped = Just value }
-
-        malariaTodayUpdateFunc value form_ =
-            if value then
-                { form_ | malariaToday = Just True }
-
-            else
-                { form_ | malariaToday = Just False, malariaTodayHelped = Nothing }
-
-        malariaTodayHelpedUpdateFunc value form_ =
-            { form_ | malariaTodayHelped = Just value }
-
-        malariaWithinPastMonthUpdateFunc value form_ =
-            if value then
-                { form_ | malariaWithinPastMonth = Just True }
-
-            else
-                { form_ | malariaWithinPastMonth = Just False, malariaWithinPastMonthHelped = Nothing }
-
-        malariaWithinPastMonthHelpedUpdateFunc value form_ =
-            { form_ | malariaWithinPastMonthHelped = Just value }
-
-        medicationHelpedQuestion =
-            div [ class "ui grid" ]
-                [ div [ class "one wide column" ] []
-                , div [ class "fifteen wide column" ]
-                    [ viewQuestionLabel language Translate.MedicationHelpedQuestion ]
-                ]
-
-        feverPast6HoursSection =
-            let
-                feverPast6HoursPositive =
-                    form.feverPast6Hours
-                        |> Maybe.withDefault False
-
-                feverPast6HoursHelpedInput =
-                    if feverPast6HoursPositive then
-                        [ medicationHelpedQuestion
-                        , viewBoolInput
-                            language
-                            form.feverPast6HoursHelped
-                            (SetTreatmentReviewBoolInput feverPast6HoursHelpedUpdateFunc)
-                            "fever-past-6-hours-helped derived"
-                            Nothing
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationForFeverPast6HoursQuestion
-            , viewBoolInput
-                language
-                form.feverPast6Hours
-                (SetTreatmentReviewBoolInput feverPast6HoursUpdateFunc)
-                "fever-past-6-hours"
-                Nothing
-            ]
-                ++ feverPast6HoursHelpedInput
-
-        malariaTodaySection =
-            let
-                malariaTodayPositive =
-                    form.malariaToday
-                        |> Maybe.withDefault False
-
-                malariaTodayHelpedInput =
-                    if malariaTodayPositive then
-                        [ medicationHelpedQuestion
-                        , viewBoolInput
-                            language
-                            form.malariaTodayHelped
-                            (SetTreatmentReviewBoolInput malariaTodayHelpedUpdateFunc)
-                            "malaria-today-helped derived"
-                            Nothing
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationForMalariaTodayQuestion
-            , viewBoolInput
-                language
-                form.malariaToday
-                (SetTreatmentReviewBoolInput malariaTodayUpdateFunc)
-                "malaria-today"
-                Nothing
-            ]
-                ++ malariaTodayHelpedInput
-
-        malariaWithinPastMonthSection =
-            let
-                malariaWithinPastMonthPositive =
-                    form.malariaWithinPastMonth
-                        |> Maybe.withDefault False
-
-                malariaWithinPastMonthHelpedInput =
-                    if malariaWithinPastMonthPositive then
-                        [ medicationHelpedQuestion
-                        , viewBoolInput
-                            language
-                            form.malariaWithinPastMonthHelped
-                            (SetTreatmentReviewBoolInput malariaWithinPastMonthHelpedUpdateFunc)
-                            "malaria-within-past-month-helped derived"
-                            Nothing
-                        ]
-
-                    else
-                        []
-            in
-            [ viewQuestionLabel language Translate.MedicationForMalariaWithinPastMonthQuestion
-            , viewBoolInput
-                language
-                form.malariaWithinPastMonth
-                (SetTreatmentReviewBoolInput malariaWithinPastMonthUpdateFunc)
-                "malaria-within-past-month"
-                Nothing
-            ]
-                ++ malariaWithinPastMonthHelpedInput
+        ( inputs, _ ) =
+            treatmentReviewFormInutsAndTasks language currentDate form
     in
-    feverPast6HoursSection
-        ++ malariaTodaySection
-        ++ malariaWithinPastMonthSection
-        |> div [ class "ui form treatment-review" ]
+    div [ class "ui form treatment-review" ]
+        inputs
 
 
 viewAcuteIllnessNextSteps : Language -> NominalDate -> Site -> GeoInfo -> AcuteIllnessEncounterId -> Bool -> AssembledData -> ModelIndexedDb -> NextStepsData -> List (Html Msg)
