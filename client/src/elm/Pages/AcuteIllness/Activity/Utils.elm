@@ -11,9 +11,11 @@ import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf5, isPersonAFertileWoman)
 import Backend.Utils exposing (tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
@@ -44,6 +46,7 @@ import Pages.Utils
         , valueConsideringIsDirtyField
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewCustomSelectListInput
@@ -799,267 +802,484 @@ treatmentReviewFormInutsAndTasks language currentDate form =
 
 
 nextStepsTasksCompletedFromTotal :
-    Bool
+    NominalDate
+    -> Bool
     -> Bool
     -> Maybe AcuteIllnessDiagnosis
     -> AcuteIllnessMeasurements
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal isChw initialEncounter diagnosis measurements data task =
-    case task of
-        NextStepsIsolation ->
-            let
-                form =
-                    measurements.isolation
-                        |> getMeasurementValueFunc
+nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter diagnosis measurements data task =
+    let
+        ( _, tasks ) =
+            case task of
+                NextStepsIsolation ->
+                    getMeasurementValueFunc measurements.isolation
                         |> isolationFormWithDefault data.isolationForm
+                        |> isolationFormInutsAndTasks English currentDate isChw
 
-                ( derivedActive, derivedCompleted ) =
-                    case form.patientIsolated of
-                        Just True ->
-                            if isChw then
-                                ( 2, taskCompleted form.healthEducation + taskCompleted form.signOnDoor )
-
-                            else
-                                ( 1, taskCompleted form.healthEducation )
-
-                        Just False ->
-                            ( 2, taskCompleted form.healthEducation + naListTaskCompleted IsolationReasonNotApplicable form.reasonsForNotIsolating )
-
-                        Nothing ->
-                            ( 0, 0 )
-            in
-            ( taskCompleted form.patientIsolated + derivedCompleted
-            , 1 + derivedActive
-            )
-
-        NextStepsContactHC ->
-            let
-                form =
-                    measurements.hcContact
-                        |> getMeasurementValueFunc
+                NextStepsContactHC ->
+                    getMeasurementValueFunc measurements.hcContact
                         |> hcContactFormWithDefault data.hcContactForm
-            in
-            form.contactedHC
-                |> Maybe.map
-                    (\contactedHC ->
-                        if contactedHC then
-                            let
-                                recommendationsCompleted =
-                                    naTaskCompleted HCRecommendationNotApplicable form.recommendations
+                        |> hcContactFormInutsAndTasks English currentDate initialEncounter
 
-                                ( ambulanceActive, ambulanceCompleted ) =
-                                    form.recommendations
-                                        |> Maybe.map
-                                            (\recommendations ->
-                                                if recommendations == SendAmbulance then
-                                                    ( naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    , naTaskCompleted ResponsePeriodNotApplicable form.ambulanceArrivalPeriod
-                                                    )
-
-                                                else
-                                                    ( 0, 0 )
-                                            )
-                                        |> Maybe.withDefault ( 0, 0 )
-                            in
-                            ( 1 + recommendationsCompleted + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceCompleted
-                            , 2 + naTaskCompleted ResponsePeriodNotApplicable form.responsePeriod + ambulanceActive
-                            )
-
-                        else
-                            ( 1, 1 )
-                    )
-                |> Maybe.withDefault ( 0, 1 )
-
-        NextStepsCall114 ->
-            let
-                form =
-                    measurements.call114
-                        |> getMeasurementValueFunc
+                NextStepsCall114 ->
+                    getMeasurementValueFunc measurements.call114
                         |> call114FormWithDefault data.call114Form
-            in
-            form.called114
-                |> Maybe.map
-                    (\called114 ->
-                        if called114 then
-                            form.recommendation114
-                                |> Maybe.map
-                                    (\recommendation114 ->
-                                        -- We do not show qustions about contacting site, if
-                                        -- 114 did not recommend to contact a site.
-                                        if List.member recommendation114 [ OtherRecommendation114, NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ] then
-                                            ( 2, 2 )
+                        |> call114FormInutsAndTasks English currentDate
 
-                                        else
-                                            form.contactedSite
-                                                |> Maybe.map
-                                                    (\_ ->
-                                                        if isJust form.recommendationSite then
-                                                            ( 4, 4 )
-
-                                                        else
-                                                            ( 3, 4 )
-                                                    )
-                                                |> Maybe.withDefault ( 2, 3 )
-                                    )
-                                |> Maybe.withDefault ( 1, 2 )
-
-                        else if isJust form.recommendation114 then
-                            ( 2, 2 )
-
-                        else
-                            ( 1, 2 )
-                    )
-                |> Maybe.withDefault ( 0, 1 )
-
-        NextStepsMedicationDistribution ->
-            let
-                form =
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
-                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
-
-                derivedQuestionExists formValue =
-                    if formValue == Just False then
-                        1
-
-                    else
-                        0
-
-                derivedQuestionCompleted medication reasonToSignFunc formValue =
-                    if formValue /= Just False then
-                        0
-
-                    else
-                        let
-                            valueSet =
-                                getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
-                                    |> isJust
-                        in
-                        if valueSet then
-                            1
-
-                        else
-                            0
-            in
-            case diagnosis of
-                Just DiagnosisMalariaUncomplicated ->
-                    ( taskCompleted form.coartem + derivedQuestionCompleted Coartem MedicationCoartem form.coartem
-                    , 1 + derivedQuestionExists form.coartem
-                    )
-
-                Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                    ( taskCompleted form.ors
-                        + taskCompleted form.zinc
-                        + derivedQuestionCompleted ORS MedicationORS form.ors
-                        + derivedQuestionCompleted Zinc MedicationZinc form.zinc
-                    , 2
-                        + derivedQuestionExists form.ors
-                        + derivedQuestionExists form.zinc
-                    )
-
-                Just DiagnosisSimpleColdAndCough ->
-                    ( taskCompleted form.lemonJuiceOrHoney
-                    , 1
-                    )
-
-                -- This is for child form 2 month old, to 5 years old.
-                Just DiagnosisRespiratoryInfectionUncomplicated ->
-                    ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
-                    , 1 + derivedQuestionExists form.amoxicillin
-                    )
-
-                Just DiagnosisPneuminialCovid19 ->
-                    ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
-                    , 1 + derivedQuestionExists form.amoxicillin
-                    )
-
+                -- NextStepsMedicationDistribution ->
+                --     let
+                --         form =
+                --             measurements.medicationDistribution
+                --                 |> getMeasurementValueFunc
+                --                 |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                --
+                --         derivedQuestionExists formValue =
+                --             if formValue == Just False then
+                --                 1
+                --
+                --             else
+                --                 0
+                --
+                --         derivedQuestionCompleted medication reasonToSignFunc formValue =
+                --             if formValue /= Just False then
+                --                 0
+                --
+                --             else
+                --                 let
+                --                     valueSet =
+                --                         getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                --                             |> isJust
+                --                 in
+                --                 if valueSet then
+                --                     1
+                --
+                --                 else
+                --                     0
+                --     in
+                --     case diagnosis of
+                --         Just DiagnosisMalariaUncomplicated ->
+                --             ( taskCompleted form.coartem + derivedQuestionCompleted Coartem MedicationCoartem form.coartem
+                --             , 1 + derivedQuestionExists form.coartem
+                --             )
+                --
+                --         Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                --             ( taskCompleted form.ors
+                --                 + taskCompleted form.zinc
+                --                 + derivedQuestionCompleted ORS MedicationORS form.ors
+                --                 + derivedQuestionCompleted Zinc MedicationZinc form.zinc
+                --             , 2
+                --                 + derivedQuestionExists form.ors
+                --                 + derivedQuestionExists form.zinc
+                --             )
+                --
+                --         Just DiagnosisSimpleColdAndCough ->
+                --             ( taskCompleted form.lemonJuiceOrHoney
+                --             , 1
+                --             )
+                --
+                --         -- This is for child form 2 month old, to 5 years old.
+                --         Just DiagnosisRespiratoryInfectionUncomplicated ->
+                --             ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
+                --             , 1 + derivedQuestionExists form.amoxicillin
+                --             )
+                --
+                --         Just DiagnosisPneuminialCovid19 ->
+                --             ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
+                --             , 1 + derivedQuestionExists form.amoxicillin
+                --             )
+                --
+                --         _ ->
+                --             ( 0, 1 )
+                --
+                -- NextStepsSendToHC ->
+                --     let
+                --         form =
+                --             measurements.sendToHC
+                --                 |> getMeasurementValueFunc
+                --                 |> sendToHCFormWithDefault data.sendToHCForm
+                --
+                --         ( reasonForNotSentActive, reasonForNotSentCompleted ) =
+                --             form.referToHealthCenter
+                --                 |> Maybe.map
+                --                     (\sentToHC ->
+                --                         if not sentToHC then
+                --                             if isJust form.reasonForNotSendingToHC then
+                --                                 ( 2, 2 )
+                --
+                --                             else
+                --                                 ( 1, 2 )
+                --
+                --                         else
+                --                             ( 1, 1 )
+                --                     )
+                --                 |> Maybe.withDefault ( 0, 1 )
+                --     in
+                --     ( reasonForNotSentActive + taskCompleted form.handReferralForm
+                --     , reasonForNotSentCompleted + 1
+                --     )
+                --
+                -- NextStepsHealthEducation ->
+                --     let
+                --         form =
+                --             measurements.healthEducation
+                --                 |> getMeasurementValueFunc
+                --                 |> healthEducationFormWithDefault data.healthEducationForm
+                --
+                --         ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
+                --             form.educationForDiagnosis
+                --                 |> Maybe.map
+                --                     (\providedHealthEducation ->
+                --                         if not providedHealthEducation then
+                --                             if isJust form.reasonForNotProvidingHealthEducation then
+                --                                 ( 1, 1 )
+                --
+                --                             else
+                --                                 ( 0, 1 )
+                --
+                --                         else
+                --                             ( 0, 0 )
+                --                     )
+                --                 |> Maybe.withDefault ( 0, 0 )
+                --     in
+                --     ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
+                --     , reasonForProvidingEducationCompleted + 1
+                --     )
+                --
+                -- NextStepsFollowUp ->
+                --     let
+                --         form =
+                --             measurements.followUp
+                --                 |> getMeasurementValueFunc
+                --                 |> followUpFormWithDefault data.followUpForm
+                --     in
+                --     ( taskCompleted form.option
+                --     , 1
+                --     )
+                --
+                -- NextStepsContactTracing ->
+                --     if data.contactsTracingForm.finished then
+                --         ( 1, 1 )
+                --
+                --     else
+                --         ( 0, 1 )
+                --
+                -- NextStepsSymptomsReliefGuidance ->
+                --     let
+                --         form =
+                --             measurements.healthEducation
+                --                 |> getMeasurementValueFunc
+                --                 |> healthEducationFormWithDefault data.healthEducationForm
+                --     in
+                --     ( taskCompleted form.educationForDiagnosis
+                --     , 1
+                --     )
                 _ ->
-                    ( 0, 1 )
+                    ( [], [] )
+    in
+    resolveTasksCompletedFromTotal tasks
 
-        NextStepsSendToHC ->
-            let
-                form =
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> sendToHCFormWithDefault data.sendToHCForm
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-            in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
-
-        NextStepsHealthEducation ->
-            let
-                form =
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
-                        |> healthEducationFormWithDefault data.healthEducationForm
-
-                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
-
-                                    else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
-            in
-            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-            , reasonForProvidingEducationCompleted + 1
-            )
-
-        NextStepsFollowUp ->
-            let
-                form =
-                    measurements.followUp
-                        |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
-
-        NextStepsContactTracing ->
-            if data.contactsTracingForm.finished then
-                ( 1, 1 )
+isolationFormInutsAndTasks : Language -> NominalDate -> Bool -> IsolationForm -> ( List (Html Msg), List (Maybe Bool) )
+isolationFormInutsAndTasks language currentDate isChw form =
+    let
+        headerHelper =
+            if isChw then
+                emptyNode
 
             else
-                ( 0, 1 )
+                viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
 
-        NextStepsSymptomsReliefGuidance ->
+        derivedSection =
             let
-                form =
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
-                        |> healthEducationFormWithDefault data.healthEducationForm
+                healthEducationSection =
+                    ( [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
+                      , viewBoolInput
+                            language
+                            form.healthEducation
+                            SetHealthEducation
+                            "health-education"
+                            Nothing
+                      ]
+                    , [ form.healthEducation ]
+                    )
             in
-            ( taskCompleted form.educationForDiagnosis
-            , 1
-            )
+            case form.patientIsolated of
+                Just True ->
+                    let
+                        signOnDoorSection =
+                            if isChw then
+                                ( [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
+                                  , viewBoolInput
+                                        language
+                                        form.signOnDoor
+                                        SetSignOnDoor
+                                        "sign-on-door"
+                                        Nothing
+                                  ]
+                                , [ form.signOnDoor ]
+                                )
+
+                            else
+                                ( [], [] )
+                    in
+                    concatInputsAndTasksSections [ signOnDoorSection, healthEducationSection ]
+
+                Just False ->
+                    concatInputsAndTasksSections
+                        [ ( [ viewQuestionLabel language Translate.WhyNot
+                            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+                            , viewCheckBoxMultipleSelectInput language
+                                [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
+                                []
+                                (form.reasonsForNotIsolating |> Maybe.withDefault [])
+                                Nothing
+                                SetReasonForNotIsolating
+                                Translate.ReasonForNotIsolating
+                            ]
+                          , [ maybeToBoolTask form.reasonsForNotIsolating ]
+                          )
+                        , healthEducationSection
+                        ]
+
+                Nothing ->
+                    ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ headerHelper
+            , viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
+            , viewBoolInput
+                language
+                form.patientIsolated
+                SetPatientIsolated
+                "patient-isolated"
+                Nothing
+            ]
+          , [ form.patientIsolated ]
+          )
+        , derivedSection
+        ]
+
+
+hcContactFormInutsAndTasks : Language -> NominalDate -> Bool -> HCContactForm -> ( List (Html Msg), List (Maybe Bool) )
+hcContactFormInutsAndTasks language currentDate initialEncounter form =
+    let
+        derivedSection =
+            case form.contactedHC of
+                Just True ->
+                    let
+                        hcRespnonseSection =
+                            let
+                                hcRespnonseOptions =
+                                    if initialEncounter then
+                                        [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
+
+                                    else
+                                        [ SendAmbulance, ComeToHealthCenter ]
+                            in
+                            ( [ viewQuestionLabel language Translate.HCResponseQuestion
+                              , viewCheckBoxSelectCustomInput language
+                                    hcRespnonseOptions
+                                    []
+                                    form.recommendations
+                                    SetHCRecommendation
+                                    (viewHCRecommendation language)
+                              ]
+                            , [ maybeToBoolTask form.recommendations ]
+                            )
+
+                        hcRespnonsePeriodSection =
+                            ( [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
+                              , viewCheckBoxSelectInput language
+                                    [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                    []
+                                    form.responsePeriod
+                                    SetResponsePeriod
+                                    Translate.ResponsePeriod
+                              ]
+                            , [ maybeToBoolTask form.responsePeriod ]
+                            )
+
+                        sendAmbulanceSection =
+                            Maybe.map
+                                (\recommendations ->
+                                    if recommendations == SendAmbulance then
+                                        ( [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
+                                          , viewCheckBoxSelectInput language
+                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
+                                                []
+                                                form.ambulanceArrivalPeriod
+                                                SetAmbulanceArrivalPeriod
+                                                Translate.ResponsePeriod
+                                          ]
+                                        , [ maybeToBoolTask form.ambulanceArrivalPeriod ]
+                                        )
+
+                                    else
+                                        ( [], [] )
+                                )
+                                form.recommendations
+                                |> Maybe.withDefault ( [], [] )
+                    in
+                    concatInputsAndTasksSections
+                        [ hcRespnonseSection, hcRespnonsePeriodSection, sendAmbulanceSection ]
+
+                _ ->
+                    ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ viewQuestionLabel language Translate.ContactedHCQuestion
+            , viewBoolInput
+                language
+                form.contactedHC
+                SetContactedHC
+                "contacted-hc"
+                Nothing
+            ]
+          , [ form.contactedHC ]
+          )
+        , derivedSection
+        ]
+
+
+viewHCRecommendation : Language -> HCRecommendation -> Html any
+viewHCRecommendation language recommendation =
+    let
+        riskLevel =
+            case recommendation of
+                SendAmbulance ->
+                    Translate.HighRiskCase
+
+                HomeIsolation ->
+                    Translate.HighRiskCase
+
+                ComeToHealthCenter ->
+                    Translate.LowRiskCase
+
+                ChwMonitoring ->
+                    Translate.LowRiskCase
+
+                HCRecommendationNotApplicable ->
+                    Translate.LowRiskCase
+    in
+    label []
+        [ text <| translate language Translate.HealthCenterDetermined
+        , span [ class "strong" ] [ text <| translate language riskLevel ]
+        , text <| translate language Translate.AndSentence
+        , span [ class "strong" ] [ text <| translate language <| Translate.HCRecommendation recommendation ]
+        ]
+
+
+call114FormInutsAndTasks : Language -> NominalDate -> Call114Form -> ( List (Html Msg), List (Maybe Bool) )
+call114FormInutsAndTasks language currentDate form =
+    let
+        derivedSection =
+            Maybe.map
+                (\called114 ->
+                    if called114 then
+                        let
+                            recommendation114Section =
+                                ( [ viewQuestionLabel language Translate.WhatWasTheirResponse
+                                  , viewCheckBoxSelectInput language
+                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherRecommendation114 ]
+                                        []
+                                        form.recommendation114
+                                        SetRecommendation114
+                                        Translate.Recommendation114
+                                  ]
+                                , [ maybeToBoolTask form.recommendation114 ]
+                                )
+
+                            derivedSiteSection =
+                                if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
+                                    let
+                                        contactedSiteSection =
+                                            ( [ viewQuestionLabel language Translate.ContactedRecommendedSiteQuestion
+                                              , viewBoolInput
+                                                    language
+                                                    form.contactedSite
+                                                    SetContactedSite
+                                                    "contacted-site"
+                                                    Nothing
+                                              ]
+                                            , [ form.contactedSite ]
+                                            )
+
+                                        recommndationSiteSection =
+                                            Maybe.map
+                                                (\contactedSite ->
+                                                    if contactedSite then
+                                                        ( [ viewQuestionLabel language Translate.WhatWasTheirResponse
+                                                          , viewCheckBoxSelectInput language
+                                                                [ TeamComeToVillage, SendToSiteWithForm, OtherRecommendationSite ]
+                                                                []
+                                                                form.recommendationSite
+                                                                SetRecommendationSite
+                                                                Translate.RecommendationSite
+                                                          ]
+                                                        , [ maybeToBoolTask form.recommendationSite ]
+                                                        )
+
+                                                    else
+                                                        ( [ viewQuestionLabel language Translate.WhyNot
+                                                          , viewCheckBoxSelectInput language
+                                                                [ NoneSentWithForm, NonePatientRefused, NoneOtherRecommendationSite ]
+                                                                []
+                                                                form.recommendationSite
+                                                                SetRecommendationSite
+                                                                Translate.RecommendationSite
+                                                          ]
+                                                        , [ maybeToBoolTask form.recommendationSite ]
+                                                        )
+                                                )
+                                                form.contactedSite
+                                                |> Maybe.withDefault ( [], [] )
+                                    in
+                                    concatInputsAndTasksSections [ contactedSiteSection, recommndationSiteSection ]
+
+                                else
+                                    ( [], [] )
+                        in
+                        concatInputsAndTasksSections [ recommendation114Section, derivedSiteSection ]
+
+                    else
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ]
+                                []
+                                form.recommendation114
+                                SetRecommendation114
+                                Translate.Recommendation114
+                          ]
+                        , [ maybeToBoolTask form.recommendation114 ]
+                        )
+                )
+                form.called114
+                |> Maybe.withDefault ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ viewCustomLabel language Translate.Call114 "" "helper call-114"
+            , div
+                [ class "review-case-wrapper"
+                , onClick <| SetPertinentSymptomsPopupState True
+                ]
+                [ viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper review-case"
+                , img [ src "assets/images/icon-review.png" ] []
+                ]
+            , viewQuestionLabel language Translate.Called114Question
+            , viewBoolInput
+                language
+                form.called114
+                SetCalled114
+                "called-114"
+                Nothing
+            ]
+          , [ form.called114 ]
+          )
+        , derivedSection
+        ]
 
 
 ongoingTreatmentTasksCompletedFromTotal : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )

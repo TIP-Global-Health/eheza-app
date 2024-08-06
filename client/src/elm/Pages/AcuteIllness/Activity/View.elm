@@ -4,7 +4,6 @@ module Pages.AcuteIllness.Activity.View exposing
     , viewAdministeredMedicationLabel
     , viewAdministeredMedicationQuestion
     , viewAmoxicillinAdministrationInstructions
-    , viewHCRecommendation
     , viewOralSolutionPrescription
     , viewParacetamolAdministrationInstructions
     , viewTabletsPrescription
@@ -1189,34 +1188,6 @@ viewExposureForm language currentDate form =
         inputs
 
 
-viewHCRecommendation : Language -> HCRecommendation -> Html any
-viewHCRecommendation language recommendation =
-    let
-        riskLevel =
-            case recommendation of
-                SendAmbulance ->
-                    Translate.HighRiskCase
-
-                HomeIsolation ->
-                    Translate.HighRiskCase
-
-                ComeToHealthCenter ->
-                    Translate.LowRiskCase
-
-                ChwMonitoring ->
-                    Translate.LowRiskCase
-
-                HCRecommendationNotApplicable ->
-                    Translate.LowRiskCase
-    in
-    label []
-        [ text <| translate language Translate.HealthCenterDetermined
-        , span [ class "strong" ] [ text <| translate language riskLevel ]
-        , text <| translate language Translate.AndSentence
-        , span [ class "strong" ] [ text <| translate language <| Translate.HCRecommendation recommendation ]
-        ]
-
-
 viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
 viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
@@ -1410,43 +1381,46 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal isChw assembled.initialEncounter diagnosis measurements data task )
+            List.map
+                (\task ->
+                    ( task
+                    , nextStepsTasksCompletedFromTotal currentDate
+                        isChw
+                        assembled.initialEncounter
+                        diagnosis
+                        measurements
+                        data
+                        task
                     )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         call114Form =
-            measurements.call114
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc measurements.call114
                 |> call114FormWithDefault data.call114Form
 
         viewForm =
             case activeTask of
                 Just NextStepsIsolation ->
-                    measurements.isolation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.isolation
                         |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate isChw measurements
+                        |> viewIsolationForm language currentDate isChw
 
                 Just NextStepsContactHC ->
-                    measurements.hcContact
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.hcContact
                         |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate assembled.initialEncounter measurements
+                        |> viewHCContactForm language currentDate assembled.initialEncounter
 
                 Just NextStepsCall114 ->
-                    viewCall114Form language currentDate measurements call114Form
+                    viewCall114Form language currentDate call114Form
 
                 Just NextStepsMedicationDistribution ->
-                    measurements.medicationDistribution
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> viewMedicationDistributionForm language currentDate person diagnosis
 
@@ -1459,8 +1433,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                             else
                                 viewSendToHospitalForm
                     in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityFunc language
                             currentDate
@@ -1470,26 +1443,22 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                             Nothing
 
                 Just NextStepsHealthEducation ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
 
                 Just NextStepsFollowUp ->
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
                         |> viewFollowUpForm language currentDate isChw
 
                 Just NextStepsContactTracing ->
-                    measurements.contactsTracing
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.contactsTracing
                         |> contactsTracingFormWithDefault data.contactsTracingForm
                         |> viewContactsTracingForm language currentDate site geoInfo db contactsTracingFinished
 
                 Just NextStepsSymptomsReliefGuidance ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewSymptomsReliefForm language currentDate diagnosis
 
@@ -1683,252 +1652,34 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
     ]
 
 
-viewIsolationForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate isChw measurements form =
+viewIsolationForm : Language -> NominalDate -> Bool -> IsolationForm -> Html Msg
+viewIsolationForm language currentDate isChw form =
     let
-        headerHelper =
-            if isChw then
-                emptyNode
-
-            else
-                viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
-
-        patientIsolatedInput =
-            [ viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
-            , viewBoolInput
-                language
-                form.patientIsolated
-                SetPatientIsolated
-                "patient-isolated"
-                Nothing
-            ]
-
-        derivedInputs =
-            case form.patientIsolated of
-                Just True ->
-                    let
-                        signOnDoorInput =
-                            if isChw then
-                                [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
-                                , viewBoolInput
-                                    language
-                                    form.signOnDoor
-                                    SetSignOnDoor
-                                    "sign-on-door"
-                                    Nothing
-                                ]
-
-                            else
-                                []
-                    in
-                    signOnDoorInput ++ healthEducationInput
-
-                Just False ->
-                    [ viewQuestionLabel language Translate.WhyNot
-                    , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-                    , viewCheckBoxMultipleSelectInput language
-                        [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
-                        []
-                        (form.reasonsForNotIsolating |> Maybe.withDefault [])
-                        Nothing
-                        SetReasonForNotIsolating
-                        Translate.ReasonForNotIsolating
-                    ]
-                        ++ healthEducationInput
-
-                Nothing ->
-                    []
-
-        healthEducationInput =
-            [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
-            , viewBoolInput
-                language
-                form.healthEducation
-                SetHealthEducation
-                "health-education"
-                Nothing
-            ]
+        ( inputs, _ ) =
+            isolationFormInutsAndTasks language currentDate isChw form
     in
-    (headerHelper :: patientIsolatedInput)
-        ++ derivedInputs
-        |> div [ class "ui form next-steps isolation" ]
+    div [ class "ui form next-steps isolation" ]
+        inputs
 
 
-viewHCContactForm : Language -> NominalDate -> Bool -> AcuteIllnessMeasurements -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate initialEncounter measurements form =
+viewHCContactForm : Language -> NominalDate -> Bool -> HCContactForm -> Html Msg
+viewHCContactForm language currentDate initialEncounter form =
     let
-        contactedHCInput =
-            [ viewQuestionLabel language Translate.ContactedHCQuestion
-            , viewBoolInput
-                language
-                form.contactedHC
-                SetContactedHC
-                "contacted-hc"
-                Nothing
-            ]
-
-        derivedInputs =
-            case form.contactedHC of
-                Just True ->
-                    let
-                        hcRespnonseOptions =
-                            if initialEncounter then
-                                [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
-
-                            else
-                                [ SendAmbulance, ComeToHealthCenter ]
-
-                        hcRespnonseInput =
-                            [ viewQuestionLabel language Translate.HCResponseQuestion
-                            , viewCheckBoxSelectCustomInput language
-                                hcRespnonseOptions
-                                []
-                                form.recommendations
-                                SetHCRecommendation
-                                (viewHCRecommendation language)
-                            ]
-
-                        hcRespnonsePeriodInput =
-                            [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
-                            , viewCheckBoxSelectInput language
-                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                []
-                                form.responsePeriod
-                                SetResponsePeriod
-                                Translate.ResponsePeriod
-                            ]
-
-                        derivedInput =
-                            form.recommendations
-                                |> Maybe.map
-                                    (\recommendations ->
-                                        if recommendations == SendAmbulance then
-                                            [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
-                                            , viewCheckBoxSelectInput language
-                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                                []
-                                                form.ambulanceArrivalPeriod
-                                                SetAmbulanceArrivalPeriod
-                                                Translate.ResponsePeriod
-                                            ]
-
-                                        else
-                                            []
-                                    )
-                                |> Maybe.withDefault []
-                    in
-                    hcRespnonseInput ++ hcRespnonsePeriodInput ++ derivedInput
-
-                _ ->
-                    []
+        ( inputs, _ ) =
+            hcContactFormInutsAndTasks language currentDate initialEncounter form
     in
-    contactedHCInput
-        ++ derivedInputs
-        |> div [ class "ui form exposure hc-contact" ]
+    div [ class "ui form exposure hc-contact" ]
+        inputs
 
 
-viewCall114Form : Language -> NominalDate -> AcuteIllnessMeasurements -> Call114Form -> Html Msg
-viewCall114Form language currentDate measurements form =
+viewCall114Form : Language -> NominalDate -> Call114Form -> Html Msg
+viewCall114Form language currentDate form =
     let
-        header =
-            [ viewCustomLabel language Translate.Call114 "" "helper call-114"
-            , div
-                [ class "review-case-wrapper"
-                , onClick <| SetPertinentSymptomsPopupState True
-                ]
-                [ viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper review-case"
-                , img [ src "assets/images/icon-review.png" ] []
-                ]
-            ]
-
-        called114Input =
-            [ viewQuestionLabel language Translate.Called114Question
-            , viewBoolInput
-                language
-                form.called114
-                SetCalled114
-                "called-114"
-                Nothing
-            ]
-
-        derivedInputs =
-            form.called114
-                |> Maybe.map
-                    (\called114 ->
-                        if called114 then
-                            let
-                                recommendation114Input =
-                                    [ viewQuestionLabel language Translate.WhatWasTheirResponse
-                                    , viewCheckBoxSelectInput language
-                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherRecommendation114 ]
-                                        []
-                                        form.recommendation114
-                                        SetRecommendation114
-                                        Translate.Recommendation114
-                                    ]
-
-                                derivedSiteInputs =
-                                    if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
-                                        let
-                                            contactedSiteInput =
-                                                [ viewQuestionLabel language Translate.ContactedRecommendedSiteQuestion
-                                                , viewBoolInput
-                                                    language
-                                                    form.contactedSite
-                                                    SetContactedSite
-                                                    "contacted-site"
-                                                    Nothing
-                                                ]
-
-                                            recommndationSiteInput =
-                                                form.contactedSite
-                                                    |> Maybe.map
-                                                        (\contactedSite ->
-                                                            if contactedSite then
-                                                                [ viewQuestionLabel language Translate.WhatWasTheirResponse
-                                                                , viewCheckBoxSelectInput language
-                                                                    [ TeamComeToVillage, SendToSiteWithForm, OtherRecommendationSite ]
-                                                                    []
-                                                                    form.recommendationSite
-                                                                    SetRecommendationSite
-                                                                    Translate.RecommendationSite
-                                                                ]
-
-                                                            else
-                                                                [ viewQuestionLabel language Translate.WhyNot
-                                                                , viewCheckBoxSelectInput language
-                                                                    [ NoneSentWithForm, NonePatientRefused, NoneOtherRecommendationSite ]
-                                                                    []
-                                                                    form.recommendationSite
-                                                                    SetRecommendationSite
-                                                                    Translate.RecommendationSite
-                                                                ]
-                                                        )
-                                                    |> Maybe.withDefault []
-                                        in
-                                        contactedSiteInput ++ recommndationSiteInput
-
-                                    else
-                                        []
-                            in
-                            recommendation114Input ++ derivedSiteInputs
-
-                        else
-                            [ viewQuestionLabel language Translate.WhyNot
-                            , viewCheckBoxSelectInput language
-                                [ NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ]
-                                []
-                                form.recommendation114
-                                SetRecommendation114
-                                Translate.Recommendation114
-                            ]
-                    )
-                |> Maybe.withDefault []
+        ( inputs, _ ) =
+            call114FormInutsAndTasks language currentDate form
     in
-    header
-        ++ called114Input
-        ++ derivedInputs
-        |> div [ class "ui form next-steps call-114" ]
+    div [ class "ui form next-steps call-114" ]
+        inputs
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
