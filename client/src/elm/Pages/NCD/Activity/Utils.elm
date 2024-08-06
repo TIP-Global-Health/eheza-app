@@ -21,6 +21,7 @@ import Measurement.Utils
         , resolveLabTestDate
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Model exposing (..)
@@ -284,36 +285,16 @@ examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> Examination
 examinationTasksCompletedFromTotal currentDate assembled data task =
     case task of
         TaskVitals ->
-            Maybe.map
-                (\birthDate ->
-                    let
-                        form =
-                            assembled.measurements.vitals
-                                |> getMeasurementValueFunc
-                                |> vitalsFormWithDefault data.vitalsForm
+            let
+                formConfig =
+                    generateVitalsFormConfig assembled
 
-                        ageYears =
-                            Gizra.NominalDate.diffYears birthDate currentDate
-
-                        ( ageDependentInputsCompleted, ageDependentInputsActive ) =
-                            if ageYears < 12 then
-                                ( 0, 0 )
-
-                            else
-                                ( taskCompleted form.sysBloodPressure
-                                    + taskCompleted form.diaBloodPressure
-                                , 2
-                                )
-                    in
-                    ( taskCompleted form.heartRate
-                        + taskCompleted form.respiratoryRate
-                        + taskCompleted form.bodyTemperature
-                        + ageDependentInputsCompleted
-                    , 3 + ageDependentInputsActive
-                    )
-                )
-                assembled.person.birthDate
-                |> Maybe.withDefault ( 0, 0 )
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.vitals
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormInputsAndTasks English currentDate formConfig
+            in
+            resolveTasksCompletedFromTotal tasks
 
         TaskCoreExam ->
             let
@@ -341,6 +322,26 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                   )
             , 7
             )
+
+
+generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig assembled =
+    { setIntInputMsg = SetVitalsIntInput
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+    , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+    , heartRatePreviousValue =
+        resolvePreviousMaybeValue assembled .vitals .heartRate
+            |> Maybe.map toFloat
+    , respiratoryRatePreviousValue =
+        resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.map toFloat
+    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , birthDate = assembled.person.birthDate
+    , formClass = "vitals"
+    , mode = VitalsFormFull
+    , invokationModule = InvokationModuleNCD
+    }
 
 
 coMorbiditiesFormWithDefault : CoMorbiditiesForm -> Maybe NCDCoMorbiditiesValue -> CoMorbiditiesForm

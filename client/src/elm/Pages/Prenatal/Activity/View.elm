@@ -952,7 +952,7 @@ viewExaminationContent language currentDate assembled data =
                             )
 
                         _ ->
-                            ( task, examinationTasksCompletedFromTotal assembled data task )
+                            ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -3255,22 +3255,7 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         formConfig =
-            { setIntInputMsg = SetVitalsIntInput
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
-            , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
-            , heartRatePreviousValue =
-                resolvePreviousMaybeValue assembled .vitals .heartRate
-                    |> Maybe.map toFloat
-            , respiratoryRatePreviousValue =
-                resolvePreviousValue assembled .vitals .respiratoryRate
-                    |> Maybe.map toFloat
-            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
-            , birthDate = assembled.person.birthDate
-            , formClass = "examination vitals"
-            , mode = VitalsFormFull
-            , invokationModule = InvokationModulePrenatal
-            }
+            generateVitalsFormConfig assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 

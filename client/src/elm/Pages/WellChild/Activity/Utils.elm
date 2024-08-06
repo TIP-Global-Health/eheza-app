@@ -16,11 +16,22 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue, ifTrue, taskAnyCompleted, taskCompleted, valueConsideringIsDirtyField)
+import Measurement.View exposing (vitalsFormInputsAndTasks)
+import Pages.Utils
+    exposing
+        ( ifEverySetEmpty
+        , ifNullableTrue
+        , ifTrue
+        , resolveTasksCompletedFromTotal
+        , taskAnyCompleted
+        , taskCompleted
+        , valueConsideringIsDirtyField
+        )
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site(..), SiteFeature)
+import Translate.Model exposing (Language(..))
 import ZScore.Model
 
 
@@ -605,8 +616,12 @@ toHeadCircumferenceValue form =
         |> andMap notes
 
 
-dangerSignsTasksCompletedFromTotal : WellChildMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
-dangerSignsTasksCompletedFromTotal measurements data task =
+dangerSignsTasksCompletedFromTotal : NominalDate -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal currentDate assembled data task =
+    let
+        measurements =
+            assembled.measurements
+    in
     case task of
         TaskSymptomsReview ->
             let
@@ -621,14 +636,33 @@ dangerSignsTasksCompletedFromTotal measurements data task =
 
         TaskVitals ->
             let
-                form =
-                    measurements.vitals
-                        |> getMeasurementValueFunc
+                formConfig =
+                    generateVitalsFormConfig assembled
+
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormInputsAndTasks English currentDate formConfig
             in
-            ( taskCompleted form.respiratoryRate + taskCompleted form.bodyTemperature
-            , 2
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig assembled =
+    { setIntInputMsg = SetVitalsIntInput
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = Nothing
+    , diaBloodPressurePreviousValue = Nothing
+    , heartRatePreviousValue = Nothing
+    , respiratoryRatePreviousValue =
+        resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.map toFloat
+    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , birthDate = assembled.person.birthDate
+    , formClass = "vitals"
+    , mode = VitalsFormBasic
+    , invokationModule = InvokationModuleWellChild
+    }
 
 
 immunisationTaskCompleted : NominalDate -> Site -> Bool -> AssembledData -> ModelIndexedDb -> Measurement.Model.ImmunisationTask -> Bool

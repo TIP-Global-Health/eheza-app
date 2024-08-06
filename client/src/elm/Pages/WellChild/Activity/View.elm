@@ -637,7 +637,7 @@ viewDangerSignsContent language currentDate assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -707,20 +707,7 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         formConfig =
-            { setIntInputMsg = SetVitalsIntInput
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = Nothing
-            , diaBloodPressurePreviousValue = Nothing
-            , heartRatePreviousValue = Nothing
-            , respiratoryRatePreviousValue =
-                resolvePreviousValue assembled .vitals .respiratoryRate
-                    |> Maybe.map toFloat
-            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
-            , birthDate = assembled.person.birthDate
-            , formClass = "vitals"
-            , mode = VitalsFormBasic
-            , invokationModule = InvokationModuleWellChild
-            }
+            generateVitalsFormConfig assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 

@@ -24,7 +24,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
@@ -36,7 +36,7 @@ import Measurement.Utils
         , vaccineDoseToComparable
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
 import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, getAllActivities)
@@ -4188,26 +4188,20 @@ toPregnancyTestValue form =
     form.pregnancyTestResult
 
 
-examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal assembled data task =
+examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal currentDate assembled data task =
     case task of
         Vitals ->
             let
-                form =
-                    assembled.measurements.vitals
-                        |> getMeasurementValueFunc
+                formConfig =
+                    generateVitalsFormConfig assembled
+
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormInputsAndTasks English currentDate formConfig
             in
-            ( taskAllCompleted [ form.sysBloodPressure, form.diaBloodPressure ]
-                + ([ Maybe.map (always ()) form.heartRate
-                   , Maybe.map (always ()) form.respiratoryRate
-                   , Maybe.map (always ()) form.bodyTemperature
-                   ]
-                    |> List.map taskCompleted
-                    |> List.sum
-                  )
-            , 4
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NutritionAssessment ->
             let
@@ -4299,6 +4293,26 @@ examinationTasksCompletedFromTotal assembled data task =
                     guExamFormInputsAndTasks English assembled form
             in
             resolveTasksCompletedFromTotal tasks
+
+
+generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig assembled =
+    { setIntInputMsg = SetVitalsIntInput
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+    , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+    , heartRatePreviousValue =
+        resolvePreviousMaybeValue assembled .vitals .heartRate
+            |> Maybe.map toFloat
+    , respiratoryRatePreviousValue =
+        resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.map toFloat
+    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , birthDate = assembled.person.birthDate
+    , formClass = "examination vitals"
+    , mode = VitalsFormFull
+    , invokationModule = InvokationModulePrenatal
+    }
 
 
 fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm

@@ -9,7 +9,14 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust, or, unwrap)
-import Measurement.Model exposing (LaboratoryTask(..))
+import Measurement.Model
+    exposing
+        ( InvokationModule(..)
+        , LaboratoryTask(..)
+        , VitalsForm
+        , VitalsFormConfig
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils
     exposing
         ( bloodSmearResultSet
@@ -18,6 +25,7 @@ import Measurement.Utils
         , testPerformedByExecutionNote
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm)
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Types exposing (..)
@@ -503,19 +511,38 @@ examinationMeasurementTaken assembled task =
                 |> Maybe.withDefault False
 
 
-examinationTasksCompletedFromTotal : AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
-examinationTasksCompletedFromTotal assembled data task =
+examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> ExaminationData -> ExaminationTask -> ( Int, Int )
+examinationTasksCompletedFromTotal currentDate assembled data task =
     case task of
         ExaminationVitals ->
             let
                 form =
-                    assembled.measurements.vitals
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
+
+                formConfig =
+                    generateVitalsFormConfig assembled form
+
+                ( _, tasks ) =
+                    vitalsFormInputsAndTasks English currentDate formConfig form
             in
-            ( taskAllCompleted [ form.sysRepeated, form.diaRepeated ]
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+generateVitalsFormConfig : AssembledData -> VitalsForm -> VitalsFormConfig Msg
+generateVitalsFormConfig assembled form =
+    { setIntInputMsg = \_ _ -> NoOp
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = form.sysBloodPressure
+    , diaBloodPressurePreviousValue = form.diaBloodPressure
+    , heartRatePreviousValue = Nothing
+    , respiratoryRatePreviousValue = Nothing
+    , bodyTemperaturePreviousValue = Nothing
+    , birthDate = assembled.person.birthDate
+    , formClass = "examination vitals"
+    , mode = VitalsFormRepeated
+    , invokationModule = InvokationModulePrenatal
+    }
 
 
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )

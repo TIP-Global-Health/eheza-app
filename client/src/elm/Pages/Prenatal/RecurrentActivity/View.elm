@@ -571,16 +571,15 @@ viewExaminationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, examinationTasksCompletedFromTotal assembled data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
@@ -640,18 +639,7 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         formConfig =
-            { setIntInputMsg = \_ _ -> NoOp
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = form.sysBloodPressure
-            , diaBloodPressurePreviousValue = form.diaBloodPressure
-            , heartRatePreviousValue = Nothing
-            , respiratoryRatePreviousValue = Nothing
-            , bodyTemperaturePreviousValue = Nothing
-            , birthDate = assembled.person.birthDate
-            , formClass = "examination vitals"
-            , mode = VitalsFormRepeated
-            , invokationModule = InvokationModulePrenatal
-            }
+            generateVitalsFormConfig assembled form
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
