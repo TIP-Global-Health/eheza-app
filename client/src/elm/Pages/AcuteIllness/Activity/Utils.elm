@@ -586,30 +586,51 @@ covidTestingFormInputsAndTasks language currentDate person form =
         ]
 
 
-exposureTasksCompletedFromTotal : AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
-exposureTasksCompletedFromTotal measurements data task =
-    case task of
-        ExposureTravel ->
-            let
-                form =
-                    measurements.travelHistory
-                        |> getMeasurementValueFunc
+exposureTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
+exposureTasksCompletedFromTotal currentDate measurements data task =
+    let
+        ( _, tasks ) =
+            case task of
+                ExposureTravel ->
+                    getMeasurementValueFunc measurements.travelHistory
                         |> travelHistoryFormWithDefault data.travelHistoryForm
-            in
-            ( taskCompleted form.covid19Country
-            , 1
-            )
+                        |> travelHistoryFormInutsAndTasks English currentDate
 
-        ExposureExposure ->
-            let
-                form =
-                    measurements.exposure
-                        |> getMeasurementValueFunc
+                ExposureExposure ->
+                    getMeasurementValueFunc measurements.exposure
                         |> exposureFormWithDefault data.exposureForm
-            in
-            ( taskCompleted form.covid19Symptoms
-            , 1
-            )
+                        |> exposureFormInutsAndTasks English currentDate
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+travelHistoryFormInutsAndTasks : Language -> NominalDate -> TravelHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+travelHistoryFormInutsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion
+      , viewBoolInput
+            language
+            form.covid19Country
+            SetCovid19Country
+            "covid19-country"
+            Nothing
+      ]
+    , [ form.covid19Country ]
+    )
+
+
+exposureFormInutsAndTasks : Language -> NominalDate -> ExposureForm -> ( List (Html Msg), List (Maybe Bool) )
+exposureFormInutsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion
+      , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
+      , viewBoolInput
+            language
+            form.covid19Symptoms
+            SetCovid19Symptoms
+            "covid19-symptoms"
+            Nothing
+      ]
+    , [ form.covid19Symptoms ]
+    )
 
 
 treatmentTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )

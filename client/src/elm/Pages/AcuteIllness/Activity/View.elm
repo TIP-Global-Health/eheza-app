@@ -523,6 +523,9 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
             Maybe.map
                 (\task ->
                     let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
                         saveMsg =
                             case task of
                                 SymptomsGeneral ->
@@ -533,9 +536,6 @@ viewAcuteIllnessSymptomsContent language currentDate id ( personId, measurements
 
                                 SymptomsGI ->
                                     SaveSymptomsGI personId measurements.symptomsGI nextTask
-
-                        nextTask =
-                            resolveNextTask task tasksCompletedFromTotalDict tasks
                     in
                     div [ class "actions symptoms" ]
                         [ button
@@ -821,6 +821,9 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                             personId =
                                 assembled.participant.person
 
+                            nextTask =
+                                resolveNextTask task tasksCompletedFromTotalDict tasks
+
                             saveMsg =
                                 case task of
                                     PhysicalExamVitals ->
@@ -837,9 +840,6 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
 
                                     PhysicalExamNutrition ->
                                         SaveNutrition personId measurements.nutrition nextTask
-
-                            nextTask =
-                                resolveNextTask task tasksCompletedFromTotalDict tasks
                         in
                         div [ class "actions symptoms" ]
                             [ button
@@ -984,6 +984,9 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
             Maybe.map
                 (\task ->
                     let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
                         saveMsg =
                             case task of
                                 LaboratoryMalariaTesting ->
@@ -1011,9 +1014,6 @@ viewAcuteIllnessLaboratory language currentDate id isChw assembled data =
                                                     Nothing
                                     in
                                     SaveCovidTesting assembled.participant.person assembled.measurements.covidTesting nextTask_
-
-                        nextTask =
-                            resolveNextTask task tasksCompletedFromTotalDict tasks
                     in
                     div [ class "actions malaria-testing" ]
                         [ button
@@ -1105,7 +1105,7 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, exposureTasksCompletedFromTotal measurements data task )
+                    ( task, exposureTasksCompletedFromTotal currentDate measurements data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -1117,16 +1117,14 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
         viewForm =
             case activeTask of
                 Just ExposureTravel ->
-                    measurements.travelHistory
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.travelHistory
                         |> travelHistoryFormWithDefault data.travelHistoryForm
-                        |> viewTravelHistoryForm language currentDate measurements
+                        |> viewTravelHistoryForm language currentDate
 
                 Just ExposureExposure ->
-                    measurements.exposure
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.exposure
                         |> exposureFormWithDefault data.exposureForm
-                        |> viewExposureForm language currentDate measurements
+                        |> viewExposureForm language currentDate
 
                 _ ->
                     emptyNode
@@ -1171,31 +1169,24 @@ viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data
     ]
 
 
-viewTravelHistoryForm : Language -> NominalDate -> AcuteIllnessMeasurements -> TravelHistoryForm -> Html Msg
-viewTravelHistoryForm language currentDate measurements form =
+viewTravelHistoryForm : Language -> NominalDate -> TravelHistoryForm -> Html Msg
+viewTravelHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            travelHistoryFormInutsAndTasks language currentDate form
+    in
     div [ class "ui form exposure travel-history" ]
-        [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion
-        , viewBoolInput
-            language
-            form.covid19Country
-            SetCovid19Country
-            "covid19-country"
-            Nothing
-        ]
+        inputs
 
 
-viewExposureForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ExposureForm -> Html Msg
-viewExposureForm language currentDate measurements form =
+viewExposureForm : Language -> NominalDate -> ExposureForm -> Html Msg
+viewExposureForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            exposureFormInutsAndTasks language currentDate form
+    in
     div [ class "ui form exposure" ]
-        [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion
-        , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
-        , viewBoolInput
-            language
-            form.covid19Symptoms
-            SetCovid19Symptoms
-            "covid19-symptoms"
-            Nothing
-        ]
+        inputs
 
 
 viewHCRecommendation : Language -> HCRecommendation -> Html any
