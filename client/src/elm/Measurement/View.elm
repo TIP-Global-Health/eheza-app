@@ -1222,6 +1222,32 @@ viewSendToFacilityForm :
     -> Html msg
 viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
+        ( inputs, _ ) =
+            sendToFacilityInputsAndTasks language
+                currentDate
+                facility
+                setReferToHealthCenterMsg
+                setReasonForNonReferralMsg
+                setHandReferralFormMsg
+                setAccompanyToHCMsg
+                form
+    in
+    div [ class "ui form send-to-hc" ]
+        inputs
+
+
+sendToFacilityInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ReferralFacility
+    -> (Bool -> msg)
+    -> (ReasonForNonReferral -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> ( List (Html msg), List (Maybe Bool) )
+sendToFacilityInputsAndTasks language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+    let
         headerHelper =
             case facility of
                 FacilityHospital ->
@@ -1233,76 +1259,88 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
         sendToHCSection =
             let
                 sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
+                    Maybe.withDefault True form.referToHealthCenter
 
-                reasonForNotSendingToHCInput =
+                reasonForNotSendingToHCSection =
                     if not sentToHealthCenter then
-                        [ div [ class "why-not" ]
-                            [ viewQuestionLabel language Translate.WhyNot
-                            , viewCheckBoxSelectInput language
-                                [ ClientRefused
-                                , NoAmbulance
-                                , ClientUnableToAffordFees
-                                , ReasonForNonReferralNotIndicated
-                                , ReasonForNonReferralOther
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ ClientRefused
+                                    , NoAmbulance
+                                    , ClientUnableToAffordFees
+                                    , ReasonForNonReferralNotIndicated
+                                    , ReasonForNonReferralOther
+                                    ]
+                                    []
+                                    form.reasonForNotSendingToHC
+                                    setReasonForNonReferralMsg
+                                    Translate.ReasonForNonReferral
                                 ]
-                                []
-                                form.reasonForNotSendingToHC
-                                setReasonForNonReferralMsg
-                                Translate.ReasonForNonReferral
-                            ]
-                        ]
+                          ]
+                        , [ maybeToBoolTask form.reasonForNotSendingToHC ]
+                        )
 
                     else
-                        []
+                        ( [], [] )
             in
-            [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                setReferToHealthCenterMsg
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
+            concatInputsAndTasksSections
+                [ ( [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
+                    , viewBoolInput
+                        language
+                        form.referToHealthCenter
+                        setReferToHealthCenterMsg
+                        "refer-to-hc"
+                        Nothing
+                    ]
+                  , [ form.referToHealthCenter ]
+                  )
+                , reasonForNotSendingToHCSection
+                ]
 
         handReferralFormSection =
-            [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-            , viewBoolInput
-                language
-                form.handReferralForm
-                setHandReferralFormMsg
-                "hand-referral-form"
-                Nothing
-            ]
+            ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+              , viewBoolInput
+                    language
+                    form.handReferralForm
+                    setHandReferralFormMsg
+                    "hand-referral-form"
+                    Nothing
+              ]
+            , [ form.handReferralForm ]
+            )
 
         accompanyToHCSection =
             Maybe.map
                 (\msg ->
-                    [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
-                    , viewBoolInput
-                        language
-                        form.accompanyToHealthCenter
-                        msg
-                        "accompany-to-hc"
-                        Nothing
-                    ]
+                    ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
+                      , viewBoolInput
+                            language
+                            form.accompanyToHealthCenter
+                            msg
+                            "accompany-to-hc"
+                            Nothing
+                      ]
+                    , [ form.accompanyToHealthCenter ]
+                    )
                 )
                 setAccompanyToHCMsg
-                |> Maybe.withDefault []
+                |> Maybe.withDefault ( [], [] )
     in
-    div [ class "ui form send-to-hc" ] <|
-        headerHelper
-            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-               , div [ class "instructions" ]
-                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-                    ]
-               ]
-            ++ sendToHCSection
-            ++ handReferralFormSection
-            ++ accompanyToHCSection
+    concatInputsAndTasksSections
+        [ ( headerHelper
+                ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                   , div [ class "instructions" ]
+                        [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                        , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                        ]
+                   ]
+          , []
+          )
+        , sendToHCSection
+        , handReferralFormSection
+        , accompanyToHCSection
+        ]
 
 
 viewReferToProgramForm :
@@ -1313,27 +1351,44 @@ viewReferToProgramForm :
     -> SendToHCForm
     -> Html msg
 viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
-    div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
+    let
+        ( inputs, _ ) =
+            referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form
+    in
+    div [ class "ui form send-to-hc" ]
+        inputs
+
+
+referToProgramFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> ( List (Html msg), List (Maybe Bool) )
+referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
             [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
             , viewActionTakenLabel language Translate.EnrollToProgramAction "icon-shuttle" Nothing
             ]
-        , viewQuestionLabel language Translate.EnrollToProgramQuestion
-        , viewBoolInput
+      , viewQuestionLabel language Translate.EnrollToProgramQuestion
+      , viewBoolInput
             language
             form.enrollToNutritionProgram
             setEnrollToNutritionProgramMsg
             "enroll-to-program"
             Nothing
-        , viewQuestionLabel language Translate.ReferToProgramQuestion
-        , viewBoolInput
+      , viewQuestionLabel language Translate.ReferToProgramQuestion
+      , viewBoolInput
             language
             form.referToNutritionProgram
             setReferToNutritionProgramMsg
             "refer-to-program"
             Nothing
-        ]
+      ]
+    , [ form.enrollToNutritionProgram, form.referToNutritionProgram ]
+    )
 
 
 viewVitalsForm : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> Html msg

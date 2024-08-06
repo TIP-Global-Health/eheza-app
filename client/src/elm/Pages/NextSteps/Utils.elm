@@ -4,45 +4,38 @@ import Backend.Measurement.Model
     exposing
         ( ChildMeasurements
         , MeasurementData
+        , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
+import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (contributingFactorsFormWithDefault, healthEducationFormWithDefault, nutritionFollowUpFormWithDefault, sendToHCFormWithDefault)
+import Measurement.View exposing (sendToFacilityInputsAndTasks)
 import Pages.NextSteps.Model exposing (..)
-import Pages.Utils exposing (taskCompleted)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
+import Translate.Model exposing (Language(..))
 
 
-nextStepsTasksCompletedFromTotal : MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
+nextStepsTasksCompletedFromTotal : NominalDate -> MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
     case task of
         NextStepsSendToHC ->
             let
-                form =
+                ( _, tasks ) =
                     mapMeasurementData .sendToHC measurements
                         |> .current
                         |> getMeasurementValueFunc
                         |> sendToHCFormWithDefault data.sendToHCForm
-
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            Pages.NextSteps.Model.SetReferToHealthCenter
+                            Pages.NextSteps.Model.SetReasonForNonReferral
+                            Pages.NextSteps.Model.SetHandReferralForm
+                            Nothing
             in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepsHealthEducation ->
             let

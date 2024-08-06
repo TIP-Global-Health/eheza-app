@@ -16,7 +16,7 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Measurement.View exposing (vitalsFormInputsAndTasks)
+import Measurement.View exposing (referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -1477,8 +1477,8 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
                 && nextVisitRequired currentDate site assembled db
 
 
-nextStepsTasksCompletedFromTotal : Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal isChw measurements data task =
+nextStepsTasksCompletedFromTotal : NominalDate -> Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate isChw measurements data task =
     case task of
         TaskContributingFactors ->
             let
@@ -1532,36 +1532,28 @@ nextStepsTasksCompletedFromTotal isChw measurements data task =
         TaskSendToHC ->
             let
                 form =
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
+
+                ( _, tasks ) =
+                    if isChw then
+                        sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            Pages.WellChild.Activity.Model.SetReferToHealthCenter
+                            Pages.WellChild.Activity.Model.SetReasonForNonReferral
+                            Pages.WellChild.Activity.Model.SetHandReferralForm
+                            Nothing
+                            form
+
+                    else
+                        referToProgramFormInputsAndTasks English
+                            currentDate
+                            Pages.WellChild.Activity.Model.SetEnrollToNutritionProgram
+                            Pages.WellChild.Activity.Model.SetReferToNutritionProgram
+                            form
             in
-            if isChw then
-                let
-                    ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                        form.referToHealthCenter
-                            |> Maybe.map
-                                (\sentToHC ->
-                                    if not sentToHC then
-                                        if isJust form.reasonForNotSendingToHC then
-                                            ( 2, 2 )
-
-                                        else
-                                            ( 1, 2 )
-
-                                    else
-                                        ( 1, 1 )
-                                )
-                            |> Maybe.withDefault ( 0, 1 )
-                in
-                ( reasonForNotSentActive + taskCompleted form.handReferralForm
-                , reasonForNotSentCompleted + 1
-                )
-
-            else
-                ( taskCompleted form.enrollToNutritionProgram + taskCompleted form.referToNutritionProgram
-                , 2
-                )
+            resolveTasksCompletedFromTotal tasks
 
         TaskNextVisit ->
             let

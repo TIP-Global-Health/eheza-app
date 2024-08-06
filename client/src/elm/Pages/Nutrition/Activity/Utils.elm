@@ -4,6 +4,7 @@ import Backend.Measurement.Model
     exposing
         ( NutritionAssessment
         , NutritionMeasurements
+        , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -22,10 +23,12 @@ import Measurement.Utils
         , nutritionFollowUpFormWithDefault
         , sendToHCFormWithDefault
         )
+import Measurement.View exposing (sendToFacilityInputsAndTasks)
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (taskCompleted)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
 import SyncManager.Model exposing (SiteFeature)
+import Translate.Model exposing (Language(..))
 import ZScore.Model
 
 
@@ -136,35 +139,23 @@ allMandatoryActivities isChw =
         [ Height, Muac, Nutrition, Weight ]
 
 
-nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
+nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
     case task of
         NextStepsSendToHC ->
             let
-                form =
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
-
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            Pages.Nutrition.Activity.Model.SetReferToHealthCenter
+                            Pages.Nutrition.Activity.Model.SetReasonForNonReferral
+                            Pages.Nutrition.Activity.Model.SetHandReferralForm
+                            Nothing
             in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepsHealthEducation ->
             let

@@ -163,7 +163,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
 
                     tasksCompletedFromTotalDict =
                         tasks
-                            |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements model task ))
+                            |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements model task ))
                             |> Dict.fromList
 
                     ( tasksCompleted, totalTasks ) =

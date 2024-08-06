@@ -28,7 +28,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (renderDatePart, vitalsFormInputsAndTasks)
+import Measurement.View exposing (renderDatePart, sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
@@ -837,33 +837,25 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagn
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
                         |> medicationDistributionFormInutsAndTasks English currentDate person diagnosis
 
-                --
-                -- NextStepsSendToHC ->
-                --     let
-                --         form =
-                --             measurements.sendToHC
-                --                 |> getMeasurementValueFunc
-                --                 |> sendToHCFormWithDefault data.sendToHCForm
-                --
-                --         ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                --             form.referToHealthCenter
-                --                 |> Maybe.map
-                --                     (\sentToHC ->
-                --                         if not sentToHC then
-                --                             if isJust form.reasonForNotSendingToHC then
-                --                                 ( 2, 2 )
-                --
-                --                             else
-                --                                 ( 1, 2 )
-                --
-                --                         else
-                --                             ( 1, 1 )
-                --                     )
-                --                 |> Maybe.withDefault ( 0, 1 )
-                --     in
-                --     ( reasonForNotSentActive + taskCompleted form.handReferralForm
-                --     , reasonForNotSentCompleted + 1
-                --     )
+                NextStepsSendToHC ->
+                    let
+                        facility =
+                            if isChw then
+                                FacilityHealthCenter
+
+                            else
+                                FacilityHospital
+                    in
+                    getMeasurementValueFunc measurements.sendToHC
+                        |> sendToHCFormWithDefault data.sendToHCForm
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            facility
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
+
                 --
                 -- NextStepsHealthEducation ->
                 --     let

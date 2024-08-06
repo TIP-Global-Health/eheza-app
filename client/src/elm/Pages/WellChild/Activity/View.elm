@@ -2239,7 +2239,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal isChw measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate isChw measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -2295,8 +2295,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                                     SetEnrollToNutritionProgram
                                     SetReferToNutritionProgram
                     in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewFormFunc
                         |> List.singleton

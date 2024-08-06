@@ -770,7 +770,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =

@@ -16,6 +16,7 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
         )
+import Measurement.View exposing (sendToFacilityInputsAndTasks)
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Utils
@@ -31,7 +32,7 @@ import Pages.Utils
         , viewQuestionLabel
         )
 import Translate exposing (translate)
-import Translate.Model exposing (Language)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> AssembledData -> TuberculosisActivity -> Bool
@@ -238,8 +239,8 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.followUp
 
 
-nextStepsTasksCompletedFromTotal : TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
+nextStepsTasksCompletedFromTotal : NominalDate -> TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
     case task of
         TaskHealthEducation ->
             let
@@ -263,29 +264,18 @@ nextStepsTasksCompletedFromTotal measurements data task =
 
         TaskReferral ->
             let
-                form =
+                ( _, tasks ) =
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
-
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
             in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
