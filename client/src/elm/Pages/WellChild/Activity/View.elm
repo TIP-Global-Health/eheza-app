@@ -61,6 +61,7 @@ import Pages.Utils
         , maybeToBoolTask
         , resolveActiveTask
         , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -561,10 +562,7 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 ++ birthDefectsTasks
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= totalTasks

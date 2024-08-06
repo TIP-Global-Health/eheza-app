@@ -26,6 +26,7 @@ import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
+        , resolveTasksCompletedFromTotal
         , taskAllCompleted
         , taskCompleted
         )
@@ -413,10 +414,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         SetFacilityNonReferralReason
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepsMedicationDistribution ->
             let

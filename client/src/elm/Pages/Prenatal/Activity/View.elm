@@ -97,6 +97,7 @@ import Pages.Utils
         , maybeToBoolTask
         , resolveActiveTask
         , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , saveButton
         , taskCompleted
         , tasksBarId
@@ -2501,15 +2502,11 @@ viewSpecialityCareContent language currentDate assembled data =
             getMeasurementValueFunc assembled.measurements.specialityCare
                 |> specialityCareFormWithDefault data.form
 
-        tasksCompleted =
-            Maybe.Extra.values tasks
-                |> List.length
-
-        totalTasks =
-            List.length tasks
-
         tasks =
             arvTasks ++ ncdTasks
+
+        ( tasksCompleted, tasksTotal ) =
+            resolveTasksCompletedFromTotal tasks
 
         ( arvSection, arvTasks ) =
             resolveARVReferralDiagnosis assembled.nursePreviousEncountersData
@@ -2576,9 +2573,9 @@ viewSpecialityCareContent language currentDate assembled data =
                 saveMsg =
                     SaveSpecialityCare personId assembled.measurements.specialityCare
             in
-            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
+            viewSaveAction language saveMsg (tasksCompleted /= tasksTotal)
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form speciality-care" ] <|
@@ -4009,12 +4006,8 @@ viewBreastfeedingContent language currentDate assembled data =
         tasks =
             form.isBreastfeeding :: derivedTasks
 
-        tasksCompleted =
-            Maybe.Extra.values tasks
-                |> List.length
-
-        totalTasks =
-            List.length tasks
+        ( tasksCompleted, tasksTotal ) =
+            resolveTasksCompletedFromTotal tasks
 
         isBreastfeedingUpdateFunc value form_ =
             { form_
@@ -4031,7 +4024,7 @@ viewBreastfeedingContent language currentDate assembled data =
                 , latchingWellDirty = True
             }
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form breeastfeeding" ] <|
@@ -4047,7 +4040,7 @@ viewBreastfeedingContent language currentDate assembled data =
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= tasksTotal ) ]
                 , onClick <| SaveBreastfeeding assembled.participant.person assembled.measurements.breastfeeding
                 ]
                 [ text <| translate language Translate.Save ]

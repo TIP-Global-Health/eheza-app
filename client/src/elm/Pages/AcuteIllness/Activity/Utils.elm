@@ -11,6 +11,7 @@ import Backend.Person.Utils exposing (ageInMonths, ageInYears, isChildUnderAgeOf
 import Backend.Utils exposing (tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils
     exposing
@@ -31,12 +32,17 @@ import Pages.Utils
         , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , valueConsideringIsDirtyField
+        , viewCheckBoxMultipleSelectInput
+        , viewLabel
         )
 import SyncManager.Model exposing (SiteFeature)
-import Translate exposing (Language, TranslationId)
+import Translate exposing (Language, TranslationId, translate)
+import Translate.Model exposing (Language(..))
 
 
 expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
@@ -263,7 +269,14 @@ symptomsTasksCompletedFromTotal measurements data task =
             )
 
 
-physicalExamTasksCompletedFromTotal : NominalDate -> Bool -> Person -> AcuteIllnessMeasurements -> PhysicalExamData -> PhysicalExamTask -> ( Int, Int )
+physicalExamTasksCompletedFromTotal :
+    NominalDate
+    -> Bool
+    -> Person
+    -> AcuteIllnessMeasurements
+    -> PhysicalExamData
+    -> PhysicalExamTask
+    -> ( Int, Int )
 physicalExamTasksCompletedFromTotal currentDate isChw person measurements data task =
     case task of
         PhysicalExamVitals ->
@@ -340,14 +353,28 @@ physicalExamTasksCompletedFromTotal currentDate isChw person measurements data t
 
         PhysicalExamNutrition ->
             let
-                form =
-                    measurements.nutrition
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
+                        |> nutritionFormInutsAndTasks English currentDate
             in
-            ( taskCompleted form.signs
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+nutritionFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessNutritionForm -> ( List (Html Msg), List (Maybe Bool) )
+nutritionFormInutsAndTasks language currentDate form =
+    ( [ p [] [ text <| translate language Translate.NutritionHelper ]
+      , viewLabel language Translate.SelectAllSigns
+      , viewCheckBoxMultipleSelectInput language
+            [ Edema, AbdominalDistension, DrySkin ]
+            [ Apathy, PoorAppetite, BrittleHair ]
+            (form.signs |> Maybe.withDefault [])
+            (Just NormalChildNutrition)
+            SetNutritionSign
+            Translate.ChildNutritionSignLabel
+      ]
+    , [ maybeToBoolTask form.signs ]
+    )
 
 
 laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> AILaboratoryTask -> ( Int, Int )
@@ -797,10 +824,7 @@ ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data t
                         SetAdverseEvent
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 dangerSignsTasksCompletedFromTotal : AcuteIllnessMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )

@@ -11,6 +11,7 @@ import Pages.NCD.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Model exposing (..)
 import Pages.NCD.RecurrentActivity.Types exposing (..)
 import Pages.NCD.Utils exposing (..)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language)
 
 
@@ -137,10 +138,7 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         SetFacilityNonReferralReason
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 resolveLaboratoryResultTasks : NominalDate -> AssembledData -> List LaboratoryTask

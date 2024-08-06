@@ -49,6 +49,7 @@ import Pages.Utils
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskAllCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -3069,10 +3070,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                         SetFacilityNonReferralReason
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepsHealthEducation ->
             let
@@ -3083,10 +3081,7 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
                 ( _, tasks ) =
                     healthEducationFormInputsAndTasks language assembled form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepsNewbornEnrolment ->
             ( taskCompleted assembled.participant.newborn
@@ -3570,10 +3565,7 @@ treatmentReviewTasksCompletedFromTotal language currentDate assembled data task 
                         assembled
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         _ ->
             let
@@ -3585,10 +3577,7 @@ treatmentReviewTasksCompletedFromTotal language currentDate assembled data task 
                         form
                         task
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 resolvePrenatalMedicationFormInputsAndTasks :
@@ -4309,10 +4298,7 @@ examinationTasksCompletedFromTotal assembled data task =
                 ( _, tasks ) =
                     guExamFormInputsAndTasks English assembled form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 fromBirthPlanValue : Maybe BirthPlanValue -> BirthPlanForm

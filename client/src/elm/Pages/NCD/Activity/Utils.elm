@@ -32,6 +32,7 @@ import Pages.Utils
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -536,10 +537,7 @@ medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
                         |> socialHistoryFormWithDefault data.socialHistoryForm
                         |> socialHistoryFormInputsAndTasks English currentDate site
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskFamilyHistory ->
             let
@@ -548,10 +546,7 @@ medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
                         |> familyHistoryFormWithDefault data.familyHistoryForm
                         |> familyHistoryFormInputsAndTasks English currentDate
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskOutsideCare ->
             -- This is not in use, because OutsideCare task got
@@ -1020,7 +1015,4 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
                         SetFacilityNonReferralReason
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks

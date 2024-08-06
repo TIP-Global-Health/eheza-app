@@ -1257,6 +1257,14 @@ maybeToBoolTask maybe =
         Nothing
 
 
+resolveTasksCompletedFromTotal : List (Maybe Bool) -> ( Int, Int )
+resolveTasksCompletedFromTotal tasks =
+    ( Maybe.Extra.values tasks
+        |> List.length
+    , List.length tasks
+    )
+
+
 resolveNextTask : t -> Dict t ( Int, Int ) -> List t -> Maybe t
 resolveNextTask activeTask completedFromTotalDict allTasks =
     List.filter

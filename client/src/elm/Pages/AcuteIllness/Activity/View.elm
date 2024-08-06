@@ -64,6 +64,7 @@ import Pages.Person.View
 import Pages.Utils
     exposing
         ( getCurrentReasonForMedicationNonAdministration
+        , maybeToBoolTask
         , nonAdministrationReasonToSign
         , resolveActiveTask
         , resolveNextTask
@@ -811,8 +812,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                         |> viewAcuteFindingsForm language currentDate
 
                 Just PhysicalExamNutrition ->
-                    measurements.nutrition
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.nutrition
                         |> Pages.AcuteIllness.Activity.Utils.nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate
 
@@ -963,17 +963,12 @@ viewAcuteFindingsForm language currentDate form =
 
 viewNutritionForm : Language -> NominalDate -> AcuteIllnessNutritionForm -> List (Html Msg)
 viewNutritionForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            nutritionFormInutsAndTasks language currentDate form
+    in
     [ div [ class "ui form physical-exam nutrition" ]
-        [ p [] [ text <| translate language Translate.NutritionHelper ]
-        , viewLabel language Translate.SelectAllSigns
-        , viewCheckBoxMultipleSelectInput language
-            [ Edema, AbdominalDistension, DrySkin ]
-            [ Apathy, PoorAppetite, BrittleHair ]
-            (form.signs |> Maybe.withDefault [])
-            (Just NormalChildNutrition)
-            SetNutritionSign
-            Translate.ChildNutritionSignLabel
-        ]
+        inputs
     ]
 
 

@@ -22,6 +22,7 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectSectionsInput
@@ -144,10 +145,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetAdverseEvent
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 nextStepsTasks : List NextStepsTask

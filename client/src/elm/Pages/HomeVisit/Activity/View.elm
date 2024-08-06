@@ -30,7 +30,8 @@ import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( viewPersonDetails
+        ( resolveTasksCompletedFromTotal
+        , viewPersonDetails
         )
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -120,10 +121,7 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -154,10 +152,7 @@ viewCaringContent language currentDate assembled db caringForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -188,10 +183,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -217,10 +209,7 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
             nutritionFoodSecurityInputsAndTasks language currentDate SetFoodSecurityBoolInput SetMainIncomeSource form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal

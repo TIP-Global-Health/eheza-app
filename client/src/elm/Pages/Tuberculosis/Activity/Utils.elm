@@ -24,6 +24,7 @@ import Pages.Utils
         , ifNullableTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxSelectInput
@@ -142,10 +143,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     dotInputsAndTasks language currentDate assembled form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskTreatmentReview ->
             let
@@ -162,10 +160,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetAdverseEvent
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 nextStepsTasks : List NextStepsTask
