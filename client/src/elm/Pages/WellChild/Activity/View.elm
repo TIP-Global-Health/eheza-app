@@ -53,7 +53,7 @@ import Measurement.View
         , viewSendToHealthCenterForm
         )
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
-import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
+import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -814,13 +814,11 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal measurements data task ))
+            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         previousValuesSet =
@@ -867,7 +865,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                     measurements.muac
                         |> getMeasurementValueFunc
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
+                        |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
                     measurements.nutrition

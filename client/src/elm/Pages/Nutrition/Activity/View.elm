@@ -2,7 +2,6 @@ module Pages.Nutrition.Activity.View exposing
     ( translateNutritionAssement
     , view
     , viewHeightForm
-    , viewMuacForm
     , viewNutritionForm
     , viewPhotoForm
     , viewWeightForm
@@ -63,6 +62,7 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , tasksBarId
         , viewCheckBoxMultipleSelectInput
@@ -357,15 +357,14 @@ viewMuacContent : Language -> NominalDate -> Site -> AssembledData -> MuacData -
 viewMuacContent language currentDate site assembled data previousValue =
     let
         form =
-            assembled.measurements.muac
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.muac
                 |> muacFormWithDefault data.form
 
-        totalTasks =
-            1
+        ( inputs, tasks ) =
+            Measurement.View.muacFormInputsAndTasks language currentDate site assembled.person previousValue SetMuac form
 
-        tasksCompleted =
-            taskCompleted form.muac
+        ( tasksCompleted, tasksTotal ) =
+            resolveTasksCompletedFromTotal tasks
 
         constraints =
             getInputConstraintsMuac site
@@ -381,15 +380,17 @@ viewMuacContent language currentDate site assembled data previousValue =
                     form.muac
 
         disabled =
-            (tasksCompleted /= totalTasks)
+            (tasksCompleted /= tasksTotal)
                 || (Maybe.map (withinConstraints constraints >> not) currentValue
                         |> Maybe.withDefault True
                    )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            viewMuacForm language currentDate site assembled.person previousValue SetMuac form
+        [ div [ class "full content" ]
+            [ div [ class "ui form muac" ]
+                inputs
+            ]
         , div [ class "actions" ]
             [ button
                 [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
@@ -397,59 +398,6 @@ viewMuacContent language currentDate site assembled data previousValue =
                 ]
                 [ text <| translate language Translate.Save ]
             ]
-        ]
-    ]
-
-
-viewMuacForm :
-    Language
-    -> NominalDate
-    -> Site
-    -> Person
-    -> Maybe Float
-    -> (String -> msg)
-    -> MuacForm
-    -> List (Html msg)
-viewMuacForm language currentDate site person previousValue setMuacMsg form =
-    let
-        activity =
-            Muac
-
-        constraints =
-            getInputConstraintsMuac site
-
-        ( currentValue, unitTransId ) =
-            case site of
-                SiteBurundi ->
-                    ( -- Value is stored in cm, but for Burundi, we need to
-                      -- view it as mm. Therefore, multiplying by 10.
-                      Maybe.map ((*) 10) form.muac
-                    , Translate.UnitMillimeter
-                    )
-
-                _ ->
-                    ( form.muac, Translate.UnitCentimeter )
-    in
-    [ div [ class "ui form muac" ]
-        [ viewLabel language <| Translate.NutritionActivityTitle activity
-        , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-        , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-        , div [ class "ui grid" ]
-            [ div [ class "eleven wide column" ]
-                [ viewMeasurementInput
-                    language
-                    currentValue
-                    setMuacMsg
-                    "muac"
-                    unitTransId
-                ]
-            , div
-                [ class "five wide column" ]
-                [ showMaybe <|
-                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
-                ]
-            ]
-        , viewPreviousMeasurement language previousValue unitTransId
         ]
     ]
 

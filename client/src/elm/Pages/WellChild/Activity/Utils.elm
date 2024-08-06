@@ -384,8 +384,12 @@ resolveNutritionAssessmentTasks assembled =
             [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
-nutritionAssessmentTasksCompletedFromTotal : WellChildMeasurements -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal measurements data task =
+nutritionAssessmentTasksCompletedFromTotal : NominalDate -> AssembledData -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
+nutritionAssessmentTasksCompletedFromTotal currentDate assembled data task =
+    let
+        measurements =
+            assembled.measurements
+    in
     case task of
         TaskHeight ->
             let
@@ -411,14 +415,17 @@ nutritionAssessmentTasksCompletedFromTotal measurements data task =
 
         TaskMuac ->
             let
-                form =
-                    measurements.muac
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
+                        |> Measurement.View.muacFormInputsAndTasks English
+                            currentDate
+                            SiteRwanda
+                            assembled.person
+                            Nothing
+                            Pages.WellChild.Activity.Model.SetMuac
             in
-            ( taskCompleted form.muac
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskNutrition ->
             let

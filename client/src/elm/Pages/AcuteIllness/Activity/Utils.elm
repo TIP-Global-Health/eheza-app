@@ -45,7 +45,7 @@ import Pages.Utils
         , viewLabel
         , viewRedAlertForSelect
         )
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 
@@ -311,14 +311,12 @@ physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task
 
         PhysicalExamMuac ->
             let
-                form =
-                    measurements.muac
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
+                        |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac
             in
-            ( taskCompleted form.muac
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         PhysicalExamAcuteFindings ->
             let

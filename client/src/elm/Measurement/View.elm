@@ -20,6 +20,7 @@ import Backend.Measurement.Utils
         , nutritionSignToString
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Utils
     exposing
         ( getNewbornExamPregnancySummary
@@ -4122,4 +4123,76 @@ nutritionFoodSecurityInputsAndTasks language currentDate setFoodSecurityBoolInpu
     , [ maybeToBoolTask form.mainIncomeSource
       , form.householdGotFood
       ]
+    )
+
+
+viewMuacForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> MuacForm
+    -> List (Html msg)
+viewMuacForm language currentDate site person previousValue setMuacMsg form =
+    let
+        ( inputs, _ ) =
+            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form
+    in
+    [ div [ class "ui form muac" ]
+        inputs
+    ]
+
+
+muacFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Site
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> MuacForm
+    -> ( List (Html msg), List (Maybe Bool) )
+muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Muac
+
+        constraints =
+            getInputConstraintsMuac site
+
+        ( currentValue, unitTransId ) =
+            case site of
+                SiteBurundi ->
+                    ( -- Value is stored in cm, but for Burundi, we need to
+                      -- view it as mm. Therefore, multiplying by 10.
+                      Maybe.map ((*) 10) form.muac
+                    , Translate.UnitMillimeter
+                    )
+
+                _ ->
+                    ( form.muac, Translate.UnitCentimeter )
+    in
+    ( [ viewLabel language <| Translate.NutritionActivityTitle activity
+      , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+      , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+      , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    currentValue
+                    setMuacMsg
+                    "muac"
+                    unitTransId
+                ]
+            , div
+                [ class "five wide column" ]
+                [ showMaybe <|
+                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
+                ]
+            ]
+      , Pages.Utils.viewPreviousMeasurement language previousValue unitTransId
+      ]
+    , [ maybeToBoolTask form.muac ]
     )

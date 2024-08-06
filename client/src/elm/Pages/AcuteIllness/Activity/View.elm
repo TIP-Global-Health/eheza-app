@@ -58,7 +58,6 @@ import Pages.AcuteIllness.Activity.Utils exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (..)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert, warningPopup)
-import Pages.Nutrition.Activity.View exposing (viewMuacForm)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.View
 import Pages.Utils
@@ -798,7 +797,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                     in
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
-                        |> viewMuacForm language currentDate site assembled.person previousValue SetMuac
+                        |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValue SetMuac
 
                 Just PhysicalExamAcuteFindings ->
                     getMeasurementValueFunc measurements.acuteFindings
