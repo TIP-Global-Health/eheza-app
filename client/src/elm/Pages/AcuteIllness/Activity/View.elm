@@ -883,26 +883,12 @@ viewCoreExamForm language currentDate form =
 
 viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)
 viewAcuteFindingsForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            acuteFindingsFormInutsAndTasks language currentDate form
+    in
     [ div [ class "ui form physical-exam acute-findings" ]
-        [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ LethargicOrUnconscious, AcuteFindingsPoorSuck, SunkenEyes, PoorSkinTurgor, Jaundice, NoAcuteFindingsGeneralSigns ]
-            []
-            (form.signsGeneral |> Maybe.withDefault [])
-            Nothing
-            SetAcuteFindingsGeneralSign
-            Translate.AcuteFindingsGeneralSign
-        , viewQuestionLabel language Translate.PatientExhibitAnyRespiratoryFindings
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ Stridor, NasalFlaring, SevereWheezing, SubCostalRetractions, NoAcuteFindingsRespiratorySigns ]
-            []
-            (form.signsRespiratory |> Maybe.withDefault [])
-            Nothing
-            SetAcuteFindingsRespiratorySign
-            Translate.AcuteFindingsRespiratorySign
-        ]
+        inputs
     ]
 
 

@@ -42,7 +42,9 @@ import Pages.Utils
         , valueConsideringIsDirtyField
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomLabel
         , viewLabel
+        , viewQuestionLabel
         , viewRedAlertForSelect
         )
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -286,57 +288,39 @@ physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task
     let
         measurements =
             assembled.measurements
-    in
-    case task of
-        PhysicalExamVitals ->
-            let
-                formConfig =
-                    generateVitalsFormConfig isChw assembled
 
-                ( _, tasks ) =
+        ( _, tasks ) =
+            case task of
+                PhysicalExamVitals ->
+                    let
+                        formConfig =
+                            generateVitalsFormConfig isChw assembled
+                    in
                     getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
                         |> vitalsFormInputsAndTasks English currentDate formConfig
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        PhysicalExamCoreExam ->
-            let
-                ( _, tasks ) =
+                PhysicalExamCoreExam ->
                     getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
                         |> coreExamFormInutsAndTasks English currentDate
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        PhysicalExamMuac ->
-            let
-                ( _, tasks ) =
+                PhysicalExamMuac ->
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
                         |> Measurement.View.muacFormInputsAndTasks English currentDate SiteRwanda assembled.person Nothing SetMuac
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        PhysicalExamAcuteFindings ->
-            let
-                form =
-                    measurements.acuteFindings
-                        |> getMeasurementValueFunc
+                PhysicalExamAcuteFindings ->
+                    getMeasurementValueFunc measurements.acuteFindings
                         |> acuteFindingsFormWithDefault data.acuteFindingsForm
-            in
-            ( taskCompleted form.signsGeneral + taskCompleted form.signsRespiratory
-            , 2
-            )
+                        |> acuteFindingsFormInutsAndTasks English currentDate
 
-        PhysicalExamNutrition ->
-            let
-                ( _, tasks ) =
+                PhysicalExamNutrition ->
                     getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
                         |> nutritionFormInutsAndTasks English currentDate
-            in
-            resolveTasksCompletedFromTotal tasks
+    in
+    resolveTasksCompletedFromTotal tasks
 
 
 generateVitalsFormConfig : Bool -> AssembledData -> VitalsFormConfig Msg
@@ -362,6 +346,33 @@ generateVitalsFormConfig isChw assembled =
             VitalsFormFull
     , invokationModule = InvokationModuleAcuteIllness
     }
+
+
+acuteFindingsFormInutsAndTasks : Language -> NominalDate -> AcuteFindingsForm -> ( List (Html Msg), List (Maybe Bool) )
+acuteFindingsFormInutsAndTasks language currentDate form =
+    ( [ div [ class "ui form physical-exam acute-findings" ]
+            [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            , viewCheckBoxMultipleSelectInput language
+                [ LethargicOrUnconscious, AcuteFindingsPoorSuck, SunkenEyes, PoorSkinTurgor, Jaundice, NoAcuteFindingsGeneralSigns ]
+                []
+                (form.signsGeneral |> Maybe.withDefault [])
+                Nothing
+                SetAcuteFindingsGeneralSign
+                Translate.AcuteFindingsGeneralSign
+            , viewQuestionLabel language Translate.PatientExhibitAnyRespiratoryFindings
+            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+            , viewCheckBoxMultipleSelectInput language
+                [ Stridor, NasalFlaring, SevereWheezing, SubCostalRetractions, NoAcuteFindingsRespiratorySigns ]
+                []
+                (form.signsRespiratory |> Maybe.withDefault [])
+                Nothing
+                SetAcuteFindingsRespiratorySign
+                Translate.AcuteFindingsRespiratorySign
+            ]
+      ]
+    , [ maybeToBoolTask form.signsGeneral, maybeToBoolTask form.signsRespiratory ]
+    )
 
 
 coreExamFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessCoreExamForm -> ( List (Html Msg), List (Maybe Bool) )
