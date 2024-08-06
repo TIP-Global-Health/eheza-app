@@ -874,40 +874,12 @@ viewVitalsForm language currentDate isChw assembled form =
 
 viewCoreExamForm : Language -> NominalDate -> AssembledData -> AcuteIllnessCoreExamForm -> Html Msg
 viewCoreExamForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            coreExamFormInutsAndTasks language currentDate form
+    in
     div [ class "ui form physical-exam core-exam" ]
-        [ div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Heart ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                    [ NormalRateAndRhythm ]
-                ]
-            ]
-        , viewCheckBoxSelectInput language
-            [ IrregularRhythm, SinusTachycardia, NormalRateAndRhythm ]
-            []
-            form.heart
-            SetCoreExamHeart
-            Translate.HeartCPESign
-        , div [ class "separator" ] []
-        , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Lungs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForSelect
-                    (form.lungs |> Maybe.withDefault [])
-                    [ NormalLungs ]
-                ]
-            ]
-        , viewCheckBoxMultipleSelectInput language
-            [ Wheezes, Crackles, NormalLungs ]
-            []
-            (form.lungs |> Maybe.withDefault [])
-            Nothing
-            SetCoreExamLungs
-            Translate.LungsCPESign
-        ]
+        inputs
 
 
 viewAcuteFindingsForm : Language -> NominalDate -> AcuteFindingsForm -> List (Html Msg)

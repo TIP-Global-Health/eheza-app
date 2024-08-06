@@ -12,6 +12,7 @@ import Backend.Utils exposing (tuberculosisManagementEnabled)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
+import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
@@ -40,7 +41,9 @@ import Pages.Utils
         , taskCompleted
         , valueConsideringIsDirtyField
         , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
         , viewLabel
+        , viewRedAlertForSelect
         )
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
@@ -299,14 +302,12 @@ physicalExamTasksCompletedFromTotal currentDate isChw person assembled data task
 
         PhysicalExamCoreExam ->
             let
-                form =
-                    measurements.coreExam
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
+                        |> coreExamFormInutsAndTasks English currentDate
             in
-            ( taskCompleted form.heart + taskCompleted form.lungs
-            , 2
-            )
+            resolveTasksCompletedFromTotal tasks
 
         PhysicalExamMuac ->
             let
@@ -363,6 +364,47 @@ generateVitalsFormConfig isChw assembled =
             VitalsFormFull
     , invokationModule = InvokationModuleAcuteIllness
     }
+
+
+coreExamFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessCoreExamForm -> ( List (Html Msg), List (Maybe Bool) )
+coreExamFormInutsAndTasks language currentDate form =
+    ( [ div [ class "ui form physical-exam core-exam" ]
+            [ div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.Heart ]
+                , div [ class "four wide column" ]
+                    [ viewRedAlertForSelect
+                        (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
+                        [ NormalRateAndRhythm ]
+                    ]
+                ]
+            , viewCheckBoxSelectInput language
+                [ IrregularRhythm, SinusTachycardia, NormalRateAndRhythm ]
+                []
+                form.heart
+                SetCoreExamHeart
+                Translate.HeartCPESign
+            , div [ class "separator" ] []
+            , div [ class "ui grid" ]
+                [ div [ class "twelve wide column" ]
+                    [ viewLabel language Translate.Lungs ]
+                , div [ class "four wide column" ]
+                    [ viewRedAlertForSelect
+                        (form.lungs |> Maybe.withDefault [])
+                        [ NormalLungs ]
+                    ]
+                ]
+            , viewCheckBoxMultipleSelectInput language
+                [ Wheezes, Crackles, NormalLungs ]
+                []
+                (form.lungs |> Maybe.withDefault [])
+                Nothing
+                SetCoreExamLungs
+                Translate.LungsCPESign
+            ]
+      ]
+    , [ maybeToBoolTask form.heart, maybeToBoolTask form.lungs ]
+    )
 
 
 nutritionFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessNutritionForm -> ( List (Html Msg), List (Maybe Bool) )
