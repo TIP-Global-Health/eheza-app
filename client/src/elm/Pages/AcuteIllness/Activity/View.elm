@@ -788,7 +788,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
                 Just PhysicalExamCoreExam ->
                     getMeasurementValueFunc measurements.coreExam
                         |> coreExamFormWithDefault data.coreExamForm
-                        |> viewCoreExamForm language currentDate assembled
+                        |> viewCoreExamForm language currentDate
                         |> List.singleton
 
                 Just PhysicalExamMuac ->
@@ -872,8 +872,8 @@ viewVitalsForm language currentDate isChw assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewCoreExamForm : Language -> NominalDate -> AssembledData -> AcuteIllnessCoreExamForm -> Html Msg
-viewCoreExamForm language currentDate assembled form =
+viewCoreExamForm : Language -> NominalDate -> AcuteIllnessCoreExamForm -> Html Msg
+viewCoreExamForm language currentDate form =
     let
         ( inputs, _ ) =
             coreExamFormInutsAndTasks language currentDate form
