@@ -4,6 +4,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (PersonId)
+import Backend.Measurement.Encoder exposing (malariaRapidTestResultAsString)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, muacIndication)
 import Backend.Person.Model exposing (Person)
@@ -45,6 +46,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewCustomSelectListInput
         , viewLabel
         , viewQuestionLabel
         , viewRedAlertForSelect
@@ -436,78 +438,152 @@ nutritionFormInutsAndTasks language currentDate form =
 
 laboratoryTasksCompletedFromTotal : NominalDate -> Person -> AcuteIllnessMeasurements -> LaboratoryData -> AILaboratoryTask -> ( Int, Int )
 laboratoryTasksCompletedFromTotal currentDate person measurements data task =
-    case task of
-        LaboratoryMalariaTesting ->
-            let
-                form =
-                    measurements.malariaTesting
-                        |> getMeasurementValueFunc
+    let
+        ( _, tasks ) =
+            case task of
+                LaboratoryMalariaTesting ->
+                    getMeasurementValueFunc measurements.malariaTesting
                         |> malariaTestingFormWithDefault data.malariaTestingForm
+                        |> malariaTestingFormInputsAndTasks English currentDate person
 
-                testResultPositive =
-                    Maybe.map rapidTestPositive form.rapidTestResult
-                        |> Maybe.withDefault False
-
-                ( isPregnantActive, isPregnantCompleted ) =
-                    if testResultPositive && isPersonAFertileWoman currentDate person then
-                        if isJust form.isPregnant then
-                            ( 1, 1 )
-
-                        else
-                            ( 1, 0 )
-
-                    else
-                        ( 0, 0 )
-            in
-            ( taskCompleted form.rapidTestResult + isPregnantCompleted
-            , 1 + isPregnantActive
-            )
-
-        LaboratoryCovidTesting ->
-            let
-                form =
-                    measurements.covidTesting
-                        |> getMeasurementValueFunc
+                LaboratoryCovidTesting ->
+                    getMeasurementValueFunc measurements.covidTesting
                         |> covidTestingFormWithDefault data.covidTestingForm
+                        |> covidTestingFormInputsAndTasks English currentDate person
+    in
+    resolveTasksCompletedFromTotal tasks
 
-                ( derivedCompleted, derivedActive ) =
-                    Maybe.map
-                        (\testPerformed ->
-                            let
-                                ( isPregnantActive, isPregnantCompleted ) =
-                                    if isPersonAFertileWoman currentDate person then
-                                        if isJust form.isPregnant then
-                                            ( 1, 1 )
 
-                                        else
-                                            ( 1, 0 )
+malariaTestingFormInputsAndTasks : Language -> NominalDate -> Person -> MalariaTestingForm -> ( List (Html Msg), List (Maybe Bool) )
+malariaTestingFormInputsAndTasks language currentDate person form =
+    let
+        testResultPositive =
+            form.rapidTestResult == Just RapidTestPositive || form.rapidTestResult == Just RapidTestPositiveAndPregnant
 
-                                    else
-                                        ( 0, 0 )
-                            in
-                            if testPerformed then
-                                Maybe.map
-                                    (\testPositive ->
-                                        if testPositive then
-                                            ( 1 + isPregnantCompleted, 1 + isPregnantActive )
+        isPregnantSection =
+            if testResultPositive && isPersonAFertileWoman currentDate person then
+                isPregnantInputsAndTasks language SetIsPregnant form.isPregnant
 
-                                        else
-                                            ( 1, 1 )
-                                    )
-                                    form.testPositive
-                                    |> Maybe.withDefault ( 0, 1 )
+            else
+                ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ viewLabel language Translate.MalariaRapidDiagnosticTest
+            , viewCustomSelectListInput form.rapidTestResult
+                [ RapidTestNegative, RapidTestPositive, RapidTestIndeterminate, RapidTestUnableToRun ]
+                malariaRapidTestResultAsString
+                SetRapidTestResult
+                (Translate.RapidTestResult >> translate language)
+                "form-input rapid-test-result"
+                (isNothing form.rapidTestResult)
+            ]
+          , [ maybeToBoolTask form.rapidTestResult ]
+          )
+        , isPregnantSection
+        ]
+
+
+isPregnantInputsAndTasks : Language -> (Bool -> Msg) -> Maybe Bool -> ( List (Html Msg), List (Maybe Bool) )
+isPregnantInputsAndTasks language setMsg currentValue =
+    ( [ viewQuestionLabel language Translate.CurrentlyPregnantQuestion
+      , viewBoolInput
+            language
+            currentValue
+            setMsg
+            "is-pregnant"
+            Nothing
+      ]
+    , [ currentValue ]
+    )
+
+
+covidTestingFormInputsAndTasks : Language -> NominalDate -> Person -> CovidTestingForm -> ( List (Html Msg), List (Maybe Bool) )
+covidTestingFormInputsAndTasks language currentDate person form =
+    let
+        derivedSection =
+            Maybe.map
+                (\testPerformed ->
+                    let
+                        isPregnantSection =
+                            if isPersonAFertileWoman currentDate person then
+                                isPregnantInputsAndTasks language
+                                    (SetCovidTestingBoolInput (\value form_ -> { form_ | isPregnant = Just value }))
+                                    form.isPregnant
 
                             else
-                                ( taskCompleted form.administrationNote + isPregnantCompleted
-                                , 1 + isPregnantActive
-                                )
-                        )
-                        form.testPerformed
-                        |> Maybe.withDefault ( 0, 0 )
-            in
-            ( taskCompleted form.testPerformed + derivedCompleted
-            , 1 + derivedActive
-            )
+                                ( [], [] )
+                    in
+                    if testPerformed then
+                        let
+                            isPregnantSectionForView =
+                                if form.testPositive == Just True then
+                                    isPregnantSection
+
+                                else
+                                    ( [], [] )
+                        in
+                        concatInputsAndTasksSections
+                            [ ( [ viewQuestionLabel language Translate.TestResultsQuestion
+                                , viewBoolInput
+                                    language
+                                    form.testPositive
+                                    (SetCovidTestingBoolInput (\value form_ -> { form_ | testPositive = Just value, isPregnant = Nothing }))
+                                    "test-result"
+                                    (Just ( Translate.RapidTestResult RapidTestPositive, Translate.RapidTestResult RapidTestNegative ))
+                                ]
+                              , [ maybeToBoolTask form.testPositive ]
+                              )
+                            , isPregnantSectionForView
+                            ]
+
+                    else
+                        concatInputsAndTasksSections
+                            [ ( [ div [ class "why-not" ]
+                                    [ viewQuestionLabel language Translate.WhyNot
+                                    , viewCheckBoxSelectInput language
+                                        [ AdministeredPreviously
+                                        , NonAdministrationLackOfStock
+                                        , NonAdministrationPatientDeclined
+                                        , NonAdministrationPatientUnableToAfford
+                                        , NonAdministrationOther
+                                        ]
+                                        []
+                                        form.administrationNote
+                                        SetCovidTestingAdministrationNote
+                                        Translate.AdministrationNote
+                                    ]
+                                ]
+                              , [ maybeToBoolTask form.administrationNote ]
+                              )
+                            , isPregnantSection
+                            ]
+                )
+                form.testPerformed
+                |> Maybe.withDefault ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ viewCustomLabel language Translate.CovidTestingInstructions "." "instructions"
+            , viewQuestionLabel language Translate.TestPerformedQuestion
+            , viewBoolInput
+                language
+                form.testPerformed
+                (SetCovidTestingBoolInput
+                    (\value form_ ->
+                        { form_
+                            | testPerformed = Just value
+                            , testPositive = Nothing
+                            , isPregnant = Nothing
+                            , administrationNote = Nothing
+                        }
+                    )
+                )
+                "test-performed"
+                Nothing
+            ]
+          , [ form.testPerformed ]
+          )
+        , derivedSection
+        ]
 
 
 exposureTasksCompletedFromTotal : AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
