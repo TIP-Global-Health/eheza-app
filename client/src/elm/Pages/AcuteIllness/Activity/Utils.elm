@@ -28,7 +28,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (vitalsFormInputsAndTasks)
+import Measurement.View exposing (renderDatePart, vitalsFormInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
@@ -41,6 +41,7 @@ import Pages.Utils
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , nonAdministrationReasonToSign
         , resolveTasksCompletedFromTotal
         , taskCompleted
         , valueConsideringIsDirtyField
@@ -50,6 +51,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewCustomSelectListInput
+        , viewInstructionsLabel
         , viewLabel
         , viewQuestionLabel
         , viewRedAlertForSelect
@@ -805,12 +807,13 @@ nextStepsTasksCompletedFromTotal :
     NominalDate
     -> Bool
     -> Bool
+    -> Person
     -> Maybe AcuteIllnessDiagnosis
     -> AcuteIllnessMeasurements
     -> NextStepsData
     -> NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter diagnosis measurements data task =
+nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagnosis measurements data task =
     let
         ( _, tasks ) =
             case task of
@@ -829,70 +832,11 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter diagnosis me
                         |> call114FormWithDefault data.call114Form
                         |> call114FormInutsAndTasks English currentDate
 
-                -- NextStepsMedicationDistribution ->
-                --     let
-                --         form =
-                --             measurements.medicationDistribution
-                --                 |> getMeasurementValueFunc
-                --                 |> medicationDistributionFormWithDefault data.medicationDistributionForm
-                --
-                --         derivedQuestionExists formValue =
-                --             if formValue == Just False then
-                --                 1
-                --
-                --             else
-                --                 0
-                --
-                --         derivedQuestionCompleted medication reasonToSignFunc formValue =
-                --             if formValue /= Just False then
-                --                 0
-                --
-                --             else
-                --                 let
-                --                     valueSet =
-                --                         getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
-                --                             |> isJust
-                --                 in
-                --                 if valueSet then
-                --                     1
-                --
-                --                 else
-                --                     0
-                --     in
-                --     case diagnosis of
-                --         Just DiagnosisMalariaUncomplicated ->
-                --             ( taskCompleted form.coartem + derivedQuestionCompleted Coartem MedicationCoartem form.coartem
-                --             , 1 + derivedQuestionExists form.coartem
-                --             )
-                --
-                --         Just DiagnosisGastrointestinalInfectionUncomplicated ->
-                --             ( taskCompleted form.ors
-                --                 + taskCompleted form.zinc
-                --                 + derivedQuestionCompleted ORS MedicationORS form.ors
-                --                 + derivedQuestionCompleted Zinc MedicationZinc form.zinc
-                --             , 2
-                --                 + derivedQuestionExists form.ors
-                --                 + derivedQuestionExists form.zinc
-                --             )
-                --
-                --         Just DiagnosisSimpleColdAndCough ->
-                --             ( taskCompleted form.lemonJuiceOrHoney
-                --             , 1
-                --             )
-                --
-                --         -- This is for child form 2 month old, to 5 years old.
-                --         Just DiagnosisRespiratoryInfectionUncomplicated ->
-                --             ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
-                --             , 1 + derivedQuestionExists form.amoxicillin
-                --             )
-                --
-                --         Just DiagnosisPneuminialCovid19 ->
-                --             ( taskCompleted form.amoxicillin + derivedQuestionCompleted Amoxicillin MedicationAmoxicillin form.amoxicillin
-                --             , 1 + derivedQuestionExists form.amoxicillin
-                --             )
-                --
-                --         _ ->
-                --             ( 0, 1 )
+                NextStepsMedicationDistribution ->
+                    getMeasurementValueFunc measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefault data.medicationDistributionForm
+                        |> medicationDistributionFormInutsAndTasks English currentDate person diagnosis
+
                 --
                 -- NextStepsSendToHC ->
                 --     let
@@ -1279,6 +1223,349 @@ call114FormInutsAndTasks language currentDate form =
           , [ form.called114 ]
           )
         , derivedSection
+        ]
+
+
+medicationDistributionFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe AcuteIllnessDiagnosis
+    -> MedicationDistributionForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+medicationDistributionFormInutsAndTasks language currentDate person diagnosis form =
+    let
+        ( instructions, ( inputs, tasks ) ) =
+            let
+                derivedQuestionInputsAndTasks medication reasonToSignFunc =
+                    let
+                        currentValue =
+                            getCurrentReasonForMedicationNonAdministration reasonToSignFunc form
+                    in
+                    ( [ viewQuestionLabel language Translate.WhyNot
+                      , viewCheckBoxSelectInput language
+                            [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                            [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                            currentValue
+                            (SetMedicationDistributionAdministrationNote currentValue medication)
+                            Translate.AdministrationNote
+                      ]
+                    , [ maybeToBoolTask currentValue ]
+                    )
+
+                -- When answer for medication administartion is Yes, we clean the reason for not adminsetering the medication.
+                updateNonAdministrationSigns medication reasonToSignFunc value form_ =
+                    if value then
+                        form_.nonAdministrationSigns
+                            |> Maybe.andThen
+                                (\nonAdministrationSigns ->
+                                    getCurrentReasonForMedicationNonAdministration reasonToSignFunc form_
+                                        |> Maybe.map
+                                            (\reason ->
+                                                Just <| EverySet.remove (nonAdministrationReasonToSign medication reason) nonAdministrationSigns
+                                            )
+                                        |> Maybe.withDefault (Just nonAdministrationSigns)
+                                )
+
+                    else
+                        form_.nonAdministrationSigns
+
+                amoxicillinAdministration =
+                    resolveAmoxicillinDosage currentDate person
+                        |> Maybe.map
+                            (\( numberOfPills, pillMass, duration ) ->
+                                let
+                                    amoxicillinUpdateFunc value form_ =
+                                        { form_ | amoxicillin = Just value, nonAdministrationSigns = updateNonAdministrationSigns Amoxicillin MedicationAmoxicillin value form_ }
+
+                                    derivedQuestionSection =
+                                        case form.amoxicillin of
+                                            Just False ->
+                                                derivedQuestionInputsAndTasks Amoxicillin MedicationAmoxicillin
+
+                                            _ ->
+                                                ( [], [] )
+
+                                    administeredMedicationQuestion =
+                                        if pillMass == "500" then
+                                            viewQuestionLabel language Translate.AdministeredOneOfAboveMedicinesQuestion
+
+                                        else
+                                            viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Amoxicillin)
+                                in
+                                ( div [ class "instructions respiratory-infection-uncomplicated" ] <|
+                                    viewAmoxicillinAdministrationInstructions language numberOfPills pillMass duration Nothing
+                                , concatInputsAndTasksSections
+                                    [ ( [ administeredMedicationQuestion
+                                        , viewBoolInput
+                                            language
+                                            form.amoxicillin
+                                            (SetMedicationDistributionBoolInput amoxicillinUpdateFunc)
+                                            "amoxicillin-medication"
+                                            Nothing
+                                        ]
+                                      , [ form.amoxicillin ]
+                                      )
+                                    , derivedQuestionSection
+                                    ]
+                                )
+                            )
+                        |> Maybe.withDefault ( emptyNode, ( [], [] ) )
+            in
+            case diagnosis of
+                Just DiagnosisMalariaUncomplicated ->
+                    let
+                        coartemUpdateFunc value form_ =
+                            { form_ | coartem = Just value, nonAdministrationSigns = updateNonAdministrationSigns Coartem MedicationCoartem value form_ }
+
+                        derivedQuestionSection =
+                            case form.coartem of
+                                Just False ->
+                                    derivedQuestionInputsAndTasks Coartem MedicationCoartem
+
+                                _ ->
+                                    ( [], [] )
+                    in
+                    ( resolveCoartemDosage currentDate person
+                        |> Maybe.map
+                            (\dosage ->
+                                div [ class "instructions malaria-uncomplicated" ]
+                                    [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Coartem) "icon-pills" Nothing
+                                    , viewTabletsPrescription language dosage (Translate.ByMouthTwiceADayForXDays 3)
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , concatInputsAndTasksSections
+                        [ ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Coartem)
+                            , viewBoolInput
+                                language
+                                form.coartem
+                                (SetMedicationDistributionBoolInput coartemUpdateFunc)
+                                "coartem-medication"
+                                Nothing
+                            ]
+                          , [ form.coartem ]
+                          )
+                        , derivedQuestionSection
+                        ]
+                    )
+
+                Just DiagnosisGastrointestinalInfectionUncomplicated ->
+                    let
+                        orsUpdateFunc value form_ =
+                            { form_ | ors = Just value, nonAdministrationSigns = updateNonAdministrationSigns ORS MedicationORS value form_ }
+
+                        zincUpdateFunc value form_ =
+                            { form_ | zinc = Just value, nonAdministrationSigns = updateNonAdministrationSigns Zinc MedicationZinc value form_ }
+
+                        orsDerivedQuestionSection =
+                            case form.ors of
+                                Just False ->
+                                    derivedQuestionInputsAndTasks ORS MedicationORS
+
+                                _ ->
+                                    ( [], [] )
+
+                        zincDerivedQuestionSection =
+                            case form.zinc of
+                                Just False ->
+                                    derivedQuestionInputsAndTasks Zinc MedicationZinc
+
+                                _ ->
+                                    ( [], [] )
+                    in
+                    ( Maybe.map2
+                        (\orsDosage zincDosage ->
+                            div [ class "instructions gastrointestinal-uncomplicated" ]
+                                [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign ORS) "icon-oral-solution" Nothing
+                                , viewOralSolutionPrescription language orsDosage
+                                , viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign Zinc) "icon-pills" Nothing
+                                , viewTabletsPrescription language zincDosage (Translate.ByMouthDaylyForXDays 10)
+                                ]
+                        )
+                        (resolveORSDosage currentDate person)
+                        (resolveZincDosage currentDate person)
+                        |> Maybe.withDefault emptyNode
+                    , concatInputsAndTasksSections
+                        [ ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign ORS)
+                            , viewBoolInput
+                                language
+                                form.ors
+                                (SetMedicationDistributionBoolInput orsUpdateFunc)
+                                "ors-medication"
+                                Nothing
+                            ]
+                          , [ form.ors ]
+                          )
+                        , orsDerivedQuestionSection
+                        , ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign Zinc)
+                            , viewBoolInput
+                                language
+                                form.zinc
+                                (SetMedicationDistributionBoolInput zincUpdateFunc)
+                                "zinc-medication"
+                                Nothing
+                            ]
+                          , [ form.zinc ]
+                          )
+                        , zincDerivedQuestionSection
+                        ]
+                    )
+
+                Just DiagnosisSimpleColdAndCough ->
+                    let
+                        lemonJuiceOrHoneyUpdateFunc value form_ =
+                            { form_ | lemonJuiceOrHoney = Just value }
+                    in
+                    ( div [ class "instructions simple-cough-and-cold" ]
+                        [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign LemonJuiceOrHoney) "icon-pills" Nothing ]
+                    , ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign LemonJuiceOrHoney)
+                        , viewBoolInput
+                            language
+                            form.lemonJuiceOrHoney
+                            (SetMedicationDistributionBoolInput lemonJuiceOrHoneyUpdateFunc)
+                            "lemon-juice-or-honey-medication"
+                            Nothing
+                        ]
+                      , [ form.lemonJuiceOrHoney ]
+                      )
+                    )
+
+                Just DiagnosisRespiratoryInfectionUncomplicated ->
+                    amoxicillinAdministration
+
+                Just DiagnosisPneuminialCovid19 ->
+                    amoxicillinAdministration
+
+                _ ->
+                    ( emptyNode, ( [], [] ) )
+    in
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , instructions
+      ]
+        ++ inputs
+    , tasks
+    )
+
+
+viewAmoxicillinAdministrationInstructions : Language -> String -> String -> TranslationId -> Maybe NominalDate -> List (Html any)
+viewAmoxicillinAdministrationInstructions language numberOfPills pillMassInMg duration maybeDate =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if numberOfPills == "0.5" then
+                ( " (" ++ (translate language <| Translate.HalfOfDosage pillMassInMg) ++ ")"
+                , div [ class "prescription" ]
+                    [ text <| translate language Translate.SeeDosageScheduleByWeight ]
+                )
+
+            else
+                ( " (" ++ pillMassInMg ++ ")"
+                , viewTabletsPrescription language numberOfPills duration
+                )
+
+        alternateMedicineSection =
+            if pillMassInMg == "500" then
+                [ p [ class "or" ] [ text <| translate language Translate.Or ]
+                , viewAdministeredMedicationCustomLabel
+                    language
+                    Translate.Administer
+                    Translate.MedicationDoxycycline
+                    ""
+                    "icon-pills"
+                    ":"
+                    maybeDate
+                , viewTabletsPrescription language "1" (Translate.ByMouthTwiceADayForXDays 5)
+                ]
+
+            else
+                []
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Amoxicillin)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , prescription
+    ]
+        ++ alternateMedicineSection
+
+
+viewParacetamolAdministrationInstructions : Language -> Maybe NominalDate -> Bool -> List (Html any)
+viewParacetamolAdministrationInstructions language maybeDate isAdult =
+    let
+        ( medicationLabelSuffix, prescription ) =
+            if isAdult then
+                ( " (1g)", Translate.ParacetamolPrescriptionForAdult )
+
+            else
+                ( " (15mg per kg)", Translate.SeeDosageScheduleByWeight )
+    in
+    [ viewAdministeredMedicationCustomLabel
+        language
+        Translate.Administer
+        (Translate.MedicationDistributionSign Paracetamol)
+        medicationLabelSuffix
+        "icon-pills"
+        ":"
+        maybeDate
+    , div [ class "prescription" ]
+        [ text <| translate language prescription ]
+    ]
+
+
+viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
+viewAdministeredMedicationQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.AdministeredMedicationQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ " "
+                ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
+viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass ":" maybeDate
+
+
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId medicineSuffix iconClass suffix maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language administerTranslationId
+                , text ": "
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ++ medicineSuffix ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text <| " " ++ suffix ]
+    in
+    viewInstructionsLabel iconClass message
+
+
+viewTabletsPrescription : Language -> String -> TranslationId -> Html any
+viewTabletsPrescription language dosage duration =
+    div [ class "prescription" ]
+        [ span [] [ text <| translate language (Translate.TabletSinglePlural dosage) ]
+        , text " "
+        , text <| translate language duration
+        , text "."
+        ]
+
+
+viewOralSolutionPrescription : Language -> String -> Html any
+viewOralSolutionPrescription language dosage =
+    div [ class "prescription" ]
+        [ span [] [ text <| translate language (Translate.Glass dosage) ]
+        , text " "
+        , text <| translate language Translate.AfterEachLiquidStool
+        , text "."
         ]
 
 

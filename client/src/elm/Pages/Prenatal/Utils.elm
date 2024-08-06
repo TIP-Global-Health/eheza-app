@@ -14,7 +14,7 @@ import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEverySet)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
-import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Types exposing (..)
 import Pages.Utils

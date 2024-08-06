@@ -52,7 +52,7 @@ import Measurement.View
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
         )
-import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils

@@ -27,12 +27,9 @@ import Pages.AcuteIllness.Activity.Utils
         , resolveORSDosage
         , resolveZincDosage
         , respiratoryRateAbnormalForAge
-        , viewHCRecommendation
-        )
-import Pages.AcuteIllness.Activity.View
-    exposing
-        ( viewAdministeredMedicationLabel
+        , viewAdministeredMedicationLabel
         , viewAmoxicillinAdministrationInstructions
+        , viewHCRecommendation
         , viewOralSolutionPrescription
         , viewParacetamolAdministrationInstructions
         , viewTabletsPrescription
