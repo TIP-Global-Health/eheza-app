@@ -20,6 +20,7 @@ import Measurement.Utils
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
+        , followUpFormInputsAndTasks
         , healthEducationFormInutsAndTasks
         , sendToFacilityInputsAndTasks
         )
@@ -30,10 +31,10 @@ import Translate.Model exposing (Language(..))
 
 nextStepsTasksCompletedFromTotal : NominalDate -> MeasurementData ChildMeasurements -> Model -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        NextStepsSendToHC ->
-            let
-                ( _, tasks ) =
+    let
+        ( _, tasks ) =
+            case task of
+                NextStepsSendToHC ->
                     mapMeasurementData .sendToHC measurements
                         |> .current
                         |> getMeasurementValueFunc
@@ -45,12 +46,8 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                             Pages.NextSteps.Model.SetReasonForNonReferral
                             Pages.NextSteps.Model.SetHandReferralForm
                             Nothing
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepsHealthEducation ->
-            let
-                ( _, tasks ) =
+                NextStepsHealthEducation ->
                     mapMeasurementData .healthEducation measurements
                         |> .current
                         |> getMeasurementValueFunc
@@ -59,12 +56,8 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                             currentDate
                             Pages.NextSteps.Model.SetProvidedEducationForDiagnosis
                             Pages.NextSteps.Model.SetReasonForNotProvidingHealthEducation
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepContributingFactors ->
-            let
-                ( _, tasks ) =
+                NextStepContributingFactors ->
                     mapMeasurementData .contributingFactors measurements
                         |> .current
                         |> getMeasurementValueFunc
@@ -72,17 +65,15 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                         |> contributingFactorsFormInutsAndTasks English
                             currentDate
                             Pages.NextSteps.Model.SetContributingFactorsSign
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepFollowUp ->
-            let
-                form =
+                NextStepFollowUp ->
                     mapMeasurementData .followUp measurements
                         |> .current
                         |> getMeasurementValueFunc
                         |> nutritionFollowUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            Pages.NextSteps.Model.SetFollowUpOption
+    in
+    resolveTasksCompletedFromTotal tasks

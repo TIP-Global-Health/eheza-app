@@ -19,6 +19,7 @@ import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
         ( contributingFactorsFormInutsAndTasks
+        , followUpFormInputsAndTasks
         , healthEducationFormInutsAndTasks
         , referToProgramFormInputsAndTasks
         , sendToFacilityInputsAndTasks
@@ -1512,14 +1513,15 @@ nextStepsTasksCompletedFromTotal currentDate isChw measurements data task =
 
         TaskFollowUp ->
             let
-                form =
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            Pages.WellChild.Activity.Model.SetFollowUpOption
             in
-            ( taskCompleted form.option
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskSendToHC ->
             let

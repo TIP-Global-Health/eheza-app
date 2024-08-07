@@ -23,7 +23,13 @@ import Measurement.Utils
         , nutritionFollowUpFormWithDefault
         , sendToHCFormWithDefault
         )
-import Measurement.View exposing (contributingFactorsFormInutsAndTasks, healthEducationFormInutsAndTasks, sendToFacilityInputsAndTasks)
+import Measurement.View
+    exposing
+        ( contributingFactorsFormInutsAndTasks
+        , followUpFormInputsAndTasks
+        , healthEducationFormInutsAndTasks
+        , sendToFacilityInputsAndTasks
+        )
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
@@ -182,11 +188,12 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
 
         NextStepFollowUp ->
             let
-                form =
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            Pages.Nutrition.Activity.Model.SetFollowUpOption
             in
-            ( taskCompleted form.option
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
