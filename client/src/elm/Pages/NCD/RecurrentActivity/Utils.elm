@@ -106,37 +106,30 @@ nextStepsTasksCompletedFromTotal language currentDate assembled data task =
     case task of
         TaskMedicationDistribution ->
             let
-                form =
+                ( _, completed, total ) =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-
-                ( _, completed, total ) =
-                    resolveMedicationDistributionInputsAndTasks language
-                        currentDate
-                        NCDEncounterPhaseRecurrent
-                        assembled
-                        SetRecommendedTreatmentSignSingle
-                        SetRecommendedTreatmentSignMultiple
-                        SetMedicationDistributionBoolInput
-                        form
+                        |> resolveMedicationDistributionInputsAndTasks language
+                            currentDate
+                            NCDEncounterPhaseRecurrent
+                            assembled
+                            SetRecommendedTreatmentSignSingle
+                            SetRecommendedTreatmentSignMultiple
+                            SetMedicationDistributionBoolInput
             in
             ( completed, total )
 
         TaskReferral ->
             let
-                form =
-                    assembled.measurements.referral
-                        |> getMeasurementValueFunc
-                        |> referralFormWithDefault data.referralForm
-
                 ( _, tasks ) =
-                    resolveReferralInputsAndTasks language
-                        currentDate
-                        NCDEncounterPhaseRecurrent
-                        assembled
-                        SetReferralBoolInput
-                        SetFacilityNonReferralReason
-                        form
+                    getMeasurementValueFunc assembled.measurements.referral
+                        |> referralFormWithDefault data.referralForm
+                        |> resolveReferralInputsAndTasks language
+                            currentDate
+                            NCDEncounterPhaseRecurrent
+                            assembled
+                            SetReferralBoolInput
+                            SetFacilityNonReferralReason
             in
             resolveTasksCompletedFromTotal tasks
 

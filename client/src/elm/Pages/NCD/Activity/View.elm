@@ -493,8 +493,7 @@ viewMedicalHistoryContent language currentDate site assembled data =
                 |> Maybe.withDefault ( 0, 0 )
 
         outsideCareForm =
-            assembled.measurements.outsideCare
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.outsideCare
                 |> outsideCareFormWithDefault data.outsideCareForm
 
         ( outsideCareInputs, outsideCareTasks ) =
@@ -732,72 +731,22 @@ outsideCareConfig =
 
 viewCoMorbiditiesForm : Language -> NominalDate -> CoMorbiditiesForm -> Html Msg
 viewCoMorbiditiesForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            coMorbiditiesFormInputsAndTasks language currentDate form
+    in
     div [ class "ui form co-morbidities" ]
-        [ viewQuestionLabel language Translate.MedicalConditionQuestion
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ MedicalConditionHIV
-            , MedicalConditionDiabetes
-            , MedicalConditionKidneyDisease
-            , MedicalConditionPregnancy
-            , MedicalConditionHypertension
-            , MedicalConditionGestationalDiabetes
-            , MedicalConditionPregnancyRelatedHypertension
-            ]
-            []
-            (Maybe.withDefault [] form.conditions)
-            (Just NoMedicalConditions)
-            SetMedicalCondition
-            Translate.MedicalCondition
-        ]
+        inputs
 
 
 viewMedicationHistoryForm : Language -> NominalDate -> MedicationHistoryForm -> Html Msg
 viewMedicationHistoryForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            medicationHistoryFormInputsAndTasks language currentDate form
+    in
     div [ class "ui form medication-history" ]
-        [ viewQuestionLabel language Translate.MedicationCausingHypertensionQuestion
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ MedicationOestrogens
-            , MedicationSteroids
-            , MedicationAmitriptyline
-            ]
-            [ MedicationIbuprofen
-            , NoMedicationCausingHypertension
-            ]
-            (Maybe.withDefault [] form.medicationsCausingHypertension)
-            Nothing
-            SetMedicationCausingHypertension
-            Translate.MedicationCausingHypertension
-        , viewQuestionLabel language Translate.MedicationTreatingHypertensionQuestion
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ MedicationAceInhibitors
-            , MedicationARBs
-            , MedicationHCTZ
-            , MedicationCalciumChannelBlockers
-            ]
-            [ MedicationMethyldopa
-            , MedicationBetaBlockers
-            , MedicationHydralazine
-            , NoMedicationTreatingHypertension
-            ]
-            (Maybe.withDefault [] form.medicationsTreatingHypertension)
-            Nothing
-            SetMedicationTreatingHypertension
-            Translate.MedicationTreatingHypertension
-        , viewQuestionLabel language Translate.MedicationTreatingDiabetesQuestion
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ MedicationMetformin
-            , MedicationGlibenclamide
-            ]
-            [ MedicationInsulin, NoMedicationTreatingDiabetes ]
-            (Maybe.withDefault [] form.medicationsTreatingDiabetes)
-            Nothing
-            SetMedicationTreatingDiabetes
-            Translate.MedicationTreatingDiabetes
-        ]
+        inputs
 
 
 viewSocialHistoryForm : Language -> NominalDate -> Site -> SocialHistoryForm -> Html Msg
@@ -1139,7 +1088,7 @@ viewNextStepsContent language currentDate assembled data =
             tasks
                 |> List.map
                     (\task ->
-                        ( task, nextStepsTasksCompletedFromTotal language currentDate assembled data task )
+                        ( task, nextStepsTasksCompletedFromTotal currentDate assembled data task )
                     )
                 |> Dict.fromList
 
@@ -1218,14 +1167,9 @@ viewNextStepsContent language currentDate assembled data =
 
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language currentDate form
+    in
     div [ class "ui form health-education" ]
-        [ viewCustomLabel language Translate.NCDHealthEducationHeader "" "label header"
-        , viewCustomLabel language Translate.NCDHealthEducationInstructions "." "label paragraph"
-        , viewQuestionLabel language Translate.NCDHealthEducationQuestion
-        , viewBoolInput
-            language
-            form.hypertension
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | hypertension = Just value }))
-            "hypertension"
-            Nothing
-        ]
+        inputs
