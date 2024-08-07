@@ -2,11 +2,7 @@
 
 /**
  * @file
- * Locates all Well child encounters where Head Circumferences value was set.
- *
- * Checks if 'no-head-circumference-warning' warning is set (which is wrong,
- * as Head Circumferences has valid value).
- * If found, 'no-head-circumference-warning' warning is deleted.
+ * Genrates MUAC report.
  *
  * Drush scr
  * profiles/hedley/modules/custom/hedley_admin/scripts/muac-report.php.
@@ -18,7 +14,7 @@ if (!drupal_is_cli()) {
 }
 
 // Get the number of nodes to be processed.
-$batch = drush_get_option('batch', 50);
+$batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
