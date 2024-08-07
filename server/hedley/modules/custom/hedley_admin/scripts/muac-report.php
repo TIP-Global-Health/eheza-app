@@ -76,7 +76,15 @@ $query->range(0, $batch);
 $query->orderBy('node.nid');
 
 $nid = 0;
-$rows[0] = ['Patient ID', 'MUAC Value', 'Date Measured (YYYY-MM-DD)', 'Nurse/CHW', 'Health Center', 'District'];
+$rows[0] = [
+  'Patient ID',
+  'MUAC Value',
+  'Date Measured (YYYY-MM-DD)',
+  'Nurse/CHW',
+  'Health Center',
+  'District',
+];
+
 while (TRUE) {
   // Free up memory.
   drupal_static_reset();
@@ -136,7 +144,3 @@ foreach ($rows as $row) {
   $row_as_string = implode(',', $row);
   drush_print($row_as_string);
 }
-
-
-
-
