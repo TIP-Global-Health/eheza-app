@@ -17,7 +17,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Model exposing (HealthEducationForm, InvokationModule(..), VitalsFormConfig, VitalsFormMode(..))
 import Measurement.Utils
     exposing
         ( fromListWithDefaultValue
@@ -856,64 +856,27 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagn
                             SetHandReferralForm
                             Nothing
 
-                --
-                -- NextStepsHealthEducation ->
-                --     let
-                --         form =
-                --             measurements.healthEducation
-                --                 |> getMeasurementValueFunc
-                --                 |> healthEducationFormWithDefault data.healthEducationForm
-                --
-                --         ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                --             form.educationForDiagnosis
-                --                 |> Maybe.map
-                --                     (\providedHealthEducation ->
-                --                         if not providedHealthEducation then
-                --                             if isJust form.reasonForNotProvidingHealthEducation then
-                --                                 ( 1, 1 )
-                --
-                --                             else
-                --                                 ( 0, 1 )
-                --
-                --                         else
-                --                             ( 0, 0 )
-                --                     )
-                --                 |> Maybe.withDefault ( 0, 0 )
-                --     in
-                --     ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-                --     , reasonForProvidingEducationCompleted + 1
-                --     )
-                --
-                -- NextStepsFollowUp ->
-                --     let
-                --         form =
-                --             measurements.followUp
-                --                 |> getMeasurementValueFunc
-                --                 |> followUpFormWithDefault data.followUpForm
-                --     in
-                --     ( taskCompleted form.option
-                --     , 1
-                --     )
-                --
-                -- NextStepsContactTracing ->
-                --     if data.contactsTracingForm.finished then
-                --         ( 1, 1 )
-                --
-                --     else
-                --         ( 0, 1 )
-                --
-                -- NextStepsSymptomsReliefGuidance ->
-                --     let
-                --         form =
-                --             measurements.healthEducation
-                --                 |> getMeasurementValueFunc
-                --                 |> healthEducationFormWithDefault data.healthEducationForm
-                --     in
-                --     ( taskCompleted form.educationForDiagnosis
-                --     , 1
-                --     )
-                _ ->
-                    ( [], [] )
+                NextStepsHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> healthEducationFormInutsAndTasks English currentDate diagnosis
+
+                NextStepsSymptomsReliefGuidance ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> symptomsReliefFormInutsAndTasks English currentDate
+
+                NextStepsFollowUp ->
+                    getMeasurementValueFunc measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+                        |> followUpFormInutsAndTasks English currentDate isChw
+
+                NextStepsContactTracing ->
+                    if data.contactsTracingForm.finished then
+                        ( [], [ Just True ] )
+
+                    else
+                        ( [], [ Nothing ] )
     in
     resolveTasksCompletedFromTotal tasks
 
@@ -1523,7 +1486,7 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
 
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass ":" maybeDate
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass "." maybeDate
 
 
 viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
@@ -1561,40 +1524,234 @@ viewOralSolutionPrescription language dosage =
         ]
 
 
-ongoingTreatmentTasksCompletedFromTotal : Language -> NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
-ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task =
+healthEducationFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> Maybe AcuteIllnessDiagnosis
+    -> HealthEducationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInutsAndTasks language currentDate maybeDiagnosis form =
+    Maybe.map
+        (\diagnosis ->
+            let
+                healthEducationSection =
+                    let
+                        providedHealthEducation =
+                            Maybe.withDefault True form.educationForDiagnosis
+
+                        reasonForNotProvidingHealthEducationSection =
+                            if not providedHealthEducation then
+                                let
+                                    reasonForNotProvidingHealthEducationOptions =
+                                        [ PatientNeedsEmergencyReferral
+                                        , ReceivedEmergencyCase
+                                        , LackOfAppropriateEducationUserGuide
+                                        , PatientRefused
+                                        ]
+                                in
+                                ( [ viewQuestionLabel language Translate.WhyNot
+                                  , viewCheckBoxSelectInput language
+                                        reasonForNotProvidingHealthEducationOptions
+                                        []
+                                        form.reasonForNotProvidingHealthEducation
+                                        SetReasonForNotProvidingHealthEducation
+                                        Translate.ReasonForNotProvidingHealthEducation
+                                  ]
+                                , [ maybeToBoolTask form.reasonForNotProvidingHealthEducation ]
+                                )
+
+                            else
+                                ( [], [] )
+                    in
+                    concatInputsAndTasksSections
+                        [ ( [ div [ class "label" ]
+                                [ text <| translate language Translate.ProvidedPreventionEducationQuestion
+                                , text " "
+                                , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
+                                , text "?"
+                                , viewBoolInput
+                                    language
+                                    form.educationForDiagnosis
+                                    SetProvidedEducationForDiagnosis
+                                    "education-for-diagnosis"
+                                    Nothing
+                                ]
+                            ]
+                          , [ form.educationForDiagnosis ]
+                          )
+                        , reasonForNotProvidingHealthEducationSection
+                        ]
+            in
+            concatInputsAndTasksSections
+                [ ( [ div [ class "ui form health-education" ] <|
+                        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                        , div [ class "instructions" ]
+                            [ viewHealthEducationLabel language
+                                Translate.ProvideHealthEducation
+                                (Translate.AcuteIllnessDiagnosis diagnosis)
+                                "icon-open-book"
+                                Nothing
+                            ]
+                        ]
+                    ]
+                  , []
+                  )
+                , healthEducationSection
+                ]
+        )
+        maybeDiagnosis
+        |> Maybe.withDefault ( [], [] )
+
+
+viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
+viewHealthEducationLabel language actionTranslationId diagnosisTranslationId iconClass maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language actionTranslationId
+                , text " "
+                , span [] [ text <| translate language diagnosisTranslationId ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text "." ]
+    in
+    viewInstructionsLabel iconClass message
+
+
+symptomsReliefFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> HealthEducationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+symptomsReliefFormInutsAndTasks language currentDate form =
+    let
+        viewSymptomRelief symptomsRelief =
+            li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
+
+        symptomsReliefList =
+            [ SymptomReliefParacetamol
+            , SymptomReliefVitaminC
+            , SymptomReliefPaidoterineSyrup
+            , SymptomReliefCoughMixture
+            ]
+    in
+    ( [ div [ class "ui form symptoms-relief" ] <|
+            [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+            , viewLabel language Translate.RecommendedSymptomRelief
+            , ul [] <|
+                List.map viewSymptomRelief symptomsReliefList
+            , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
+            , viewBoolInput
+                language
+                form.educationForDiagnosis
+                SetProvidedEducationForDiagnosis
+                "education-for-diagnosis"
+                Nothing
+            ]
+      ]
+    , [ form.educationForDiagnosis ]
+    )
+
+
+followUpFormInutsAndTasks : Language -> NominalDate -> Bool -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
+followUpFormInutsAndTasks language currentDate isChw form =
+    let
+        ( headerHelper, label ) =
+            if isChw then
+                ( [], Translate.FollowUpByChwLabel )
+
+            else
+                ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                  , div [ class "instructions" ]
+                        [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
+                        ]
+                  ]
+                , Translate.FollowUpLabel
+                )
+    in
+    ( headerHelper
+        ++ [ viewLabel language label
+           , viewCheckBoxSelectInput language
+                [ OneDay, ThreeDays, OneWeek, TwoWeeks, FollowUpNotNeeded ]
+                []
+                form.option
+                SetFollowUpOption
+                Translate.FollowUpOption
+           ]
+    , [ maybeToBoolTask form.option ]
+    )
+
+
+viewFollowUpLabel : Language -> TranslationId -> String -> Html any
+viewFollowUpLabel language actionTranslationId iconClass =
+    let
+        message =
+            div [] [ text <| translate language actionTranslationId ++ "." ]
+    in
+    viewInstructionsLabel iconClass message
+
+
+ongoingTreatmentTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> OngoingTreatmentData -> OngoingTreatmentTask -> ( Int, Int )
+ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task =
     case task of
         OngoingTreatmentReview ->
             let
-                form =
+                ( _, tasks ) =
                     getMeasurementValueFunc measurements.treatmentOngoing
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
-
-                ( _, tasks ) =
-                    treatmentReviewInputsAndTasks language
-                        currentDate
-                        SetOngoingTreatmentReviewBoolInput
-                        SetReasonForNotTaking
-                        SetTotalMissedDoses
-                        SetAdverseEvent
-                        form
+                        |> treatmentReviewInputsAndTasks English
+                            currentDate
+                            SetOngoingTreatmentReviewBoolInput
+                            SetReasonForNotTaking
+                            SetTotalMissedDoses
+                            SetAdverseEvent
             in
             resolveTasksCompletedFromTotal tasks
 
 
-dangerSignsTasksCompletedFromTotal : AcuteIllnessMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
-dangerSignsTasksCompletedFromTotal measurements data task =
+dangerSignsTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
+dangerSignsTasksCompletedFromTotal currentDate measurements data task =
     case task of
         ReviewDangerSigns ->
             let
-                form =
-                    measurements.dangerSigns
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.dangerSigns
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
+                        |> reviewDangerSignsFormInutsAndTasks English currentDate
             in
-            ( taskCompleted form.conditionImproving + taskCompleted form.symptoms
-            , 2
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+reviewDangerSignsFormInutsAndTasks : Language -> NominalDate -> ReviewDangerSignsForm -> ( List (Html Msg), List (Maybe Bool) )
+reviewDangerSignsFormInutsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.ConditionImprovingQuestion
+      , viewBoolInput
+            language
+            form.conditionImproving
+            SetConditionImproving
+            "conditionImproving"
+            Nothing
+      , viewQuestionLabel language Translate.HaveAnyOfTheFollowingQuestion
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ DangerSignUnableDrinkSuck
+            , DangerSignVomiting
+            , DangerSignConvulsions
+            , DangerSignLethargyUnconsciousness
+            , DangerSignRespiratoryDistress
+            , DangerSignSpontaneousBleeding
+            , DangerSignBloodyDiarrhea
+            , DangerSignNewSkinRash
+            , NoAcuteIllnessDangerSign
+            ]
+            []
+            (form.symptoms |> Maybe.withDefault [])
+            Nothing
+            SetDangerSign
+            Translate.AcuteIllnessDangerSign
+      ]
+    , [ form.conditionImproving, maybeToBoolTask form.symptoms ]
+    )
 
 
 taskNotCompleted : Bool -> Int

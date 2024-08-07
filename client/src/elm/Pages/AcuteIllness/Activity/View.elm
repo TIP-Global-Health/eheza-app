@@ -1439,6 +1439,11 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language currentDate diagnosis
 
+                Just NextStepsSymptomsReliefGuidance ->
+                    getMeasurementValueFunc measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> viewSymptomsReliefForm language currentDate
+
                 Just NextStepsFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
@@ -1448,11 +1453,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                     getMeasurementValueFunc measurements.contactsTracing
                         |> contactsTracingFormWithDefault data.contactsTracingForm
                         |> viewContactsTracingForm language currentDate site geoInfo db contactsTracingFinished
-
-                Just NextStepsSymptomsReliefGuidance ->
-                    getMeasurementValueFunc measurements.healthEducation
-                        |> healthEducationFormWithDefault data.healthEducationForm
-                        |> viewSymptomsReliefForm language currentDate diagnosis
 
                 Nothing ->
                     emptyNode
@@ -1501,8 +1501,7 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
                                         else
                                             let
                                                 hcContactForm =
-                                                    measurements.hcContact
-                                                        |> getMeasurementValueFunc
+                                                    getMeasurementValueFunc measurements.hcContact
                                                         |> hcContactFormWithDefault data.hcContactForm
                                             in
                                             if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
@@ -1769,7 +1768,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, ongoingTreatmentTasksCompletedFromTotal language currentDate measurements data task )
+                    ( task, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -1781,8 +1780,7 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
         viewForm =
             case activeTask of
                 Just OngoingTreatmentReview ->
-                    measurements.treatmentOngoing
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.treatmentOngoing
                         |> ongoingTreatmentReviewFormWithDefault data.treatmentReviewForm
                         |> viewOngoingTreatmentReviewForm language currentDate
 
@@ -1879,7 +1877,7 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
         tasksCompletedFromTotalDict =
             List.map
                 (\task ->
-                    ( task, dangerSignsTasksCompletedFromTotal measurements data task )
+                    ( task, dangerSignsTasksCompletedFromTotal currentDate measurements data task )
                 )
                 tasks
                 |> Dict.fromList
@@ -1891,10 +1889,9 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
         viewForm =
             case activeTask of
                 Just ReviewDangerSigns ->
-                    measurements.dangerSigns
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.dangerSigns
                         |> reviewDangerSignsFormWithDefault data.reviewDangerSignsForm
-                        |> viewReviewDangerSignsForm language currentDate measurements
+                        |> viewReviewDangerSignsForm language currentDate
 
                 _ ->
                     emptyNode
@@ -1933,174 +1930,44 @@ viewAcuteIllnessDangerSigns language currentDate id ( personId, measurements ) d
     ]
 
 
-viewReviewDangerSignsForm : Language -> NominalDate -> AcuteIllnessMeasurements -> ReviewDangerSignsForm -> Html Msg
-viewReviewDangerSignsForm language currentDate measurements form =
+viewReviewDangerSignsForm : Language -> NominalDate -> ReviewDangerSignsForm -> Html Msg
+viewReviewDangerSignsForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            reviewDangerSignsFormInutsAndTasks language currentDate form
+    in
     div [ class "ui form danger-signs" ]
-        [ viewQuestionLabel language Translate.ConditionImprovingQuestion
-        , viewBoolInput
-            language
-            form.conditionImproving
-            SetConditionImproving
-            "conditionImproving"
-            Nothing
-        , viewQuestionLabel language Translate.HaveAnyOfTheFollowingQuestion
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ DangerSignUnableDrinkSuck
-            , DangerSignVomiting
-            , DangerSignConvulsions
-            , DangerSignLethargyUnconsciousness
-            , DangerSignRespiratoryDistress
-            , DangerSignSpontaneousBleeding
-            , DangerSignBloodyDiarrhea
-            , DangerSignNewSkinRash
-            , NoAcuteIllnessDangerSign
-            ]
-            []
-            (form.symptoms |> Maybe.withDefault [])
-            Nothing
-            SetDangerSign
-            Translate.AcuteIllnessDangerSign
-        ]
+        inputs
 
 
 viewHealthEducationForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate maybeDiagnosis form =
-    maybeDiagnosis
-        |> Maybe.map
-            (\diagnosis ->
-                let
-                    healthEducationSection =
-                        let
-                            providedHealthEducation =
-                                form.educationForDiagnosis
-                                    |> Maybe.withDefault True
-
-                            reasonForNotProvidingHealthEducation =
-                                if not providedHealthEducation then
-                                    let
-                                        reasonForNotProvidingHealthEducationOptions =
-                                            [ PatientNeedsEmergencyReferral
-                                            , ReceivedEmergencyCase
-                                            , LackOfAppropriateEducationUserGuide
-                                            , PatientRefused
-                                            ]
-                                    in
-                                    [ viewQuestionLabel language Translate.WhyNot
-                                    , viewCheckBoxSelectInput language
-                                        reasonForNotProvidingHealthEducationOptions
-                                        []
-                                        form.reasonForNotProvidingHealthEducation
-                                        SetReasonForNotProvidingHealthEducation
-                                        Translate.ReasonForNotProvidingHealthEducation
-                                    ]
-
-                                else
-                                    []
-                        in
-                        div [ class "label" ]
-                            [ text <| translate language Translate.ProvidedPreventionEducationQuestion
-                            , text " "
-                            , text <| translate language <| Translate.AcuteIllnessDiagnosis diagnosis
-                            , text "?"
-                            , viewBoolInput
-                                language
-                                form.educationForDiagnosis
-                                SetProvidedEducationForDiagnosis
-                                "education-for-diagnosis"
-                                Nothing
-                            ]
-                            :: reasonForNotProvidingHealthEducation
-                in
-                div [ class "ui form health-education" ] <|
-                    [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                    , div [ class "instructions" ]
-                        [ viewHealthEducationLabel language Translate.ProvideHealthEducation (Translate.AcuteIllnessDiagnosis diagnosis) "icon-open-book" Nothing
-                        ]
-                    ]
-                        ++ healthEducationSection
-            )
-        |> Maybe.withDefault emptyNode
-
-
-viewSymptomsReliefForm : Language -> NominalDate -> Maybe AcuteIllnessDiagnosis -> HealthEducationForm -> Html Msg
-viewSymptomsReliefForm language currentDate maybeDiagnosis form =
     let
-        viewSymptomRelief symptomsRelief =
-            li [] [ text <| translate language <| Translate.SymptomRelief symptomsRelief ]
-
-        symptomsReliefList =
-            [ SymptomReliefParacetamol
-            , SymptomReliefVitaminC
-            , SymptomReliefPaidoterineSyrup
-            , SymptomReliefCoughMixture
-            ]
+        ( inputs, _ ) =
+            healthEducationFormInutsAndTasks language currentDate maybeDiagnosis form
     in
-    div [ class "ui form symptoms-relief" ] <|
-        [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
-        , viewLabel language Translate.RecommendedSymptomRelief
-        , ul [] <|
-            List.map viewSymptomRelief symptomsReliefList
-        , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
-        , viewBoolInput
-            language
-            form.educationForDiagnosis
-            SetProvidedEducationForDiagnosis
-            "education-for-diagnosis"
-            Nothing
-        ]
+    div [ class "ui form health-education" ]
+        inputs
 
 
-viewHealthEducationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
-viewHealthEducationLabel language actionTranslationId diagnosisTranslationId iconClass maybeDate =
+viewSymptomsReliefForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
+viewSymptomsReliefForm language currentDate form =
     let
-        message =
-            div [] <|
-                [ text <| translate language actionTranslationId
-                , text " "
-                , span [] [ text <| translate language diagnosisTranslationId ]
-                ]
-                    ++ renderDatePart language maybeDate
-                    ++ [ text "." ]
+        ( inputs, _ ) =
+            symptomsReliefFormInutsAndTasks language currentDate form
     in
-    viewInstructionsLabel iconClass message
+    div [ class "ui form symptoms-relief" ]
+        inputs
 
 
 viewFollowUpForm : Language -> NominalDate -> Bool -> FollowUpForm -> Html Msg
 viewFollowUpForm language currentDate isChw form =
     let
-        ( headerHelper, label ) =
-            if isChw then
-                ( [], Translate.FollowUpByChwLabel )
-
-            else
-                ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                  , div [ class "instructions" ]
-                        [ viewFollowUpLabel language Translate.AlertChwToFollowUp "icon-house"
-                        ]
-                  ]
-                , Translate.FollowUpLabel
-                )
+        ( inputs, _ ) =
+            followUpFormInutsAndTasks language currentDate isChw form
     in
-    div [ class "ui form follow-up" ] <|
-        headerHelper
-            ++ [ viewLabel language label
-               , viewCheckBoxSelectInput language
-                    [ OneDay, ThreeDays, OneWeek, TwoWeeks, FollowUpNotNeeded ]
-                    []
-                    form.option
-                    SetFollowUpOption
-                    Translate.FollowUpOption
-               ]
-
-
-viewFollowUpLabel : Language -> TranslationId -> String -> Html any
-viewFollowUpLabel language actionTranslationId iconClass =
-    let
-        message =
-            div [] [ text <| translate language actionTranslationId ++ "." ]
-    in
-    viewInstructionsLabel iconClass message
+    div [ class "ui form follow-up" ]
+        inputs
 
 
 viewContactsTracingForm : Language -> NominalDate -> Site -> GeoInfo -> ModelIndexedDb -> Bool -> ContactsTracingForm -> Html Msg
