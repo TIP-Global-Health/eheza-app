@@ -147,10 +147,10 @@ allMandatoryActivities isChw =
 
 nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        NextStepsSendToHC ->
-            let
-                ( _, tasks ) =
+    let
+        ( _, tasks ) =
+            case task of
+                NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
@@ -160,40 +160,28 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                             Pages.Nutrition.Activity.Model.SetReasonForNonReferral
                             Pages.Nutrition.Activity.Model.SetHandReferralForm
                             Nothing
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepsHealthEducation ->
-            let
-                ( _, tasks ) =
+                NextStepsHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> healthEducationFormInutsAndTasks English
                             currentDate
                             Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
                             Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepContributingFactors ->
-            let
-                ( _, tasks ) =
+                NextStepContributingFactors ->
                     getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> contributingFactorsFormInutsAndTasks English
                             currentDate
                             Pages.Nutrition.Activity.Model.SetContributingFactorsSign
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        NextStepFollowUp ->
-            let
-                ( _, tasks ) =
+                NextStepFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> followUpFormInputsAndTasks English
                             currentDate
                             []
                             Pages.Nutrition.Activity.Model.SetFollowUpOption
-            in
-            resolveTasksCompletedFromTotal tasks
+    in
+    resolveTasksCompletedFromTotal tasks

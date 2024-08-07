@@ -1991,12 +1991,12 @@ viewNextStepsContent language currentDate isChw assembled data =
                 Just NextStepsAppointmentConfirmation ->
                     getMeasurementValueFunc measurements.appointmentConfirmation
                         |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
-                        |> viewAppointmentConfirmationForm language currentDate assembled
+                        |> viewAppointmentConfirmationForm language currentDate
 
                 Just NextStepsFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-                        |> viewFollowUpForm language currentDate assembled
+                        |> viewFollowUpForm language currentDate
 
                 Just NextStepsSendToHC ->
                     getMeasurementValueFunc measurements.sendToHC
@@ -3680,48 +3680,24 @@ viewHealthEducationForm language currentDate assembled form =
         inputs
 
 
-viewFollowUpForm : Language -> NominalDate -> AssembledData -> FollowUpForm -> Html Msg
-viewFollowUpForm language assembled currentDate form =
-    div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpWithMotherLabel
-        , viewCheckBoxSelectInput language
-            [ ThreeDays
-            , Backend.Measurement.Model.OneMonth
-            , TwoMonths
-            , Backend.Measurement.Model.ThreeMonths
-            , FollowUpNotNeeded
-            ]
-            []
-            form.option
-            SetFollowUpOption
-            Translate.FollowUpOption
-        ]
-
-
-viewAppointmentConfirmationForm : Language -> NominalDate -> AssembledData -> AppointmentConfirmationForm -> Html Msg
-viewAppointmentConfirmationForm language currentDate assembled form =
+viewAppointmentConfirmationForm : Language -> NominalDate -> AppointmentConfirmationForm -> Html Msg
+viewAppointmentConfirmationForm language currentDate form =
     let
-        appointmentDateForView =
-            Maybe.map formatDDMMYYYY form.appointmentDate
-                |> Maybe.withDefault ""
-
-        dateSelectorConfig =
-            { select = SetAppointmentConfirmation
-            , close = SetAppointmentDateSelectorState Nothing
-            , dateFrom = currentDate
-            , dateTo = Date.add Months 9 currentDate
-            , dateDefault = Nothing
-            }
+        ( inputs, _ ) =
+            appointmentConfirmationFormInutsAndTasks language currentDate form
     in
     div [ class "form appointment-confirmation" ]
-        [ viewLabel language Translate.AppointmentConfirmationInstrunction
-        , div
-            [ class "form-input date"
-            , onClick <| SetAppointmentDateSelectorState (Just dateSelectorConfig)
-            ]
-            [ text appointmentDateForView ]
-        , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.appointmentDate
-        ]
+        inputs
+
+
+viewFollowUpForm : Language -> NominalDate -> FollowUpForm -> Html Msg
+viewFollowUpForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            followUpFormInutsAndTasks language currentDate form
+    in
+    div [ class "ui form follow-up" ]
+        inputs
 
 
 viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg

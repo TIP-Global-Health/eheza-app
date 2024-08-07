@@ -17,11 +17,13 @@ import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), Pren
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (isNurseEncounter)
 import Date exposing (Unit(..))
+import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
@@ -64,6 +66,7 @@ import Pages.Utils
 import SyncManager.Model exposing (Site)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
+import Utils.Html exposing (viewModal)
 
 
 expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
@@ -2784,12 +2787,160 @@ mentalHealthDiagnoses =
     DiagnosisDepressionNotLikely :: mentalHealthDiagnosesRequiringTreatment
 
 
+nextStepsTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> Bool
+    -> AssembledData
+    -> NextStepsData
+    -> NextStepsTask
+    -> ( Int, Int )
+nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task =
+    case task of
+        NextStepsAppointmentConfirmation ->
+            let
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.appointmentConfirmation
+                        |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
+                        |> appointmentConfirmationFormInutsAndTasks language currentDate
+            in
+            resolveTasksCompletedFromTotal tasks
+
+        NextStepsFollowUp ->
+            let
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.followUp
+                        |> followUpFormWithDefault data.followUpForm
+                        |> followUpFormInutsAndTasks language currentDate
+            in
+            resolveTasksCompletedFromTotal tasks
+
+        NextStepsSendToHC ->
+            let
+                form =
+                    getMeasurementValueFunc assembled.measurements.sendToHC
+                        |> referralFormWithDefault data.referralForm
+
+                ( _, tasks ) =
+                    case assembled.encounter.encounterType of
+                        NurseEncounter ->
+                            tasksForNurse
+
+                        NursePostpartumEncounter ->
+                            tasksForNurse
+
+                        _ ->
+                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
+
+                tasksForNurse =
+                    resolveReferralInputsAndTasksForNurse language
+                        currentDate
+                        assembled
+                        SetReferralBoolInput
+                        SetFacilityNonReferralReason
+                        form
+            in
+            resolveTasksCompletedFromTotal tasks
+
+        NextStepsHealthEducation ->
+            let
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.healthEducation
+                        |> healthEducationFormWithDefault data.healthEducationForm
+                        |> healthEducationFormInputsAndTasks language assembled
+            in
+            resolveTasksCompletedFromTotal tasks
+
+        NextStepsNewbornEnrolment ->
+            ( taskCompleted assembled.participant.newborn
+            , 1
+            )
+
+        NextStepsMedicationDistribution ->
+            let
+                ( _, completed, total ) =
+                    getMeasurementValueFunc assembled.measurements.medicationDistribution
+                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
+                        |> resolveMedicationDistributionInputsAndTasks language
+                            currentDate
+                            PrenatalEncounterPhaseInitial
+                            assembled
+                            SetMedicationDistributionBoolInput
+                            SetMedicationDistributionAdministrationNote
+                            SetRecommendedTreatmentSign
+                            SetAvoidingGuidanceReason
+            in
+            ( completed, total )
+
+        NextStepsWait ->
+            let
+                completed =
+                    if nextStepsTaskCompleted currentDate assembled NextStepsWait then
+                        1
+
+                    else
+                        0
+            in
+            ( completed
+            , 1
+            )
+
+
+appointmentConfirmationFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> AppointmentConfirmationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+appointmentConfirmationFormInutsAndTasks language currentDate form =
+    let
+        appointmentDateForView =
+            Maybe.map formatDDMMYYYY form.appointmentDate
+                |> Maybe.withDefault ""
+
+        dateSelectorConfig =
+            { select = SetAppointmentConfirmation
+            , close = SetAppointmentDateSelectorState Nothing
+            , dateFrom = currentDate
+            , dateTo = Date.add Months 9 currentDate
+            , dateDefault = Nothing
+            }
+    in
+    ( [ viewLabel language Translate.AppointmentConfirmationInstrunction
+      , div
+            [ class "form-input date"
+            , onClick <| SetAppointmentDateSelectorState (Just dateSelectorConfig)
+            ]
+            [ text appointmentDateForView ]
+      , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.appointmentDate
+      ]
+    , [ maybeToBoolTask form.appointmentDate ]
+    )
+
+
+followUpFormInutsAndTasks : Language -> NominalDate -> FollowUpForm -> ( List (Html Msg), List (Maybe Bool) )
+followUpFormInutsAndTasks language currentDate form =
+    ( [ viewLabel language Translate.FollowUpWithMotherLabel
+      , viewCheckBoxSelectInput language
+            [ ThreeDays
+            , Backend.Measurement.Model.OneMonth
+            , TwoMonths
+            , Backend.Measurement.Model.ThreeMonths
+            , FollowUpNotNeeded
+            ]
+            []
+            form.option
+            SetFollowUpOption
+            Translate.FollowUpOption
+      ]
+    , [ maybeToBoolTask form.option ]
+    )
+
+
 healthEducationFormInputsAndTasks : Language -> AssembledData -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
 healthEducationFormInputsAndTasks language assembled healthEducationForm =
     let
         form =
-            assembled.measurements.healthEducation
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.healthEducation
                 |> healthEducationFormWithDefault healthEducationForm
     in
     case assembled.encounter.encounterType of
@@ -3010,115 +3161,6 @@ healthEducationFormInputsAndTasksForChw language assembled form =
         -- We should never get here, as function is only for CHW.
         NursePostpartumEncounter ->
             ( [], [] )
-
-
-nextStepsTasksCompletedFromTotal :
-    Language
-    -> NominalDate
-    -> Bool
-    -> AssembledData
-    -> NextStepsData
-    -> NextStepsTask
-    -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task =
-    case task of
-        NextStepsAppointmentConfirmation ->
-            let
-                form =
-                    assembled.measurements.appointmentConfirmation
-                        |> getMeasurementValueFunc
-                        |> appointmentConfirmationFormWithDefault data.appointmentConfirmationForm
-            in
-            ( taskCompleted form.appointmentDate
-            , 1
-            )
-
-        NextStepsFollowUp ->
-            let
-                form =
-                    assembled.measurements.followUp
-                        |> getMeasurementValueFunc
-                        |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
-
-        NextStepsSendToHC ->
-            let
-                form =
-                    assembled.measurements.sendToHC
-                        |> getMeasurementValueFunc
-                        |> referralFormWithDefault data.referralForm
-
-                ( _, tasks ) =
-                    case assembled.encounter.encounterType of
-                        NurseEncounter ->
-                            tasksForNurse
-
-                        NursePostpartumEncounter ->
-                            tasksForNurse
-
-                        _ ->
-                            resolveReferralInputsAndTasksForCHW language currentDate assembled form
-
-                tasksForNurse =
-                    resolveReferralInputsAndTasksForNurse language
-                        currentDate
-                        assembled
-                        SetReferralBoolInput
-                        SetFacilityNonReferralReason
-                        form
-            in
-            resolveTasksCompletedFromTotal tasks
-
-        NextStepsHealthEducation ->
-            let
-                form =
-                    getMeasurementValueFunc assembled.measurements.healthEducation
-                        |> healthEducationFormWithDefault data.healthEducationForm
-
-                ( _, tasks ) =
-                    healthEducationFormInputsAndTasks language assembled form
-            in
-            resolveTasksCompletedFromTotal tasks
-
-        NextStepsNewbornEnrolment ->
-            ( taskCompleted assembled.participant.newborn
-            , 1
-            )
-
-        NextStepsMedicationDistribution ->
-            let
-                form =
-                    getMeasurementValueFunc assembled.measurements.medicationDistribution
-                        |> medicationDistributionFormWithDefaultInitialPhase data.medicationDistributionForm
-
-                ( _, completed, total ) =
-                    resolveMedicationDistributionInputsAndTasks language
-                        currentDate
-                        PrenatalEncounterPhaseInitial
-                        assembled
-                        SetMedicationDistributionBoolInput
-                        SetMedicationDistributionAdministrationNote
-                        SetRecommendedTreatmentSign
-                        SetAvoidingGuidanceReason
-                        form
-            in
-            ( completed, total )
-
-        NextStepsWait ->
-            let
-                completed =
-                    if nextStepsTaskCompleted currentDate assembled NextStepsWait then
-                        1
-
-                    else
-                        0
-            in
-            ( completed
-            , 1
-            )
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
