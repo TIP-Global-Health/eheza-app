@@ -978,15 +978,34 @@ viewFollowUpForm :
     -> { f | option : Maybe FollowUpOption }
     -> Html msg
 viewFollowUpForm language currentDate options setFollowUpOptionMsg form =
+    let
+        ( inputs, _ ) =
+            followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form
+    in
     div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
-        , viewCheckBoxSelectInput language
-            options
-            []
-            form.option
-            setFollowUpOptionMsg
-            Translate.FollowUpOption
-        ]
+        inputs
+
+
+followUpFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> List FollowUpOption
+    -> (FollowUpOption -> msg)
+    -> { f | option : Maybe FollowUpOption }
+    -> ( List (Html msg), List (Maybe Bool) )
+followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form =
+    ( [ div [ class "ui form follow-up" ]
+            [ viewLabel language Translate.FollowUpLabel
+            , viewCheckBoxSelectInput language
+                options
+                []
+                form.option
+                setFollowUpOptionMsg
+                Translate.FollowUpOption
+            ]
+      ]
+    , [ maybeToBoolTask form.option ]
+    )
 
 
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild

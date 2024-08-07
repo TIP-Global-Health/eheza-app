@@ -681,7 +681,6 @@ viewNextStepsContent language currentDate assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
                             currentDate
-                            assembled
                         |> List.singleton
 
                 Just TaskFollowUp ->
@@ -748,35 +747,11 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form =
+viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language currentDate form
+    in
     div [ class "ui form health-education" ]
-        [ viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationPositiveResult
-        , viewBoolInput
-            language
-            form.positiveResult
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | positiveResult = Just value }))
-            "positive-result"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationSaferSexPractices
-        , viewBoolInput
-            language
-            form.saferSexPractices
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | saferSexPractices = Just value }))
-            "safer-sex-practices"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationEncouragedPartnerTesting
-        , viewBoolInput
-            language
-            form.encouragedPartnerTesting
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | encouragedPartnerTesting = Just value }))
-            "encouraged-partner-testing"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationFamilyPlanningOptions
-        , viewBoolInput
-            language
-            form.familyPlanningOptions
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | familyPlanningOptions = Just value }))
-            "family-planning-options"
-            Nothing
-        ]
+        inputs

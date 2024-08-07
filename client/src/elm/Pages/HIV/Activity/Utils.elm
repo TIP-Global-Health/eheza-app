@@ -15,7 +15,7 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
         )
-import Measurement.View exposing (sendToFacilityInputsAndTasks)
+import Measurement.View exposing (followUpFormInputsAndTasks, sendToFacilityInputsAndTasks)
 import Pages.HIV.Activity.Model exposing (..)
 import Pages.HIV.Encounter.Model exposing (AssembledData)
 import Pages.Utils
@@ -226,33 +226,23 @@ nextStepsTaskCompleted assembled task =
 
 nextStepsTasksCompletedFromTotal : NominalDate -> HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        TaskHealthEducation ->
-            let
-                form =
+    let
+        ( _, tasks ) =
+            case task of
+                TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-            in
-            ( taskCompleted form.positiveResult
-                + taskCompleted form.saferSexPractices
-                + taskCompleted form.encouragedPartnerTesting
-                + taskCompleted form.familyPlanningOptions
-            , 4
-            )
+                        |> healthEducationFormInputsAndTasks English currentDate
 
-        TaskFollowUp ->
-            let
-                form =
+                TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            SetFollowUpOption
 
-        TaskReferral ->
-            let
-                ( _, tasks ) =
+                TaskReferral ->
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
@@ -262,8 +252,43 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                             SetReasonForNonReferral
                             SetHandReferralForm
                             Nothing
-            in
-            resolveTasksCompletedFromTotal tasks
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+healthEducationFormInputsAndTasks : Language -> NominalDate -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationPositiveResult
+      , viewBoolInput
+            language
+            form.positiveResult
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | positiveResult = Just value }))
+            "positive-result"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationSaferSexPractices
+      , viewBoolInput
+            language
+            form.saferSexPractices
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | saferSexPractices = Just value }))
+            "safer-sex-practices"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationEncouragedPartnerTesting
+      , viewBoolInput
+            language
+            form.encouragedPartnerTesting
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | encouragedPartnerTesting = Just value }))
+            "encouraged-partner-testing"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationFamilyPlanningOptions
+      , viewBoolInput
+            language
+            form.familyPlanningOptions
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | familyPlanningOptions = Just value }))
+            "family-planning-options"
+            Nothing
+      ]
+    , [ form.positiveResult, form.saferSexPractices, form.encouragedPartnerTesting, form.familyPlanningOptions ]
+    )
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool

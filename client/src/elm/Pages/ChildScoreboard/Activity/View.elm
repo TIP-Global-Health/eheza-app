@@ -424,43 +424,35 @@ immunisationTasksCompletedFromTotal language currentDate site assembled data tas
                 form =
                     case vaccineType of
                         VaccineBCG ->
-                            assembled.measurements.bcgImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.bcgImmunisation
                                 |> vaccinationFormWithDefault data.bcgForm
 
                         VaccineDTP ->
-                            assembled.measurements.dtpImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.dtpImmunisation
                                 |> vaccinationFormWithDefault data.dtpForm
 
                         VaccineDTPStandalone ->
-                            assembled.measurements.dtpStandaloneImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.dtpStandaloneImmunisation
                                 |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                         VaccineIPV ->
-                            assembled.measurements.ipvImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.ipvImmunisation
                                 |> vaccinationFormWithDefault data.ipvForm
 
                         VaccineMR ->
-                            assembled.measurements.mrImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.mrImmunisation
                                 |> vaccinationFormWithDefault data.mrForm
 
                         VaccineOPV ->
-                            assembled.measurements.opvImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.opvImmunisation
                                 |> vaccinationFormWithDefault data.opvForm
 
                         VaccinePCV13 ->
-                            assembled.measurements.pcv13Immunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.pcv13Immunisation
                                 |> vaccinationFormWithDefault data.pcv13Form
 
                         VaccineRotarix ->
-                            assembled.measurements.rotarixImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.rotarixImmunisation
                                 |> vaccinationFormWithDefault data.rotarixForm
 
                         -- Vaccine type not in use.

@@ -240,8 +240,7 @@ symptomsTasksCompletedFromTotal measurements data task =
         SymptomsGeneral ->
             let
                 form =
-                    measurements.symptomsGeneral
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsGeneral
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
             in
             ( taskNotCompleted (Dict.isEmpty form.signs)
@@ -251,8 +250,7 @@ symptomsTasksCompletedFromTotal measurements data task =
         SymptomsRespiratory ->
             let
                 form =
-                    measurements.symptomsRespiratory
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsRespiratory
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
             in
             ( taskNotCompleted (Dict.isEmpty form.signs)
@@ -262,8 +260,7 @@ symptomsTasksCompletedFromTotal measurements data task =
         SymptomsGI ->
             let
                 form =
-                    measurements.symptomsGI
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsGI
                         |> symptomsGIFormWithDefault data.symptomsGIForm
 
                 totalDerived =

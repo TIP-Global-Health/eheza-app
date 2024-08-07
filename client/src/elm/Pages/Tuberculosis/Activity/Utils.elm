@@ -16,7 +16,7 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
         )
-import Measurement.View exposing (sendToFacilityInputsAndTasks)
+import Measurement.View exposing (followUpFormInputsAndTasks, sendToFacilityInputsAndTasks)
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Utils
@@ -241,30 +241,23 @@ nextStepsTaskCompleted assembled task =
 
 nextStepsTasksCompletedFromTotal : NominalDate -> TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
 nextStepsTasksCompletedFromTotal currentDate measurements data task =
-    case task of
-        TaskHealthEducation ->
-            let
-                form =
+    let
+        ( _, tasks ) =
+            case task of
+                TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-            in
-            ( taskCompleted form.followUpTesting
-            , 1
-            )
+                        |> healthEducationFormInputsAndTasks English currentDate
 
-        TaskFollowUp ->
-            let
-                form =
+                TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            SetFollowUpOption
 
-        TaskReferral ->
-            let
-                ( _, tasks ) =
+                TaskReferral ->
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> sendToFacilityInputsAndTasks English
@@ -274,8 +267,44 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
                             SetReasonForNonReferral
                             SetHandReferralForm
                             Nothing
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+healthEducationFormInputsAndTasks : Language -> NominalDate -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language currentDate form =
+    let
+        followUpTestingTable =
+            let
+                viewRow stage =
+                    div [ class "row" ]
+                        [ div [ class "item label" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageLabel stage ]
+                        , div [ class "item test" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageTest stage ]
+                        , div [ class "item guidance" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageInstructions stage ]
+                        ]
             in
-            resolveTasksCompletedFromTotal tasks
+            div [ class "follow-up-testing-table" ] <|
+                List.map viewRow
+                    [ FollowUpTestingMonth1
+                    , FollowUpTestingMonth2
+                    , FollowUpTestingEndMonth2
+                    , FollowUpTestingEndMonth5
+                    , FollowUpTestingEndMonth6
+                    ]
+    in
+    ( [ div [ class "ui form health-education" ]
+            [ followUpTestingTable
+            , viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
+            , viewBoolInput
+                language
+                form.followUpTesting
+                (SetHealthEducationBoolInput (\value form_ -> { form_ | followUpTesting = Just value }))
+                "followup-testing"
+                Nothing
+            ]
+      ]
+    , [ maybeToBoolTask form.followUpTesting ]
+    )
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
