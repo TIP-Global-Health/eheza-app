@@ -413,7 +413,7 @@ type TranslationId
     | AILaboratoryTask AILaboratoryTask
     | All
     | AllowedValuesRangeHelper FloatInputConstraints
-    | AlmostEverydayOption
+    | AlmostEveryday
     | AmbulancArrivalPeriodQuestion
     | ANCEncountersNotRecordedQuestion
     | ANCIndicateVisitsMonthsPhrase
@@ -1131,10 +1131,10 @@ type TranslationId
     | On
     | OneVisit
     | OnceAMonth
-    | OnceAWeekOption
-    | OnceInLastSixMonthsOption
-    | OnceInLastThreeMonthsOption
-    | OnceInTheLastTwoMonthsOption
+    | OnceAWeek
+    | OnceInLastSixMonths
+    | OnceInLastThreeMonths
+    | OnceInTheLastTwoMonths
     | OnceYouEndTheEncounter
     | OnceYouEndYourGroupEncounter
     | OngoingTreatmentTask OngoingTreatmentTask
@@ -1799,9 +1799,9 @@ type TranslationId
     | TuberculosisSuspect
     | TuberculosisSymptomQuestion TuberculosisSymptom
     | TuberculosisWarning
-    | TwiceAMonthOption
-    | TwoAndMoreDaysAWeekOption
-    | TwoToThreeDaysAWeeksOption
+    | TwiceAMonth
+    | TwoAndMoreDaysAWeek
+    | TwoToThreeDaysAWeek
     | TwoVisits
     | Type
     | UbudeheLabel
@@ -3170,7 +3170,7 @@ translationSet trans =
             , kirundi = Just "Akahise ko kugenderwa imbere yo kuvyara"
             }
 
-        AlmostEverydayOption ->
+        AlmostEveryday ->
             { english = "Almost everyday (6-7 days)"
             , kinyarwanda = Just "Buri munsi (iminsi 6-7)"
             , kirundi = Nothing
@@ -13094,25 +13094,25 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        OnceAWeekOption ->
+        OnceAWeek ->
             { english = "Once a week"
             , kinyarwanda = Just "Rimwe mu cyumweru"
             , kirundi = Nothing
             }
 
-        OnceInLastSixMonthsOption ->
+        OnceInLastSixMonths ->
             { english = "Once in last six months"
             , kinyarwanda = Just "Rimwe mu mezi atandatu ashize"
             , kirundi = Nothing
             }
 
-        OnceInLastThreeMonthsOption ->
+        OnceInLastThreeMonths ->
             { english = "Once in last three months"
             , kinyarwanda = Just "Rimwe mu mezi atatu ashize"
             , kirundi = Nothing
             }
 
-        OnceInTheLastTwoMonthsOption ->
+        OnceInTheLastTwoMonths ->
             { english = "Once in the last two months"
             , kinyarwanda = Just "Rimwe mu mezi abiri ashize"
             , kirundi = Nothing
@@ -19775,16 +19775,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwoToThreeDaysAWeeksOption
+                            translationSet TwoToThreeDaysAWeek
 
                         ResilienceSurveyQuestionOption3 ->
                             translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet AlmostEverydayOption
+                            translationSet AlmostEveryday
 
                 ResilienceSurveyQuestion2 ->
                     case option of
@@ -19792,16 +19792,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwoToThreeDaysAWeeksOption
+                            translationSet TwoToThreeDaysAWeek
 
                         ResilienceSurveyQuestionOption3 ->
                             translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet AlmostEverydayOption
+                            translationSet AlmostEveryday
 
                 ResilienceSurveyQuestion3 ->
                     case option of
@@ -19809,13 +19809,13 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceInLastSixMonthsOption
+                            translationSet OnceInLastSixMonths
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet OnceInLastThreeMonthsOption
+                            translationSet OnceInLastThreeMonths
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceInTheLastTwoMonthsOption
+                            translationSet OnceInTheLastTwoMonths
 
                         ResilienceSurveyQuestionOption4 ->
                             translationSet OnceAMonth
@@ -19826,16 +19826,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwoToThreeDaysAWeeksOption
+                            translationSet TwoToThreeDaysAWeek
 
                         ResilienceSurveyQuestionOption3 ->
                             translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet AlmostEverydayOption
+                            translationSet AlmostEveryday
 
                 ResilienceSurveyQuestion5 ->
                     case option of
@@ -19843,16 +19843,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwoToThreeDaysAWeeksOption
+                            translationSet TwoToThreeDaysAWeek
 
                         ResilienceSurveyQuestionOption3 ->
                             translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet AlmostEverydayOption
+                            translationSet AlmostEveryday
 
                 ResilienceSurveyQuestion6 ->
                     case option of
@@ -19860,13 +19860,13 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceInLastSixMonthsOption
+                            translationSet OnceInLastSixMonths
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet OnceInLastThreeMonthsOption
+                            translationSet OnceInLastThreeMonths
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceInTheLastTwoMonthsOption
+                            translationSet OnceInTheLastTwoMonths
 
                         ResilienceSurveyQuestionOption4 ->
                             translationSet OnceAMonth
@@ -19877,13 +19877,13 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceInLastSixMonthsOption
+                            translationSet OnceInLastSixMonths
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet OnceInLastThreeMonthsOption
+                            translationSet OnceInLastThreeMonths
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceInTheLastTwoMonthsOption
+                            translationSet OnceInTheLastTwoMonths
 
                         ResilienceSurveyQuestionOption4 ->
                             { english = "Once every month"
@@ -19897,16 +19897,16 @@ translationSet trans =
                             translationSet Never
 
                         ResilienceSurveyQuestionOption1 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwoToThreeDaysAWeeksOption
+                            translationSet TwoToThreeDaysAWeek
 
                         ResilienceSurveyQuestionOption3 ->
                             translationSet FourToFiveDaysAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet AlmostEverydayOption
+                            translationSet AlmostEveryday
 
                 ResilienceSurveyQuestion9 ->
                     case option of
@@ -19917,13 +19917,13 @@ translationSet trans =
                             translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwiceAMonthOption
+                            translationSet TwiceAMonth
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet TwoAndMoreDaysAWeekOption
+                            translationSet TwoAndMoreDaysAWeek
 
                 ResilienceSurveyQuestion10 ->
                     case option of
@@ -19934,13 +19934,13 @@ translationSet trans =
                             translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwiceAMonthOption
+                            translationSet TwiceAMonth
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet TwoAndMoreDaysAWeekOption
+                            translationSet TwoAndMoreDaysAWeek
 
                 ResilienceSurveyQuestion11 ->
                     case option of
@@ -19951,13 +19951,13 @@ translationSet trans =
                             translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwiceAMonthOption
+                            translationSet TwiceAMonth
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet TwoAndMoreDaysAWeekOption
+                            translationSet TwoAndMoreDaysAWeek
 
                 ResilienceSurveyQuestion12 ->
                     case option of
@@ -19968,13 +19968,13 @@ translationSet trans =
                             translationSet OnceAMonth
 
                         ResilienceSurveyQuestionOption2 ->
-                            translationSet TwiceAMonthOption
+                            translationSet TwiceAMonth
 
                         ResilienceSurveyQuestionOption3 ->
-                            translationSet OnceAWeekOption
+                            translationSet OnceAWeek
 
                         ResilienceSurveyQuestionOption4 ->
-                            translationSet TwoAndMoreDaysAWeekOption
+                            translationSet TwoAndMoreDaysAWeek
 
         ResilienceReminderHeader name reminderType ->
             case reminderType of
@@ -22308,19 +22308,19 @@ translationSet trans =
             , kirundi = Just "Umugwayi afise ingorane iri hejuru y'ingwara y'igituntu"
             }
 
-        TwiceAMonthOption ->
+        TwiceAMonth ->
             { english = "Twice a month"
             , kinyarwanda = Just "Kabiri mu kwezi"
             , kirundi = Nothing
             }
 
-        TwoAndMoreDaysAWeekOption ->
+        TwoAndMoreDaysAWeek ->
             { english = "2 and more days a week"
             , kinyarwanda = Just "Iminsi 2 kuzamura mu cyumweru"
             , kirundi = Nothing
             }
 
-        TwoToThreeDaysAWeeksOption ->
+        TwoToThreeDaysAWeek ->
             { english = "2 to 3 days a week"
             , kinyarwanda = Just "Kabiri kugera kuri gatatu mu cyumweru"
             , kirundi = Nothing
