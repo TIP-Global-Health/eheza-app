@@ -16,7 +16,14 @@ import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
-import Measurement.View exposing (referToProgramFormInputsAndTasks, sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
+import Measurement.View
+    exposing
+        ( contributingFactorsFormInutsAndTasks
+        , healthEducationFormInutsAndTasks
+        , referToProgramFormInputsAndTasks
+        , sendToFacilityInputsAndTasks
+        , vitalsFormInputsAndTasks
+        )
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -1482,41 +1489,26 @@ nextStepsTasksCompletedFromTotal currentDate isChw measurements data task =
     case task of
         TaskContributingFactors ->
             let
-                form =
-                    measurements.contributingFactors
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                        |> contributingFactorsFormInutsAndTasks English
+                            currentDate
+                            Pages.WellChild.Activity.Model.SetContributingFactorsSign
             in
-            ( taskCompleted form.signs
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskHealthEducation ->
             let
-                form =
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-
-                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
-
-                                    else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
+                        |> healthEducationFormInutsAndTasks English
+                            currentDate
+                            Pages.WellChild.Activity.Model.SetProvidedEducationForDiagnosis
+                            Pages.WellChild.Activity.Model.SetReasonForNotProvidingHealthEducation
             in
-            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-            , reasonForProvidingEducationCompleted + 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskFollowUp ->
             let

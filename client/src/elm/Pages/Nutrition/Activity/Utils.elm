@@ -23,7 +23,7 @@ import Measurement.Utils
         , nutritionFollowUpFormWithDefault
         , sendToHCFormWithDefault
         )
-import Measurement.View exposing (sendToFacilityInputsAndTasks)
+import Measurement.View exposing (contributingFactorsFormInutsAndTasks, healthEducationFormInutsAndTasks, sendToFacilityInputsAndTasks)
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
@@ -159,41 +159,26 @@ nextStepsTasksCompletedFromTotal currentDate measurements data task =
 
         NextStepsHealthEducation ->
             let
-                form =
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-
-                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
-
-                                    else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
+                        |> healthEducationFormInutsAndTasks English
+                            currentDate
+                            Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
+                            Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
             in
-            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-            , reasonForProvidingEducationCompleted + 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepContributingFactors ->
             let
-                form =
-                    measurements.contributingFactors
-                        |> getMeasurementValueFunc
+                ( _, tasks ) =
+                    getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
+                        |> contributingFactorsFormInutsAndTasks English
+                            currentDate
+                            Pages.Nutrition.Activity.Model.SetContributingFactorsSign
             in
-            ( taskCompleted form.signs
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         NextStepFollowUp ->
             let

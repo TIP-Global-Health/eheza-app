@@ -900,16 +900,34 @@ viewContributingFactorsForm :
     -> ContributingFactorsForm
     -> Html msg
 viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
+    let
+        ( inputs, _ ) =
+            contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form
+    in
     div [ class "ui form contributing-factors" ]
-        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
-        , viewCheckBoxMultipleSelectInput language
-            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
-            []
-            (form.signs |> Maybe.withDefault [])
-            (Just NoContributingFactorsSign)
-            setContributingFactorsSignMsg
-            Translate.ContributingFactor
-        ]
+        inputs
+
+
+contributingFactorsFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> (ContributingFactorsSign -> msg)
+    -> ContributingFactorsForm
+    -> ( List (Html msg), List (Maybe Bool) )
+contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form =
+    ( [ div [ class "ui form contributing-factors" ]
+            [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+            , viewCheckBoxMultipleSelectInput language
+                [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
+                []
+                (Maybe.withDefault [] form.signs)
+                (Just NoContributingFactorsSign)
+                setContributingFactorsSignMsg
+                Translate.ContributingFactor
+            ]
+      ]
+    , [ maybeToBoolTask form.signs ]
+    )
 
 
 viewFollowUp :
@@ -1078,51 +1096,75 @@ viewHealthEducationForm :
     -> Html msg
 viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
+        ( inputs, _ ) =
+            healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
+    in
+    div [ class "ui form health-education" ]
+        inputs
+
+
+healthEducationFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotProvidingHealthEducation -> msg)
+    -> HealthEducationForm
+    -> ( List (Html msg), List (Maybe Bool) )
+healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+    let
         healthEducationSection =
             let
                 providedHealthEducation =
-                    form.educationForDiagnosis
-                        |> Maybe.withDefault True
+                    Maybe.withDefault True form.educationForDiagnosis
 
-                reasonForNotProvidingHealthEducation =
+                reasonForNotProvidingHealthEducationSection =
                     if not providedHealthEducation then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ PatientNeedsEmergencyReferral
-                            , ReceivedEmergencyCase
-                            , LackOfAppropriateEducationUserGuide
-                            , PatientRefused
-                            , PatientTooIll
-                            ]
-                            []
-                            form.reasonForNotProvidingHealthEducation
-                            setReasonForNotProvidingHealthEducationMsg
-                            Translate.ReasonForNotProvidingHealthEducation
-                        ]
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ PatientNeedsEmergencyReferral
+                                , ReceivedEmergencyCase
+                                , LackOfAppropriateEducationUserGuide
+                                , PatientRefused
+                                , PatientTooIll
+                                ]
+                                []
+                                form.reasonForNotProvidingHealthEducation
+                                setReasonForNotProvidingHealthEducationMsg
+                                Translate.ReasonForNotProvidingHealthEducation
+                          ]
+                        , [ maybeToBoolTask form.reasonForNotProvidingHealthEducation ]
+                        )
 
                     else
-                        []
+                        ( [], [] )
             in
-            [ div [ class "label" ]
-                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
-                , text "?"
+            concatInputsAndTasksSections
+                [ ( [ div [ class "label" ]
+                        [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
+                        , text "?"
+                        ]
+                    , viewBoolInput
+                        language
+                        form.educationForDiagnosis
+                        setProvidedEducationForDiagnosisMsg
+                        "education-for-diagnosis"
+                        Nothing
+                    ]
+                  , [ form.educationForDiagnosis ]
+                  )
+                , reasonForNotProvidingHealthEducationSection
                 ]
-            , viewBoolInput
-                language
-                form.educationForDiagnosis
-                setProvidedEducationForDiagnosisMsg
-                "education-for-diagnosis"
-                Nothing
-            ]
-                ++ reasonForNotProvidingHealthEducation
     in
-    div [ class "ui form health-education" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
+    concatInputsAndTasksSections
+        [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+            , div [ class "instructions" ]
+                [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
+                ]
             ]
+          , []
+          )
+        , healthEducationSection
         ]
-            ++ healthEducationSection
 
 
 viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any

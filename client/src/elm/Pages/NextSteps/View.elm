@@ -162,13 +162,11 @@ viewNextStepsContent language currentDate zscores childId child session db model
                             ]
 
                     tasksCompletedFromTotalDict =
-                        tasks
-                            |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements model task ))
+                        List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements model task )) tasks
                             |> Dict.fromList
 
                     ( tasksCompleted, totalTasks ) =
-                        activeTask
-                            |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                        Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                             |> Maybe.withDefault ( 0, 0 )
 
                     viewForm =
