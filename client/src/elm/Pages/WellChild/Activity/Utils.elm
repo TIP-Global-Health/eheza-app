@@ -40,9 +40,11 @@ import Measurement.View
         , vitalsFormInputsAndTasks
         , weightFormAndTasks
         )
+import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Utils
     exposing
-        ( ifEverySetEmpty
+        ( concatInputsAndTasksSections
+        , ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
         , maybeToBoolTask
@@ -50,15 +52,20 @@ import Pages.Utils
         , taskAnyCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
+        , viewBoolInput
+        , viewCheckBoxMultipleSelectInput
+        , viewCheckBoxSelectInput
+        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPreviousMeasurement
+        , viewQuestionLabel
         )
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site(..), SiteFeature)
-import Translate exposing (Language, translate)
+import Translate exposing (Language, TranslationId, translate)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
 import ZScore.Utils exposing (viewZScore)
@@ -724,30 +731,54 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     let
         measurements =
             assembled.measurements
-    in
-    case task of
-        TaskSymptomsReview ->
-            let
-                form =
-                    measurements.symptomsReview
-                        |> getMeasurementValueFunc
+
+        ( _, tasks ) =
+            case task of
+                TaskSymptomsReview ->
+                    getMeasurementValueFunc measurements.symptomsReview
                         |> symptomsReviewFormWithDefault data.symptomsReviewForm
-            in
-            ( taskCompleted form.symptoms
-            , 1
-            )
+                        |> symptomsReviewFormInputsAndTasks English currentDate
 
-        TaskVitals ->
-            let
-                formConfig =
-                    generateVitalsFormConfig assembled
-
-                ( _, tasks ) =
+                TaskVitals ->
+                    let
+                        formConfig =
+                            generateVitalsFormConfig assembled
+                    in
                     getMeasurementValueFunc measurements.vitals
                         |> vitalsFormWithDefault data.vitalsForm
                         |> vitalsFormInputsAndTasks English currentDate formConfig
-            in
-            resolveTasksCompletedFromTotal tasks
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
+symptomsReviewFormInputsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.PatientGotAnySymptoms
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ SymptomBreathingProblems
+            , SymptomConvulsions
+            , SymptomLethargyOrUnresponsiveness
+            , SymptomDiarrhea
+            , SymptomVomiting
+            , SymptomUmbilicalCordRedness
+            , SymptomStiffNeckOrBulgingFontanelle
+            , SymptomSevereEdema
+            , SymptomPalmoplantarPallor
+            , SymptomHistoryOfFever
+            , SymptomBabyTiresQuicklyWhenFeeding
+            , SymptomCoughingOrTearingWhileFeeding
+            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
+            , ExcessiveSweatingWhenFeeding
+            ]
+            []
+            (Maybe.withDefault [] form.symptoms)
+            (Just NoWellChildSymptoms)
+            SetSymptom
+            Translate.WellChildSymptom
+      ]
+    , [ maybeToBoolTask form.symptoms ]
+    )
 
 
 generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
@@ -1352,40 +1383,124 @@ latestAdministrationDateForMedicine measurements =
         |> List.head
 
 
-medicationTasksCompletedFromTotal : WellChildMeasurements -> MedicationData -> MedicationTask -> ( Int, Int )
-medicationTasksCompletedFromTotal measurements data task =
+medicationTasksCompletedFromTotal : NominalDate -> Site -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal currentDate site assembled data task =
     let
-        processMedicationAdministrationTask form =
-            let
-                ( nonAdministrationCompleted, nonAdministrationActive ) =
-                    if form.medicationAdministered == Just False then
-                        ( taskCompleted form.reasonForNonAdministration, 1 )
+        measurements =
+            assembled.measurements
 
-                    else
-                        ( 0, 0 )
-            in
-            ( taskCompleted form.medicationAdministered + nonAdministrationCompleted
-            , 1 + nonAdministrationActive
-            )
+        ( _, tasks ) =
+            case task of
+                TaskAlbendazole ->
+                    let
+                        config =
+                            { medication = Albendazole
+                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
+                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
+                            , helper = Translate.AdministerAlbendazoleHelper
+                            }
+                    in
+                    getMeasurementValueFunc measurements.albendazole
+                        |> medicationAdministrationFormWithDefault data.albendazoleForm
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+
+                TaskMebendezole ->
+                    let
+                        config =
+                            { medication = Mebendezole
+                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
+                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
+                            , helper = Translate.AdministerMebendezoleHelper
+                            }
+                    in
+                    getMeasurementValueFunc measurements.mebendezole
+                        |> medicationAdministrationFormWithDefault data.mebendezoleForm
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+
+                TaskVitaminA ->
+                    let
+                        config =
+                            { medication = VitaminA
+                            , setMedicationAdministeredMsg = SetVitaminAAdministered
+                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
+                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
+                            , helper = Translate.AdministerVitaminAHelperWellChild
+                            }
+                    in
+                    getMeasurementValueFunc measurements.vitaminA
+                        |> medicationAdministrationFormWithDefault data.vitaminAForm
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
     in
-    case task of
-        TaskAlbendazole ->
-            measurements.albendazole
-                |> getMeasurementValueFunc
-                |> medicationAdministrationFormWithDefault data.albendazoleForm
-                |> processMedicationAdministrationTask
+    resolveTasksCompletedFromTotal tasks
 
-        TaskMebendezole ->
-            measurements.mebendezole
-                |> getMeasurementValueFunc
-                |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                |> processMedicationAdministrationTask
 
-        TaskVitaminA ->
-            measurements.vitaminA
-                |> getMeasurementValueFunc
-                |> medicationAdministrationFormWithDefault data.vitaminAForm
-                |> processMedicationAdministrationTask
+medicationAdministrationFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Site
+    -> AssembledData
+    -> MedicationAdministrationFormConfig
+    -> MedicationAdministrationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+medicationAdministrationFormInputsAndTasks language currentDate site assembled config form =
+    let
+        instructions =
+            config.resolveDosageAndIconFunc currentDate site assembled.person
+                |> Maybe.map
+                    (\( dosage, icon ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
+                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        questions =
+            concatInputsAndTasksSections
+                [ ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
+                    , viewBoolInput
+                        language
+                        form.medicationAdministered
+                        config.setMedicationAdministeredMsg
+                        ""
+                        Nothing
+                    ]
+                  , [ form.medicationAdministered ]
+                  )
+                , derivedQuestion
+                ]
+
+        derivedQuestion =
+            if form.medicationAdministered == Just False then
+                ( [ viewQuestionLabel language Translate.WhyNot
+                  , viewCheckBoxSelectInput language
+                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
+                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
+                        form.reasonForNonAdministration
+                        config.setReasonForNonAdministration
+                        Translate.AdministrationNote
+                  ]
+                , [ maybeToBoolTask form.reasonForNonAdministration ]
+                )
+
+            else
+                ( [], [] )
+    in
+    concatInputsAndTasksSections
+        [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+            , instructions
+            ]
+          , []
+          )
+        , questions
+        ]
+
+
+viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
+viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
+    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass dosage Nothing
 
 
 fromAdministrationNote : Maybe AdministrationNote -> MedicationAdministrationForm
@@ -1809,8 +1924,7 @@ nextStepsTasksCompletedFromTotal currentDate isChw measurements data task =
         TaskNextVisit ->
             let
                 form =
-                    measurements.nextVisit
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.nextVisit
                         |> nextVisitFormWithDefault data.nextVisitForm
             in
             ( taskAnyCompleted [ form.immunisationDate, form.pediatricVisitDate ]

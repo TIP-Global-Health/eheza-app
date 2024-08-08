@@ -718,31 +718,12 @@ viewVitalsForm language currentDate assembled form =
 
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
+    let
+        ( inputs, _ ) =
+            symptomsReviewFormInputsAndTasks language currentDate form
+    in
     [ div [ class "ui form symptoms-review" ]
-        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ SymptomBreathingProblems
-            , SymptomConvulsions
-            , SymptomLethargyOrUnresponsiveness
-            , SymptomDiarrhea
-            , SymptomVomiting
-            , SymptomUmbilicalCordRedness
-            , SymptomStiffNeckOrBulgingFontanelle
-            , SymptomSevereEdema
-            , SymptomPalmoplantarPallor
-            , SymptomHistoryOfFever
-            , SymptomBabyTiresQuicklyWhenFeeding
-            , SymptomCoughingOrTearingWhileFeeding
-            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
-            , ExcessiveSweatingWhenFeeding
-            ]
-            []
-            (form.symptoms |> Maybe.withDefault [])
-            (Just NoWellChildSymptoms)
-            SetSymptom
-            Translate.WellChildSymptom
-        ]
+        inputs
     ]
 
 
@@ -1779,7 +1760,7 @@ viewMedicationContent language currentDate site isChw assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate site assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -1878,15 +1859,6 @@ viewMedicationContent language currentDate site isChw assembled data =
     ]
 
 
-type alias MedicationAdministrationFormConfig =
-    { medication : MedicationDistributionSign
-    , setMedicationAdministeredMsg : Bool -> Msg
-    , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
-    , helper : TranslationId
-    }
-
-
 viewMedicationAdministrationForm :
     Language
     -> NominalDate
@@ -1897,47 +1869,11 @@ viewMedicationAdministrationForm :
     -> List (Html Msg)
 viewMedicationAdministrationForm language currentDate site assembled config form =
     let
-        instructions =
-            config.resolveDosageAndIconFunc currentDate site assembled.person
-                |> Maybe.map
-                    (\( dosage, icon ) ->
-                        div [ class "instructions" ]
-                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
-                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-
-        questions =
-            [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
-            , viewBoolInput
-                language
-                form.medicationAdministered
-                config.setMedicationAdministeredMsg
-                ""
-                Nothing
-            ]
-                ++ derivedQuestion
-
-        derivedQuestion =
-            if form.medicationAdministered == Just False then
-                [ viewQuestionLabel language Translate.WhyNot
-                , viewCheckBoxSelectInput language
-                    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
-                    [ NonAdministrationPatientDeclined, NonAdministrationOther ]
-                    form.reasonForNonAdministration
-                    config.setReasonForNonAdministration
-                    Translate.AdministrationNote
-                ]
-
-            else
-                []
+        ( inputs, _ ) =
+            medicationAdministrationFormInputsAndTasks language currentDate site assembled config form
     in
-    [ div [ class "ui form medication-administration" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , instructions
-        ]
-            ++ questions
+    [ div [ class "ui form medication-administration" ]
+        inputs
     ]
 
 
