@@ -538,11 +538,11 @@ prescribedMedicationsInputsAndTasks :
     -> ( List (Html Msg), ( Int, Int ) )
 prescribedMedicationsInputsAndTasks language currentDate assembled form =
     let
-        ( recordMedicationsInputs, recordMedicationsTasks ) =
-            recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
+        ( recordMedicationsForm, recordMedicationsTasks ) =
+            recordMedicationsFormAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
     if assembled.initialEncounter then
-        ( recordMedicationsInputs, recordMedicationsTasks )
+        ( recordMedicationsForm, recordMedicationsTasks )
 
     else
         generateAllEncountersData assembled
@@ -556,7 +556,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                                 ( [], ( 0, 0 ) )
 
                             else
-                                ( recordMedicationsInputs, recordMedicationsTasks )
+                                ( recordMedicationsForm, recordMedicationsTasks )
 
                         prescribedMedicationForView =
                             EverySet.toList prescribedMedication
@@ -582,15 +582,15 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                       )
                     )
                 )
-            |> Maybe.withDefault ( recordMedicationsInputs, recordMedicationsTasks )
+            |> Maybe.withDefault ( recordMedicationsForm, recordMedicationsTasks )
 
 
-recordMedicationsInputsAndTasks :
+recordMedicationsFormAndTasks :
     Language
     -> TranslationId
     -> PrescribedMedicationForm
     -> ( List (Html Msg), ( Int, Int ) )
-recordMedicationsInputsAndTasks language questionTransId form =
+recordMedicationsFormAndTasks language questionTransId form =
     ( [ div [ class "ui form prescribed-medication" ]
             [ viewQuestionLabel language questionTransId
             , viewCheckBoxMultipleSelectSectionsInput language

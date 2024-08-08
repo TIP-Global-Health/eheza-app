@@ -356,26 +356,24 @@ generateVitalsFormConfig isChw assembled =
 
 acuteFindingsFormInutsAndTasks : Language -> NominalDate -> AcuteFindingsForm -> ( List (Html Msg), List (Maybe Bool) )
 acuteFindingsFormInutsAndTasks language currentDate form =
-    ( [ div [ class "ui form physical-exam acute-findings" ]
-            [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            , viewCheckBoxMultipleSelectInput language
-                [ LethargicOrUnconscious, AcuteFindingsPoorSuck, SunkenEyes, PoorSkinTurgor, Jaundice, NoAcuteFindingsGeneralSigns ]
-                []
-                (form.signsGeneral |> Maybe.withDefault [])
-                Nothing
-                SetAcuteFindingsGeneralSign
-                Translate.AcuteFindingsGeneralSign
-            , viewQuestionLabel language Translate.PatientExhibitAnyRespiratoryFindings
-            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-            , viewCheckBoxMultipleSelectInput language
-                [ Stridor, NasalFlaring, SevereWheezing, SubCostalRetractions, NoAcuteFindingsRespiratorySigns ]
-                []
-                (form.signsRespiratory |> Maybe.withDefault [])
-                Nothing
-                SetAcuteFindingsRespiratorySign
-                Translate.AcuteFindingsRespiratorySign
-            ]
+    ( [ viewQuestionLabel language Translate.PatientExhibitAnyFindings
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ LethargicOrUnconscious, AcuteFindingsPoorSuck, SunkenEyes, PoorSkinTurgor, Jaundice, NoAcuteFindingsGeneralSigns ]
+            []
+            (form.signsGeneral |> Maybe.withDefault [])
+            Nothing
+            SetAcuteFindingsGeneralSign
+            Translate.AcuteFindingsGeneralSign
+      , viewQuestionLabel language Translate.PatientExhibitAnyRespiratoryFindings
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ Stridor, NasalFlaring, SevereWheezing, SubCostalRetractions, NoAcuteFindingsRespiratorySigns ]
+            []
+            (form.signsRespiratory |> Maybe.withDefault [])
+            Nothing
+            SetAcuteFindingsRespiratorySign
+            Translate.AcuteFindingsRespiratorySign
       ]
     , [ maybeToBoolTask form.signsGeneral, maybeToBoolTask form.signsRespiratory ]
     )
@@ -383,40 +381,38 @@ acuteFindingsFormInutsAndTasks language currentDate form =
 
 coreExamFormInutsAndTasks : Language -> NominalDate -> AcuteIllnessCoreExamForm -> ( List (Html Msg), List (Maybe Bool) )
 coreExamFormInutsAndTasks language currentDate form =
-    ( [ div [ class "ui form physical-exam core-exam" ]
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.Heart ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForSelect
-                        (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
-                        [ NormalRateAndRhythm ]
-                    ]
+    ( [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Heart ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.heart |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    [ NormalRateAndRhythm ]
                 ]
-            , viewCheckBoxSelectInput language
-                [ IrregularRhythm, SinusTachycardia, NormalRateAndRhythm ]
-                []
-                form.heart
-                SetCoreExamHeart
-                Translate.HeartCPESign
-            , div [ class "separator" ] []
-            , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.Lungs ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForSelect
-                        (form.lungs |> Maybe.withDefault [])
-                        [ NormalLungs ]
-                    ]
-                ]
-            , viewCheckBoxMultipleSelectInput language
-                [ Wheezes, Crackles, NormalLungs ]
-                []
-                (form.lungs |> Maybe.withDefault [])
-                Nothing
-                SetCoreExamLungs
-                Translate.LungsCPESign
             ]
+      , viewCheckBoxSelectInput language
+            [ IrregularRhythm, SinusTachycardia, NormalRateAndRhythm ]
+            []
+            form.heart
+            SetCoreExamHeart
+            Translate.HeartCPESign
+      , div [ class "separator" ] []
+      , div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewLabel language Translate.Lungs ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.lungs |> Maybe.withDefault [])
+                    [ NormalLungs ]
+                ]
+            ]
+      , viewCheckBoxMultipleSelectInput language
+            [ Wheezes, Crackles, NormalLungs ]
+            []
+            (form.lungs |> Maybe.withDefault [])
+            Nothing
+            SetCoreExamLungs
+            Translate.LungsCPESign
       ]
     , [ maybeToBoolTask form.heart, maybeToBoolTask form.lungs ]
     )
@@ -1580,15 +1576,13 @@ healthEducationFormInutsAndTasks language currentDate maybeDiagnosis form =
                         ]
             in
             concatInputsAndTasksSections
-                [ ( [ div [ class "ui form health-education" ] <|
-                        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-                        , div [ class "instructions" ]
-                            [ viewHealthEducationLabel language
-                                Translate.ProvideHealthEducation
-                                (Translate.AcuteIllnessDiagnosis diagnosis)
-                                "icon-open-book"
-                                Nothing
-                            ]
+                [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                    , div [ class "instructions" ]
+                        [ viewHealthEducationLabel language
+                            Translate.ProvideHealthEducation
+                            (Translate.AcuteIllnessDiagnosis diagnosis)
+                            "icon-open-book"
+                            Nothing
                         ]
                     ]
                   , []
@@ -1632,19 +1626,17 @@ symptomsReliefFormInutsAndTasks language currentDate form =
             , SymptomReliefCoughMixture
             ]
     in
-    ( [ div [ class "ui form symptoms-relief" ] <|
-            [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
-            , viewLabel language Translate.RecommendedSymptomRelief
-            , ul [] <|
-                List.map viewSymptomRelief symptomsReliefList
-            , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
-            , viewBoolInput
-                language
-                form.educationForDiagnosis
-                SetProvidedEducationForDiagnosis
-                "education-for-diagnosis"
-                Nothing
-            ]
+    ( [ viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
+      , viewLabel language Translate.RecommendedSymptomRelief
+      , ul [] <|
+            List.map viewSymptomRelief symptomsReliefList
+      , viewQuestionLabel language Translate.ProvidedSymtomReliefGuidanceQuestion
+      , viewBoolInput
+            language
+            form.educationForDiagnosis
+            SetProvidedEducationForDiagnosis
+            "education-for-diagnosis"
+            Nothing
       ]
     , [ form.educationForDiagnosis ]
     )

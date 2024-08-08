@@ -916,16 +916,14 @@ contributingFactorsFormInutsAndTasks :
     -> ContributingFactorsForm
     -> ( List (Html msg), List (Maybe Bool) )
 contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form =
-    ( [ div [ class "ui form contributing-factors" ]
-            [ viewQuestionLabel language Translate.ContributingFactorsQuestion
-            , viewCheckBoxMultipleSelectInput language
-                [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
-                []
-                (Maybe.withDefault [] form.signs)
-                (Just NoContributingFactorsSign)
-                setContributingFactorsSignMsg
-                Translate.ContributingFactor
-            ]
+    ( [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
+            []
+            (Maybe.withDefault [] form.signs)
+            (Just NoContributingFactorsSign)
+            setContributingFactorsSignMsg
+            Translate.ContributingFactor
       ]
     , [ maybeToBoolTask form.signs ]
     )
@@ -1013,15 +1011,13 @@ followUpFormInputsAndTasks :
     -> { f | option : Maybe FollowUpOption }
     -> ( List (Html msg), List (Maybe Bool) )
 followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form =
-    ( [ div [ class "ui form follow-up" ]
-            [ viewLabel language Translate.FollowUpLabel
-            , viewCheckBoxSelectInput language
-                options
-                []
-                form.option
-                setFollowUpOptionMsg
-                Translate.FollowUpOption
-            ]
+    ( [ viewLabel language Translate.FollowUpLabel
+      , viewCheckBoxSelectInput language
+            options
+            []
+            form.option
+            setFollowUpOptionMsg
+            Translate.FollowUpOption
       ]
     , [ maybeToBoolTask form.option ]
     )
@@ -4415,17 +4411,15 @@ nutritionFormInputsAndTasks language currentDate setSignMsg form =
         activity =
             Backend.NutritionActivity.Model.Nutrition
     in
-    ( [ div [ class "ui form nutrition" ]
-            [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-            , viewLabel language Translate.SelectAllSigns
-            , viewCheckBoxMultipleSelectInput language
-                [ Edema, AbdominalDistension, DrySkin ]
-                [ Apathy, PoorAppetite, BrittleHair ]
-                (Maybe.withDefault [] form.signs)
-                (Just NormalChildNutrition)
-                setSignMsg
-                Translate.ChildNutritionSignLabel
-            ]
+    ( [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+      , viewLabel language Translate.SelectAllSigns
+      , viewCheckBoxMultipleSelectInput language
+            [ Edema, AbdominalDistension, DrySkin ]
+            [ Apathy, PoorAppetite, BrittleHair ]
+            (Maybe.withDefault [] form.signs)
+            (Just NormalChildNutrition)
+            setSignMsg
+            Translate.ChildNutritionSignLabel
       ]
     , [ maybeToBoolTask form.signs ]
     )
