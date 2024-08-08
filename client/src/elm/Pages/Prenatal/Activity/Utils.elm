@@ -3593,33 +3593,27 @@ treatmentReviewTasksCompletedFromTotal :
 treatmentReviewTasksCompletedFromTotal language currentDate assembled data task =
     let
         form =
-            assembled.measurements.medication
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.medication
                 |> medicationFormWithDefault data.medicationForm
-    in
-    case task of
-        TreatmentReviewPrenatalMedication ->
-            let
-                ( _, tasks ) =
+
+        ( _, tasks ) =
+            case task of
+                TreatmentReviewPrenatalMedication ->
                     resolvePrenatalMedicationFormInputsAndTasks language
                         currentDate
                         SetMedicationSubActivityBoolInput
                         assembled
                         form
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        _ ->
-            let
-                ( _, tasks ) =
+                _ ->
                     resolveMedicationTreatmentFormInputsAndTasks language
                         currentDate
                         SetMedicationSubActivityBoolInput
                         assembled
                         form
                         task
-            in
-            resolveTasksCompletedFromTotal tasks
+    in
+    resolveTasksCompletedFromTotal tasks
 
 
 resolvePrenatalMedicationFormInputsAndTasks :
@@ -4254,8 +4248,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                     isJust measuredHeight
 
                 form_ =
-                    assembled.measurements.nutrition
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.nutrition
                         |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                 form =
@@ -4290,8 +4283,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
         CorePhysicalExam ->
             let
                 form =
-                    assembled.measurements.corePhysicalExam
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.corePhysicalExam
                         |> corePhysicalExamFormWithDefault data.corePhysicalExamForm
 
                 extremitiesTaskCompleted =
@@ -4327,12 +4319,10 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
 
         GUExam ->
             let
-                form =
+                ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.guExam
                         |> guExamFormWithDefault data.guExamForm
-
-                ( _, tasks ) =
-                    guExamFormInputsAndTasks English assembled form
+                        |> guExamFormInputsAndTasks English assembled
             in
             resolveTasksCompletedFromTotal tasks
 
@@ -5337,8 +5327,7 @@ immunisationTasksCompletedFromTotal language currentDate site assembled data tas
         form =
             case vaccineType of
                 VaccineTetanus ->
-                    assembled.measurements.tetanusImmunisation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc assembled.measurements.tetanusImmunisation
                         |> vaccinationFormWithDefault data.tetanusForm
 
         ( _, tasksActive, tasksCompleted ) =
