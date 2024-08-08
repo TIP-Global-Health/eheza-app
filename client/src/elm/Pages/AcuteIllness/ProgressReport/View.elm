@@ -39,7 +39,7 @@ import Pages.AcuteIllness.Activity.View
         )
 import Pages.AcuteIllness.Encounter.Model exposing (AcuteIllnessEncounterData, AssembledData)
 import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
-import Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
@@ -104,7 +104,7 @@ viewContent language currentDate site features id isChw initiator model assemble
                             partitionActivities currentDate isChw assembled
 
                         allowEndEncounter =
-                            allowEndingEcounter currentDate isChw assembled pendingActivities
+                            allowEndingEncounter currentDate isChw assembled pendingActivities
                     in
                     viewEndEncounterMenuForProgressReport language
                         features
@@ -186,15 +186,12 @@ viewHeader language id initiator =
     in
     div [ class "ui basic segment head" ]
         [ h1 [ class "ui header" ]
-            [ text <| translate language label
-            ]
+            [ text <| translate language label ]
         , span
             [ class "link-back"
             , onClick <| SetActivePage (UserPage goBackPage)
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 
@@ -752,7 +749,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
                                             viewMissedDoses =
                                                 div [ class "treatment-comment" ]
                                                     [ text "- "
-                                                    , text <| translate language <| Translate.MissedDosesOfMedicatgion missedDoses
+                                                    , text <| translate language <| Translate.MissedDosesOfMedication missedDoses
                                                     , text "."
                                                     ]
 
@@ -766,7 +763,7 @@ viewTreatmentSigns language currentDate initialEncounter firstInitialWithSubsequ
 
                                                         events =
                                                             EverySet.toList treatmentOngoing.adverseEvents
-                                                                |> List.map (Translate.AcuteIllnessAdverseEvent >> translate language)
+                                                                |> List.map (Translate.AdverseEvent >> translate language)
                                                     in
                                                     [ div [ class "treatment-comment" ]
                                                         [ text "- "

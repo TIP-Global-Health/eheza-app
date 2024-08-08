@@ -8,33 +8,39 @@ import SyncManager.Model exposing (Site(..))
 reportTypeToString : ReportType -> String
 reportTypeToString reportType =
     case reportType of
-        ReportWellChild ->
-            "well-child"
+        ReportAcuteIllness ->
+            "acute-illness"
 
         ReportAntenatal ->
             "antenatal"
 
-        ReportAcuteIllness ->
-            "acute-illness"
-
         ReportNCD ->
             "ncd"
+
+        ReportTuberculosis ->
+            "tuberculosis"
+
+        ReportWellChild ->
+            "well-child"
 
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
     case reportType of
-        "well-child" ->
-            Just ReportWellChild
+        "acute-illness" ->
+            Just ReportAcuteIllness
 
         "antenatal" ->
             Just ReportAntenatal
 
-        "acute-illness" ->
-            Just ReportAcuteIllness
-
         "ncd" ->
             Just ReportNCD
+
+        "tuberculosis" ->
+            Just ReportTuberculosis
+
+        "well-child" ->
+            Just ReportWellChild
 
         _ ->
             Nothing
