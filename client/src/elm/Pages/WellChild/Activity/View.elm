@@ -48,12 +48,16 @@ import Measurement.View
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewHealthEducationForm
+        , viewHeightForm
+        , viewMuacForm
         , viewNutritionFollowUpForm
+        , viewNutritionForm
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
+        , viewWeightForm
         )
 import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
-import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
+import Pages.Nutrition.Activity.View exposing (viewPhotoForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
@@ -814,7 +818,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate assembled data task )) tasks
+            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -825,8 +829,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
 
         headCircumferenceForm =
-            measurements.headCircumference
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc measurements.headCircumference
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
         headCircumferenceZScore =
@@ -836,16 +839,12 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             else
                 Maybe.andThen
                     (\headCircumference ->
-                        let
-                            person =
-                                assembled.person
-                        in
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
-                            person.birthDate
+                            assembled.person.birthDate
                             |> Maybe.andThen
                                 (\ageInDays ->
-                                    zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                                    zScoreHeadCircumferenceForAge zscores ageInDays assembled.person.gender (Centimetres headCircumference)
                                 )
                     )
                     headCircumferenceForm.headCircumference
@@ -853,8 +852,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    measurements.height
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.height
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
 
@@ -862,28 +860,24 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                     viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
-                    measurements.muac
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
-                        |> Measurement.View.viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
+                        |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
-                    measurements.nutrition
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
                 Just TaskWeight ->
                     let
                         heightValue =
-                            assembled.measurements.height
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.height
 
                         showWeightForHeightZScore =
                             assembled.encounter.encounterType /= NewbornExam
                     in
-                    measurements.weight
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.weight
                         |> weightFormWithDefault data.weightForm
                         |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
 
@@ -952,60 +946,10 @@ viewHeadCircumferenceForm :
     -> List (Html Msg)
 viewHeadCircumferenceForm language currentDate person zscore previousValue form =
     let
-        inputSection =
-            if measurementNotTakenChecked then
-                []
-
-            else
-                let
-                    zScoreText =
-                        Maybe.map viewZScore zscore
-                            |> Maybe.withDefault (translate language Translate.NotAvailable)
-                in
-                [ div [ class "ui grid" ]
-                    [ div [ class "eleven wide column" ]
-                        [ viewMeasurementInput
-                            language
-                            form.headCircumference
-                            SetHeadCircumference
-                            "head-circumference"
-                            Translate.UnitCentimeter
-                        ]
-                    , div
-                        [ class "five wide column" ]
-                        [ showMaybe <|
-                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
-                        ]
-                    ]
-                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
-                , div [ class "ui large header z-score age" ]
-                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
-                    , span [ class "sub header" ]
-                        [ text zScoreText ]
-                    ]
-                ]
-
-        measurementNotTakenChecked =
-            form.measurementNotTaken == Just True
+        ( formForView, _ ) =
+            headCircumferenceFormAndTasks language currentDate person zscore previousValue form
     in
-    [ div [ class "ui form head-circumference" ] <|
-        [ viewLabel language <| Translate.NutritionAssessmentTask TaskHeadCircumference
-        , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
-        ]
-            ++ inputSection
-    , div
-        [ class "ui checkbox activity"
-        , onClick ToggleHeadCircumferenceNotTaken
-        ]
-        [ input
-            [ type_ "checkbox"
-            , checked measurementNotTakenChecked
-            , classList [ ( "checked", measurementNotTakenChecked ) ]
-            ]
-            []
-        , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
-        ]
-    ]
+    formForView
 
 
 viewImmunisationContent :
@@ -1249,80 +1193,17 @@ viewImmunisationContent language currentDate site isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal :
-    Language
-    -> NominalDate
-    -> Site
-    -> Bool
-    -> AssembledData
-    -> ImmunisationData
-    -> Measurement.Model.ImmunisationTask
-    -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
-    Maybe.map
-        (\vaccineType ->
-            let
-                form =
-                    case vaccineType of
-                        VaccineBCG ->
-                            assembled.measurements.bcgImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.bcgForm
-
-                        VaccineDTP ->
-                            assembled.measurements.dtpImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpForm
-
-                        VaccineDTPStandalone ->
-                            assembled.measurements.dtpStandaloneImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpStandaloneForm
-
-                        VaccineHPV ->
-                            assembled.measurements.hpvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.hpvForm
-
-                        VaccineIPV ->
-                            assembled.measurements.ipvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.ipvForm
-
-                        VaccineMR ->
-                            assembled.measurements.mrImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.mrForm
-
-                        VaccineOPV ->
-                            assembled.measurements.opvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.opvForm
-
-                        VaccinePCV13 ->
-                            assembled.measurements.pcv13Immunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.pcv13Form
-
-                        VaccineRotarix ->
-                            assembled.measurements.rotarixImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.rotarixForm
-
-                ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
-            in
-            ( tasksActive, tasksCompleted )
-        )
-        (immunisationTaskToVaccineType task)
-        |> Maybe.withDefault ( 0, 0 )
-
-
 viewVaccinationForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
 viewVaccinationForm language currentDate site isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
+            Pages.WellChild.Activity.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                isChw
+                assembled
+                vaccineType
+                form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
@@ -1408,106 +1289,6 @@ viewVaccinationOverview language currentDate site child vaccinationProgress db =
                 ]
     in
     entriesHeading :: entries
-
-
-vaccinationFormDynamicContentAndTasks :
-    Language
-    -> NominalDate
-    -> Site
-    -> Bool
-    -> AssembledData
-    -> WellChildVaccineType
-    -> WellChildVaccinationForm
-    -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form =
-    Maybe.map
-        (\birthDate ->
-            let
-                config =
-                    { birthDate = birthDate
-                    , expectedDoses = expectedDoses
-                    , dosesFromPreviousEncountersData = dosesFromPreviousEncountersData
-                    , dosesFromCurrentEncounterData = dosesFromCurrentEncounterData
-                    , setVaccinationFormViewModeMsg = SetVaccinationFormViewMode vaccineType
-                    , setUpdatePreviousVaccinesMsg = SetUpdatePreviousVaccines vaccineType
-                    , setWillReceiveVaccineTodayMsg = SetWillReceiveVaccineToday vaccineType
-                    , setAdministrationNoteMsg = SetAdministrationNote vaccineType
-                    , setVaccinationUpdateDateSelectorStateMsg = SetVaccinationUpdateDateSelectorState vaccineType
-                    , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
-                    , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
-                    , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person.birthDate vaccineType initialOpvAdministered
-                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
-                    , firstDoseExpectedFrom =
-                        initialVaccinationDateByBirthDate site
-                            birthDate
-                            initialOpvAdministered
-                            assembled.vaccinationProgress
-                            ( vaccineType, VaccineDoseFirst )
-
-                    -- Only nurses at HC can administer vaccinations.
-                    -- CHWs only record previous vaccinations given by nurses.
-                    , suggestDoseToday = assembled.encounter.encounterType == PediatricCare
-                    }
-
-                initialOpvAdministeredByForm =
-                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
-
-                initialOpvAdministered =
-                    if form.administeredDosesDirty then
-                        initialOpvAdministeredByForm
-
-                    else
-                        let
-                            initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
-                        in
-                        initialOpvAdministeredByForm || initialOpvAdministeredByProgress
-
-                expectedDoses =
-                    getAllDosesForVaccine initialOpvAdministered vaccineType
-                        |> List.filter
-                            (\dose ->
-                                expectVaccineDoseForPerson currentDate
-                                    site
-                                    assembled.person
-                                    initialOpvAdministered
-                                    assembled.vaccinationProgress
-                                    ( vaccineType, dose )
-                            )
-
-                dosesFromPreviousEncountersData =
-                    Dict.get vaccineType assembled.vaccinationHistory
-                        |> Maybe.withDefault Dict.empty
-                        |> Dict.toList
-
-                dosesFromCurrentEncounterData =
-                    Maybe.map2
-                        (\doses dates ->
-                            let
-                                orderedDoses =
-                                    EverySet.toList doses
-                                        |> List.sortBy vaccineDoseToComparable
-
-                                orderedDates =
-                                    EverySet.toList dates
-                                        |> List.sortWith Date.compare
-                            in
-                            List.Extra.zip orderedDoses orderedDates
-                        )
-                        form.administeredDoses
-                        form.administrationDates
-                        |> Maybe.withDefault []
-            in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
-                currentDate
-                site
-                config
-                (WellChildVaccine vaccineType)
-                form
-        )
-        assembled.person.birthDate
-        |> Maybe.withDefault ( [], 0, 1 )
 
 
 viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)

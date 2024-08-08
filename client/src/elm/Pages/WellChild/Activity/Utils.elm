@@ -2,7 +2,14 @@ module Pages.WellChild.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, headCircumferenceValueFunc, weightValueFunc)
+import Backend.Measurement.Utils
+    exposing
+        ( expectNCDAActivity
+        , getMeasurementValueFunc
+        , headCircumferenceIndication
+        , headCircumferenceValueFunc
+        , weightValueFunc
+        )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
 import Backend.Person.Model exposing (Person)
@@ -11,7 +18,11 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
+import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Measurement.Model exposing (..)
@@ -21,26 +32,36 @@ import Measurement.View
         ( contributingFactorsFormInutsAndTasks
         , followUpFormInputsAndTasks
         , healthEducationFormInutsAndTasks
+        , heightFormAndTasks
+        , nutritionFormInputsAndTasks
         , referToProgramFormInputsAndTasks
         , sendToFacilityInputsAndTasks
+        , viewColorAlertIndication
         , vitalsFormInputsAndTasks
+        , weightFormAndTasks
         )
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
         , ifTrue
+        , maybeToBoolTask
         , resolveTasksCompletedFromTotal
         , taskAnyCompleted
         , taskCompleted
         , valueConsideringIsDirtyField
+        , viewLabel
+        , viewMeasurementInput
+        , viewPreviousMeasurement
         )
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import SyncManager.Model exposing (Site(..), SiteFeature)
+import Translate exposing (Language, translate)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
+import ZScore.Utils exposing (viewZScore)
 
 
 generateNutritionAssessment : NominalDate -> ZScore.Model.Model -> ModelIndexedDb -> AssembledData -> List NutritionAssessment
@@ -392,38 +413,40 @@ resolveNutritionAssessmentTasks assembled =
             [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
-nutritionAssessmentTasksCompletedFromTotal : NominalDate -> AssembledData -> NutritionAssessmentData -> NutritionAssessmentTask -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal currentDate assembled data task =
+nutritionAssessmentTasksCompletedFromTotal :
+    NominalDate
+    -> ZScore.Model.Model
+    -> AssembledData
+    -> NutritionAssessmentData
+    -> NutritionAssessmentTask
+    -> ( Int, Int )
+nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task =
     let
         measurements =
             assembled.measurements
-    in
-    case task of
-        TaskHeight ->
-            let
-                form =
-                    measurements.height
-                        |> getMeasurementValueFunc
+
+        ( _, tasks ) =
+            case task of
+                TaskHeight ->
+                    getMeasurementValueFunc measurements.height
                         |> heightFormWithDefault data.heightForm
-            in
-            ( taskCompleted form.height
-            , 1
-            )
+                        |> heightFormAndTasks English
+                            currentDate
+                            zscores
+                            assembled.person
+                            Nothing
+                            SetHeight
 
-        TaskHeadCircumference ->
-            let
-                form =
-                    measurements.headCircumference
-                        |> getMeasurementValueFunc
+                TaskHeadCircumference ->
+                    getMeasurementValueFunc measurements.headCircumference
                         |> headCircumferenceFormWithDefault data.headCircumferenceForm
-            in
-            ( taskCompleted form.headCircumference
-            , 1
-            )
+                        |> headCircumferenceFormAndTasks English
+                            currentDate
+                            assembled.person
+                            Nothing
+                            Nothing
 
-        TaskMuac ->
-            let
-                ( _, tasks ) =
+                TaskMuac ->
                     getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
                         |> Measurement.View.muacFormInputsAndTasks English
@@ -432,30 +455,95 @@ nutritionAssessmentTasksCompletedFromTotal currentDate assembled data task =
                             assembled.person
                             Nothing
                             Pages.WellChild.Activity.Model.SetMuac
-            in
-            resolveTasksCompletedFromTotal tasks
 
-        TaskNutrition ->
-            let
-                form =
-                    measurements.nutrition
-                        |> getMeasurementValueFunc
+                TaskNutrition ->
+                    getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
-            in
-            ( taskCompleted form.signs
-            , 1
-            )
+                        |> nutritionFormInputsAndTasks English
+                            currentDate
+                            Pages.WellChild.Activity.Model.SetNutritionSign
 
-        TaskWeight ->
-            let
-                form =
-                    measurements.weight
-                        |> getMeasurementValueFunc
+                TaskWeight ->
+                    getMeasurementValueFunc measurements.weight
                         |> weightFormWithDefault data.weightForm
-            in
-            ( taskCompleted form.weight
-            , 1
-            )
+                        |> weightFormAndTasks English
+                            currentDate
+                            zscores
+                            assembled.person
+                            Nothing
+                            Nothing
+                            False
+                            Pages.WellChild.Activity.Model.SetWeight
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+headCircumferenceFormAndTasks :
+    Language
+    -> NominalDate
+    -> Person
+    -> Maybe Float
+    -> Maybe Float
+    -> HeadCircumferenceForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+headCircumferenceFormAndTasks language currentDate person zscore previousValue form =
+    let
+        inputSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                let
+                    zScoreText =
+                        Maybe.map viewZScore zscore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+                in
+                [ div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.headCircumference
+                            SetHeadCircumference
+                            "head-circumference"
+                            Translate.UnitCentimeter
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
+                        ]
+                    ]
+                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
+                    ]
+                ]
+
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
+    in
+    ( [ div [ class "ui form head-circumference" ] <|
+            [ viewLabel language <| Translate.NutritionAssessmentTask TaskHeadCircumference
+            , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
+            ]
+                ++ inputSection
+      , div
+            [ class "ui checkbox activity"
+            , onClick ToggleHeadCircumferenceNotTaken
+            ]
+            [ input
+                [ type_ "checkbox"
+                , checked measurementNotTakenChecked
+                , classList [ ( "checked", measurementNotTakenChecked ) ]
+                ]
+                []
+            , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
+            ]
+      ]
+    , [ maybeToBoolTask form.headCircumference ]
+    )
 
 
 fromSymptomsReviewValue : Maybe (EverySet WellChildSymptom) -> SymptomsReviewForm
@@ -1483,6 +1571,175 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildECD
                 && activityCompleted currentDate zscores site features isChw assembled db WellChildMedication
                 && nextVisitRequired currentDate site assembled db
+
+
+immunisationTasksCompletedFromTotal :
+    Language
+    -> NominalDate
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> ImmunisationData
+    -> Measurement.Model.ImmunisationTask
+    -> ( Int, Int )
+immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
+    Maybe.map
+        (\vaccineType ->
+            let
+                form =
+                    case vaccineType of
+                        VaccineBCG ->
+                            assembled.measurements.bcgImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.bcgForm
+
+                        VaccineDTP ->
+                            assembled.measurements.dtpImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.dtpForm
+
+                        VaccineDTPStandalone ->
+                            assembled.measurements.dtpStandaloneImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.dtpStandaloneForm
+
+                        VaccineHPV ->
+                            assembled.measurements.hpvImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.hpvForm
+
+                        VaccineIPV ->
+                            assembled.measurements.ipvImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.ipvForm
+
+                        VaccineMR ->
+                            assembled.measurements.mrImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.mrForm
+
+                        VaccineOPV ->
+                            assembled.measurements.opvImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.opvForm
+
+                        VaccinePCV13 ->
+                            assembled.measurements.pcv13Immunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.pcv13Form
+
+                        VaccineRotarix ->
+                            assembled.measurements.rotarixImmunisation
+                                |> getMeasurementValueFunc
+                                |> vaccinationFormWithDefault data.rotarixForm
+
+                ( _, tasksActive, tasksCompleted ) =
+                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
+            in
+            ( tasksActive, tasksCompleted )
+        )
+        (immunisationTaskToVaccineType task)
+        |> Maybe.withDefault ( 0, 0 )
+
+
+vaccinationFormDynamicContentAndTasks :
+    Language
+    -> NominalDate
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> WellChildVaccineType
+    -> WellChildVaccinationForm
+    -> ( List (Html Msg), Int, Int )
+vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form =
+    Maybe.map
+        (\birthDate ->
+            let
+                config =
+                    { birthDate = birthDate
+                    , expectedDoses = expectedDoses
+                    , dosesFromPreviousEncountersData = dosesFromPreviousEncountersData
+                    , dosesFromCurrentEncounterData = dosesFromCurrentEncounterData
+                    , setVaccinationFormViewModeMsg = SetVaccinationFormViewMode vaccineType
+                    , setUpdatePreviousVaccinesMsg = SetUpdatePreviousVaccines vaccineType
+                    , setWillReceiveVaccineTodayMsg = SetWillReceiveVaccineToday vaccineType
+                    , setAdministrationNoteMsg = SetAdministrationNote vaccineType
+                    , setVaccinationUpdateDateSelectorStateMsg = SetVaccinationUpdateDateSelectorState vaccineType
+                    , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
+                    , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
+                    , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
+                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person.birthDate vaccineType initialOpvAdministered
+                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
+                    , firstDoseExpectedFrom =
+                        initialVaccinationDateByBirthDate site
+                            birthDate
+                            initialOpvAdministered
+                            assembled.vaccinationProgress
+                            ( vaccineType, VaccineDoseFirst )
+
+                    -- Only nurses at HC can administer vaccinations.
+                    -- CHWs only record previous vaccinations given by nurses.
+                    , suggestDoseToday = assembled.encounter.encounterType == PediatricCare
+                    }
+
+                initialOpvAdministeredByForm =
+                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
+
+                initialOpvAdministered =
+                    if form.administeredDosesDirty then
+                        initialOpvAdministeredByForm
+
+                    else
+                        let
+                            initialOpvAdministeredByProgress =
+                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
+                        in
+                        initialOpvAdministeredByForm || initialOpvAdministeredByProgress
+
+                expectedDoses =
+                    getAllDosesForVaccine initialOpvAdministered vaccineType
+                        |> List.filter
+                            (\dose ->
+                                expectVaccineDoseForPerson currentDate
+                                    site
+                                    assembled.person
+                                    initialOpvAdministered
+                                    assembled.vaccinationProgress
+                                    ( vaccineType, dose )
+                            )
+
+                dosesFromPreviousEncountersData =
+                    Dict.get vaccineType assembled.vaccinationHistory
+                        |> Maybe.withDefault Dict.empty
+                        |> Dict.toList
+
+                dosesFromCurrentEncounterData =
+                    Maybe.map2
+                        (\doses dates ->
+                            let
+                                orderedDoses =
+                                    EverySet.toList doses
+                                        |> List.sortBy vaccineDoseToComparable
+
+                                orderedDates =
+                                    EverySet.toList dates
+                                        |> List.sortWith Date.compare
+                            in
+                            List.Extra.zip orderedDoses orderedDates
+                        )
+                        form.administeredDoses
+                        form.administrationDates
+                        |> Maybe.withDefault []
+            in
+            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                config
+                (WellChildVaccine vaccineType)
+                form
+        )
+        assembled.person.birthDate
+        |> Maybe.withDefault ( [], 0, 1 )
 
 
 nextStepsTasksCompletedFromTotal : NominalDate -> Bool -> WellChildMeasurements -> NextStepsData -> Pages.WellChild.Activity.Types.NextStepsTask -> ( Int, Int )

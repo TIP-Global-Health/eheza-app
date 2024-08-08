@@ -23,7 +23,8 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Utils
     exposing
-        ( getNewbornExamPregnancySummary
+        ( calculateZScoreWeightForAge
+        , getNewbornExamPregnancySummary
         , nutritionAssessmentForBackend
         , resolveAllWeightMeasurementsForChild
         , resolveNCDANeverFilled
@@ -4238,6 +4239,88 @@ nutritionFoodSecurityInputsAndTasks language currentDate setFoodSecurityBoolInpu
     )
 
 
+viewHeightForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> HeightForm
+    -> List (Html msg)
+viewHeightForm language currentDate zscores person previousValue setHeightMsg form =
+    let
+        ( formForView, _ ) =
+            heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form
+    in
+    formForView
+
+
+heightFormAndTasks :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> HeightForm
+    -> ( List (Html msg), List (Maybe Bool) )
+heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Height
+
+        zScoreText =
+            Maybe.andThen
+                (\height ->
+                    Maybe.map
+                        (\birthDate -> diffDays birthDate currentDate)
+                        person.birthDate
+                        |> Maybe.andThen
+                            (\ageInDays ->
+                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                            )
+                )
+                form.height
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsHeight
+    in
+    ( [ div [ class "ui form height" ]
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+            , div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewMeasurementInput
+                        language
+                        form.height
+                        setHeightMsg
+                        "height"
+                        Translate.UnitCentimeter
+                    ]
+                , div
+                    [ class "five wide column" ]
+                    [ showMaybe <|
+                        Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+                            form.height
+                            previousValue
+                    ]
+                ]
+            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+            ]
+      , div [ class "ui large header z-score age" ]
+            [ text <| translate language Translate.ZScoreHeightForAge
+            , span [ class "sub header" ]
+                [ text zScoreText ]
+            ]
+      ]
+    , [ maybeToBoolTask form.height ]
+    )
+
+
 viewMuacForm :
     Language
     -> NominalDate
@@ -4307,4 +4390,144 @@ muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg
       , Pages.Utils.viewPreviousMeasurement language previousValue unitTransId
       ]
     , [ maybeToBoolTask form.muac ]
+    )
+
+
+viewNutritionForm : Language -> NominalDate -> (ChildNutritionSign -> msg) -> NutritionForm -> List (Html msg)
+viewNutritionForm language currentDate setSignMsg form =
+    let
+        ( inputs, _ ) =
+            nutritionFormInputsAndTasks language currentDate setSignMsg form
+    in
+    [ div [ class "ui form nutrition" ]
+        inputs
+    ]
+
+
+nutritionFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (ChildNutritionSign -> msg)
+    -> NutritionForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionFormInputsAndTasks language currentDate setSignMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Nutrition
+    in
+    ( [ div [ class "ui form nutrition" ]
+            [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            , viewLabel language Translate.SelectAllSigns
+            , viewCheckBoxMultipleSelectInput language
+                [ Edema, AbdominalDistension, DrySkin ]
+                [ Apathy, PoorAppetite, BrittleHair ]
+                (Maybe.withDefault [] form.signs)
+                (Just NormalChildNutrition)
+                setSignMsg
+                Translate.ChildNutritionSignLabel
+            ]
+      ]
+    , [ maybeToBoolTask form.signs ]
+    )
+
+
+viewWeightForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe HeightInCm
+    -> Maybe Float
+    -> Bool
+    -> (String -> msg)
+    -> WeightForm
+    -> List (Html msg)
+viewWeightForm language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+    let
+        ( formForView, _ ) =
+            weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form
+    in
+    formForView
+
+
+weightFormAndTasks :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe HeightInCm
+    -> Maybe Float
+    -> Bool
+    -> (String -> msg)
+    -> WeightForm
+    -> ( List (Html msg), List (Maybe Bool) )
+weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Weight
+
+        zScoreForAgeText =
+            calculateZScoreWeightForAge currentDate zscores person form.weight
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        zScoreForHeightText =
+            Maybe.andThen
+                (\(HeightInCm height) ->
+                    Maybe.andThen
+                        (\weight ->
+                            Maybe.map
+                                (\birthDate -> diffDays birthDate currentDate)
+                                person.birthDate
+                                |> Maybe.andThen
+                                    (\ageInDays ->
+                                        zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                    )
+                        )
+                        form.weight
+                )
+                heightValue
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsWeight
+    in
+    ( [ div [ class "ui form weight" ]
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+            , div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewMeasurementInput
+                        language
+                        form.weight
+                        setWeightMsg
+                        "weight"
+                        Translate.KilogramShorthand
+                    ]
+                , div
+                    [ class "five wide column" ]
+                    [ showMaybe <|
+                        Maybe.map2 (viewMeasurementFloatDiff language Translate.KilogramShorthand)
+                            form.weight
+                            previousValue
+                    ]
+                ]
+            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.KilogramShorthand
+            ]
+      , div [ class "ui large header z-score age" ]
+            [ text <| translate language Translate.ZScoreWeightForAge
+            , span [ class "sub header" ]
+                [ text zScoreForAgeText ]
+            ]
+      , showIf showWeightForHeightZScore <|
+            div [ class "ui large header z-score height" ]
+                [ text <| translate language Translate.ZScoreWeightForHeight
+                , span [ class "sub header" ]
+                    [ text zScoreForHeightText
+                    ]
+                ]
+      ]
+    , [ maybeToBoolTask form.weight ]
     )
