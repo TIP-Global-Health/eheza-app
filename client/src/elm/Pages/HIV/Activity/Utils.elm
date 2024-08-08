@@ -538,44 +538,48 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
         ( recordMedicationsInputs, recordMedicationsTasks ) =
             recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
-    generateAllEncountersData assembled
-        |> resolvePrescribedMedicationSets HIVMedicationsNotChanged
-        |> Tuple.first
-        |> Maybe.map
-            (\prescribedMedication ->
-                let
-                    ( derivedInputs, ( derivedTasksCompleted, derivedTasksTotal ) ) =
-                        if form.medicationsNotChanged /= Just False then
-                            ( [], ( 0, 0 ) )
+    if assembled.initialEncounter then
+        ( recordMedicationsInputs, recordMedicationsTasks )
 
-                        else
-                            ( recordMedicationsInputs, recordMedicationsTasks )
+    else
+        generateAllEncountersData assembled
+            |> resolvePrescribedMedicationSets HIVMedicationsNotChanged
+            |> Tuple.first
+            |> Maybe.map
+                (\prescribedMedication ->
+                    let
+                        ( derivedInputs, ( derivedTasksCompleted, derivedTasksTotal ) ) =
+                            if form.medicationsNotChanged /= Just False then
+                                ( [], ( 0, 0 ) )
 
-                    prescribedMedicationForView =
-                        EverySet.toList prescribedMedication
-                            |> List.map
-                                (\medication ->
-                                    li [] [ text <| translate language <| Translate.HIVPrescribedMedication medication ]
-                                )
-                            |> ul []
-                in
-                ( [ viewLabel language Translate.PrescribedMedication
-                  , prescribedMedicationForView
-                  , viewQuestionLabel language Translate.PrescribedMedicationsChangedQuestion
-                  , viewBoolInput
-                        language
-                        form.medicationsNotChanged
-                        SetPrescribedMedicationsNotChanged
-                        "medications-changed"
-                        Nothing
-                  ]
-                    ++ derivedInputs
-                , ( taskCompleted form.medicationsNotChanged + derivedTasksCompleted
-                  , 1 + derivedTasksTotal
-                  )
+                            else
+                                ( recordMedicationsInputs, recordMedicationsTasks )
+
+                        prescribedMedicationForView =
+                            EverySet.toList prescribedMedication
+                                |> List.map
+                                    (\medication ->
+                                        li [] [ text <| translate language <| Translate.HIVPrescribedMedication medication ]
+                                    )
+                                |> ul []
+                    in
+                    ( [ viewLabel language Translate.PrescribedMedication
+                      , prescribedMedicationForView
+                      , viewQuestionLabel language Translate.PrescribedMedicationsChangedQuestion
+                      , viewBoolInput
+                            language
+                            form.medicationsNotChanged
+                            SetPrescribedMedicationsNotChanged
+                            "medications-changed"
+                            Nothing
+                      ]
+                        ++ derivedInputs
+                    , ( taskCompleted form.medicationsNotChanged + derivedTasksCompleted
+                      , 1 + derivedTasksTotal
+                      )
+                    )
                 )
-            )
-        |> Maybe.withDefault (recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsQuestion form)
+            |> Maybe.withDefault ( recordMedicationsInputs, recordMedicationsTasks )
 
 
 recordMedicationsInputsAndTasks :
