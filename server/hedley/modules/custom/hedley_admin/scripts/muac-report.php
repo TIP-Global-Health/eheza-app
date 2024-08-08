@@ -37,16 +37,16 @@ $query->condition('fr.field_role_value', 'nurse');
 $nurses = $query->execute()->fetchCol();
 
 $encounter_types = [
-  'acute_illness_muac',
-  'child_scoreboard_ncda',
-  'muac',
-  'nutrition_muac',
-  'well_child_muac',
+  'acute_illness_muac' => 'Acute Illness',
+  'child_scoreboard_ncda' => 'Child Scorecard',
+  'muac' => 'Nutrition Group',
+  'nutrition_muac' => 'Nutrition Group',
+  'well_child_muac' => 'SPV',
 ];
 
 $query = db_select('node', 'node');
 $query->fields('node', ['nid', 'type']);
-$query->condition('type', $encounter_types, 'IN');
+$query->condition('type', array_keys($encounter_types), 'IN');
 $query->condition('status', NODE_PUBLISHED);
 
 $field_to_join = [
@@ -77,6 +77,7 @@ $rows[0] = [
   'MUAC Value',
   'Date Measured (YYYY-MM-DD)',
   'Nurse/CHW',
+  'Encounter Type',
   'Health Center',
   'District',
 ];
@@ -128,6 +129,7 @@ while (TRUE) {
       $row->field_muac,
       $measured_date,
       $nurse_type,
+      $encounter_types[$row->type],
       $health_centers[$row->field_shards],
       $row->field_district,
     ];
