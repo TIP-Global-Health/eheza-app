@@ -1,4 +1,4 @@
-module Pages.Tuberculosis.Encounter.View exposing (view)
+module Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
@@ -12,12 +12,13 @@ import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Tuberculosis.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.Tuberculosis.Encounter.Model exposing (..)
-import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
+import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing
         ( viewEndEncounterButton
         , viewEndEncounterDialog
         , viewPersonDetailsExtended
+        , viewReportLink
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
@@ -94,8 +95,7 @@ viewMainPageContent : Language -> NominalDate -> ModelIndexedDb -> AssembledData
 viewMainPageContent language currentDate db assembled model =
     let
         ( completedActivities, pendingActivities ) =
-            List.filter (expectActivity currentDate assembled) allActivities
-                |> List.partition (activityCompleted currentDate assembled)
+            partitionActivities currentDate assembled
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -133,13 +133,12 @@ viewMainPageContent language currentDate db assembled model =
         innerContent =
             if model.selectedTab == Reports then
                 div [ class "reports-wrapper" ]
-                    [-- @todo:
-                     -- viewReportLink language
-                     --     Translate.ProgressReport
-                     --     (SetActivePage <|
-                     --         UserPage <|
-                     --             TuberculosisProgressReportPage (InitiatorEncounterPage assembled.id)
-                     --     )
+                    [ viewReportLink language
+                        Translate.ProgressReport
+                        (SetActivePage <|
+                            UserPage <|
+                                TuberculosisProgressReportPage assembled.id
+                        )
                     ]
 
             else
@@ -155,7 +154,7 @@ viewMainPageContent language currentDate db assembled model =
                     ]
 
         allowEndEncounter =
-            allowEndingEcounter pendingActivities
+            allowEndingEncounter pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -168,6 +167,6 @@ viewMainPageContent language currentDate db assembled model =
     ]
 
 
-allowEndingEcounter : List TuberculosisActivity -> Bool
-allowEndingEcounter pendingActivities =
+allowEndingEncounter : List TuberculosisActivity -> Bool
+allowEndingEncounter pendingActivities =
     List.isEmpty pendingActivities

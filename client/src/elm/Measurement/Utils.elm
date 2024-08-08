@@ -1534,7 +1534,7 @@ treatmentReviewCustomReasonsForNotTakingInputsAndTasks language currentDate ( re
                                 (Maybe.withDefault [] form.adverseEvents)
                                 Nothing
                                 setAdverseEventMsg
-                                Translate.AcuteIllnessAdverseEvent
+                                Translate.AdverseEvent
                           ]
                         , [ maybeToBoolTask form.adverseEvents ]
                         )

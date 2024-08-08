@@ -354,6 +354,9 @@ pageToFragment current =
                 TuberculosisActivityPage id activity ->
                     Just <| "tuberculosis-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.TuberculosisActivity.Utils.activityToString activity
 
+                TuberculosisProgressReportPage id ->
+                    Just <| "tuberculosis-progress-report/" ++ fromEntityUuid id
+
                 EducationSessionPage id ->
                     Just <| "education-session/" ++ fromEntityUuid id
 
@@ -443,6 +446,7 @@ parser =
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
+        , map (\id -> UserPage <| TuberculosisProgressReportPage id) (s "tuberculosis-progress-report" </> parseUuid)
         , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
         , map (\id -> UserPage <| HIVEncounterPage id) (s "hiv-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)

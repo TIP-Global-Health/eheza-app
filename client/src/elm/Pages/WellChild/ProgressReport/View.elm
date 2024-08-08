@@ -87,7 +87,7 @@ import Pages.WellChild.Activity.View exposing (viewVaccinationOverview)
 import Pages.WellChild.Encounter.Model exposing (AssembledData)
 import Pages.WellChild.Encounter.Utils
     exposing
-        ( allowEndingEcounter
+        ( allowEndingEncounter
         , generateAssembledData
         , pediatricCareMilestoneToComparable
         , resolveDateForPediatricCareMilestone
@@ -162,7 +162,7 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEcounter currentDate pendingActivities assembled
+                        , allowEndEncounter = allowEndingEncounter currentDate pendingActivities assembled
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp

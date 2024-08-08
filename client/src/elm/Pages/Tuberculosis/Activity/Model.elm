@@ -70,14 +70,14 @@ emptyMedicationData =
 
 type alias PrescribedMedicationForm =
     { medications : Maybe (List TuberculosisPrescribedMedication)
-    , medicationsDirty : Bool
+    , medicationsNotChanged : Maybe Bool
     }
 
 
 emptyPrescribedMedicationForm : PrescribedMedicationForm
 emptyPrescribedMedicationForm =
     { medications = Nothing
-    , medicationsDirty = False
+    , medicationsNotChanged = Nothing
     }
 
 
@@ -184,6 +184,7 @@ type Msg
     | SaveDiagnostics PersonId IndividualEncounterParticipantId (Maybe ( TuberculosisDiagnosticsId, TuberculosisDiagnostics ))
       -- MEDICATION
     | SetActiveMedicationTask MedicationTask
+    | SetPrescribedMedicationsNotChanged Bool
     | SetPrescribedMedication TuberculosisPrescribedMedication
     | SavePrescribedMedication PersonId (Maybe ( TuberculosisMedicationId, TuberculosisMedication )) (Maybe MedicationTask)
     | SetDOTBoolInput (Bool -> DOTForm -> DOTForm) Bool

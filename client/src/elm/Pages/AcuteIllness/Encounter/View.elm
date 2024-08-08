@@ -1,4 +1,4 @@
-module Pages.AcuteIllness.Encounter.View exposing (allowEndingEcounter, partitionActivities, view, viewPersonDetailsWithAlert, warningPopup)
+module Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partitionActivities, view, viewPersonDetailsWithAlert, warningPopup)
 
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.AcuteIllnessActivity.Utils exposing (getActivityIcon, getAllActivities)
@@ -362,7 +362,7 @@ viewMainPageContent language currentDate id isChw assembled model =
                     ]
 
         allowEndEncounter =
-            allowEndingEcounter currentDate isChw assembled pendingActivities
+            allowEndingEncounter currentDate isChw assembled pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -382,8 +382,8 @@ partitionActivities currentDate isChw assembled =
         |> List.partition (activityCompleted currentDate isChw assembled)
 
 
-allowEndingEcounter : NominalDate -> Bool -> AssembledData -> List AcuteIllnessActivity -> Bool
-allowEndingEcounter currentDate isChw assembled pendingActivities =
+allowEndingEncounter : NominalDate -> Bool -> AssembledData -> List AcuteIllnessActivity -> Bool
+allowEndingEncounter currentDate isChw assembled pendingActivities =
     if not assembled.initialEncounter then
         List.isEmpty pendingActivities
 

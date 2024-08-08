@@ -41,6 +41,9 @@ update currentDate id db msg model =
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
 
+        medicationForm =
+            resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
+
         generateMedicationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| TuberculosisEncounterPage id ]
@@ -138,20 +141,28 @@ update currentDate id db msg model =
             , []
             )
 
+        SetPrescribedMedicationsNotChanged value ->
+            let
+                updatedForm =
+                    { medicationForm | medicationsNotChanged = Just value, medications = Nothing }
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | prescribedMedicationForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetPrescribedMedication medication ->
             let
-                medicationForm =
-                    resolveFormWithDefaults .medication prescribedMedicationFormWithDefault model.medicationData.prescribedMedicationForm
-
-                form =
-                    medicationForm
-
                 updatedForm =
                     setMultiSelectInputValue .medications
-                        (\medications -> { form | medications = medications, medicationsDirty = True })
+                        (\medications -> { medicationForm | medications = medications })
                         NoTuberculosisPrescribedMedications
                         medication
-                        form
+                        medicationForm
 
                 updatedData =
                     model.medicationData
