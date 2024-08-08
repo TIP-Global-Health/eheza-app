@@ -196,6 +196,7 @@ type UserPage
     | TuberculosisParticipantPage PersonId
     | TuberculosisEncounterPage TuberculosisEncounterId -- Tuberculosis activities index.
     | TuberculosisActivityPage TuberculosisEncounterId TuberculosisActivity -- record Tuberculosis activity.
+    | TuberculosisProgressReportPage TuberculosisEncounterId -- Tuberculosis progress report.
     | EducationSessionPage EducationSessionId -- Education Session page.
     | HIVParticipantPage PersonId
     | HIVEncounterPage HIVEncounterId -- HIV activities index.

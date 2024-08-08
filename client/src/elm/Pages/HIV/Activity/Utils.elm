@@ -20,7 +20,7 @@ import Measurement.Utils
         , treatmentReviewInputsAndTasks
         )
 import Pages.HIV.Activity.Model exposing (..)
-import Pages.HIV.Encounter.Model exposing (AssembledData)
+import Pages.HIV.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
@@ -535,62 +535,51 @@ prescribedMedicationsInputsAndTasks :
     -> ( List (Html Msg), ( Int, Int ) )
 prescribedMedicationsInputsAndTasks language currentDate assembled form =
     let
-        mPrescribedMedications =
-            List.filterMap
-                (\data ->
-                    getMeasurementValueFunc data.measurements.medication
-                        |> Maybe.andThen
-                            (\value ->
-                                case EverySet.toList value of
-                                    [ HIVMedicationsNotChanged ] ->
-                                        Nothing
-
-                                    _ ->
-                                        Just value
-                            )
-                )
-                assembled.previousEncountersData
-                |> List.head
-
         ( recordMedicationsInputs, recordMedicationsTasks ) =
-            recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsTakenQuestion form
+            recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
-    Maybe.map
-        (\prescribedMedication ->
-            let
-                ( derivedInputs, ( derivedTasksCompleted, derivedTasksTotal ) ) =
-                    if form.medicationsNotChanged /= Just False then
-                        ( [], ( 0, 0 ) )
+    if assembled.initialEncounter then
+        ( recordMedicationsInputs, recordMedicationsTasks )
 
-                    else
-                        ( recordMedicationsInputs, recordMedicationsTasks )
+    else
+        generateAllEncountersData assembled
+            |> resolvePrescribedMedicationSets HIVMedicationsNotChanged
+            |> Tuple.first
+            |> Maybe.map
+                (\prescribedMedication ->
+                    let
+                        ( derivedInputs, ( derivedTasksCompleted, derivedTasksTotal ) ) =
+                            if form.medicationsNotChanged /= Just False then
+                                ( [], ( 0, 0 ) )
 
-                prescribedMedicationForView =
-                    EverySet.toList prescribedMedication
-                        |> List.map
-                            (\medication ->
-                                li [] [ text <| translate language <| Translate.HIVPrescribedMedication medication ]
-                            )
-                        |> ul []
-            in
-            ( [ viewLabel language Translate.PrescribedMedication
-              , prescribedMedicationForView
-              , viewQuestionLabel language Translate.HIVPrescribedMedicationsChangedQuestion
-              , viewBoolInput
-                    language
-                    form.medicationsNotChanged
-                    SetPrescribedMedicationsNotChanged
-                    "medications-changed"
-                    Nothing
-              ]
-                ++ derivedInputs
-            , ( taskCompleted form.medicationsNotChanged + derivedTasksCompleted
-              , 1 + derivedTasksTotal
-              )
-            )
-        )
-        mPrescribedMedications
-        |> Maybe.withDefault (recordMedicationsInputsAndTasks language Translate.HIVPrescribedMedicationsQuestion form)
+                            else
+                                ( recordMedicationsInputs, recordMedicationsTasks )
+
+                        prescribedMedicationForView =
+                            EverySet.toList prescribedMedication
+                                |> List.map
+                                    (\medication ->
+                                        li [] [ text <| translate language <| Translate.HIVPrescribedMedication medication ]
+                                    )
+                                |> ul []
+                    in
+                    ( [ viewLabel language Translate.PrescribedMedication
+                      , prescribedMedicationForView
+                      , viewQuestionLabel language Translate.PrescribedMedicationsChangedQuestion
+                      , viewBoolInput
+                            language
+                            form.medicationsNotChanged
+                            SetPrescribedMedicationsNotChanged
+                            "medications-changed"
+                            Nothing
+                      ]
+                        ++ derivedInputs
+                    , ( taskCompleted form.medicationsNotChanged + derivedTasksCompleted
+                      , 1 + derivedTasksTotal
+                      )
+                    )
+                )
+            |> Maybe.withDefault ( recordMedicationsInputs, recordMedicationsTasks )
 
 
 recordMedicationsInputsAndTasks :
@@ -627,4 +616,29 @@ recordMedicationsInputsAndTasks language questionTransId form =
             |> Maybe.withDefault 0
       , 1
       )
+    )
+
+
+generateAllEncountersData : AssembledData -> List EncounterData
+generateAllEncountersData assembled =
+    { id = assembled.id
+    , startDate = assembled.encounter.startDate
+    , measurements = assembled.measurements
+    }
+        :: assembled.previousEncountersData
+
+
+resolvePrescribedMedicationSets :
+    HIVPrescribedMedication
+    -> List EncounterData
+    -> ( Maybe (EverySet HIVPrescribedMedication), Maybe (EverySet HIVPrescribedMedication) )
+resolvePrescribedMedicationSets notChangedOption allEncountersData =
+    let
+        prescribedMedicationSets =
+            List.filterMap (.measurements >> .medication >> getMeasurementValueFunc)
+                allEncountersData
+                |> List.filter (not << EverySet.member notChangedOption)
+    in
+    ( List.head prescribedMedicationSets
+    , List.drop 1 prescribedMedicationSets |> List.head
     )

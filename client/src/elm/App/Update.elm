@@ -112,6 +112,8 @@ import Pages.Tuberculosis.Activity.Model
 import Pages.Tuberculosis.Activity.Update
 import Pages.Tuberculosis.Encounter.Model
 import Pages.Tuberculosis.Encounter.Update
+import Pages.Tuberculosis.ProgressReport.Model
+import Pages.Tuberculosis.ProgressReport.Update
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.Update
 import Pages.WellChild.Encounter.Model
@@ -851,6 +853,19 @@ update msg model =
                             in
                             ( { data | childScoreboardReportPages = Dict.insert id subModel data.childScoreboardReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageTuberculosisProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.Tuberculosis.ProgressReport.Model.emptyModel
+                                        |> Pages.Tuberculosis.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | tuberculosisProgressReportPages = Dict.insert id subModel data.tuberculosisProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisProgressReport id) subCmd
                             , extraMsgs
                             )
 

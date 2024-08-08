@@ -272,53 +272,9 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
     let
         componentsSelectionInput =
             case reportType of
-                ReportWellChild ->
-                    let
-                        currentValue =
-                            Maybe.map
-                                (\list ->
-                                    case list of
-                                        WellChild components ->
-                                            EverySet.toList components
-
-                                        -- We should never get here.
-                                        _ ->
-                                            []
-                                )
-                                componentsList
-                                |> Maybe.withDefault []
-
-                        setMsg =
-                            \component ->
-                                let
-                                    currentComponents =
-                                        EverySet.fromList currentValue
-
-                                    updatedComponents =
-                                        if EverySet.member component currentComponents then
-                                            EverySet.remove component currentComponents
-
-                                        else
-                                            EverySet.insert component currentComponents
-                                in
-                                WellChild updatedComponents
-                                    |> Just
-                                    |> ComponentsSelection phoneNumber
-                                    |> Just
-                                    |> SetState
-                    in
-                    viewCheckBoxMultipleSelectInput language
-                        [ ComponentWellChildActiveDiagnoses
-                        , ComponentWellChildImmunizationHistory
-                        , ComponentWellChildECD
-                        , ComponentWellChildGrowth
-                        , ComponentWellChildNextAppointment
-                        ]
-                        []
-                        currentValue
-                        Nothing
-                        setMsg
-                        Translate.ReportComponentWellChild
+                -- Not in use.
+                ReportAcuteIllness ->
+                    emptyNode
 
                 ReportAntenatal ->
                     let
@@ -370,10 +326,6 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                         setMsg
                         Translate.ReportComponentAntenatal
 
-                -- Not in use.
-                ReportAcuteIllness ->
-                    emptyNode
-
                 ReportNCD ->
                     let
                         currentValue =
@@ -422,6 +374,58 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                         setMsg
                         Translate.ReportComponentNCD
 
+                -- Not in use.
+                ReportTuberculosis ->
+                    emptyNode
+
+                ReportWellChild ->
+                    let
+                        currentValue =
+                            Maybe.map
+                                (\list ->
+                                    case list of
+                                        WellChild components ->
+                                            EverySet.toList components
+
+                                        -- We should never get here.
+                                        _ ->
+                                            []
+                                )
+                                componentsList
+                                |> Maybe.withDefault []
+
+                        setMsg =
+                            \component ->
+                                let
+                                    currentComponents =
+                                        EverySet.fromList currentValue
+
+                                    updatedComponents =
+                                        if EverySet.member component currentComponents then
+                                            EverySet.remove component currentComponents
+
+                                        else
+                                            EverySet.insert component currentComponents
+                                in
+                                WellChild updatedComponents
+                                    |> Just
+                                    |> ComponentsSelection phoneNumber
+                                    |> Just
+                                    |> SetState
+                    in
+                    viewCheckBoxMultipleSelectInput language
+                        [ ComponentWellChildActiveDiagnoses
+                        , ComponentWellChildImmunizationHistory
+                        , ComponentWellChildECD
+                        , ComponentWellChildGrowth
+                        , ComponentWellChildNextAppointment
+                        ]
+                        []
+                        currentValue
+                        Nothing
+                        setMsg
+                        Translate.ReportComponentWellChild
+
         continueButtonAction =
             if componentsSelected then
                 [ onClick <| SetReportComponents (config.setReportComponentsMsg componentsList) phoneNumber ]
@@ -433,14 +437,9 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
             Maybe.map
                 (\list ->
                     case reportType of
-                        ReportWellChild ->
-                            case list of
-                                WellChild components ->
-                                    not <| EverySet.isEmpty components
-
-                                -- We should never get here.
-                                _ ->
-                                    False
+                        -- Not in use.
+                        ReportAcuteIllness ->
+                            False
 
                         ReportAntenatal ->
                             case list of
@@ -451,13 +450,22 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                 _ ->
                                     False
 
-                        -- Not in use.
-                        ReportAcuteIllness ->
-                            False
-
                         ReportNCD ->
                             case list of
                                 NCD components ->
+                                    not <| EverySet.isEmpty components
+
+                                -- We should never get here.
+                                _ ->
+                                    False
+
+                        -- Not in use.
+                        ReportTuberculosis ->
+                            False
+
+                        ReportWellChild ->
+                            case list of
+                                WellChild components ->
                                     not <| EverySet.isEmpty components
 
                                 -- We should never get here.

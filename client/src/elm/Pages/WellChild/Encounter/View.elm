@@ -14,7 +14,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewPersonDetailsExtended, viewSkipNCDADialog)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
-import Pages.WellChild.Encounter.Utils exposing (allowEndingEcounter, generateAssembledData)
+import Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -239,7 +239,7 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
                 action
 
         allowEndEncounter =
-            allowEndingEcounter currentDate pendingActivities assembled
+            allowEndingEncounter currentDate pendingActivities assembled
 
         endEcounterButtonAttributes =
             if allowEndEncounter then
