@@ -1,7 +1,6 @@
 module Pages.PatientRecord.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model
+import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Types
 import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (..)

@@ -158,15 +158,16 @@ viewPhoneInput language currentDate site data =
                 )
                 allCountryCodes
 
-        curerntPhoneNumber =
-            if siteToCountryCode site == data.countryCode then
-                "0" ++ trimLeadingZeros data.phone
-
-            else
-                "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
-
         continueButtonAttributes =
             if String.length data.phone >= minimalNumberLength then
+                let
+                    curerntPhoneNumber =
+                        if siteToCountryCode site == data.countryCode then
+                            "0" ++ trimLeadingZeros data.phone
+
+                        else
+                            "+" ++ countryCodeToString data.countryCode ++ trimLeadingZeros data.phone
+                in
                 [ class "ui primary fluid button"
                 , onClick <| SetState <| Just (PhoneUpdateAtProfile curerntPhoneNumber)
                 ]

@@ -1,6 +1,6 @@
 module Pages.Reports.View exposing (view)
 
-import App.Types exposing (Language, Site)
+import App.Types exposing (Language)
 import AssocList as Dict exposing (Dict)
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model
@@ -11,12 +11,11 @@ import Backend.Reports.Model
         , NutritionReportTableType(..)
         , PatientData
         , PrenatalEncounterType(..)
-        , PrenatalParticipantData
         , ReportsData
         , SelectedEntity(..)
         )
 import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
-import Date exposing (Interval(..), Unit(..))
+import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
@@ -193,19 +192,6 @@ viewReportsData language currentDate themePath data model =
 
                                                                     else
                                                                         let
-                                                                            dateConcluded =
-                                                                                -- If pregnancy was concluded, but conclusion date is
-                                                                                -- after TO date, we mark pregnancy as not concluded.
-                                                                                Maybe.andThen
-                                                                                    (\date ->
-                                                                                        if Date.compare limitDate date == LT then
-                                                                                            Nothing
-
-                                                                                        else
-                                                                                            Just date
-                                                                                    )
-                                                                                    participantData.dateConcluded
-
                                                                             filteredEncounters =
                                                                                 List.filter
                                                                                     (\encounterData ->
@@ -220,6 +206,20 @@ viewReportsData language currentDate themePath data model =
                                                                             Nothing
 
                                                                         else
+                                                                            let
+                                                                                dateConcluded =
+                                                                                    -- If pregnancy was concluded, but conclusion date is
+                                                                                    -- after TO date, we mark pregnancy as not concluded.
+                                                                                    Maybe.andThen
+                                                                                        (\date ->
+                                                                                            if Date.compare limitDate date == LT then
+                                                                                                Nothing
+
+                                                                                            else
+                                                                                                Just date
+                                                                                        )
+                                                                                        participantData.dateConcluded
+                                                                            in
                                                                             Just { participantData | dateConcluded = dateConcluded, encounters = filteredEncounters }
                                                                 )
                                                             )
@@ -303,7 +303,7 @@ viewReportsData language currentDate themePath data model =
         [ generateReportsHeaderImage themePath
         , topBar
         , div [ class "inputs" ] <|
-            [ viewSelectListInput language
+            (viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
                 , ReportPrenatal
@@ -315,8 +315,8 @@ viewReportsData language currentDate themePath data model =
                 Translate.ReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
-            ]
-                ++ dateInputs
+            )
+                :: dateInputs
                 ++ [ content ]
         , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
         , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
@@ -345,8 +345,8 @@ viewDemographicsReport language limitDate scopeLabel records =
                 ++ demographicsReportEncountersDataToCSV demographicsReportEncountersData
     in
     div [ class "report demographics" ] <|
-        viewDemographicsReportPatients language limitDate demographicsReportPatientsData
-            ++ viewDemographicsReportEncounters language demographicsReportEncountersData
+        viewDemographicsReportPatients demographicsReportPatientsData
+            ++ viewDemographicsReportEncounters demographicsReportEncountersData
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -578,27 +578,24 @@ generateDemographicsReportPatientsData language limitDate records =
 
 
 viewDemographicsReportPatients :
-    Language
-    -> NominalDate
-    ->
-        { heading : String
-        , tables :
-            List
-                { captions : List String
-                , name : String
-                , rows : List (List String)
-                , totals : ( String, String )
-                }
-        }
+    { heading : String
+    , tables :
+        List
+            { captions : List String
+            , name : String
+            , rows : List (List String)
+            , totals : ( String, String )
+            }
+    }
     -> List (Html Msg)
-viewDemographicsReportPatients language limitDate data =
+viewDemographicsReportPatients data =
     let
         viewTable tableData =
             div [ class <| "table " ++ tableData.name ] <|
-                [ div [ class "row captions" ] <|
+                (div [ class "row captions" ] <|
                     viewStandardCells tableData.captions
-                ]
-                    ++ List.map viewStandardRow tableData.rows
+                )
+                    :: List.map viewStandardRow tableData.rows
     in
     div [ class "section heading" ] [ text data.heading ]
         :: List.map viewTable data.tables
@@ -648,8 +645,7 @@ generateDemographicsReportEncountersData language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.map .encounters
-                            >> List.concat
+                        (List.concatMap .encounters
                             >> List.filter
                                 (\encounter ->
                                     List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -662,8 +658,7 @@ generateDemographicsReportEncountersData language records =
             List.filterMap
                 (.prenatalData
                     >> Maybe.map
-                        (List.map .encounters
-                            >> List.concat
+                        (List.concatMap .encounters
                             >> List.filter
                                 (\encounter ->
                                     not <| List.member encounter.encounterType [ NurseEncounter, NursePostpartumEncounter ]
@@ -801,7 +796,7 @@ generateDemographicsReportEncountersData language records =
 
         nutritionGroupPmtctEncountersData =
             List.filterMap
-                (.groupNutritionPmtctData >> Maybe.map identity)
+                .groupNutritionPmtctData
                 records
 
         nutritionGroupPmtctEncountersTotal =
@@ -812,7 +807,7 @@ generateDemographicsReportEncountersData language records =
 
         nutritionGroupFbfEncountersData =
             List.filterMap
-                (.groupNutritionFbfData >> Maybe.map identity)
+                .groupNutritionFbfData
                 records
 
         nutritionGroupFbfEncountersTotal =
@@ -823,7 +818,7 @@ generateDemographicsReportEncountersData language records =
 
         nutritionGroupSorwatheEncountersData =
             List.filterMap
-                (.groupNutritionSorwatheData >> Maybe.map identity)
+                .groupNutritionSorwatheData
                 records
 
         nutritionGroupSorwatheEncountersTotal =
@@ -834,7 +829,7 @@ generateDemographicsReportEncountersData language records =
 
         nutritionGroupChwEncountersData =
             List.filterMap
-                (.groupNutritionChwData >> Maybe.map identity)
+                .groupNutritionChwData
                 records
 
         nutritionGroupChwEncountersTotal =
@@ -845,7 +840,7 @@ generateDemographicsReportEncountersData language records =
 
         nutritionGroupAchiEncountersData =
             List.filterMap
-                (.groupNutritionAchiData >> Maybe.map identity)
+                .groupNutritionAchiData
                 records
 
         nutritionGroupAchiEncountersTotal =
@@ -943,15 +938,13 @@ generateDemographicsReportEncountersData language records =
 
 
 viewDemographicsReportEncounters :
-    Language
-    ->
-        { heading : String
-        , captions : List String
-        , rows : List ( List String, Bool )
-        , totals : { label : String, total : String, unique : String }
-        }
+    { heading : String
+    , captions : List String
+    , rows : List ( List String, Bool )
+    , totals : { label : String, total : String, unique : String }
+    }
     -> List (Html Msg)
-viewDemographicsReportEncounters language data =
+viewDemographicsReportEncounters data =
     let
         viewRow ( cells, shiftLeft ) =
             div [ class "row" ] <|
@@ -971,10 +964,10 @@ viewDemographicsReportEncounters language data =
     in
     [ div [ class "section heading" ] [ text data.heading ]
     , div [ class "table encounters" ] <|
-        [ div [ class "row captions" ] <|
+        (div [ class "row captions" ] <|
             viewStandardCells data.captions
-        ]
-            ++ List.map viewRow data.rows
+        )
+            :: List.map viewRow data.rows
             ++ [ div [ class "row encounters-totals" ] <|
                     viewStandardCells [ data.totals.label, data.totals.total, data.totals.unique ]
                ]
@@ -1017,9 +1010,7 @@ viewNutritionReport language currentDate scopeLabel mBackendGeneratedData report
             reportTablesDataToCSV generatedData
     in
     div [ class "report nutrition" ] <|
-        (List.map viewNutritionMetricsResultsTable generatedData
-            |> List.concat
-        )
+        List.concatMap viewNutritionMetricsResultsTable generatedData
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -1404,9 +1395,7 @@ viewPrenatalReport language limitDate scopeLabel records =
             reportTablesDataToCSV data
     in
     div [ class "report prenatal" ] <|
-        (List.map viewTable data
-            |> List.concat
-        )
+        List.concatMap viewTable data
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -1663,8 +1652,8 @@ viewAcuteIllnessReport language limitDate startDate scopeLabel records =
         [ div [ class "table" ] <|
             captionsRow
                 :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
         ]
-            ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
 generateAcuteIllnessReportData :
@@ -1739,7 +1728,7 @@ generateAcuteIllnessReportData language startDate records =
         [ translate language Translate.Diagnosis
         , translate language Translate.Total
         ]
-    , rows = rows ++ [ totalsRow ] ++ [ noneRow ]
+    , rows = rows ++ [ totalsRow, noneRow ]
     }
 
 

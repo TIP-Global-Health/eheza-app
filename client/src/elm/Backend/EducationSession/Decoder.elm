@@ -2,7 +2,7 @@ module Backend.EducationSession.Decoder exposing (decodeEducationSession, decode
 
 import Backend.EducationSession.Model exposing (..)
 import Backend.EducationSession.Utils exposing (..)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)

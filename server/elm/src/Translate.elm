@@ -108,7 +108,6 @@ type TranslationId
     | NewScope
     | NewSelection
     | NoDiagnosis
-    | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
     | NutritionBehavior
@@ -129,7 +128,6 @@ type TranslationId
     | ReportType ReportType
     | ReportTypeLabel
     | ResolveMonth Bool Month
-    | Result
     | Save
     | Scope
     | Sector
@@ -148,7 +146,6 @@ type TranslationId
     | TargetedInterventions
     | Total
     | Tuberculosis
-    | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
@@ -738,12 +735,6 @@ translationSet transId =
             , kirundi = Just "Nta Gupima/gusuzuma"
             }
 
-        None ->
-            { english = "None"
-            , kinyarwanda = Just "Ntabyo"
-            , kirundi = Just "Nta na kimwe"
-            }
-
         NumberOfVisits number ->
             if number == 1 then
                 { english = "1 visit"
@@ -928,12 +919,6 @@ translationSet transId =
         ResolveMonth short month ->
             translateMonth month short
 
-        Result ->
-            { english = "Result"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
         Save ->
             { english = "Save"
             , kinyarwanda = Just "Kubika"
@@ -1063,12 +1048,6 @@ translationSet transId =
 
         Tuberculosis ->
             { english = "Tuberculosis"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        ViewMode ->
-            { english = "View Mode"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

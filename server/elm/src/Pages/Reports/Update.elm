@@ -2,10 +2,10 @@ module Pages.Reports.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import App.Ports
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Model exposing (ModelBackend)
 import Backend.Reports.Model exposing (PatientData)
-import Date exposing (Interval(..), Unit(..))
+import Date exposing (Unit(..))
 import Error.Utils exposing (noError)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra
@@ -135,18 +135,18 @@ calculateNutritionReportDataTask currentDate data =
                     )
                     records
 
-            currentYear =
-                Date.year currentDate
-
             allEncounters =
                 let
+                    currentYear =
+                        Date.year currentDate
+
                     filterByYear encounter =
                         Date.year encounter.startDate >= startingYear
 
                     startingYear =
                         currentYear - 3
                 in
-                List.map
+                List.concatMap
                     (\record ->
                         [ Maybe.map
                             (List.concat
@@ -190,7 +190,6 @@ calculateNutritionReportDataTask currentDate data =
                             |> List.concat
                     )
                     records
-                    |> List.concat
 
             encountersByMonth =
                 List.foldl

@@ -12,15 +12,14 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -275,19 +274,13 @@ viewStepRecordSymptoms language currentDate contact data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
                         saveMsg =
                             case task of
                                 SymptomsGeneral ->

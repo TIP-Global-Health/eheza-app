@@ -7,7 +7,6 @@ import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
 import Backend.Person.Model exposing (Person)
-import Backend.Person.Utils exposing (ageInYears)
 import Backend.Session.Model exposing (EditableSession, OfflineSession)
 import Backend.Session.Utils exposing (getChild, getChildMeasurementData, getChildren, getMother, getMotherMeasurementData, getMyMother)
 import EverySet exposing (EverySet)
@@ -25,7 +24,7 @@ import Pages.Nutrition.Activity.View exposing (warningPopup)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Session.Model
-import Pages.Utils exposing (viewSkipNCDADialog)
+import Pages.Utils exposing (isAboveAgeOf2Years, viewSkipNCDADialog)
 import Participant.Model exposing (Participant)
 import Participant.Utils exposing (childParticipant, motherParticipant)
 import SyncManager.Model exposing (Site(..), SiteFeature)
@@ -108,18 +107,13 @@ viewFoundChild language currentDate zscores site features isChw ( childId, child
                 |> translate language
                 |> text
 
-        isAboveAgeOf2Years =
-            ageInYears currentDate child
-                |> Maybe.map (\years -> years >= 2)
-                |> Maybe.withDefault False
-
         age =
             child.birthDate
                 |> Maybe.map
                     (\birthDate ->
                         let
                             renderAgeFunc =
-                                if isAboveAgeOf2Years then
+                                if isAboveAgeOf2Years currentDate child then
                                     renderAgeYearsMonths
 
                                 else
@@ -445,54 +439,48 @@ viewActivityCards :
     -> List ( String, Html (Msg activity any) )
 viewActivityCards config language offlineSession personId activities selectedTab selectedActivity =
     let
-        clinicType =
-            offlineSession.session.clinicType
-
-        adultIsCaregiver =
-            isCaregiver personId offlineSession
-
-        pendingActivitiesView =
-            if List.isEmpty activities.pending then
-                let
-                    messageTransId =
-                        if adultIsCaregiver then
-                            Translate.CaregiverMessage
-
-                        else
-                            Translate.NoActivitiesPendingForThisParticipant
-                in
-                [ span [] [ text <| translate language messageTransId ] ]
-
-            else
-                List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
-
-        completedActivitiesView =
-            if List.isEmpty activities.completed then
-                let
-                    messageTransId =
-                        if adultIsCaregiver then
-                            Translate.CaregiverMessage
-
-                        else
-                            Translate.NoActivitiesCompletedForThisParticipant
-                in
-                [ span [] [ text <| translate language messageTransId ] ]
-
-            else
-                List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
-
         activeView =
             if selectedTab == ProgressReport then
                 emptyNode
 
             else
+                let
+                    clinicType =
+                        offlineSession.session.clinicType
+
+                    adultIsCaregiver =
+                        isCaregiver personId offlineSession
+                in
                 div [ class "ui task segment" ]
                     [ div [ class "ui five column grid" ] <|
                         if selectedTab == Pending then
-                            pendingActivitiesView
+                            if List.isEmpty activities.pending then
+                                let
+                                    messageTransId =
+                                        if adultIsCaregiver then
+                                            Translate.CaregiverMessage
+
+                                        else
+                                            Translate.NoActivitiesPendingForThisParticipant
+                                in
+                                [ span [] [ text <| translate language messageTransId ] ]
+
+                            else
+                                List.map (viewActivityListItem config language clinicType selectedActivity) activities.pending
+
+                        else if List.isEmpty activities.completed then
+                            let
+                                messageTransId =
+                                    if adultIsCaregiver then
+                                        Translate.CaregiverMessage
+
+                                    else
+                                        Translate.NoActivitiesCompletedForThisParticipant
+                            in
+                            [ span [] [ text <| translate language messageTransId ] ]
 
                         else
-                            completedActivitiesView
+                            List.map (viewActivityListItem config language clinicType selectedActivity) activities.completed
                     ]
 
         pendingTabTitle =

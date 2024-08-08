@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)

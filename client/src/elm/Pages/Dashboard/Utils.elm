@@ -10,7 +10,6 @@ import Backend.Dashboard.Model
         , CaseManagement
         , CaseNutrition
         , CaseNutritionTotal
-        , ChildScoreboardDataItem
         , ChildScoreboardEncounterDataItem
         , ChildrenBeneficiariesStats
         , DashboardStats
@@ -22,14 +21,12 @@ import Backend.Dashboard.Model
         , NutritionPageData
         , NutritionStatus
         , NutritionValue
-        , PMTCTDataItem
         , PatientDetails
         , Periods
         , PersonIdentifier
         , PrenatalDataItem
         , PrenatalEncounterDataItem
         , ProgramType(..)
-        , SPVDataItem
         , SPVEncounterDataItem
         , TotalBeneficiaries
         , TotalEncountersData
@@ -1036,10 +1033,6 @@ countPregnanciesDueWithin4MonthsForSelectedMonth dateLastDayOfSelectedMonth isCh
 -}
 countPregnanciesWith4VisitsOrMoreForSelectedMonth : NominalDate -> List PrenatalDataItem -> Int
 countPregnanciesWith4VisitsOrMoreForSelectedMonth dateLastDayOfSelectedMonth =
-    let
-        dateFirstDayOfSelectedMonth =
-            Date.floor Date.Month dateLastDayOfSelectedMonth
-    in
     List.filter
         (\pregnancy ->
             let

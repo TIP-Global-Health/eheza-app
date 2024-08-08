@@ -2,10 +2,8 @@ module Pages.HomeVisit.Activity.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -27,21 +25,13 @@ import Measurement.View
         , nutritionHygieneInputsAndTasks
         )
 import Pages.HomeVisit.Activity.Model exposing (..)
-import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( maybeToBoolTask
-        , taskCompleted
-        , taskCompletedWithException
-        , viewBoolInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewCustomSelectListInput
+        ( resolveTasksCompletedFromTotal
         , viewPersonDetails
-        , viewQuestionLabel
         )
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -131,10 +121,7 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -165,10 +152,7 @@ viewCaringContent language currentDate assembled db caringForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -199,10 +183,7 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
@@ -228,10 +209,7 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
             nutritionFoodSecurityInputsAndTasks language currentDate SetFoodSecurityBoolInput SetMainIncomeSource form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal

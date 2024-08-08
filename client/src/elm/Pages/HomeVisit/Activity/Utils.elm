@@ -1,15 +1,11 @@
 module Pages.HomeVisit.Activity.Utils exposing (..)
 
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.Measurement.Model exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
-import Pages.HomeVisit.Activity.Model exposing (..)
+import Maybe.Extra exposing (isJust)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (ifEverySetEmpty, ifNullableTrue)
 
 
 expectActivity : NominalDate -> Person -> AssembledData -> ModelIndexedDb -> HomeVisitActivity -> Bool

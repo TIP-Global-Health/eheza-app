@@ -7,7 +7,6 @@ module Translate exposing
     , ValidationError(..)
     , translate
     , translateText
-    , translationSet
     )
 
 {-| This module has just the translations ... for types and
@@ -23,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
@@ -1272,7 +1271,6 @@ type TranslationId
     | PregnancyOutcomeLabel
     | PregnancyOutcome PregnancyOutcome
     | PrescribedMedicationsChangedQuestion
-    | PrescribedMedicationsQuestion
     | PrescribedMedicationsTakenQuestion
     | PreviousCSectionScar
     | PreviousDelivery
@@ -1422,7 +1420,6 @@ type TranslationId
     | ResilienceGuideSection3Note
     | ResilienceGuideSection4Title
     | ResilienceGuideSection4Text
-    | ResilienceGuideSection5Title
     | ResilienceGuideSection5Bullet1
     | ResilienceGuideSection5Bullet2
     | ResilienceGuideSection5Bullet3
@@ -1801,7 +1798,6 @@ type TranslationId
     | TuberculosisNextStepsTask Pages.Tuberculosis.Activity.Model.NextStepsTask
     | TuberculosisPast
     | TuberculosisPrescribedMedication TuberculosisPrescribedMedication
-    | TuberculosisPrescribedMedicationsQuestion
     | TuberculosisPresent
     | TuberculosisProvideDOTTodayQuestion
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
@@ -16902,12 +16898,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        PrescribedMedicationsQuestion ->
-            { english = "What are the medications that were prescribed"
-            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Nothing
-            }
-
         PrescribedMedicationsTakenQuestion ->
             { english = "What are the medications being taken"
             , kinyarwanda = Nothing
@@ -18861,12 +18851,6 @@ translationSet trans =
         ResilienceGuideSection4Text ->
             { english = "Locate unread messages in that section. Click twice on the message to increase its visibility, and after that it will be removed from unread messages"
             , kinyarwanda = Just "Shakira ubutumwa utarasoma muri icyo gice. Kanda inshuro ebyili ku butumwa uri gusoma kugirango ubusome neza. maze buhite buva ku rutonde rw'ubutumwa utarasoma"
-            , kirundi = Nothing
-            }
-
-        ResilienceGuideSection5Title ->
-            { english = "e. Saving your Favourite Messages: (If a message resonates positively with you, you can designate it as a favourite)"
-            , kinyarwanda = Just "e. Kubika Ubutumwa wakunze: (Niba hari ubutumwa wasomye ukabwishimira/ukabukunda, ushobora kubushyira muri iki gice) Uko bikorwa"
             , kirundi = Nothing
             }
 
@@ -22447,12 +22431,6 @@ translationSet trans =
 
                 NoTuberculosisPrescribedMedications ->
                     translationSet EmptyString
-
-        TuberculosisPrescribedMedicationsQuestion ->
-            { english = "What are the medications that were prescribed"
-            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Nothing
-            }
 
         TuberculosisPresent ->
             { english = "Tuberculosis in the present"

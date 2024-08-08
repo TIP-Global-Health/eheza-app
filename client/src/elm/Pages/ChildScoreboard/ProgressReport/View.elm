@@ -7,21 +7,14 @@ import Backend.Model exposing (ModelIndexedDb)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
-import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectActivity)
-import Pages.ChildScoreboard.Encounter.Model exposing (AssembledData)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
-import Pages.ChildScoreboard.Encounter.View exposing (acuteIllnessEncounterPopup, viewEndEncounterButton)
 import Pages.ChildScoreboard.ProgressReport.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
-import Pages.WellChild.ProgressReport.View exposing (viewNCDAScorecard, viewProgressReport)
+import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (translate)
 import Translate.Model exposing (Language)
-import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model
 
@@ -68,7 +61,7 @@ view language currentDate zscores site features id db model =
 
         ( bottomActionData, mandatoryNutritionAssessmentMeasurementsTaken ) =
             Maybe.map2
-                (\assembled ( _, child ) ->
+                (\assembled _ ->
                     let
                         ( _, pendingActivities ) =
                             List.filter (expectActivity currentDate site assembled) allActivities

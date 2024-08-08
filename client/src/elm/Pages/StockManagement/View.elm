@@ -34,6 +34,7 @@ import Pages.Utils
         ( customPopup
         , maybeToBoolTask
         , resolveSelectedDateForMonthSelector
+        , resolveTasksCompletedFromTotal
         , viewBoolInput
         , viewCheckBoxSelectInput
         , viewLabel
@@ -624,10 +625,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
             )
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
     in
     viewStockUpdateContent language
         form.confirmIdentity
@@ -763,10 +761,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
             )
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
     in
     viewStockUpdateContent language
         form.confirmIdentity

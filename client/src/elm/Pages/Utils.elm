@@ -61,11 +61,6 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
 
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
-
         ( thumbnailClass, maybeAge ) =
             if isAdult then
                 ( "mother"
@@ -80,7 +75,7 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
                         (\birthDate ->
                             let
                                 renderAgeFunc =
-                                    if isAboveAgeOf2Years then
+                                    if isAboveAgeOf2Years currentDate person then
                                         renderAgeYearsMonths
 
                                     else
@@ -122,17 +117,19 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
     ]
 
 
+isAboveAgeOf2Years : NominalDate -> Person -> Bool
+isAboveAgeOf2Years currentDate person =
+    ageInYears currentDate person
+        |> Maybe.map (\age -> age >= 2)
+        |> Maybe.withDefault False
+
+
 viewPersonDetailsExtended : Language -> NominalDate -> Person -> List (Html any)
 viewPersonDetailsExtended language currentDate person =
     let
         isAdult =
             isPersonAnAdult currentDate person
                 |> Maybe.withDefault True
-
-        isAboveAgeOf2Years =
-            ageInYears currentDate person
-                |> Maybe.map (\age -> age >= 2)
-                |> Maybe.withDefault False
 
         ( thumbnailClass, ageEntry ) =
             if isAdult then
@@ -149,7 +146,7 @@ viewPersonDetailsExtended language currentDate person =
                         (\birthDate ->
                             let
                                 renderAgeFunc =
-                                    if isAboveAgeOf2Years then
+                                    if isAboveAgeOf2Years currentDate person then
                                         renderAgeYearsMonths
 
                                     else
@@ -1260,6 +1257,25 @@ maybeToBoolTask maybe =
         Nothing
 
 
+resolveTasksCompletedFromTotal : List (Maybe Bool) -> ( Int, Int )
+resolveTasksCompletedFromTotal tasks =
+    ( Maybe.Extra.values tasks
+        |> List.length
+    , List.length tasks
+    )
+
+
+resolveNextTask : t -> Dict t ( Int, Int ) -> List t -> Maybe t
+resolveNextTask activeTask completedFromTotalDict allTasks =
+    List.filter
+        (\task ->
+            (task /= activeTask)
+                && (not <| isTaskCompleted completedFromTotalDict task)
+        )
+        allTasks
+        |> List.head
+
+
 tasksBarId : String
 tasksBarId =
     "tasks-bar"
@@ -1395,3 +1411,10 @@ resolveActiveTask options selected =
         )
         selected
         |> Maybe.withDefault (List.head options)
+
+
+concatInputsAndTasksSections : List ( List (Html msg), List (Maybe Bool) ) -> ( List (Html msg), List (Maybe Bool) )
+concatInputsAndTasksSections sections =
+    ( List.map Tuple.first sections |> List.concat
+    , List.map Tuple.second sections |> List.concat
+    )
