@@ -4984,18 +4984,41 @@ div.page-activity.ncd {
 
 div.page-activity.wellbeing {
 
-  .ui.button .counter {
-    background-color: $color-velvet;
-    border-radius: 50%;
-    display: inline-block;
-    font-size: 16px;
-    font-weight: bold;
-    height: 30px;
-    left: 5px;
-    line-height: 30px;
-    position: relative;
-    top: -15px;
-    width: 30px;
+  .ui.button {
+    margin-bottom: 20px;
+
+    .counter {
+      background-color: $color-velvet;
+      border-radius: 50%;
+      display: inline-block;
+      font-size: 16px;
+      font-weight: bold;
+      height: 30px;
+      left: 5px;
+      line-height: 30px;
+      position: relative;
+      top: -15px;
+      width: 30px;
+    }
+  }
+}
+
+div.page-activity.messaging-guide {
+  height: auto;
+
+  .guide {
+    background: $color-white;
+    padding: 30px 25px;
+    color: $color-text;
+
+    .title {
+      font-weight: bold;
+      font-size: 25px;
+    }
+    .note {
+      font-style: italic;
+      font-weight: bold;
+    }
   }
 }
 
@@ -5260,7 +5283,7 @@ div.page-activity.messaging-center {
     }
   }
 
-  .ui.report.unstackable.items .guide-message {
+  .ui.report.unstackable.items .guide {
     background: $color-white;
     padding: 30px 25px 30px 25px;
     color: $color-text;

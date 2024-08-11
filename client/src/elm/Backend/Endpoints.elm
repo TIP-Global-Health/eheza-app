@@ -57,7 +57,6 @@ import Backend.Relationship.Decoder exposing (decodeRelationship)
 import Backend.Relationship.Encoder exposing (encodeRelationship)
 import Backend.Relationship.Model exposing (Relationship)
 import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
-import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Decoder exposing (decodeResilienceSurvey)
 import Backend.ResilienceSurvey.Encoder exposing (encodeResilienceSurvey)
@@ -1251,13 +1250,6 @@ resilienceSurveyEndpoint : ReadWriteEndPoint Error ResilienceSurveyId Resilience
 resilienceSurveyEndpoint =
     swEndpoint "nodes/resilience_survey" decodeResilienceSurvey
         |> withValueEncoder (object << encodeResilienceSurvey)
-        |> withParamsEncoder encodeByNurseParam
-
-
-resilienceMessageEndpoint : ReadWriteEndPoint Error ResilienceMessageId ResilienceMessage ResilienceMessage (Maybe NurseId)
-resilienceMessageEndpoint =
-    swEndpoint "nodes/resilience_message" decodeResilienceMessage
-        |> withValueEncoder (object << encodeResilienceMessage)
         |> withParamsEncoder encodeByNurseParam
 
 

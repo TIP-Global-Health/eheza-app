@@ -486,6 +486,9 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
           elseif ($key != 'uuid' && is_string($value) && Uuid::isValid($value)) {
             $data[$key] = hedley_restful_uuid_to_nid($value);
           }
+          elseif ($key == 'resilience_messages') {
+            $data[$key] = json_encode($value);
+          }
           else {
             $data[$key] = $value;
           }
