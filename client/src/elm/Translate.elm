@@ -3017,6 +3017,7 @@ translationSet trans =
         AdoptionSurveyProgressSame ->
             { english = "You remained in the same category."
             , kinyarwanda = Just "Wagumye mu cyiciro kimwe."
+            , kirundi = Nothing
             }
 
         AdverseEvent event ->
