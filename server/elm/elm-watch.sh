@@ -20,7 +20,7 @@ function run {
   date -R;
   echo -en "${COLOR_OFF}";
 
-  elm make src/Main.elm --output ../hedley/modules/custom/hedley_ncda/js/elm-main.js
+  elm make src/Main.elm --output ../hedley/modules/custom/hedley_general/js/elm-main.js
   # on Linux optionally prepend for better performance: sysconfcpus -n 1
 
   ) 200>"/var/lock/${LOCKNAME}"

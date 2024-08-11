@@ -110,6 +110,8 @@ import Pages.Tuberculosis.Activity.View
 import Pages.Tuberculosis.Encounter.Model
 import Pages.Tuberculosis.Encounter.View
 import Pages.Tuberculosis.Participant.View
+import Pages.Tuberculosis.ProgressReport.Model
+import Pages.Tuberculosis.ProgressReport.View
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.View
 import Pages.WellChild.Encounter.Model
@@ -985,6 +987,22 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Tuberculosis.Activity.View.view model.language currentDate id activity model.indexedDb page_
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
+                            |> flexPageWrapper configured.config model
+
+                    TuberculosisProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.tuberculosisProgressReportPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.ProgressReport.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.ProgressReport.View.view model.language
+                            currentDate
+                            site
+                            features
+                            encounterId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisProgressReport encounterId)
                             |> flexPageWrapper configured.config model
 
                     EducationSessionPage id ->

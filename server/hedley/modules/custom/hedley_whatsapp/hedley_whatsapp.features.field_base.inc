@@ -44,10 +44,11 @@ function hedley_whatsapp_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'well-child' => 'Well Child',
-        'antenatal' => 'Antenatal',
         'acute-illness' => 'Acute Illness',
+        'antenatal' => 'Antenatal',
         'ncd' => 'NCD',
+        'tuberculosis' => 'Tuberculosis',
+        'well-child' => 'Well Child',
       ),
       'allowed_values_function' => '',
     ),

@@ -80,9 +80,7 @@ viewHeader language initiator model =
             [ class "link-back"
             , onClick action
             ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
+            [ span [ class "icon-back" ] [] ]
         ]
 
 

@@ -6,7 +6,6 @@ import Backend.Scoreboard.Model exposing (..)
 import Backend.Scoreboard.Utils exposing (..)
 import Date
 import EverySet exposing (EverySet)
-import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
