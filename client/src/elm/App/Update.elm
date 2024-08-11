@@ -897,8 +897,7 @@ update msg model =
                         MsgPageClinicalProgressReport id subMsg ->
                             let
                                 ( subModel, subCmd, extraMsgs ) =
-                                    data.clinicalProgressReportPages
-                                        |> Dict.get id
+                                    Dict.get id data.clinicalProgressReportPages
                                         |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
                                         |> Pages.Prenatal.ProgressReport.Update.update subMsg
                             in
@@ -924,7 +923,7 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     Dict.get id data.messagingCenterPages
                                         |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate subMsg
+                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate model.indexedDb subMsg
                             in
                             ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
@@ -1277,6 +1276,24 @@ update msg model =
                 )
                 model
 
+        UpdateNurseData nurse ->
+            updateConfigured
+                (\configured ->
+                    let
+                        updatedLoggedIn =
+                            RemoteData.map
+                                (\loggedIn ->
+                                    { loggedIn | nurse = nurse }
+                                )
+                                configured.loggedIn
+                    in
+                    ( { configured | loggedIn = updatedLoggedIn }
+                    , Cmd.none
+                    , []
+                    )
+                )
+                model
+
         CheckDataWanted ->
             -- Note that we will be called repeatedly. So, it's vitally important that
             -- the `fetch` implementations use a `WebData`-like strategy to indicate
@@ -1441,7 +1458,7 @@ handleRevision model revision =
             Maybe.andThen
                 (\( _, loggedIn ) ->
                     if Tuple.first loggedIn.nurse == uuid then
-                        Just (SetLoggedIn (Success ( uuid, data )))
+                        Just (UpdateNurseData ( uuid, data ))
 
                     else
                         Nothing

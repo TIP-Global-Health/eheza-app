@@ -1,5 +1,6 @@
-module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage)
+module Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessage, decodeResilienceMessages)
 
+import AssocList as Dict exposing (Dict)
 import Backend.ResilienceMessage.Model exposing (..)
 import Backend.ResilienceMessage.Utils exposing (..)
 import Gizra.Json exposing (decodeInt)
@@ -9,10 +10,20 @@ import Json.Decode.Pipeline exposing (..)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 
+decodeResilienceMessages : Decoder (Dict String ResilienceMessage)
+decodeResilienceMessages =
+    list decodeResilienceMessage
+        |> andThen
+            (\messages ->
+                List.map (\message -> ( generateResilienceMessageId message.category message.order, message )) messages
+                    |> Dict.fromList
+                    |> succeed
+            )
+
+
 decodeResilienceMessage : Decoder ResilienceMessage
 decodeResilienceMessage =
     succeed ResilienceMessage
-        |> required "nurse" decodeEntityUuid
         |> required "resilience_category" decodeResilienceCategory
         |> required "resilience_order" decodeResilienceMessageOrder
         |> required "display_day" decodeInt

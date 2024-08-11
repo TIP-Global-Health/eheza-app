@@ -1,19 +1,33 @@
 module Backend.Nurse.Encoder exposing (encodeNurse)
 
+import AssocList as Dict exposing (Dict)
 import Backend.Nurse.Model exposing (..)
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Encoder exposing (encodeEducationLevel, encodeGender, encodeMaritalStatus, encodeUbudehe)
+import Backend.ResilienceMessage.Encoder exposing (encodeResilienceMessage)
 import EverySet
 import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeNullable)
+import Utils.Json exposing (encodeIfSet, encodeNullable)
 
 
 encodeNurse : Nurse -> List ( String, Value )
 encodeNurse nurse =
+    let
+        resilienceMessages =
+            let
+                messages =
+                    Dict.values nurse.resilienceMessages
+            in
+            if List.isEmpty messages then
+                []
+
+            else
+                [ ( "resilience_messages", list (encodeResilienceMessage >> Json.Encode.object) messages ) ]
+    in
     [ ( "label", string nurse.name )
     , ( "health_centers", list encodeEntityUuid (EverySet.toList nurse.healthCenters) )
     , ( "villages", list encodeEntityUuid (EverySet.toList nurse.villages) )
@@ -30,8 +44,9 @@ encodeNurse nurse =
     , ( "deleted", bool False )
     , ( "type", string "nurse" )
     ]
-        ++ encodeNullable "email" nurse.email string
-        ++ encodeNullable "next_reminder" nurse.resilienceNextReminder encodePosixAsSeconds
+        ++ encodeIfSet "email" nurse.email string
+        ++ encodeIfSet "next_reminder" nurse.resilienceNextReminder encodePosixAsSeconds
+        ++ resilienceMessages
 
 
 encodeRole : Role -> Value

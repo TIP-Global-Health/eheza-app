@@ -55,6 +55,7 @@ import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MessagingCenter.Model
 import Pages.MessagingCenter.View
+import Pages.MessagingGuide.View
 import Pages.MyAccount.View
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.View
@@ -1101,6 +1102,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper configured.config model
+
+                    MessagingGuide ->
+                        Pages.MessagingGuide.View.view model.language
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->

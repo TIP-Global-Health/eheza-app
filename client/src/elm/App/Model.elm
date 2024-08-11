@@ -389,6 +389,7 @@ type Msg
     | MsgPagePinCode Pages.PinCode.Model.Msg
     | TryPinCode String
     | SetLoggedIn (WebData ( NurseId, Nurse ))
+    | UpdateNurseData ( NurseId, Nurse )
       -- Manage device pairing
     | MsgPageDevice Pages.Device.Model.Msg
     | TryPairingCode String
