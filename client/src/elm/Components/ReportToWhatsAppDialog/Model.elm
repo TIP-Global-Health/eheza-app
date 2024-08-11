@@ -57,10 +57,11 @@ type alias ReportComponentsConfig msg =
 
 
 type ReportType
-    = ReportWellChild
+    = ReportAcuteIllness
     | ReportAntenatal
-    | ReportAcuteIllness
     | ReportNCD
+    | ReportTuberculosis
+    | ReportWellChild
 
 
 type ReportComponentsList

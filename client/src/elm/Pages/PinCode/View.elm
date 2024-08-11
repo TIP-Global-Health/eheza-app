@@ -7,6 +7,7 @@ import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, isCommunityHealthWorker, isLabTechnician)
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
+import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.Utils exposing (stockManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
@@ -275,7 +276,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
                     viewCardFunc =
                         if activity == MenuWellbeing then
-                            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+                            resolveNumberOfUnreadMessages currentTime currentDate nurse
                                 |> activityCardWithCounter
 
                         else
@@ -446,7 +447,7 @@ resilienceNotificationDialog language currentTime currentDate nurseId nurse db m
     if notificationTimeReached && isJust nurse.resilienceProgramStartDate then
         let
             numberOfUnreadMessages =
-                resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+                resolveNumberOfUnreadMessages currentTime currentDate nurse
         in
         if numberOfUnreadMessages > 0 then
             Just <|

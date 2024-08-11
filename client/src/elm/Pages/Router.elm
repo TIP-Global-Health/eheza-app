@@ -354,6 +354,9 @@ pageToFragment current =
                 TuberculosisActivityPage id activity ->
                     Just <| "tuberculosis-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.TuberculosisActivity.Utils.activityToString activity
 
+                TuberculosisProgressReportPage id ->
+                    Just <| "tuberculosis-progress-report/" ++ fromEntityUuid id
+
                 EducationSessionPage id ->
                     Just <| "education-session/" ++ fromEntityUuid id
 
@@ -378,6 +381,9 @@ pageToFragment current =
 
                 WellbeingPage ->
                     Just "wellbeing"
+
+                MessagingGuide ->
+                    Just "messaging-guide"
 
                 StockManagementPage ->
                     Just "stock-management"
@@ -443,6 +449,7 @@ parser =
         , map (\initiator -> UserPage <| NCDProgressReportPage initiator) (s "ncd-progress-report" </> parseNCDProgressReportInitiator)
         , map (\id -> UserPage <| TuberculosisEncounterPage id) (s "tuberculosis-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| TuberculosisActivityPage id activity) (s "tuberculosis-activity" </> parseUuid </> parseTuberculosisActivity)
+        , map (\id -> UserPage <| TuberculosisProgressReportPage id) (s "tuberculosis-progress-report" </> parseUuid)
         , map (\id -> UserPage <| EducationSessionPage id) (s "education-session" </> parseUuid)
         , map (\id -> UserPage <| HIVEncounterPage id) (s "hiv-encounter" </> parseUuid)
         , map (\id activity -> UserPage <| HIVActivityPage id activity) (s "hiv-activity" </> parseUuid </> parseHIVActivity)
@@ -450,6 +457,7 @@ parser =
         , map (\id initiator -> UserPage <| PatientRecordPage initiator id) (s "patient-record" </> parseUuid </> parsePatientRecordInitiator)
         , map (UserPage MessagingCenterPage) (s "messaging-center")
         , map (UserPage WellbeingPage) (s "wellbeing")
+        , map (UserPage MessagingGuide) (s "messaging-guide")
         , map (UserPage StockManagementPage) (s "stock-management")
 
         -- `top` represents the page without any segements ... i.e. the root page.

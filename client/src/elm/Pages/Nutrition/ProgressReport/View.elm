@@ -8,7 +8,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Pages.Nutrition.Activity.Utils exposing (mandatoryActivitiesCompleted)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
-import Pages.Nutrition.Encounter.View exposing (allowEndingEcounter, partitionActivities)
+import Pages.Nutrition.Encounter.View exposing (allowEndingEncounter, partitionActivities)
 import Pages.Nutrition.ProgressReport.Model exposing (..)
 import Pages.WellChild.ProgressReport.Model exposing (WellChildProgressReportInitiator(..))
 import Pages.WellChild.ProgressReport.View exposing (viewProgressReport)
@@ -66,7 +66,7 @@ view language currentDate zscores site features id isChw db model =
                     in
                     ( Just <|
                         { showEndEncounterDialog = model.showEndEncounterDialog
-                        , allowEndEncounter = allowEndingEcounter isChw pendingActivities
+                        , allowEndEncounter = allowEndingEncounter isChw pendingActivities
                         , closeEncounterMsg = CloseEncounter id
                         , setEndEncounterDialogStateMsg = SetEndEncounterDialogState
                         , startEncounterMsg = NoOp

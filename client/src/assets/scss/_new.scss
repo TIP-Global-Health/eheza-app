@@ -1148,12 +1148,11 @@ div.page-activity {
   }
 }
 
-// Prenatal Encounter, Nutrition Encounter and
-// Acute Illness Encounter pages
 div.page-encounter.nutrition,
 div.page-encounter.prenatal,
 div.page-encounter.acute-illness,
-div.page-encounter.ncd {
+div.page-encounter.ncd,
+div.page-encounter.tuberculosis {
 
   .ui.full.segment {
 
@@ -3872,6 +3871,130 @@ div.page-report.acute-illness {
   }
 }
 
+div.page-report.tuberculosis {
+
+  .pane .pane-content {
+    color: $color-text;
+    padding: 20px;
+  }
+
+  .pane .pane-content .heading {
+    border-bottom: 1px solid $color-text;
+    color: $color-dark-gray;
+    display: flex;
+    font-size: 20px;
+    font-weight: 600;
+    padding: 15px 30px;
+    width: 100%;
+  }
+
+  .pane .pane-content .entry {
+    display: flex;
+    line-height: 40px;
+  }
+
+  .pane.summary .pane-content .entry .label {
+    float: left;
+    width: 35%;
+  }
+
+  .pane.treatment-timeline .pane-content {
+    padding: 30px 10px;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline div {
+    border-top: 10px solid $color-text;
+    font-size: 18px;
+    height: 40px;
+    padding-top: 10px;
+    text-align: center;
+    width: 15%;
+  }
+
+  .pane.treatment-timeline .pane-content .timeline div.green {
+    border-top: 10px solid $color-green-dark;
+  }
+
+  .pane.adverse-events .pane-content .entry .label {
+    float: left;
+    width: 70%;
+  }
+
+  .pane.encounters .pane-content .heading .date {
+    width: 80%;
+  }
+
+  .pane.encounters .pane-content .entry {
+    border-bottom: 1px solid $color-text;
+    padding: 15px 30px;
+  }
+
+  .pane.encounters .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+  .pane.encounters .pane-content .entry .label {
+    float: left;
+    width: 80%;
+  }
+
+  .pane.encounters .pane-content .entry .icon .icon-forward {
+    align-self: center;
+    background: url(#{$img-path}icon-forward-blue.svg) center center no-repeat;
+    background-size: 45px 50px;
+    height: 50px;
+    margin-left: 20px;
+    width: 50px;
+  }
+
+  .pane.encounter-details .pane-content .entry {
+    border-bottom: 1px solid $color-text;
+    justify-content: space-between;
+    line-height: normal;
+    padding: 15px 0;
+  }
+
+  .pane.encounter-details .pane-content .entry:last-child {
+    border-bottom: none;
+  }
+
+
+  .pane.encounter-details .pane-content .entry .label {
+    float: left;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 35%;
+  }
+
+  .pane.encounter-details .pane-content .entry .confirmation {
+    float: left;
+    margin-bottom: auto;
+    margin-top: auto;
+    width: 15%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value {
+    float: left;
+    font-size: 18px;
+    width: 50%;
+  }
+
+  .pane.encounter-details .pane-content .entry .value.long {
+    width: 65%;
+  }
+}
+
 div.page-report.acute-illness,
 div.page-activity.trace-contact,
 div.page-encounter.well-child,
@@ -4039,7 +4162,8 @@ div.page-report.clinical,
 div.page-report.demographics,
 div.page-activity.patient-record,
 div.page-report.child-scoreboard,
-div.page-report.ncd {
+div.page-report.ncd,
+div.page-report.tuberculosis {
   background: unset;
 
   .pane-heading {
@@ -4860,18 +4984,41 @@ div.page-activity.ncd {
 
 div.page-activity.wellbeing {
 
-  .ui.button .counter {
-    background-color: $color-velvet;
-    border-radius: 50%;
-    display: inline-block;
-    font-size: 16px;
-    font-weight: bold;
-    height: 30px;
-    left: 5px;
-    line-height: 30px;
-    position: relative;
-    top: -15px;
-    width: 30px;
+  .ui.button {
+    margin-bottom: 20px;
+
+    .counter {
+      background-color: $color-velvet;
+      border-radius: 50%;
+      display: inline-block;
+      font-size: 16px;
+      font-weight: bold;
+      height: 30px;
+      left: 5px;
+      line-height: 30px;
+      position: relative;
+      top: -15px;
+      width: 30px;
+    }
+  }
+}
+
+div.page-activity.messaging-guide {
+  height: auto;
+
+  .guide {
+    background: $color-white;
+    padding: 30px 25px;
+    color: $color-text;
+
+    .title {
+      font-weight: bold;
+      font-size: 25px;
+    }
+    .note {
+      font-style: italic;
+      font-weight: bold;
+    }
   }
 }
 
@@ -5136,7 +5283,7 @@ div.page-activity.messaging-center {
     }
   }
 
-  .ui.report.unstackable.items .guide-message {
+  .ui.report.unstackable.items .guide {
     background: $color-white;
     padding: 30px 25px 30px 25px;
     color: $color-text;
