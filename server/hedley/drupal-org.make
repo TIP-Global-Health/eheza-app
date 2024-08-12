@@ -92,6 +92,7 @@ projects[prepopulate][patch][] = "https://www.drupal.org/files/issues/prepopulat
 
 projects[restful][subdir] = "contrib"
 projects[restful][version] = "1.10"
+projects[restful][patch][] = "https://patch-diff.githubusercontent.com/raw/RESTful-Drupal/restful/pull/1072.patch"
 
 projects[search_api][subdir] = "contrib"
 projects[search_api][version] = "1.12"
