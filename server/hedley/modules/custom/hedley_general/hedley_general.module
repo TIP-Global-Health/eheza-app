@@ -193,7 +193,7 @@ function hedley_general_get_person_content_associated_by_fields($person_id, arra
     $query = db_select("field_data_$field", 't');
     $query->addField('t', 'entity_id');
     $query->addField('t', 'bundle');
-    $query->condition("{$field}_target_id", $person_id);
+    $query->condition("${field}_target_id", $person_id);
 
     $content = array_merge($content, $query->execute()->fetchAll());
   }
