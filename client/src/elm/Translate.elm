@@ -13537,7 +13537,7 @@ translationSet trans =
             }
 
         Period2WeeksOrLess ->
-            { english = "2 Weeks or less"
+            { english = "2 weeks or less"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

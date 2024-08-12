@@ -219,8 +219,7 @@ symptomsTasksCompletedFromTotal measurements data task =
         SymptomsGeneral ->
             let
                 form =
-                    measurements.symptomsGeneral
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsGeneral
                         |> symptomsGeneralFormWithDefault data.symptomsGeneralForm
             in
             ( taskNotCompleted (Dict.isEmpty form.signs)
@@ -229,13 +228,25 @@ symptomsTasksCompletedFromTotal measurements data task =
 
         SymptomsRespiratory ->
             let
+                ( coughCompleted, coughTotal ) =
+                    Dict.get Cough form.signs
+                        |> Maybe.map
+                            (\value ->
+                                case value of
+                                    1 ->
+                                        ( 0, 1 )
+
+                                    _ ->
+                                        ( 1, 1 )
+                            )
+                        |> Maybe.withDefault ( 0, 0 )
+
                 form =
-                    measurements.symptomsRespiratory
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.symptomsRespiratory
                         |> symptomsRespiratoryFormWithDefault data.symptomsRespiratoryForm
             in
-            ( taskNotCompleted (Dict.isEmpty form.signs)
-            , 1
+            ( taskNotCompleted (Dict.isEmpty form.signs) + coughCompleted
+            , 1 + coughTotal
             )
 
         SymptomsGI ->
