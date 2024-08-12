@@ -1,5 +1,5 @@
 {
   "require": {
-    "ramsey/uuid": "3.7.3"
+    "ramsey/uuid": "4.7.6"
   }
 }
