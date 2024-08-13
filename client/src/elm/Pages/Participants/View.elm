@@ -12,7 +12,15 @@ import Html.Events exposing (onClick)
 import LocalData
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participants.Model exposing (Model, Msg(..), Tab(..))
-import Pages.Utils exposing (..)
+import Pages.Utils
+    exposing
+        ( filterDependentNoResultsMessage
+        , matchMotherAndHerChildren
+        , normalizeFilter
+        , viewCustomAction
+        , viewEndEncounterDialog
+        , viewNameFilter
+        )
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, thumbnailImage, viewModal)
 
@@ -129,13 +137,7 @@ view language isChw ( sessionId, session ) model =
                 UserPage ClinicsPage
 
         endSessionButton =
-            div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button green"
-                    , onClick <| SetRedirectPage <| UserPage ClinicalPage
-                    ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
+            viewCustomAction language (SetRedirectPage <| UserPage ClinicalPage) False Trans.EndGroupEncounter
 
         header =
             div

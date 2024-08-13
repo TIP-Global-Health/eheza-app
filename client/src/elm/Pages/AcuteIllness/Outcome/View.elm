@@ -15,7 +15,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewLabel, viewSelectListInput, viewTasksCount)
+import Pages.Utils exposing (taskCompleted, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
@@ -99,12 +99,6 @@ viewAcuteIllnessOutcome language currentDate data model =
                 , acuteIllnessOutcomeInput
                 ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick SaveAcuteIllnessOutcome
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language SaveAcuteIllnessOutcome (tasksCompleted /= totalTasks)
         ]
     ]

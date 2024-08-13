@@ -173,11 +173,9 @@ viewDangerSignsContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
-            ]
+        , viewSaveAction language
+            (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -238,11 +236,9 @@ viewSymptomReviewContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
-            ]
+        , viewSaveAction language
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -266,11 +262,9 @@ viewFamilyPlanningContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ viewFamilyPlanningForm language Translate.FamilyPlanningCurentlyQuestion SetFamilyPlanningSign form
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
-            ]
+        , viewSaveAction language
+            (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -367,8 +361,7 @@ viewExaminationContent language currentDate assembled data =
                                 TaskCoreExam ->
                                     SaveCoreExam personId measurements.coreExam nextTask
                     in
-                    div [ class "actions" ]
-                        [ saveButton language (tasksCompleted == totalTasks) saveAction ]
+                    viewSaveAction language saveAction (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -679,8 +672,7 @@ viewOutsideCareContent language currentDate assembled form =
                             else
                                 SetOutsideCareStep OutsideCareStepMedications
                     in
-                    div [ class "actions" ]
-                        [ saveButton language saveButtonActive actionMsg ]
+                    viewSaveAction language actionMsg (not saveButtonActive)
 
                 OutsideCareStepMedications ->
                     div [ class "actions two" ]

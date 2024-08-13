@@ -12,7 +12,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Json.Decode
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewTextInput)
+import Pages.Utils exposing (viewCheckBoxMultipleSelectInput, viewCustomAction, viewTextInput)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate, translateText)
 import Utils.Html exposing (viewCustomModal)
@@ -251,13 +251,7 @@ viewPhoneUpdateConfirmation language currentDate allowComponentsSelection phoneN
     in
     [ div [ class "content" ]
         [ translateText language Translate.ReportToWhatsAppPhoneUpdateConfirmationMessasge ]
-    , div [ class "actions" ]
-        [ button
-            [ class "ui primary fluid button"
-            , onClick <| SetState <| Just nextState
-            ]
-            [ text <| translate language Translate.Continue ]
-        ]
+    , viewCustomAction language (SetState <| Just nextState) False Translate.Continue
     ]
 
 
@@ -559,13 +553,7 @@ viewExecutionResult language currentDate maybeResult clearComponentsMsg =
                         -- We should never get here, since proper responses are set at app.js.
                         _ ->
                             Translate.ReportToWhatsAppExecutionResultSomethingWentWrong
-                    , div [ class "actions" ]
-                        [ button
-                            [ class "ui primary fluid button"
-                            , onClick <| SetState Nothing
-                            ]
-                            [ text <| translate language Translate.Close ]
-                        ]
+                    , viewCustomAction language (SetState Nothing) False Translate.Close
                     )
                 )
                 maybeResult

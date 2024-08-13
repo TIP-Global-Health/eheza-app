@@ -93,7 +93,7 @@ import Pages.Prenatal.View
         )
 import Pages.Utils
     exposing
-        ( customSaveButton
+        ( customButton
         , maybeToBoolTask
         , resolveActiveTask
         , resolveNextTask
@@ -541,13 +541,9 @@ viewPregnancyDatingContent language currentDate assembled data =
                             ]
                        ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyDating assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SavePregnancyDating assembled.encounter.participant assembled.participant.person assembled.measurements.lastMenstrualPeriod)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -773,7 +769,7 @@ viewHistoryContent language currentDate assembled data =
                                 Obstetric ->
                                     case data.obstetricHistoryStep of
                                         ObstetricHistoryFirstStep ->
-                                            [ customSaveButton language
+                                            [ customButton language
                                                 saveButtonActive
                                                 (SaveOBHistoryStep1
                                                     assembled.participant.person
@@ -1096,13 +1092,9 @@ viewFamilyPlanningContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ viewFamilyPlanningForm language Translate.FamilyPlanningInFutureQuestion SetFamilyPlanningSign form
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveFamilyPlanning assembled.participant.person assembled.measurements.familyPlanning)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -1142,13 +1134,9 @@ viewMedicationContent language currentDate assembled data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveMedication assembled.participant.person assembled.measurements.medication
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveMedication assembled.participant.person assembled.measurements.medication)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -1218,13 +1206,9 @@ viewDangerSignsContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveDangerSigns assembled.participant.person assembled.measurements.dangerSigns)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -1386,13 +1370,9 @@ viewBirthPlanContent language currentDate assembled data =
                     Nothing
                 ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveBirthPlan assembled.participant.person assembled.measurements.birthPlan
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveBirthPlan assembled.participant.person assembled.measurements.birthPlan)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -1665,13 +1645,9 @@ viewLaboratoryContentForChw language currentDate assembled data =
                 , resultInput
                 ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyTest assembled.participant.person assembled.measurements.pregnancyTest
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SavePregnancyTest assembled.participant.person assembled.measurements.pregnancyTest)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -1695,13 +1671,9 @@ viewHealthEducationContent language currentDate assembled data =
             [ div [ class "ui form health-education" ]
                 inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveHealthEducation assembled.participant.person assembled.measurements.healthEducation)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -3998,13 +3970,7 @@ viewBreastfeedingContent language currentDate assembled data =
                 ]
                     ++ derivedSection
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveBreastfeeding assembled.participant.person assembled.measurements.breastfeeding
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language (SaveBreastfeeding assembled.participant.person assembled.measurements.breastfeeding) (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -4066,13 +4032,7 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
                 receivedVitaminAInput
                     ++ receivedFolicAcidInput
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick action
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language action (tasksCompleted /= totalTasks)
         ]
     ]
 

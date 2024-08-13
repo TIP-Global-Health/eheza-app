@@ -68,6 +68,7 @@ import Pages.Utils
     exposing
         ( calculatePercentage
         , resolveSelectedDateForMonthSelector
+        , viewCustomAction
         , viewCustomSelectListInput
         , viewMonthSelector
         )
@@ -2419,8 +2420,7 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
                 []
 
             else
-                db.villages
-                    |> RemoteData.toMaybe
+                RemoteData.toMaybe db.villages
                     |> Maybe.map
                         (\villages ->
                             let
@@ -2471,18 +2471,8 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
                         )
                     |> Maybe.withDefault []
 
-        closeButtonDisabled =
+        disabled =
             (model.programTypeFilter == FilterProgramCommunity) && isNothing model.selectedVillageFilter
-
-        closeButtonAttributes =
-            if closeButtonDisabled then
-                [ class "ui primary fluid button disabled"
-                ]
-
-            else
-                [ class "ui primary fluid button"
-                , onClick <| SetModalState Nothing
-                ]
     in
     div [ class "ui active modal" ]
         [ div [ class "header" ]
@@ -2490,11 +2480,7 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
         , div [ class "content" ] <|
             programTypeFilterInputSection
                 ++ villageInputSection
-        , div [ class "actions" ]
-            [ button
-                closeButtonAttributes
-                [ text <| translate language Translate.Close ]
-            ]
+        , viewCustomAction language (SetModalState Nothing) disabled Translate.Close
         ]
 
 

@@ -12,7 +12,7 @@ import Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivit
 import Pages.HomeVisit.Encounter.Model exposing (..)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewPersonDetails)
+import Pages.Utils exposing (viewCustomAction, viewPersonDetails)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
@@ -132,11 +132,7 @@ viewMainPageContent language currentDate id isChw db data model =
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewCustomAction language (CloseEncounter id) (not allowEndEncounter) Translate.EndEncounter
                 ]
     in
     [ tabs

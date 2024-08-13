@@ -1283,13 +1283,44 @@ tasksBarId =
 
 viewSaveAction : Language -> msg -> Bool -> Html msg
 viewSaveAction language saveMsg disabled =
+    viewCustomAction language saveMsg disabled Translate.Save
+
+
+viewCustomAction : Language -> msg -> Bool -> Translate.TranslationId -> Html msg
+viewCustomAction language saveMsg disabled label =
     div [ class "actions" ]
-        [ saveButton language (not disabled) saveMsg ]
+        [ customButton language (not disabled) saveMsg label ]
+
+
+saveButton : Language -> Bool -> msg -> Html msg
+saveButton language active msg =
+    customButton language active msg Translate.Save
+
+
+customButton : Language -> Bool -> msg -> Translate.TranslationId -> Html msg
+customButton language active msg label =
+    let
+        attributes =
+            classList
+                [ ( "ui fluid primary button", True )
+                , ( "active", active )
+                , ( "disabled", not active )
+                ]
+                :: (if active then
+                        [ onClick msg ]
+
+                    else
+                        []
+                   )
+    in
+    button attributes
+        [ text <| translate language label ]
 
 
 viewTasksCount : Language -> Int -> Int -> Html any
 viewTasksCount language tasksCompleted totalTasks =
-    div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    div [ class "tasks-count" ]
+        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
 
 
 insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
@@ -1297,24 +1328,6 @@ insertIntoSet value set =
     Maybe.map (EverySet.insert value) set
         |> Maybe.withDefault (EverySet.singleton value)
         |> Just
-
-
-saveButton : Language -> Bool -> msg -> Html msg
-saveButton language active msg =
-    customSaveButton language active msg Translate.Save
-
-
-customSaveButton : Language -> Bool -> msg -> Translate.TranslationId -> Html msg
-customSaveButton language active msg label =
-    button
-        [ classList
-            [ ( "ui fluid primary button", True )
-            , ( "active", active )
-            , ( "disabled", not active )
-            ]
-        , onClick msg
-        ]
-        [ text <| translate language label ]
 
 
 customPopup : Language -> Bool -> TranslationId -> String -> ( Html msg, Html msg, msg ) -> Html msg

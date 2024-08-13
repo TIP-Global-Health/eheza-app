@@ -61,6 +61,7 @@ import Pages.Utils
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCheckBoxValueInput
+        , viewCustomAction
         , viewCustomLabel
         , viewCustomSelectListInput
         , viewInstructionsLabel
@@ -388,13 +389,7 @@ pertinentSymptomsPopup language isOpen closeMsg measurements =
                             |> div [ class "section-items" ]
                         ]
                     ]
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick closeMsg
-                        ]
-                        [ text <| translate language Translate.Close ]
-                    ]
+                , viewCustomAction language closeMsg False Translate.Close
                 ]
 
     else

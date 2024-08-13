@@ -29,6 +29,7 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewQuestionLabel
+        , viewSaveAction
         , viewSelectListInput
         , viewTasksCount
         )
@@ -266,13 +267,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
                         ++ educationLevelInput
                         ++ ubudeheInput
                         ++ maritalStatusInput
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveKickOffSurvey nurseId nurse
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveKickOffSurvey nurseId nurse) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]
@@ -309,13 +304,7 @@ viewQuarterlySurvey language currentDate nurseId form =
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
                     List.concatMap questionInput quarterlySurveyQuestions
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveSurvey ResilienceSurveyQuarterly nurseId
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveSurvey ResilienceSurveyQuarterly nurseId) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]
@@ -352,13 +341,7 @@ viewAdoptionSurvey language currentDate nurseId form =
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
                     List.concatMap questionInput adoptionSurveyQuestions
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveSurvey ResilienceSurveyAdoption nurseId
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveSurvey ResilienceSurveyAdoption nurseId) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]

@@ -40,7 +40,6 @@ import Pages.Utils
     exposing
         ( resolveActiveTask
         , resolveNextTask
-        , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
@@ -232,13 +231,8 @@ viewDiagnosticsContent language currentDate assembled db data =
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ] inputs
-            ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                saveAction
-            ]
+            [ div [ class "ui form danger-signs" ] inputs ]
+        , viewSaveAction language saveAction (tasksCompleted /= totalTasks)
         ]
     , viewModal endEncounterDialog
     ]
@@ -611,11 +605,9 @@ viewSymptomReviewContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
-            ]
+        , viewSaveAction language
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 

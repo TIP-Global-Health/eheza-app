@@ -13,7 +13,7 @@ import List
 import LocalData
 import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog, viewSkipNCDADialog)
+import Pages.Utils exposing (viewCustomAction, viewEndEncounterDialog, viewSkipNCDADialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -139,13 +139,7 @@ view language isChw ( sessionId, session ) model =
                 UserPage ClinicsPage
 
         endSessionButton =
-            div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button green"
-                    , onClick <| SetRedirectPage <| UserPage ClinicalPage
-                    ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
+            viewCustomAction language (SetRedirectPage <| UserPage ClinicalPage) False Trans.EndGroupEncounter
     in
     div
         [ class "wrap wrap-alt-2" ]

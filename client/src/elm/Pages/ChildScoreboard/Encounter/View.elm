@@ -15,7 +15,7 @@ import Pages.ChildScoreboard.Activity.Utils exposing (activityCompleted, expectA
 import Pages.ChildScoreboard.Encounter.Model exposing (..)
 import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEncounterActionButton, viewPersonDetailsExtended)
+import Pages.Utils exposing (viewCustomAction, viewEncounterActionButton, viewPersonDetailsExtended)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -185,13 +185,7 @@ acuteIllnessEncounterPopup language assembled showAIEncounterPopup triggerAcuteI
                         ]
                     , div [ class "popup-action" ] [ text <| translate language Translate.NCDADiarrheaPopupMessage ]
                     ]
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| triggerAcuteIllnessEncounterMsg assembled
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
+                , viewCustomAction language (triggerAcuteIllnessEncounterMsg assembled) False Translate.Continue
                 ]
 
     else
