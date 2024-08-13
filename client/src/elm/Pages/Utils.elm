@@ -1287,6 +1287,11 @@ viewSaveAction language saveMsg disabled =
         [ saveButton language (not disabled) saveMsg ]
 
 
+viewTasksCount : Language -> Int -> Int -> Html any
+viewTasksCount language tasksCompleted totalTasks =
+    div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+
+
 insertIntoSet : a -> Maybe (EverySet a) -> Maybe (EverySet a)
 insertIntoSet value set =
     Maybe.map (EverySet.insert value) set

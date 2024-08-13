@@ -72,6 +72,7 @@ import Pages.Utils
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
         , viewSaveAction
+        , viewTasksCount
         )
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
@@ -273,7 +274,7 @@ viewHeightContent language currentDate zscores assembled data previousValue =
                         |> Maybe.withDefault True
                    )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewHeightForm language currentDate zscores assembled.person previousValue SetHeight form
@@ -316,7 +317,7 @@ viewMuacContent language currentDate site assembled data previousValue =
                         |> Maybe.withDefault True
                    )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form muac" ]
@@ -346,7 +347,7 @@ viewNutritionContent language currentDate zscores assembled db data =
             generateNutritionAssessment currentDate zscores db assembled
                 |> nutritionAssessmentForBackend
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewNutritionForm language currentDate SetNutritionSign form
@@ -387,7 +388,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
         tasksCompleted =
             taskCompleted displayPhoto
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
@@ -458,7 +459,7 @@ viewWeightContent language currentDate zscores assembled data previousValue =
                         |> Maybe.withDefault True
                    )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewWeightForm language currentDate zscores assembled.person heightValue previousValue True SetWeight form
@@ -644,13 +645,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                                     in
                                     SaveFollowUp personId measurements.followUp assesment nextTask
                     in
-                    div [ class "actions next-steps" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
+                    viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
                 )
                 activeTask
                 |> Maybe.withDefault emptyNode
@@ -659,7 +654,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
