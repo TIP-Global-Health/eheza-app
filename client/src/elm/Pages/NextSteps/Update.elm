@@ -7,6 +7,7 @@ import Backend.Measurement.Model
         ( ContributingFactorsSign(..)
         )
 import Backend.Session.Model
+import Gizra.Update exposing (sequenceExtra)
 import Measurement.Model
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.Page exposing (SessionPage(..))
@@ -18,9 +19,20 @@ import Pages.Utils exposing (setMultiSelectInputValue)
 -}
 update : PersonId -> Activity -> Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update childId activity msg model =
+    let
+        generateNextStepsMsgs nextTask =
+            Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
+                |> Maybe.withDefault [ SetActiveSessionPage (ActivityPage activity) ]
+    in
     case msg of
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
+
+        SetActiveSessionPage page ->
+            ( model
+            , Cmd.none
+            , [ Pages.Session.Model.SetActiveSessionPage page ]
+            )
 
         SetActiveNextStepsTask task ->
             ( { model | activeTask = Just task }
@@ -67,25 +79,21 @@ update childId activity msg model =
             , []
             )
 
-        SaveSendToHC valueId value nextTask_ ->
+        SaveSendToHC valueId value nextTask ->
             let
                 saveMsg =
                     Measurement.Model.SaveSendToHC valueId value
                         |> Backend.Session.Model.MeasurementOutMsgChild childId
                         |> Pages.Session.Model.MsgSession
 
-                ( backToOriginMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ Pages.Session.Model.SetActiveSessionPage (ActivityPage activity) ]
-                            , Nothing
-                            )
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
             in
-            ( { model | activeTask = nextTask }
+            ( model
             , Cmd.none
-            , saveMsg :: backToOriginMsg
+            , [ saveMsg ]
             )
+                |> sequenceExtra (update childId activity) extraMsgs
 
         SetProvidedEducationForDiagnosis value ->
             let
@@ -113,25 +121,21 @@ update childId activity msg model =
             , []
             )
 
-        SaveHealthEducation valueId value nextTask_ ->
+        SaveHealthEducation valueId value nextTask ->
             let
                 saveMsg =
                     Measurement.Model.SaveHealthEducation valueId value
                         |> Backend.Session.Model.MeasurementOutMsgChild childId
                         |> Pages.Session.Model.MsgSession
 
-                ( backToOriginMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ Pages.Session.Model.SetActiveSessionPage (ActivityPage activity) ]
-                            , Nothing
-                            )
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
             in
-            ( { model | activeTask = nextTask }
+            ( model
             , Cmd.none
-            , saveMsg :: backToOriginMsg
+            , [ saveMsg ]
             )
+                |> sequenceExtra (update childId activity) extraMsgs
 
         SetContributingFactorsSign sign ->
             let
@@ -150,25 +154,21 @@ update childId activity msg model =
             , []
             )
 
-        SaveContributingFactors valueId value nextTask_ ->
+        SaveContributingFactors valueId value nextTask ->
             let
                 saveMsg =
                     Measurement.Model.SaveContributingFactors valueId value
                         |> Backend.Session.Model.MeasurementOutMsgChild childId
                         |> Pages.Session.Model.MsgSession
 
-                ( backToOriginMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ Pages.Session.Model.SetActiveSessionPage (ActivityPage activity) ]
-                            , Nothing
-                            )
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
             in
-            ( { model | activeTask = nextTask }
+            ( model
             , Cmd.none
-            , saveMsg :: backToOriginMsg
+            , [ saveMsg ]
             )
+                |> sequenceExtra (update childId activity) extraMsgs
 
         SetFollowUpOption option ->
             let
@@ -183,22 +183,18 @@ update childId activity msg model =
             , []
             )
 
-        SaveFollowUp valueId value nextTask_ ->
+        SaveFollowUp valueId value nextTask ->
             let
                 saveMsg =
                     Measurement.Model.SaveFollowUp valueId value
                         |> Backend.Session.Model.MeasurementOutMsgChild childId
                         |> Pages.Session.Model.MsgSession
 
-                ( backToOriginMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], Just task ))
-                        |> Maybe.withDefault
-                            ( [ Pages.Session.Model.SetActiveSessionPage (ActivityPage activity) ]
-                            , Nothing
-                            )
+                extraMsgs =
+                    generateNextStepsMsgs nextTask
             in
-            ( { model | activeTask = nextTask }
+            ( model
             , Cmd.none
-            , saveMsg :: backToOriginMsg
+            , [ saveMsg ]
             )
+                |> sequenceExtra (update childId activity) extraMsgs
