@@ -233,9 +233,14 @@ symptomsTasksCompletedFromTotal measurements data task =
                         |> Maybe.map
                             (\value ->
                                 case value of
+                                    -- Value is set to 1 when Cough symptom is checked, but
+                                    -- period (more / less than 2 weeks ) was not selected.
                                     1 ->
                                         ( 0, 1 )
 
+                                    -- Possible values are symptomMaxDuration  (14),
+                                    -- or coughLessThan2WeeksConstant (7). In both cases,
+                                    -- Cough symptom is checked and period is selected.
                                     _ ->
                                         ( 1, 1 )
                             )
