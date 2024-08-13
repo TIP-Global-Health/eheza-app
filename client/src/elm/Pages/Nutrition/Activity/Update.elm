@@ -45,6 +45,12 @@ update currentDate site id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| NutritionEncounterPage id ]
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -81,8 +87,7 @@ update currentDate site id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    model.heightData.form
-                        |> toHeightValueWithDefault measurement
+                    toHeightValueWithDefault measurement model.heightData.form
                         |> unwrap
                             []
                             (\value ->

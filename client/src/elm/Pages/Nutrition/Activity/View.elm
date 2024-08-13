@@ -71,6 +71,7 @@ import Pages.Utils
         , viewPersonDetails
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
+        , viewSaveAction
         )
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (Language, translate)
@@ -254,8 +255,7 @@ viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledDa
 viewHeightContent language currentDate zscores assembled data previousValue =
     let
         form =
-            assembled.measurements.height
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.height
                 |> heightFormWithDefault data.form
 
         totalTasks =
@@ -269,8 +269,7 @@ viewHeightContent language currentDate zscores assembled data previousValue =
 
         disabled =
             (tasksCompleted /= totalTasks)
-                || (form.height
-                        |> Maybe.map (withinConstraints constraints >> not)
+                || (Maybe.map (withinConstraints constraints >> not) form.height
                         |> Maybe.withDefault True
                    )
     in
@@ -278,13 +277,9 @@ viewHeightContent language currentDate zscores assembled data previousValue =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewHeightForm language currentDate zscores assembled.person previousValue SetHeight form
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                , onClick <| SaveHeight assembled.participant.person assembled.measurements.height
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveHeight assembled.participant.person assembled.measurements.height)
+            disabled
         ]
     ]
 
@@ -327,13 +322,9 @@ viewMuacContent language currentDate site assembled data previousValue =
             [ div [ class "ui form muac" ]
                 inputs
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                , onClick <| SaveMuac assembled.participant.person assembled.measurements.muac
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveMuac assembled.participant.person assembled.measurements.muac)
+            disabled
         ]
     ]
 
@@ -342,8 +333,7 @@ viewNutritionContent : Language -> NominalDate -> ZScore.Model.Model -> Assemble
 viewNutritionContent language currentDate zscores assembled db data =
     let
         form =
-            assembled.measurements.nutrition
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.nutrition
                 |> nutritionFormWithDefault data.form
 
         totalTasks =
@@ -360,13 +350,9 @@ viewNutritionContent language currentDate zscores assembled db data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewNutritionForm language currentDate SetNutritionSign form
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveNutrition assembled.participant.person assembled.measurements.nutrition assessment)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -377,7 +363,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
-        ( displayPhoto, saveMsg, isDisabled ) =
+        ( displayPhoto, saveMsg, disabled ) =
             case data.form.url of
                 Just url ->
                     let
@@ -385,13 +371,13 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
                             Maybe.map Tuple.first measurements.photo
                     in
                     ( Just url
-                    , [ onClick <| SavePhoto personId photoId url ]
+                    , SavePhoto personId photoId url
                     , False
                     )
 
                 Nothing ->
                     ( getMeasurementValueFunc measurements.photo
-                    , []
+                    , NoOp
                     , True
                     )
 
@@ -405,16 +391,7 @@ viewPhotoContent language currentDate ( personId, measurements ) data =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
-        , div [ class "actions" ]
-            [ button
-                (classList
-                    [ ( "ui fluid primary button", True )
-                    , ( "disabled", isDisabled )
-                    ]
-                    :: saveMsg
-                )
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language saveMsg disabled
         ]
     ]
 
@@ -459,8 +436,7 @@ viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledDa
 viewWeightContent language currentDate zscores assembled data previousValue =
     let
         form =
-            assembled.measurements.weight
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.weight
                 |> weightFormWithDefault data.form
 
         totalTasks =
@@ -470,8 +446,7 @@ viewWeightContent language currentDate zscores assembled data previousValue =
             taskCompleted form.weight
 
         heightValue =
-            assembled.measurements.height
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.height
 
         constraints =
             getInputConstraintsWeight
@@ -487,13 +462,9 @@ viewWeightContent language currentDate zscores assembled data previousValue =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewWeightForm language currentDate zscores assembled.person heightValue previousValue True SetWeight form
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-                , onClick <| SaveWeight assembled.participant.person assembled.measurements.weight
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language
+            (SaveWeight assembled.participant.person assembled.measurements.weight)
+            disabled
         ]
     ]
 
