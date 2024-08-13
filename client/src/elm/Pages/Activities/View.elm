@@ -159,7 +159,6 @@ view language isChw ( sessionId, session ) model =
                 , onClick <| SetRedirectPage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             , ul [ class "links-head" ]
                 [ li

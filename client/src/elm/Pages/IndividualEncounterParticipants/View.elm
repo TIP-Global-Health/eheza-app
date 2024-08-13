@@ -56,7 +56,6 @@ viewHeader title =
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

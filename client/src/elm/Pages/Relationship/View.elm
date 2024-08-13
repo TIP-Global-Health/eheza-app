@@ -57,7 +57,6 @@ viewHeader language initiator id1 =
             , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

@@ -73,7 +73,6 @@ viewHeader language id activity =
             , onClick <| SetActivePage <| UserPage <| HomeVisitEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

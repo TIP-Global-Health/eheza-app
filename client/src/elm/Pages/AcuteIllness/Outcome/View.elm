@@ -62,7 +62,6 @@ viewHeader language data =
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

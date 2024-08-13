@@ -104,7 +104,6 @@ viewHeader language id activity =
             , onClick <| SetActivePage <| UserPage <| NCDEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

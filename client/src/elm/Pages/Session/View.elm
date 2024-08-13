@@ -74,7 +74,6 @@ wrapError language sessionId errorHtml =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , errorHtml
@@ -229,7 +228,6 @@ viewClosedSession language sessionId session db =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , div
@@ -259,7 +257,6 @@ viewUnauthorizedSession language sessionId session db =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , div

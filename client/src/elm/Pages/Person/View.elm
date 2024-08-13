@@ -105,7 +105,6 @@ viewHeader language initiator name =
             , onClick <| App.Model.SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -729,7 +728,6 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                     , onClick <| SetActivePage originBasedSettings.goBackPage
                     ]
                     [ span [ class "icon-back" ] []
-                    , span [] []
                     ]
                 ]
 

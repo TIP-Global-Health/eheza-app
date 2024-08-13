@@ -142,7 +142,6 @@ viewHeader language id activity =
             , onClick <| SetActivePage <| UserPage <| NutritionEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

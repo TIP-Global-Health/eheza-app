@@ -145,7 +145,6 @@ viewHeader language id activity diagnosis =
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

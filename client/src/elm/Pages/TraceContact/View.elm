@@ -84,7 +84,6 @@ viewHeader language =
             , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

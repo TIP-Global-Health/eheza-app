@@ -168,7 +168,6 @@ viewHeader language id activity assembled =
             , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

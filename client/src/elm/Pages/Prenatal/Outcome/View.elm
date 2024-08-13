@@ -81,7 +81,6 @@ viewHeader language initiator data =
             , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
