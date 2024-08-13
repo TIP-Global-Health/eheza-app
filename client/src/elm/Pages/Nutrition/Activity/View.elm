@@ -605,20 +605,17 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task ))
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
             case activeTask of
                 Just NextStepsSendToHC ->
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewSendToHealthCenterForm language
                             currentDate
@@ -628,8 +625,7 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                             Nothing
 
                 Just NextStepsHealthEducation ->
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
                             currentDate
@@ -637,14 +633,12 @@ viewNextStepsContent language currentDate zscores id assembled db data =
                             SetReasonForNotProvidingHealthEducation
 
                 Just NextStepContributingFactors ->
-                    measurements.contributingFactors
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
                         |> viewContributingFactorsForm language currentDate SetContributingFactorsSign
 
                 Just NextStepFollowUp ->
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
                         |> viewNutritionFollowUpForm language currentDate SetFollowUpOption
 

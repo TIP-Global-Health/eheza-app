@@ -129,8 +129,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
     allMandatoryActivities isChw
-        |> List.filter (not << activityCompleted currentDate zscores features isChw assembled db)
-        |> List.isEmpty
+        |> List.all (activityCompleted currentDate zscores features isChw assembled db)
 
 
 {-| List of activities that need to be completed, in order to
