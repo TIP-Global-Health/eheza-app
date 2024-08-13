@@ -71,6 +71,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomAction
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
@@ -203,7 +204,7 @@ headCircumferencePopup :
     -> ( PersonId, Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference ), Maybe NutritionAssessmentTask )
     -> TranslationId
     -> Maybe (Html Msg)
-headCircumferencePopup language ( personId, saved, nextTask_ ) message =
+headCircumferencePopup language ( personId, saved, nextTask ) message =
     Just <|
         div [ class "ui active modal danger-signs-popup" ]
             [ div [ class "content" ]
@@ -213,13 +214,10 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
                     ]
                 , div [ class "popup-action" ] [ text <| translate language message ]
                 ]
-            , div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button"
-                    , onClick <| CloseHeadCircumferencePopup personId saved nextTask_
-                    ]
-                    [ text <| translate language Translate.Continue ]
-                ]
+            , viewCustomAction language
+                (CloseHeadCircumferencePopup personId saved nextTask)
+                False
+                Translate.Continue
             ]
 
 
@@ -2142,7 +2140,7 @@ viewPhotoContent language currentDate assembled form =
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
-        ( displayPhoto, saveMsg, isDisabled ) =
+        ( displayPhoto, saveMsg, disabled ) =
             case form.url of
                 Just url ->
                     let
@@ -2150,13 +2148,13 @@ viewPhotoContent language currentDate assembled form =
                             Maybe.map Tuple.first assembled.measurements.photo
                     in
                     ( Just url
-                    , [ onClick <| SavePhoto assembled.participant.person photoId url ]
+                    , SavePhoto assembled.participant.person photoId url
                     , False
                     )
 
                 Nothing ->
                     ( getMeasurementValueFunc assembled.measurements.photo
-                    , []
+                    , NoOp
                     , True
                     )
 
@@ -2170,16 +2168,7 @@ viewPhotoContent language currentDate assembled form =
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
-        , div [ class "actions" ]
-            [ button
-                (classList
-                    [ ( "ui fluid primary button", True )
-                    , ( "disabled", isDisabled )
-                    ]
-                    :: saveMsg
-                )
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language saveMsg disabled
         ]
     ]
 

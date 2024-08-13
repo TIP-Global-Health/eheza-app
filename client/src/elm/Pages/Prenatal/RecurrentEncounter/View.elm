@@ -26,7 +26,7 @@ import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (activityCompleted, expectActivity)
 import Pages.Prenatal.RecurrentEncounter.Model exposing (..)
 import Pages.Prenatal.RecurrentEncounter.Utils exposing (..)
-import Pages.Utils exposing (viewReportLink)
+import Pages.Utils exposing (viewCustomAction, viewReportLink)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
@@ -183,13 +183,7 @@ viewMainPageContent language currentDate nurse assembled model =
             in
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui fluid primary button"
-                        , onClick action
-                        ]
-                        [ text <| translate language label ]
-                    ]
+                , viewCustomAction language action False label
                 ]
     in
     [ tabs

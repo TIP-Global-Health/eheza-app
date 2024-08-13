@@ -120,15 +120,6 @@ viewMainPageContent language currentDate id isChw db data model =
         allowEndEncounter =
             List.isEmpty pendingActivities
 
-        endEcounterButtonAttributes =
-            if allowEndEncounter then
-                [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent

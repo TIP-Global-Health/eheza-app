@@ -203,11 +203,7 @@ viewDiagnosticsContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                saveAction
-            ]
+        , viewSaveAction language saveAction (tasksCompleted /= totalTasks)
         ]
     , viewModal endEncounterDialog
     ]
@@ -441,11 +437,9 @@ viewSymptomReviewContent language currentDate assembled data =
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
-            ]
+        , viewSaveAction language
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 

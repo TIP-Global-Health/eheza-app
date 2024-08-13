@@ -25,6 +25,7 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomAction
         , viewCustomLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -425,13 +426,7 @@ viewWarningPopup language popupState =
                     ]
                 ]
                 [ div [ class "content" ] content
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
+                , viewCustomAction language (SetActivePage <| UserPage GlobalCaseManagementPage) False Translate.Continue
                 ]
         )
         popupState

@@ -15,7 +15,8 @@ import Translate exposing (TranslationId)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetWarningPopupState (Maybe WarningPopupType)
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date

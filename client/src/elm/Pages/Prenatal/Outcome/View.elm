@@ -18,7 +18,7 @@ import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput, viewTasksCount)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -172,12 +172,6 @@ viewPregnancyOutcome language currentDate initiator data model =
                     (Just ( Translate.Facility, Translate.Home ))
                 ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyOutcome destinationPage
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language (SavePregnancyOutcome destinationPage) (tasksCompleted /= totalTasks)
         ]
     ]
