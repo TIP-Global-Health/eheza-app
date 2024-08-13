@@ -338,7 +338,7 @@ function hedley_general_join_field_to_query(SelectQuery $query, $entity_type, $f
         break;
 
       default:
-        throw new Exception(format_string(' hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
+        throw new Exception(format_string('hedley_general_join_field_to_query() is not implemented for entity_type: "@type"', ['@type' => $entity_type]));
     }
   }
 
