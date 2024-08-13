@@ -117,6 +117,7 @@ import Pages.Utils
         , viewRedAlertForSelect
         , viewSaveAction
         , viewSelectListInput
+        , viewTasksCount
         , viewYellowAlertForSelect
         )
 import Round
@@ -522,7 +523,7 @@ viewPregnancyDatingContent language currentDate assembled data =
         ( edd, ega ) =
             generateEDDandEGA language currentDate ( "", "" ) form.lmpDate
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ] <|
@@ -861,7 +862,7 @@ viewHistoryContent language currentDate assembled data =
             List.map viewTask <|
                 tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -1066,7 +1067,7 @@ viewExaminationContent language currentDate assembled data =
             List.map viewTask <|
                 tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -1090,7 +1091,7 @@ viewFamilyPlanningContent language currentDate assembled data =
         tasksCompleted =
             taskCompleted form.signs
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewFamilyPlanningForm language Translate.FamilyPlanningInFutureQuestion SetFamilyPlanningSign form
@@ -1137,7 +1138,7 @@ viewMedicationContent language currentDate assembled data =
             , List.length tasks
             )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
@@ -1212,7 +1213,7 @@ viewDangerSignsContent language currentDate assembled data =
                     , 1
                     )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
@@ -1263,7 +1264,7 @@ viewPrenatalPhotoContent language currentDate assembled data =
             else
                 0
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , divKeyed [ class "ui full segment photo" ]
         [ keyedDivKeyed "content"
             [ class "content" ]
@@ -1342,7 +1343,7 @@ viewBirthPlanContent language currentDate assembled data =
         transportationFunc value form_ =
             { form_ | haveTransportation = Just value }
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form birth-plan" ]
@@ -1625,7 +1626,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             [ viewForm, actions ]
@@ -1656,7 +1657,7 @@ viewLaboratoryContentForChw language currentDate assembled data =
                 "form-input select"
                 (isNothing form.pregnancyTestResult)
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form laboratory pregnancy-testing" ] <|
@@ -1688,7 +1689,7 @@ viewHealthEducationContent language currentDate assembled data =
         ( inputs, tasks ) =
             healthEducationFormInputsAndTasks language assembled data.form
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form health-education" ]
@@ -1880,7 +1881,7 @@ viewMentalHealthContent language currentDate assembled data =
                 MentalHealthSpecialistQuestion ->
                     Just (MentalHealthQuestion MentalHealthQuestion10)
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form mental-health" ]
@@ -2222,7 +2223,7 @@ viewSymptomReviewContent language currentDate assembled data =
                     div [ class "instructions" ]
                         [ viewLabel language Translate.PrenatalSymptomQuestionsHeader ]
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] <|
@@ -2347,8 +2348,7 @@ viewTreatmentReviewContent language currentDate assembled data =
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ]
-        [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -2504,7 +2504,7 @@ viewSpecialityCareContent language currentDate assembled data =
         tasks =
             arvTasks ++ ncdTasks
 
-        ( tasksCompleted, tasksTotal ) =
+        ( tasksCompleted, totalTasks ) =
             resolveTasksCompletedFromTotal tasks
 
         ( arvSection, arvTasks ) =
@@ -2572,9 +2572,9 @@ viewSpecialityCareContent language currentDate assembled data =
                 saveMsg =
                     SaveSpecialityCare personId assembled.measurements.specialityCare
             in
-            viewSaveAction language saveMsg (tasksCompleted /= tasksTotal)
+            viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form speciality-care" ] <|
@@ -3966,7 +3966,7 @@ viewBreastfeedingContent language currentDate assembled data =
         tasks =
             form.isBreastfeeding :: derivedTasks
 
-        ( tasksCompleted, tasksTotal ) =
+        ( tasksCompleted, totalTasks ) =
             resolveTasksCompletedFromTotal tasks
 
         isBreastfeedingUpdateFunc value form_ =
@@ -3984,7 +3984,7 @@ viewBreastfeedingContent language currentDate assembled data =
                 , latchingWellDirty = True
             }
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form breeastfeeding" ] <|
@@ -4000,7 +4000,7 @@ viewBreastfeedingContent language currentDate assembled data =
             ]
         , div [ class "actions" ]
             [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= tasksTotal ) ]
+                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
                 , onClick <| SaveBreastfeeding assembled.participant.person assembled.measurements.breastfeeding
                 ]
                 [ text <| translate language Translate.Save ]
@@ -4059,7 +4059,7 @@ viewPostpartumTreatmentReviewContent language currentDate assembled data =
             else
                 saveMsg
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form medication" ] <|

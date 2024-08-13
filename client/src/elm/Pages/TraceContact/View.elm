@@ -29,6 +29,7 @@ import Pages.Utils
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
+        , viewTasksCount
         )
 import RemoteData
 import Translate exposing (Language, translate)
@@ -195,7 +196,7 @@ viewStepInitiateContact language currentDate contact data =
             else
                 ( 0, 0 )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             instructions
@@ -300,7 +301,7 @@ viewStepRecordSymptoms language currentDate contact data =
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm

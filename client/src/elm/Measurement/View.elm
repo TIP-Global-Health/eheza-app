@@ -67,6 +67,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
+        , viewTasksCount
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -2652,7 +2653,7 @@ viewNCDAContent language currentDate zscores site personId person config helperS
                 |> Maybe.withDefault ( emptyNode, emptyNode )
     in
     [ header
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form ncda" ] viewForm ]

@@ -30,6 +30,7 @@ import Pages.Utils
         , viewCustomLabel
         , viewQuestionLabel
         , viewSelectListInput
+        , viewTasksCount
         )
 import RemoteData
 import Time exposing (posixToMillis)
@@ -255,7 +256,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
             6
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form kick-off-survey" ] <|
@@ -303,7 +304,7 @@ viewQuarterlySurvey language currentDate nurseId form =
             List.length quarterlySurveyQuestions
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
@@ -346,7 +347,7 @@ viewAdoptionSurvey language currentDate nurseId form =
             List.length adoptionSurveyQuestions
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|

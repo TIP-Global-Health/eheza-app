@@ -44,6 +44,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         , viewSelectListInput
+        , viewTasksCount
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
@@ -826,11 +827,7 @@ viewSignaturePad language handleStoredSignatureMsg =
 viewStockUpdateContent : Language -> Maybe Bool -> List (Html Msg) -> Msg -> Bool -> Msg -> Int -> Int -> List (Html Msg)
 viewStockUpdateContent language confirmIdentity formForView saveMsg displayPopup hidePopupMsg tasksCompleted totalTasks =
     [ div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ]
-            [ text <|
-                translate language <|
-                    Translate.TasksCompleted tasksCompleted totalTasks
-            ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "ui full content" ]
                 formForView

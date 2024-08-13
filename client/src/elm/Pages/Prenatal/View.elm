@@ -16,6 +16,7 @@ import Pages.Utils
         , viewBoolInput
         , viewEncounterActionButton
         , viewQuestionLabel
+        , viewTasksCount
         )
 import Translate exposing (Language, translate)
 
@@ -72,7 +73,7 @@ viewMalariaPreventionContent language currentDate assembled setBoolInputMsg save
         receivedMosquitoNetUpdateFunc value form_ =
             { form_ | receivedMosquitoNet = Just value }
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form malaria-prevention" ]

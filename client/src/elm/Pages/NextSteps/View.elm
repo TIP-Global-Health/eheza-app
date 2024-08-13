@@ -29,7 +29,7 @@ import Measurement.View
 import Pages.NextSteps.Model exposing (Model, Msg(..))
 import Pages.NextSteps.Utils exposing (nextStepsTasksCompletedFromTotal)
 import Pages.Nutrition.Activity.View exposing (warningPopup)
-import Pages.Utils exposing (resolveNextTask, tasksBarId, viewPersonDetails)
+import Pages.Utils exposing (resolveNextTask, tasksBarId, viewPersonDetails, viewTasksCount)
 import RemoteData
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -276,7 +276,7 @@ viewNextStepsContent language currentDate zscores childId child session db model
                     [ div [ class "ui three column grid" ] <|
                         List.map viewTask tasks
                     ]
-                , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+                , viewTasksCount language tasksCompleted totalTasks
                 , div [ class "ui full segment" ]
                     [ div [ class "full content" ]
                         [ viewForm

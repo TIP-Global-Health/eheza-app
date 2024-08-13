@@ -32,6 +32,8 @@ import Pages.Utils
     exposing
         ( resolveTasksCompletedFromTotal
         , viewPersonDetails
+        , viewSaveAction
+        , viewTasksCount
         )
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -125,11 +127,14 @@ viewFeedingContent language currentDate assembled db feedingForm =
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveFeeding assembled.participant.person assembled.measurements.feeding) disabled
+                ++ [ viewSaveAction language
+                        (SaveFeeding assembled.participant.person assembled.measurements.feeding)
+                        disabled
+                   ]
         ]
     ]
 
@@ -156,11 +161,14 @@ viewCaringContent language currentDate assembled db caringForm =
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveNutritionCaring assembled.participant.person assembled.measurements.caring) disabled
+                ++ [ viewSaveAction language
+                        (SaveNutritionCaring assembled.participant.person assembled.measurements.caring)
+                        disabled
+                   ]
         ]
     ]
 
@@ -187,11 +195,14 @@ viewHygieneContent language currentDate assembled db hygieneForm =
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveHygiene assembled.participant.person assembled.measurements.hygiene) disabled
+                ++ [ viewSaveAction language
+                        (SaveHygiene assembled.participant.person assembled.measurements.hygiene)
+                        disabled
+                   ]
         ]
     ]
 
@@ -213,22 +224,13 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveFoodSecurity assembled.participant.person assembled.measurements.foodSecurity) disabled
-        ]
-    ]
-
-
-viewAction : Language -> Msg -> Bool -> List (Html Msg)
-viewAction language saveMsg disabled =
-    [ div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
+                ++ [ viewSaveAction language
+                        (SaveFoodSecurity assembled.participant.person assembled.measurements.foodSecurity)
+                        disabled
+                   ]
         ]
     ]
