@@ -190,11 +190,11 @@ viewWarningPopup language currentDate warningPopupState =
                             (SetWarningPopupState Nothing)
                             assessment
 
-                    PopupMacrocephaly personId saved nextTask_ ->
-                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMacrocephalyWarning
+                    PopupMacrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
 
-                    PopupMicrocephaly personId saved nextTask_ ->
-                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMicrocephalyWarning
+                    PopupMicrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
             )
 
 
