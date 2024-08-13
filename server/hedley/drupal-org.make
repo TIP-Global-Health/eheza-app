@@ -6,7 +6,7 @@ projects[admin_menu][subdir] = "contrib"
 projects[admin_menu][version] = "3.0-rc7"
 
 projects[admin_views][subdir] = "contrib"
-projects[admin_views][version] = "1.8"
+projects[admin_views][version] = "1.7"
 
 projects[advancedqueue][subdir] = "contrib"
 projects[advancedqueue][version] = "1.x-dev"
@@ -136,7 +136,7 @@ projects[devel][subdir] = "development"
 projects[devel][version] = "1.7"
 
 projects[migrate][subdir] = "development"
-projects[migrate][version] = "2.12"
+projects[migrate][version] = "2.11"
 
 projects[migrate_extras][subdir] = "development"
 projects[migrate_extras][version] = "2.5"
