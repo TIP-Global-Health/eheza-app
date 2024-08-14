@@ -32,7 +32,7 @@ type alias Model =
 
 emptyModel : Model
 emptyModel =
-    { activeTab = TabGuide
+    { activeTab = TabUnread
     , tabScrollPosition = 0
     , expandedMessages = EverySet.empty
     , messageOptionsDialogState = Nothing
@@ -43,8 +43,7 @@ emptyModel =
 
 
 type MessagingTab
-    = TabGuide
-    | TabUnread
+    = TabUnread
     | TabFavorites
     | TabGrowth
     | TabConnecting
@@ -92,7 +91,7 @@ emptySurveyForm =
 
 type SurveyScoreDialogState
     = QuarterlySurveyScore Int
-    | AdoptionSurveyScore Int
+    | AdoptionSurveyScore (List Int)
 
 
 type Msg
@@ -110,8 +109,8 @@ type Msg
     | SetSurveyScoreDialogState (Maybe SurveyScoreDialogState)
     | SetActiveTab MessagingTab
     | ScrollTab Int
-    | ResilienceMessageClicked NurseId ResilienceMessageId ResilienceMessage Bool
+    | ResilienceMessageClicked ResilienceMessageId NurseId Nurse Bool
     | SetMessageOptionsDialogState (Maybe MessageOptionsDialogState)
-    | ToggleMessageRead NurseId ResilienceMessageId ResilienceMessage Bool
-    | ToggleMessageFavorite NurseId ResilienceMessageId ResilienceMessage
-    | ScheduleMessageReminder Int NurseId ResilienceMessageId ResilienceMessage
+    | ToggleMessageRead ResilienceMessageId NurseId Nurse Bool
+    | ToggleMessageFavorite ResilienceMessageId NurseId Nurse
+    | ScheduleMessageReminder Int ResilienceMessageId NurseId Nurse

@@ -235,6 +235,45 @@ function hedley_user_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-nurse-field_resilience_messages'.
+  $field_instances['node-nurse-field_resilience_messages'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 16,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_messages',
+    'label' => 'Resilience Messages',
+    'required' => FALSE,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 16,
+    ),
+  );
+
   // Exported field_instance: 'node-nurse-field_resilience_program'.
   $field_instances['node-nurse-field_resilience_program'] = array(
     'bundle' => 'nurse',
@@ -724,6 +763,7 @@ function hedley_user_field_default_field_instances() {
   t('PIN code');
   t('Phone');
   t('Profile photo');
+  t('Resilience Messages');
   t('Resilience Next Reminder');
   t('Resilience Program');
   t('Role');

@@ -466,25 +466,6 @@ expectNextStepsTask currentDate assembled task =
         NextStepsMedicationDistribution ->
             case assembled.encounter.encounterType of
                 NurseEncounter ->
-                    let
-                        hypertensionlikeDiagnosesCondition =
-                            -- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
-                            (updateHypertensionTreatmentWithMedication assembled
-                                && (-- Hypertension / Moderate Preeclamsia treatment
-                                    -- did not cause an adverse event.
-                                    not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-                                   )
-                                && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-                                    -- in referral to hospital.
-                                    not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
-                                   )
-                            )
-                                || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
-                                   -- at current encounter does not indicate a need for hospitalization.
-                                   (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                                        && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
-                                   )
-                    in
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && ((resolveRequiredMedicationsSet English currentDate PrenatalEncounterPhaseInitial assembled
@@ -504,18 +485,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisTrichomonasOrBacterialVaginosis
                                     ]
                                     assembled
-                                || (hypertensionlikeDiagnosesCondition
-                                        && -- If Preeclampsia was diagnosed at current
-                                           -- encounter, there's no need to medicate, because
-                                           -- patient is sent to hospital anyway.
-                                           (not <|
-                                                diagnosedAnyOf
-                                                    [ DiagnosisModeratePreeclampsiaInitialPhase
-                                                    , DiagnosisSeverePreeclampsiaInitialPhase
-                                                    ]
-                                                    assembled
-                                           )
-                                   )
+                                || continuousHypertensionTreatmentRequired assembled
                            )
 
                 NursePostpartumEncounter ->
@@ -547,12 +517,48 @@ expectNextStepsTask currentDate assembled task =
                 && -- If we refer patients somewhere, there's no need to wait.
                    (not <| expectNextStepsTask currentDate assembled NextStepsSendToHC)
                 && -- We show Wait activity when there's at least one
-                   -- test that was performed, or, 2 hours waiting is
-                   -- required for blood pressure recheck.
+                   -- test that was performed, or, 2 hours waiting is required
+                   -- for blood pressure recheck during initial nurse encounter.
                    (getMeasurementValueFunc assembled.measurements.labsResults
-                        |> Maybe.map (.performedTests >> EverySet.isEmpty >> not)
+                        |> Maybe.map
+                            (\value ->
+                                EverySet.diff value.performedTests value.completedTests
+                                    |> EverySet.isEmpty
+                                    |> not
+                            )
                         |> Maybe.withDefault False
                    )
+
+
+continuousHypertensionTreatmentRequired : AssembledData -> Bool
+continuousHypertensionTreatmentRequired assembled =
+    (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+     (updateHypertensionTreatmentWithMedication assembled
+        && (-- Hypertension / Moderate Preeclamsia treatment
+            -- did not cause an adverse event.
+            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+           )
+        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+            -- in referral to hospital.
+            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+           )
+     )
+        || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
+           -- at current encounter does not indicate a need for hospitalization.
+           (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
+           )
+    )
+        && (-- If Preeclampsia was diagnosed at current
+            -- encounter, there's no need to medicate, because
+            -- patient is sent to hospital anyway.
+            not <|
+                diagnosedAnyOf
+                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                    , DiagnosisSeverePreeclampsiaInitialPhase
+                    ]
+                    assembled
+           )
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -616,14 +622,11 @@ nextStepsTaskCompleted currentDate assembled task =
 
                 hypertensionTreatmentCompleted =
                     if
+                        -- Hypertension diagnosed at current encounter.
                         diagnosedHypertension PrenatalEncounterPhaseInitial assembled
-                            || -- Adding this to account for continuous treatment that may be
-                               -- provided for Moderate Preeclampsia.
-                               diagnosedPreviouslyAnyOf
-                                [ DiagnosisModeratePreeclampsiaInitialPhase
-                                , DiagnosisModeratePreeclampsiaRecurrentPhase
-                                ]
-                                assembled
+                            || -- Hypertension diagnosed previously and we
+                               -- need to continue treatment.
+                               continuousHypertensionTreatmentRequired assembled
                     then
                         recommendedTreatmentMeasurementTaken recommendedTreatmentSignsForHypertension assembled.measurements
 
@@ -1005,7 +1008,9 @@ referToMentalHealthSpecialist assembled =
 referToARVProgram : AssembledData -> Bool
 referToARVProgram assembled =
     (diagnosed DiagnosisHIVInitialPhase assembled && hivProgramAtHC assembled.measurements)
-        || referredToSpecialityCareProgram EnrolledToARVProgram assembled
+        || (expectSpecialityCareSignSection assembled EnrolledToARVProgram
+                && referredToSpecialityCareProgram EnrolledToARVProgram assembled
+           )
 
 
 referToUltrasound : AssembledData -> Bool
@@ -1357,23 +1362,28 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
             generateDangerSignsListForNurse assembled
 
         emergencyDiagnoses =
-            List.filter
-                (matchEmergencyReferalPrenatalDiagnosis
-                    egaInWeeks
-                    dangerSignsList
-                    assembled
-                )
-                emergencyReferralDiagnoses
-                |> EverySet.fromList
+            if assembled.encounter.encounterType == NursePostpartumEncounter then
+                -- There are not emergency diagnoses during Postpartum encounter.
+                EverySet.empty
+
+            else
+                List.filter
+                    (matchEmergencyReferalPrenatalDiagnosis
+                        egaInWeeks
+                        dangerSignsList
+                        assembled
+                    )
+                    emergencyReferralDiagnoses
+                    |> EverySet.fromList
 
         diagnosesByLabResultsAndExamination =
-            List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
-                labResultsAndExaminationDiagnoses
+            resolveLabResultsAndExaminationDiagnoses assembled.encounter.encounterType
+                |> List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 |> EverySet.fromList
 
         diagnosesBySymptoms =
-            List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
-                symptomsDiagnoses
+            resolveSymptomsDiagnoses assembled.encounter.encounterType
+                |> List.filter (matchSymptomsPrenatalDiagnosis egaInWeeks assembled)
                 |> EverySet.fromList
 
         diagnosesByMentalHealth =
@@ -2677,85 +2687,95 @@ emergencyObstetricCareServicesDiagnoses =
     ]
 
 
-labResultsAndExaminationDiagnoses : List PrenatalDiagnosis
-labResultsAndExaminationDiagnoses =
-    [ DiagnosisChronicHypertensionImmediate
-    , DiagnosisChronicHypertensionAfterRecheck
-    , DiagnosisGestationalHypertensionImmediate
-    , DiagnosisGestationalHypertensionAfterRecheck
-    , DiagnosisModeratePreeclampsiaInitialPhase
-    , DiagnosisModeratePreeclampsiaRecurrentPhase
-    , DiagnosisSeverePreeclampsiaInitialPhase
-    , DiagnosisSeverePreeclampsiaRecurrentPhase
-    , DiagnosisHIVInitialPhase
-    , DiagnosisHIVRecurrentPhase
-    , DiagnosisHIVDetectableViralLoadInitialPhase
-    , DiagnosisHIVDetectableViralLoadRecurrentPhase
-    , DiagnosisDiscordantPartnershipInitialPhase
-    , DiagnosisDiscordantPartnershipRecurrentPhase
-    , DiagnosisSyphilisInitialPhase
-    , DiagnosisSyphilisRecurrentPhase
-    , DiagnosisSyphilisWithComplicationsInitialPhase
-    , DiagnosisSyphilisWithComplicationsRecurrentPhase
-    , DiagnosisNeurosyphilisInitialPhase
-    , DiagnosisNeurosyphilisRecurrentPhase
-    , DiagnosisHepatitisBInitialPhase
-    , DiagnosisHepatitisBRecurrentPhase
-    , DiagnosisMalariaInitialPhase
-    , DiagnosisMalariaRecurrentPhase
-    , DiagnosisMalariaMedicatedContinuedInitialPhase
-    , DiagnosisMalariaMedicatedContinuedRecurrentPhase
-    , DiagnosisMalariaWithAnemiaInitialPhase
-    , DiagnosisMalariaWithAnemiaRecurrentPhase
-    , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
-    , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
-    , DiagnosisMalariaWithSevereAnemiaInitialPhase
-    , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-    , DiagnosisModerateAnemiaInitialPhase
-    , DiagnosisModerateAnemiaRecurrentPhase
-    , DiagnosisSevereAnemiaInitialPhase
-    , DiagnosisSevereAnemiaRecurrentPhase
-    , DiagnosisSevereAnemiaWithComplicationsInitialPhase
-    , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
-    , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
-    , DiagnosisRhesusNegativeInitialPhase
-    , DiagnosisRhesusNegativeRecurrentPhase
-    , DiagnosisPostpartumEarlyMastitisOrEngorgment
-    , DiagnosisPostpartumMastitis
-    , DiagnosisPostpartumInfection
-    , DiagnosisPostpartumExcessiveBleeding
-    ]
+resolveLabResultsAndExaminationDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
+resolveLabResultsAndExaminationDiagnoses encounterType =
+    case encounterType of
+        NursePostpartumEncounter ->
+            [ DiagnosisPostpartumEarlyMastitisOrEngorgment
+            , DiagnosisPostpartumMastitis
+            , DiagnosisPostpartumInfection
+            , DiagnosisPostpartumExcessiveBleeding
+            ]
+
+        _ ->
+            [ DiagnosisChronicHypertensionImmediate
+            , DiagnosisChronicHypertensionAfterRecheck
+            , DiagnosisGestationalHypertensionImmediate
+            , DiagnosisGestationalHypertensionAfterRecheck
+            , DiagnosisModeratePreeclampsiaInitialPhase
+            , DiagnosisModeratePreeclampsiaRecurrentPhase
+            , DiagnosisSeverePreeclampsiaInitialPhase
+            , DiagnosisSeverePreeclampsiaRecurrentPhase
+            , DiagnosisHIVInitialPhase
+            , DiagnosisHIVRecurrentPhase
+            , DiagnosisHIVDetectableViralLoadInitialPhase
+            , DiagnosisHIVDetectableViralLoadRecurrentPhase
+            , DiagnosisDiscordantPartnershipInitialPhase
+            , DiagnosisDiscordantPartnershipRecurrentPhase
+            , DiagnosisSyphilisInitialPhase
+            , DiagnosisSyphilisRecurrentPhase
+            , DiagnosisSyphilisWithComplicationsInitialPhase
+            , DiagnosisSyphilisWithComplicationsRecurrentPhase
+            , DiagnosisNeurosyphilisInitialPhase
+            , DiagnosisNeurosyphilisRecurrentPhase
+            , DiagnosisHepatitisBInitialPhase
+            , DiagnosisHepatitisBRecurrentPhase
+            , DiagnosisMalariaInitialPhase
+            , DiagnosisMalariaRecurrentPhase
+            , DiagnosisMalariaMedicatedContinuedInitialPhase
+            , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+            , DiagnosisMalariaWithAnemiaInitialPhase
+            , DiagnosisMalariaWithAnemiaRecurrentPhase
+            , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+            , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+            , DiagnosisMalariaWithSevereAnemiaInitialPhase
+            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+            , DiagnosisModerateAnemiaInitialPhase
+            , DiagnosisModerateAnemiaRecurrentPhase
+            , DiagnosisSevereAnemiaInitialPhase
+            , DiagnosisSevereAnemiaRecurrentPhase
+            , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+            , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+            , DiagnosisRhesusNegativeInitialPhase
+            , DiagnosisRhesusNegativeRecurrentPhase
+            ]
 
 
-symptomsDiagnoses : List PrenatalDiagnosis
-symptomsDiagnoses =
-    [ DiagnosisHyperemesisGravidumBySymptoms
-    , DiagnosisSevereVomitingBySymptoms
-    , DiagnosisHeartburn
-    , DiagnosisHeartburnPersistent
-    , DiagnosisDeepVeinThrombosis
-    , DiagnosisPelvicPainIntense
-    , DiagnosisPelvicPainContinued
-    , DiagnosisUrinaryTractInfection
-    , DiagnosisUrinaryTractInfectionContinued
-    , DiagnosisPyelonephritis
-    , DiagnosisCandidiasis
-    , DiagnosisCandidiasisContinued
-    , DiagnosisGonorrhea
-    , DiagnosisGonorrheaContinued
-    , DiagnosisTrichomonasOrBacterialVaginosis
-    , DiagnosisTrichomonasOrBacterialVaginosisContinued
-    , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
-    , DiagnosisPostpartumAbdominalPain
-    , DiagnosisPostpartumUrinaryIncontinence
-    , DiagnosisPostpartumHeadache
-    , DiagnosisPostpartumFatigue
-    , DiagnosisPostpartumFever
-    , DiagnosisPostpartumPerinealPainOrDischarge
-    ]
+resolveSymptomsDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
+resolveSymptomsDiagnoses encounterType =
+    case encounterType of
+        NursePostpartumEncounter ->
+            [ DiagnosisPostpartumAbdominalPain
+            , DiagnosisPostpartumUrinaryIncontinence
+            , DiagnosisPostpartumHeadache
+            , DiagnosisPostpartumFatigue
+            , DiagnosisPostpartumFever
+            , DiagnosisPostpartumPerinealPainOrDischarge
+            ]
+
+        _ ->
+            [ DiagnosisHyperemesisGravidumBySymptoms
+            , DiagnosisSevereVomitingBySymptoms
+            , DiagnosisHeartburn
+            , DiagnosisHeartburnPersistent
+            , DiagnosisDeepVeinThrombosis
+            , DiagnosisPelvicPainIntense
+            , DiagnosisPelvicPainContinued
+            , DiagnosisUrinaryTractInfection
+            , DiagnosisUrinaryTractInfectionContinued
+            , DiagnosisPyelonephritis
+            , DiagnosisCandidiasis
+            , DiagnosisCandidiasisContinued
+            , DiagnosisGonorrhea
+            , DiagnosisGonorrheaContinued
+            , DiagnosisTrichomonasOrBacterialVaginosis
+            , DiagnosisTrichomonasOrBacterialVaginosisContinued
+            , Backend.PrenatalEncounter.Types.DiagnosisTuberculosis
+            ]
 
 
 mentalHealthDiagnoses : List PrenatalDiagnosis
@@ -5861,7 +5881,8 @@ matchRequiredReferralFacility assembled facility =
             referToARVProgram assembled
 
         FacilityNCDProgram ->
-            referredToSpecialityCareProgram EnrolledToNCDProgram assembled
+            expectSpecialityCareSignSection assembled EnrolledToNCDProgram
+                && referredToSpecialityCareProgram EnrolledToNCDProgram assembled
 
         FacilityANCServices ->
             -- Explicit NCD facility.

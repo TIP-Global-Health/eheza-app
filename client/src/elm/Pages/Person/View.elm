@@ -552,12 +552,8 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                 IndividualEncounterOrigin encounterType ->
                     case encounterType of
                         AcuteIllnessEncounter ->
-                            let
-                                expectedAge =
-                                    expectedAgeByForm currentDate personForm operation
-                            in
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
-                            , expectedAge = expectedAge
+                            , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = today
@@ -584,7 +580,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
 
                         HIVEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage HIVEncounter)
-                            , expectedAge = ExpectAdultOrChild
+                            , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = today
@@ -604,12 +600,8 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             }
 
                         NCDEncounter ->
-                            let
-                                expectedAge =
-                                    expectedAgeByForm currentDate personForm operation
-                            in
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
-                            , expectedAge = expectedAge
+                            , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -90 today
                             , birthDateSelectorTo = Date.add Years -12 today
@@ -627,7 +619,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
 
                         TuberculosisEncounter ->
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage TuberculosisEncounter)
-                            , expectedAge = ExpectAdultOrChild
+                            , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
                             , birthDateSelectorFrom = Date.add Years -120 today
                             , birthDateSelectorTo = today

@@ -62,6 +62,7 @@ import Pages.TraceContact.Fetch
 import Pages.Tuberculosis.Activity.Fetch
 import Pages.Tuberculosis.Encounter.Fetch
 import Pages.Tuberculosis.Participant.Fetch
+import Pages.Tuberculosis.ProgressReport.Fetch
 import Pages.WellChild.Activity.Fetch
 import Pages.WellChild.Encounter.Fetch
 import Pages.WellChild.Participant.Fetch
@@ -411,6 +412,10 @@ fetch model =
                 Pages.WellChild.ProgressReport.Fetch.fetch id model.indexedDb
                     |> List.map MsgIndexedDb
 
+            UserPage (TuberculosisProgressReportPage id) ->
+                Pages.Tuberculosis.ProgressReport.Fetch.fetch id model.indexedDb
+                    |> List.map MsgIndexedDb
+
             UserPage (NCDProgressReportPage initiator) ->
                 let
                     encounterId =
@@ -465,6 +470,9 @@ fetch model =
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
+
+            UserPage MessagingGuide ->
+                []
 
             UserPage StockManagementPage ->
                 getLoggedInData model

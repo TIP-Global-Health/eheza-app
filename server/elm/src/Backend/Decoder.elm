@@ -1,7 +1,7 @@
 module Backend.Decoder exposing (decodeSite)
 
 import App.Types exposing (Site(..))
-import Backend.Menu.Model exposing (..)
+import Backend.ScoreboardMenu.Model exposing (..)
 import Json.Decode exposing (Decoder, andThen, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 

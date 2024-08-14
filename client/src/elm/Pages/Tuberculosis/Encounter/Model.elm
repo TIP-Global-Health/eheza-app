@@ -34,14 +34,14 @@ type alias AssembledData =
     , participant : IndividualEncounterParticipant
     , person : Person
     , measurements : TuberculosisMeasurements
-    , previousEncountersData : List PreviousEncounterData
+    , previousEncountersData : List EncounterData
 
     -- Intial encounter is the one where initial diagnosis is made.
     , initialEncounter : Bool
     }
 
 
-type alias PreviousEncounterData =
+type alias EncounterData =
     { id : TuberculosisEncounterId
     , startDate : NominalDate
     , measurements : TuberculosisMeasurements

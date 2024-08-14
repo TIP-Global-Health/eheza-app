@@ -234,6 +234,11 @@ function hedley_standard_install() {
   $data_manager_role->name = 'Data Manager';
   user_role_save($data_manager_role);
 
+  // Creating a Statistical Queries Manager role.
+  $statistical_queries_manager_role = new stdClass();
+  $statistical_queries_manager_role->name = 'Statistical Queries Manager';
+  user_role_save($statistical_queries_manager_role);
+
   // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
   $nurse_role->name = 'nurse';
@@ -712,4 +717,23 @@ function hedley_update_7042() {
  */
 function hedley_update_7043() {
   module_enable(['hedley_hiv']);
+}
+
+/**
+ * Enable the Hedley Reports module and create dedicated role.
+ */
+function hedley_update_7044() {
+  module_enable(['hedley_reports']);
+
+  // Creating a Statistical Queries Manager role.
+  $statistical_queries_manager_role = new stdClass();
+  $statistical_queries_manager_role->name = 'Statistical Queries Manager';
+  user_role_save($statistical_queries_manager_role);
+}
+
+/**
+ * Deletes Resilience Message content type.
+ */
+function hedley_update_7045() {
+  node_type_delete('resilience_message');
 }

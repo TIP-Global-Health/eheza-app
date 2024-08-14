@@ -155,7 +155,7 @@ viewMainPageContent language currentDate db assembled model =
                     ]
 
         allowEndEncounter =
-            allowEndingEcounter pendingActivities
+            allowEndingEncounter pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -168,6 +168,6 @@ viewMainPageContent language currentDate db assembled model =
     ]
 
 
-allowEndingEcounter : List NCDActivity -> Bool
-allowEndingEcounter pendingActivities =
+allowEndingEncounter : List NCDActivity -> Bool
+allowEndingEncounter pendingActivities =
     List.isEmpty pendingActivities

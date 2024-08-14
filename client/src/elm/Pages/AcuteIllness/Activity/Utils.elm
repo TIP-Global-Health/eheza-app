@@ -2304,10 +2304,11 @@ covid19SuspectDiagnosed measurements =
                     )
                 |> Maybe.withDefault 0
 
-        excludesGeneral =
-            [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
-
         generalSymptomsCount =
+            let
+                excludesGeneral =
+                    [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+            in
             countGeneralSymptoms measurements excludesGeneral
 
         respiratorySymptomsCount =
@@ -2356,9 +2357,9 @@ covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements
 covid19DiagnosisPath currentDate person isChw measurements =
     if
         (not <| covid19SuspectDiagnosed measurements)
-            || -- In case we have cought symptom for more than 2 weeks,
+            || -- In case we have cough symptom for more than 2 weeks,
                -- we must diagnose Tuberculosis suspect.
-               -- Therefore, we need to exit COVID19 path/
+               -- Therefore, we need to exit COVID19 path.
                coughForMoreThan2Weeks measurements
     then
         Nothing

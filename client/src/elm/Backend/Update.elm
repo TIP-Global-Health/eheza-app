@@ -72,7 +72,6 @@ import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
 import Backend.ResilienceMessage.Model
-import Backend.ResilienceMessage.Update
 import Backend.ResilienceSurvey.Model
 import Backend.ResilienceSurvey.Update
 import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
@@ -137,6 +136,7 @@ import Pages.Prenatal.RecurrentEncounter.Utils
 import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
+import Pages.Tuberculosis.Encounter.Utils
 import Pages.WellChild.Activity.Utils
 import Pages.WellChild.Encounter.Model
 import Pages.WellChild.Encounter.Utils
@@ -1802,19 +1802,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             , []
             )
 
-        FetchResilienceMessagesForNurse id ->
-            ( { model | resilienceMessagesByNurse = Dict.insert id Loading model.resilienceMessagesByNurse }
-            , sw.select resilienceMessageEndpoint (Just id)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedResilienceMessagesForNurse id)
-            , []
-            )
-
-        HandleFetchedResilienceMessagesForNurse id data ->
-            ( { model | resilienceMessagesByNurse = Dict.insert id data model.resilienceMessagesByNurse }
-            , Cmd.none
-            , []
-            )
-
         FetchVillages ->
             ( { model | villages = Loading }
             , sw.select villageEndpoint ()
@@ -2048,7 +2035,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processVitalsRevisionAndUpdateLabsResults participantId encounterId value =
+                processVitalsRevisionAndUpdatePrenatalLabsResults participantId encounterId value =
                     if downloadingContent then
                         ( model, [] )
 
@@ -2126,7 +2113,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         in
                         ( newModel, extraMsgs )
 
-                processRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
+                processPrenatalRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
                     if downloadingContent then
                         ( model, [] )
 
@@ -2345,6 +2332,25 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                             )
                             encounterId
                             |> Maybe.withDefault []
+
+                processTuberculosisRevisionAndNavigateToProgressReport encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        generateTuberculosisEncounterCompletedMsgs currentDate newModel encounterId_
+                                    )
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -2789,7 +2795,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                         -- it's handled by `processRevisionAndAssessPrenatal`
                         -- activation that comes bellow.
                         ( _, extraMsgsForLabsResults ) =
-                            processVitalsRevisionAndUpdateLabsResults
+                            processVitalsRevisionAndUpdatePrenatalLabsResults
                                 data.participantId
                                 data.encounterId
                                 data.value
@@ -2805,7 +2811,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ MalariaPreventionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2815,7 +2821,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalHealthEducationRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2825,7 +2831,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalSendToHCRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -2835,7 +2841,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                 [ PrenatalMedicationDistributionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -3569,6 +3575,76 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     , extraMsgs
                     )
 
+                [ TuberculosisDOTRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisFollowUpRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisMedicationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisReferralRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisSymptomReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisTreatmentReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
                 _ ->
                     let
                         ( newModel, recalculateEditableSessions ) =
@@ -3881,20 +3957,6 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             in
             ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
             , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
-            , appMsgs
-            )
-
-        MsgResilienceMessage messageNurseId subMsg ->
-            let
-                requests =
-                    Dict.get messageNurseId model.resilienceMessageRequests
-                        |> Maybe.withDefault Backend.ResilienceMessage.Model.emptyModel
-
-                ( subModel, subCmd, appMsgs ) =
-                    Backend.ResilienceMessage.Update.update currentDate subMsg requests
-            in
-            ( { model | resilienceMessageRequests = Dict.insert messageNurseId subModel model.resilienceMessageRequests }
-            , Cmd.map (MsgResilienceMessage messageNurseId) subCmd
             , appMsgs
             )
 
@@ -6096,28 +6158,6 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        ResilienceMessageRevision uuid data ->
-            let
-                nurseMessages =
-                    Dict.get data.nurse model.resilienceMessagesByNurse
-                        |> Maybe.andThen RemoteData.toMaybe
-
-                resilienceMessagesByNurse =
-                    Maybe.map
-                        (\messages ->
-                            let
-                                updatedMessages =
-                                    Dict.insert uuid data messages
-                            in
-                            Dict.insert data.nurse (Success updatedMessages) model.resilienceMessagesByNurse
-                        )
-                        nurseMessages
-                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceMessagesByNurse)
-            in
-            ( { model | resilienceMessagesByNurse = resilienceMessagesByNurse }
-            , recalc
-            )
-
         ResilienceSurveyRevision uuid data ->
             let
                 nurseSurveys =
@@ -6933,53 +6973,62 @@ generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    testExecuted =
-                        testPerformedByExecutionNote executionNote
-                in
-                Maybe.map
-                    (\( resultsId, measurement ) ->
-                        let
-                            updatedValue =
-                                (\value ->
-                                    { value
-                                        | performedTests =
-                                            if testExecuted then
-                                                EverySet.insert test value.performedTests
+                if
+                    -- We allow Vitals recheck only during initial encounter.
+                    -- At subsequent encounter, no need to retake blood preasure.
+                    (test == Backend.Measurement.Model.TestVitalsRecheck)
+                        && (not <| List.isEmpty assembled.nursePreviousEncountersData)
+                then
+                    []
 
-                                            else
-                                                EverySet.remove test value.performedTests
-
-                                        -- When we have universal form, it's possible to change if test is performed
-                                        -- at lab, or at point of care.
-                                        -- Therefore, we need to make sure that test does not appear as completed,
-                                        -- which can happen, when nurse switches from point of care to lab.
-                                        , completedTests = EverySet.remove test value.completedTests
-                                        , resolutionDate = Date.add Days labExpirationPeriod currentDate
-                                    }
-                                )
-                                    measurement.value
-                        in
-                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
-                    )
-                    assembled.measurements.labsResults
-                    |> Maybe.withDefault
-                        (if testExecuted then
+                else
+                    let
+                        testExecuted =
+                            testPerformedByExecutionNote executionNote
+                    in
+                    Maybe.map
+                        (\( resultsId, measurement ) ->
                             let
-                                resultsValue =
-                                    Backend.Measurement.Model.LabsResultsValue
-                                        (EverySet.singleton test)
-                                        EverySet.empty
-                                        (Date.add Days labExpirationPeriod currentDate)
-                                        False
-                                        Nothing
-                                        Nothing
-                            in
-                            [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+                                updatedValue =
+                                    (\value ->
+                                        { value
+                                            | performedTests =
+                                                if testExecuted then
+                                                    EverySet.insert test value.performedTests
 
-                         else
-                            []
+                                                else
+                                                    EverySet.remove test value.performedTests
+
+                                            -- When we have universal form, it's possible to change if test is performed
+                                            -- at lab, or at point of care.
+                                            -- Therefore, we need to make sure that test does not appear as completed,
+                                            -- which can happen, when nurse switches from point of care to lab.
+                                            , completedTests = EverySet.remove test value.completedTests
+                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                        }
+                                    )
+                                        measurement.value
+                            in
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
                         )
+                        assembled.measurements.labsResults
+                        |> Maybe.withDefault
+                            (if testExecuted then
+                                let
+                                    resultsValue =
+                                        Backend.Measurement.Model.LabsResultsValue
+                                            (EverySet.singleton test)
+                                            EverySet.empty
+                                            (Date.add Days labExpirationPeriod currentDate)
+                                            False
+                                            Nothing
+                                            Nothing
+                                in
+                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+
+                             else
+                                []
+                            )
             )
         |> Maybe.withDefault []
 
@@ -7042,12 +7091,20 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
 
                                             else
                                                 value.reviewState
+
+                                        resolutionDate =
+                                            if not isLabTech && allLabsCompleted then
+                                                currentDate
+
+                                            else
+                                                value.resolutionDate
                                     in
                                     { value
                                         | performedTests = updatedPerformedTests
                                         , completedTests = updatedCompletedTests
                                         , testsWithFollowUp = updatedTestsWithFollowUp
                                         , reviewState = reviewState
+                                        , resolutionDate = resolutionDate
                                     }
                                 )
                                     results.value
@@ -8334,3 +8391,26 @@ generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw d
             ( programTypeFilter, selectedVillage )
             (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
     }
+
+
+generateTuberculosisEncounterCompletedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> TuberculosisEncounterId
+    -> List App.Model.Msg
+generateTuberculosisEncounterCompletedMsgs currentDate after id =
+    Pages.Tuberculosis.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    ( _, pendingActivities ) =
+                        Pages.Tuberculosis.Encounter.Utils.partitionActivities currentDate assembled
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <| UserPage <| TuberculosisProgressReportPage id ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []

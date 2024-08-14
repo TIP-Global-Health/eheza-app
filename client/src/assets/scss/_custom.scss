@@ -1391,6 +1391,23 @@ input::placeholder {
         margin-bottom: 1rem;
         text-align: center;
         text-transform: uppercase;
+
+        .message {
+          display: flex;
+          position: relative;
+          font-size: 25px;
+
+          .icon-up,
+          .icon-down {
+            display: block;
+            margin-left: auto;
+            right: 0;
+          }
+        }
+        .summary {
+          text-align: left;
+          font-size: 25px;
+        }
       }
 
       .popup-action {

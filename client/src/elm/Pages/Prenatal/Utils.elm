@@ -107,22 +107,31 @@ diagnosesCausingHospitalReferralByPhase phase assembled =
         case phase of
             PrenatalEncounterPhaseInitial ->
                 let
-                    general =
+                    byImmediateDiagnoses =
                         diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseInitial assembled
-                            ++ diagnosesCausingHospitalReferralByMentalHealth assembled
-                            ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseInitial assembled
-
-                    byAdverseEvent =
-                        -- Can be only on first phase, as that's where we record past treatment.
-                        diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
-
-                    byPastDiagnoses =
-                        diagnosesCausingHospitalReferralByPastDiagnoses assembled
                 in
-                general
-                    ++ byAdverseEvent
-                    ++ byPastDiagnoses
-                    |> EverySet.fromList
+                case assembled.encounter.encounterType of
+                    NursePostpartumEncounter ->
+                        EverySet.fromList byImmediateDiagnoses
+
+                    _ ->
+                        let
+                            general =
+                                byImmediateDiagnoses
+                                    ++ diagnosesCausingHospitalReferralByMentalHealth assembled
+                                    ++ diagnosesCausingHospitalReferralByOtherReasons PrenatalEncounterPhaseInitial assembled
+
+                            byAdverseEvent =
+                                -- Can be only on first phase, as that's where we record past treatment.
+                                diagnosesCausingHospitalReferralByAdverseEventForTreatment assembled
+
+                            byPastDiagnoses =
+                                diagnosesCausingHospitalReferralByPastDiagnoses assembled
+                        in
+                        general
+                            ++ byAdverseEvent
+                            ++ byPastDiagnoses
+                            |> EverySet.fromList
 
             PrenatalEncounterPhaseRecurrent ->
                 diagnosesCausingHospitalReferralByImmediateDiagnoses PrenatalEncounterPhaseRecurrent assembled

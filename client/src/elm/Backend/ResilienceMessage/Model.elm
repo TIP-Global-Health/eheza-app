@@ -6,8 +6,7 @@ import Time
 
 
 type alias ResilienceMessage =
-    { nurse : NurseId
-    , category : ResilienceCategory
+    { category : ResilienceCategory
     , order : ResilienceMessageOrder
     , displayDay : Int
     , timeRead : Maybe Time.Posix
@@ -44,8 +43,3 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { updateMessage = NotAsked }
-
-
-type Msg
-    = UpdateMessage ResilienceMessageId ResilienceMessage
-    | HandleUpdatedMessage (WebData ())

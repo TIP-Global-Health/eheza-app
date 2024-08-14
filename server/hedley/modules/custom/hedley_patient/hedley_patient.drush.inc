@@ -334,11 +334,11 @@ function _consolidate_prenatal_encounter_content_validate(array $measurements, $
   $count = count($measurements);
   $return['messages'][] = "Duplicate got $count prenatal_encounter measurements.";
 
-  $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
+  $participants_original = hedley_person_individual_participants_for_person($original, ['antenatal'], 'DESC');
   $count = count($participants_original);
   $return['messages'][] = "Original got $count prenatal_encounter participants.";
 
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, ['antenatal'], 'DESC');
   $count = count($participants_duplicate);
   $return['messages'][] = "Duplicate got $count prenatal_encounter participants.";
 
@@ -376,8 +376,8 @@ function _consolidate_prenatal_encounter_content_validate(array $measurements, $
  * @throws \EntityMetadataWrapperException
  */
 function _consolidate_prenatal_encounter_content_execute(array $measurements, $original, $duplicate) {
-  $participants_original = hedley_person_individual_participants_for_person($original, 'antenatal', 'DESC');
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'antenatal', 'DESC');
+  $participants_original = hedley_person_individual_participants_for_person($original, ['antenatal'], 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, ['antenatal'], 'DESC');
 
   // Search for ongoing participant (pregnancy) of original patient.
   // If found, record it's ID.
@@ -689,7 +689,7 @@ function _consolidate_single_participant_content_validate(array $measurements, $
   $count_measurements = count($measurements);
   $return['messages'][] = "Duplicate got $count_measurements $encounter_type measurements.";
 
-  $participants_original = hedley_person_individual_participants_for_person($original, $encounter_type_value, 'DESC');
+  $participants_original = hedley_person_individual_participants_for_person($original, [$encounter_type_value], 'DESC');
   $count_original = count($participants_original);
   if ($count_original > 1) {
     $return['messages'][] = 'Error: There are multiple participants for original, while only one is allowed. Can not determine with which participant to consolidate.';
@@ -698,7 +698,7 @@ function _consolidate_single_participant_content_validate(array $measurements, $
 
   $return['messages'][] = "Original got $count_original $encounter_type participants.";
 
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, $encounter_type_value, 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, [$encounter_type_value], 'DESC');
   $count_duplicate = count($participants_duplicate);
   if ($count_duplicate == 0 && $count_measurements > 0) {
     $return['messages'][] = "Error: Duplicate got 0 $encounter_type participants. Can not pull encounters data for duplicate.";
@@ -736,9 +736,9 @@ function _consolidate_single_participant_content_validate(array $measurements, $
 function _consolidate_single_participant_content_execute(array $measurements, $original, $duplicate, $encounter_type) {
   $encounter_type_value = HEDLEY_PATIENT_ENCOUNTER_TYPE_VALUE_MAPPING[$encounter_type];
 
-  $participants_original = hedley_person_individual_participants_for_person($original, $encounter_type_value, 'DESC');
+  $participants_original = hedley_person_individual_participants_for_person($original, [$encounter_type_value], 'DESC');
   $count_original = count($participants_original);
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, $encounter_type_value, 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, [$encounter_type_value], 'DESC');
 
   if ($count_original == 0) {
     // If original patient does not have a participant, associate
@@ -798,7 +798,7 @@ function _consolidate_acute_illness_encounter_content_validate(array $measuremen
   $count = count($measurements);
   $return['messages'][] = "Duplicate got $count acute_illness measurements.";
 
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, ['acute_illness'], 'DESC');
   $count = count($participants_duplicate);
   $return['messages'][] = "Duplicate got $count acute_illness Participants.";
 
@@ -825,7 +825,7 @@ function _consolidate_acute_illness_encounter_content_validate(array $measuremen
  * @throws EntityMetadataWrapperException
  */
 function _consolidate_acute_illness_encounter_content_execute(array $measurements, $original, $duplicate) {
-  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, 'acute_illness', 'DESC');
+  $participants_duplicate = hedley_person_individual_participants_for_person($duplicate, ['acute_illness'], 'DESC');
 
   // Associate all  participants and measurements of duplicate,
   // with the original patient.

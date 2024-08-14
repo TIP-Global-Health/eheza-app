@@ -55,6 +55,7 @@ import Pages.IndividualEncounterParticipants.View
 import Pages.IndividualEncounterTypes.View
 import Pages.MessagingCenter.Model
 import Pages.MessagingCenter.View
+import Pages.MessagingGuide.View
 import Pages.MyAccount.View
 import Pages.NCD.Activity.Model
 import Pages.NCD.Activity.View
@@ -109,6 +110,8 @@ import Pages.Tuberculosis.Activity.View
 import Pages.Tuberculosis.Encounter.Model
 import Pages.Tuberculosis.Encounter.View
 import Pages.Tuberculosis.Participant.View
+import Pages.Tuberculosis.ProgressReport.Model
+import Pages.Tuberculosis.ProgressReport.View
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Activity.View
 import Pages.WellChild.Encounter.Model
@@ -986,6 +989,22 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             |> Html.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity)
                             |> flexPageWrapper configured.config model
 
+                    TuberculosisProgressReportPage encounterId ->
+                        let
+                            page_ =
+                                Dict.get encounterId loggedInModel.tuberculosisProgressReportPages
+                                    |> Maybe.withDefault Pages.Tuberculosis.ProgressReport.Model.emptyModel
+                        in
+                        Pages.Tuberculosis.ProgressReport.View.view model.language
+                            currentDate
+                            site
+                            features
+                            encounterId
+                            model.indexedDb
+                            page_
+                            |> Html.map (MsgLoggedIn << MsgPageTuberculosisProgressReport encounterId)
+                            |> flexPageWrapper configured.config model
+
                     EducationSessionPage id ->
                         let
                             page_ =
@@ -1083,6 +1102,10 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                            |> flexPageWrapper configured.config model
+
+                    MessagingGuide ->
+                        Pages.MessagingGuide.View.view model.language
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->

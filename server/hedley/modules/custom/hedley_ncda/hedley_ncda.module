@@ -19,8 +19,8 @@ function hedley_ncda_menu() {
   }
 
   $items['admin/reports/aggregated-ncda'] = array(
-    'title' => 'Aggregated NCDA scoreboard',
-    'description' => 'View Aggregated NCDA scoreboard',
+    'title' => 'Aggregated NCDA',
+    'description' => 'View Aggregated NCDA',
     'page callback' => 'hedley_ncda_aggregated_callback_menu',
     'access callback' => 'hedley_ncda_aggregated_ncda_report_access',
   );
@@ -106,7 +106,7 @@ function hedley_ncda_node_update($node) {
   }
 
   if ($node->type == 'person') {
-    hedley_ncda_trigger_recalculation_by_edited_person($node);
+    hedley_ncda_trigger_recalculation_for_edited_person($node);
     return;
   }
 
@@ -178,16 +178,16 @@ function hedley_ncda_calculate_aggregated_data_worker($queue_item) {
  */
 function hedley_ncda_aggregated_callback_menu() {
   $site = variable_get('hedley_general_site_name', '');
-  return hedley_ncda_build_elm_app('menu', ['site' => $site]);
+  return hedley_general_build_elm_app('ncda-menu', ['site' => $site]);
 }
 
 /**
  * Callback for aggregated NCDA elm application of district.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -199,12 +199,12 @@ function hedley_ncda_aggregated_callback_district($province, $district) {
 /**
  * Callback for aggregated NCDA elm application of sector.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -216,14 +216,14 @@ function hedley_ncda_aggregated_callback_sector($province, $district, $sector) {
 /**
  * Callback for aggregated NCDA elm application of cell.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -235,16 +235,16 @@ function hedley_ncda_aggregated_callback_cell($province, $district, $sector, $ce
 /**
  * Callback for aggregated NCDA elm application of village.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
- * @param int $village
- *   The village ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -259,16 +259,16 @@ function hedley_ncda_aggregated_callback_village($province, $district, $sector, 
  * Based on input fields, determines administrative divisions for which
  * data is provided.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int|null $sector
- *   The sector ID (optional).
- * @param int|null $cell
- *   The cell ID (optional).
- * @param int|null $village
- *   The village ID (optional).
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string|null $sector
+ *   Sector name (optional).
+ * @param string|null $cell
+ *   Cell name (optional).
+ * @param string|null $village
+ *   Village name (optional).
  *
  * @return string
  *   The HTML markup for the Elm application.
@@ -294,71 +294,31 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
   }
 
   $data['site'] = variable_get('hedley_general_site_name', '');
-  $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
 
-  return hedley_ncda_build_elm_app('results', $data);
-}
-
-/**
- * Build Elm application for aggregated NCDA.
- *
- * @param string $page
- *   The page name.
- * @param array $data
- *   The data array to be used by Elm application.
- *
- * @return string
- *   The HTML markup for the Elm application.
- */
-function hedley_ncda_build_elm_app($page, array $data) {
-  $path_hedley_ncda = drupal_get_path('module', 'hedley_ncda');
-  // Add application.
-  drupal_add_js($path_hedley_ncda . '/js/elm-main.js');
-  drupal_add_js($path_hedley_ncda . '/js/elm.js');
-  // Add CSS.
-  drupal_add_css($path_hedley_ncda . '/css/aggregated-ncda.css', 'file');
-  if ($page == 'results') {
-    $path_system = drupal_get_path('module', 'system');
-    drupal_add_css($path_system . '/system.base.css', 'file');
-    drupal_add_css($path_system . '/system.menus.css', 'file');
-    $default_theme = variable_get('theme_default', 'bartik');
-    $path_theme = drupal_get_path('theme', $default_theme);
-    drupal_add_css($path_theme . '/css/style.css', 'file');
-    drupal_add_css($path_theme . '/css/layout.css', 'file');
-    drupal_add_css($path_theme . '/css/colors.css', 'file');
+  if ($data['entity_type'] == 'district') {
+    list($data['results'], $data['additional']) = hedley_reports_load_results_data('aggregated-ncda', $data['entity_type'], $province, $district);
+  }
+  else {
+    // For smaller data sets, we generate results on fly.
+    $data['results'] = hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village);
   }
 
-  // Getting a unique ID for the app.
-  $app_id = drupal_html_id('elm-app');
-
-  // Add settings.
-  $settings = [
-    'elm_apps' => [
-      $app_id => [
-        'page' => $page,
-        'data' => $data,
-      ],
-    ],
-  ];
-  drupal_add_js($settings, 'setting');
-
-  // Return the HTML markup for the Elm application.
-  return '<div id="' . $app_id . '"></div>';
+  return hedley_general_build_elm_app('ncda-results', $data);
 }
 
 /**
  * Generate aggregated NCDA data which is stored on person nodes.
  *
- * @param int $province
- *   The province ID.
- * @param int $district
- *   The district ID.
- * @param int $sector
- *   The sector ID.
- * @param int $cell
- *   The cell ID.
- * @param int $village
- *   The village ID.
+ * @param string $province
+ *   Province name.
+ * @param string $district
+ *   District name.
+ * @param string $sector
+ *   Sector name.
+ * @param string $cell
+ *   Cell name.
+ * @param string $village
+ *   Village name.
  *
  * @return array
  *   An array of generated data.
@@ -1043,7 +1003,7 @@ function hedley_ncda_trigger_recalculation_for_new_village($node) {
  * Triggers calculation of NCDA data, for newly created person.
  *
  * @param object $node
- *   The node object of a village.
+ *   The node object of a person.
  *
  * @throws EntityMetadataWrapperException
  */
@@ -1070,15 +1030,15 @@ function hedley_ncda_trigger_recalculation_for_created_person($node) {
 /**
  * Triggers recalculation of person's NCDA data, when edited.
  *
- * Recalculation is required only when birth date is edited.
+ * Recalculation is required only when birthdate is edited.
  * Note: Currently, editing geo fields of person is not allowed.
  *
  * @param object $node
- *   The node object of a village.
+ *   The node object of a person.
  *
  * @throws EntityMetadataWrapperException
  */
-function hedley_ncda_trigger_recalculation_by_edited_person($node) {
+function hedley_ncda_trigger_recalculation_for_edited_person($node) {
   $wrapper = entity_metadata_wrapper('node', $node);
   $wrapper_orig = entity_metadata_wrapper('node', $node->original);
 

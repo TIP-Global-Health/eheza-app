@@ -79,6 +79,7 @@ import Pages.StockManagement.Model
 import Pages.TraceContact.Model
 import Pages.Tuberculosis.Activity.Model
 import Pages.Tuberculosis.Encounter.Model
+import Pages.Tuberculosis.ProgressReport.Model
 import Pages.WellChild.Activity.Model
 import Pages.WellChild.Encounter.Model
 import Pages.WellChild.ProgressReport.Model
@@ -311,6 +312,7 @@ type alias LoggedInModel =
     , childScoreboardReportPages : Dict ChildScoreboardEncounterId Pages.ChildScoreboard.ProgressReport.Model.Model
     , tuberculosisEncounterPages : Dict TuberculosisEncounterId Pages.Tuberculosis.Encounter.Model.Model
     , tuberculosisActivityPages : Dict ( TuberculosisEncounterId, TuberculosisActivity ) Pages.Tuberculosis.Activity.Model.Model
+    , tuberculosisProgressReportPages : Dict TuberculosisEncounterId Pages.Tuberculosis.ProgressReport.Model.Model
     , educationSessionPages : Dict EducationSessionId Pages.EducationSession.Model.Model
     , hivEncounterPages : Dict HIVEncounterId Pages.HIV.Encounter.Model.Model
     , hivActivityPages : Dict ( HIVEncounterId, HIVActivity ) Pages.HIV.Activity.Model.Model
@@ -364,6 +366,7 @@ emptyLoggedInModel site villageId nurse =
     , childScoreboardReportPages = Dict.empty
     , tuberculosisEncounterPages = Dict.empty
     , tuberculosisActivityPages = Dict.empty
+    , tuberculosisProgressReportPages = Dict.empty
     , educationSessionPages = Dict.empty
     , hivEncounterPages = Dict.empty
     , hivActivityPages = Dict.empty
@@ -386,6 +389,7 @@ type Msg
     | MsgPagePinCode Pages.PinCode.Model.Msg
     | TryPinCode String
     | SetLoggedIn (WebData ( NurseId, Nurse ))
+    | UpdateNurseData ( NurseId, Nurse )
       -- Manage device pairing
     | MsgPageDevice Pages.Device.Model.Msg
     | TryPairingCode String
@@ -452,6 +456,7 @@ type MsgLoggedIn
     | MsgPageWellChildProgressReport WellChildEncounterId Pages.WellChild.ProgressReport.Model.Msg
     | MsgPageNCDProgressReport NCDEncounterId Pages.NCD.ProgressReport.Model.Msg
     | MsgPageChildScoreboardReport ChildScoreboardEncounterId Pages.ChildScoreboard.ProgressReport.Model.Msg
+    | MsgPageTuberculosisProgressReport TuberculosisEncounterId Pages.Tuberculosis.ProgressReport.Model.Msg
     | MsgPageAcuteIllnessOutcome IndividualEncounterParticipantId Pages.AcuteIllness.Outcome.Model.Msg
     | MsgPageTraceContact AcuteIllnessTraceContactId Pages.TraceContact.Model.Msg
     | MsgPageClinicalProgressReport PrenatalEncounterId Pages.Prenatal.ProgressReport.Model.Msg

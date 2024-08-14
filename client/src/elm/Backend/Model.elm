@@ -44,7 +44,6 @@ import Backend.Person.Model exposing (Initiator, PatchPersonInitator, Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter, PrenatalEncounterPostCreateDestination)
 import Backend.Relationship.Model exposing (MyRelationship, Relationship)
-import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (EditableSession, ExpectedParticipants, Session)
 import Backend.StockUpdate.Model exposing (StockManagementData)
@@ -105,7 +104,6 @@ type alias ModelIndexedDb =
     , traceContactRequests : Dict AcuteIllnessTraceContactId Backend.TraceContact.Model.Model
     , nurseRequests : Dict NurseId Backend.Nurse.Model.Model
     , resilienceSurveyRequests : Dict NurseId Backend.ResilienceSurvey.Model.Model
-    , resilienceMessageRequests : Dict NurseId Backend.ResilienceMessage.Model.Model
     , stockUpdateRequests : Dict NurseId Backend.StockUpdate.Model.Model
     , educationSessionRequests : Dict EducationSessionId Backend.EducationSession.Model.Model
 
@@ -177,7 +175,6 @@ type alias ModelIndexedDb =
 
     -- Resilience.
     , resilienceSurveysByNurse : Dict NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
-    , resilienceMessagesByNurse : Dict NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
 
     -- Stock Management.
     , stockUpdates : WebData (Dict StockUpdateId StockUpdate)
@@ -266,7 +263,6 @@ emptyModelIndexedDb =
     , individualEncounterParticipantRequests = Dict.empty
     , nurseRequests = Dict.empty
     , resilienceSurveyRequests = Dict.empty
-    , resilienceMessageRequests = Dict.empty
     , stockUpdateRequests = Dict.empty
     , individualParticipants = Dict.empty
     , individualParticipantsByPerson = Dict.empty
@@ -278,7 +274,6 @@ emptyModelIndexedDb =
     , computedDashboards = Dict.empty
     , computedDashboardLastFetched = Time.millisToPosix 0
     , resilienceSurveysByNurse = Dict.empty
-    , resilienceMessagesByNurse = Dict.empty
     , stockUpdates = NotAsked
     , educationSessionsByPerson = Dict.empty
     , postPerson = NotAsked
@@ -386,7 +381,6 @@ type MsgIndexedDb
     | FetchPrenatalEncountersForParticipants (List IndividualEncounterParticipantId)
     | FetchPrenatalMeasurements PrenatalEncounterId
     | FetchRelationshipsForPerson PersonId
-    | FetchResilienceMessagesForNurse NurseId
     | FetchResilienceSurveysForNurse NurseId
     | FetchSession SessionId
     | FetchSessionsByClinic ClinicId
@@ -460,7 +454,6 @@ type MsgIndexedDb
     | HandleFetchedPrenatalEncountersForParticipants (WebData (Dict IndividualEncounterParticipantId (Dict PrenatalEncounterId PrenatalEncounter)))
     | HandleFetchedPrenatalMeasurements PrenatalEncounterId (WebData PrenatalMeasurements)
     | HandleFetchedRelationshipsForPerson PersonId (WebData (Dict RelationshipId MyRelationship))
-    | HandleFetchedResilienceMessagesForNurse NurseId (WebData (Dict ResilienceMessageId ResilienceMessage))
     | HandleFetchedResilienceSurveysForNurse NurseId (WebData (Dict ResilienceSurveyId ResilienceSurvey))
     | HandleFetchedSession SessionId (WebData Session)
     | HandleFetchedSessionsByClinic ClinicId (WebData (Dict SessionId Session))
@@ -534,7 +527,6 @@ type MsgIndexedDb
     | MsgIndividualEncounterParticipant IndividualEncounterParticipantId Backend.IndividualEncounterParticipant.Model.Msg
     | MsgNurse NurseId Backend.Nurse.Model.Msg
     | MsgResilienceSurvey NurseId Backend.ResilienceSurvey.Model.Msg
-    | MsgResilienceMessage NurseId Backend.ResilienceMessage.Model.Msg
     | MsgStockUpdate NurseId Backend.StockUpdate.Model.Msg
     | ResetFailedToFetchAuthorities
 
@@ -685,7 +677,6 @@ type Revision
     | PrenatalTetanusImmunisationRevision PrenatalTetanusImmunisationId PrenatalTetanusImmunisation
     | PrenatalUrineDipstickTestRevision PrenatalUrineDipstickTestId PrenatalUrineDipstickTest
     | RelationshipRevision RelationshipId Relationship
-    | ResilienceMessageRevision ResilienceMessageId ResilienceMessage
     | ResilienceSurveyRevision ResilienceSurveyId ResilienceSurvey
     | SendToHCRevision SendToHCId SendToHC
     | SessionRevision SessionId Session

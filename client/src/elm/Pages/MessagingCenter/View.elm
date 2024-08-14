@@ -45,7 +45,7 @@ view language currentTime nurseId nurse db model =
             fromLocalDateTime currentTime
 
         numberOfUnreadMessages =
-            resolveNumberOfUnreadMessages currentTime currentDate nurseId nurse db
+            resolveNumberOfUnreadMessages currentTime currentDate nurse
 
         header =
             div [ class "ui basic head segment" ]
@@ -375,36 +375,94 @@ surveyScoreDialog language =
     Maybe.map
         (\dialogState ->
             let
-                ( scoreText, interpretationFunction ) =
+                ( scoreText, interpretationFunction, additionalMessage ) =
                     case dialogState of
                         QuarterlySurveyScore score ->
                             ( String.fromInt score ++ "/20"
                             , Translate.QuarterlySurveyScoreInterpretation score
+                            , Nothing
                             )
 
-                        AdoptionSurveyScore score ->
-                            ( String.fromInt score ++ "/60"
-                            , Translate.AdoptionSurveyScoreInterpretation score
-                            )
+                        AdoptionSurveyScore scores ->
+                            case scores of
+                                [ first ] ->
+                                    ( String.fromInt first ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation first
+                                    , Nothing
+                                    )
 
-                data =
+                                [ first, second ] ->
+                                    let
+                                        messageContent =
+                                            if first < second then
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressImproving), span [ class "icon-up" ] [] ]
+
+                                            else if first > second then
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressNotImproving), span [ class "icon-down" ] [] ]
+
+                                            else
+                                                [ text (translate language <| Translate.AdoptionSurveyProgressSame) ]
+                                    in
+                                    ( String.fromInt second ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation second
+                                    , Just <| p [ class "message" ] messageContent
+                                    )
+
+                                [ first, second, third ] ->
+                                    let
+                                        message =
+                                            Just <|
+                                                ul [ class "summary" ]
+                                                    [ li [] [ text (translate language (Translate.AdoptionSurveyBaselineScore first)) ]
+                                                    , li [] [ text (translate language (Translate.AdoptionSurvey3MonthScore second)) ]
+                                                    ]
+                                    in
+                                    ( String.fromInt third ++ "/60"
+                                    , Translate.AdoptionSurveyScoreInterpretation third
+                                    , message
+                                    )
+
+                                _ ->
+                                    ( "", Translate.EmptyString, Nothing )
+
+                bottomMessage =
+                    let
+                        interpretation =
+                            p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    in
+                    Maybe.map
+                        (\message ->
+                            div []
+                                [ interpretation
+                                , message
+                                ]
+                        )
+                        additionalMessage
+                        |> Maybe.withDefault interpretation
+
+                dialogData =
                     ( p [ class "score" ] [ text scoreText ]
-                    , p [ class "interpretation" ] [ text <| translate language <| interpretationFunction ]
+                    , bottomMessage
                     , SetSurveyScoreDialogState Nothing
                     )
             in
-            customPopup language False Translate.Continue "survey-score-popup blue" data
+            customPopup language False Translate.Continue "survey-score-popup blue" dialogData
         )
 
 
 viewMessagingCenter : Language -> Time.Posix -> NominalDate -> NominalDate -> NurseId -> Nurse -> ModelIndexedDb -> Model -> Html Msg
-viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model =
+viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse_ db model =
     let
-        messages =
-            resolveInboxMessages currentDate programStartDate nurseId db
+        nurse =
+            -- Genrate full list of messages that are supposed to
+            -- appear at inbox on current date.
+            { nurse_
+                | resilienceMessages =
+                    generateInboxMessages currentDate programStartDate nurse_.resilienceMessages
+            }
 
         ( unread, read ) =
-            Dict.toList messages
+            Dict.toList nurse.resilienceMessages
                 |> List.partition
                     (\( _, message ) ->
                         case message.timeRead of
@@ -438,14 +496,11 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
                         |> List.map viewMessage
             in
             case model.activeTab of
-                TabGuide ->
-                    viewGuide language nurse
-
                 TabUnread ->
                     List.map viewMessage unread
 
                 TabFavorites ->
-                    Dict.toList messages
+                    Dict.toList nurse.resilienceMessages
                         |> List.filter (Tuple.second >> .isFavorite)
                         |> List.map viewMessage
 
@@ -469,7 +524,7 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
         , div [ class "ui report unstackable items" ]
             content
         , viewModal <|
-            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId model.activeTab)
+            Maybe.map (messageOptionsDialog language currentTime currentDate nurseId nurse model.activeTab)
                 model.messageOptionsDialogState
         ]
 
@@ -478,8 +533,7 @@ viewTabs : Language -> Model -> Html Msg
 viewTabs language model =
     let
         allTabs =
-            [ TabGuide
-            , TabUnread
+            [ TabUnread
             , TabFavorites
             , TabGrowth
             , TabConnecting
@@ -580,7 +634,7 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             model.activeTab == TabUnread
 
         messageClickedAction =
-            ResilienceMessageClicked nurseId messageId message updateTimeRead
+            ResilienceMessageClicked messageId nurseId nurse updateTimeRead
 
         sentDate =
             Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
@@ -642,57 +696,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
             ]
             body
         ]
-
-
-viewGuide : Language -> Nurse -> List (Html Msg)
-viewGuide language nurse =
-    [ div [ class "guide" ]
-        [ p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection1Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection1Bullet2 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection2Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection2Bullet2 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection3Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet3 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet4 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet5 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet6 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection3Bullet7 ]
-            ]
-        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection3Note ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection4Title ]
-        , p [] [ text <| translate language Translate.ResilienceGuideSection4Text ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection5Bullet3 ]
-            ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceGuideSection6Title ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet3 ]
-            , li []
-                [ text <| translate language Translate.ResilienceGuideSection6Bullet4
-                , ul []
-                    [ li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet5 ]
-                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet6 ]
-                    , li [] [ text <| translate language Translate.ResilienceGuideSection6Bullet7 ]
-                    ]
-                ]
-            ]
-        , p [ class "title note" ] [ text <| translate language Translate.ResilienceGuideSection6Note ]
-        ]
-    ]
 
 
 viewIntroductionMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
@@ -1073,10 +1076,11 @@ messageOptionsDialog :
     -> Time.Posix
     -> NominalDate
     -> NurseId
+    -> Nurse
     -> MessagingTab
     -> MessageOptionsDialogState
     -> Html Msg
-messageOptionsDialog language currentTime currentDate nurseId tab state =
+messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
     case state of
         MessageOptionsStateMain ( messageId, message ) ->
             let
@@ -1094,7 +1098,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                     in
                     [ button
                         [ class "ui fluid button cyan"
-                        , onClick <| ToggleMessageRead nurseId messageId message isRead
+                        , onClick <| ToggleMessageRead messageId nurseId nurse isRead
                         ]
                         [ img [ src "assets/images/envelope.svg" ] []
                         , text <| translate language <| Translate.ReadToggle isRead
@@ -1104,7 +1108,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                 favoriteUnfavorite =
                     [ button
                         [ class "ui fluid button purple"
-                        , onClick <| ToggleMessageFavorite nurseId messageId message
+                        , onClick <| ToggleMessageFavorite messageId nurseId nurse
                         ]
                         [ img [ src "assets/images/star.svg" ] []
                         , text <| translate language <| Translate.FavoriteToggle message.isFavorite
@@ -1139,7 +1143,7 @@ messageOptionsDialog language currentTime currentDate nurseId tab state =
                 buttonForView hours =
                     button
                         [ class "ui fluid button primary"
-                        , onClick <| ScheduleMessageReminder hours nurseId messageId message
+                        , onClick <| ScheduleMessageReminder hours messageId nurseId nurse
                         ]
                         [ text <| translate language <| Translate.HoursSinglePlural hours
                         ]

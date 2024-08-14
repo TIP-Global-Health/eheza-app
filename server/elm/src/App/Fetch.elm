@@ -2,6 +2,7 @@ module App.Fetch exposing (fetch)
 
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
+import Pages.Reports.Fetch
 import Pages.Scoreboard.Fetch
 
 
@@ -24,11 +25,18 @@ views. more often than that.
 fetch : Model -> List Msg
 fetch model =
     case model.activePage of
-        Menu ->
+        ScoreboardMenu ->
             []
 
         Scoreboard ->
             Pages.Scoreboard.Fetch.fetch model.backend model.scoreboardPage
+                |> List.map (\subMsg -> MsgBackend subMsg)
+
+        ReportsMenu ->
+            []
+
+        Reports ->
+            Pages.Reports.Fetch.fetch model.backend model.reportsPage
                 |> List.map (\subMsg -> MsgBackend subMsg)
 
         NotFound ->

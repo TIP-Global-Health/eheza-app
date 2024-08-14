@@ -4092,6 +4092,9 @@ tuberculosisPrescribedMedicationToString sign =
         MedicationOther ->
             "other"
 
+        TuberculosisMedicationsNotChanged ->
+            "not-changed"
+
         NoTuberculosisPrescribedMedications ->
             "none"
 
@@ -4107,6 +4110,9 @@ tuberculosisPrescribedMedicationFromString sign =
 
         "other" ->
             Just MedicationOther
+
+        "not-changed" ->
+            Just TuberculosisMedicationsNotChanged
 
         "none" ->
             Just NoTuberculosisPrescribedMedications
