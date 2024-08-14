@@ -7,18 +7,23 @@ import Backend.Measurement.Model
     exposing
         ( AcuteIllnessMeasurements
         , ChildMeasurementList
+        , ChildScoreboardMeasurements
         , FollowUpMeasurements
+        , HIVMeasurements
         , HomeVisitMeasurements
         , MotherMeasurementList
+        , NCDMeasurements
         , NutritionMeasurements
         , PrenatalMeasurements
+        , StockManagementMeasurements
+        , TuberculosisMeasurements
         , WellChildMeasurements
         )
 import Backend.Model exposing (..)
 import EverySet exposing (EverySet)
-import Json.Encode exposing (object)
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (applyBackendUrl, toCmd, toEntityUuid, withoutDecoder)
+import Restful.Endpoint exposing (applyBackendUrl, toCmd, withoutDecoder)
+import SyncManager.Model exposing (SiteFeature(..))
 
 
 sw : Restful.Endpoint.CrudOperations w e k v c p
@@ -129,6 +134,66 @@ mapWellChildMeasurements id func model =
             model
 
 
+mapNCDMeasurements : Maybe NCDEncounterId -> (NCDMeasurements -> NCDMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapNCDMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | ncdMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.ncdMeasurements }
+
+        Nothing ->
+            model
+
+
+mapChildScoreboardMeasurements : Maybe ChildScoreboardEncounterId -> (ChildScoreboardMeasurements -> ChildScoreboardMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapChildScoreboardMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | childScoreboardMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.childScoreboardMeasurements }
+
+        Nothing ->
+            model
+
+
+mapTuberculosisMeasurements : Maybe TuberculosisEncounterId -> (TuberculosisMeasurements -> TuberculosisMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapTuberculosisMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | tuberculosisMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.tuberculosisMeasurements }
+
+        Nothing ->
+            model
+
+
+mapHIVMeasurements : Maybe HIVEncounterId -> (HIVMeasurements -> HIVMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapHIVMeasurements id func model =
+    case id of
+        Just encounterId ->
+            { model | hivMeasurements = Dict.update encounterId (Maybe.map (RemoteData.map func)) model.hivMeasurements }
+
+        Nothing ->
+            model
+
+
+mapStockManagementMeasurements : Maybe HealthCenterId -> (StockManagementMeasurements -> StockManagementMeasurements) -> ModelIndexedDb -> ModelIndexedDb
+mapStockManagementMeasurements id func model =
+    case id of
+        Just healthCenterId ->
+            let
+                mapped =
+                    Dict.get healthCenterId model.stockManagementMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (\measurements ->
+                                Dict.insert healthCenterId (func measurements |> Success) model.stockManagementMeasurements
+                            )
+                        |> Maybe.withDefault model.stockManagementMeasurements
+            in
+            { model | stockManagementMeasurements = mapped }
+
+        Nothing ->
+            model
+
+
 saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedValue endpoint handleSavedMsg =
     let
         measurement =
@@ -200,3 +265,37 @@ everySetsEqual set1 set2 =
                 |> EverySet.size
     in
     (size1 == size2) && (size1 == sizeIntersect)
+
+
+
+-- FEATURES ON/OFF
+
+
+ncdaEnabled : EverySet SiteFeature -> Bool
+ncdaEnabled =
+    EverySet.member FeatureNCDA
+
+
+reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
+reportToWhatsAppEnabled =
+    EverySet.member FeatureReportToWhatsApp
+
+
+stockManagementEnabled : EverySet SiteFeature -> Bool
+stockManagementEnabled =
+    EverySet.member FeatureStockManagement
+
+
+tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
+tuberculosisManagementEnabled =
+    EverySet.member FeatureTuberculosisManagement
+
+
+groupEducationEnabled : EverySet SiteFeature -> Bool
+groupEducationEnabled =
+    EverySet.member FeatureGroupEducation
+
+
+hivManagementEnabled : EverySet SiteFeature -> Bool
+hivManagementEnabled =
+    EverySet.member FeatureHIVManagement

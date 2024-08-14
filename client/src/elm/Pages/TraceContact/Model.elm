@@ -1,9 +1,8 @@
 module Pages.TraceContact.Model exposing (..)
 
-import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ContactTraceItem, SymptomsGISign, SymptomsGeneralSign, SymptomsRespiratorySign)
 import EverySet exposing (EverySet)
-import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask)
 import Pages.Page exposing (Page)
 
 

@@ -4,22 +4,31 @@ module Backend.Dashboard.Model exposing (..)
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis, AcuteIllnessEncounterType)
+import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (VillageId)
 import Backend.IndividualEncounterParticipant.Model exposing (DeliveryLocation, IndividualEncounterParticipantOutcome)
 import Backend.Measurement.Model
     exposing
         ( Call114Sign
+        , ChildNutritionSign
         , DangerSign
         , FamilyPlanningSign
-        , FollowUpMeasurements
         , Gender
         , HCContactSign
         , HCRecommendation
         , IsolationSign
+        , MedicalCondition
         , Recommendation114
         , SendToHCSign
+        , TestExecutionNote
+        , TestResult
         )
+import Backend.NCDEncounter.Types exposing (NCDDiagnosis)
+import Backend.NutritionEncounter.Model exposing (NutritionEncounterType)
+import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
+import Backend.WellChildEncounter.Model exposing (EncounterWarning, WellChildEncounterType)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 
@@ -28,9 +37,21 @@ type alias AssembledData =
     { stats : DashboardStats
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
-    , caseManagementData : Maybe FollowUpMeasurements
+    , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
     , nutritionPageData : NutritionPageData
+    , groupEducationData : List EducationSessionData
+    , healthCenterVillages : List VillageId
+    , patientsDetails : Dict PersonIdentifier PatientDetails
     }
+
+
+
+-- type alias GroupEducationData =
 
 
 type alias NutritionPageData =
@@ -58,7 +79,15 @@ type alias DashboardStatsRaw =
     , totalEncounters : TotalEncountersData
     , acuteIllnessData : List AcuteIllnessDataItem
     , prenatalData : List PrenatalDataItem
+    , ncdData : List NCDDataItem
+    , pmtctData : List PMTCTDataItem
+    , spvData : List SPVDataItem
+    , childScoreboardData : List ChildScoreboardDataItem
+    , nutritionIndividualData : List NutritionIndividualDataItem
+    , nutritionGroupData : List NutritionGroupDataItem
+    , groupEducationData : Dict VillageId (List EducationSessionData)
     , villagesWithResidents : Dict VillageId (List PersonIdentifier)
+    , patientsDetails : Dict PersonIdentifier PatientDetails
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
@@ -78,7 +107,15 @@ emptyModel =
     , totalEncounters = TotalEncountersData Dict.empty Dict.empty
     , acuteIllnessData = []
     , prenatalData = []
+    , ncdData = []
+    , pmtctData = []
+    , spvData = []
+    , childScoreboardData = []
+    , nutritionIndividualData = []
+    , nutritionGroupData = []
+    , groupEducationData = Dict.empty
     , villagesWithResidents = Dict.empty
+    , patientsDetails = Dict.empty
     , timestamp = ""
     , cacheHash = ""
     }
@@ -91,7 +128,6 @@ type alias DashboardStats =
     , familyPlanning : List FamilyPlanningStats
     , missedSessions : List ParticipantStats
     , totalEncounters : TotalEncountersData
-    , villagesWithResidents : Dict VillageId (List PersonIdentifier)
 
     -- UTC Date and time on which statistics were generated.
     , timestamp : String
@@ -116,7 +152,6 @@ type alias CaseManagementData =
 
 type alias CaseManagement =
     { identifier : PersonIdentifier
-    , name : String
     , birthDate : NominalDate
     , gender : Gender
     , nutrition : CaseNutrition
@@ -150,9 +185,7 @@ type alias ChildrenBeneficiariesStats =
     , gender : Gender
     , birthDate : NominalDate
     , memberSince : NominalDate
-    , name : String
-    , motherName : String
-    , phoneNumber : Maybe String
+    , motherIdentifier : Maybe PersonIdentifier
     , graduationDate : NominalDate
     }
 
@@ -164,11 +197,10 @@ type alias FamilyPlanningStats =
 
 
 type alias ParticipantStats =
-    { name : String
+    { identifier : PersonIdentifier
     , gender : Gender
     , birthDate : NominalDate
-    , motherName : String
-    , phoneNumber : Maybe String
+    , motherIdentifier : Maybe PersonIdentifier
     , expectedDate : NominalDate
     }
 
@@ -256,13 +288,18 @@ type alias PrenatalDataItem =
 
 type alias PrenatalEncounterDataItem =
     { startDate : NominalDate
+    , encounterType : PrenatalEncounterType
     , dangerSigns : EverySet DangerSign
+    , diagnoses : EverySet PrenatalDiagnosis
+    , muac : Maybe Float
+    , sendToHCSigns : EverySet SendToHCSign
     }
 
 
 type alias AcuteIllnessDataItem =
     { identifier : PersonIdentifier
     , created : NominalDate
+    , birthDate : NominalDate
     , diagnosis : AcuteIllnessDiagnosis
     , dateConcluded : Maybe NominalDate
     , outcome : Maybe IndividualEncounterParticipantOutcome
@@ -272,7 +309,9 @@ type alias AcuteIllnessDataItem =
 
 type alias AcuteIllnessEncounterDataItem =
     { startDate : NominalDate
+    , encounterType : AcuteIllnessEncounterType
     , sequenceNumber : Int
+    , ageInMonths : Int
     , diagnosis : AcuteIllnessDiagnosis
     , feverRecorded : Bool
     , isolationSigns : EverySet IsolationSign
@@ -281,4 +320,147 @@ type alias AcuteIllnessEncounterDataItem =
     , recommendation114 : EverySet Recommendation114
     , hcContactSigns : EverySet HCContactSign
     , hcRecommendation : EverySet HCRecommendation
+    }
+
+
+type alias NCDDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , encounters : List NCDEncounterDataItem
+    }
+
+
+type alias NCDEncounterDataItem =
+    { startDate : NominalDate
+    , diagnoses : EverySet NCDDiagnosis
+    , medicalConditions : EverySet MedicalCondition
+    , coMorbidities : EverySet MedicalCondition
+    , hivTestResult : Maybe TestResult
+    , hivTestExecutionNote : Maybe TestExecutionNote
+    }
+
+
+type alias PMTCTDataItem =
+    { identifier : PersonIdentifier
+    , startDate : NominalDate
+    , endDate : NominalDate
+    }
+
+
+type alias SPVDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , gender : Gender
+    , encounters : List SPVEncounterDataItem
+    }
+
+
+type alias SPVEncounterDataItem =
+    { startDate : NominalDate
+    , encounterType : WellChildEncounterType
+    , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
+    , hpvImminizationDates : EverySet NominalDate
+    }
+
+
+type alias ChildScoreboardDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , gender : Gender
+    , encounters : List ChildScoreboardEncounterDataItem
+    }
+
+
+type alias ChildScoreboardEncounterDataItem =
+    { startDate : NominalDate
+    , bcgImminizationDates : EverySet NominalDate
+    , opvImminizationDates : EverySet NominalDate
+    , dtpImminizationDates : EverySet NominalDate
+    , dtpStandaloneImminizationDates : EverySet NominalDate
+    , pcv13ImminizationDates : EverySet NominalDate
+    , rotarixImminizationDates : EverySet NominalDate
+    , ipvImminizationDates : EverySet NominalDate
+    , mrImminizationDates : EverySet NominalDate
+    }
+
+
+type alias NutritionIndividualDataItem =
+    { identifier : PersonIdentifier
+    , created : NominalDate
+    , birthDate : NominalDate
+    , encounters : List NutritionIndividualEncounterDataItem
+    }
+
+
+type alias NutritionIndividualEncounterDataItem =
+    { startDate : NominalDate
+    , encounterType : NutritionEncounterType
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias NutritionGroupDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionGroupEncounterDataItem
+    }
+
+
+type alias NutritionGroupEncounterDataItem =
+    { startDate : NominalDate
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias NutritionDataItem =
+    { identifier : PersonIdentifier
+    , encounters : List NutritionEncounterDataItem
+    }
+
+
+type alias NutritionEncounterDataItem =
+    { startDate : NominalDate
+    , warnings : EverySet EncounterWarning
+    , zscoreStunting : Maybe Float
+    , zscoreUnderweight : Maybe Float
+    , zscoreWasting : Maybe Float
+    , muac : Maybe Float
+    , nutritionSigns : EverySet ChildNutritionSign
+    }
+
+
+type alias PatientDetails =
+    { name : String
+    , gender : Gender
+    , phoneNumber : Maybe String
+    }
+
+
+type alias EducationSessionData =
+    { startDate : NominalDate
+    , topics : EverySet EducationTopic
+    , participants : EverySet PersonIdentifier
     }

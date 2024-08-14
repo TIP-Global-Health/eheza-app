@@ -1,6 +1,6 @@
 module Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
 
-import Activity.Model exposing (ChildActivity(..), MotherActivity(..))
+import Activity.Model exposing (ChildActivity, MotherActivity)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (resolvePreviousValuesSetForChild)
@@ -15,6 +15,7 @@ import Measurement.Utils exposing (getChildForm, getMotherForm)
 import Measurement.View
 import Pages.Activity.Model exposing (..)
 import Pages.Session.Model
+import SyncManager.Model exposing (Site)
 import Translate exposing (Language)
 import ZScore.Model
 
@@ -26,6 +27,7 @@ this could be built on more generically, but this will do for now.
 viewChildMeasurements :
     Language
     -> NominalDate
+    -> Site
     -> ZScore.Model.Model
     -> Bool
     -> ModelIndexedDb
@@ -34,10 +36,10 @@ viewChildMeasurements :
     -> Pages.Session.Model.Model
     -> EditableSession
     -> Html (Msg PersonId Measurement.Model.MsgChild)
-viewChildMeasurements language currentDate zscores isChw db childId activity pages session =
+viewChildMeasurements language currentDate site zscores isChw db childId activity pages session =
     let
         form =
-            getChildForm childId pages session
+            getChildForm site childId pages session
     in
     getChildMeasurementData childId session
         |> LocalData.unwrap
@@ -46,16 +48,16 @@ viewChildMeasurements language currentDate zscores isChw db childId activity pag
                 getChild childId session.offlineSession
                     |> Maybe.map
                         (\child ->
-                            resolvePreviousValuesSetForChild currentDate childId db
-                                |> Measurement.View.viewChild language currentDate isChw ( childId, child ) activity measurements zscores session db form
+                            resolvePreviousValuesSetForChild currentDate site childId db
+                                |> Measurement.View.viewChild language currentDate site isChw ( childId, child ) activity measurements zscores session db form
                                 |> Html.map MsgMeasurement
                         )
                     |> Maybe.withDefault emptyNode
             )
 
 
-viewMotherMeasurements : Language -> NominalDate -> PersonId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgMother)
-viewMotherMeasurements language currentDate motherId activity pages session =
+viewMotherMeasurements : Language -> NominalDate -> Site -> PersonId -> MotherActivity -> Pages.Session.Model.Model -> EditableSession -> Html (Msg PersonId Measurement.Model.MsgMother)
+viewMotherMeasurements language currentDate site motherId activity pages session =
     let
         form =
             getMotherForm motherId pages session

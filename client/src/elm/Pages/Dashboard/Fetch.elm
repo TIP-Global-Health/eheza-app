@@ -12,7 +12,7 @@ fetch : NominalDate -> HealthCenterId -> ModelIndexedDb -> Model -> List MsgInde
 fetch currentDate healthCenterId db model =
     [ FetchVillages, FetchComputedDashboard healthCenterId ]
         ++ (if isJust model.selectedVillageFilter then
-                Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId db
+                Pages.GlobalCaseManagement.Fetch.fetch currentDate healthCenterId model.selectedVillageFilter db
 
             else
                 []

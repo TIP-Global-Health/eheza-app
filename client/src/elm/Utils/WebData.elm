@@ -1,9 +1,11 @@
 module Utils.WebData exposing
-    ( isNetworkError
+    ( decodeDrupalError
+    , isNetworkError
     , resetError
     , resetSuccess
     , sendWithHandler
     , viewError
+    , viewErrorForRollbar
     , viewWebData
     , whenNotAsked
     )
@@ -15,6 +17,7 @@ import HttpBuilder exposing (..)
 import Json.Decode exposing (Decoder, field)
 import RemoteData exposing (RemoteData(..), WebData)
 import Translate exposing (Language, translate)
+import Translate.Model
 import Utils.Html exposing (spinner)
 
 
@@ -70,6 +73,34 @@ viewError language error =
                 , p [] [ text response.status.message ]
                 , p [] [ text decodedBody ]
                 ]
+
+
+viewErrorForRollbar : Http.Error -> String
+viewErrorForRollbar error =
+    case error of
+        Http.BadUrl url ->
+            "Http.BadUrl: " ++ url
+
+        Http.BadPayload message _ ->
+            "Http.BadPayload: " ++ message
+
+        Http.NetworkError ->
+            "Http.NetworkError"
+
+        Http.Timeout ->
+            "Http.Timeout"
+
+        Http.BadStatus response ->
+            let
+                decodedBody =
+                    case Json.Decode.decodeString decodeDrupalError response.body of
+                        Ok decoded ->
+                            decoded.title
+
+                        Err err ->
+                            response.body
+            in
+            "Http.BadStatus - message: " ++ response.status.message ++ ", body: " ++ decodedBody
 
 
 {-| Return `Just msg` if we're `NotAsked`, otherwise `Nothing`. Sort of the

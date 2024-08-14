@@ -75,38 +75,20 @@ function hedley_person_menu() {
     'description' => 'Import participants form spreadsheet on Google Drive',
     'page callback' => 'drupal_get_form',
     'page arguments' => ['hedley_person_import_form'],
-    'access callback' => 'hedley_person_import_form_access',
+    'access callback' => 'hedley_admin_administrators_access',
+    'weight' => 1,
   ];
 
   return $items;
 }
 
 /**
- * Determines if the user may perform patients import. Only Admins are allowed.
- *
- * @return bool
- *   TRUE if allowed, FALSE otherwise.
- */
-function hedley_person_import_form_access() {
-  global $user;
-
-  // Always give access to the admin user.
-  if ($user->uid == 1) {
-    return TRUE;
-  }
-
-  $admin_role = user_role_load_by_name('administrator');
-
-  return user_has_role($admin_role->rid);
-}
-
-/**
  * Patients import form. Form content changes based on step we're at.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -131,9 +113,9 @@ function hedley_person_import_form(array $form, array &$form_state) {
  * Presents input for Google spreadsheet ID, with patients data.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -183,9 +165,9 @@ function hedley_person_get_data(array $form, array $form_state) {
  * Presents summary of fetched CSV, and asks for confirmation to proceed.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -223,9 +205,9 @@ function hedley_person_confirmation(array $form, array $form_state) {
  * Presents summary for result of performed import.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   Form array.
@@ -256,9 +238,9 @@ function hedley_person_summary(array $form, array $form_state) {
  * - If there're no errors, forwards form to 'Confirmation' step.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_import_get_data(array $form, array &$form_state) {
   $spreadsheet_id = $form['spreadsheet_id']['#value'];
@@ -359,9 +341,9 @@ function hedley_person_import_get_data(array $form, array &$form_state) {
  * Creates BATCH operation that performs import of patients.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_execute_import(array $form, array &$form_state) {
   $patient_type = $form_state['storage']['$patient_type'];
@@ -459,9 +441,9 @@ function hedley_person_execute_batch_import($patient_type, array $lines, array &
  * Used for confirmation decline ('No' button), and summary 'Ok' submit.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  */
 function hedley_person_reset_form(array $form, array &$form_state) {
   $form_state['storage'] = [];
@@ -585,7 +567,7 @@ function hedley_person_validate_patient_fields($patient_type, array $values, arr
   }
 
   // Ubudehe.
-  if (!in_array(strtolower($ubudehe), ['1', '2', '3', '4'])) {
+  if (!in_array(strtolower($ubudehe), ['1', '2', '3', '4', '0'])) {
     $errors[] = "Ubudehe: Invalid value - $ubudehe";
   }
 
@@ -845,6 +827,9 @@ function hedley_person_import_patient($patient_type, array $values) {
 
     // Try to create relationship with parent/caregiver.
     $relation = strtolower(trim($values[HEDLEY_PERSON_COLUMN_CHILD_RELATION]));
+    if (empty($relation)) {
+      return "Import was successful, but relationship was not set, and therefore, not created.";
+    }
 
     // Resolve parent/caregiver.
     $adult_national_id = trim($values[HEDLEY_PERSON_COLUMN_CHILD_MOTHER_NATIONAL_ID]);
@@ -1130,9 +1115,9 @@ function hedley_person_resolve_person_by_national_id($national_id) {
  * Import form AJAX callback.
  *
  * @param array $form
- *   Form API form.
+ *   The form being processed.
  * @param array $form_state
- *   Form API form.
+ *   The form state.
  *
  * @return array
  *   The form.
@@ -1176,14 +1161,26 @@ function hedley_person_node_presave($node) {
     return;
   }
 
-  // We don't make the check for newly created nodes.
+  // We don't make the checks for newly created nodes, because
+  // node label is set by auto-label setting on creation, and
+  // new person can't be created with 'deleted = TRUE'.
   if (empty($node->nid)) {
     return;
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-  $deleted = $wrapper->field_deleted->value();
 
+  // Set node label.
+  $first_name = $wrapper->field_first_name->value();
+  $second_name = $wrapper->field_second_name->value();
+
+  if (!empty($first_name) || !empty($second_name)) {
+    $title = empty($first_name) ? $second_name : "$second_name $first_name";
+    $wrapper->title->set($title);
+  }
+
+  // If being deleted, verify person got no measurements.
+  $deleted = $wrapper->field_deleted->value();
   if (!isset($deleted) || $deleted === FALSE) {
     return;
   }
@@ -1314,50 +1311,50 @@ function hedley_person_process_deleted_update($node) {
 /**
  * Resolves all pmtct_participant nodes IDs for person.
  *
- * @param int $nid
+ * @param int $person_id
  *   Child node ID.
  *
  * @return array
  *   List of pmtct_participant nodes IDs.
  */
-function hedley_person_pmtct_participants_for_person($nid) {
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
+function hedley_person_pmtct_participants_for_person($person_id) {
+  $association_fields = [
+    'field_person',
+    'field_adult',
+  ];
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
-  $query->condition('n.type', 'pmtct_participant');
+  $ids = [];
+  foreach ($entries as $entry) {
+    if ($entry->bundle == 'pmtct_participant') {
+      $ids[] = $entry->entity_id;
+    }
+  }
 
-  $person_or = db_or();
-  $person_or->condition('p.field_person_target_id', $nid);
-  $person_or->condition('a.field_adult_target_id', $nid);
-  $query->condition($person_or);
-
-  $query->addField('n', 'nid');
-
-  return $query->execute()->fetchCol();
+  return $ids;
 }
 
 /**
- * Resolves person individual_participant nodes IDs, for given encounter type.
+ * Resolves person individual_participant nodes IDs, for given encounter types.
  *
  * @param int $nid
  *   Person node ID.
- * @param string $type
- *   Encounter type.
+ * @param array $types
+ *   Encounter types.
  * @param string $order
  *   Sorting order.
  *
  * @return array
- *   List of individual_participant nodes IDs.
+ *   List of individual participant nodes IDs.
  */
-function hedley_person_individual_participants_for_person($nid, $type, $order = 'ASC') {
+function hedley_person_individual_participants_for_person($nid, array $types, $order = 'ASC') {
   $query = db_select('node', 'n');
   $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
   $query->leftJoin('field_data_field_encounter_type', 'et', 'et.entity_id = p.entity_id');
 
   $query->condition('n.type', 'individual_participant');
 
-  $query->condition('et.field_encounter_type_value', $type);
+  $query->condition('et.field_encounter_type_value', $types, 'IN');
   $query->condition('p.field_person_target_id', $nid);
   $query->addField('n', 'nid');
   $query->orderBy('n.nid', $order);
@@ -1391,32 +1388,60 @@ function hedley_person_encounters_for_individual_participant($nid) {
  *   - Individual Participants.
  *   - Relationships.
  *
- * @param int $nid
+ * @param int $person_id
  *   Child node ID.
  *
  * @return array
- *   List of nodes IDs to be marked as deleted..
+ *   List of nodes IDs to be marked as deleted.
  */
-function hedley_person_content_affected_by_deletion($nid) {
-  $query = db_select('node', 'n');
-  $query->join('field_data_field_person', 'p', 'p.entity_id = n.nid');
-  $query->leftJoin('field_data_field_adult', 'a', 'a.entity_id = n.nid');
-  $query->leftJoin('field_data_field_related_to', 'rt', 'rt.entity_id = n.nid');
-
-  $person_or = db_or();
-  $person_or->condition('p.field_person_target_id', $nid);
-  $person_or->condition('a.field_adult_target_id', $nid);
-  $person_or->condition('rt.field_related_to_target_id', $nid);
-  $query->condition($person_or);
+function hedley_person_content_affected_by_deletion($person_id) {
+  $association_fields = [
+    'field_person',
+    'field_adult',
+    'field_related_to',
+  ];
+  $entries = hedley_general_get_person_content_associated_by_fields($person_id, $association_fields);
 
   $bundles = [
     'pmtct_participant',
     'relationship',
     'individual_participant',
   ];
-  $query->condition('n.type', $bundles, 'IN');
 
-  $query->addField('n', 'nid');
+  $ids = [];
+  foreach ($entries as $entry) {
+    if (in_array($entry->bundle, $bundles)) {
+      $ids[] = $entry->entity_id;
+    }
+  }
 
-  return $query->execute()->fetchCol();
+  return $ids;
+}
+
+/**
+ * Get the patient's full name from a node.
+ *
+ * This function retrieves the patient's full name from a given node using
+ * entity metadata wrappers. It first tries to fetch the values of the
+ * 'field_first_name' and 'field_second_name' fields and constructs the full
+ * name using them. If both fields are empty, it uses the node's label as the
+ * patient's name.
+ *
+ * @param object $node
+ *   The node object from which to retrieve the patient's name.
+ *
+ * @return string
+ *   The patient's full name.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_person_get_paitent_name($node) {
+  $wrapper = entity_metadata_wrapper('node', $node);
+  $first_name = trim($wrapper->field_first_name->value());
+  $second_name = trim($wrapper->field_second_name->value());
+  if (empty($first_name) && empty($second_name)) {
+    $second_name = $wrapper->label();
+  }
+
+  return empty($first_name) ? $second_name : "$second_name $first_name";
 }

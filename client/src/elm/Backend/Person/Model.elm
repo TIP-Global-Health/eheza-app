@@ -1,21 +1,4 @@
-module Backend.Person.Model exposing
-    ( EducationLevel(..)
-    , ExpectedAge(..)
-    , ExpectedGender(..)
-    , HIVStatus(..)
-    , Initiator(..)
-    , MaritalStatus(..)
-    , ModeOfDelivery(..)
-    , ParticipantDirectoryOperation(..)
-    , Person
-    , Ubudehe(..)
-    , VaginalDelivery(..)
-    , allEducationLevels
-    , allHivStatuses
-    , allMaritalStatuses
-    , allModesOfDelivery
-    , allUbudehes
-    )
+module Backend.Person.Model exposing (..)
 
 import Backend.Entities exposing (AcuteIllnessEncounterId, HealthCenterId, PersonId, PrenatalEncounterId, SessionId)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
@@ -63,7 +46,6 @@ allHivStatuses : List HIVStatus
 allHivStatuses =
     [ HIVExposedInfant
     , Negative
-    , NegativeDiscordantCouple
     , Positive
     , Unknown
     ]
@@ -95,6 +77,9 @@ type Ubudehe
     | Ubudehe2
     | Ubudehe3
     | Ubudehe4
+      -- Ubudehe is Rwanda specific, so other sites will
+      -- have the field preset to NoUbudehe.
+    | NoUbudehe
 
 
 allUbudehes : List Ubudehe
@@ -114,6 +99,7 @@ type EducationLevel
     | DiplomaProgram
     | HigherEducation
     | AdvancedDiploma
+    | MastersDegree
 
 
 allEducationLevels : List EducationLevel
@@ -133,6 +119,8 @@ type MaritalStatus
     | Married
     | Single
     | Widowed
+    | LivingWithPartner
+    | Religious
 
 
 allMaritalStatuses : List MaritalStatus
@@ -175,3 +163,8 @@ type ExpectedGender
     = ExpectMale
     | ExpectFemale
     | ExpectMaleOrFemale
+
+
+type PatchPersonInitator
+    = InitiatorEditForm
+    | InitiatorProgressReport

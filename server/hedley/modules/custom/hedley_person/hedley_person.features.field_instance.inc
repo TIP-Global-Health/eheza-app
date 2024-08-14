@@ -11,6 +11,303 @@
 function hedley_person_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-nurse-field_birth_date'.
+  $field_instances['node-nurse-field_birth_date'] = array(
+    'bundle' => 'nurse',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_birth_date',
+    'label' => 'Resilience Birth date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 15,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_select',
+      'weight' => 10,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_education_level'.
+  $field_instances['node-nurse-field_education_level'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 11,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_education_level',
+    'label' => 'Resilience Education Level',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_gender'.
+  $field_instances['node-nurse-field_gender'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_gender',
+    'label' => 'Resilience Gender',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_marital_status'.
+  $field_instances['node-nurse-field_marital_status'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 13,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_marital_status',
+    'label' => 'Resilience Marital status',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 14,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_resilience_role'.
+  $field_instances['node-nurse-field_resilience_role'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 9,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_role',
+    'label' => 'Resilience role',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 9,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_resilience_start_date'.
+  $field_instances['node-nurse-field_resilience_start_date'] = array(
+    'bundle' => 'nurse',
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'date',
+        'settings' => array(
+          'custom_date_format' => '',
+          'format_type' => 'long',
+          'fromto' => 'both',
+          'multiple_from' => '',
+          'multiple_number' => '',
+          'multiple_to' => '',
+          'show_remaining_days' => FALSE,
+        ),
+        'type' => 'date_default',
+        'weight' => 8,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_resilience_start_date',
+    'label' => 'Resilience start date',
+    'required' => 0,
+    'settings' => array(
+      'default_value' => 'blank',
+      'default_value2' => 'same',
+      'default_value_code' => '',
+      'default_value_code2' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'date',
+      'settings' => array(
+        'increment' => 1,
+        'input_format' => 'm/d/Y - H:i:s',
+        'input_format_custom' => '',
+        'label_position' => 'above',
+        'no_fieldset' => 0,
+        'text_parts' => array(),
+        'year_range' => '-3:+3',
+      ),
+      'type' => 'date_text',
+      'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance: 'node-nurse-field_ubudehe'.
+  $field_instances['node-nurse-field_ubudehe'] = array(
+    'bundle' => 'nurse',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 12,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ubudehe',
+    'label' => 'Resilience Ubudehe',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 13,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_birth_date'.
   $field_instances['node-person-field_birth_date'] = array(
     'bundle' => 'person',
@@ -44,7 +341,7 @@ function hedley_person_field_default_field_instances() {
     'label' => 'Birth date',
     'required' => 0,
     'settings' => array(
-      'default_value' => 'now',
+      'default_value' => 'blank',
       'default_value2' => 'same',
       'default_value_code' => '',
       'default_value_code2' => '',
@@ -160,7 +457,7 @@ function hedley_person_field_default_field_instances() {
     'description' => '',
     'display' => array(
       'default' => array(
-        'label' => 'above',
+        'label' => 'hidden',
         'module' => 'entityreference',
         'settings' => array(
           'bypass_access' => FALSE,
@@ -231,7 +528,7 @@ function hedley_person_field_default_field_instances() {
         'display_label' => 1,
       ),
       'type' => 'options_onoff',
-      'weight' => 26,
+      'weight' => 27,
     ),
   );
 
@@ -624,6 +921,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_ncda_data'.
+  $field_instances['node-person-field_ncda_data'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 27,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_ncda_data',
+    'label' => 'NCDA Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 23,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_number_of_children'.
   $field_instances['node-person-field_number_of_children'] = array(
     'bundle' => 'person',
@@ -800,6 +1137,46 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-person-field_reports_data'.
+  $field_instances['node-person-field_reports_data'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 28,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reports_data',
+    'label' => 'Reports Data',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 24,
+    ),
+  );
+
   // Exported field_instance: 'node-person-field_second_name'.
   $field_instances['node-person-field_second_name'] = array(
     'bundle' => 'person',
@@ -920,7 +1297,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 25,
+      'weight' => 26,
     ),
   );
 
@@ -997,7 +1374,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 23,
+      'weight' => 25,
     ),
   );
 
@@ -1310,6 +1687,7 @@ function hedley_person_field_default_field_instances() {
   t('How are these persons related?');
   t('Marital status');
   t('Mode of delivery');
+  t('NCDA Data');
   t('National ID number');
   t('Number of children');
   t('Number of children under 5 years old');
@@ -1319,6 +1697,14 @@ function hedley_person_field_default_field_instances() {
   t('Province');
   t('Related by');
   t('Related to');
+  t('Reports Data');
+  t('Resilience Birth date');
+  t('Resilience Education Level');
+  t('Resilience Gender');
+  t('Resilience Marital status');
+  t('Resilience Ubudehe');
+  t('Resilience role');
+  t('Resilience start date');
   t('Second name');
   t('Sector');
   t('Shards');

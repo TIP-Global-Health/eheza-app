@@ -10,7 +10,7 @@ with the other measurements.
 
 -}
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Translate.Model exposing (TranslationSet)
 

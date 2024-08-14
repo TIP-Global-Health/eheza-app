@@ -1,12 +1,6 @@
 module Pages.Activity.Test exposing (all)
 
-import AssocList as Dict
-import Date
 import Expect
-import Fixtures exposing (..)
-import Pages.Activity.Model exposing (emptyModel)
-import Participant.Model
-import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 
 

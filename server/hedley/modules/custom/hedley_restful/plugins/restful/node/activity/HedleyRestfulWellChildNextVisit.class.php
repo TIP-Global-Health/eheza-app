@@ -15,7 +15,9 @@ class HedleyRestfulWellChildNextVisit extends HedleyRestfulWellChildActivityBase
    */
   protected $fields = [
     'field_immunisation_date',
+    'field_asap_immunisation_date',
     'field_pediatric_visit_date',
+    'field_date_concluded',
   ];
 
   /**
@@ -23,7 +25,9 @@ class HedleyRestfulWellChildNextVisit extends HedleyRestfulWellChildActivityBase
    */
   protected $dateFields = [
     'field_immunisation_date',
+    'field_asap_immunisation_date',
     'field_pediatric_visit_date',
+    'field_date_concluded',
   ];
 
 }

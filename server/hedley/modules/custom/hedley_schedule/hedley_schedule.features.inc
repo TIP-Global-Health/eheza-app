@@ -75,6 +75,14 @@ function hedley_schedule_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'ncd_encounter' => array(
+      'name' => t('NCD Encounter'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'nutrition_encounter' => array(
       'name' => t('Nutrition Encounter'),
       'base' => 'node_content',

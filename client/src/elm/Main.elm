@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import App.Model exposing (Flags, Model, Msg)
+import App.Model
 import App.Update
 import App.View
 import Browser

@@ -99,6 +99,14 @@ function hedley_activity_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'group_ncda' => array(
+      'name' => t('Group NCDA'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'group_send_to_hc' => array(
       'name' => t('Group Send to HC'),
       'base' => 'node_content',
@@ -181,6 +189,14 @@ function hedley_activity_node_info() {
     ),
     'nutrition_muac' => array(
       'name' => t('Nutrition MUAC'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'nutrition_ncda' => array(
+      'name' => t('Nutrition NCDA'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

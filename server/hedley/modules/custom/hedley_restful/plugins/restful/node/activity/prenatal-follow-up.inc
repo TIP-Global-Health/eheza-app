@@ -11,7 +11,7 @@ $plugin = array(
   'name' => 'prenatal-follow-up',
   'entity_type' => 'node',
   'bundle' => 'prenatal_follow_up',
-  'description' => t('Exports the PrenatalFollowUp bundle.'),
+  'description' => t('Exports the Prenatal Follow Up bundle.'),
   'class' => 'HedleyRestfulPrenatalFollowUp',
   'authentication_types' => TRUE,
 );

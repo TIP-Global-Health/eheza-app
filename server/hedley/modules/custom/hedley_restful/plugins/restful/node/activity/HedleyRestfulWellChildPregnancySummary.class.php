@@ -13,15 +13,21 @@ class HedleyRestfulWellChildPregnancySummary extends HedleyRestfulWellChildActiv
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
-    'field_delivery_complications',
+  protected $fields = [
+    'field_expected_date_concluded',
+    'field_apgar_one_min',
+    'field_apgar_five_min',
+    'field_weight',
+    'field_height',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
-    'field_expected_date_concluded',
+  protected $multiFields = [
+    'field_pregnancy_summary_signs',
+    'field_delivery_complications',
+    'field_birth_defects',
   ];
 
   /**

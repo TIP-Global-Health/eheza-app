@@ -1,5 +1,5 @@
 module Error.Utils exposing
-    ( decodeError
+    ( decoderError
     , httpError
     , maybeHttpError
     , noError
@@ -43,6 +43,6 @@ plainError module_ location error =
     Just <| Error module_ location (Plain error)
 
 
-decodeError : String -> String -> Json.Decode.Error -> Maybe Error
-decodeError module_ location error =
+decoderError : String -> String -> Json.Decode.Error -> Maybe Error
+decoderError module_ location error =
     Just <| Error module_ location (Decoder error)

@@ -19,3 +19,5 @@ prepare_db_for_dev.sh
 
 # deployment
 .pantheon
+.pantheon-rwanda
+.pantheon-burundi

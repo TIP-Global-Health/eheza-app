@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley Resilience feature.
+ */
+
+include_once 'hedley_resilience.features.inc';

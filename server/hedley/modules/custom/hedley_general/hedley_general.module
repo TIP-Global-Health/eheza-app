@@ -150,38 +150,6 @@ function hedley_general_get_aq_item_by_title($item_title, $all_status = FALSE) {
 }
 
 /**
- * Returns a list of measurements IDs that were taken during certain encounter.
- *
- * @param int $encounter_id
- *   ID of individual encounter.
- * @param string $encounter_type
- *   Type of individual encounter.
- *
- * @return array
- *   List of measurements IDs.
- */
-function hedley_general_get_individual_encounter_measurements($encounter_id, $encounter_type) {
-  $types = [
-    'acute_illness',
-    'nutrition',
-    'prenatal',
-  ];
-
-  if (!in_array($encounter_type, $types)) {
-    return [];
-  }
-
-  $table = "{field_data_field_{$encounter_type}_encounter}";
-  $target_field = "field_{$encounter_type}_encounter_target_id";
-
-  $query = db_select($table, 't');
-  $query->addField('t', 'entity_id');
-  $query->condition($target_field, $encounter_id);
-
-  return $query->execute()->fetchCol();
-}
-
-/**
  * Returns a list of measurements IDs that were taken for certain person.
  *
  * @param int $person_id
@@ -206,6 +174,34 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 }
 
 /**
+ * Resolves all content associated with person using association fields.
+ *
+ * For example, 'field_person' associates all measurements taken for person.
+ *
+ * @param int $person_id
+ *   Node ID of the person.
+ * @param array $fields
+ *   List of association fields.
+ *
+ * @return array
+ *   List of pairs (node ID + bundle) of content associated with person.
+ */
+function hedley_general_get_person_content_associated_by_fields($person_id, array $fields) {
+  $content = [];
+
+  foreach ($fields as $field) {
+    $query = db_select("field_data_$field", 't');
+    $query->addField('t', 'entity_id');
+    $query->addField('t', 'bundle');
+    $query->condition("${field}_target_id", $person_id);
+
+    $content = array_merge($content, $query->execute()->fetchAll());
+  }
+
+  return $content;
+}
+
+/**
  * Returns list of content types that are considered as measurements.
  *
  * We return both group and individual encounters measurements.
@@ -216,30 +212,60 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 function hedley_general_get_measurement_types() {
   $measurement_types = [];
   $content_types = array_keys(node_type_get_types());
+  $encounter_types = hedley_general_get_encounter_types();
+  $measurement_indicator_fields = [];
+  foreach ($encounter_types as $encounter_type) {
+    $measurement_indicator_fields[] = "field_$encounter_type";
+  }
 
-  foreach ($content_types as $type) {
-    $fields = hedley_general_get_content_type_fields($type);
-
-    // Group encounter measurements got the 'session' field.
-    // Individual encounter measurements got encounter type field.
-    $measurement_indicator_fields = [
-      'field_session',
-      'field_nutrition_encounter',
-      'field_prenatal_encounter',
-      'field_acute_illness_encounter',
-      'field_home_visit_encounter',
-      'field_well_child_encounter',
-    ];
+  foreach ($content_types as $content_type) {
+    $fields = hedley_general_get_content_type_fields($content_type);
 
     foreach ($measurement_indicator_fields as $indicator) {
       if (in_array($indicator, $fields)) {
-        $measurement_types[] = $type;
+        $measurement_types[] = $content_type;
         break;
       }
     }
   }
 
   return $measurement_types;
+}
+
+/**
+ * Returns list of content types that are considered as encounters.
+ *
+ * Both group and individual encounters are returned.
+ *
+ * @return array
+ *   List of content types that are considered as encounters.
+ */
+function hedley_general_get_encounter_types() {
+  $types = hedley_general_get_individual_encounter_types();
+  // Session represents group encounter.
+  $types[] = 'session';
+
+  return $types;
+}
+
+/**
+ * Returns a list of individual encounters content type names.
+ *
+ * @return array
+ *   List of individual encounters content type names.
+ */
+function hedley_general_get_individual_encounter_types() {
+  $encounter_types = [];
+  $content_types = array_keys(node_type_get_types());
+
+  // As a convention, name of encounter content type ends with `_encounter`.
+  foreach ($content_types as $type) {
+    if (preg_match('/_encounter$/', $type)) {
+      $encounter_types[] = $type;
+    }
+  }
+
+  return $encounter_types;
 }
 
 /**
@@ -262,7 +288,7 @@ function hedley_general_get_content_type_fields($type) {
 /**
  * Implements hook_query_TAG_alter().
  *
- * Add to a query which to get all entities that have field_deleted set
+ * Adds a condition to select entities that have field_deleted set
  * to False, or not set at all (an indication that entity is not deleted).
  */
 function hedley_general_query_exclude_deleted_alter(QueryAlterableInterface $query) {
@@ -363,6 +389,9 @@ function hedley_general_shard_by_health_center($nid) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $nid);
+  if (!isset($wrapper->field_health_center)) {
+    return FALSE;
+  }
   $shard = $wrapper->field_health_center->getIdentifier();
 
   return !empty($shard) ? $shard : FALSE;
@@ -384,7 +413,121 @@ function hedley_general_shards_by_person($nid) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $nid);
+  if (!isset($wrapper->field_shards)) {
+    return [];
+  }
   $shards = $wrapper->field_shards->value(['identifier' => TRUE]);
 
   return !empty($shards) ? $shards : [];
+}
+
+/**
+ * Implements hook_file_presave().
+ *
+ * If file is saved directly into 'private', sets it's uri and
+ * destination to storage sub folder (storage-MM-YYYY).
+ * Exception are whatsapp screenshots that should remain at public, since
+ * they get deleted after few hours anyway.
+ * We need this, so that photos that are fetched from client get correct
+ * uri for image style into 'deferredPhotos' table, which is used to
+ * download deferred photos during device sync.
+ * The file itself will be moved to storage folder at hook_file_insert().
+ */
+function hedley_general_file_presave($file) {
+  $valid = FALSE;
+  $valid_prefixes = [
+    'image-',
+    'signature-',
+  ];
+  foreach ($valid_prefixes as $prefix) {
+    if (strpos($file->filename, $prefix) === 0) {
+      $valid = TRUE;
+      break;
+    }
+  }
+
+  if (!$valid || $file->uri !== 'private://' . $file->filename) {
+    return;
+  }
+
+  // Generate storages sub-folder name per current date.
+  $target_folder = 'private://storage-' . date('m-Y', time()) . '/';
+  if (!file_prepare_directory($target_folder, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS)) {
+    return;
+  }
+
+  $new_uri = str_replace('private://', $target_folder, $file->uri);
+  $file->uri = $new_uri;
+  $file->destination = $new_uri;
+}
+
+/**
+ * Implements hook_file_insert().
+ *
+ * At hook_file_presave(), file uri is set to storage sub-folder.
+ * If such file is inserted, we move the file from 'private' to
+ * storage sub-folder.
+ */
+function hedley_general_file_insert($file) {
+  $file = file_load($file->fid);
+  if (strstr($file->uri, 'private://storage-') === FALSE) {
+    return;
+  }
+
+  $destination = $file->uri;
+  $file->uri = 'private://' . $file->filename;
+  file_move($file, $destination);
+}
+
+/**
+ * Build Elm application for aggregated NCDA.
+ *
+ * @param string $page
+ *   The page name.
+ * @param array $data
+ *   The data array to be used by Elm application.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_general_build_elm_app($page, array $data) {
+  $path_hedley_general = drupal_get_path('module', 'hedley_general');
+
+  // Add scripts.
+  drupal_add_js($path_hedley_general . '/js/elm-main.js');
+  drupal_add_js($path_hedley_general . '/js/elm.js');
+
+  // Add CSS for all pages.
+  drupal_add_css($path_hedley_general . '/css/elm.css', 'file');
+  drupal_add_css($path_hedley_general . '/css/date-selector.css', 'file');
+
+  if (in_array($page, ['ncda-results', 'reports-results'])) {
+    // Add CSS for results pages.
+    $path_system = drupal_get_path('module', 'system');
+    drupal_add_css($path_system . '/system.base.css', 'file');
+    drupal_add_css($path_system . '/system.menus.css', 'file');
+    $default_theme = variable_get('theme_default', 'bartik');
+    $path_theme = drupal_get_path('theme', $default_theme);
+    drupal_add_css($path_theme . '/css/style.css', 'file');
+    drupal_add_css($path_theme . '/css/layout.css', 'file');
+    drupal_add_css($path_theme . '/css/colors.css', 'file');
+  }
+
+  // Getting a unique ID for the app.
+  $app_id = drupal_html_id('elm-app');
+
+  // Add settings.
+  $settings = [
+    'elm_apps' => [
+      $app_id => [
+        'page' => $page,
+        'data' => $data,
+        'theme_path' => $path_hedley_general,
+      ],
+    ],
+  ];
+  drupal_add_js($settings, 'setting');
+
+  // Return the HTML markup for the Elm application.
+  return '<div id="' . $app_id . '"></div>';
 }

@@ -26,7 +26,7 @@ projects[composer_manager][subdir] = "contrib"
 projects[composer_manager][version] = "1.8"
 
 projects[date][subdir] = "contrib"
-projects[date][version] = "2.11-beta3"
+projects[date][version] = "2.13"
 
 projects[diff][subdir] = "contrib"
 projects[diff][version] = "3.2"
@@ -42,6 +42,7 @@ projects[entitycache][version] = 1.2
 
 projects[entityreference][subdir] = "contrib"
 projects[entityreference][version] = "1.5"
+projects[entityreference][patch][] = "https://gist.githubusercontent.com/AronNovak/28c7ea79823db3da7cf3ee77c4799577/raw/4cf996dbf56486f5d36eff5105646e31402625fa/entityreference-devel-generate-speedup.patch"
 
 projects[entity_validator][subdir] = "contrib"
 projects[entity_validator][version] = "1.2"
@@ -84,7 +85,7 @@ projects[module_filter][subdir] = "contrib"
 projects[module_filter][version] = 2.2
 
 projects[og][subdir] = "contrib"
-projects[og][version] = 2.x
+projects[og][version] = 2.11
 
 projects[prepopulate][subdir] = "contrib"
 projects[prepopulate][version] = 2.1
@@ -106,13 +107,13 @@ projects[strongarm][subdir] = "contrib"
 projects[strongarm][version] = "2.0"
 
 projects[title][subdir] = "contrib"
-projects[title][version] = "1.0-alpha9"
+projects[title][version] = "1.0-beta4"
 
 projects[token][subdir] = "contrib"
 projects[token][version] = "1.7"
 
 projects[views][subdir] = "contrib"
-projects[views][version] = "3.22"
+projects[views][version] = "3.27"
 
 projects[views_bulk_operations][subdir] = "contrib"
 projects[views_bulk_operations][version] = "3.5"

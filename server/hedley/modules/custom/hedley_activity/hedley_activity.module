@@ -8,6 +8,7 @@
 include_once 'hedley_activity.features.inc';
 
 define('HEDLEY_ACTIVITY_NUTRITION_ENCOUNTER_CONTENT_TYPE', 'nutrition_encounter');
+define('HEDLEY_ACTIVITY_HOME_VISIT_ENCOUNTER_CONTENT_TYPE', 'home_visit_encounter');
 define('HEDLEY_ACTIVITY_ATTENDANCE_CONTENT_TYPE', 'attendance');
 define('HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE', 'family_planning');
 define('HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE', 'photo');
@@ -33,8 +34,48 @@ define('HEDLEY_ACTIVITY_ISOLATION_CONTENT_TYPE', 'isolation');
 define('HEDLEY_ACTIVITY_CALL_114_CONTENT_TYPE', 'call_114');
 define('HEDLEY_ACTIVITY_HC_CONTAC_CONTENT_TYPE', 'hc_contact');
 define('HEDLEY_ACTIVITY_DANGER_SIGNS_CONTENT_TYPE', 'danger_signs');
+define('HEDLEY_ACTIVITY_PRENATAL_REFERRAL_CONTENT_TYPE', 'prenatal_send_to_hc');
+define('HEDLEY_ACTIVITY_PRENATAL_NUTRITION_CONTENT_TYPE', 'prenatal_nutrition');
 define('HEDLEY_ACTIVITY_WELL_CHILD_HEAD_CIRCUMFERENCE_CONTENT_TYPE', 'well_child_head_circumference');
-
+define('HEDLEY_ACTIVITY_PERSON_CONTENT_TYPE', 'person');
+define('HEDLEY_ACTIVITY_GROUP_NCDA_CONTENT_TYPE', 'group_ncda');
+define('HEDLEY_ACTIVITY_NUTRITION_NCDA_CONTENT_TYPE', 'nutrition_ncda');
+define('HEDLEY_ACTIVITY_WELL_CHILD_ENCOUNTER_CONTENT_TYPE', 'well_child_encounter');
+define('HEDLEY_ACTIVITY_WELL_CHILD_NCDA_CONTENT_TYPE', 'well_child_ncda');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_NCDA_CONTENT_TYPE', 'child_scoreboard_ncda');
+define('HEDLEY_ACTIVITY_WELL_CHILD_PREGNANCY_SUMMARY_CONTENT_TYPE', 'well_child_pregnancy_summary');
+define('HEDLEY_ACTIVITY_CHILD_FBF_CONTENT_TYPE', 'child_fbf');
+define('HEDLEY_ACTIVITY_GROUP_SEND_TO_HC_CONTENT_TYPE', 'group_send_to_hc');
+define('HEDLEY_ACTIVITY_NUTRITION_SEND_TO_HC_CONTENT_TYPE', 'nutrition_send_to_hc');
+define('HEDLEY_ACTIVITY_WELL_CHILD_SEND_TO_HC_CONTENT_TYPE', 'well_child_send_to_hc');
+define('HEDLEY_ACTIVITY_MEDICATION_DISTRIBUTION_CONTENT_TYPE', 'medication_distribution');
+define('HEDLEY_ACTIVITY_WELL_CHILD_MEBENDEZOLE_CONTENT_TYPE', 'well_child_mebendezole');
+define('HEDLEY_ACTIVITY_WELL_CHILD_VITAMIN_A_CONTENT_TYPE', 'well_child_vitamin_a');
+define('HEDLEY_ACTIVITY_WELL_CHILD_ECD_CONTENT_TYPE', 'well_child_ecd');
+define('HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE', 'well_child_bcg_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE', 'well_child_opv_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE', 'well_child_dtp_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE', 'well_child_dtp_sa_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE', 'well_child_pcv13_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE', 'well_child_rotarix_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE', 'well_child_ipv_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE', 'well_child_mr_immunisation');
+define('HEDLEY_ACTIVITY_WELL_CHILD_HPV_IMMUNISATION_CONTENT_TYPE', 'well_child_hpv_immunisation');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_BCG_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_bcg_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_OPV_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_opv_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_DTP_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_dtp_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_dtp_sa_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_PCV13_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_pcv13_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ROTARIX_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_rotarix_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IPV_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_ipv_iz');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_MR_IMMUNISATION_CONTENT_TYPE', 'child_scoreboard_mr_iz');
+define('HEDLEY_ACTIVITY_NCD_ENCOUNTER_CONTENT_TYPE', 'ncd_encounter');
+define('HEDLEY_ACTIVITY_NCD_OUTSIDE_CARE_CONTENT_TYPE', 'ncd_outside_care');
+define('HEDLEY_ACTIVITY_NCD_CO_MORBIDITIES_CONTENT_TYPE', 'ncd_co_morbidities');
+define('HEDLEY_ACTIVITY_GROUP_PARTICIPANT_CONTENT_TYPE', 'pmtct_participant');
+define('HEDLEY_ACTIVITY_GROUP_ENCOUNTER_CONTENT_TYPE', 'session');
+define('HEDLEY_ACTIVITY_GROUP_EDUCATION_CONTENT_TYPE', 'education_session');
+define('HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ENCOUNTER_CONTENT_TYPE', 'child_scoreboard_encounter');
 
 const HEDLEY_ACTIVITY_HEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
@@ -58,6 +99,52 @@ const HEDLEY_ACTIVITY_WEIGHT_BUNDLES = [
   HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
   HEDLEY_ACTIVITY_NUTRITION_WEIGHT_CONTENT_TYPE,
   HEDLEY_ACTIVITY_WELL_CHILD_WEIGHT_CONTENT_TYPE,
+];
+
+const HEDLEY_ACTIVITY_NCDA_BUNDLES = [
+  HEDLEY_ACTIVITY_GROUP_NCDA_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_NUTRITION_NCDA_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_NCDA_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_NCDA_CONTENT_TYPE,
+];
+
+const HEDLEY_ACTIVITY_SEND_TO_HC_BUNDLES = [
+  HEDLEY_ACTIVITY_GROUP_SEND_TO_HC_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_NUTRITION_SEND_TO_HC_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_SEND_TO_HC_CONTENT_TYPE,
+];
+
+// This list does not include HPV immunization, as it's used only
+// by NCDA, where HPV is not relevant.
+const HEDLEY_ACTIVITY_WELL_CHILD_IMMUNISATION_BUNDLES = [
+  HEDLEY_ACTIVITY_WELL_CHILD_BCG_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_OPV_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_DTP_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_PCV13_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_ROTARIX_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_IPV_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WELL_CHILD_MR_IMMUNISATION_CONTENT_TYPE,
+];
+
+const HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IMMUNISATION_BUNDLES = [
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_BCG_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_OPV_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_DTP_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_DTP_STANDALONE_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_PCV13_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_ROTARIX_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_IPV_IMMUNISATION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_CHILD_SCOREBOARD_MR_IMMUNISATION_CONTENT_TYPE,
+];
+
+const HEDLEY_ACTIVITY_REPORTS_GROUP_MEASUREMENT_BUNDLES = [
+  HEDLEY_ACTIVITY_FAMILY_PLANNING_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_HEIGHT_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_MUAC_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_NUTRITION_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_PHOTO_CONTENT_TYPE,
+  HEDLEY_ACTIVITY_WEIGHT_CONTENT_TYPE,
 ];
 
 /**
@@ -204,6 +291,13 @@ function hedley_activity_node_presave($node) {
     return;
   }
 
+  if (!isset($wrapper->field_person->field_birth_date)) {
+    return;
+  }
+  if (!isset($wrapper->field_person->field_gender)) {
+    return;
+  }
+
   $birth = $wrapper->field_person->field_birth_date->value();
   $gender = $wrapper->field_person->field_gender->value();
   $measured = $wrapper->field_date_measured->value();
@@ -332,43 +426,30 @@ function hedley_activity_node_by_peer_in_session(\EntityMetadataWrapper $wrapper
 }
 
 /**
- * Get a measurement by the measurement types and period.
+ * Counts measurements taken for person during all given sessions.
  *
  * @param int $person_id
  *   The person node ID.
- * @param array $measurement_bundles
- *   The measurement node bundle.
- * @param array $period
- *   The period of the measurement, contains a start and an end.
- * @param int $range
- *   Optional; The query's range.
+ * @param array $sessions_ids
+ *   The IDs of the sessions.
  *
- * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
+ * @return int
+ *   Number of measurements.
  */
-function hedley_activity_get_person_measurements_by_period($person_id, array $measurement_bundles, array $period, $range = 100) {
+function hedley_activity_count_person_measurements_taken_during_sessions($person_id, array $sessions_ids) {
   $query = db_select('node', 'node');
-  $query->fields('node', ['nid', 'created', 'type']);
+  $query->fields('node', ['nid']);
+  $query->condition('status', NODE_PUBLISHED);
 
   $person_field = 'field_person';
   hedley_general_join_field_to_query($query, 'node', $person_field);
   $person_field_name = $person_field . '.' . $person_field . '_target_id';
   $query->condition($person_field_name, $person_id);
 
-  $query
-    ->condition('type', $measurement_bundles, 'IN')
-    ->condition('status', NODE_PUBLISHED);
+  $session_field = 'field_session';
+  hedley_general_join_field_to_query($query, 'node', $session_field);
+  $session_field_name = $session_field . '.' . $session_field . '_target_id';
+  $query->condition($session_field_name, $sessions_ids, 'IN');
 
-  hedley_general_join_field_to_query($query, 'node', 'field_session');
-  $date_field = 'field_scheduled_date';
-  hedley_general_join_field_to_query($query, 'node', $date_field, TRUE, "field_session.field_session_target_id");
-  $date_field_name = $date_field . '.' . $date_field . '_value';
-
-  $query->condition($date_field_name, [$period['start'], $period['end']], 'BETWEEN');
-
-  $query->range(0, $range);
-
-  return $query
-    ->execute()
-    ->fetchAllAssoc('nid');
+  return $query->countQuery()->execute()->fetchField();
 }

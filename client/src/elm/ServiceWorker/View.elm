@@ -21,7 +21,7 @@ view currentTime language model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.ServiceWorkerStatus ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick BackToPinCodePage
                 ]

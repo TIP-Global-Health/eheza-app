@@ -2,8 +2,8 @@ module Pages.MyAccount.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (..)
-import Html exposing (Html, a, div, h2, i, img, p, text)
-import Html.Attributes exposing (class, href, src)
+import Html exposing (Html, div, text)
+import Html.Attributes exposing (class)
 import Translate as Trans exposing (Language, translate)
 
 

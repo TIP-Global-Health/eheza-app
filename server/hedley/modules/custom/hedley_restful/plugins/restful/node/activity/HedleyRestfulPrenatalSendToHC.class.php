@@ -13,15 +13,17 @@ class HedleyRestfulPrenatalSendToHC extends HedleyRestfulPrenatalActivityBase {
   /**
    * {@inheritdoc}
    */
-  protected $multiFields = [
-    'field_send_to_hc',
+  protected $fields = [
+    'field_reason_not_sent_to_hc',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected $fields = [
-    'field_reason_not_sent_to_hc',
+  protected $multiFields = [
+    'field_send_to_hc',
+    'field_referrals',
+    'field_reasons_for_non_referrals',
   ];
 
 }

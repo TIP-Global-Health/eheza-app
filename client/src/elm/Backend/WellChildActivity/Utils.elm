@@ -30,6 +30,12 @@ encodeActivityAsString activity =
         WellChildPhoto ->
             "well-child-photo"
 
+        WellChildNCDA ->
+            "well-child-ncda"
+
+        WellChildHomeVisit ->
+            "well-child-home-visit"
+
 
 {-| The inverse of encodeActivityTypeAsString
 -}
@@ -59,6 +65,12 @@ decodeActivityFromString s =
 
         "well-child-photo" ->
             Just WellChildPhoto
+
+        "well-child-ncda" ->
+            Just WellChildNCDA
+
+        "well-child-home-visit" ->
+            Just WellChildHomeVisit
 
         _ ->
             Nothing
@@ -94,23 +106,23 @@ getActivityIcon activity =
         WellChildPhoto ->
             "photo"
 
+        WellChildNCDA ->
+            "history"
 
-getAllActivities : Bool -> List WellChildActivity
-getAllActivities isChw =
-    if isChw then
-        [ WellChildPregnancySummary
-        , WellChildImmunisation
-        , WellChildNutritionAssessment
-        , WellChildPhoto
-        , WellChildNextSteps
-        ]
+        WellChildHomeVisit ->
+            "home-visit"
 
-    else
-        [ WellChildDangerSigns
-        , WellChildNutritionAssessment
-        , WellChildImmunisation
-        , WellChildECD
-        , WellChildMedication
-        , WellChildPhoto
-        , WellChildNextSteps
-        ]
+
+getAllActivities : List WellChildActivity
+getAllActivities =
+    [ WellChildPregnancySummary
+    , WellChildDangerSigns
+    , WellChildNutritionAssessment
+    , WellChildImmunisation
+    , WellChildHomeVisit
+    , WellChildECD
+    , WellChildMedication
+    , WellChildPhoto
+    , WellChildNCDA
+    , WellChildNextSteps
+    ]

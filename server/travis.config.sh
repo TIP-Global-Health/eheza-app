@@ -9,7 +9,7 @@
 #########################################################################################
 
 # GitHub Repository identifier
-GH_REPO="Gizra/ihangane"
+GH_REPO="TIP-Global-Health/eheza-app"
 
 
 # The profile used to install the platform.

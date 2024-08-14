@@ -32,7 +32,7 @@ We can only change the `selectedParticipant` and `selectedTab`.
 
 import Backend.Entities exposing (..)
 import Measurement.Model
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page)
 
 
 type alias Model id =

@@ -140,7 +140,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['id'] = 'nid';
   $handler->display->display_options['sorts']['nid']['table'] = 'node';
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -251,7 +251,7 @@ function hedley_admin_views_default_views() {
     'bypass_access' => 0,
     'link' => 0,
   );
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -268,7 +268,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nid']['element_label_colon'] = FALSE;
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -420,7 +420,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['relationship'] = 'uid';
   $handler->display->display_options['fields']['name']['label'] = 'Created by';
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -441,7 +441,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -533,7 +533,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['created']['date_format'] = 'custom';
   $handler->display->display_options['fields']['created']['custom_date_format'] = 'd-m-Y';
   $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -548,7 +548,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['alter']['path'] = '/admin/content/measurements/[nid]';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -641,7 +641,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_education_level']['id'] = 'field_education_level';
   $handler->display->display_options['fields']['field_education_level']['table'] = 'field_data_field_education_level';
   $handler->display->display_options['fields']['field_education_level']['field'] = 'field_education_level';
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -658,7 +658,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -871,7 +871,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['arguments']['nid']['summary_options']['items_per_page'] = '25';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -980,7 +980,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['name']['label'] = 'Created by';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1083,7 +1083,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['created']['second_date_format'] = 'long';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1184,7 +1184,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_education_level']['field'] = 'field_education_level';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1395,7 +1395,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[field_family_planning_signs] [field_height] [field_muac] [field_nutrition_signs] [field_photo] [field_weight]';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1536,7 +1536,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['nothing']['field'] = 'nothing';
   $handler->display->display_options['fields']['nothing']['label'] = 'Measurement Value';
   $handler->display->display_options['fields']['nothing']['alter']['text'] = '[field_family_planning_signs]';
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -1558,7 +1558,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1686,7 +1686,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['name']['field'] = 'name';
   $handler->display->display_options['fields']['name']['relationship'] = 'uid';
   $handler->display->display_options['fields']['name']['label'] = 'Created by';
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -1707,7 +1707,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
   $handler->display->display_options['defaults']['filter_groups'] = FALSE;
   $handler->display->display_options['defaults']['filters'] = FALSE;
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -1847,7 +1847,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
   $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
-  /* Field: Content: Birth date */
+  /* Field: Content: Resilience Birth date */
   $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['field'] = 'field_birth_date';
@@ -1962,7 +1962,7 @@ function hedley_admin_views_default_views() {
     'scale' => '2',
     'prefix_suffix' => 1,
   );
-  /* Field: Content: Edit link */
+  /* Field: Content: Link to edit content */
   $handler->display->display_options['fields']['edit_node']['id'] = 'edit_node';
   $handler->display->display_options['fields']['edit_node']['table'] = 'views_entity_node';
   $handler->display->display_options['fields']['edit_node']['field'] = 'edit_node';
@@ -1980,7 +1980,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['sorts']['nid']['id'] = 'nid';
   $handler->display->display_options['sorts']['nid']['table'] = 'node';
   $handler->display->display_options['sorts']['nid']['field'] = 'nid';
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';
@@ -2158,7 +2158,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_gender']['table'] = 'field_data_field_gender';
   $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
-  /* Field: Content: Birth date */
+  /* Field: Content: Resilience Birth date */
   $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['field'] = 'field_birth_date';
@@ -2399,7 +2399,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['fields']['field_gender']['field'] = 'field_gender';
   $handler->display->display_options['fields']['field_gender']['relationship'] = 'field_person_target_id';
   $handler->display->display_options['fields']['field_gender']['label'] = 'Sex';
-  /* Field: Content: Birth date */
+  /* Field: Content: Resilience Birth date */
   $handler->display->display_options['fields']['field_birth_date']['id'] = 'field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['table'] = 'field_data_field_birth_date';
   $handler->display->display_options['fields']['field_birth_date']['field'] = 'field_birth_date';
@@ -2725,7 +2725,7 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['number_of_records'] = '0';
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary']['format'] = 'default_summary';
   $handler->display->display_options['arguments']['field_person_target_id_1']['summary_options']['items_per_page'] = '25';
-  /* Filter criterion: Content: Published */
+  /* Filter criterion: Content: Published status */
   $handler->display->display_options['filters']['status']['id'] = 'status';
   $handler->display->display_options['filters']['status']['table'] = 'node';
   $handler->display->display_options['filters']['status']['field'] = 'status';

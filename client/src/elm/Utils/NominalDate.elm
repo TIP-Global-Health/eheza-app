@@ -1,4 +1,4 @@
-module Utils.NominalDate exposing (endField, renderAgeMonthsDays, renderAgeMonthsDaysAbbrev, renderAgeMonthsDaysHtml, renderAgeYearsMonths, renderDate, startField)
+module Utils.NominalDate exposing (..)
 
 {-| An extra utility for elm-community/elm-time ... should integrate with
 Gizra.NominalDate.
@@ -30,7 +30,7 @@ renderAgeMonthsDays language birthDate now =
             diff.months
     in
     if days == 1 && months == 0 then
-        translate language <| Translate.AgeSingleDayWithoutMonth months days
+        translate language <| Translate.AgeSingleDayWithoutMonth days
 
     else if months == 0 then
         translate language <| Translate.AgeDays days
@@ -189,3 +189,43 @@ startField =
 endField : String
 endField =
     "end"
+
+
+sortTuplesByDate : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
+sortTuplesByDate =
+    sortByDate Tuple.first
+
+
+sortTuplesByDateDesc : ( NominalDate, a ) -> ( NominalDate, a ) -> Order
+sortTuplesByDateDesc =
+    sortByDateDesc Tuple.first
+
+
+sortEncounterTuples : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
+sortEncounterTuples =
+    sortByDate (Tuple.second >> .startDate)
+
+
+sortEncounterTuplesDesc : ( id, { e | startDate : NominalDate } ) -> ( id, { e | startDate : NominalDate } ) -> Order
+sortEncounterTuplesDesc =
+    sortByDateDesc (Tuple.second >> .startDate)
+
+
+sortByStartDateDesc : { e | startDate : NominalDate } -> { e | startDate : NominalDate } -> Order
+sortByStartDateDesc =
+    sortByDateDesc .startDate
+
+
+sortDatesDesc : NominalDate -> NominalDate -> Order
+sortDatesDesc =
+    sortByDateDesc identity
+
+
+sortByDate : (a -> NominalDate) -> a -> a -> Order
+sortByDate getDateFunc entity1 entity2 =
+    Date.compare (getDateFunc entity1) (getDateFunc entity2)
+
+
+sortByDateDesc : (a -> NominalDate) -> a -> a -> Order
+sortByDateDesc getDateFunc entity1 entity2 =
+    Date.compare (getDateFunc entity2) (getDateFunc entity1)

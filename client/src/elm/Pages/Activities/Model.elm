@@ -1,5 +1,7 @@
-module Pages.Activities.Model exposing (Model, Msg(..), Tab(..), emptyModel)
+module Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..), emptyModel)
 
+import Activity.Model exposing (Activity)
+import EverySet exposing (EverySet)
 import Pages.Page exposing (Page)
 
 
@@ -22,7 +24,16 @@ desired activity. So, we're not drawing a wrapper around the `Page.Activity`
 -}
 type alias Model =
     { selectedTab : Tab
-    , showEndSessionDialog : Bool
+    , skippedActivities : EverySet Activity
+    , dialogState : Maybe DialogType
+    }
+
+
+emptyModel : Model
+emptyModel =
+    { selectedTab = Pending
+    , skippedActivities = EverySet.empty
+    , dialogState = Nothing
     }
 
 
@@ -30,7 +41,8 @@ type Msg
     = CloseSession
     | SetRedirectPage Page
     | SetSelectedTab Tab
-    | ShowEndSessionDialog Bool
+    | SkipActivity Activity
+    | SetDialogState (Maybe DialogType)
 
 
 {-| This is related to the `Tab` type in `Pages.Activity.Model`, except that here
@@ -43,8 +55,6 @@ type Tab
     | Pending
 
 
-emptyModel : Model
-emptyModel =
-    { selectedTab = Pending
-    , showEndSessionDialog = False
-    }
+type DialogType
+    = DialogEndSession
+    | DialogSkipNCDA

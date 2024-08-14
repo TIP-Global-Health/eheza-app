@@ -9,7 +9,7 @@ import Editable
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onCheck, onClick, onInput)
+import Html.Events exposing (onClick, onInput)
 import Json.Encode
 import List.Extra
 import List.Zipper as Zipper
@@ -20,8 +20,6 @@ import SyncManager.Model
     exposing
         ( BackendAuthorityEntity(..)
         , BackendGeneralEntity(..)
-        , DownloadPhotosBatchRec
-        , DownloadPhotosMode(..)
         , DownloadSyncResponse
         , Model
         , Msg(..)
@@ -29,8 +27,7 @@ import SyncManager.Model
         , SyncStatus(..)
         )
 import SyncManager.Utils exposing (getSyncedHealthCenters)
-import Translate exposing (Language, translate)
-import Url
+import Translate exposing (Language)
 import Utils.Html exposing (spinner)
 import Utils.WebData
 
@@ -55,52 +52,6 @@ view language configuredModel db model =
 
         Nothing ->
             emptyNode
-
-
-{-| Helper to see the device UUID, and current nurse, if logged in.
--}
-viewDeviceInfo : Language -> ConfiguredModel -> Html Msg
-viewDeviceInfo language configuration =
-    let
-        loggedInNurse =
-            case RemoteData.toMaybe configuration.loggedIn of
-                Just loggedIn ->
-                    let
-                        nurse =
-                            Tuple.second loggedIn.nurse
-                    in
-                    div [] [ text <| "Nurse: " ++ nurse.name ]
-
-                Nothing ->
-                    div [] [ text "Nurse not logged in" ]
-
-        deviceIdInfo =
-            case RemoteData.toMaybe configuration.device of
-                Just device ->
-                    case device.deviceId of
-                        Just deviceId ->
-                            div [] [ text <| "Device ID: " ++ String.fromInt deviceId ]
-
-                        Nothing ->
-                            div []
-                                [ text """
-                                    Device ID not set as device was paired before June 2020.
-                                    You may re-pair to get a new ID, but in general this is not a problem -
-                                    it just makes troubleshooting a bit easier.
-                                    """
-                                ]
-
-                Nothing ->
-                    div [] [ text "Device ID not set, either not paired, or a pair before June 2020" ]
-    in
-    details
-        [ class "segment ui"
-        , property "open" (Json.Encode.bool False)
-        ]
-        [ summary [] [ text "Device info" ]
-        , loggedInNurse
-        , deviceIdInfo
-        ]
 
 
 viewSyncSettings : Language -> Model -> Html Msg
@@ -294,6 +245,9 @@ viewGeneralEntity language backendGeneralEntity =
 
             BackendGeneralVillage identifier ->
                 text <| "Village " ++ identifier.entity.name
+
+            BackendGeneralResilienceSurvey identifier ->
+                text <| "Resilience Survey " ++ identifier.uuid
         ]
 
 
@@ -411,6 +365,36 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityChildFbf identifier ->
                 viewMeasurement identifier "Child Fbf"
 
+            BackendAuthorityChildScoreboardEncounter identifier ->
+                text ("Child Scoreboard Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityChildScoreboardBCGImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard BCG Immunisation"
+
+            BackendAuthorityChildScoreboardDTPImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard DTP Immunisation"
+
+            BackendAuthorityChildScoreboardDTPStandaloneImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard DTP standalone Immunisation"
+
+            BackendAuthorityChildScoreboardIPVImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard IPV Immunisation"
+
+            BackendAuthorityChildScoreboardMRImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard MR Immunisation"
+
+            BackendAuthorityChildScoreboardNCDA identifier ->
+                viewMeasurement identifier "Child Scoreboard NCDA"
+
+            BackendAuthorityChildScoreboardOPVImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard OPV Immunisation"
+
+            BackendAuthorityChildScoreboardPCV13Immunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard PCV13 Immunisation"
+
+            BackendAuthorityChildScoreboardRotarixImmunisation identifier ->
+                viewMeasurement identifier "Child Scoreboard Rotarix Immunisation"
+
             BackendAuthorityClinic identifier ->
                 text <| "Clinic " ++ identifier.entity.name
 
@@ -429,8 +413,11 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityDangerSigns identifier ->
                 viewMeasurement identifier "Danger Signs"
 
-            BackendAuthorityDashboardStats identifier ->
+            BackendAuthorityDashboardStats _ ->
                 text "Dashboard Statistics"
+
+            BackendAuthorityEducationSession identifier ->
+                text ("Education Session at village ID " ++ fromEntityUuid identifier.entity.village)
 
             BackendAuthorityExposure identifier ->
                 viewMeasurement identifier "Exposure"
@@ -444,6 +431,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityGroupHealthEducation identifier ->
                 viewMeasurement identifier "Group Health Education"
 
+            BackendAuthorityGroupNCDA identifier ->
+                viewMeasurement identifier "Group NCDA"
+
             BackendAuthorityGroupSendToHC identifier ->
                 viewMeasurement identifier "Group Send to HC"
 
@@ -456,8 +446,32 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityHeight identifier ->
                 viewMeasurement identifier "Height"
 
+            BackendAuthorityHIVDiagnostics identifier ->
+                viewMeasurement identifier "HIV Diagnostics"
+
+            BackendAuthorityHIVEncounter identifier ->
+                text ("HIV Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityHIVFollowUp identifier ->
+                viewMeasurement identifier "HIV Follow Up"
+
+            BackendAuthorityHIVHealthEducation identifier ->
+                viewMeasurement identifier "HIV Health Education"
+
+            BackendAuthorityHIVMedication identifier ->
+                viewMeasurement identifier "HIV Medication"
+
+            BackendAuthorityHIVReferral identifier ->
+                viewMeasurement identifier "HIV Referral"
+
+            BackendAuthorityHIVSymptomReview identifier ->
+                viewMeasurement identifier "HIV Symptom Review"
+
+            BackendAuthorityHIVTreatmentReview identifier ->
+                viewMeasurement identifier "HIV Treatment Review"
+
             BackendAuthorityHomeVisitEncounter identifier ->
-                text ("HomeVisitEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+                text ("Home Visit Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
             BackendAuthorityIndividualParticipant identifier ->
                 text <| "Individual Participant for person ID " ++ fromEntityUuid identifier.entity.person
@@ -489,6 +503,75 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityMuac identifier ->
                 viewMeasurement identifier "Muac"
 
+            BackendAuthorityNCDCoMorbidities identifier ->
+                viewMeasurement identifier "NCDCoMorbidities"
+
+            BackendAuthorityNCDCoreExam identifier ->
+                viewMeasurement identifier "NCDCoreExam"
+
+            BackendAuthorityNCDCreatinineTest identifier ->
+                viewMeasurement identifier "NCDCreatinineTest"
+
+            BackendAuthorityNCDDangerSigns identifier ->
+                viewMeasurement identifier "NCDDangerSigns"
+
+            BackendAuthorityNCDEncounter identifier ->
+                text ("NCDEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityNCDFamilyHistory identifier ->
+                viewMeasurement identifier "NCDFamilyHistory"
+
+            BackendAuthorityNCDFamilyPlanning identifier ->
+                viewMeasurement identifier "NCDFamilyPlanning"
+
+            BackendAuthorityNCDHbA1cTest identifier ->
+                viewMeasurement identifier "NCDHbA1cTest"
+
+            BackendAuthorityNCDHealthEducation identifier ->
+                viewMeasurement identifier "NCDHealthEducation"
+
+            BackendAuthorityNCDHIVTest identifier ->
+                viewMeasurement identifier "NCDHIVTest"
+
+            BackendAuthorityNCDLabsResults identifier ->
+                viewMeasurement identifier "NCDLabsResults"
+
+            BackendAuthorityNCDLipidPanelTest identifier ->
+                viewMeasurement identifier "NCDLipidPanelTest"
+
+            BackendAuthorityNCDLiverFunctionTest identifier ->
+                viewMeasurement identifier "NCDLiverFunctionTest"
+
+            BackendAuthorityNCDMedicationDistribution identifier ->
+                viewMeasurement identifier "NCDMedicationDistribution"
+
+            BackendAuthorityNCDMedicationHistory identifier ->
+                viewMeasurement identifier "NCDMedicationHistory"
+
+            BackendAuthorityNCDOutsideCare identifier ->
+                viewMeasurement identifier "NCDOutsideCare"
+
+            BackendAuthorityNCDPregnancyTest identifier ->
+                viewMeasurement identifier "NCDPregnancyTest"
+
+            BackendAuthorityNCDRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "NCDRandomBloodSugarTest"
+
+            BackendAuthorityNCDReferral identifier ->
+                viewMeasurement identifier "NCDReferral"
+
+            BackendAuthorityNCDSocialHistory identifier ->
+                viewMeasurement identifier "NCDSocialHistory"
+
+            BackendAuthorityNCDSymptomReview identifier ->
+                viewMeasurement identifier "NCDSymptomReview"
+
+            BackendAuthorityNCDUrineDipstickTest identifier ->
+                viewMeasurement identifier "NCDUrineDipstickTest"
+
+            BackendAuthorityNCDVitals identifier ->
+                viewMeasurement identifier "NCDVitals"
+
             BackendAuthorityNutrition identifier ->
                 viewMeasurement identifier "Nutrition"
 
@@ -499,7 +582,7 @@ viewAuthorityEntity backendAuthorityEntity =
                 viewMeasurement identifier "Nutrition Contributing Factors"
 
             BackendAuthorityNutritionEncounter identifier ->
-                text ("NutritionEncounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+                text ("Nutrition Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
             BackendAuthorityNutritionFeeding identifier ->
                 viewMeasurement identifier "Nutrition Feeding"
@@ -521,6 +604,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityNutritionMuac identifier ->
                 viewMeasurement identifier "Nutrition Muac"
+
+            BackendAuthorityNutritionNCDA identifier ->
+                viewMeasurement identifier "Nutrition NCDA"
 
             BackendAuthorityNutritionNutrition identifier ->
                 viewMeasurement identifier "Nutrition Nutrition"
@@ -555,35 +641,92 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPmtctParticipant identifier ->
                 text <| "Pmtct Participant for child ID " ++ fromEntityUuid identifier.entity.child
 
-            BackendAuthorityPregnancyTesting identifier ->
+            BackendAuthorityPregnancyTest identifier ->
                 viewMeasurement identifier "Pregnancy Testing"
-
-            BackendAuthorityPrenatalPhoto identifier ->
-                viewMeasurement identifier "Prenatal Photo"
-
-            BackendAuthorityPrenatalFamilyPlanning identifier ->
-                viewMeasurement identifier "Prenatal Family Planning"
-
-            BackendAuthorityPrenatalHealthEducation identifier ->
-                viewMeasurement identifier "Prenatal Health Education"
-
-            BackendAuthorityPrenatalFollowUp identifier ->
-                viewMeasurement identifier "Prenatal Follow Up"
-
-            BackendAuthorityPrenatalSendToHC identifier ->
-                viewMeasurement identifier "Prenatal Send to HC"
-
-            BackendAuthorityPrenatalNutrition identifier ->
-                viewMeasurement identifier "Prenatal Nutrition"
 
             BackendAuthorityPrenatalEncounter identifier ->
                 text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
 
+            BackendAuthorityPrenatalBloodGpRsTest identifier ->
+                viewMeasurement identifier "Prenatal Blood GpRs Test"
+
+            BackendAuthorityPrenatalBreastfeeding identifier ->
+                viewMeasurement identifier "Prenatal Breastfeeding"
+
+            BackendAuthorityPrenatalFamilyPlanning identifier ->
+                viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalFollowUp identifier ->
+                viewMeasurement identifier "Prenatal Follow Up"
+
+            BackendAuthorityPrenatalGUExam identifier ->
+                viewMeasurement identifier "Prenatal GU Exam"
+
+            BackendAuthorityPrenatalHealthEducation identifier ->
+                viewMeasurement identifier "Prenatal Health Education"
+
+            BackendAuthorityPrenatalHemoglobinTest identifier ->
+                viewMeasurement identifier "Prenatal Hemoglobin Test"
+
+            BackendAuthorityPrenatalHepatitisBTest identifier ->
+                viewMeasurement identifier "Prenatal Hepatitis B Test"
+
+            BackendAuthorityPrenatalHIVTest identifier ->
+                viewMeasurement identifier "Prenatal HIV Test"
+
+            BackendAuthorityPrenatalHIVPCRTest identifier ->
+                viewMeasurement identifier "Prenatal HIV PCR Test"
+
+            BackendAuthorityPrenatalLabsResults identifier ->
+                viewMeasurement identifier "Prenatal Labs Results"
+
+            BackendAuthorityPrenatalMalariaTest identifier ->
+                viewMeasurement identifier "Prenatal Malaria Test"
+
+            BackendAuthorityPrenatalMedicationDistribution identifier ->
+                viewMeasurement identifier "Prenatal Medication Distribution"
+
+            BackendAuthorityPrenatalMentalHealth identifier ->
+                viewMeasurement identifier "Prenatal Mental Health"
+
+            BackendAuthorityPrenatalNutrition identifier ->
+                viewMeasurement identifier "Prenatal Nutrition"
+
+            BackendAuthorityPrenatalOutsideCare identifier ->
+                viewMeasurement identifier "Prenatal Outside Care"
+
+            BackendAuthorityPrenatalPartnerHIVTest identifier ->
+                viewMeasurement identifier "Prenatal Partner HIV Test"
+
+            BackendAuthorityPrenatalPhoto identifier ->
+                viewMeasurement identifier "Prenatal Photo"
+
+            BackendAuthorityPrenatalRandomBloodSugarTest identifier ->
+                viewMeasurement identifier "Prenatal Random Blood Sugar Test"
+
+            BackendAuthorityPrenatalSendToHC identifier ->
+                viewMeasurement identifier "Prenatal Send to HC"
+
+            BackendAuthorityPrenatalSpecialityCare identifier ->
+                viewMeasurement identifier "Prenatal Speciality Care"
+
+            BackendAuthorityPrenatalSymptomReview identifier ->
+                viewMeasurement identifier "Prenatal Symptom Review"
+
+            BackendAuthorityPrenatalSyphilisTest identifier ->
+                viewMeasurement identifier "Prenatal Syphilis Test"
+
+            BackendAuthorityPrenatalTetanusImmunisation identifier ->
+                viewMeasurement identifier "Prenatal Tetanus Immunisation"
+
+            BackendAuthorityPrenatalUrineDipstickTest identifier ->
+                viewMeasurement identifier "Prenatal Urine Dipstick Test"
+
             BackendAuthorityRelationship identifier ->
                 text <| "Relationship for person ID " ++ fromEntityUuid identifier.entity.person
 
-            BackendAuthorityResource identifier ->
-                viewMeasurement identifier "Resource"
+            BackendAuthorityMalariaPrevention identifier ->
+                viewMeasurement identifier "Malaria Prevention"
 
             BackendAuthoritySendToHC identifier ->
                 viewMeasurement identifier "Send to HC"
@@ -593,6 +736,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthoritySocialHistory identifier ->
                 viewMeasurement identifier "Social History"
+
+            BackendAuthorityStockUpdate identifier ->
+                text <| "Stock Update " ++ identifier.uuid
 
             BackendAuthoritySymptomsGeneral identifier ->
                 viewMeasurement identifier "Symptoms General"
@@ -612,6 +758,33 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityTreatmentReview identifier ->
                 viewMeasurement identifier "Treatment Review"
 
+            BackendAuthorityTuberculosisDiagnostics identifier ->
+                viewMeasurement identifier "Tuberculosis Diagnostics"
+
+            BackendAuthorityTuberculosisDOT identifier ->
+                viewMeasurement identifier "Tuberculosis DOT"
+
+            BackendAuthorityTuberculosisEncounter identifier ->
+                text ("Tuberculosis Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
+
+            BackendAuthorityTuberculosisFollowUp identifier ->
+                viewMeasurement identifier "Tuberculosis Follow Up"
+
+            BackendAuthorityTuberculosisHealthEducation identifier ->
+                viewMeasurement identifier "Tuberculosis Health Education"
+
+            BackendAuthorityTuberculosisMedication identifier ->
+                viewMeasurement identifier "Tuberculosis Medication"
+
+            BackendAuthorityTuberculosisReferral identifier ->
+                viewMeasurement identifier "Tuberculosis Referral"
+
+            BackendAuthorityTuberculosisSymptomReview identifier ->
+                viewMeasurement identifier "Tuberculosis Symptom Review"
+
+            BackendAuthorityTuberculosisTreatmentReview identifier ->
+                viewMeasurement identifier "Tuberculosis Treatment Review"
+
             BackendAuthorityVitals identifier ->
                 viewMeasurement identifier "Vitals"
 
@@ -624,11 +797,17 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildBCGImmunisation identifier ->
                 viewMeasurement identifier "Well Child BCG Immunisation"
 
+            BackendAuthorityWellChildCaring identifier ->
+                viewMeasurement identifier "Well Child Caring"
+
             BackendAuthorityWellChildContributingFactors identifier ->
                 viewMeasurement identifier "Well Child Contributing Factors"
 
             BackendAuthorityWellChildDTPImmunisation identifier ->
                 viewMeasurement identifier "Well Child DTP Immunisation"
+
+            BackendAuthorityWellChildDTPStandaloneImmunisation identifier ->
+                viewMeasurement identifier "Well Child DTP standalone Immunisation"
 
             BackendAuthorityWellChildECD identifier ->
                 viewMeasurement identifier "Well Child ECD"
@@ -636,8 +815,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityWellChildEncounter identifier ->
                 text ("Well Child Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityWellChildFeeding identifier ->
+                viewMeasurement identifier "Well Child Feeding"
+
             BackendAuthorityWellChildFollowUp identifier ->
                 viewMeasurement identifier "Well Child Follow Up"
+
+            BackendAuthorityWellChildFoodSecurity identifier ->
+                viewMeasurement identifier "Well Child Food Security"
 
             BackendAuthorityWellChildHeadCircumference identifier ->
                 viewMeasurement identifier "Well Child Head Circumference"
@@ -647,6 +832,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildHeight identifier ->
                 viewMeasurement identifier "Well Child Height"
+
+            BackendAuthorityWellChildHygiene identifier ->
+                viewMeasurement identifier "Well Child Hygiene"
 
             BackendAuthorityWellChildHPVImmunisation identifier ->
                 viewMeasurement identifier "Well Child HPV Immunisation"
@@ -662,6 +850,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityWellChildMuac identifier ->
                 viewMeasurement identifier "Well Child Muac"
+
+            BackendAuthorityWellChildNCDA identifier ->
+                viewMeasurement identifier "Well Child NCDA"
 
             BackendAuthorityWellChildNextVisit identifier ->
                 viewMeasurement identifier "Well Child Next Visit"
@@ -701,65 +892,10 @@ viewAuthorityEntity backendAuthorityEntity =
         ]
 
 
-viewDownloadPhotosBatch : Language -> Model -> DownloadPhotosBatchRec -> Html Msg
-viewDownloadPhotosBatch language model deferredPhoto =
-    case deferredPhoto.indexDbRemoteData of
-        RemoteData.Success (Just result) ->
-            let
-                fileName =
-                    result.photo
-                        |> Url.fromString
-                        |> Maybe.andThen
-                            (\url ->
-                                url.path
-                                    |> String.split "/"
-                                    |> List.Extra.last
-                            )
-                        |> Maybe.withDefault ""
-
-                attempt =
-                    result.attempts + 1
-
-                attemptString =
-                    case attempt of
-                        1 ->
-                            "1st"
-
-                        2 ->
-                            "2nd"
-
-                        3 ->
-                            "3rd"
-
-                        _ ->
-                            String.fromInt attempt ++ "th"
-            in
-            div []
-                [ text <|
-                    "Photos batch download ("
-                        ++ String.fromInt (deferredPhoto.batchCounter + 1)
-                        ++ " out of "
-                        ++ String.fromInt deferredPhoto.batchSize
-                        ++ ")"
-                , div []
-                    [ text <| attemptString ++ " attempt to download "
-                    , a [ href result.photo, target "_blank" ] [ text fileName ]
-                    ]
-                ]
-
-        _ ->
-            emptyNode
-
-
 {-| Show a list of Authorities that allow syncing from.
 -}
 viewHealthCentersForSync : Language -> ModelIndexedDb -> Model -> Html Msg
 viewHealthCentersForSync language db model =
-    let
-        -- The Health centers that are synced.
-        selectedHealthCentersUuid =
-            getSyncedHealthCenters model
-    in
     case db.healthCenters of
         RemoteData.Success healthCenters ->
             if Dict.isEmpty healthCenters then
@@ -767,6 +903,10 @@ viewHealthCentersForSync language db model =
                     [ summary [] [ text "No health centers synced yet" ] ]
 
             else
+                let
+                    selectedHealthCentersUuid =
+                        getSyncedHealthCenters model
+                in
                 details
                     [ class "segment ui"
                     , property "open" (Json.Encode.bool False)

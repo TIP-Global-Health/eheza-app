@@ -1,15 +1,19 @@
 module SyncManager.Model exposing (..)
 
-import AssocList exposing (Dict)
+import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessEncounter)
+import Backend.ChildScoreboardEncounter.Model exposing (ChildScoreboardEncounter)
 import Backend.Clinic.Model exposing (Clinic)
 import Backend.Counseling.Model exposing (CounselingSchedule, CounselingTopic)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model exposing (EducationSession)
 import Backend.Entities exposing (HealthCenterId)
+import Backend.HIVEncounter.Model exposing (HIVEncounter)
 import Backend.HealthCenter.Model exposing (CatchmentArea, HealthCenter)
 import Backend.HomeVisitEncounter.Model exposing (HomeVisitEncounter)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterParticipant)
 import Backend.Measurement.Model exposing (..)
+import Backend.NCDEncounter.Model exposing (NCDEncounter)
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.NutritionEncounter.Model exposing (NutritionEncounter)
 import Backend.ParticipantConsent.Model exposing (ParticipantForm)
@@ -17,15 +21,23 @@ import Backend.Person.Model exposing (Person)
 import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounter)
 import Backend.Relationship.Model exposing (Relationship)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurvey)
 import Backend.Session.Model exposing (Session)
+import Backend.TuberculosisEncounter.Model exposing (TuberculosisEncounter)
 import Backend.Village.Model exposing (Village)
 import Backend.WellChildEncounter.Model exposing (WellChildEncounter)
+import Components.ReportToWhatsAppDialog.Model exposing (ReportType)
 import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import Editable exposing (Editable)
+import EverySet exposing (EverySet)
+import GeoLocation.Model exposing (GeoInfo, ReverseGeoInfo, emptyGeoInfo)
+import Gizra.NominalDate exposing (NominalDate)
 import Json.Decode exposing (Value)
 import List.Zipper exposing (Zipper)
 import RemoteData exposing (RemoteData(..), WebData)
 import Time
+import Translate.Model exposing (Language)
 
 
 {-| The "general" entities are ones that currently don't belong to a specific
@@ -40,6 +52,7 @@ type BackendGeneralEntity
     | BackendGeneralNurse (BackendEntity Nurse)
     | BackendGeneralParticipantForm (BackendEntity ParticipantForm)
     | BackendGeneralVillage (BackendEntity Village)
+    | BackendGeneralResilienceSurvey (BackendEntity ResilienceSurvey)
 
 
 {-| The "Authority" entities are ones that belong to a specific
@@ -61,8 +74,18 @@ type BackendAuthorityEntity
     | BackendAuthorityAttendance (BackendEntity Attendance)
     | BackendAuthorityBreastExam (BackendEntity BreastExam)
     | BackendAuthorityBirthPlan (BackendEntity BirthPlan)
-    | BackendAuthorityChildFbf (BackendEntity Fbf)
     | BackendAuthorityCall114 (BackendEntity Call114)
+    | BackendAuthorityChildFbf (BackendEntity Fbf)
+    | BackendAuthorityChildScoreboardEncounter (BackendEntity ChildScoreboardEncounter)
+    | BackendAuthorityChildScoreboardBCGImmunisation (BackendEntity ChildScoreboardBCGImmunisation)
+    | BackendAuthorityChildScoreboardDTPImmunisation (BackendEntity ChildScoreboardDTPImmunisation)
+    | BackendAuthorityChildScoreboardDTPStandaloneImmunisation (BackendEntity ChildScoreboardDTPStandaloneImmunisation)
+    | BackendAuthorityChildScoreboardIPVImmunisation (BackendEntity ChildScoreboardIPVImmunisation)
+    | BackendAuthorityChildScoreboardMRImmunisation (BackendEntity ChildScoreboardMRImmunisation)
+    | BackendAuthorityChildScoreboardNCDA (BackendEntity ChildScoreboardNCDA)
+    | BackendAuthorityChildScoreboardOPVImmunisation (BackendEntity ChildScoreboardOPVImmunisation)
+    | BackendAuthorityChildScoreboardPCV13Immunisation (BackendEntity ChildScoreboardPCV13Immunisation)
+    | BackendAuthorityChildScoreboardRotarixImmunisation (BackendEntity ChildScoreboardRotarixImmunisation)
     | BackendAuthorityClinic (BackendEntity Clinic)
     | BackendAuthorityContributingFactors (BackendEntity ContributingFactors)
     | BackendAuthorityCorePhysicalExam (BackendEntity CorePhysicalExam)
@@ -70,14 +93,24 @@ type BackendAuthorityEntity
     | BackendAuthorityCovidTesting (BackendEntity CovidTesting)
     | BackendAuthorityDangerSigns (BackendEntity DangerSigns)
     | BackendAuthorityDashboardStats (BackendEntity DashboardStatsRaw)
+    | BackendAuthorityEducationSession (BackendEntity EducationSession)
     | BackendAuthorityExposure (BackendEntity Exposure)
     | BackendAuthorityFamilyPlanning (BackendEntity FamilyPlanning)
     | BackendAuthorityFollowUp (BackendEntity FollowUp)
     | BackendAuthorityGroupHealthEducation (BackendEntity GroupHealthEducation)
+    | BackendAuthorityGroupNCDA (BackendEntity GroupNCDA)
     | BackendAuthorityGroupSendToHC (BackendEntity GroupSendToHC)
     | BackendAuthorityHealthEducation (BackendEntity HealthEducation)
     | BackendAuthorityHCContact (BackendEntity HCContact)
     | BackendAuthorityHeight (BackendEntity Height)
+    | BackendAuthorityHIVDiagnostics (BackendEntity HIVDiagnostics)
+    | BackendAuthorityHIVEncounter (BackendEntity HIVEncounter)
+    | BackendAuthorityHIVFollowUp (BackendEntity HIVFollowUp)
+    | BackendAuthorityHIVHealthEducation (BackendEntity HIVHealthEducation)
+    | BackendAuthorityHIVMedication (BackendEntity HIVMedication)
+    | BackendAuthorityHIVReferral (BackendEntity HIVReferral)
+    | BackendAuthorityHIVSymptomReview (BackendEntity HIVSymptomReview)
+    | BackendAuthorityHIVTreatmentReview (BackendEntity HIVTreatmentReview)
     | BackendAuthorityHomeVisitEncounter (BackendEntity HomeVisitEncounter)
     | BackendAuthorityIndividualParticipant (BackendEntity IndividualEncounterParticipant)
     | BackendAuthorityIsolation (BackendEntity Isolation)
@@ -89,6 +122,29 @@ type BackendAuthorityEntity
     | BackendAuthorityMedicationDistribution (BackendEntity MedicationDistribution)
     | BackendAuthorityMotherFbf (BackendEntity Fbf)
     | BackendAuthorityMuac (BackendEntity Muac)
+    | BackendAuthorityNCDCoMorbidities (BackendEntity NCDCoMorbidities)
+    | BackendAuthorityNCDCoreExam (BackendEntity NCDCoreExam)
+    | BackendAuthorityNCDCreatinineTest (BackendEntity NCDCreatinineTest)
+    | BackendAuthorityNCDDangerSigns (BackendEntity NCDDangerSigns)
+    | BackendAuthorityNCDEncounter (BackendEntity NCDEncounter)
+    | BackendAuthorityNCDFamilyHistory (BackendEntity NCDFamilyHistory)
+    | BackendAuthorityNCDFamilyPlanning (BackendEntity NCDFamilyPlanning)
+    | BackendAuthorityNCDHbA1cTest (BackendEntity NCDHbA1cTest)
+    | BackendAuthorityNCDHealthEducation (BackendEntity NCDHealthEducation)
+    | BackendAuthorityNCDHIVTest (BackendEntity NCDHIVTest)
+    | BackendAuthorityNCDLabsResults (BackendEntity NCDLabsResults)
+    | BackendAuthorityNCDLipidPanelTest (BackendEntity NCDLipidPanelTest)
+    | BackendAuthorityNCDLiverFunctionTest (BackendEntity NCDLiverFunctionTest)
+    | BackendAuthorityNCDMedicationDistribution (BackendEntity NCDMedicationDistribution)
+    | BackendAuthorityNCDMedicationHistory (BackendEntity NCDMedicationHistory)
+    | BackendAuthorityNCDOutsideCare (BackendEntity NCDOutsideCare)
+    | BackendAuthorityNCDPregnancyTest (BackendEntity NCDPregnancyTest)
+    | BackendAuthorityNCDRandomBloodSugarTest (BackendEntity NCDRandomBloodSugarTest)
+    | BackendAuthorityNCDReferral (BackendEntity NCDReferral)
+    | BackendAuthorityNCDSocialHistory (BackendEntity NCDSocialHistory)
+    | BackendAuthorityNCDSymptomReview (BackendEntity NCDSymptomReview)
+    | BackendAuthorityNCDUrineDipstickTest (BackendEntity NCDUrineDipstickTest)
+    | BackendAuthorityNCDVitals (BackendEntity NCDVitals)
     | BackendAuthorityNutrition (BackendEntity ChildNutrition)
     | BackendAuthorityNutritionCaring (BackendEntity NutritionCaring)
     | BackendAuthorityNutritionContributingFactors (BackendEntity NutritionContributingFactors)
@@ -100,6 +156,7 @@ type BackendAuthorityEntity
     | BackendAuthorityNutritionHeight (BackendEntity NutritionHeight)
     | BackendAuthorityNutritionHygiene (BackendEntity NutritionHygiene)
     | BackendAuthorityNutritionMuac (BackendEntity NutritionMuac)
+    | BackendAuthorityNutritionNCDA (BackendEntity NutritionNCDA)
     | BackendAuthorityNutritionNutrition (BackendEntity NutritionNutrition)
     | BackendAuthorityNutritionPhoto (BackendEntity NutritionPhoto)
     | BackendAuthorityNutritionSendToHC (BackendEntity NutritionSendToHC)
@@ -111,42 +168,77 @@ type BackendAuthorityEntity
     | BackendAuthorityPerson (BackendEntity Person)
     | BackendAuthorityPhoto (BackendEntity Photo)
     | BackendAuthorityPmtctParticipant (BackendEntity PmtctParticipant)
-    | BackendAuthorityPregnancyTesting (BackendEntity PregnancyTest)
-    | BackendAuthorityPrenatalHealthEducation (BackendEntity PrenatalHealthEducation)
-    | BackendAuthorityPrenatalFollowUp (BackendEntity PrenatalFollowUp)
-    | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
-    | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
-    | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
-    | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
+    | BackendAuthorityPregnancyTest (BackendEntity PregnancyTest)
+    | BackendAuthorityPrenatalBloodGpRsTest (BackendEntity PrenatalBloodGpRsTest)
+    | BackendAuthorityPrenatalBreastfeeding (BackendEntity PrenatalBreastfeeding)
     | BackendAuthorityPrenatalEncounter (BackendEntity PrenatalEncounter)
+    | BackendAuthorityPrenatalFamilyPlanning (BackendEntity PrenatalFamilyPlanning)
+    | BackendAuthorityPrenatalFollowUp (BackendEntity PrenatalFollowUp)
+    | BackendAuthorityPrenatalGUExam (BackendEntity PrenatalGUExam)
+    | BackendAuthorityPrenatalHealthEducation (BackendEntity PrenatalHealthEducation)
+    | BackendAuthorityPrenatalHemoglobinTest (BackendEntity PrenatalHemoglobinTest)
+    | BackendAuthorityPrenatalHepatitisBTest (BackendEntity PrenatalHepatitisBTest)
+    | BackendAuthorityPrenatalHIVTest (BackendEntity PrenatalHIVTest)
+    | BackendAuthorityPrenatalHIVPCRTest (BackendEntity PrenatalHIVPCRTest)
+    | BackendAuthorityPrenatalLabsResults (BackendEntity PrenatalLabsResults)
+    | BackendAuthorityPrenatalMalariaTest (BackendEntity PrenatalMalariaTest)
+    | BackendAuthorityPrenatalMedicationDistribution (BackendEntity PrenatalMedicationDistribution)
+    | BackendAuthorityPrenatalMentalHealth (BackendEntity PrenatalMentalHealth)
+    | BackendAuthorityPrenatalNutrition (BackendEntity PrenatalNutrition)
+    | BackendAuthorityPrenatalOutsideCare (BackendEntity PrenatalOutsideCare)
+    | BackendAuthorityPrenatalPartnerHIVTest (BackendEntity PrenatalPartnerHIVTest)
+    | BackendAuthorityPrenatalPhoto (BackendEntity PrenatalPhoto)
+    | BackendAuthorityPrenatalRandomBloodSugarTest (BackendEntity PrenatalRandomBloodSugarTest)
+    | BackendAuthorityPrenatalSendToHC (BackendEntity PrenatalSendToHC)
+    | BackendAuthorityPrenatalSpecialityCare (BackendEntity PrenatalSpecialityCare)
+    | BackendAuthorityPrenatalSymptomReview (BackendEntity PrenatalSymptomReview)
+    | BackendAuthorityPrenatalSyphilisTest (BackendEntity PrenatalSyphilisTest)
+    | BackendAuthorityPrenatalTetanusImmunisation (BackendEntity PrenatalTetanusImmunisation)
+    | BackendAuthorityPrenatalUrineDipstickTest (BackendEntity PrenatalUrineDipstickTest)
     | BackendAuthorityRelationship (BackendEntity Relationship)
-    | BackendAuthorityResource (BackendEntity Resource)
+    | BackendAuthorityMalariaPrevention (BackendEntity MalariaPrevention)
     | BackendAuthoritySendToHC (BackendEntity SendToHC)
     | BackendAuthoritySession (BackendEntity Session)
     | BackendAuthoritySocialHistory (BackendEntity SocialHistory)
+    | BackendAuthorityStockUpdate (BackendEntity StockUpdate)
     | BackendAuthoritySymptomsGeneral (BackendEntity SymptomsGeneral)
     | BackendAuthoritySymptomsGI (BackendEntity SymptomsGI)
     | BackendAuthoritySymptomsRespiratory (BackendEntity SymptomsRespiratory)
     | BackendAuthorityTravelHistory (BackendEntity TravelHistory)
     | BackendAuthorityTreatmentOngoing (BackendEntity TreatmentOngoing)
     | BackendAuthorityTreatmentReview (BackendEntity TreatmentReview)
+    | BackendAuthorityTuberculosisDiagnostics (BackendEntity TuberculosisDiagnostics)
+    | BackendAuthorityTuberculosisDOT (BackendEntity TuberculosisDOT)
+    | BackendAuthorityTuberculosisEncounter (BackendEntity TuberculosisEncounter)
+    | BackendAuthorityTuberculosisFollowUp (BackendEntity TuberculosisFollowUp)
+    | BackendAuthorityTuberculosisHealthEducation (BackendEntity TuberculosisHealthEducation)
+    | BackendAuthorityTuberculosisMedication (BackendEntity TuberculosisMedication)
+    | BackendAuthorityTuberculosisReferral (BackendEntity TuberculosisReferral)
+    | BackendAuthorityTuberculosisSymptomReview (BackendEntity TuberculosisSymptomReview)
+    | BackendAuthorityTuberculosisTreatmentReview (BackendEntity TuberculosisTreatmentReview)
     | BackendAuthorityVitals (BackendEntity Vitals)
     | BackendAuthorityWeight (BackendEntity Weight)
     | BackendAuthorityWellChildAlbendazole (BackendEntity WellChildAlbendazole)
     | BackendAuthorityWellChildBCGImmunisation (BackendEntity WellChildBCGImmunisation)
+    | BackendAuthorityWellChildCaring (BackendEntity WellChildCaring)
     | BackendAuthorityWellChildContributingFactors (BackendEntity WellChildContributingFactors)
     | BackendAuthorityWellChildDTPImmunisation (BackendEntity WellChildDTPImmunisation)
+    | BackendAuthorityWellChildDTPStandaloneImmunisation (BackendEntity WellChildDTPStandaloneImmunisation)
     | BackendAuthorityWellChildECD (BackendEntity WellChildECD)
     | BackendAuthorityWellChildEncounter (BackendEntity WellChildEncounter)
+    | BackendAuthorityWellChildFeeding (BackendEntity WellChildFeeding)
     | BackendAuthorityWellChildFollowUp (BackendEntity WellChildFollowUp)
+    | BackendAuthorityWellChildFoodSecurity (BackendEntity WellChildFoodSecurity)
     | BackendAuthorityWellChildHeadCircumference (BackendEntity WellChildHeadCircumference)
     | BackendAuthorityWellChildHealthEducation (BackendEntity WellChildHealthEducation)
     | BackendAuthorityWellChildHeight (BackendEntity WellChildHeight)
+    | BackendAuthorityWellChildHygiene (BackendEntity WellChildHygiene)
     | BackendAuthorityWellChildHPVImmunisation (BackendEntity WellChildHPVImmunisation)
     | BackendAuthorityWellChildIPVImmunisation (BackendEntity WellChildIPVImmunisation)
     | BackendAuthorityWellChildMebendezole (BackendEntity WellChildMebendezole)
     | BackendAuthorityWellChildMRImmunisation (BackendEntity WellChildMRImmunisation)
     | BackendAuthorityWellChildMuac (BackendEntity WellChildMuac)
+    | BackendAuthorityWellChildNCDA (BackendEntity WellChildNCDA)
     | BackendAuthorityWellChildNextVisit (BackendEntity WellChildNextVisit)
     | BackendAuthorityWellChildNutrition (BackendEntity WellChildNutrition)
     | BackendAuthorityWellChildOPVImmunisation (BackendEntity WellChildOPVImmunisation)
@@ -190,6 +282,9 @@ type alias SyncInfoGeneral =
     , remainingToDownload : Int
     , deviceName : String
     , status : SyncInfoStatus
+    , rollbarToken : String
+    , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -200,6 +295,9 @@ type alias SyncInfoGeneralForPort =
     , remainingToDownload : Int
     , deviceName : String
     , status : String
+    , rollbarToken : String
+    , site : String
+    , features : String
     }
 
 
@@ -282,6 +380,11 @@ type alias Model =
     -- `idle` - 50; which is the minimum we will allow.
     -- `sync` - 10000. The means that sync will sit idle for 10 seconds.
     , syncSpeed : Editable SyncSpeed
+
+    -- We genereate and store Geo structure, to avoid repeated recalculations
+    -- on every click (at View), which causes unacceptable slowness.
+    , geoInfo : GeoInfo
+    , reverseGeoInfo : ReverseGeoInfo
     }
 
 
@@ -299,6 +402,8 @@ emptyModel flags =
     , downloadPhotosBatchSize = flags.batchSize
     , syncCycle = SyncCycleOn
     , syncSpeed = Editable.ReadOnly flags.syncSpeed
+    , geoInfo = emptyGeoInfo
+    , reverseGeoInfo = Dict.empty
     }
 
 
@@ -331,6 +436,9 @@ type alias DownloadSyncResponse a =
     { entities : List a
     , revisionCount : Int
     , deviceName : String
+    , rollbarToken : String
+    , site : Site
+    , features : EverySet SiteFeature
     }
 
 
@@ -410,10 +518,14 @@ type alias IndexDbUploadRemoteData a =
 -}
 type SyncStatus
     = SyncIdle
-    | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
       -- Int is used for a counter, to track file upload errors.
       -- If counter exceeds threshold, sync will be stopped.
-    | SyncUploadPhotoAuthority Int (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | SyncUploadPhoto Int (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      -- Int is used for a counter, to track file upload errors.
+      -- If counter exceeds threshold, sync will be stopped.
+    | SyncUploadScreenshot Int (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
+    | SyncUploadGeneral (UploadRec IndexDbQueryUploadGeneralResultRecord)
+    | SyncUploadWhatsApp (UploadRec IndexDbQueryUploadWhatsAppResultRecord)
     | SyncUploadAuthority (UploadRec IndexDbQueryUploadAuthorityResultRecord)
     | SyncDownloadGeneral (WebData (DownloadSyncResponse BackendGeneralEntity))
     | SyncDownloadAuthority (WebData (DownloadSyncResponse BackendAuthorityEntity))
@@ -442,8 +554,10 @@ type SyncCycle
 -}
 type IndexDbQueryType
     = -- Get a single photo pending uploading.
-      IndexDbQueryUploadPhotoAuthority
+      IndexDbQueryUploadPhoto
+    | IndexDbQueryUploadScreenshot
     | IndexDbQueryUploadGeneral
+    | IndexDbQueryUploadWhatsApp
       -- Query one authority at a time, to make sure
       -- content is being uploaded in correct order,
       -- and we present correct 'remianing for upload'
@@ -460,19 +574,27 @@ type IndexDbQueryType
     | IndexDbQueryRemoveUploadPhotos (List Int)
       -- Reports the number of entries at shardChanges table.
     | IndexDbQueryGetTotalEntriesToUpload
+      -- Pulls Entity from Shards table by UUID. We use so we can reslove
+      -- `Could not find UUID` error without performing remote debug on device.
+    | IndexDbQueryGetShardsEntityByUuid String
 
 
 type IndexDbQueryTypeResult
     = -- A single photo for upload, if exists.
-      IndexDbQueryUploadPhotoAuthorityResult (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
-    | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
+      IndexDbQueryUploadPhotoResult (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+      -- A single screenshot for upload, if exists.
+    | IndexDbQueryUploadScreenshotResult (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | IndexDbQueryUploadGeneralResult (Maybe IndexDbQueryUploadGeneralResultRecord)
+    | IndexDbQueryUploadWhatsAppResult (Maybe IndexDbQueryUploadWhatsAppResultRecord)
+    | IndexDbQueryUploadAuthorityResult (Maybe IndexDbQueryUploadAuthorityResultRecord)
       -- A single deferred photo, if exists.
     | IndexDbQueryDeferredPhotoResult (Maybe IndexDbQueryDeferredPhotoResultRecord)
     | IndexDbQueryGetTotalEntriesToUploadResult Int
+      -- JSON.stringify representation of pulled entity.
+    | IndexDbQueryGetShardsEntityByUuidResult String
 
 
-type UploadPhotoError
+type UploadFileError
     = BadJson String
     | NetworkError String
     | UploadError String
@@ -497,14 +619,20 @@ type IndexDbSaveStatus
     | IndexDbSaveSuccess
 
 
-{-| The info we get from query to `generalPhotoUploadChanges`.
--}
 type alias IndexDbQueryUploadPhotoResultRecord =
     { uuid : String
     , photo : String
     , localId : Int
 
     -- If photo was uploaded to Drupal, get the file ID.
+    , fileId : Maybe Int
+    }
+
+
+type alias IndexDbQueryUploadFileResultRecord =
+    { localId : Int
+
+    -- If file was uploaded to Drupal, get the ID.
     , fileId : Maybe Int
     }
 
@@ -519,6 +647,23 @@ type UploadMethod
 type alias IndexDbQueryUploadGeneralResultRecord =
     { entities : List ( BackendGeneralEntity, UploadMethod )
     , remaining : Int
+    }
+
+
+type alias IndexDbQueryUploadWhatsAppResultRecord =
+    { entities : List BackendWhatsAppEntity
+    , remaining : Int
+    }
+
+
+type alias BackendWhatsAppEntity =
+    { localId : Int
+    , personId : String
+    , dateMeasured : NominalDate
+    , language : Language
+    , reportType : ReportType
+    , phoneNumber : String
+    , screenshot : Int
     }
 
 
@@ -567,6 +712,21 @@ type alias IncidentContnentIdentifier =
     String
 
 
+type Site
+    = SiteRwanda
+    | SiteBurundi
+    | SiteUnknown
+
+
+type SiteFeature
+    = FeatureGroupEducation
+    | FeatureHIVManagement
+    | FeatureNCDA
+    | FeatureReportToWhatsApp
+    | FeatureStockManagement
+    | FeatureTuberculosisManagement
+
+
 type Msg
     = MsgDebouncer (Debouncer.Msg Msg)
     | NoOp
@@ -592,19 +752,25 @@ type Msg
       -- uploading the photos happens in JS, since we have to deal with file blobs
       -- which would be harder in Elm, given we have elm/http@1.0.
       -- This is the reason it doesn't get as arguments the result of the IndexDB.
-    | BackendPhotoUploadAuthority
+    | BackendPhotoUpload
+    | BackendScreenshotUpload
     | BackendUploadAuthority (Maybe IndexDbQueryUploadAuthorityResultRecord)
     | BackendUploadAuthorityHandle IndexDbQueryUploadAuthorityResultRecord (WebData ())
     | BackendUploadGeneral (Maybe IndexDbQueryUploadGeneralResultRecord)
     | BackendUploadGeneralHandle IndexDbQueryUploadGeneralResultRecord (WebData ())
-    | BackendUploadPhotoAuthorityHandle (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendUploadWhatsApp (Maybe IndexDbQueryUploadWhatsAppResultRecord)
+    | BackendUploadWhatsAppHandle IndexDbQueryUploadWhatsAppResultRecord (WebData ())
+    | BackendUploadPhotoHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
+    | BackendUploadScreenshotHandle (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
     | BackendReportState Int
+    | BackendReportIncidentDetails String
     | BackendReportSyncIncident SyncIncidentType
     | QueryIndexDb IndexDbQueryType
     | QueryIndexDbHandle Value
     | SavedAtIndexDbHandle Value
     | FetchFromIndexDbDeferredPhoto
     | FetchFromIndexDbUploadGeneral
+    | FetchFromIndexDbUploadWhatsApp
     | FetchFromIndexDbUploadAuthority
     | RevisionIdAuthorityAdd HealthCenterId
     | RevisionIdAuthorityRemove HealthCenterId

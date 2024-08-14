@@ -32,11 +32,6 @@ decodeEmptyArrayAsEmptyDict =
             )
 
 
-decodeError : Decoder String
-decodeError =
-    field "title" string
-
-
 decodeNullAsEmptyArray : Decoder (List a)
 decodeNullAsEmptyArray =
     (nullable <| list value)
@@ -56,24 +51,54 @@ turns it into an `EverySet`.
 -}
 decodeEverySet : Decoder a -> Decoder (EverySet a)
 decodeEverySet decoder =
-    oneOf
-        [ map EverySet.fromList <| list decoder
-        , succeed EverySet.empty
-        ]
-
-
-decodeWithDefault : a -> Decoder a -> Decoder a
-decodeWithDefault default decoder =
-    oneOf [ decoder, succeed default ]
-
-
-encodeIfExists : String -> Maybe a -> (a -> Value) -> List ( String, Value )
-encodeIfExists name maybeVal encoder =
-    maybeVal
-        |> Maybe.map (\val -> [ ( name, encoder val ) ])
-        |> Maybe.withDefault []
+    decodeWithFallback EverySet.empty (map EverySet.fromList <| list decoder)
 
 
 decodeWithFallback : a -> Decoder a -> Decoder a
 decodeWithFallback fallback decoder =
     oneOf [ decoder, succeed fallback ]
+
+
+encodeIfSet : String -> Maybe a -> (a -> Value) -> List ( String, Value )
+encodeIfSet name maybeVal encoder =
+    Maybe.map (\val -> [ ( name, encoder val ) ]) maybeVal
+        |> Maybe.withDefault []
+
+
+encodeNullable : String -> Maybe a -> (a -> Value) -> List ( String, Value )
+encodeNullable name =
+    encodeNullableWithValueFunc name identity
+
+
+encodeNullableWithValueFunc : String -> (a -> b) -> Maybe a -> (b -> Value) -> List ( String, Value )
+encodeNullableWithValueFunc name valueFunc maybeVal encoder =
+    let
+        encoded =
+            Maybe.map (valueFunc >> encoder) maybeVal
+                |> Maybe.withDefault Json.Encode.null
+    in
+    [ ( name, encoded ) ]
+
+
+encodeEverySetNullable : String -> Maybe (EverySet a) -> (a -> Value) -> List ( String, Value )
+encodeEverySetNullable name maybeVal encoder =
+    let
+        encoded =
+            Maybe.map
+                (\val ->
+                    if EverySet.isEmpty val then
+                        Json.Encode.null
+
+                    else
+                        encodeEverySet encoder val
+                )
+                maybeVal
+                |> Maybe.withDefault Json.Encode.null
+    in
+    [ ( name, encoded ) ]
+
+
+encodeEverySet : (a -> Value) -> EverySet a -> Value
+encodeEverySet encoder set =
+    EverySet.toList set
+        |> Json.Encode.list encoder

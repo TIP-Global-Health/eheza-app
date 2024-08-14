@@ -1,0 +1,290 @@
+.form-input.date {
+  height: 100px;
+  width: 100px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 35000;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.ui.modal.calendar-popup {
+  width: 80%;
+  margin-left: 4%;
+  margin-top: 5%;
+}
+
+/* DateSelector */
+.date-selector-popup,
+.ui.form .date-selector-popup {
+  background: #06b9ff;
+  height: 100%;
+  padding: 40px 70px;
+  width: 100%;
+}
+
+.date-selector-popup p,
+.ui.form .date-selector-popup p {
+  color: #fff;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.date-selector-popup select,
+.ui.form .date-selector-popup select {
+  background-color: #fff;
+  border-radius: 10px;
+  color: #808080;
+  font-size: 2.5rem;
+  border: 2px solid #b1b1b1;
+  padding: 0 0.5em;
+  line-height: 0.5;
+  text-align: left;
+  height: 70px;
+  width: 100%;
+}
+
+.date-selector-popup .year,
+.ui.form .date-selector-popup .year {
+  float: left;
+  width: 45%;
+  margin-right: 10%;
+}
+
+.date-selector-popup .month,
+.ui.form .date-selector-popup .month {
+  float: left;
+  width: 45%;
+}
+
+.date-selector-popup .days,
+.ui.form .date-selector-popup .days {
+  padding-top: 120px;
+}
+
+.date-selector-popup .days table,
+.ui.form .date-selector-popup .days table {
+  text-align: center;
+  width: 100%;
+}
+
+.date-selector-popup .days table th,
+.ui.form .date-selector-popup .days table th {
+  color: #fff;
+  text-transform: uppercase;
+}
+
+.date-selector-popup .days table td,
+.ui.form .date-selector-popup .days table td {
+  background-color: #fff;
+  border: 10px solid #06b9ff;
+  border-radius: 24px;
+  color: #808080;
+  font-size: 24px;
+  font-weight: bold;
+  height: 80px;
+  width: 80px;
+}
+
+.date-selector-popup .days table td.date-selector--dimmed,
+.ui.form .date-selector-popup .days table td.date-selector--dimmed,
+.date-selector-popup .days table td.date-selector--disabled,
+.ui.form .date-selector-popup .days table td.date-selector--disabled {
+  background-color: #e6e6e6;
+  color: #fff;
+}
+
+.date-selector-popup .days table td.date-selector--selected,
+.ui.form .date-selector-popup .days table td.date-selector--selected {
+  background-color: #000;
+  color: #fff;
+}
+
+.date-selector-popup .days table td.date-selector--selected p,
+.ui.form .date-selector-popup .days table td.date-selector--selected p {
+  border: 3px solid #fff;
+  border-radius: 6px;
+  line-height: 64px;
+}
+
+.date-selector-popup .ui.button,
+.ui.form .date-selector-popup .ui.button {
+  background: #fff;
+  border-radius: 5px;
+  color: #808080;
+  display: block;
+  margin-left: 30px;
+  margin-top: 30px;
+  width: 90%;
+}
+
+.date-selector-popup .ui.button.save {
+  font-family: Nunito, Arial, sans-serif;
+  font-size: 1.52rem;
+  font-weight: 800;
+  margin: auto;
+  padding-top: 1em;
+  padding-bottom: 1em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.date-selector {
+  font-size: 1em;
+  width: 27em;
+  height: 20em;
+  line-height: 1em;
+  background: #eeeeee;
+  color: #333333;
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+.date-selector > div {
+  float: left;
+  height: 18em;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 1em 0;
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+  margin-left: -1px;
+}
+
+.date-selector > div:nth-child(1) {
+  width: 4.5em;
+  border-left: none;
+  margin-left: 0;
+}
+
+.date-selector > div:nth-child(2) {
+  width: 4em;
+}
+
+.date-selector > div:nth-child(3) {
+  width: 18.5em;
+}
+
+.date-selector ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.date-selector li {
+  margin: 0;
+  padding: 0.25em 1em;
+}
+
+.date-selector table {
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.date-selector th,
+.date-selector td {
+  width: 1.5em;
+  height: 1em;
+  text-align: right;
+  padding: 0.75em 0.5em;
+}
+
+.date-selector th {
+  position: relative;
+  font-weight: normal;
+  padding-top: 0.25em;
+  color: #aaaaaa;
+}
+
+.date-selector th::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: block;
+  content: "";
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.date-selector th:first-child,
+.date-selector td:first-child {
+  padding-left: 1em;
+}
+
+.date-selector th:last-child,
+.date-selector td:last-child {
+  padding-right: 1em;
+}
+
+.date-selector li:hover,
+.date-selector td:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.date-selector--selected,
+.date-selector--selected.date-selector--selected:hover {
+  background: #69b3ff;
+  color: #ffffff;
+}
+
+.date-selector--dimmed {
+  color: #aaaaaa;
+}
+
+.date-selector--disabled,
+.date-selector--disabled.date-selector--disabled:hover {
+  background: transparent;
+  color: #dddddd;
+}
+
+/* scrollable-year */
+.date-selector--scrollable-year {
+  width: 28em;
+}
+
+.date-selector--scrollable-year > div:nth-child(1) {
+  width: 5.5em;
+}
+
+/* Dropdown */
+.dropdown {
+  display: inline-block;
+}
+
+.dropdown--button-container {
+  cursor: default;
+}
+
+.dropdown-open {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+.dropdown-open .dropdown--button-container {
+  position: relative;
+  z-index: 1;
+}
+
+.dropdown--page-cover {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.dropdown--content-container {
+  position: absolute;
+  box-shadow: 0 0.25em 2em 1px rgba(60, 60, 60, 0.35);
+}

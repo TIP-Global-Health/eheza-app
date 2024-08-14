@@ -1,0 +1,8 @@
+<?php
+
+/**
+ * @file
+ * Code for the Hedley HIV feature.
+ */
+
+include_once 'hedley_hiv.features.inc';

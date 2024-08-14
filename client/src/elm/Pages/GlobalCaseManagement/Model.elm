@@ -1,11 +1,17 @@
 module Pages.GlobalCaseManagement.Model exposing (..)
 
-import AssocList exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType)
-import Backend.Measurement.Model exposing (FollowUpOption(..), FollowUpValue, NutritionAssessment, PrenatalFollowUpValue)
+import Backend.Measurement.Model
+    exposing
+        ( AcuteIllnessFollowUpValue
+        , FollowUpOption
+        , FollowUpValue
+        , NutritionFollowUpValue
+        , PrenatalFollowUpValue
+        )
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType)
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Pages.Page exposing (Page)
@@ -27,8 +33,13 @@ emptyModel =
 type CaseManagementFilter
     = FilterAcuteIllness
     | FilterAntenatal
-    | FilterNutrition
     | FilterContactsTrace
+    | FilterHIV
+    | FilterImmunization
+    | FilterNCDLabs
+    | FilterNutrition
+    | FilterPrenatalLabs
+    | FilterTuberculosis
 
 
 type FollowUpDueOption
@@ -42,7 +53,7 @@ type FollowUpDueOption
 type alias NutritionFollowUpItem =
     { dateMeasured : NominalDate
     , personName : String
-    , value : FollowUpValue
+    , value : NutritionFollowUpValue
     }
 
 
@@ -61,7 +72,7 @@ type alias AcuteIllnessFollowUpItem =
     -- we need to store sequence number, to be able to order
     -- follow ups correctly.
     , encounterSequenceNumber : Int
-    , value : EverySet FollowUpOption
+    , value : AcuteIllnessFollowUpValue
     }
 
 
@@ -91,14 +102,68 @@ type alias PrenatalFollowUpEntry =
     }
 
 
+type alias ImmunizationFollowUpItem =
+    { dateMeasured : NominalDate
+    , dueDate : NominalDate
+    , personName : String
+    }
+
+
+type alias ImmunizationFollowUpEntry =
+    { personId : PersonId
+    , item : ImmunizationFollowUpItem
+    }
+
+
+type alias TuberculosisFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe TuberculosisEncounterId
+    , value : FollowUpValue
+    }
+
+
+type alias TuberculosisFollowUpEntry =
+    { participantId : Maybe IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : TuberculosisFollowUpItem
+    , allowStartEncounter : Bool
+    }
+
+
+type alias HIVFollowUpItem =
+    { dateMeasured : NominalDate
+    , personName : String
+    , encounterId : Maybe HIVEncounterId
+    , value : FollowUpValue
+    }
+
+
+type alias HIVFollowUpEntry =
+    { participantId : Maybe IndividualEncounterParticipantId
+    , personId : PersonId
+    , item : HIVFollowUpItem
+    , allowStartEncounter : Bool
+    }
+
+
 type FollowUpEncounterDataType
     = FollowUpNutrition FollowUpNutritionData
     | FollowUpAcuteIllness FollowUpAcuteIllnessData
     | FollowUpPrenatal FollowUpPrenatalData
+    | FollowUpImmunization FollowUpImmunizationData
+    | FollowUpTuberculosis FollowUpTuberculosisData
+    | FollowUpHIV FollowUpHIVData
     | CaseManagementContactsTracing
 
 
 type alias FollowUpNutritionData =
+    { personId : PersonId
+    , personName : String
+    }
+
+
+type alias FollowUpImmunizationData =
     { personId : PersonId
     , personName : String
     }
@@ -122,12 +187,58 @@ type alias FollowUpPrenatalData =
     }
 
 
-type alias ContactsTracingEntry =
+type alias FollowUpTuberculosisData =
+    { personId : PersonId
+    , personName : String
+    , participantId : Maybe IndividualEncounterParticipantId
+    }
+
+
+type alias FollowUpHIVData =
+    { personId : PersonId
+    , personName : String
+    , participantId : Maybe IndividualEncounterParticipantId
+    }
+
+
+type alias ContactsTracingEntryData =
     { itemId : AcuteIllnessTraceContactId
     , personName : String
     , phoneNumber : String
     , reporterName : String
     , lastFollowUpDate : Maybe NominalDate
+    }
+
+
+type alias PrenatalLabsEntryData =
+    { personId : PersonId
+    , personName : String
+    , encounterId : PrenatalEncounterId
+    , state : LabsEntryState
+    , urgentDiagnoses : List PrenatalDiagnosis
+    , label : String
+    }
+
+
+type LabsEntryState
+    = LabsEntryPending
+    | LabsEntryClosingSoon
+    | LabsEntryReadyForReview
+    | LabsEntryReviewed
+
+
+type alias NCDLabsEntryData =
+    { personId : PersonId
+    , personName : String
+    , encounterId : NCDEncounterId
+    , state : LabsEntryState
+    , label : String
+    }
+
+
+type alias FollowUpPatients =
+    { nutrition : List PersonId
+    , immunization : List PersonId
     }
 
 
@@ -137,3 +248,4 @@ type Msg
     | SetDialogState (Maybe FollowUpEncounterDataType)
     | StartFollowUpEncounter FollowUpEncounterDataType
     | StartPrenatalFollowUpEncounter IndividualEncounterParticipantId Bool PrenatalEncounterType
+    | HandleUrgentPrenatalDiagnoses PrenatalEncounterId ( String, String )

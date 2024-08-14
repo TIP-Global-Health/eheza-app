@@ -1,11 +1,6 @@
 module Pages.Participant.Test exposing (all)
 
-import AssocList as Dict
-import Date
 import Expect
-import Fixtures exposing (..)
-import Pages.Participant.Model exposing (emptyModel)
-import Participant.Model
 import Test exposing (Test, describe, test)
 
 

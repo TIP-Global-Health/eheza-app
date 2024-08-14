@@ -2,15 +2,12 @@ module App.Test exposing (all)
 
 import App.Model exposing (..)
 import App.View exposing (view)
-import AssocList as Dict
-import Maybe exposing (withDefault)
 import Pages.Device.Model
 import Pages.PinCode.Model
 import RemoteData exposing (RemoteData(..))
-import Restful.Endpoint exposing (toEntityUuid)
 import Test exposing (Test, describe, test)
 import Test.Html.Query as Query
-import Test.Html.Selector as Selector exposing (class, tag, text)
+import Test.Html.Selector as Selector exposing (text)
 import Translate.Model exposing (Language(..))
 
 

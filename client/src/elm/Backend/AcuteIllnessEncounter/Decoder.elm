@@ -1,13 +1,14 @@
-module Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounter)
+module Backend.AcuteIllnessEncounter.Decoder exposing (decodeAcuteIllnessDiagnosis, decodeAcuteIllnessEncounter, decodeAcuteIllnessEncounterType)
 
 import Backend.AcuteIllnessEncounter.Model exposing (..)
+import Backend.AcuteIllnessEncounter.Types exposing (..)
 import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
-import Utils.Json exposing (decodeWithDefault)
+import Utils.Json exposing (decodeWithFallback)
 
 
 decodeAcuteIllnessEncounter : Decoder AcuteIllnessEncounter
@@ -17,7 +18,7 @@ decodeAcuteIllnessEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> optional "sequence_number" decodeInt 1
-        |> optional "ai_encounter_type" (decodeWithDefault AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
+        |> optional "ai_encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
@@ -30,6 +31,9 @@ decodeAcuteIllnessEncounterType =
                 case encounterType of
                     "nurse-encounter" ->
                         succeed AcuteIllnessEncounterNurse
+
+                    "nurse-encounter-subsequent" ->
+                        succeed AcuteIllnessEncounterNurseSubsequent
 
                     "chw-encounter" ->
                         succeed AcuteIllnessEncounterCHW

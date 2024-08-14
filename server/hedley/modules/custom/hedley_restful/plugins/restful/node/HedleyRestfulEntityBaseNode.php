@@ -63,21 +63,27 @@ abstract class HedleyRestfulEntityBaseNode extends \RestfulEntityBaseNode {
    */
   protected function imageProcess(array $value) {
     if (static::isArrayNumeric($value)) {
-      $output = array();
+      $return = [];
       foreach ($value as $item) {
-        $output[] = $this->imageProcess($item);
+        $return[] = $this->imageProcess($item);
       }
-      return $output;
+      return $return;
     }
-    return array(
+
+    $return = [
       'id' => $value['fid'],
       'self' => file_create_url($value['uri']),
       'filemime' => $value['filemime'],
       'filesize' => $value['filesize'],
       'width' => $value['width'],
       'height' => $value['height'],
-      'styles' => $value['image_styles'],
-    );
+    ];
+
+    if (!empty($value['image_styles'])) {
+      $return['styles'] = $value['image_styles'];
+    }
+
+    return $return;
   }
 
   /**

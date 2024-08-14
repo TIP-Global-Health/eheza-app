@@ -1,19 +1,5 @@
 module ZScore.Model exposing (..)
 
-{-| Models our ZScore tables.
-
-
-## Model
-
-@docs Model, Msg, MaleAndFemale, ZScoreEntry, emptyModel
-
-
-## Units
-
-@docs Length, Height, Centimetres, Kilograms, BMI, ZScore
-
--}
-
 import RemoteData exposing (RemoteData(..), WebData)
 import Utils.AllDict exposing (AllDict)
 

@@ -1,6 +1,83 @@
-/*
-DateSelector
-*/
+/* DateSelector */
+ .date-selector-popup, .ui.form .date-selector-popup {
+	 background: #06b9ff;
+	 height: 100%;
+	 padding: 40px 70px;
+	 width: 100%;
+}
+ .date-selector-popup p, .ui.form .date-selector-popup p {
+	 color: #fff;
+	 font-size: 22px;
+	 font-weight: bold;
+	 margin-bottom: 0;
+	 text-align: center;
+	 text-transform: uppercase;
+}
+ .date-selector-popup select, .ui.form .date-selector-popup select {
+	 background-color: #fff;
+	 border-radius: 10px;
+	 color: #808080;
+	 font-size: 2.5rem;
+	 border: 2px solid #b1b1b1;
+	 padding: 0 0.5em;
+	 line-height: 0.5;
+	 text-align: left;
+	 height: 70px;
+	 width: 100%;
+}
+ .date-selector-popup .year, .ui.form .date-selector-popup .year {
+	 float: left;
+	 width: 35%;
+	 margin-right: 110px;
+}
+ .date-selector-popup .month, .ui.form .date-selector-popup .month {
+	 float: left;
+	 width: 45%;
+}
+ .date-selector-popup .days, .ui.form .date-selector-popup .days {
+	 padding-top: 120px;
+}
+ .date-selector-popup .days table, .ui.form .date-selector-popup .days table {
+	 text-align: center;
+	 width: 100%;
+}
+ .date-selector-popup .days table th, .ui.form .date-selector-popup .days table th {
+	 color: #fff;
+	 text-transform: uppercase;
+}
+ .date-selector-popup .days table td, .ui.form .date-selector-popup .days table td {
+	 background-color: #fff;
+	 border: 10px solid #06b9ff;
+	 border-radius: 24px;
+	 color: #808080;
+	 font-size: 24px;
+	 font-weight: bold;
+	 height: 80px;
+	 width: 80px;
+}
+ .date-selector-popup .days table td.date-selector--dimmed, .ui.form .date-selector-popup .days table td.date-selector--dimmed, .date-selector-popup .days table td.date-selector--disabled, .ui.form .date-selector-popup .days table td.date-selector--disabled {
+	 background-color: #e6e6e6;
+	 color: #fff;
+}
+ .date-selector-popup .days table td.date-selector--selected, .ui.form .date-selector-popup .days table td.date-selector--selected {
+	 background-color: #000;
+	 color: #fff;
+}
+ .date-selector-popup .days table td.date-selector--selected p, .ui.form .date-selector-popup .days table td.date-selector--selected p {
+	 border: 3px solid #fff;
+	 border-radius: 6px;
+	 line-height: 64px;
+}
+ .date-selector-popup .ui.button, .ui.form .date-selector-popup .ui.button {
+	 background: #fff;
+	 border-radius: 5px;
+	 color: #808080;
+	 display: block;
+	 margin-left: 30px;
+	 margin-top: 30px;
+	 width: 90%;
+}
+
 
 .date-selector { font-size: 1em; width: 27em; height: 20em; line-height: 1em; background: #eeeeee; color: #333333; cursor: default; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
 

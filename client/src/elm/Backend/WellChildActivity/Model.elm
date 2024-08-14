@@ -10,3 +10,5 @@ type WellChildActivity
     | WellChildImmunisation
     | WellChildNextSteps
     | WellChildPhoto
+    | WellChildNCDA
+    | WellChildHomeVisit

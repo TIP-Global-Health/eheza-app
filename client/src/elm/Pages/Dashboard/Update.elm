@@ -1,14 +1,13 @@
 module Pages.Dashboard.Update exposing (update)
 
 import App.Model
-import AssocList as Dict
 import Backend.Entities exposing (HealthCenterId)
 import Backend.Model exposing (ModelIndexedDb)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (filterProgramTypeFromString)
-import Pages.Page exposing (ChwDashboardPage(..), DashboardPage(..), NurseDashboardPage(..), Page(..), UserPage(..))
+import Pages.Page exposing (DashboardPage(..), NutritionSubPage(..), Page(..), UserPage(..))
 import Restful.Endpoint exposing (toEntityUuid)
 
 
@@ -49,7 +48,8 @@ update currentDate healthCenterId subPage db msg model =
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate healthCenterId subPage db) [ SetActivePage (UserPage (DashboardPage (NursePage CaseManagementPage))) ]
+                |> sequenceExtra (update currentDate healthCenterId subPage db)
+                    [ SetActivePage (UserPage (DashboardPage (PageNutrition PageCaseManagement))) ]
 
         SetFilterGender gender ->
             ( { model | beneficiariesGender = gender }
@@ -120,21 +120,49 @@ update currentDate healthCenterId subPage db msg model =
 
         SetActivePage page ->
             let
+                -- When nurse navigates from Nutrition charts page to main page,
+                -- reset filters to All Programs, unless village was selected.
+                ( programTypeFilter, selectedVillageFilter ) =
+                    case ( subPage, page ) of
+                        ( PageNutrition PageCharts, UserPage (DashboardPage PageMain) ) ->
+                            if model.programTypeFilter /= FilterProgramCommunity then
+                                ( FilterAllPrograms, Nothing )
+
+                            else
+                                ( model.programTypeFilter, model.selectedVillageFilter )
+
+                        _ ->
+                            ( model.programTypeFilter, model.selectedVillageFilter )
+
                 newPeriod =
                     case page of
-                        UserPage (DashboardPage MainPage) ->
+                        UserPage (DashboardPage PageMain) ->
                             OneYear
 
-                        UserPage (DashboardPage (NursePage StatsPage)) ->
+                        UserPage (DashboardPage (PageNutrition PageStats)) ->
                             ThisMonth
 
-                        UserPage (DashboardPage (NursePage CaseManagementPage)) ->
+                        UserPage (DashboardPage (PageNutrition PageCaseManagement)) ->
                             ThreeMonthsAgo
 
                         _ ->
                             OneYear
             in
-            ( { model | latestPage = subPage, period = newPeriod }, Cmd.none, [ App.Model.SetActivePage page ] )
+            ( { model
+                | latestPage = subPage
+                , programTypeFilter = programTypeFilter
+                , selectedVillageFilter = selectedVillageFilter
+                , period = newPeriod
+              }
+            , Cmd.none
+            , [ App.Model.SetActivePage page ]
+            )
+
+        SetEducationSessionDrillIn session ->
+            ( { model | educationSessionDrillIn = session }
+            , Cmd.none
+            , []
+            )
 
 
 getAssembledPermutationMsg : Maybe HealthCenterId -> Model -> List App.Model.Msg

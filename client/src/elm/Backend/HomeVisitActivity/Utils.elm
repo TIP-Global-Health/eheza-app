@@ -66,6 +66,6 @@ getActivityIcon activity =
             "food-security"
 
 
-getAllActivities : List HomeVisitActivity
-getAllActivities =
+allActivities : List HomeVisitActivity
+allActivities =
     [ Feeding, Caring, Hygiene, FoodSecurity ]

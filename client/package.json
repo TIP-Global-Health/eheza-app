@@ -4,15 +4,19 @@
   "version": "0.1.0",
   "description": "Generated elm",
   "dependencies": {
-    "workbox-build": "^4.3.1",
+    "html2canvas": "^1.4.1",
     "include-media": "^1.4.9",
-    "webdriverio": "^5.9.1"
+    "rollbar": "^2.26.2",
+    "signature_pad": "^4.1.5",
+    "webdriverio": "^5.9.1",
+    "workbox-build": "^6.5.4"
   },
   "devDependencies": {
     "browser-sync": "^2.26.5",
     "chance": "^1.0.18",
     "csv-parse": "^4.4.1",
     "del": "^4.1.1",
+    "elm-review": "^2.10.2",
     "elm-test": "^0.19.1-revision6",
     "git-rev": "^0.2.1",
     "gulp": "^3.9.1",

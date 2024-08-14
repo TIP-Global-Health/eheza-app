@@ -115,7 +115,8 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
         $this->createMuac($session_nid, $child_nid, $measurements[$measurements_state]['muac'], $session['date']);;
       }
 
-      $case_management = hedley_stats_get_case_management($this->healthCenterId);
+      $patients_details = [];
+      $case_management = hedley_stats_get_case_management($this->healthCenterId, $patients_details);
 
       // Assert the amount of case management.
       $this->assertEqual(20, count($case_management['this_year']['fbf']));
@@ -133,8 +134,9 @@ class HedleyStatsCalculation extends HedleyWebTestBase {
       'start' => strtotime("-1 month"),
       'end' => time(),
     ];
-    $fbf_clinics = hedley_health_center_get_clinics_by_health_center($this->healthCenterId, 'fbf');
-    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics);
+    $fbf_clinics = hedley_health_center_get_clinics_of_health_center($this->healthCenterId, 'fbf');
+    $patients_details = [];
+    list($completed_programs, $missed_sessions) = hedley_stats_get_session_attendance_stats_by_health_center($this->healthCenterId, $fbf_clinics, $patients_details);
 
     // Filter missed sessions.
     $count_missed_sessions = 0;

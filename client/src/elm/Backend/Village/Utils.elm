@@ -1,17 +1,16 @@
 module Backend.Village.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Village.Model exposing (..)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 getVillageClinicId : VillageId -> ModelIndexedDb -> Maybe ClinicId
 getVillageClinicId villageId db =
-    db.clinics
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe db.clinics
         |> Maybe.map
             (Dict.toList
                 >> List.filterMap
@@ -28,8 +27,7 @@ getVillageClinicId villageId db =
 
 getVillageById : ModelIndexedDb -> VillageId -> Maybe Village
 getVillageById db villageId =
-    db.villages
-        |> RemoteData.toMaybe
+    RemoteData.toMaybe db.villages
         |> Maybe.andThen (Dict.get villageId)
 
 
@@ -41,6 +39,13 @@ getVillageHealthCenterId villageId db =
 
 personLivesInVillage : Person -> ModelIndexedDb -> VillageId -> Bool
 personLivesInVillage person db villageId =
+    getVillageById db villageId
+        |> Maybe.map (isVillageResident person)
+        |> Maybe.withDefault False
+
+
+isVillageResident : Person -> Village -> Bool
+isVillageResident person village =
     let
         valuesMatch villageValue personValue =
             case personValue of
@@ -50,16 +55,11 @@ personLivesInVillage person db villageId =
                 Nothing ->
                     False
     in
-    getVillageById db villageId
-        |> Maybe.map
-            (\village ->
-                valuesMatch village.province person.province
-                    && valuesMatch village.district person.district
-                    && valuesMatch village.sector person.sector
-                    && valuesMatch village.cell person.cell
-                    && valuesMatch village.village person.village
-            )
-        |> Maybe.withDefault False
+    valuesMatch village.province person.province
+        && valuesMatch village.district person.district
+        && valuesMatch village.sector person.sector
+        && valuesMatch village.cell person.cell
+        && valuesMatch village.village person.village
 
 
 getVillageIdByGeoFields : ModelIndexedDb -> String -> String -> String -> String -> String -> Maybe VillageId
@@ -78,3 +78,13 @@ getVillageIdByGeoFields db province district sector cell village_ =
                 >> List.head
                 >> Maybe.map Tuple.first
             )
+
+
+{-| Need to `FetchPeopleInVillage villageId` at Fetch, for this to work.
+-}
+resolveVillageResidents : VillageId -> ModelIndexedDb -> List PersonId
+resolveVillageResidents villageId db =
+    Dict.get villageId db.peopleInVillage
+        |> Maybe.andThen RemoteData.toMaybe
+        |> Maybe.map Dict.keys
+        |> Maybe.withDefault []

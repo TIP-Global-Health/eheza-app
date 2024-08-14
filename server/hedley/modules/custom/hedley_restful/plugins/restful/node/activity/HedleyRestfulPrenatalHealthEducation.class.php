@@ -15,6 +15,7 @@ class HedleyRestfulPrenatalHealthEducation extends HedleyRestfulPrenatalActivity
    */
   protected $multiFields = [
     'field_prenatal_health_education',
+    'field_health_education_signs_ph2',
   ];
 
 }

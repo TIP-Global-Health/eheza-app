@@ -8,31 +8,44 @@
 include_once 'hedley_health_center.features.inc';
 
 /**
- * Get Clinics by health center.
+ * Get Clinics node IDS belonging to health center, by clinic type.
  *
  * @param int $health_center_id
  *   The health center node ID.
- * @param string $type
- *   The clinic type.
  * @param int $range
  *   The queries' range.
  *
  * @return array
- *   Node IDs if they exist or empty array if no nodes exist.
+ *   Array of clinic type, each holding an array of that type clinic Node IDs.
  */
-function hedley_health_center_get_clinics_by_health_center($health_center_id, $type, $range = 100) {
-  $query = new EntityFieldQuery();
+function hedley_health_center_get_clinics_of_health_center($health_center_id, $range = 100) {
+  $query = db_select('node', 'n')
+    ->condition('n.type', 'clinic')
+    ->condition('n.status', NODE_PUBLISHED);
+
+  $query->join('field_data_field_health_center', 'hc', 'n.nid = hc.entity_id');
+  $query->join('field_data_field_group_type', 'gt', 'n.nid = gt.entity_id');
+
   $query
-    ->entityCondition('entity_type', 'node')
-    ->propertyCondition('type', 'clinic')
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_health_center', 'target_id', $health_center_id)
-    ->fieldCondition('field_group_type', 'value', $type)
+    ->condition('hc.field_health_center_target_id', $health_center_id)
     ->range(0, $range);
 
-  $result = $query->execute();
+  $query->fields('n', ['nid']);
+  $query->fields('gt', ['field_group_type_value']);
 
-  return !empty($result['node']) ? array_keys($result['node']) : [];
+  $result = $query->execute()->fetchAll();
+  $clinics_by_type = [];
+
+  foreach ($result as $row) {
+    if (!isset($clinics_by_type[$row->field_group_type_value])) {
+      $clinics_by_type[$row->field_group_type_value] = [$row->nid];
+      continue;
+    }
+
+    $clinics_by_type[$row->field_group_type_value][] = [$row->nid];
+  }
+
+  return $clinics_by_type;
 }
 
 /**
@@ -56,6 +69,25 @@ function hedley_health_center_get_villages_by_health_center($health_center_id, $
     ->range(0, $range);
 
   $result = $query->execute();
+
+  return !empty($result['node']) ? array_keys($result['node']) : [];
+}
+
+/**
+ * Retrieves all health center node IDs.
+ *
+ * @return array
+ *   An array of health center node IDs. If no health centers are found,
+ *   an empty array is returned.
+ */
+function hedley_health_center_get_all_health_centers_ids() {
+  $query = new EntityFieldQuery();
+
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'health_center')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->execute();
 
   return !empty($result['node']) ? array_keys($result['node']) : [];
 }

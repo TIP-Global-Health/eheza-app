@@ -6,29 +6,25 @@ available for data-entry.
 -}
 
 import AssocList as Dict exposing (Dict)
-import Backend.Clinic.Model exposing (Clinic, ClinicType(..), allClinicTypes)
+import Backend.Clinic.Model exposing (Clinic, allClinicTypes)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
 import Backend.Nurse.Model exposing (Nurse)
 import Backend.Nurse.Utils exposing (isAuthorithedNurse)
-import Backend.Session.Model exposing (Session)
-import Backend.Session.Utils exposing (isClosed)
-import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
-import List.Zipper as Zipper
-import Maybe.Extra exposing (isJust, unwrap)
+import Maybe.Extra exposing (isJust)
 import Pages.Clinics.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.PageNotFound.View
-import RemoteData exposing (RemoteData(..), WebData, isLoading)
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
-import SyncManager.Model exposing (SyncInfoStatus(..))
+import Pages.Utils exposing (viewBySyncStatus)
+import RemoteData
+import Restful.Endpoint exposing (toEntityUuid)
+import SyncManager.Model
 import SyncManager.Utils exposing (getSyncedHealthCenters)
 import Translate exposing (Language, translate)
+import Utils.NominalDate exposing (sortByDate)
 import Utils.WebData exposing (viewWebData)
 
 
@@ -39,22 +35,14 @@ For now, at least, we don't really need our own `Msg` type, so we're just using
 the big one.
 
 -}
-view : Language -> NominalDate -> Nurse -> HealthCenterId -> Maybe ClinicId -> Model -> ModelIndexedDb -> SyncManager.Model.Model -> Html Msg
-view language currentDate user healthCenterId selectedClinic model db syncManager =
-    case selectedClinic of
-        Just clinicId ->
-            viewClinic language currentDate user clinicId db
-
-        Nothing ->
-            viewClinicList language user healthCenterId model db syncManager
-
-
-viewClinicList : Language -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> SyncManager.Model.Model -> Html Msg
-viewClinicList language user healthCenterId model db syncManager =
+view : Language -> NominalDate -> Nurse -> HealthCenterId -> Model -> ModelIndexedDb -> SyncManager.Model.Model -> Html Msg
+view language currentDate user healthCenterId model db syncManager =
     let
         content =
             viewWebData language
-                (viewLoadedClinicList language user healthCenterId syncManager model)
+                (viewLoadedClinicList language currentDate user healthCenterId syncManager db model
+                    >> viewBySyncStatus language healthCenterId syncManager.syncInfoAuthorities
+                )
                 identity
                 db.clinics
 
@@ -70,13 +58,11 @@ viewClinicList language user healthCenterId model db syncManager =
             [ class "ui basic head segment" ]
             [ h1 [ class "ui header" ]
                 [ text <| translate language titleTransId ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick goBackAction
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+                [ span [ class "icon-back" ] [] ]
             ]
         , div
             [ class "ui basic segment" ]
@@ -92,115 +78,124 @@ we could show something about the sync status here ... might want to know how
 up-to-date things are.
 
 -}
-viewLoadedClinicList : Language -> Nurse -> HealthCenterId -> SyncManager.Model.Model -> Model -> Dict ClinicId Clinic -> Html Msg
-viewLoadedClinicList language user selectedHealthCenterId syncManager model clinics =
+viewLoadedClinicList :
+    Language
+    -> NominalDate
+    -> Nurse
+    -> HealthCenterId
+    -> SyncManager.Model.Model
+    -> ModelIndexedDb
+    -> Model
+    -> Dict ClinicId Clinic
+    -> Html Msg
+viewLoadedClinicList language currentDate user selectedHealthCenterId syncManager db model clinics =
     let
         syncedHealthCenters =
             getSyncedHealthCenters syncManager
                 |> List.map toEntityUuid
 
-        showWarningMessage header message =
-            div
-                [ class "ui message warning" ]
-                [ div [ class "header" ] [ text <| translate language header ]
-                , text <| translate language message
-                ]
-
-        selectedHealthCenterSyncInfo =
-            syncManager.syncInfoAuthorities
-                |> Maybe.andThen
-                    (Zipper.toList >> List.Extra.find (\authorityInfo -> authorityInfo.uuid == fromEntityUuid selectedHealthCenterId))
-    in
-    selectedHealthCenterSyncInfo
-        |> Maybe.map
-            (\syncInfo ->
-                case syncInfo.status of
-                    NotAvailable ->
-                        showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync
-
-                    Uploading ->
-                        showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCUploading
-
-                    Downloading ->
-                        showWarningMessage Translate.SelectedHCSyncing Translate.SelectedHCDownloading
-
-                    _ ->
-                        let
-                            titleTransId =
-                                if isJust model.clinicType then
-                                    Translate.SelectYourGroup
-
-                                else
-                                    Translate.SelectProgram
-
-                            title =
-                                p
-                                    [ class "centered" ]
-                                    [ text <| translate language titleTransId
-                                    , text ":"
-                                    ]
-
-                            synced =
-                                case model.clinicType of
-                                    Just clinicType ->
-                                        clinics
-                                            |> Dict.filter
-                                                (\_ clinic ->
-                                                    -- Group belongs to seleced health center.
-                                                    (clinic.healthCenterId == selectedHealthCenterId)
-                                                        -- Health center is synced.
-                                                        && List.member clinic.healthCenterId syncedHealthCenters
-                                                        -- Group is of selected type.
-                                                        && (clinic.clinicType == clinicType)
-                                                )
-                                            |> Dict.toList
-                                            |> List.sortBy (Tuple.second >> .name)
-                                            |> Dict.fromList
-
-                                    Nothing ->
-                                        clinics
-                                            |> Dict.filter
-                                                (\_ clinic ->
-                                                    -- Group belongs to seleced health center.
-                                                    (clinic.healthCenterId == selectedHealthCenterId)
-                                                        -- Health center is synced.
-                                                        && List.member clinic.healthCenterId syncedHealthCenters
-                                                )
-
-                            buttonsView =
-                                if isJust model.clinicType then
-                                    synced
-                                        |> Dict.toList
-                                        |> List.map (viewClinicButton user)
-
-                                else
-                                    synced
-                                        |> Dict.values
-                                        |> viewClinicTypeButtons language
-                        in
-                        div []
-                            [ title
-                            , div [] buttonsView
-                            ]
-            )
-        |> Maybe.withDefault
-            (showWarningMessage Translate.SelectedHCNotSynced Translate.PleaseSync)
-
-
-viewClinicButton : Nurse -> ( ClinicId, Clinic ) -> Html Msg
-viewClinicButton nurse ( clinicId, clinic ) =
-    let
-        classAttr =
-            if isAuthorithedNurse clinic nurse then
-                class "ui fluid primary button"
+        titleTransId =
+            if isJust model.clinicType then
+                Translate.SelectYourGroup
 
             else
-                class "ui fluid primary dark disabled button"
+                Translate.SelectProgram
+
+        title =
+            p
+                [ class "centered" ]
+                [ text <| translate language titleTransId
+                , text ":"
+                ]
+
+        synced =
+            case model.clinicType of
+                Just clinicType ->
+                    Dict.filter
+                        (\_ clinic ->
+                            -- Group belongs to seleced health center.
+                            (clinic.healthCenterId == selectedHealthCenterId)
+                                -- Health center is synced.
+                                && List.member clinic.healthCenterId syncedHealthCenters
+                                -- Group is of selected type.
+                                && (clinic.clinicType == clinicType)
+                        )
+                        clinics
+                        |> Dict.toList
+                        |> List.sortBy (Tuple.second >> .name)
+                        |> Dict.fromList
+
+                Nothing ->
+                    Dict.filter
+                        (\_ clinic ->
+                            -- Group belongs to seleced health center.
+                            (clinic.healthCenterId == selectedHealthCenterId)
+                                -- Health center is synced.
+                                && List.member clinic.healthCenterId syncedHealthCenters
+                        )
+                        clinics
+
+        buttonsView =
+            if isJust model.clinicType then
+                Dict.toList synced
+                    |> List.map (viewClinicButton currentDate user db)
+
+            else
+                Dict.values synced
+                    |> viewClinicTypeButtons language
     in
-    button
-        [ classAttr
-        , onClick <| SetActivePage <| UserPage <| ClinicsPage <| Just clinicId
+    div []
+        [ title
+        , div [] buttonsView
         ]
+
+
+viewClinicButton : NominalDate -> Nurse -> ModelIndexedDb -> ( ClinicId, Clinic ) -> Html Msg
+viewClinicButton currentDate nurse db ( clinicId, clinic ) =
+    let
+        attributes =
+            if isAuthorithedNurse clinic nurse then
+                let
+                    sessions =
+                        Dict.get clinicId db.sessionsByClinic
+                            |> Maybe.andThen RemoteData.toMaybe
+
+                    sessionStartedToday =
+                        Maybe.andThen
+                            (Dict.filter (\_ session -> session.startDate == currentDate)
+                                >> Dict.toList
+                                >> List.sortWith (sortByDate (Tuple.second >> .startDate))
+                                >> List.head
+                            )
+                            sessions
+
+                    action =
+                        Maybe.map
+                            (\( sessionId, _ ) ->
+                                [ SessionPage sessionId AttendancePage
+                                    |> UserPage
+                                    |> SetActivePage
+                                    |> onClick
+                                ]
+                            )
+                            sessionStartedToday
+                            |> Maybe.withDefault
+                                [ { startDate = currentDate
+                                  , endDate = Nothing
+                                  , clinicId = clinicId
+                                  , clinicType = clinic.clinicType
+                                  }
+                                    |> PostSession
+                                    |> MsgIndexedDb
+                                    |> onClick
+                                ]
+                in
+                class "ui fluid primary button" :: action
+
+            else
+                [ class "ui fluid primary dark disabled button" ]
+    in
+    button attributes
         [ text clinic.name ]
 
 
@@ -208,12 +203,11 @@ viewClinicTypeButtons : Language -> List Clinic -> List (Html Msg)
 viewClinicTypeButtons language clinics =
     let
         clinicsTypes =
-            clinics
-                |> List.map .clinicType
+            List.map .clinicType clinics
 
         allowedTypes =
-            allClinicTypes
-                |> List.filter (\type_ -> List.member type_ clinicsTypes)
+            List.filter (\type_ -> List.member type_ clinicsTypes)
+                allClinicTypes
     in
     allowedTypes
         |> List.map
@@ -224,178 +218,3 @@ viewClinicTypeButtons language clinics =
                     ]
                     [ text <| translate language (Translate.ClinicType allowedType) ]
             )
-
-
-{-| View a specific clinic.
--}
-viewClinic : Language -> NominalDate -> Nurse -> ClinicId -> ModelIndexedDb -> Html Msg
-viewClinic language currentDate nurse clinicId db =
-    let
-        clinic =
-            RemoteData.map (Dict.get clinicId) db.clinics
-
-        sessions =
-            db.sessionsByClinic
-                |> Dict.get clinicId
-                |> Maybe.withDefault NotAsked
-    in
-    viewWebData language
-        (viewLoadedClinic language currentDate nurse db.postSession clinicId)
-        identity
-        (RemoteData.append clinic sessions)
-
-
-viewLoadedClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> ( Maybe Clinic, Dict SessionId Session ) -> Html Msg
-viewLoadedClinic language currentDate nurse postSession clinicId ( clinic, sessions ) =
-    case clinic of
-        Just clinic_ ->
-            div
-                [ class "wrap wrap-alt-2" ]
-                (viewFoundClinic language currentDate nurse postSession clinicId clinic_ sessions)
-
-        Nothing ->
-            Pages.PageNotFound.View.viewPage language
-                (SetActivePage <| UserPage <| ClinicsPage Nothing)
-                (UserPage <| ClinicsPage <| Just clinicId)
-
-
-{-| We show recent and upcoming sessions, with a link to dive into the session
-if it is open. (That is, the dates are correct and it's not explicitly closed).
-We'll show anything which was scheduled to start or end within the last week
-or the next week.
--}
-viewFoundClinic : Language -> NominalDate -> Nurse -> WebData SessionId -> ClinicId -> Clinic -> Dict SessionId Session -> List (Html Msg)
-viewFoundClinic language currentDate nurse postSession clinicId clinic sessions =
-    let
-        daysToShow =
-            7
-
-        recentAndUpcomingSessions =
-            sessions
-                |> Dict.filter
-                    (\_ session ->
-                        let
-                            deltaToEndDateDays =
-                                session.endDate
-                                    |> Maybe.withDefault currentDate
-                                    |> (\endDate -> Date.diff Days endDate currentDate)
-
-                            deltaToStartDateDays =
-                                Date.diff Days session.startDate currentDate
-                        in
-                        -- Ends last week or next week
-                        (abs deltaToEndDateDays <= daysToShow)
-                            || -- Starts last week or next week
-                               (abs deltaToStartDateDays <= daysToShow)
-                            || -- Is between start and end date
-                               (deltaToStartDateDays <= 0 && deltaToEndDateDays >= 0)
-                    )
-
-        sessionsStartedToday =
-            recentAndUpcomingSessions
-                |> Dict.filter (\_ session -> session.startDate == currentDate)
-
-        -- We allow the creation of a new session if there is no session that
-        -- was started today. So, there are several scenarios:
-        --
-        -- 1. If there are open sessions from the past (not started today), you
-        --    can choose one of them, or start a new session.
-        --
-        -- 2. If there is an open session started today, you can only choose
-        --    that session. You can't start a second open session for today.
-        --
-        -- Note that we can theoretically end up with two sessions started the
-        -- same day if they were created on different devices, and the second
-        -- is created before the first syncs. We could write some code to
-        -- automatically "consolidate" those two sessions.
-        enableCreateSessionButton =
-            Dict.isEmpty sessionsStartedToday
-
-        defaultSession =
-            { startDate = currentDate
-            , endDate = Nothing
-            , clinicId = clinicId
-            , clinicType = clinic.clinicType
-            }
-
-        createSessionButton =
-            button
-                [ classList
-                    [ ( "ui button", True )
-                    , ( "disabled", not enableCreateSessionButton )
-                    , ( "active", enableCreateSessionButton )
-                    , ( "loading", isLoading postSession )
-                    ]
-                , defaultSession
-                    |> PostSession
-                    |> MsgIndexedDb
-                    |> onClick
-                ]
-                [ text <| translate language Translate.CreateGroupEncounter ]
-
-        content =
-            if isAuthorithedNurse clinic nurse then
-                [ h1 [] [ text <| translate language Translate.RecentAndUpcomingGroupEncounters ]
-                , table
-                    [ class "ui table session-list" ]
-                    [ thead []
-                        [ tr []
-                            [ th [] [ text <| translate language Translate.StartDate ]
-                            , th [] [ text <| translate language Translate.EndDate ]
-                            ]
-                        ]
-                    , recentAndUpcomingSessions
-                        |> Dict.map (viewSession language currentDate)
-                        |> Dict.values
-                        |> tbody []
-                    ]
-                , createSessionButton
-                ]
-
-            else
-                [ div [ class "ui message error" ]
-                    [ text <| translate language Translate.GroupUnauthorized ]
-                ]
-    in
-    [ div
-        [ class "ui basic head segment" ]
-        [ h1
-            [ class "ui header" ]
-            [ text clinic.name ]
-        , a
-            [ class "link-back"
-            , onClick <| SetActivePage <| UserPage <| ClinicsPage Nothing
-            ]
-            [ span [ class "icon-back" ] []
-            , span [] []
-            ]
-        ]
-    , div [ class "ui basic segment" ] content
-    ]
-
-
-viewSession : Language -> NominalDate -> SessionId -> Session -> Html Msg
-viewSession language currentDate sessionId session =
-    let
-        enableLink =
-            not (isClosed currentDate session)
-
-        link =
-            button
-                [ classList
-                    [ ( "ui button", True )
-                    , ( "disabled", not enableLink )
-                    , ( "active", enableLink )
-                    ]
-                , SessionPage sessionId AttendancePage
-                    |> UserPage
-                    |> SetActivePage
-                    |> onClick
-                ]
-                [ text <| translate language Translate.Attendance ]
-    in
-    tr []
-        [ td [] [ text <| formatDDMMYYYY session.startDate ]
-        , td [] [ text <| Maybe.withDefault "" <| Maybe.map formatDDMMYYYY session.endDate ]
-        , td [] [ link ]
-        ]

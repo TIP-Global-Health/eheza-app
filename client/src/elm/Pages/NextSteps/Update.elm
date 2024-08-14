@@ -4,17 +4,14 @@ import Activity.Model exposing (Activity)
 import Backend.Entities exposing (PersonId)
 import Backend.Measurement.Model
     exposing
-        ( ChildNutritionSign(..)
-        , ContributingFactorsSign(..)
+        ( ContributingFactorsSign(..)
         )
 import Backend.Session.Model
 import Measurement.Model
-import Measurement.Utils exposing (contributingFactorsFormWithDefault, followUpFormWithDefault, healthEducationFormWithDefault, sendToHCFormWithDefault)
 import Pages.NextSteps.Model exposing (Model, Msg(..))
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
+import Pages.Page exposing (SessionPage(..))
 import Pages.Session.Model
 import Pages.Utils exposing (setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
 
 
 {-| The extra return parameter indicates our desire to change the `activePage`.
@@ -22,12 +19,6 @@ import RemoteData exposing (RemoteData(..))
 update : PersonId -> Activity -> Msg -> Model -> ( Model, Cmd Msg, List Pages.Session.Model.Msg )
 update childId activity msg model =
     case msg of
-        SetRedirectPage page ->
-            ( model
-            , Cmd.none
-            , [ Pages.Session.Model.SetActivePage page ]
-            )
-
         SetWarningPopupState state ->
             ( { model | warningPopupState = state }, Cmd.none, [] )
 
@@ -63,7 +54,7 @@ update childId activity msg model =
             , []
             )
 
-        SetReasonForNotSendingToHC value ->
+        SetReasonForNonReferral value ->
             let
                 form =
                     model.sendToHCForm

@@ -1,10 +1,10 @@
-module Backend.WellChildEncounter.Decoder exposing (decodeWellChildEncounter)
+module Backend.WellChildEncounter.Decoder exposing (decodeEncounterWarning, decodeWellChildEncounter, decodeWellChildEncounterType)
 
 import Backend.WellChildEncounter.Model exposing (..)
-import EverySet
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, at, bool, dict, fail, field, int, list, map, map2, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (custom, hardcoded, optional, optionalAt, required, requiredAt)
+import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
 
 
@@ -22,19 +22,7 @@ decodeWellChildEncounter =
                 list decodeEncounterNote
             )
             NoEncounterNotes
-        |> optional "encounter_warnings"
-            (map
-                (\warnings ->
-                    if List.isEmpty warnings then
-                        EverySet.singleton NoEncounterWarnings
-
-                    else
-                        EverySet.fromList warnings
-                )
-             <|
-                list decodeEncounterWarning
-            )
-            (EverySet.singleton NoEncounterWarnings)
+        |> optional "encounter_warnings" decodeEncounterWarnings (EverySet.singleton NoEncounterWarnings)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
@@ -46,6 +34,9 @@ decodeWellChildEncounterType =
                 case encounterType of
                     "pediatric-care" ->
                         succeed PediatricCare
+
+                    "pediatric-care-chw" ->
+                        succeed PediatricCareChw
 
                     "newborn-exam" ->
                         succeed NewbornExam
@@ -74,6 +65,23 @@ decodeEncounterNote =
                             note
                                 ++ " is not a recognized EncounterNote"
             )
+
+
+decodeEncounterWarnings : Decoder (EverySet EncounterWarning)
+decodeEncounterWarnings =
+    oneOf
+        [ map
+            (\warnings ->
+                if List.isEmpty warnings then
+                    EverySet.singleton NoEncounterWarnings
+
+                else
+                    EverySet.fromList warnings
+            )
+          <|
+            list decodeEncounterWarning
+        , succeed (EverySet.singleton NoEncounterWarnings)
+        ]
 
 
 decodeEncounterWarning : Decoder EncounterWarning

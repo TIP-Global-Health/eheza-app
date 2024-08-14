@@ -90,7 +90,7 @@ a {
   }
 
   &.head {
-    margin: 0 -35px 30px -35px;
+    margin: 0 -30px 30px -30px;
     padding: 25px 0;
     z-index: 100;
     position: relative;
@@ -122,6 +122,7 @@ a {
 }
 
 .actions {
+  height: 63px;
   margin: 2.5rem -3rem -2.5rem -3rem;
 }
 
@@ -252,6 +253,22 @@ h3.ui.header {
 
   &.primary {
     background: $color-primary;
+  }
+
+  &.velvet {
+    background: $color-velvet;
+  }
+
+  &.purple {
+    background: $color-purple;
+  }
+
+  &.cyan {
+    background: $color-cyan;
+  }
+
+  &.green {
+    background: $color-green;
   }
 
   &.disabled {
@@ -388,7 +405,7 @@ h3.ui.header {
 }
 
 .icon-task-fbf {
-  background-image: url(#{$img-path}icon-fbf-active.svg);
+  background-image: url(#{$img-path}icon-fbf-white.svg);
   background-size: 122px 122px;
 }
 
@@ -402,12 +419,14 @@ h3.ui.header {
   background-size: 122px 122px;
 }
 
+.icon-task-case-management,
 .icon-task-history {
-  background-image: url(#{$img-path}icon-task-history.svg);
+  background-image: url(#{$img-path}icon-history-white.svg);
   background-size: 122px 122px;
 }
 
-.icon-task-patient-provisions {
+.icon-task-patient-provisions,
+.icon-task-outside-care {
   background-image: url(#{$img-path}icon-task-patient-provisions.svg);
   background-size: 122px 122px;
 }
@@ -422,12 +441,14 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-clinical,
 .icon-task-physical-exam {
   background-image: url(#{$img-path}icon-physical-exam.svg);
   background-size: 78px 78px;
 }
 
-.icon-task-laboratory {
+.icon-task-laboratory,
+.icon-task-laboratory-follow-ups {
   background-image: url(#{$img-path}icon-laboratory-white.svg);
   background-size: 78px 78px;
 }
@@ -437,6 +458,7 @@ h3.ui.header {
   background-size: 78px 78px;
 }
 
+.icon-task-postpartum-treatment-review,
 .icon-task-prior-treatment {
   background-image: url(#{$img-path}icon-prior-treatment.svg);
   background-size: 78px 78px;
@@ -453,7 +475,8 @@ h3.ui.header {
 }
 
 .icon-task-send-to-hc,
-.icon-task-appointment-confirmation {
+.icon-task-appointment-confirmation,
+.icon-task-speciality-care {
   background-image: url(#{$img-path}icon-health-center-white.svg);
   background-size: 78px 78px;
 }
@@ -466,6 +489,11 @@ h3.ui.header {
 .icon-task-feeding {
   background-image: url(#{$img-path}icon-feeding-white.svg);
   background-size: 122px 122px;
+}
+
+.icon-task-breastfeeding {
+  background-image: url(#{$img-path}icon-breastfeeding-white.svg);
+  background-size: 92px 92px;
 }
 
 .icon-task-caring {
@@ -509,6 +537,51 @@ h3.ui.header {
 
 .icon-task-vaccination-history {
   background-image: url(#{$img-path}icon-vaccination-history.svg);
+}
+
+.icon-task-malaria {
+  background-image: url(#{$img-path}icon-malaria-white.svg);
+  background-size: 100px 100px;
+}
+
+.icon-task-mental-health {
+  background-image: url(#{$img-path}icon-mental-health-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-participant-directory {
+  background-image: url(#{$img-path}icon-exposure-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-dashboards {
+  background-image: url(#{$img-path}icon-dashboards.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-device-status {
+  background-image: url(#{$img-path}icon-device-status.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-messaging-center {
+  background-image: url(#{$img-path}icon-wellbeing.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-stock-management {
+  background-image: url(#{$img-path}icon-fbf-white.svg);
+  background-size: 128px 128px;
+}
+
+.icon-task-home-visit {
+  background-image: url(#{$img-path}icon-house-white.svg);
+  background-size: 92px 92px;
+}
+
+.icon-task-diagnostics {
+  background-image: url(#{$img-path}icon-medication-distribution-white.svg);
+  background-size: 86px 86px;
 }
 
 // Tasks horizontal scroll
@@ -692,6 +765,11 @@ h3.ui.header {
   background-size: 168px 168px;
 }
 
+.icon-item-history {
+  background-image: url(#{$img-path}icon-history-blue.svg);
+  background-size: 122px;
+}
+
 // Form
 
 .ui.form {
@@ -869,6 +947,17 @@ h3.ui.header {
           margin-top: -20px;
           width: 20%;
 
+          .patient-record {
+            background: url(#{$img-path}icon-forms-blue.svg) center center no-repeat;
+            background-size: 80px 80px;
+            display: block;
+            float: left;
+            height: 80px;
+            margin-left: -45px;
+            margin-top: 43px;
+            width: 80px;
+          }
+
           .action-icon-wrapper {
             height: 50px;
             border: 2px solid gray;
@@ -897,6 +986,14 @@ h3.ui.header {
               &.link {
                 background: url(#{$img-path}icon-link.svg) no-repeat center;
               }
+            }
+          }
+
+          .action-icon-wrapper.blue {
+            border: 2px solid $color-primary;
+
+            .action-icon.forward {
+                background: url(#{$img-path}icon-forward-blue2.svg) no-repeat center;
             }
           }
         }
@@ -933,6 +1030,17 @@ h3.ui.header {
         &.error {
           border-color: $color-red;
         }
+      }
+
+      .date-input {
+        font-size: 2rem;
+        border: 2px solid $color-gray;
+        padding: 0 0.5em;
+        line-height: 45px;
+        text-align: center;
+        height: 50px;
+        width: 100%;
+        color: $color-text;
       }
 
       .birtdate-label {
@@ -1209,10 +1317,38 @@ input::placeholder {
     }
   }
 
+  &.calendar-popup {
+    border-radius: 10px;
+    height: 820px;
+    margin-left: -365px;
+    width: 730px;
+  }
+
+  &.ncda-helper-popup {
+    margin-left: -300px;
+    width: 600px;
+
+    .header {
+      text-align: left;
+      text-transform: none;
+    }
+
+    .content {
+      color: $color-text;
+      text-align: left;
+    }
+
+    .actions .button {
+      margin-left: 0;
+    }
+  }
+
   &.diagnosis-popup,
+  &.warning-popup,
   &.open-pregnancy-popup,
   &.danger-signs-popup,
-  &.trace-contact-popup {
+  &.trace-contact-popup,
+  &.survey-score-popup {
     border-top: 15px solid $color-red-alert;
     margin-left: -300px;
     width: 600px;
@@ -1255,6 +1391,23 @@ input::placeholder {
         margin-bottom: 1rem;
         text-align: center;
         text-transform: uppercase;
+
+        .message {
+          display: flex;
+          position: relative;
+          font-size: 25px;
+
+          .icon-up,
+          .icon-down {
+            display: block;
+            margin-left: auto;
+            right: 0;
+          }
+        }
+        .summary {
+          text-align: left;
+          font-size: 25px;
+        }
       }
 
       .popup-action {
@@ -1408,6 +1561,25 @@ input::placeholder {
 
     .actions .button {
       margin-left: 0;
+    }
+  }
+
+  &.diagnosis-popup,
+  &.warning-popup {
+
+    .bottom-message p {
+      margin-bottom: 10px;
+    }
+
+    ul {
+      text-align: left;
+    }
+  }
+
+  &.survey-score-popup {
+
+    .content {
+      padding-top: 2rem;
     }
   }
 
@@ -1565,7 +1737,8 @@ input::placeholder {
 }
 
 .icon-english,
-.icon-kinyarwanda {
+.icon-kinyarwanda,
+.icon-kirundi {
   width: 27px;
   height: 27px;
   display: block;
@@ -1578,6 +1751,11 @@ input::placeholder {
 
 .icon-kinyarwanda {
   background: url(#{$img-path}icon-kinyarwanda.png) no-repeat center;
+  background-size: 16px 11px;
+}
+
+.icon-kirundi {
+  background: url(#{$img-path}icon-kirundi.png) no-repeat center;
   background-size: 16px 11px;
 }
 
@@ -1626,6 +1804,62 @@ input::placeholder {
     }
   }
 
+}
+
+.icon-feeding {
+  .active &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-feeding-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-feeding-gray.svg);
+  }
+}
+
+.icon-caring {
+  .active &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-caring-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-caring-gray.svg);
+  }
+}
+
+.icon-hygiene {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hygiene-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hygiene-gray.svg);
+  }
+}
+
+.icon-food-security {
+  .active &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-food-security-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-food-security-gray.svg);
+  }
 }
 
 .icon-height {
@@ -1758,11 +1992,11 @@ input::placeholder {
 
 .icon-fbf {
   .active &:after {
-    background-image: url(#{$img-path}icon-fbf-active.svg);
+    background-image: url(#{$img-path}icon-fbf-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-fbf-active.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-fbf-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
@@ -1911,17 +2145,18 @@ input::placeholder {
   }
 }
 
+.icon-pregnancy,
 .icon-obstetrical-exam {
   .active &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg);
   }
 
   .completed &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-white.svg), url(#{$img-path}icon-completed-circle.svg);
+    background-image: url(#{$img-path}icon-pregnancy-white.svg), url(#{$img-path}icon-completed-circle.svg);
   }
 
   &:after {
-    background-image: url(#{$img-path}icon-obstetricalexam-gray.svg);
+    background-image: url(#{$img-path}icon-pregnancy-gray.svg);
   }
 }
 
@@ -1936,6 +2171,21 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-breastexam-gray.svg);
+  }
+}
+
+.icon-creatinine,
+.icon-gu-exam {
+  .active &:after {
+    background-image: url(#{$img-path}icon-uterus-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-uterus-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-uterus-gray.svg);
   }
 }
 
@@ -2065,6 +2315,134 @@ input::placeholder {
   }
 }
 
+.icon-laboratory-blood-sugar,
+.icon-hba1c {
+  .active &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-white-blue.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-white-gray.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-blood-sugar-gray.svg);
+  }
+}
+
+.icon-laboratory-blood-group {
+  .active &:after {
+    background-image: url(#{$img-path}icon-blood-group-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-blood-group-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-blood-group-gray.svg);
+  }
+}
+
+.icon-laboratory-hemoglobin {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hemoglobin-gray.svg);
+  }
+}
+
+.icon-liver-function,
+.icon-laboratory-hepatitis-b {
+  .active &:after {
+    background-image: url(#{$img-path}icon-liver-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-liver-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-liver-gray.svg);
+  }
+}
+
+.icon-lipid-panel {
+  .active &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-lipid-panel-gray.svg);
+  }
+}
+
+.icon-laboratory-hiv {
+  .active &:after {
+    background-image: url(#{$img-path}icon-hiv-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-hiv-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-hiv-gray.svg);
+  }
+}
+
+.icon-laboratory-syphilis {
+  .active &:after {
+    background-image: url(#{$img-path}icon-syphilis-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-syphilis-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-syphilis-gray.svg);
+  }
+}
+
+.icon-laboratory-urine-dipstick {
+  .active &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-urine-dipstick-gray.svg);
+  }
+}
+
+.icon-laboratory-history {
+  .active &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-medicalhistory-gray.svg);
+  }
+}
+
 .icon-exposure-travel {
   .active &:after {
     background-image: url(#{$img-path}icon-travel-white.svg);
@@ -2149,6 +2527,7 @@ input::placeholder {
   }
 }
 
+.icon-outside-care,
 .icon-next-steps-medication-distribution {
   .active &:after {
     background-image: url(#{$img-path}icon-medication-distribution-white.svg);
@@ -2163,6 +2542,20 @@ input::placeholder {
   }
 }
 
+.icon-next-steps-treatment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-treatment-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-treatment-gray.svg);
+  }
+}
+
 .icon-next-steps-send-to-hc {
   .active &:after {
     background-image: url(#{$img-path}icon-health-center-white.svg);
@@ -2174,6 +2567,34 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-health-center-gray.svg);
+  }
+}
+
+.icon-next-steps-referral {
+  .active &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-cross-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-cross-gray.svg);
+  }
+}
+
+.icon-next-steps-wait {
+  .active &:after {
+    background-image: url(#{$img-path}icon-sand-watch-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-sand-watch-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-sand-watch-gray.svg);
   }
 }
 
@@ -2194,7 +2615,6 @@ input::placeholder {
 .icon-danger-signs {
   .active &:after {
     background-image: url(#{$img-path}icon-danger-signs-white.svg);
-    background-size: 83px 83px;
   }
 
   .completed &:after {
@@ -2203,7 +2623,6 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-danger-signs-gray.svg);
-    background-size: 83px 83px;
   }
 }
 
@@ -2333,20 +2752,7 @@ input::placeholder {
   }
 }
 
-.icon-albendazole {
-  .active &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg);
-  }
-
-  .completed &:after {
-    background-image: url(#{$img-path}icon-pills-box-white.svg), url(#{$img-path}icon-completed-circle.svg);
-  }
-
-  &:after {
-    background-image: url(#{$img-path}icon-pills-box-gray.svg);
-  }
-}
-
+.icon-albendazole,
 .icon-mebendezole {
   .active &:after {
     background-image: url(#{$img-path}icon-pills-box-white.svg);
@@ -2484,6 +2890,133 @@ input::placeholder {
 
   &:after {
     background-image: url(#{$img-path}icon-contributing-factors-gray.svg);
+  }
+}
+
+.icon-tetanus-vaccine {
+  .active &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-tetanus-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-tetanus-gray.svg);
+  }
+}
+
+.icon-family {
+  .active &:after {
+    background-image: url(#{$img-path}icon-family-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-family-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-family-gray.svg);
+  }
+}
+
+
+.icon-history {
+  .active &:after {
+    background-image: url(#{$img-path}icon-history-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-history-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-history-gray.svg);
+  }
+}
+
+.icon-ncda-antenatal {
+  .active &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-antenatal-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-antenatal-gray.svg);
+  }
+}
+
+.icon-ncda-universal-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-universal-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-nutrition-behavior {
+  .active &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-nutrition-behavior-gray.svg);
+  }
+}
+
+.icon-ncda-targeted-intervention {
+  .active &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-targeted-intervention-gray.svg);
+  }
+}
+
+.icon-ncda-infrastructure-environment {
+  .active &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-infrastructure-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-infrastructure-gray.svg);
+  }
+}
+
+.icon-dot {
+  .active &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg);
+  }
+
+  .completed &:after {
+    background-image: url(#{$img-path}icon-dot-white.svg), url(#{$img-path}icon-completed-circle.svg);
+  }
+
+  &:after {
+    background-image: url(#{$img-path}icon-dot-gray.svg);
   }
 }
 

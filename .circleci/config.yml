@@ -7,7 +7,7 @@ workflows:
       - lint_phpcs
       - lint_elm
       - lint_shellcheck
-      - test:
+      - test_simpletest_linux:
           requires:
             - lint_phpcs
             - lint_elm
@@ -16,7 +16,7 @@ workflows:
 jobs:
   lint_phpcs:
     docker:
-      - image: cimg/php:7.3.28
+      - image: cimg/php:7.4.30
     steps:
       - checkout
       - run: ci-scripts/install_coder.sh
@@ -36,17 +36,11 @@ jobs:
       - checkout
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
-  test:
+  test_simpletest_linux:
     machine:
       image: ubuntu-2004:202111-01
     steps:
       - checkout
-      - restore_cache:
-          keys:
-            - drupal
-      - run: ci-scripts/install_server.sh
-      - run: ci-scripts/test_server.sh
-      - save_cache:
-          key: drupal
-          paths:
-            - /tmp/cache
+      - run: ci-scripts/install_ddev.sh
+      - run: ci-scripts/install_drupal.sh
+      - run: ci-scripts/circleci_wait.sh ddev simpletest

@@ -8,7 +8,8 @@ import App.Utils exposing (getLoggedInData, updateSubModel)
 import AssocList as Dict
 import Backend.Endpoints exposing (nurseEndpoint)
 import Backend.Model
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
+import Backend.Nurse.Model
+import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
 import Backend.NutritionActivity.Model exposing (NutritionActivity(..))
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
@@ -20,67 +21,106 @@ import Browser.Navigation as Nav
 import Config
 import Device.Decoder
 import Device.Encoder
-import Dict as LegacyDict
+import Error.Model exposing (ErrorType(..))
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Http exposing (Error(..))
 import HttpBuilder
 import Json.Decode
-import Json.Encode
-import Pages.AcuteIllnessActivity.Model
-import Pages.AcuteIllnessActivity.Update
-import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Update
-import Pages.AcuteIllnessOutcome.Model
-import Pages.AcuteIllnessOutcome.Update
-import Pages.AcuteIllnessParticipant.Model
-import Pages.AcuteIllnessParticipant.Update
-import Pages.AcuteIllnessProgressReport.Model
-import Pages.AcuteIllnessProgressReport.Update
+import MD5
+import Pages.AcuteIllness.Activity.Model
+import Pages.AcuteIllness.Activity.Update
+import Pages.AcuteIllness.Encounter.Model
+import Pages.AcuteIllness.Encounter.Update
+import Pages.AcuteIllness.Outcome.Model
+import Pages.AcuteIllness.Outcome.Update
+import Pages.AcuteIllness.Participant.Model
+import Pages.AcuteIllness.Participant.Update
+import Pages.AcuteIllness.ProgressReport.Model
+import Pages.AcuteIllness.ProgressReport.Update
+import Pages.ChildScoreboard.Activity.Model
+import Pages.ChildScoreboard.Activity.Update
+import Pages.ChildScoreboard.Encounter.Model
+import Pages.ChildScoreboard.Encounter.Update
+import Pages.ChildScoreboard.ProgressReport.Model
+import Pages.ChildScoreboard.ProgressReport.Update
 import Pages.Clinics.Update
 import Pages.Dashboard.Model
 import Pages.Dashboard.Update
 import Pages.Device.Model
 import Pages.Device.Update
+import Pages.EducationSession.Model
+import Pages.EducationSession.Update
 import Pages.GlobalCaseManagement.Update
-import Pages.HomeVisitActivity.Model
-import Pages.HomeVisitActivity.Update
-import Pages.HomeVisitEncounter.Model
-import Pages.HomeVisitEncounter.Update
+import Pages.HIV.Activity.Model
+import Pages.HIV.Activity.Update
+import Pages.HIV.Encounter.Model
+import Pages.HIV.Encounter.Update
+import Pages.HomeVisit.Activity.Model
+import Pages.HomeVisit.Activity.Update
+import Pages.HomeVisit.Encounter.Model
+import Pages.HomeVisit.Encounter.Update
 import Pages.IndividualEncounterParticipants.Update
-import Pages.NutritionActivity.Model
-import Pages.NutritionActivity.Update
-import Pages.NutritionEncounter.Model
-import Pages.NutritionEncounter.Update
-import Pages.NutritionProgressReport.Model
-import Pages.NutritionProgressReport.Update
+import Pages.MessagingCenter.Model
+import Pages.MessagingCenter.Update
+import Pages.NCD.Activity.Model
+import Pages.NCD.Activity.Update
+import Pages.NCD.Encounter.Model
+import Pages.NCD.Encounter.Update
+import Pages.NCD.ProgressReport.Model
+import Pages.NCD.ProgressReport.Update
+import Pages.NCD.RecurrentActivity.Model
+import Pages.NCD.RecurrentActivity.Update
+import Pages.NCD.RecurrentEncounter.Model
+import Pages.NCD.RecurrentEncounter.Update
+import Pages.Nutrition.Activity.Model
+import Pages.Nutrition.Activity.Update
+import Pages.Nutrition.Encounter.Model
+import Pages.Nutrition.Encounter.Update
+import Pages.Nutrition.ProgressReport.Model
+import Pages.Nutrition.ProgressReport.Update
 import Pages.Page exposing (..)
+import Pages.PatientRecord.Model
+import Pages.PatientRecord.Update
 import Pages.People.Update
 import Pages.Person.Model
 import Pages.Person.Update
 import Pages.PinCode.Model
 import Pages.PinCode.Update
-import Pages.PregnancyOutcome.Model
-import Pages.PregnancyOutcome.Update
-import Pages.PrenatalActivity.Model
-import Pages.PrenatalActivity.Update
-import Pages.PrenatalEncounter.Model
-import Pages.PrenatalEncounter.Update
-import Pages.PrenatalParticipant.Model
-import Pages.PrenatalParticipant.Update
+import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Update
+import Pages.Prenatal.Encounter.Model
+import Pages.Prenatal.Encounter.Update
+import Pages.Prenatal.Outcome.Model
+import Pages.Prenatal.Outcome.Update
+import Pages.Prenatal.Participant.Model
+import Pages.Prenatal.Participant.Update
+import Pages.Prenatal.ProgressReport.Model
+import Pages.Prenatal.ProgressReport.Update
+import Pages.Prenatal.RecurrentActivity.Model
+import Pages.Prenatal.RecurrentActivity.Update
+import Pages.Prenatal.RecurrentEncounter.Model
+import Pages.Prenatal.RecurrentEncounter.Update
 import Pages.Relationship.Model
 import Pages.Relationship.Update
 import Pages.Router exposing (activePageByUrl, pageToFragment)
 import Pages.Session.Model
 import Pages.Session.Update
+import Pages.StockManagement.Update
 import Pages.TraceContact.Model
 import Pages.TraceContact.Update
-import Pages.WellChildActivity.Model
-import Pages.WellChildActivity.Update
-import Pages.WellChildEncounter.Model
-import Pages.WellChildEncounter.Update
-import Pages.WellChildProgressReport.Model
-import Pages.WellChildProgressReport.Update
-import RemoteData exposing (RemoteData(..), WebData)
+import Pages.Tuberculosis.Activity.Model
+import Pages.Tuberculosis.Activity.Update
+import Pages.Tuberculosis.Encounter.Model
+import Pages.Tuberculosis.Encounter.Update
+import Pages.Tuberculosis.ProgressReport.Model
+import Pages.Tuberculosis.ProgressReport.Update
+import Pages.WellChild.Activity.Model
+import Pages.WellChild.Activity.Update
+import Pages.WellChild.Encounter.Model
+import Pages.WellChild.Encounter.Update
+import Pages.WellChild.ProgressReport.Model
+import Pages.WellChild.ProgressReport.Update
+import RemoteData exposing (RemoteData(..))
 import Restful.Endpoint exposing (fromEntityUuid, select, toCmd)
 import ServiceWorker.Model
 import ServiceWorker.Update
@@ -92,7 +132,7 @@ import Translate.Model exposing (Language(..))
 import Translate.Utils exposing (languageFromCode, languageToCode)
 import Update.Extra exposing (sequence)
 import Url
-import Version
+import Utils.WebData
 import ZScore.Model
 import ZScore.Update
 
@@ -105,7 +145,7 @@ init flags url key =
                 Ok language ->
                     language
 
-                Err msg ->
+                Err _ ->
                     English
 
         url_ =
@@ -194,36 +234,54 @@ updateAndThenFetch msg model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     let
-        noChange =
-            ( model, Cmd.none )
-
         currentDate =
             fromLocalDateTime model.currentTime
 
         loggedInData =
             getLoggedInData model
 
-        isChw =
-            loggedInData
-                |> Maybe.map (Tuple.second >> .nurse >> Tuple.second >> isCommunityHealthWorker)
-                |> Maybe.withDefault False
+        ( isChw, isLabTech ) =
+            Maybe.map
+                (Tuple.second
+                    >> .nurse
+                    >> Tuple.second
+                    >> (\nurse ->
+                            ( isCommunityHealthWorker nurse, isLabTechnician nurse )
+                       )
+                )
+                loggedInData
+                |> Maybe.withDefault ( False, False )
+
+        site =
+            model.syncManager.syncInfoGeneral.site
+
+        features =
+            model.syncManager.syncInfoGeneral.features
+
+        reverseGeoInfo =
+            model.syncManager.reverseGeoInfo
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         MsgIndexedDb subMsg ->
             let
                 nurseId =
-                    loggedInData
-                        |> Maybe.map (Tuple.second >> .nurse >> Tuple.first)
+                    Maybe.map (Tuple.second >> .nurse >> Tuple.first) loggedInData
 
                 ( subModel, subCmd, extraMsgs ) =
                     Backend.Update.updateIndexedDb model.language
                         currentDate
                         model.currentTime
                         model.zscores
+                        site
+                        features
                         nurseId
                         model.healthCenterId
                         model.villageId
                         isChw
+                        isLabTech
                         model.activePage
                         model.syncManager
                         subMsg
@@ -261,7 +319,15 @@ update msg model =
                         MsgPageCreatePerson subMsg ->
                             let
                                 ( subModel, subCmd, appMsgs ) =
-                                    Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb data.createPersonPage
+                                    Pages.Person.Update.update currentDate
+                                        site
+                                        reverseGeoInfo
+                                        model.healthCenterId
+                                        model.villageId
+                                        isChw
+                                        subMsg
+                                        model.indexedDb
+                                        data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
                             , Cmd.map (MsgLoggedIn << MsgPageCreatePerson) subCmd
@@ -292,8 +358,15 @@ update msg model =
                             let
                                 ( subModel, subCmd, appMsgs ) =
                                     Dict.get id data.editPersonPages
-                                        |> Maybe.withDefault Pages.Person.Model.emptyEditModel
-                                        |> Pages.Person.Update.update currentDate model.healthCenterId model.villageId isChw subMsg model.indexedDb
+                                        |> Maybe.withDefault (Pages.Person.Model.emptyEditModel site)
+                                        |> Pages.Person.Update.update currentDate
+                                            site
+                                            reverseGeoInfo
+                                            model.healthCenterId
+                                            model.villageId
+                                            isChw
+                                            subMsg
+                                            model.indexedDb
                             in
                             ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
@@ -315,8 +388,8 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     data.prenatalParticipantPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.PrenatalParticipant.Model.emptyModel
-                                        |> Pages.PrenatalParticipant.Update.update currentDate id subMsg
+                                        |> Maybe.withDefault Pages.Prenatal.Participant.Model.emptyModel
+                                        |> Pages.Prenatal.Participant.Update.update currentDate id subMsg
                             in
                             ( { data | prenatalParticipantPages = Dict.insert id subModel data.prenatalParticipantPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalParticipant id) subCmd
@@ -351,8 +424,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.acuteIllnessParticipantPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.AcuteIllnessParticipant.Model.emptyModel
-                                        |> Pages.AcuteIllnessParticipant.Update.update currentDate id subMsg
+                                        |> Maybe.withDefault Pages.AcuteIllness.Participant.Model.emptyModel
+                                        |> Pages.AcuteIllness.Participant.Update.update currentDate id subMsg
                             in
                             ( { data | acuteIllnessParticipantPages = Dict.insert id subModel data.acuteIllnessParticipantPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessParticipant id) subCmd
@@ -365,7 +438,13 @@ update msg model =
                                     data.sessionPages
                                         |> Dict.get sessionId
                                         |> Maybe.withDefault Pages.Session.Model.emptyModel
-                                        |> Pages.Session.Update.update currentDate model.zscores sessionId model.indexedDb subMsg
+                                        |> Pages.Session.Update.update currentDate
+                                            model.zscores
+                                            site
+                                            features
+                                            sessionId
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | sessionPages = Dict.insert sessionId subModel data.sessionPages }
                             , Cmd.map (MsgLoggedIn << MsgPageSession sessionId) subCmd
@@ -377,11 +456,24 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalEncounterPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.PrenatalEncounter.Model.emptyModel
-                                        |> Pages.PrenatalEncounter.Update.update subMsg
+                                        |> Maybe.withDefault Pages.Prenatal.Encounter.Model.emptyModel
+                                        |> Pages.Prenatal.Encounter.Update.update id subMsg
                             in
                             ( { data | prenatalEncounterPages = Dict.insert id subModel data.prenatalEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalRecurrentEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalRecurrentEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.Prenatal.RecurrentEncounter.Model.emptyModel
+                                        |> Pages.Prenatal.RecurrentEncounter.Update.update currentDate id subMsg
+                            in
+                            ( { data | prenatalRecurrentEncounterPages = Dict.insert id subModel data.prenatalRecurrentEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentEncounter id) subCmd
                             , extraMsgs
                             )
 
@@ -390,8 +482,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.nutritionEncounterPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.NutritionEncounter.Model.emptyModel
-                                        |> Pages.NutritionEncounter.Update.update subMsg
+                                        |> Maybe.withDefault Pages.Nutrition.Encounter.Model.emptyModel
+                                        |> Pages.Nutrition.Encounter.Update.update subMsg
                             in
                             ( { data | nutritionEncounterPages = Dict.insert id subModel data.nutritionEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionEncounter id) subCmd
@@ -403,8 +495,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.acuteIllnessEncounterPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.AcuteIllnessEncounter.Model.emptyModel
-                                        |> Pages.AcuteIllnessEncounter.Update.update subMsg
+                                        |> Maybe.withDefault Pages.AcuteIllness.Encounter.Model.emptyModel
+                                        |> Pages.AcuteIllness.Encounter.Update.update subMsg
                             in
                             ( { data | acuteIllnessEncounterPages = Dict.insert id subModel data.acuteIllnessEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessEncounter id) subCmd
@@ -416,8 +508,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.homeVisitEncounterPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.HomeVisitEncounter.Model.emptyModel
-                                        |> Pages.HomeVisitEncounter.Update.update subMsg
+                                        |> Maybe.withDefault Pages.HomeVisit.Encounter.Model.emptyModel
+                                        |> Pages.HomeVisit.Encounter.Update.update subMsg
                             in
                             ( { data | homeVisitEncounterPages = Dict.insert id subModel data.homeVisitEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageHomeVisitEncounter id) subCmd
@@ -429,11 +521,94 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.wellChildEncounterPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.WellChildEncounter.Model.emptyModel
-                                        |> Pages.WellChildEncounter.Update.update currentDate model.zscores isChw model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.WellChild.Encounter.Model.emptyModel
+                                        |> Pages.WellChild.Encounter.Update.update currentDate
+                                            model.zscores
+                                            site
+                                            isChw
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | wellChildEncounterPages = Dict.insert id subModel data.wellChildEncounterPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.Encounter.Model.emptyModel
+                                        |> Pages.NCD.Encounter.Update.update subMsg
+                            in
+                            ( { data | ncdEncounterPages = Dict.insert id subModel data.ncdEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDRecurrentEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.RecurrentEncounter.Model.emptyModel
+                                        |> Pages.NCD.RecurrentEncounter.Update.update id subMsg
+                            in
+                            ( { data | ncdRecurrentEncounterPages = Dict.insert id subModel data.ncdRecurrentEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.childScoreboardEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Encounter.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Encounter.Update.update subMsg
+                            in
+                            ( { data | childScoreboardEncounterPages = Dict.insert id subModel data.childScoreboardEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageTuberculosisEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.Tuberculosis.Encounter.Model.emptyModel
+                                        |> Pages.Tuberculosis.Encounter.Update.update subMsg
+                            in
+                            ( { data | tuberculosisEncounterPages = Dict.insert id subModel data.tuberculosisEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisEncounter id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageEducationSession id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.educationSessionPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.EducationSession.Model.emptyModel
+                                        |> Pages.EducationSession.Update.update currentDate id subMsg
+                            in
+                            ( { data | educationSessionPages = Dict.insert id subModel data.educationSessionPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageEducationSession id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageHIVEncounter id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.hivEncounterPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.HIV.Encounter.Model.emptyModel
+                                        |> Pages.HIV.Encounter.Update.update subMsg
+                            in
+                            ( { data | hivEncounterPages = Dict.insert id subModel data.hivEncounterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHIVEncounter id) subCmd
                             , extraMsgs
                             )
 
@@ -442,11 +617,43 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.prenatalActivityPages
                                         |> Dict.get ( id, activity )
-                                        |> Maybe.withDefault Pages.PrenatalActivity.Model.emptyModel
-                                        |> Pages.PrenatalActivity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.Prenatal.Activity.Model.emptyModel
+                                        |> Pages.Prenatal.Activity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
                             in
                             ( { data | prenatalActivityPages = Dict.insert ( id, activity ) subModel data.prenatalActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPagePrenatalActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalRecurrentActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalRecurrentActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyModel
+                                        |> Pages.Prenatal.RecurrentActivity.Update.update model.language currentDate id isLabTech model.indexedDb subMsg
+                            in
+                            ( { data | prenatalRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.prenatalRecurrentActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalRecurrentActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePrenatalLabsHistory originEncounterId labEncounterId lab subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.prenatalLabsHistoryPages
+                                        |> Dict.get ( originEncounterId, labEncounterId, lab )
+                                        |> Maybe.withDefault Pages.Prenatal.RecurrentActivity.Model.emptyLabResultsData
+                                        |> Pages.Prenatal.RecurrentActivity.Update.updateLabsHistory model.language
+                                            currentDate
+                                            originEncounterId
+                                            labEncounterId
+                                            isLabTech
+                                            model.indexedDb
+                                            subMsg
+                            in
+                            ( { data | prenatalLabsHistoryPages = Dict.insert ( originEncounterId, labEncounterId, lab ) subModel data.prenatalLabsHistoryPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePrenatalLabsHistory originEncounterId labEncounterId lab) subCmd
                             , extraMsgs
                             )
 
@@ -455,8 +662,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.nutritionActivityPages
                                         |> Dict.get ( id, activity )
-                                        |> Maybe.withDefault Pages.NutritionActivity.Model.emptyModel
-                                        |> Pages.NutritionActivity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.Nutrition.Activity.Model.emptyModel
+                                        |> Pages.Nutrition.Activity.Update.update currentDate site id model.indexedDb subMsg
                             in
                             ( { data | nutritionActivityPages = Dict.insert ( id, activity ) subModel data.nutritionActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionActivity id activity) subCmd
@@ -468,8 +675,13 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.acuteIllnessActivityPages
                                         |> Dict.get ( id, activity )
-                                        |> Maybe.withDefault Pages.AcuteIllnessActivity.Model.emptyModel
-                                        |> Pages.AcuteIllnessActivity.Update.update currentDate model.healthCenterId id model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.AcuteIllness.Activity.Model.emptyModel
+                                        |> Pages.AcuteIllness.Activity.Update.update currentDate
+                                            site
+                                            model.healthCenterId
+                                            id
+                                            model.indexedDb
+                                            subMsg
                             in
                             ( { data | acuteIllnessActivityPages = Dict.insert ( id, activity ) subModel data.acuteIllnessActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessActivity id activity) subCmd
@@ -481,8 +693,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.homeVisitActivityPages
                                         |> Dict.get ( id, activity )
-                                        |> Maybe.withDefault Pages.HomeVisitActivity.Model.emptyModel
-                                        |> Pages.HomeVisitActivity.Update.update currentDate id model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.HomeVisit.Activity.Model.emptyModel
+                                        |> Pages.HomeVisit.Activity.Update.update currentDate id model.indexedDb subMsg
                             in
                             ( { data | homeVisitActivityPages = Dict.insert ( id, activity ) subModel data.homeVisitActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageHomeVisitActivity id activity) subCmd
@@ -494,11 +706,76 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.wellChildActivityPages
                                         |> Dict.get ( id, activity )
-                                        |> Maybe.withDefault Pages.WellChildActivity.Model.emptyModel
-                                        |> Pages.WellChildActivity.Update.update currentDate isChw id model.indexedDb subMsg
+                                        |> Maybe.withDefault Pages.WellChild.Activity.Model.emptyModel
+                                        |> Pages.WellChild.Activity.Update.update currentDate site isChw id model.indexedDb subMsg
                             in
                             ( { data | wellChildActivityPages = Dict.insert ( id, activity ) subModel data.wellChildActivityPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.Activity.Model.emptyModel
+                                        |> Pages.NCD.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdActivityPages = Dict.insert ( id, activity ) subModel data.ncdActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDRecurrentActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdRecurrentActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.NCD.RecurrentActivity.Model.emptyModel
+                                        |> Pages.NCD.RecurrentActivity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | ncdRecurrentActivityPages = Dict.insert ( id, activity ) subModel data.ncdRecurrentActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDRecurrentActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.childScoreboardActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.ChildScoreboard.Activity.Model.emptyModel
+                                        |> Pages.ChildScoreboard.Activity.Update.update currentDate site id model.indexedDb subMsg
+                            in
+                            ( { data | childScoreboardActivityPages = Dict.insert ( id, activity ) subModel data.childScoreboardActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageTuberculosisActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.Tuberculosis.Activity.Model.emptyModel
+                                        |> Pages.Tuberculosis.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | tuberculosisActivityPages = Dict.insert ( id, activity ) subModel data.tuberculosisActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisActivity id activity) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageHIVActivity id activity subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.hivActivityPages
+                                        |> Dict.get ( id, activity )
+                                        |> Maybe.withDefault Pages.HIV.Activity.Model.emptyModel
+                                        |> Pages.HIV.Activity.Update.update currentDate id model.indexedDb subMsg
+                            in
+                            ( { data | hivActivityPages = Dict.insert ( id, activity ) subModel data.hivActivityPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageHIVActivity id activity) subCmd
                             , extraMsgs
                             )
 
@@ -507,8 +784,8 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     data.pregnancyOutcomePages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.PregnancyOutcome.Model.emptyModel
-                                        |> Pages.PregnancyOutcome.Update.update currentDate id subMsg
+                                        |> Maybe.withDefault Pages.Prenatal.Outcome.Model.emptyModel
+                                        |> Pages.Prenatal.Outcome.Update.update currentDate id subMsg
                             in
                             ( { data | pregnancyOutcomePages = Dict.insert id subModel data.pregnancyOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPagePregnancyOutcome id) subCmd
@@ -520,8 +797,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.acuteIllnessProgressReportPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.AcuteIllnessProgressReport.Model.emptyModel
-                                        |> Pages.AcuteIllnessProgressReport.Update.update subMsg
+                                        |> Maybe.withDefault Pages.AcuteIllness.ProgressReport.Model.emptyModel
+                                        |> Pages.AcuteIllness.ProgressReport.Update.update subMsg
                             in
                             ( { data | acuteIllnessProgressReportPages = Dict.insert id subModel data.acuteIllnessProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessProgressReport id) subCmd
@@ -533,8 +810,8 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.nutritionProgressReportPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.NutritionProgressReport.Model.emptyModel
-                                        |> Pages.NutritionProgressReport.Update.update subMsg
+                                        |> Maybe.withDefault Pages.Nutrition.ProgressReport.Model.emptyModel
+                                        |> Pages.Nutrition.ProgressReport.Update.update subMsg
                             in
                             ( { data | nutritionProgressReportPages = Dict.insert id subModel data.nutritionProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageNutritionProgressReport id) subCmd
@@ -546,11 +823,49 @@ update msg model =
                                 ( subModel, subCmd, extraMsgs ) =
                                     data.wellChildProgressReportPages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.WellChildProgressReport.Model.emptyModel
-                                        |> Pages.WellChildProgressReport.Update.update subMsg
+                                        |> Maybe.withDefault Pages.WellChild.ProgressReport.Model.emptyModel
+                                        |> Pages.WellChild.ProgressReport.Update.update subMsg
                             in
                             ( { data | wellChildProgressReportPages = Dict.insert id subModel data.wellChildProgressReportPages }
                             , Cmd.map (MsgLoggedIn << MsgPageWellChildProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageNCDProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.ncdProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.NCD.ProgressReport.Model.emptyModel
+                                        |> Pages.NCD.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | ncdProgressReportPages = Dict.insert id subModel data.ncdProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageNCDProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageChildScoreboardReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    Dict.get id data.childScoreboardReportPages
+                                        |> Maybe.withDefault Pages.ChildScoreboard.ProgressReport.Model.emptyModel
+                                        |> Pages.ChildScoreboard.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | childScoreboardReportPages = Dict.insert id subModel data.childScoreboardReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageChildScoreboardReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPageTuberculosisProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    data.tuberculosisProgressReportPages
+                                        |> Dict.get id
+                                        |> Maybe.withDefault Pages.Tuberculosis.ProgressReport.Model.emptyModel
+                                        |> Pages.Tuberculosis.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | tuberculosisProgressReportPages = Dict.insert id subModel data.tuberculosisProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageTuberculosisProgressReport id) subCmd
                             , extraMsgs
                             )
 
@@ -559,8 +874,8 @@ update msg model =
                                 ( subModel, subCmd, appMsgs ) =
                                     data.acuteIllnessOutcomePages
                                         |> Dict.get id
-                                        |> Maybe.withDefault Pages.AcuteIllnessOutcome.Model.emptyModel
-                                        |> Pages.AcuteIllnessOutcome.Update.update currentDate id subMsg
+                                        |> Maybe.withDefault Pages.AcuteIllness.Outcome.Model.emptyModel
+                                        |> Pages.AcuteIllness.Outcome.Update.update currentDate id subMsg
                             in
                             ( { data | acuteIllnessOutcomePages = Dict.insert id subModel data.acuteIllnessOutcomePages }
                             , Cmd.map (MsgLoggedIn << MsgPageAcuteIllnessOutcome id) subCmd
@@ -576,6 +891,52 @@ update msg model =
                             in
                             ( { data | traceContactPages = Dict.insert id subModel data.traceContactPages }
                             , Cmd.map (MsgLoggedIn << MsgPageTraceContact id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageClinicalProgressReport id subMsg ->
+                            let
+                                ( subModel, subCmd, extraMsgs ) =
+                                    Dict.get id data.clinicalProgressReportPages
+                                        |> Maybe.withDefault Pages.Prenatal.ProgressReport.Model.emptyModel
+                                        |> Pages.Prenatal.ProgressReport.Update.update subMsg
+                            in
+                            ( { data | clinicalProgressReportPages = Dict.insert id subModel data.clinicalProgressReportPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageClinicalProgressReport id) subCmd
+                            , extraMsgs
+                            )
+
+                        MsgPagePatientRecord id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.patientRecordPages
+                                        |> Maybe.withDefault Pages.PatientRecord.Model.emptyModel
+                                        |> Pages.PatientRecord.Update.update currentDate id subMsg
+                            in
+                            ( { data | patientRecordPages = Dict.insert id subModel data.patientRecordPages }
+                            , Cmd.map (MsgLoggedIn << MsgPagePatientRecord id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageMessagingCenter id subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Dict.get id data.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                                        |> Pages.MessagingCenter.Update.update model.currentTime currentDate model.indexedDb subMsg
+                            in
+                            ( { data | messagingCenterPages = Dict.insert id subModel data.messagingCenterPages }
+                            , Cmd.map (MsgLoggedIn << MsgPageMessagingCenter id) subCmd
+                            , appMsgs
+                            )
+
+                        MsgPageStockManagement subMsg ->
+                            let
+                                ( subModel, subCmd, appMsgs ) =
+                                    Pages.StockManagement.Update.update currentDate model.healthCenterId subMsg data.stockManagementPage
+                            in
+                            ( { data | stockManagementPage = subModel }
+                            , Cmd.map (MsgLoggedIn << MsgPageStockManagement) subCmd
                             , appMsgs
                             )
                 )
@@ -645,46 +1006,54 @@ update msg model =
                             Pages.PinCode.Update.update subMsg configured.pinCodePage
 
                         ( extraMsgs, extraCmds ) =
-                            outMsg
-                                |> Maybe.map
-                                    (\out ->
-                                        case out of
-                                            Pages.PinCode.Model.TryPinCode code ->
-                                                ( [ TryPinCode code ], [] )
+                            Maybe.map
+                                (\out ->
+                                    case out of
+                                        Pages.PinCode.Model.TryPinCode code ->
+                                            ( [ TryPinCode code ], [] )
 
-                                            Pages.PinCode.Model.Logout ->
-                                                ( [ SetLoggedIn NotAsked
-                                                  , MsgIndexedDb Backend.Model.HandleLogout
-                                                  , SetHealthCenter Nothing
-                                                  , SetVillage Nothing
-                                                  ]
-                                                , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
-                                                )
+                                        Pages.PinCode.Model.Logout ->
+                                            ( [ SetLoggedIn NotAsked
+                                              , MsgIndexedDb Backend.Model.HandleLogout
+                                              , SetHealthCenter Nothing
+                                              , SetVillage Nothing
+                                              ]
+                                            , [ cachePinCode "", cacheHealthCenter "", cacheVillage "" ]
+                                            )
 
-                                            Pages.PinCode.Model.SetActivePage page ->
-                                                let
-                                                    resetDashboardMsg =
-                                                        case page of
-                                                            -- When accessing Dashboard page, reset
-                                                            -- the page to initial state - selected month,
-                                                            -- for example will be set to current month.
-                                                            UserPage (DashboardPage MainPage) ->
-                                                                Pages.Dashboard.Model.Reset model.villageId
-                                                                    |> MsgPageDashboard MainPage
-                                                                    |> MsgLoggedIn
-                                                                    |> List.singleton
+                                        Pages.PinCode.Model.SetActivePage page ->
+                                            let
+                                                resetDashboardMsg =
+                                                    case page of
+                                                        -- When accessing Dashboard page, reset
+                                                        -- the page to initial state - selected month,
+                                                        -- for example will be set to current month.
+                                                        UserPage (DashboardPage PageMain) ->
+                                                            Pages.Dashboard.Model.Reset model.villageId
+                                                                |> MsgPageDashboard PageMain
+                                                                |> MsgLoggedIn
+                                                                |> List.singleton
 
-                                                            _ ->
-                                                                []
-                                                in
-                                                ( SetActivePage page :: resetDashboardMsg, [] )
+                                                        _ ->
+                                                            []
+                                            in
+                                            ( SetActivePage page :: resetDashboardMsg, [] )
 
-                                            Pages.PinCode.Model.SetHealthCenter id ->
-                                                ( [ SetHealthCenter (Just id) ], [] )
+                                        Pages.PinCode.Model.SetHealthCenter id ->
+                                            ( [ SetHealthCenter (Just id) ], [] )
 
-                                            Pages.PinCode.Model.SetVillage id ->
-                                                ( [ SetVillage (Just id) ], [] )
-                                    )
+                                        Pages.PinCode.Model.SetVillage id ->
+                                            ( [ SetVillage (Just id) ], [] )
+
+                                        Pages.PinCode.Model.UpdateNurse nurseId nurse ->
+                                            ( [ Backend.Nurse.Model.UpdateNurse nurseId nurse
+                                                    |> Backend.Model.MsgNurse nurseId
+                                                    |> MsgIndexedDb
+                                              ]
+                                            , []
+                                            )
+                                )
+                                outMsg
                                 |> Maybe.withDefault ( [], [] )
                     in
                     ( { configured | pinCodePage = subModel }
@@ -749,8 +1118,8 @@ update msg model =
                                 |> Maybe.withDefault []
 
                         -- When navigating to Acute Illness participant page, set initial view mode.
-                        UserPage (AcuteIllnessParticipantPage participantId) ->
-                            Pages.AcuteIllnessParticipant.Model.SetViewMode Pages.AcuteIllnessParticipant.Model.ManageIllnesses
+                        UserPage (AcuteIllnessParticipantPage _ participantId) ->
+                            Pages.AcuteIllness.Participant.Model.SetViewMode Pages.AcuteIllness.Participant.Model.ManageIllnesses
                                 |> MsgPageAcuteIllnessParticipant participantId
                                 |> MsgLoggedIn
                                 |> List.singleton
@@ -856,18 +1225,22 @@ update msg model =
         MsgSyncManager subMsg ->
             model.configuration
                 |> RemoteData.toMaybe
-                |> Maybe.andThen (\config -> RemoteData.toMaybe config.device)
+                |> Maybe.andThen (.device >> RemoteData.toMaybe)
                 |> Maybe.map
                     (\device ->
-                        updateSubModel
-                            subMsg
-                            model.syncManager
-                            (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
-                            (\subModel model_ -> { model_ | syncManager = subModel })
-                            (\subCmds -> MsgSyncManager subCmds)
-                            model
+                        let
+                            ( updatedModel, cmd, appMsgs ) =
+                                updateSubModel
+                                    subMsg
+                                    model.syncManager
+                                    (\subMsg_ subModel -> SyncManager.Update.update currentDate model.currentTime model.activePage model.dbVersion device subMsg_ subModel)
+                                    (\subModel model_ -> { model_ | syncManager = subModel })
+                                    (\subCmds -> MsgSyncManager subCmds)
+                                    model
+                        in
+                        sequence update appMsgs ( updatedModel, cmd )
                     )
-                |> Maybe.withDefault noChange
+                |> Maybe.withDefault ( model, Cmd.none )
 
         TryPinCode code ->
             updateConfigured
@@ -894,7 +1267,27 @@ update msg model =
         SetLoggedIn nurse ->
             updateConfigured
                 (\configured ->
-                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel model.villageId) nurse }
+                    ( { configured | loggedIn = RemoteData.map (emptyLoggedInModel site model.villageId) nurse }
+                    , Cmd.none
+                    , [ Pages.PinCode.Model.SetNextNotification model.currentTime
+                            |> MsgPagePinCode
+                      ]
+                    )
+                )
+                model
+
+        UpdateNurseData nurse ->
+            updateConfigured
+                (\configured ->
+                    let
+                        updatedLoggedIn =
+                            RemoteData.map
+                                (\loggedIn ->
+                                    { loggedIn | nurse = nurse }
+                                )
+                                configured.loggedIn
+                    in
+                    ( { configured | loggedIn = updatedLoggedIn }
                     , Cmd.none
                     , []
                     )
@@ -964,22 +1357,16 @@ update msg model =
             sequence update dataToFetch ( newModel, Cmd.none )
 
         UrlRequested urlRequest ->
-            let
-                ( modelUpdated, cmd ) =
-                    case urlRequest of
-                        Browser.Internal url ->
-                            ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.navigationKey (Url.toString url) )
 
-                        -- As we use a tag in multiple places in HTML and CSS,
-                        -- we'll get `External ""` msg when it's clicked.
-                        -- Therefore, we will not react to external Url requests,
-                        -- because app does not require it anyway.
-                        Browser.External href ->
-                            ( model, Cmd.none )
-            in
-            ( modelUpdated
-            , cmd
-            )
+                -- As we use a tag in multiple places in HTML and CSS,
+                -- we'll get `External ""` msg when it's clicked.
+                -- Therefore, we will not react to external Url requests,
+                -- because app does not require it anyway.
+                Browser.External _ ->
+                    ( model, Cmd.none )
 
         UrlChanged url ->
             let
@@ -1016,6 +1403,51 @@ update msg model =
             , cmd
             )
 
+        TriggerRollbar source errorType ->
+            let
+                cmd =
+                    if String.isEmpty model.syncManager.syncInfoGeneral.rollbarToken then
+                        Cmd.none
+
+                    else
+                        let
+                            generateRollbarCmd message =
+                                case source of
+                                    SyncProcess ->
+                                        logByRollbar
+                                            { source = "sync"
+                                            , message = message
+                                            , md5 = MD5.hex message
+                                            }
+
+                                    IndexedDB ->
+                                        logByRollbar
+                                            { source = "db"
+                                            , message = message
+                                            , md5 = ""
+                                            }
+
+                                    ServiceWorker ->
+                                        logByRollbar
+                                            { source = "sw"
+                                            , message = message
+                                            , md5 = ""
+                                            }
+                        in
+                        case errorType of
+                            Http err ->
+                                Utils.WebData.viewErrorForRollbar err
+                                    |> generateRollbarCmd
+
+                            Decoder err ->
+                                Json.Decode.errorToString err
+                                    |> generateRollbarCmd
+
+                            Plain string ->
+                                generateRollbarCmd string
+            in
+            ( model, cmd )
+
 
 {-| Updates our `nurse` user if the uuid matches the logged-in user.
 -}
@@ -1026,7 +1458,7 @@ handleRevision model revision =
             Maybe.andThen
                 (\( _, loggedIn ) ->
                     if Tuple.first loggedIn.nurse == uuid then
-                        Just (SetLoggedIn (Success ( uuid, data )))
+                        Just (UpdateNurseData ( uuid, data ))
 
                     else
                         Nothing
@@ -1089,8 +1521,7 @@ subscriptions model =
     let
         checkDataWanted =
             if model.scheduleDataWantedCheck then
-                [ Time.every 50 (always CheckDataWanted)
-                ]
+                [ Time.every 50 (always CheckDataWanted) ]
 
             else
                 []

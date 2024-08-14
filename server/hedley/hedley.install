@@ -161,7 +161,7 @@ function hedley_standard_install() {
     ],
     [
       'module' => 'menu',
-      'delta' => 'menu-ihangane-admin-menu',
+      'delta' => 'menu-eheza-app-admin-menu',
       'theme' => $default_theme,
       'status' => 0,
       'weight' => 0,
@@ -171,7 +171,7 @@ function hedley_standard_install() {
     ],
     [
       'module' => 'hedley_admin',
-      'delta' => 'ihangane_sidebar_menu',
+      'delta' => 'eheza_app_sidebar_menu',
       'theme' => $default_theme,
       'status' => 1,
       'weight' => 0,
@@ -224,10 +224,20 @@ function hedley_standard_install() {
   // Set this as the administrator role.
   variable_set('user_admin_role', $admin_role->rid);
 
-  // Creating a E-ledger viewer role and add the permissions.
+  // Creating a E-ledger viewer role.
   $ledger_viewer_role = new stdClass();
   $ledger_viewer_role->name = 'E-ledger viewer';
   user_role_save($ledger_viewer_role);
+
+  // Creating a Data Manager role.
+  $data_manager_role = new stdClass();
+  $data_manager_role->name = 'Data Manager';
+  user_role_save($data_manager_role);
+
+  // Creating a Statistical Queries Manager role.
+  $statistical_queries_manager_role = new stdClass();
+  $statistical_queries_manager_role->name = 'Statistical Queries Manager';
+  user_role_save($statistical_queries_manager_role);
 
   // Creating a Nurse role and add the permissions.
   $nurse_role = new stdClass();
@@ -332,7 +342,7 @@ function hedley_update_7001() {
 }
 
 /**
- * Installs the new ihangane_admin module.
+ * Installs the new hedley_admin module.
  */
 function hedley_update_7002() {
   $modules = ['hedley_admin'];
@@ -343,7 +353,7 @@ function hedley_update_7002() {
     'status' => 1,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('delta', 'menu-eheza-app-admin-menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 }
@@ -462,7 +472,7 @@ function hedley_update_7013() {
     'status' => 0,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'menu-ihangane-admin-menu');
+  $query->condition('delta', 'menu-eheza-app-admin-menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 
@@ -471,7 +481,7 @@ function hedley_update_7013() {
     'status' => 1,
     'region' => 'sidebar_first',
   ]);
-  $query->condition('delta', 'ihangane_sidebar_menu');
+  $query->condition('delta', 'eheza_app_sidebar_menu');
   $query->condition('theme', 'bartik');
   $query->execute();
 }
@@ -622,8 +632,108 @@ function hedley_update_7031() {
 }
 
 /**
- * Enable the Views Lite Pager module.
+ * Enable the Hedley Case Management module.
  */
 function hedley_update_7032() {
+  module_enable(['hedley_case_management']);
+}
+
+/**
+ * Enable the Views Lite Pager module.
+ */
+function hedley_update_7033() {
   module_enable(['views_litepager']);
+}
+
+/**
+ * Enable the Hedley NCD module.
+ */
+function hedley_update_7034() {
+  module_enable(['hedley_ncd']);
+}
+
+/**
+ *  Enable the Hedley WhatsApp module.
+ */
+function hedley_update_7035() {
+  module_enable(['hedley_whatsapp']);
+}
+
+/**
+ * Enable the Hedley Resilience module.
+ */
+function hedley_update_7036() {
+  module_enable(['hedley_resilience']);
+}
+
+/**
+ * Enable the Hedley Stock Management module.
+ */
+function hedley_update_7037() {
+  module_enable(['hedley_stock_management']);
+}
+
+/**
+ * Enable the Hedley NCDA module.
+ */
+function hedley_update_7038() {
+  module_enable(['hedley_ncda']);
+}
+
+/**
+ * If not set already, sets default site to 'rwanda'.
+ */
+function hedley_update_7039() {
+  if (empty(variable_get('hedley_general_site_name', ''))) {
+    variable_set('hedley_general_site_name', 'rwanda');
+  }
+}
+
+/**
+ * Create 'Data Manager' role.
+ */
+function hedley_update_7040() {
+  $data_manager_role = new stdClass();
+  $data_manager_role->name = 'Data Manager';
+  user_role_save($data_manager_role);
+}
+
+/**
+ * Enable the Hedley Tuberculosis module.
+ */
+function hedley_update_7041() {
+  module_enable(['hedley_tuberculosis']);
+}
+
+/**
+ * Enable the Hedley Group Education module.
+ */
+function hedley_update_7042() {
+  module_enable(['hedley_group_education']);
+}
+
+/**
+ * Enable the Hedley HIV module.
+ */
+function hedley_update_7043() {
+  module_enable(['hedley_hiv']);
+}
+
+/**
+ * Enable the Hedley Reports module and create dedicated role.
+ */
+function hedley_update_7044() {
+  module_enable(['hedley_reports']);
+
+  // Creating a Statistical Queries Manager role.
+  $statistical_queries_manager_role = new stdClass();
+  $statistical_queries_manager_role->name = 'Statistical Queries Manager';
+  user_role_save($statistical_queries_manager_role);
+}
+
+/**
+ * Deletes Resilience Message content type.
+ */
+function hedley_update_7045() {
+  node_type_delete('resilience_message');
 }

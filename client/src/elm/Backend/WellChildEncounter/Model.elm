@@ -18,7 +18,12 @@ type alias WellChildEncounter =
     }
 
 
-emptyWellChildEncounter : IndividualEncounterParticipantId -> NominalDate -> WellChildEncounterType -> Maybe HealthCenterId -> WellChildEncounter
+emptyWellChildEncounter :
+    IndividualEncounterParticipantId
+    -> NominalDate
+    -> WellChildEncounterType
+    -> Maybe HealthCenterId
+    -> WellChildEncounter
 emptyWellChildEncounter participant startDate encounterType shard =
     { participant = participant
     , startDate = startDate
@@ -32,6 +37,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
 
 type WellChildEncounterType
     = PediatricCare
+    | PediatricCareChw
     | NewbornExam
 
 
@@ -115,9 +121,9 @@ type alias Model =
     , saveHealthEducation : WebData ()
     , saveFollowUp : WebData ()
     , saveSendToHC : WebData ()
-    , saveImmunisation : WebData ()
     , saveBCGImmunisation : WebData ()
     , saveDTPImmunisation : WebData ()
+    , saveDTPStandaloneImmunisation : WebData ()
     , saveHPVImmunisation : WebData ()
     , saveIPVImmunisation : WebData ()
     , saveMRImmunisation : WebData ()
@@ -129,6 +135,11 @@ type alias Model =
     , saveMebendezole : WebData ()
     , saveVitaminA : WebData ()
     , saveNextVisit : WebData ()
+    , saveNCDA : WebData ()
+    , saveFeeding : WebData ()
+    , saveHygiene : WebData ()
+    , saveFoodSecurity : WebData ()
+    , saveCaring : WebData ()
     }
 
 
@@ -148,9 +159,9 @@ emptyModel =
     , saveHealthEducation = NotAsked
     , saveFollowUp = NotAsked
     , saveSendToHC = NotAsked
-    , saveImmunisation = NotAsked
     , saveBCGImmunisation = NotAsked
     , saveDTPImmunisation = NotAsked
+    , saveDTPStandaloneImmunisation = NotAsked
     , saveHPVImmunisation = NotAsked
     , saveIPVImmunisation = NotAsked
     , saveMRImmunisation = NotAsked
@@ -162,12 +173,17 @@ emptyModel =
     , saveMebendezole = NotAsked
     , saveVitaminA = NotAsked
     , saveNextVisit = NotAsked
+    , saveNCDA = NotAsked
+    , saveFeeding = NotAsked
+    , saveHygiene = NotAsked
+    , saveFoodSecurity = NotAsked
+    , saveCaring = NotAsked
     }
 
 
 type Msg
     = CloseWellChildEncounter
-    | HandleWellChildEncounterEdited (WebData ())
+    | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning
     | SavePregnancySummary PersonId (Maybe WellChildPregnancySummaryId) PregnancySummaryValue
@@ -184,7 +200,7 @@ type Msg
     | HandleSavedMuac (WebData ())
     | SaveNutrition PersonId (Maybe WellChildNutritionId) NutritionValue
     | HandleSavedNutrition (WebData ())
-    | SavePhoto PersonId (Maybe WellChildPhotoId) PhotoUrl
+    | SavePhoto PersonId (Maybe WellChildPhotoId) ImageUrl
     | HandleSavedPhoto (WebData ())
     | SaveWeight PersonId (Maybe WellChildWeightId) WeightInKg
     | HandleSavedWeight (WebData ())
@@ -192,7 +208,7 @@ type Msg
     | HandleSavedContributingFactors (WebData ())
     | SaveHealthEducation PersonId (Maybe WellChildHealthEducationId) HealthEducationValue
     | HandleSavedHealthEducation (WebData ())
-    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) FollowUpValue
+    | SaveFollowUp PersonId (Maybe WellChildFollowUpId) NutritionFollowUpValue
     | HandleSavedFollowUp (WebData ())
     | SaveSendToHC PersonId (Maybe WellChildSendToHCId) SendToHCValue
     | HandleSavedSendToHC (WebData ())
@@ -202,6 +218,8 @@ type Msg
     | HandleSavedBCGImmunisation (WebData ())
     | SaveDTPImmunisation PersonId (Maybe WellChildDTPImmunisationId) VaccinationValue
     | HandleSavedDTPImmunisation (WebData ())
+    | SaveDTPStandaloneImmunisation PersonId (Maybe WellChildDTPStandaloneImmunisationId) VaccinationValue
+    | HandleSavedDTPStandaloneImmunisation (WebData ())
     | SaveHPVImmunisation PersonId (Maybe WellChildHPVImmunisationId) VaccinationValue
     | HandleSavedHPVImmunisation (WebData ())
     | SaveIPVImmunisation PersonId (Maybe WellChildIPVImmunisationId) VaccinationValue
@@ -222,3 +240,13 @@ type Msg
     | HandleSavedVitaminA (WebData ())
     | SaveNextVisit PersonId (Maybe WellChildNextVisitId) NextVisitValue
     | HandleSavedNextVisit (WebData ())
+    | SaveNCDA PersonId (Maybe WellChildNCDAId) NCDAValue
+    | HandleSavedNCDA (WebData ())
+    | SaveFeeding PersonId (Maybe WellChildFeedingId) NutritionFeedingValue
+    | HandleSavedFeeding (WebData ())
+    | SaveHygiene PersonId (Maybe WellChildHygieneId) NutritionHygieneValue
+    | HandleSavedHygiene (WebData ())
+    | SaveFoodSecurity PersonId (Maybe WellChildFoodSecurityId) NutritionFoodSecurityValue
+    | HandleSavedFoodSecurity (WebData ())
+    | SaveCaring PersonId (Maybe WellChildCaringId) NutritionCaringValue
+    | HandleSavedCaring (WebData ())

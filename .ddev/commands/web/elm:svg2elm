@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Convert SVG to Elm.
+## Usage: elm:svg2elm
+## Example: "ddev elm:svg2elm"
+
+cd ../elm && ./svg2elm.sh

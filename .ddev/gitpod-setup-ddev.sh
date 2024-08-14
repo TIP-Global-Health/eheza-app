@@ -15,17 +15,17 @@ cat <<CONFIGEND > ${MYDIR}/config.gitpod.yaml
 use_dns_when_possible: false
 
 # Throwaway ports, otherwise Gitpod throw an error 'port needs to be > 1024'
-router_http_port: "8888"
+router_http_port: "8080"
 router_https_port: "8889"
 
 additional_fqdns:
-- 8888-${shortgpurl}
+- 8080-${shortgpurl}
 - 8025-${shortgpurl}
 - 8036-${shortgpurl}
 CONFIGEND
 
 # Forces proper external base URL.
-DRUPAL_BASE=$(gp url 8888)
+DRUPAL_BASE=$(gp url 8080)
 mkdir -p web/sites/all/drush
 cat <<DRUSH_CFG > web/sites/all/drush/drush.yml
 options:

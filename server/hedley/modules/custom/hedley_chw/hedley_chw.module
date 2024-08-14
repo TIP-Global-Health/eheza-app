@@ -10,7 +10,7 @@ include_once 'hedley_chw.features.inc';
 /**
  * Implements hook_node_insert().
  *
- * Crate CHW group for newly created village.
+ * Create CHW group for newly created village.
  */
 function hedley_chw_node_insert($node) {
   hedley_chw_process_new_participation($node);
@@ -287,13 +287,13 @@ function hedley_chw_participate_in_group($child_id, $adult_id, $group_id) {
  *
  * @throws \EntityMetadataWrapperException
  */
-function hedley_chw_get_village_residents($nid, $range = 1000) {
-  $wrapper = entity_metadata_wrapper('node', $nid);
-  $province = $wrapper->field_province->value();
-  $district = $wrapper->field_district->value();
-  $sector = $wrapper->field_sector->value();
-  $cell = $wrapper->field_cell->value();
-  $village = $wrapper->field_village->value();
+function hedley_chw_get_village_residents($nid, $range = 5000) {
+  $node = node_load($nid);
+  $province = $node->field_province[LANGUAGE_NONE][0]['value'];
+  $district = $node->field_district[LANGUAGE_NONE][0]['value'];
+  $sector = $node->field_sector[LANGUAGE_NONE][0]['value'];
+  $cell = $node->field_cell[LANGUAGE_NONE][0]['value'];
+  $village = $node->field_village[LANGUAGE_NONE][0]['value'];
 
   $query = new EntityFieldQuery();
   $result = $query

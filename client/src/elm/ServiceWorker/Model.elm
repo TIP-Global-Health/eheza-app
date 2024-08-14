@@ -3,8 +3,6 @@ module ServiceWorker.Model exposing (IncomingMsg(..), Model, Msg(..), NewWorker(
 {-| Some state we maintain relating to service workers.
 -}
 
-import AssocList as Dict exposing (Dict)
-import Backend.Entities exposing (..)
 import Backend.Model exposing (Revision)
 import Json.Encode exposing (Value)
 import RemoteData exposing (RemoteData(..))

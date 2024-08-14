@@ -17,19 +17,20 @@ function hedley_user_node_presave($node) {
   }
 
   $wrapper = entity_metadata_wrapper('node', $node);
-
-  if (empty($node->nid)) {
-    // New user, so we generate a PIN code if not provided.
-    if (empty($wrapper->field_pin_code->value())) {
-      $wrapper->field_pin_code->set(hedley_user_get_unique_pincode());
-    }
-    elseif (!hedley_user_check_unique_pincode($wrapper->field_pin_code->value())) {
-      throw new Exception('The provided PIN code was not unique.');
-    }
+  $pin_code = $wrapper->field_pin_code->value();
+  if (empty($pin_code)) {
+    // No PIN code provided, so we generate one.
+    $wrapper->field_pin_code->set(hedley_user_get_unique_pincode());
+    return;
   }
-  elseif (!hedley_user_check_unique_pincode($wrapper->field_pin_code->value(), $wrapper->getIdentifier())) {
-    // Existing user, so throw error if it's not unique.
-    throw new Exception('The provided PIN code was not unique.');
+
+  if (strlen($pin_code) < 4) {
+    throw new Exception('The provided PIN code is too short. Minimal length - 4 characters.');
+  }
+
+  $nid = !empty($node->nid) ? $node->nid : NULL;
+  if (!hedley_user_check_unique_pincode($pin_code, $nid)) {
+    throw new Exception('The provided PIN code is not unique.');
   }
 }
 

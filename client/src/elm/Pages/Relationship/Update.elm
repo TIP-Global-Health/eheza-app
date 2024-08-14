@@ -3,8 +3,6 @@ module Pages.Relationship.Update exposing (update)
 import App.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import Backend.Person.Model exposing (Initiator(..))
-import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Relationship.Model exposing (..)
 import Restful.Endpoint exposing (toEntityUuid)
 
@@ -32,7 +30,7 @@ update id1 id2 msg model =
             , [ App.Model.SetActivePage page ]
             )
 
-        Reset initiator ->
+        Reset _ ->
             ( emptyModel
             , Cmd.none
             , []

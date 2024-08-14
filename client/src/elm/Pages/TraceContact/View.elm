@@ -1,38 +1,38 @@
 module Pages.TraceContact.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..))
+import AssocList as Dict
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (ContactTraceItem)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (generateFullName)
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra exposing (isJust)
-import Pages.AcuteIllnessActivity.Types exposing (SymptomsTask(..))
-import Pages.AcuteIllnessActivity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
+import Maybe.Extra
+import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
+import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
     exposing
         ( isTaskCompleted
+        , resolveActiveTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewCustomLabel
+        , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
         )
-import Pages.WellChildEncounter.View exposing (thumbnailDimensions, viewPersonDetails)
-import RemoteData exposing (RemoteData)
-import Translate exposing (Language, TranslationId, translate)
+import RemoteData
+import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage, viewModal)
 
 
@@ -53,7 +53,7 @@ view language currentDate id db model =
                 traceContact
 
         personDetails =
-            Maybe.map (viewPersonDetails language currentDate)
+            Maybe.map (viewPersonDetailsExtended language currentDate)
                 tracePerson
                 |> Maybe.withDefault (viewContactDetails language currentDate traceContact)
 
@@ -64,8 +64,8 @@ view language currentDate id db model =
 
         content =
             div [ class "ui unstackable items" ] <|
-                [ div [ class "item" ] personDetails ]
-                    ++ traceContentStepForm
+                div [ class "item" ] personDetails
+                    :: traceContentStepForm
     in
     div [ class "page-activity trace-contact" ]
         [ viewHeader language
@@ -118,6 +118,13 @@ viewContactDetails language currentDate traceContact =
         )
         traceContact
         |> Maybe.withDefault []
+
+
+thumbnailDimensions : { width : Int, height : Int }
+thumbnailDimensions =
+    { width = 140
+    , height = 140
+    }
 
 
 viewTraceContactStep : Language -> NominalDate -> Model -> ContactTraceItem -> List (Html Msg)
@@ -207,7 +214,7 @@ viewStepRecordSymptoms language currentDate contact data =
             [ SymptomsGeneral, SymptomsRespiratory, SymptomsGI ]
 
         activeTask =
-            Maybe.Extra.or data.activeTask (List.head tasks)
+            resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let

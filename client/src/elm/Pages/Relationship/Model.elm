@@ -1,7 +1,7 @@
 module Pages.Relationship.Model exposing (Model, Msg(..), emptyModel)
 
 import Backend.Entities exposing (..)
-import Backend.Person.Model exposing (Initiator(..))
+import Backend.Person.Model exposing (Initiator)
 import Backend.Relationship.Model exposing (..)
 import Pages.Page exposing (Page)
 

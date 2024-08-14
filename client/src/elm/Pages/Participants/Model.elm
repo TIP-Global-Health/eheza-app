@@ -14,7 +14,7 @@ show the participant.
 
 -}
 
-import Pages.Page exposing (Page(..))
+import Pages.Page exposing (Page)
 
 
 type alias Model =

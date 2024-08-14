@@ -113,6 +113,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create group_ncda content'.
+  $permissions['create group_ncda content'] = array(
+    'name' => 'create group_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create group_send_to_hc content'.
   $permissions['create group_send_to_hc content'] = array(
     'name' => 'create group_send_to_hc content',
@@ -219,6 +229,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'create nutrition_muac content'.
   $permissions['create nutrition_muac content'] = array(
     'name' => 'create nutrition_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create nutrition_ncda content'.
+  $permissions['create nutrition_ncda content'] = array(
+    'name' => 'create nutrition_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -478,6 +498,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any group_ncda content'.
+  $permissions['delete any group_ncda content'] = array(
+    'name' => 'delete any group_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any group_send_to_hc content'.
   $permissions['delete any group_send_to_hc content'] = array(
     'name' => 'delete any group_send_to_hc content',
@@ -571,6 +600,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete any nutrition_muac content'.
   $permissions['delete any nutrition_muac content'] = array(
     'name' => 'delete any nutrition_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any nutrition_ncda content'.
+  $permissions['delete any nutrition_ncda content'] = array(
+    'name' => 'delete any nutrition_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -811,6 +849,15 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own group_ncda content'.
+  $permissions['delete own group_ncda content'] = array(
+    'name' => 'delete own group_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own group_send_to_hc content'.
   $permissions['delete own group_send_to_hc content'] = array(
     'name' => 'delete own group_send_to_hc content',
@@ -904,6 +951,15 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'delete own nutrition_muac content'.
   $permissions['delete own nutrition_muac content'] = array(
     'name' => 'delete own nutrition_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own nutrition_ncda content'.
+  $permissions['delete own nutrition_ncda content'] = array(
+    'name' => 'delete own nutrition_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -1156,6 +1212,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any group_ncda content'.
+  $permissions['edit any group_ncda content'] = array(
+    'name' => 'edit any group_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any group_send_to_hc content'.
   $permissions['edit any group_send_to_hc content'] = array(
     'name' => 'edit any group_send_to_hc content',
@@ -1262,6 +1328,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit any nutrition_muac content'.
   $permissions['edit any nutrition_muac content'] = array(
     'name' => 'edit any nutrition_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any nutrition_ncda content'.
+  $permissions['edit any nutrition_ncda content'] = array(
+    'name' => 'edit any nutrition_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1533,6 +1609,16 @@ function hedley_activity_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own group_ncda content'.
+  $permissions['edit own group_ncda content'] = array(
+    'name' => 'edit own group_ncda content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own group_send_to_hc content'.
   $permissions['edit own group_send_to_hc content'] = array(
     'name' => 'edit own group_send_to_hc content',
@@ -1639,6 +1725,16 @@ function hedley_activity_user_default_permissions() {
   // Exported permission: 'edit own nutrition_muac content'.
   $permissions['edit own nutrition_muac content'] = array(
     'name' => 'edit own nutrition_muac content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own nutrition_ncda content'.
+  $permissions['edit own nutrition_ncda content'] = array(
+    'name' => 'edit own nutrition_ncda content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

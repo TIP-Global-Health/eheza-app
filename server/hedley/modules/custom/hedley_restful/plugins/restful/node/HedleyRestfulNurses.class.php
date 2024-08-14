@@ -16,6 +16,26 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
   public function publicFieldsInfo() {
     $public_fields = parent::publicFieldsInfo();
 
+    $standard_fields_names = [
+      'field_role',
+      'field_pin_code',
+      'field_resilience_program',
+      'field_resilience_role',
+      'field_education_level',
+      'field_gender',
+      'field_marital_status',
+      'field_ubudehe',
+      'field_next_reminder',
+      'field_resilience_messages',
+    ];
+
+    foreach ($standard_fields_names as $field_name) {
+      $public_name = str_replace('field_', '', $field_name);
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+      ];
+    }
+
     $public_fields['health_centers'] = [
       'property' => 'field_health_centers',
       'sub_property' => 'field_uuid',
@@ -26,12 +46,18 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
-    $public_fields['pin_code'] = [
-      'property' => 'field_pin_code',
+    $public_fields['birth_date'] = [
+      'property' => 'field_birth_date',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToYmd'],
+      ],
     ];
 
-    $public_fields['role'] = [
-      'property' => 'field_role',
+    $public_fields['resilience_start_date'] = [
+      'property' => 'field_resilience_start_date',
+      'process_callbacks' => [
+        [$this, 'convertTimestampToYmd'],
+      ],
     ];
 
     return $public_fields;
@@ -46,6 +72,16 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_pin_code',
       'field_health_centers',
       'field_villages',
+      'field_resilience_program',
+      'field_resilience_role',
+      'field_education_level',
+      'field_gender',
+      'field_marital_status',
+      'field_ubudehe',
+      'field_birth_date',
+      'field_resilience_start_date',
+      'field_next_reminder',
+      'field_resilience_messages',
     ];
 
     foreach ($field_names as $field_name) {
@@ -82,6 +118,15 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
         $item->villages = explode(',', $item->uuids_villages);
       }
       unset($item->uuids_villages);
+
+      $item->resilience_program = (bool) $item->resilience_program;
+
+      $birth_date = explode(' ', $item->birth_date);
+      $item->birth_date = !empty($birth_date[0]) ? $birth_date[0] : NULL;
+
+      $resilience_start_date = explode(' ', $item->resilience_start_date);
+      $item->resilience_start_date = !empty($resilience_start_date[0]) ? $resilience_start_date[0] : NULL;
+      $item->resilience_messages = drupal_json_decode($item->resilience_messages);
     }
 
     return $items;

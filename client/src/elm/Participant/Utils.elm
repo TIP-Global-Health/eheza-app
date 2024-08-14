@@ -9,7 +9,7 @@ import Backend.Session.Utils exposing (getMyMother)
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model
 import Pages.Activity.Utils exposing (viewChildMeasurements, viewMotherMeasurements)
-import Participant.Model exposing (Participant, ParticipantId(..))
+import Participant.Model exposing (Participant)
 import RemoteData exposing (RemoteData(..))
 
 
@@ -29,7 +29,6 @@ childParticipant =
     , tagActivity = ChildActivity
     , toChildId = Just
     , toMotherId = always Nothing
-    , toParticipantId = ParticipantChild
     , viewMeasurements = viewChildMeasurements
     }
 
@@ -38,7 +37,7 @@ motherParticipant : Participant PersonId Person MotherActivity Measurement.Model
 motherParticipant =
     { getAvatarUrl = .avatarUrl
     , getBirthDate = .birthDate
-    , getMotherId = \motherId session -> Just motherId
+    , getMotherId = \motherId _ -> Just motherId
     , getName = .name
     , getParticipants = \session -> session.offlineSession.mothers
     , getValue = \id db -> Dict.get id db.people |> Maybe.withDefault NotAsked
@@ -50,6 +49,5 @@ motherParticipant =
     , tagActivity = MotherActivity
     , toChildId = always Nothing
     , toMotherId = Just
-    , toParticipantId = ParticipantMother
-    , viewMeasurements = \language date zscores isChw db -> viewMotherMeasurements language date
+    , viewMeasurements = \language date site _ _ _ -> viewMotherMeasurements language date site
     }

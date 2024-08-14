@@ -1,7 +1,37 @@
 #!/bin/bash
 
+set -e
+
 ## Description: Run robo commands inside the web container for the client app.
 ## Usage: gulp
 ## Example: "ddev gulp publish" or "ddev gulp".
 
-cd ../../client && gulp $@
+CLIENT_PATH="../../client"
+
+if [ "$1" == "publish" ];
+then
+  if [[ -z "${EHEZA_INFRA_REPO_REMOTE}" ]]; then
+    echo "Please specify EHEZA_INFRA_REPO_REMOTE in your DDEV local config before trying to do deployments."
+    exit 1
+  fi
+
+  if [[ -z "${EHEZA_SITE}" ]]; then
+    echo "Please specify EHEZA_SITE in your DDEV local config, as for deployment, we must know for which site it's being performed."
+    exit 1
+  fi
+
+  if [ ! -d ../../eheza-infra ]; then
+  echo "Cloning eheza-infra repo..."
+    git clone "${EHEZA_INFRA_REPO_REMOTE}" ../../eheza-infra
+  else
+    echo "Updating eheza-infra repo..."
+    cd ../../eheza-infra
+    git pull
+    cd -
+  fi
+
+  cp ../../eheza-infra/elm/${EHEZA_SITE}/Config.Deploy.elm ${CLIENT_PATH}/src/elm/
+fi
+
+export TZ=Europe/Budapest
+cd ../../client  && gulp $@

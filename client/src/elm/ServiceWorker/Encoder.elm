@@ -17,16 +17,10 @@ encodeOutgoingMsg : OutgoingMsg -> Value
 encodeOutgoingMsg msg =
     case msg of
         Register ->
-            object
-                [ ( "tag", string "Register" )
-                ]
+            object [ ( "tag", string "Register" ) ]
 
         Update ->
-            object
-                [ ( "tag", string "Update" )
-                ]
+            object [ ( "tag", string "Update" ) ]
 
         SkipWaiting ->
-            object
-                [ ( "tag", string "SkipWaiting" )
-                ]
+            object [ ( "tag", string "SkipWaiting" ) ]

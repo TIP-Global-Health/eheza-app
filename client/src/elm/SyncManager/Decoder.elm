@@ -8,13 +8,17 @@ module SyncManager.Decoder exposing
 
 import AssocList as Dict
 import Backend.AcuteIllnessEncounter.Decoder
+import Backend.ChildScoreboardEncounter.Decoder
 import Backend.Clinic.Decoder
 import Backend.Counseling.Decoder
 import Backend.Dashboard.Decoder
+import Backend.EducationSession.Decoder
+import Backend.HIVEncounter.Decoder
 import Backend.HealthCenter.Decoder
 import Backend.HomeVisitEncounter.Decoder
 import Backend.IndividualEncounterParticipant.Decoder
 import Backend.Measurement.Decoder
+import Backend.NCDEncounter.Decoder
 import Backend.Nurse.Decoder
 import Backend.NutritionEncounter.Decoder
 import Backend.ParticipantConsent.Decoder
@@ -22,16 +26,23 @@ import Backend.Person.Decoder
 import Backend.PmtctParticipant.Decoder
 import Backend.PrenatalEncounter.Decoder
 import Backend.Relationship.Decoder
+import Backend.ResilienceMessage.Decoder
+import Backend.ResilienceSurvey.Decoder
 import Backend.Session.Decoder
+import Backend.StockUpdate.Decoder
+import Backend.TuberculosisEncounter.Decoder
 import Backend.Village.Decoder
 import Backend.WellChildEncounter.Decoder
-import Gizra.Date exposing (decodeDate)
+import Components.ReportToWhatsAppDialog.Decoder exposing (decodeReportType)
+import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeInt)
+import Gizra.NominalDate
 import Json.Decode exposing (..)
 import Json.Decode.Pipeline exposing (..)
 import RemoteData exposing (RemoteData)
 import SyncManager.Model exposing (..)
-import Time
+import SyncManager.Utils exposing (siteFeaturesFromString, siteFromString)
+import Translate.Utils exposing (decodeLanguage)
 
 
 decodeIndexDbQueryTypeResult : Decoder IndexDbQueryTypeResult
@@ -40,27 +51,25 @@ decodeIndexDbQueryTypeResult =
         |> andThen
             (\queryType ->
                 case queryType of
-                    "IndexDbQueryUploadPhotoAuthorityResult" ->
+                    "IndexDbQueryUploadPhotoResult" ->
                         decodeIndexDbQueryUploadPhotoResultRecordRemoteData
-                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoAuthorityResult val))
+                            |> andThen (\val -> succeed (IndexDbQueryUploadPhotoResult val))
+
+                    "IndexDbQueryUploadScreenshotResult" ->
+                        decodeIndexDbQueryUploadScreenshotResultRecordRemoteData
+                            |> andThen (\val -> succeed (IndexDbQueryUploadScreenshotResult val))
 
                     "IndexDbQueryUploadAuthorityResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadAuthorityResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
-
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadAuthorityResult Nothing)
-                            ]
+                        field "data" decodeIndexDbQueryUploadAuthorityResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadAuthorityResult (Just record)))
 
                     "IndexDbQueryUploadGeneralResult" ->
-                        oneOf
-                            [ field "data" decodeIndexDbQueryUploadGeneralResultRecord
-                                |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
+                        field "data" decodeIndexDbQueryUploadGeneralResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadGeneralResult (Just record)))
 
-                            -- In case we have no entities to upload.
-                            , succeed (IndexDbQueryUploadGeneralResult Nothing)
-                            ]
+                    "IndexDbQueryUploadWhatsAppResult" ->
+                        field "data" decodeIndexDbQueryUploadWhatsAppResultRecord
+                            |> andThen (\record -> succeed (IndexDbQueryUploadWhatsAppResult (Just record)))
 
                     "IndexDbQueryDeferredPhotoResult" ->
                         oneOf
@@ -75,12 +84,16 @@ decodeIndexDbQueryTypeResult =
                         field "data" decodeInt
                             |> andThen (\val -> succeed (IndexDbQueryGetTotalEntriesToUploadResult val))
 
+                    "IndexDbQueryGetShardsEntityByUuidResult" ->
+                        field "data" string
+                            |> andThen (\val -> succeed (IndexDbQueryGetShardsEntityByUuidResult val))
+
                     _ ->
                         fail <| queryType ++ " is not a recognized IndexDbQueryTypeResult"
             )
 
 
-decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadPhotoError (Maybe IndexDbQueryUploadPhotoResultRecord))
+decodeIndexDbQueryUploadPhotoResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadPhotoResultRecord))
 decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
     at [ "data", "tag" ] string
         |> andThen
@@ -89,6 +102,47 @@ decodeIndexDbQueryUploadPhotoResultRecordRemoteData =
                     "Success" ->
                         oneOf
                             [ at [ "data", "result" ] decodeIndexDbQueryUploadPhotoResultRecord
+                                |> andThen (\record -> succeed (RemoteData.Success (Just record)))
+
+                            -- In case we have no photos to upload.
+                            , succeed (RemoteData.Success Nothing)
+                            ]
+
+                    "Error" ->
+                        (succeed (\a b -> ( a, b ))
+                            |> requiredAt [ "data", "error" ] string
+                            |> optionalAt [ "data", "reason" ] (nullable string) Nothing
+                        )
+                            |> andThen
+                                (\( error, maybeReason ) ->
+                                    case error of
+                                        "BadJson" ->
+                                            succeed (RemoteData.Failure <| BadJson (Maybe.withDefault "" maybeReason))
+
+                                        "NetworkError" ->
+                                            succeed (RemoteData.Failure <| NetworkError (Maybe.withDefault "" maybeReason))
+
+                                        "UploadError" ->
+                                            succeed (RemoteData.Failure <| UploadError (Maybe.withDefault "" maybeReason))
+
+                                        _ ->
+                                            fail <| error ++ " is not a recognized Error tag IndexDbQueryUploadPhotoResultRecord"
+                                )
+
+                    _ ->
+                        fail <| tag ++ " is not a recognized Error for decodeIndexDbQueryUploadPhotoResultRecordRemoteData"
+            )
+
+
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData : Decoder (RemoteData UploadFileError (Maybe IndexDbQueryUploadFileResultRecord))
+decodeIndexDbQueryUploadScreenshotResultRecordRemoteData =
+    at [ "data", "tag" ] string
+        |> andThen
+            (\tag ->
+                case tag of
+                    "Success" ->
+                        oneOf
+                            [ at [ "data", "result" ] decodeIndexDbQueryUploadFileResultRecord
                                 |> andThen (\record -> succeed (RemoteData.Success (Just record)))
 
                             -- In case we have no photos to upload.
@@ -130,11 +184,37 @@ decodeIndexDbQueryUploadPhotoResultRecord =
         |> optional "fileId" (nullable int) Nothing
 
 
+decodeIndexDbQueryUploadFileResultRecord : Decoder IndexDbQueryUploadFileResultRecord
+decodeIndexDbQueryUploadFileResultRecord =
+    succeed IndexDbQueryUploadFileResultRecord
+        |> required "localId" int
+        |> optional "fileId" (nullable int) Nothing
+
+
 decodeIndexDbQueryUploadGeneralResultRecord : Decoder IndexDbQueryUploadGeneralResultRecord
 decodeIndexDbQueryUploadGeneralResultRecord =
     succeed IndexDbQueryUploadGeneralResultRecord
         |> required "entities" (list <| decodeBackendEntityAndUploadMethod (\uuid localId -> decodeBackendGeneralEntity (hardcoded uuid) (hardcoded localId)))
         |> required "remaining" decodeInt
+
+
+decodeIndexDbQueryUploadWhatsAppResultRecord : Decoder IndexDbQueryUploadWhatsAppResultRecord
+decodeIndexDbQueryUploadWhatsAppResultRecord =
+    succeed IndexDbQueryUploadWhatsAppResultRecord
+        |> required "entities" (list decodeBackendWhatsAppEntity)
+        |> required "remaining" decodeInt
+
+
+decodeBackendWhatsAppEntity : Decoder BackendWhatsAppEntity
+decodeBackendWhatsAppEntity =
+    succeed BackendWhatsAppEntity
+        |> required "localId" decodeInt
+        |> required "person" string
+        |> required "date_measured" Gizra.NominalDate.decodeYYYYMMDD
+        |> required "language" decodeLanguage
+        |> required "report_type" decodeReportType
+        |> required "phone_number" string
+        |> required "fileId" decodeInt
 
 
 decodeIndexDbQueryUploadAuthorityResultRecord : Decoder IndexDbQueryUploadAuthorityResultRecord
@@ -220,6 +300,9 @@ decodeDownloadSyncResponseGeneral =
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
+            |> optional "rollbar_token" string ""
+            |> optional "site" decodeSite SiteRwanda
+            |> optional "features" decodeSiteFeatures EverySet.empty
         )
 
 
@@ -272,9 +355,24 @@ decodeBackendGeneralEntity uuidDecoder identifierDecoder =
                     "village" ->
                         doDecode Backend.Village.Decoder.decodeVillage BackendGeneralVillage
 
+                    "resilience_survey" ->
+                        doDecode Backend.ResilienceSurvey.Decoder.decodeResilienceSurvey BackendGeneralResilienceSurvey
+
                     _ ->
                         fail <| type_ ++ " is unknown BackendGeneralEntity"
             )
+
+
+decodeSite : Decoder Site
+decodeSite =
+    string
+        |> andThen (siteFromString >> succeed)
+
+
+decodeSiteFeatures : Decoder (EverySet SiteFeature)
+decodeSiteFeatures =
+    string
+        |> andThen (siteFeaturesFromString >> succeed)
 
 
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
@@ -284,6 +382,9 @@ decodeDownloadSyncResponseAuthority =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> hardcoded ""
+            |> hardcoded ""
+            |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 
@@ -294,6 +395,9 @@ decodeDownloadSyncResponseAuthorityStats =
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> hardcoded 0
             |> hardcoded ""
+            |> hardcoded ""
+            |> hardcoded SiteUnknown
+            |> hardcoded EverySet.empty
         )
 
 
@@ -405,6 +509,56 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeFbf
                             BackendAuthorityChildFbf
 
+                    "child_scoreboard_encounter" ->
+                        doDecode
+                            Backend.ChildScoreboardEncounter.Decoder.decodeChildScoreboardEncounter
+                            BackendAuthorityChildScoreboardEncounter
+
+                    "child_scoreboard_bcg_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardBCGImmunisation
+                            BackendAuthorityChildScoreboardBCGImmunisation
+
+                    "child_scoreboard_dtp_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPImmunisation
+                            BackendAuthorityChildScoreboardDTPImmunisation
+
+                    "child_scoreboard_dtp_sa_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardDTPStandaloneImmunisation
+                            BackendAuthorityChildScoreboardDTPStandaloneImmunisation
+
+                    "child_scoreboard_ipv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardIPVImmunisation
+                            BackendAuthorityChildScoreboardIPVImmunisation
+
+                    "child_scoreboard_mr_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardMRImmunisation
+                            BackendAuthorityChildScoreboardMRImmunisation
+
+                    "child_scoreboard_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardNCDA
+                            BackendAuthorityChildScoreboardNCDA
+
+                    "child_scoreboard_opv_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardOPVImmunisation
+                            BackendAuthorityChildScoreboardOPVImmunisation
+
+                    "child_scoreboard_pcv13_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardPCV13Immunisation
+                            BackendAuthorityChildScoreboardPCV13Immunisation
+
+                    "child_scoreboard_rotarix_iz" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeChildScoreboardRotarixImmunisation
+                            BackendAuthorityChildScoreboardRotarixImmunisation
+
                     "clinic" ->
                         doDecode
                             Backend.Clinic.Decoder.decodeClinic
@@ -435,6 +589,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeDangerSigns
                             BackendAuthorityDangerSigns
 
+                    "education_session" ->
+                        doDecode
+                            Backend.EducationSession.Decoder.decodeEducationSession
+                            BackendAuthorityEducationSession
+
                     "exposure" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeExposure
@@ -455,6 +614,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeGroupHealthEducation
                             BackendAuthorityGroupHealthEducation
 
+                    "group_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeGroupNCDA
+                            BackendAuthorityGroupNCDA
+
                     "group_send_to_hc" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeGroupSendToHC
@@ -474,6 +638,46 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeHeight
                             BackendAuthorityHeight
+
+                    "hiv_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVDiagnostics
+                            BackendAuthorityHIVDiagnostics
+
+                    "hiv_encounter" ->
+                        doDecode
+                            Backend.HIVEncounter.Decoder.decodeHIVEncounter
+                            BackendAuthorityHIVEncounter
+
+                    "hiv_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVFollowUp
+                            BackendAuthorityHIVFollowUp
+
+                    "hiv_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVHealthEducation
+                            BackendAuthorityHIVHealthEducation
+
+                    "hiv_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVMedication
+                            BackendAuthorityHIVMedication
+
+                    "hiv_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVReferral
+                            BackendAuthorityHIVReferral
+
+                    "hiv_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVSymptomReview
+                            BackendAuthorityHIVSymptomReview
+
+                    "hiv_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeHIVTreatmentReview
+                            BackendAuthorityHIVTreatmentReview
 
                     "home_visit_encounter" ->
                         doDecode
@@ -530,6 +734,121 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeMuac
                             BackendAuthorityMuac
 
+                    "ncd_co_morbidities" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCoMorbidities
+                            BackendAuthorityNCDCoMorbidities
+
+                    "ncd_core_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCoreExam
+                            BackendAuthorityNCDCoreExam
+
+                    "ncd_creatinine_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDCreatinineTest
+                            BackendAuthorityNCDCreatinineTest
+
+                    "ncd_danger_signs" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDDangerSigns
+                            BackendAuthorityNCDDangerSigns
+
+                    "ncd_encounter" ->
+                        doDecode
+                            Backend.NCDEncounter.Decoder.decodeNCDEncounter
+                            BackendAuthorityNCDEncounter
+
+                    "ncd_family_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDFamilyHistory
+                            BackendAuthorityNCDFamilyHistory
+
+                    "ncd_family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDFamilyPlanning
+                            BackendAuthorityNCDFamilyPlanning
+
+                    "ncd_hba1c_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHbA1cTest
+                            BackendAuthorityNCDHbA1cTest
+
+                    "ncd_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHealthEducation
+                            BackendAuthorityNCDHealthEducation
+
+                    "ncd_hiv_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDHIVTest
+                            BackendAuthorityNCDHIVTest
+
+                    "ncd_labs_results" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLabsResults
+                            BackendAuthorityNCDLabsResults
+
+                    "ncd_lipid_panel_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLipidPanelTest
+                            BackendAuthorityNCDLipidPanelTest
+
+                    "ncd_liver_function_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDLiverFunctionTest
+                            BackendAuthorityNCDLiverFunctionTest
+
+                    "ncd_medication_distribution" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDMedicationDistribution
+                            BackendAuthorityNCDMedicationDistribution
+
+                    "ncd_medication_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDMedicationHistory
+                            BackendAuthorityNCDMedicationHistory
+
+                    "ncd_outside_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDOutsideCare
+                            BackendAuthorityNCDOutsideCare
+
+                    "ncd_pregnancy_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDPregnancyTest
+                            BackendAuthorityNCDPregnancyTest
+
+                    "ncd_random_blood_sugar_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDRandomBloodSugarTest
+                            BackendAuthorityNCDRandomBloodSugarTest
+
+                    "ncd_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDReferral
+                            BackendAuthorityNCDReferral
+
+                    "ncd_social_history" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDSocialHistory
+                            BackendAuthorityNCDSocialHistory
+
+                    "ncd_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDSymptomReview
+                            BackendAuthorityNCDSymptomReview
+
+                    "ncd_urine_dipstick_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDUrineDipstickTest
+                            BackendAuthorityNCDUrineDipstickTest
+
+                    "ncd_vitals" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNCDVitals
+                            BackendAuthorityNCDVitals
+
                     "nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutrition
@@ -585,6 +904,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeNutritionMuac
                             BackendAuthorityNutritionMuac
 
+                    "nutrition_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeNutritionNCDA
+                            BackendAuthorityNutritionNCDA
+
                     "nutrition_nutrition" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeNutritionNutrition
@@ -630,6 +954,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Person.Decoder.decodePerson
                             BackendAuthorityPerson
 
+                    "pmtct_participant" ->
+                        doDecode
+                            Backend.PmtctParticipant.Decoder.decodePmtctParticipant
+                            BackendAuthorityPmtctParticipant
+
                     "photo" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePhoto
@@ -637,56 +966,146 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
 
                     "pregnancy_testing" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodePregnancyTesting
-                            BackendAuthorityPregnancyTesting
+                            Backend.Measurement.Decoder.decodePregnancyTest
+                            BackendAuthorityPregnancyTest
 
-                    "prenatal_photo" ->
+                    "prenatal_blood_gprs_test" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodePrenatalPhoto
-                            BackendAuthorityPrenatalPhoto
+                            Backend.Measurement.Decoder.decodePrenatalBloodGpRsTest
+                            BackendAuthorityPrenatalBloodGpRsTest
 
-                    "pmtct_participant" ->
+                    "prenatal_breastfeeding" ->
                         doDecode
-                            Backend.PmtctParticipant.Decoder.decodePmtctParticipant
-                            BackendAuthorityPmtctParticipant
-
-                    "prenatal_family_planning" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
-                            BackendAuthorityPrenatalFamilyPlanning
-
-                    "prenatal_health_education" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
-                            BackendAuthorityPrenatalHealthEducation
-
-                    "prenatal_nutrition" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalNutrition
-                            BackendAuthorityPrenatalNutrition
-
-                    "prenatal_follow_up" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalFollowUp
-                            BackendAuthorityPrenatalFollowUp
-
-                    "prenatal_send_to_hc" ->
-                        doDecode
-                            Backend.Measurement.Decoder.decodePrenatalSendToHc
-                            BackendAuthorityPrenatalSendToHC
+                            Backend.Measurement.Decoder.decodePrenatalBreastfeeding
+                            BackendAuthorityPrenatalBreastfeeding
 
                     "prenatal_encounter" ->
                         doDecode
                             Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter
                             BackendAuthorityPrenatalEncounter
 
+                    "prenatal_family_planning" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
+                            BackendAuthorityPrenatalFamilyPlanning
+
+                    "prenatal_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFollowUp
+                            BackendAuthorityPrenatalFollowUp
+
+                    "prenatal_gu_exam" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalGUExam
+                            BackendAuthorityPrenatalGUExam
+
+                    "prenatal_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHealthEducation
+                            BackendAuthorityPrenatalHealthEducation
+
+                    "prenatal_hemoglobin_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHemoglobinTest
+                            BackendAuthorityPrenatalHemoglobinTest
+
+                    "prenatal_hepatitis_b_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHepatitisBTest
+                            BackendAuthorityPrenatalHepatitisBTest
+
+                    "prenatal_hiv_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHIVTest
+                            BackendAuthorityPrenatalHIVTest
+
+                    "prenatal_hiv_pcr_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalHIVPCRTest
+                            BackendAuthorityPrenatalHIVPCRTest
+
+                    "prenatal_labs_results" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalLabsResults
+                            BackendAuthorityPrenatalLabsResults
+
+                    "prenatal_malaria_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMalariaTest
+                            BackendAuthorityPrenatalMalariaTest
+
+                    "prenatal_medication_distribution" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMedicationDistribution
+                            BackendAuthorityPrenatalMedicationDistribution
+
+                    "prenatal_mental_health" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMentalHealth
+                            BackendAuthorityPrenatalMentalHealth
+
+                    "prenatal_nutrition" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalNutrition
+                            BackendAuthorityPrenatalNutrition
+
+                    "prenatal_outside_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalOutsideCare
+                            BackendAuthorityPrenatalOutsideCare
+
+                    "prenatal_partner_hiv_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalPartnerHIVTest
+                            BackendAuthorityPrenatalPartnerHIVTest
+
+                    "prenatal_photo" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalPhoto
+                            BackendAuthorityPrenatalPhoto
+
+                    "prenatal_random_blood_sugar_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalRandomBloodSugarTest
+                            BackendAuthorityPrenatalRandomBloodSugarTest
+
+                    "prenatal_send_to_hc" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSendToHc
+                            BackendAuthorityPrenatalSendToHC
+
+                    "prenatal_speciality_care" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSpecialityCare
+                            BackendAuthorityPrenatalSpecialityCare
+
+                    "prenatal_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSymptomReview
+                            BackendAuthorityPrenatalSymptomReview
+
+                    "prenatal_syphilis_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalSyphilisTest
+                            BackendAuthorityPrenatalSyphilisTest
+
+                    "prenatal_tetanus_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalTetanusImmunisation
+                            BackendAuthorityPrenatalTetanusImmunisation
+
+                    "prenatal_urine_dipstick_test" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalUrineDipstickTest
+                            BackendAuthorityPrenatalUrineDipstickTest
+
                     "relationship" ->
                         doDecode Backend.Relationship.Decoder.decodeRelationship BackendAuthorityRelationship
 
                     "resource" ->
                         doDecode
-                            Backend.Measurement.Decoder.decodeResource
-                            BackendAuthorityResource
+                            Backend.Measurement.Decoder.decodeMalariaPrevention
+                            BackendAuthorityMalariaPrevention
 
                     "send_to_hc" ->
                         doDecode
@@ -707,6 +1126,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Dashboard.Decoder.decodeDashboardStatsRaw
                             BackendAuthorityDashboardStats
+
+                    "stock_update" ->
+                        doDecode
+                            Backend.StockUpdate.Decoder.decodeStockUpdate
+                            BackendAuthorityStockUpdate
 
                     "symptoms_general" ->
                         doDecode
@@ -738,6 +1162,51 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeTreatmentOngoing
                             BackendAuthorityTreatmentOngoing
 
+                    "tuberculosis_diagnostics" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDiagnostics
+                            BackendAuthorityTuberculosisDiagnostics
+
+                    "tuberculosis_dot" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisDOT
+                            BackendAuthorityTuberculosisDOT
+
+                    "tuberculosis_encounter" ->
+                        doDecode
+                            Backend.TuberculosisEncounter.Decoder.decodeTuberculosisEncounter
+                            BackendAuthorityTuberculosisEncounter
+
+                    "tuberculosis_follow_up" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisFollowUp
+                            BackendAuthorityTuberculosisFollowUp
+
+                    "tuberculosis_health_education" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisHealthEducation
+                            BackendAuthorityTuberculosisHealthEducation
+
+                    "tuberculosis_medication" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisMedication
+                            BackendAuthorityTuberculosisMedication
+
+                    "tuberculosis_referral" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisReferral
+                            BackendAuthorityTuberculosisReferral
+
+                    "tuberculosis_symptom_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisSymptomReview
+                            BackendAuthorityTuberculosisSymptomReview
+
+                    "tuberculosis_treatment_review" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeTuberculosisTreatmentReview
+                            BackendAuthorityTuberculosisTreatmentReview
+
                     "vitals" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeVitals
@@ -758,6 +1227,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodeWellChildBCGImmunisation
                             BackendAuthorityWellChildBCGImmunisation
 
+                    "well_child_caring" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildCaring
+                            BackendAuthorityWellChildCaring
+
                     "well_child_contributing_factors" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildContributingFactors
@@ -767,6 +1241,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildDTPImmunisation
                             BackendAuthorityWellChildDTPImmunisation
+
+                    "well_child_dtp_sa_immunisation" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildDTPStandaloneImmunisation
+                            BackendAuthorityWellChildDTPStandaloneImmunisation
 
                     "well_child_ecd" ->
                         doDecode
@@ -778,10 +1257,20 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.WellChildEncounter.Decoder.decodeWellChildEncounter
                             BackendAuthorityWellChildEncounter
 
+                    "well_child_feeding" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFeeding
+                            BackendAuthorityWellChildFeeding
+
                     "well_child_follow_up" ->
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildFollowUp
                             BackendAuthorityWellChildFollowUp
+
+                    "well_child_food_security" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildFoodSecurity
+                            BackendAuthorityWellChildFoodSecurity
 
                     "well_child_head_circumference" ->
                         doDecode
@@ -797,6 +1286,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildHeight
                             BackendAuthorityWellChildHeight
+
+                    "well_child_hygiene" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildHygiene
+                            BackendAuthorityWellChildHygiene
 
                     "well_child_hpv_immunisation" ->
                         doDecode
@@ -822,6 +1316,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodeWellChildMuac
                             BackendAuthorityWellChildMuac
+
+                    "well_child_ncda" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodeWellChildNCDA
+                            BackendAuthorityWellChildNCDA
 
                     "well_child_next_visit" ->
                         doDecode

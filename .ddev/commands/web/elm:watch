@@ -1,0 +1,7 @@
+#!/bin/bash
+
+## Description: Run Elm compile, watch for changes.
+## Usage: elm:watch
+## Example: "ddev elm:watch"
+
+cd ../elm && ./elm-watch.sh

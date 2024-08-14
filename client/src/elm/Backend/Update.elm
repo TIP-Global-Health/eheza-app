@@ -3,52 +3,89 @@ module Backend.Update exposing (updateIndexedDb)
 import Activity.Model exposing (Activity(..), ChildActivity(..), SummaryByActivity, SummaryByParticipant)
 import Activity.Utils exposing (getAllChildActivities, getAllMotherActivities, motherIsCheckedIn, summarizeChildActivity, summarizeChildParticipant, summarizeMotherActivity, summarizeMotherParticipant)
 import App.Model
-import AssocList as Dict exposing (Dict)
+import App.Utils exposing (triggerRollbarOnFailure)
+import AssocList as Dict
 import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
-import Backend.AcuteIllnessEncounter.Model exposing (AcuteIllnessDiagnosis(..), emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Model exposing (emptyAcuteIllnessEncounter)
+import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis(..))
 import Backend.AcuteIllnessEncounter.Update
+import Backend.ChildScoreboardActivity.Utils
+import Backend.ChildScoreboardEncounter.Model
+import Backend.ChildScoreboardEncounter.Update
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Counseling.Decoder exposing (combineCounselingSchedules)
 import Backend.Dashboard.Model exposing (DashboardStatsRaw)
+import Backend.EducationSession.Model
+import Backend.EducationSession.Update
 import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
-import Backend.Fetch
-import Backend.HomeVisitActivity.Model
+import Backend.HIVEncounter.Model
+import Backend.HIVEncounter.Update
 import Backend.HomeVisitEncounter.Model exposing (emptyHomeVisitEncounter)
 import Backend.HomeVisitEncounter.Update
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..))
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantExtraData(..), IndividualParticipantInitiator(..))
 import Backend.IndividualEncounterParticipant.Update
-import Backend.Measurement.Model exposing (ChildMeasurements, ChildNutritionSign, HistoricalMeasurements, Measurements, WellChildSymptom(..))
+import Backend.Measurement.Model
+    exposing
+        ( BloodSmearResult(..)
+        , ChildMeasurements
+        , HistoricalMeasurements
+        , LaboratoryTest(..)
+        , LabsResultsReviewState(..)
+        , Measurements
+        , TestExecutionNote(..)
+        , TestPrerequisite(..)
+        , WellChildSymptom(..)
+        )
 import Backend.Measurement.Utils
     exposing
         ( getMeasurementValueFunc
+        , labExpirationPeriod
         , mapChildMeasurementsAtOfflineSession
         , mapMeasurementData
         , splitChildMeasurements
         , splitMotherMeasurements
         )
 import Backend.Model exposing (..)
+import Backend.NCDActivity.Model
+import Backend.NCDEncounter.Model
+import Backend.NCDEncounter.Update
+import Backend.Nurse.Model
+import Backend.Nurse.Update
 import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Model exposing (emptyNutritionEncounter)
 import Backend.NutritionEncounter.Update
 import Backend.NutritionEncounter.Utils exposing (nutritionAssessmentForBackend)
-import Backend.Person.Model exposing (Initiator(..), Person)
+import Backend.Person.Model exposing (Initiator(..), PatchPersonInitator(..), Person)
 import Backend.Person.Utils exposing (ageInMonths, graduatingAgeInMonth)
 import Backend.PmtctParticipant.Model exposing (AdultActivities(..))
 import Backend.PrenatalActivity.Model
-import Backend.PrenatalEncounter.Model exposing (ClinicalProgressReportInitiator(..), PrenatalEncounterPostCreateDestination(..), PrenatalEncounterType(..), emptyPrenatalEncounter)
+import Backend.PrenatalEncounter.Model
+    exposing
+        ( PrenatalEncounterPostCreateDestination(..)
+        , PrenatalProgressReportInitiator(..)
+        , emptyPrenatalEncounter
+        )
+import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Update
 import Backend.Relationship.Encoder exposing (encodeRelationshipChanges)
 import Backend.Relationship.Model exposing (MyRelatedBy(..), MyRelationship, RelatedBy(..))
 import Backend.Relationship.Utils exposing (toMyRelationship, toRelationship)
-import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession, Session)
+import Backend.ResilienceMessage.Model
+import Backend.ResilienceSurvey.Model
+import Backend.ResilienceSurvey.Update
+import Backend.Session.Model exposing (CheckedIn, EditableSession, OfflineSession)
 import Backend.Session.Update
 import Backend.Session.Utils exposing (getChildMeasurementData2, getMyMother)
+import Backend.StockUpdate.Model
+import Backend.StockUpdate.Update
+import Backend.StockUpdate.Utils exposing (generateStockManagementData)
 import Backend.TraceContact.Model
 import Backend.TraceContact.Update
+import Backend.TuberculosisEncounter.Model
+import Backend.TuberculosisEncounter.Update
 import Backend.Utils exposing (..)
-import Backend.Village.Utils exposing (getVillageClinicId)
-import Backend.WellChildActivity.Model
+import Backend.Village.Utils exposing (getVillageById, getVillageClinicId)
 import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), emptyWellChildEncounter)
 import Backend.WellChildEncounter.Update
 import Date exposing (Unit(..))
@@ -57,11 +94,12 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Json.Encode exposing (object)
 import LocalData exposing (LocalData(..), ReadyStatus(..))
-import Maybe.Extra exposing (isJust, isNothing, unwrap)
-import Measurement.Model exposing (OutMsgMother(..))
-import Pages.AcuteIllnessActivity.Model
-import Pages.AcuteIllnessActivity.Types
-import Pages.AcuteIllnessActivity.Utils
+import Maybe.Extra exposing (isJust, isNothing)
+import Measurement.Model
+import Measurement.Utils exposing (bloodSmearResultSet, testPerformedByExecutionNote)
+import Pages.AcuteIllness.Activity.Model
+import Pages.AcuteIllness.Activity.Types
+import Pages.AcuteIllness.Activity.Utils
     exposing
         ( activityCompleted
         , mandatoryActivitiesCompletedSubsequentVisit
@@ -71,31 +109,40 @@ import Pages.AcuteIllnessActivity.Utils
         , resolveNextStepSubsequentEncounter
         , respiratoryRateAbnormalForAge
         )
-import Pages.AcuteIllnessEncounter.Model
-import Pages.AcuteIllnessEncounter.Utils
+import Pages.AcuteIllness.Encounter.Model
+import Pages.AcuteIllness.Encounter.Utils
+import Pages.ChildScoreboard.Activity.Utils
+import Pages.ChildScoreboard.Encounter.Utils
 import Pages.Dashboard.Model
 import Pages.Dashboard.Utils
+import Pages.GlobalCaseManagement.Utils
+import Pages.NCD.RecurrentActivity.Utils
+import Pages.NCD.Utils
 import Pages.NextSteps.Model
-import Pages.NutritionActivity.Model
-import Pages.NutritionActivity.Utils
-import Pages.NutritionEncounter.Model
-import Pages.NutritionEncounter.Utils
+import Pages.Nutrition.Activity.Model
+import Pages.Nutrition.Activity.Utils
+import Pages.Nutrition.Encounter.Utils
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Participant.Model
 import Pages.Person.Model
-import Pages.PrenatalActivity.Model
-import Pages.PrenatalActivity.Utils
-import Pages.PrenatalEncounter.Model
-import Pages.PrenatalEncounter.Utils
+import Pages.Prenatal.Activity.Model
+import Pages.Prenatal.Activity.Types exposing (WarningPopupType(..))
+import Pages.Prenatal.Activity.Utils
+import Pages.Prenatal.Encounter.Model
+import Pages.Prenatal.Encounter.Utils
+import Pages.Prenatal.RecurrentActivity.Model
+import Pages.Prenatal.RecurrentActivity.Utils
+import Pages.Prenatal.RecurrentEncounter.Utils
+import Pages.Prenatal.Utils
 import Pages.Relationship.Model
 import Pages.Session.Model
-import Pages.WellChildActivity.Model
-import Pages.WellChildActivity.Utils
-import Pages.WellChildEncounter.Model
-import Pages.WellChildEncounter.Utils
+import Pages.Tuberculosis.Encounter.Utils
+import Pages.WellChild.Activity.Utils
+import Pages.WellChild.Encounter.Model
+import Pages.WellChild.Encounter.Utils
 import RemoteData exposing (RemoteData(..), WebData)
-import Restful.Endpoint exposing (EntityUuid, ReadOnlyEndPoint, ReadWriteEndPoint, applyBackendUrl, toCmd, toTask, withoutDecoder)
-import SyncManager.Model
+import Restful.Endpoint exposing (toCmd, toTask)
+import SyncManager.Model exposing (Site, SiteFeature)
 import Task
 import Time
 import Translate exposing (Language, translate)
@@ -107,16 +154,19 @@ updateIndexedDb :
     -> NominalDate
     -> Time.Posix
     -> ZScore.Model.Model
+    -> Site
+    -> EverySet SiteFeature
     -> Maybe NurseId
     -> Maybe HealthCenterId
     -> Maybe VillageId
+    -> Bool
     -> Bool
     -> Page
     -> SyncManager.Model.Model
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -274,7 +324,22 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , []
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
         FetchEditableSessionCheckedIn id ->
             Dict.get id model.editableSessions
@@ -325,7 +390,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     (\editable ->
                         let
                             summaryByActivity =
-                                summarizeByActivity currentDate zscores editable.offlineSession editable.checkedIn isChw model
+                                summarizeByActivity currentDate zscores features editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByActivity = summaryByActivity }
@@ -344,7 +409,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     (\editable ->
                         let
                             summaryByParticipant =
-                                summarizeByParticipant currentDate zscores editable.offlineSession editable.checkedIn isChw model
+                                summarizeByParticipant currentDate zscores features editable.offlineSession editable.checkedIn isChw model
 
                             updatedEditable =
                                 { editable | summaryByParticipant = summaryByParticipant }
@@ -450,28 +515,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
-        FetchPeopleByName name ->
-            let
-                trimmed =
-                    String.trim name
-            in
-            -- We'll limit the search to 500 each for now ... basically,
-            -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
-            , sw.selectRange personEndpoint { nameContains = Just trimmed } 0 (Just 500)
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+        FetchIndividualEncounterParticipant id ->
+            ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
+            , sw.get individualEncounterParticipantEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedIndividualEncounterParticipant id)
             , []
             )
 
-        HandleFetchedPeopleByName name data ->
-            ( { model | personSearches = Dict.insert (String.trim name) data model.personSearches }
+        HandleFetchedIndividualEncounterParticipant id data ->
+            ( { model | individualParticipants = Dict.insert id data model.individualParticipants }
             , Cmd.none
             , []
             )
 
+        FetchIndividualEncounterParticipants ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    individualParticipantsUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.individualParticipants ids
+                in
+                ( { model | individualParticipants = individualParticipantsUpdated }
+                , sw.getMany individualEncounterParticipantEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedIndividualEncounterParticipants)
+                , []
+                )
+
+        HandleFetchedIndividualEncounterParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | individualParticipants = Dict.union dictUpdated model.individualParticipants }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchIndividualEncounterParticipantsForPerson id ->
             ( { model | individualParticipantsByPerson = Dict.insert id Loading model.individualParticipantsByPerson }
-            , sw.select individualEncounterParticipantEndpoint (Just id)
+            , sw.select individualEncounterParticipantEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedIndividualEncounterParticipantsForPerson id)
             , []
             )
@@ -482,9 +571,56 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchIndividualEncounterParticipantsForPeople ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    individualParticipantsByPersonUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.individualParticipantsByPerson ids
+                in
+                ( { model | individualParticipantsByPerson = individualParticipantsByPersonUpdated }
+                , sw.select individualEncounterParticipantEndpoint ids
+                    |> toCmd
+                        (RemoteData.fromResult
+                            >> RemoteData.map
+                                (.items
+                                    >> List.foldl
+                                        (\( participantId, participant ) accum ->
+                                            let
+                                                dictPeopleUpdated =
+                                                    Dict.get participant.person accum
+                                                        |> Maybe.map (Dict.insert participantId participant)
+                                                        |> Maybe.withDefault (Dict.singleton participantId participant)
+                                            in
+                                            Dict.insert participant.person dictPeopleUpdated accum
+                                        )
+                                        Dict.empty
+                                )
+                            >> HandleFetchedIndividualEncounterParticipantsForPeople
+                        )
+                , []
+                )
+
+        HandleFetchedIndividualEncounterParticipantsForPeople webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | individualParticipantsByPerson = Dict.union dictUpdated model.individualParticipantsByPerson }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchPrenatalEncountersForParticipant id ->
             ( { model | prenatalEncountersByParticipant = Dict.insert id Loading model.prenatalEncountersByParticipant }
-            , sw.select prenatalEncounterEndpoint (Just id)
+            , sw.select prenatalEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPrenatalEncountersForParticipant id)
             , []
             )
@@ -495,9 +631,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchPrenatalEncountersForParticipants ids ->
+            let
+                prenatalEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.prenatalEncountersByParticipant ids
+            in
+            ( { model | prenatalEncountersByParticipant = prenatalEncountersByParticipantUpdated }
+            , sw.select prenatalEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedPrenatalEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedPrenatalEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | prenatalEncountersByParticipant = Dict.union dictUpdated model.prenatalEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchNutritionEncountersForParticipant id ->
             ( { model | nutritionEncountersByParticipant = Dict.insert id Loading model.nutritionEncountersByParticipant }
-            , sw.select nutritionEncounterEndpoint (Just id)
+            , sw.select nutritionEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNutritionEncountersForParticipant id)
             , []
             )
@@ -510,7 +689,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         FetchHomeVisitEncountersForParticipant id ->
             ( { model | homeVisitEncountersByParticipant = Dict.insert id Loading model.homeVisitEncountersByParticipant }
-            , sw.select homeVisitEncounterEndpoint (Just id)
+            , sw.select homeVisitEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHomeVisitEncountersForParticipant id)
             , []
             )
@@ -521,9 +700,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchHomeVisitEncountersForParticipants ids ->
+            let
+                homeVisitEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.homeVisitEncountersByParticipant ids
+            in
+            ( { model | homeVisitEncountersByParticipant = homeVisitEncountersByParticipantUpdated }
+            , sw.select homeVisitEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHomeVisitEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHomeVisitEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | homeVisitEncountersByParticipant = Dict.union dictUpdated model.homeVisitEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchWellChildEncountersForParticipant id ->
             ( { model | wellChildEncountersByParticipant = Dict.insert id Loading model.wellChildEncountersByParticipant }
-            , sw.select wellChildEncounterEndpoint (Just id)
+            , sw.select wellChildEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedWellChildEncountersForParticipant id)
             , []
             )
@@ -534,9 +756,52 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchWellChildEncountersForParticipants ids ->
+            let
+                wellChildEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.wellChildEncountersByParticipant ids
+            in
+            ( { model | wellChildEncountersByParticipant = wellChildEncountersByParticipantUpdated }
+            , sw.select wellChildEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedWellChildEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedWellChildEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | wellChildEncountersByParticipant = Dict.union dictUpdated model.wellChildEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
         FetchAcuteIllnessEncountersForParticipant id ->
             ( { model | acuteIllnessEncountersByParticipant = Dict.insert id Loading model.acuteIllnessEncountersByParticipant }
-            , sw.select acuteIllnessEncounterEndpoint (Just id)
+            , sw.select acuteIllnessEncounterEndpoint [ id ]
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedAcuteIllnessEncountersForParticipant id)
             , []
             )
@@ -546,6 +811,230 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , []
             )
+
+        FetchAcuteIllnessEncountersForParticipants ids ->
+            let
+                acuteIllnessEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.acuteIllnessEncountersByParticipant ids
+            in
+            ( { model | acuteIllnessEncountersByParticipant = acuteIllnessEncountersByParticipantUpdated }
+            , sw.select acuteIllnessEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedAcuteIllnessEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedAcuteIllnessEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | acuteIllnessEncountersByParticipant = Dict.union dictUpdated model.acuteIllnessEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchNCDEncountersForParticipant id ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id Loading model.ncdEncountersByParticipant }
+            , sw.select ncdEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedNCDEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipant id data ->
+            ( { model | ncdEncountersByParticipant = Dict.insert id data model.ncdEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchNCDEncountersForParticipants ids ->
+            let
+                ncdEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.ncdEncountersByParticipant ids
+            in
+            ( { model | ncdEncountersByParticipant = ncdEncountersByParticipantUpdated }
+            , sw.select ncdEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedNCDEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedNCDEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | ncdEncountersByParticipant = Dict.union dictUpdated model.ncdEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchChildScoreboardEncountersForParticipant id ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id Loading model.childScoreboardEncountersByParticipant }
+            , sw.select childScoreboardEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedChildScoreboardEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncountersForParticipant id data ->
+            ( { model | childScoreboardEncountersByParticipant = Dict.insert id data model.childScoreboardEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisEncountersForParticipant id ->
+            ( { model | tuberculosisEncountersByParticipant = Dict.insert id Loading model.tuberculosisEncountersByParticipant }
+            , sw.select tuberculosisEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedTuberculosisEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedTuberculosisEncountersForParticipant id data ->
+            ( { model | tuberculosisEncountersByParticipant = Dict.insert id data model.tuberculosisEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisEncountersForParticipants ids ->
+            let
+                tuberculosisEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.tuberculosisEncountersByParticipant ids
+            in
+            ( { model | tuberculosisEncountersByParticipant = tuberculosisEncountersByParticipantUpdated }
+            , sw.select tuberculosisEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedTuberculosisEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedTuberculosisEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | tuberculosisEncountersByParticipant = Dict.union dictUpdated model.tuberculosisEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchHIVEncountersForParticipant id ->
+            ( { model | hivEncountersByParticipant = Dict.insert id Loading model.hivEncountersByParticipant }
+            , sw.select hivEncounterEndpoint [ id ]
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedHIVEncountersForParticipant id)
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipant id data ->
+            ( { model | hivEncountersByParticipant = Dict.insert id data model.hivEncountersByParticipant }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncountersForParticipants ids ->
+            let
+                hivEncountersByParticipantUpdated =
+                    List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncountersByParticipant ids
+            in
+            ( { model | hivEncountersByParticipant = hivEncountersByParticipantUpdated }
+            , sw.select hivEncounterEndpoint ids
+                |> toCmd
+                    (RemoteData.fromResult
+                        >> RemoteData.map
+                            (.items
+                                >> List.foldl
+                                    (\( encounterId, encounter ) accum ->
+                                        let
+                                            dictParticipantUpdated =
+                                                Dict.get encounter.participant accum
+                                                    |> Maybe.map (Dict.insert encounterId encounter)
+                                                    |> Maybe.withDefault (Dict.singleton encounterId encounter)
+                                        in
+                                        Dict.insert encounter.participant dictParticipantUpdated accum
+                                    )
+                                    Dict.empty
+                            )
+                        >> HandleFetchedHIVEncountersForParticipants
+                    )
+            , []
+            )
+
+        HandleFetchedHIVEncountersForParticipants webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncountersByParticipant = Dict.union dictUpdated model.hivEncountersByParticipant }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchPrenatalMeasurements id ->
             ( { model | prenatalMeasurements = Dict.insert id Loading model.prenatalMeasurements }
@@ -599,6 +1088,48 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
+        FetchStockManagementMeasurements id ->
+            ( { model | stockManagementMeasurements = Dict.insert id Loading model.stockManagementMeasurements }
+            , sw.get stockManagementMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedStockManagementMeasurements id)
+            , []
+            )
+
+        HandleFetchedStockManagementMeasurements id data ->
+            ( { model | stockManagementMeasurements = Dict.insert id data model.stockManagementMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchStockManagementData id ->
+            let
+                updatedModel =
+                    case Dict.get id model.stockManagementData of
+                        Just (Success _) ->
+                            -- Data already calculated, and there's no need to recalculate.
+                            model
+
+                        _ ->
+                            let
+                                data =
+                                    Dict.get id model.stockManagementMeasurements
+                                        |> Maybe.andThen RemoteData.toMaybe
+                                        |> Maybe.map (generateStockManagementData currentDate >> Success)
+                                        |> Maybe.withDefault NotAsked
+                            in
+                            { model | stockManagementData = Dict.insert id data model.stockManagementData }
+            in
+            ( updatedModel
+            , Cmd.none
+            , []
+            )
+
+        MarkForRecalculationStockManagementData id ->
+            ( { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+            , Cmd.none
+            , []
+            )
+
         FetchHomeVisitMeasurements id ->
             ( { model | homeVisitMeasurements = Dict.insert id Loading model.homeVisitMeasurements }
             , sw.get homeVisitMeasurementsEndpoint id
@@ -621,6 +1152,58 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedWellChildMeasurements id data ->
             ( { model | wellChildMeasurements = Dict.insert id data model.wellChildMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchNCDMeasurements id ->
+            ( { model | ncdMeasurements = Dict.insert id Loading model.ncdMeasurements }
+            , sw.get ncdMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDMeasurements id)
+            , []
+            )
+
+        HandleFetchedNCDMeasurements id data ->
+            ( { model | ncdMeasurements = Dict.insert id data model.ncdMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardMeasurements id ->
+            ( { model | childScoreboardMeasurements = Dict.insert id Loading model.childScoreboardMeasurements }
+            , sw.get childScoreboardMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardMeasurements id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardMeasurements id data ->
+            ( { model | childScoreboardMeasurements = Dict.insert id data model.childScoreboardMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisMeasurements id ->
+            ( { model | tuberculosisMeasurements = Dict.insert id Loading model.tuberculosisMeasurements }
+            , sw.get tuberculosisMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTuberculosisMeasurements id)
+            , []
+            )
+
+        HandleFetchedTuberculosisMeasurements id data ->
+            ( { model | tuberculosisMeasurements = Dict.insert id data model.tuberculosisMeasurements }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVMeasurements id ->
+            ( { model | hivMeasurements = Dict.insert id Loading model.hivMeasurements }
+            , sw.get hivMeasurementsEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVMeasurements id)
+            , []
+            )
+
+        HandleFetchedHIVMeasurements id data ->
+            ( { model | hivMeasurements = Dict.insert id data model.hivMeasurements }
             , Cmd.none
             , []
             )
@@ -822,11 +1405,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                 in
                 ( { model | people = peopleUpdated }
                 , sw.getMany personEndpoint ids
-                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchPeople)
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPeople)
                 , []
                 )
 
-        HandleFetchPeople webData ->
+        HandleFetchedPeople webData ->
             case RemoteData.toMaybe webData of
                 Nothing ->
                     noChange
@@ -840,6 +1423,69 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , Cmd.none
                     , []
                     )
+
+        FetchPeopleByName name ->
+            let
+                trimmed =
+                    String.trim name
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByName trimmed data ->
+            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleInVillage id ->
+            getVillageById model id
+                |> Maybe.map
+                    (\village ->
+                        let
+                            geoFields =
+                                String.join "|"
+                                    [ village.province
+                                    , village.district
+                                    , village.sector
+                                    , village.cell
+                                    , village.village
+                                    ]
+                        in
+                        ( { model | peopleInVillage = Dict.insert id Loading model.peopleInVillage }
+                        , sw.selectRange personEndpoint (ParamsGeoFields geoFields) 0 (Just 5000)
+                            |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleInVillage id)
+                        , []
+                        )
+                    )
+                |> Maybe.withDefault noChange
+
+        HandleFetchedPeopleInVillage id data ->
+            ( { model | peopleInVillage = Dict.insert id data model.peopleInVillage }
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    [ HandleFetchedPeople data ]
 
         FetchPerson id ->
             ( { model | people = Dict.insert id Loading model.people }
@@ -866,6 +1512,36 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , Cmd.none
             , []
             )
+
+        FetchPrenatalEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    prenatalEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.prenatalEncounters ids
+                in
+                ( { model | prenatalEncounters = prenatalEncountersUpdated }
+                , sw.getMany prenatalEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedPrenatalEncounters)
+                , []
+                )
+
+        HandleFetchedPrenatalEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | prenatalEncounters = Dict.union dictUpdated model.prenatalEncounters }
+                    , Cmd.none
+                    , []
+                    )
 
         FetchNutritionEncounter id ->
             ( { model | nutritionEncounters = Dict.insert id Loading model.nutritionEncounters }
@@ -919,15 +1595,170 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , []
             )
 
-        FetchIndividualEncounterParticipant id ->
-            ( { model | individualParticipants = Dict.insert id Loading model.individualParticipants }
-            , sw.get individualEncounterParticipantEndpoint id
-                |> toCmd (RemoteData.fromResult >> HandleFetchedIndividualEncounterParticipant id)
+        FetchAcuteIllnessEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    acuteIllnessEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.acuteIllnessEncounters ids
+                in
+                ( { model | acuteIllnessEncounters = acuteIllnessEncountersUpdated }
+                , sw.getMany acuteIllnessEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedAcuteIllnessEncounters)
+                , []
+                )
+
+        HandleFetchedAcuteIllnessEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | acuteIllnessEncounters = Dict.union dictUpdated model.acuteIllnessEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchNCDEncounter id ->
+            ( { model | ncdEncounters = Dict.insert id Loading model.ncdEncounters }
+            , sw.get ncdEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedNCDEncounter id)
             , []
             )
 
-        HandleFetchedIndividualEncounterParticipant id data ->
-            ( { model | individualParticipants = Dict.insert id data model.individualParticipants }
+        HandleFetchedNCDEncounter id data ->
+            ( { model | ncdEncounters = Dict.insert id data model.ncdEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchChildScoreboardEncounter id ->
+            ( { model | childScoreboardEncounters = Dict.insert id Loading model.childScoreboardEncounters }
+            , sw.get childScoreboardEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedChildScoreboardEncounter id)
+            , []
+            )
+
+        HandleFetchedChildScoreboardEncounter id data ->
+            ( { model | childScoreboardEncounters = Dict.insert id data model.childScoreboardEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisEncounter id ->
+            ( { model | tuberculosisEncounters = Dict.insert id Loading model.tuberculosisEncounters }
+            , sw.get tuberculosisEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTuberculosisEncounter id)
+            , []
+            )
+
+        HandleFetchedTuberculosisEncounter id data ->
+            ( { model | tuberculosisEncounters = Dict.insert id data model.tuberculosisEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchTuberculosisEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    tuberculosisEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.tuberculosisEncounters ids
+                in
+                ( { model | tuberculosisEncounters = tuberculosisEncountersUpdated }
+                , sw.getMany tuberculosisEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedTuberculosisEncounters)
+                , []
+                )
+
+        HandleFetchedTuberculosisEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | tuberculosisEncounters = Dict.union dictUpdated model.tuberculosisEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchHIVEncounter id ->
+            ( { model | hivEncounters = Dict.insert id Loading model.hivEncounters }
+            , sw.get hivEncounterEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedHIVEncounter id)
+            , []
+            )
+
+        HandleFetchedHIVEncounter id data ->
+            ( { model | hivEncounters = Dict.insert id data model.hivEncounters }
+            , Cmd.none
+            , []
+            )
+
+        FetchHIVEncounters ids ->
+            if List.isEmpty ids then
+                noChange
+
+            else
+                let
+                    hivEncountersUpdated =
+                        List.foldl (\id accum -> Dict.insert id Loading accum) model.hivEncounters ids
+                in
+                ( { model | hivEncounters = hivEncountersUpdated }
+                , sw.getMany hivEncounterEndpoint ids
+                    |> toCmd (RemoteData.fromResult >> RemoteData.map Dict.fromList >> HandleFetchedHIVEncounters)
+                , []
+                )
+
+        HandleFetchedHIVEncounters webData ->
+            case RemoteData.toMaybe webData of
+                Nothing ->
+                    noChange
+
+                Just dict ->
+                    let
+                        dictUpdated =
+                            Dict.map (\_ v -> RemoteData.Success v) dict
+                    in
+                    ( { model | hivEncounters = Dict.union dictUpdated model.hivEncounters }
+                    , Cmd.none
+                    , []
+                    )
+
+        FetchEducationSession id ->
+            ( { model | educationSessions = Dict.insert id Loading model.educationSessions }
+            , sw.get educationSessionEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedEducationSession id)
+            , []
+            )
+
+        HandleFetchedEducationSession id data ->
+            ( { model | educationSessions = Dict.insert id data model.educationSessions }
+            , Cmd.none
+            , []
+            )
+
+        FetchEducationSessionsForPerson id ->
+            ( { model | educationSessionsByPerson = Dict.insert id Loading model.educationSessionsByPerson }
+            , sw.select educationSessionEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedEducationSessionsForPerson id)
+            , []
+            )
+
+        HandleFetchedEducationSessionsForPerson id data ->
+            ( { model | educationSessionsByPerson = Dict.insert id data model.educationSessionsByPerson }
             , Cmd.none
             , []
             )
@@ -954,6 +1785,58 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandleFetchedSessionsByClinic clinicId data ->
             ( { model | sessionsByClinic = Dict.insert clinicId data model.sessionsByClinic }
+            , Cmd.none
+            , []
+            )
+
+        FetchResilienceSurveysForNurse id ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id Loading model.resilienceSurveysByNurse }
+            , sw.select resilienceSurveyEndpoint (Just id)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedResilienceSurveysForNurse id)
+            , []
+            )
+
+        HandleFetchedResilienceSurveysForNurse id data ->
+            ( { model | resilienceSurveysByNurse = Dict.insert id data model.resilienceSurveysByNurse }
+            , Cmd.none
+            , []
+            )
+
+        FetchVillages ->
+            ( { model | villages = Loading }
+            , sw.select villageEndpoint ()
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
+            , []
+            )
+
+        HandleFetchedVillages data ->
+            ( { model | villages = data }
+            , Cmd.none
+            , []
+            )
+
+        FetchTraceContact id ->
+            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
+            , sw.get acuteIllnessTraceContactEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+            , []
+            )
+
+        HandleFetchedTraceContact id data ->
+            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+            , Cmd.none
+            , []
+            )
+
+        FetchPregnancyByNewborn id ->
+            ( { model | pregnancyByNewborn = Dict.insert id Loading model.pregnancyByNewborn }
+            , sw.get pregnancyByNewbornEndpoint id
+                |> toCmd (RemoteData.fromResult >> HandleFetchedPregnancyByNewborn id)
+            , []
+            )
+
+        HandleFetchedPregnancyByNewborn id data ->
+            ( { model | pregnancyByNewborn = Dict.insert id data model.pregnancyByNewborn }
             , Cmd.none
             , []
             )
@@ -986,7 +1869,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate isChw model newModel)
+                                Maybe.map2 (generateSuspectedDiagnosisMsgs currentDate features isChw model newModel)
                                     encounterId
                                     person
                                     |> Maybe.withDefault []
@@ -1003,7 +1886,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1042,7 +1925,15 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         -- or not.
                                         -- Therefore, we will be examining the 'before' state, taking into consideration
                                         -- that triggering activity is completed.
-                                        generateNutritionAssessmentGroupMsgs currentDate zscores isChw participantId sessionId_ activePage updateFunc newModel
+                                        generateNutritionAssessmentGroupMsgs currentDate
+                                            zscores
+                                            features
+                                            isChw
+                                            participantId
+                                            sessionId_
+                                            activePage
+                                            updateFunc
+                                            newModel
                                 in
                                 ( withRecalc, extraMsgs )
                             )
@@ -1059,13 +1950,16 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw model newModel)
+                                Maybe.map (generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw model newModel)
                                     encounterId
                                     |> Maybe.withDefault []
                         in
                         ( newModel, extraMsgs )
 
                 processRevisionAndAssessPrenatal participantId encounterId updateAssesment =
+                    processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment Nothing
+
+                processRevisionAndAssessPrenatalWithReportToOrigin participantId encounterId updateAssesment originData =
                     if downloadingContent then
                         ( model, [] )
 
@@ -1075,7 +1969,192 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                 List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                             extraMsgs =
-                                Maybe.map (generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment newModel)
+                                Maybe.map (generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processRevisionAndAssessNCD participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map (generateNCDAssessmentMsgs currentDate language activePage newModel)
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processRevisionAndUpdatePrenatalLabsResults participantId encounterId test executionNote resultsAdded testPrerequisites =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        let
+                                            labsResultsMsgs =
+                                                if
+                                                    resultsAdded
+                                                        || -- If user is lab tech, we know for sure
+                                                           -- the update is performed from recurrent phase of encounter,
+                                                           -- even if actual test results are not set (which can happen
+                                                           -- if lab tech indicates that test was not run).
+                                                           isLabTech
+                                                then
+                                                    generatePrenatalLabsResultsAddedMsgs currentDate isLabTech newModel test testPrerequisites encounterId_
+
+                                                else
+                                                    generatePrenatalLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+
+                                            possibleEndEncounterMsgs =
+                                                if atPrenatalRecurrentPhase activePage then
+                                                    generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                else if atPrenatalInitialPhase activePage then
+                                                    generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+
+                                                else
+                                                    []
+                                        in
+                                        labsResultsMsgs ++ possibleEndEncounterMsgs
+                                    )
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processVitalsRevisionAndUpdatePrenatalLabsResults participantId encounterId value =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map2
+                                    (\dia sys ->
+                                        Maybe.map
+                                            (\encounterId_ ->
+                                                let
+                                                    resultsAdded =
+                                                        isJust value.diaRepeated
+
+                                                    labsResultsMsgs =
+                                                        if resultsAdded then
+                                                            generatePrenatalLabsResultsAddedMsgs
+                                                                currentDate
+                                                                isLabTech
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                Nothing
+                                                                encounterId_
+
+                                                        else
+                                                            let
+                                                                executionNote =
+                                                                    if Pages.Prenatal.Activity.Utils.highBloodPressureCondition dia sys then
+                                                                        -- When we have diagnosed Hypertension, we'll try to unschedule
+                                                                        -- vitals recheck (as we do not know if it was scheduled before).
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+
+                                                                    else
+                                                                    -- When we suspect hypertension, we'll try to schedule vitals recheck.
+                                                                    -- generatePrenatalLabsTestAddedMsgs will schedule only if needed.
+                                                                    if
+                                                                        Pages.Prenatal.Utils.marginalBloodPressureCondition dia sys
+                                                                    then
+                                                                        Backend.Measurement.Model.TestNoteRunToday
+
+                                                                    else
+                                                                        -- Otherwise, we try to unschedule vitals recheck.
+                                                                        -- generatePrenatalLabsTestAddedMsgs will unschedule only if needed.
+                                                                        Backend.Measurement.Model.TestNoteNotIndicated
+                                                            in
+                                                            generatePrenatalLabsTestAddedMsgs
+                                                                currentDate
+                                                                newModel
+                                                                Backend.Measurement.Model.TestVitalsRecheck
+                                                                executionNote
+                                                                encounterId_
+
+                                                    possibleEndEncounterMsgs =
+                                                        if atPrenatalRecurrentPhase activePage then
+                                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+
+                                                        else if atPrenatalInitialPhase activePage then
+                                                            generatePrenatalInitialPhaseCompletedMsgs currentDate site newModel encounterId_
+
+                                                        else
+                                                            []
+                                                in
+                                                labsResultsMsgs ++ possibleEndEncounterMsgs
+                                            )
+                                            encounterId
+                                            |> Maybe.withDefault []
+                                    )
+                                    value.dia
+                                    value.sys
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
+
+                processPrenatalRevisionPossiblyCompletingRecurrentPhase participantId encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+                        in
+                        if not <| atPrenatalRecurrentPhase activePage then
+                            ( newModel, [] )
+
+                        else
+                            let
+                                extraMsgs =
+                                    Maybe.map
+                                        (\encounterId_ ->
+                                            generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech newModel encounterId_
+                                        )
+                                        encounterId
+                                        |> Maybe.withDefault []
+                            in
+                            ( newModel, extraMsgs )
+
+                processRevisionAndUpdateNCDLabsResults participantId encounterId test executionNote resultsAdded =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        if resultsAdded then
+                                            generateNCDLabsResultsAddedMsgs currentDate newModel test encounterId_
+
+                                        else
+                                            generateNCDLabsTestAddedMsgs currentDate newModel test executionNote encounterId_
+                                    )
                                     encounterId
                                     |> Maybe.withDefault []
                         in
@@ -1126,7 +2205,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         encounterId
                             |> Maybe.andThen
                                 (\id ->
-                                    Pages.WellChildEncounter.Utils.generateAssembledData id after
+                                    Pages.WellChild.Encounter.Utils.generateAssembledData site id after
                                         |> RemoteData.toMaybe
                                         |> Maybe.map
                                             (\assembledAfter ->
@@ -1142,33 +2221,33 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                                         ageMonths =
                                                                             Date.diff Months birthDate currentDate
                                                                     in
-                                                                    Pages.WellChildActivity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
+                                                                    Pages.WellChild.Activity.Utils.generateRemianingECDSignsAfterCurrentEncounter currentDate assembledAfter
                                                                         |> List.filterMap
                                                                             (\sign ->
-                                                                                if List.member sign Pages.WellChildActivity.Utils.ecdSignsFrom5Weeks then
+                                                                                if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom5Weeks then
                                                                                     if ageMonths >= 6 then
-                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else if ageWeeks >= 14 then
-                                                                                        Just Pages.WellChildEncounter.Model.ChildBehind
+                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
 
                                                                                     else
                                                                                         Nothing
 
-                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSignsFrom13Weeks then
+                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSignsFrom13Weeks then
                                                                                     if ageMonths >= 6 then
-                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else
                                                                                         Nothing
 
-                                                                                else if List.member sign Pages.WellChildActivity.Utils.ecdSigns6To12MonthsMajors then
+                                                                                else if List.member sign Pages.WellChild.Activity.Utils.ecdSigns6To12MonthsMajors then
                                                                                     -- Signs will be displayed until child is 13 months old.
                                                                                     if ageMonths == 12 then
-                                                                                        Just Pages.WellChildEncounter.Model.ReferToSpecialist
+                                                                                        Just Pages.WellChild.Encounter.Model.ReferToSpecialist
 
                                                                                     else if ageMonths >= 9 then
-                                                                                        Just Pages.WellChildEncounter.Model.ChildBehind
+                                                                                        Just Pages.WellChild.Encounter.Model.ChildBehind
 
                                                                                     else
                                                                                         Nothing
@@ -1180,29 +2259,30 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                             |> Maybe.withDefault []
 
                                                     warning =
-                                                        if List.member Pages.WellChildEncounter.Model.ReferToSpecialist warningsList then
+                                                        if List.member Pages.WellChild.Encounter.Model.ReferToSpecialist warningsList then
                                                             WarningECDMilestoneReferToSpecialist
 
-                                                        else if List.member Pages.WellChildEncounter.Model.ChildBehind warningsList then
+                                                        else if List.member Pages.WellChild.Encounter.Model.ChildBehind warningsList then
                                                             WarningECDMilestoneBehind
 
                                                         else
                                                             NoECDMilstoneWarning
 
                                                     setPopUpStateMsg popupType =
-                                                        Pages.WellChildEncounter.Model.PopupECD popupType
+                                                        Pages.WellChild.Encounter.Model.PopupECD popupType
+                                                            |> Pages.WellChild.Encounter.Model.DialogWarning
                                                             |> Just
-                                                            |> Pages.WellChildEncounter.Model.SetWarningPopupState
+                                                            |> Pages.WellChild.Encounter.Model.SetDialogState
                                                             |> App.Model.MsgPageWellChildEncounter id
                                                             |> App.Model.MsgLoggedIn
 
                                                     popUpMsg =
                                                         case warning of
                                                             WarningECDMilestoneReferToSpecialist ->
-                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ReferToSpecialist ]
+                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ReferToSpecialist ]
 
                                                             WarningECDMilestoneBehind ->
-                                                                [ setPopUpStateMsg Pages.WellChildEncounter.Model.ChildBehind ]
+                                                                [ setPopUpStateMsg Pages.WellChild.Encounter.Model.ChildBehind ]
 
                                                             _ ->
                                                                 []
@@ -1216,6 +2296,61 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                             )
                                 )
                             |> Maybe.withDefault []
+
+                processWellChildImmunisationRevision participantId encounterId after =
+                    if downloadingContent then
+                        []
+
+                    else
+                        Maybe.andThen
+                            (\id ->
+                                Pages.WellChild.Encounter.Utils.generateAssembledData site id after
+                                    |> RemoteData.toMaybe
+                                    |> Maybe.andThen
+                                        (\assembledAfter ->
+                                            Maybe.map
+                                                (\( measurementId, measurement ) ->
+                                                    let
+                                                        immunisationDate =
+                                                            Pages.WellChild.Activity.Utils.generateNextDateForImmunisationVisit currentDate site assembledAfter
+
+                                                        asapImmunisationDate =
+                                                            Pages.WellChild.Activity.Utils.generateASAPImmunisationDate currentDate site assembledAfter
+
+                                                        value =
+                                                            measurement.value
+                                                    in
+                                                    [ Backend.WellChildEncounter.Model.SaveNextVisit assembledAfter.participant.person
+                                                        (Just measurementId)
+                                                        { value | immunisationDate = immunisationDate, asapImmunisationDate = asapImmunisationDate }
+                                                        |> Backend.Model.MsgWellChildEncounter id
+                                                        |> App.Model.MsgIndexedDb
+                                                    ]
+                                                )
+                                                assembledAfter.measurements.nextVisit
+                                        )
+                            )
+                            encounterId
+                            |> Maybe.withDefault []
+
+                processTuberculosisRevisionAndNavigateToProgressReport encounterId =
+                    if downloadingContent then
+                        ( model, [] )
+
+                    else
+                        let
+                            ( newModel, _ ) =
+                                List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                            extraMsgs =
+                                Maybe.map
+                                    (\encounterId_ ->
+                                        generateTuberculosisEncounterCompletedMsgs currentDate newModel encounterId_
+                                    )
+                                    encounterId
+                                    |> Maybe.withDefault []
+                        in
+                        ( newModel, extraMsgs )
             in
             case revisions of
                 -- Special handling for a single attendance revision, which means
@@ -1267,7 +2402,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , []
                     )
 
-                [ SymptomsGeneralRevision uuid data ] ->
+                [ SymptomsGeneralRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1277,7 +2412,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SymptomsRespiratoryRevision uuid data ] ->
+                [ SymptomsRespiratoryRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1287,7 +2422,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SymptomsGIRevision uuid data ] ->
+                [ SymptomsGIRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1297,7 +2432,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ TravelHistoryRevision uuid data ] ->
+                [ TravelHistoryRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1307,7 +2442,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ ExposureRevision uuid data ] ->
+                [ ExposureRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1317,7 +2452,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessVitalsRevision uuid data ] ->
+                [ AcuteIllnessVitalsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1327,7 +2462,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessCoreExamRevision uuid data ] ->
+                [ AcuteIllnessCoreExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1337,7 +2472,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteFindingsRevision uuid data ] ->
+                [ AcuteFindingsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1347,7 +2482,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ MalariaTestingRevision uuid data ] ->
+                [ MalariaTestingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1357,7 +2492,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ CovidTestingRevision uuid data ] ->
+                [ CovidTestingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1367,7 +2502,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessDangerSignsRevision uuid data ] ->
+                [ AcuteIllnessDangerSignsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1377,7 +2512,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessMuacRevision uuid data ] ->
+                [ AcuteIllnessMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1387,7 +2522,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessNutritionRevision uuid data ] ->
+                [ AcuteIllnessNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1397,7 +2532,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ TreatmentOngoingRevision uuid data ] ->
+                [ TreatmentOngoingRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndDiagnoseAcuteIllness data.participantId data.encounterId
@@ -1407,14 +2542,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ IsolationRevision uuid data ] ->
+                [ IsolationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1422,14 +2557,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ Call114Revision uuid data ] ->
+                [ Call114Revision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1437,14 +2572,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ HCContactRevision uuid data ] ->
+                [ HCContactRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1452,14 +2587,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ MedicationDistributionRevision uuid data ] ->
+                [ MedicationDistributionRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1467,14 +2602,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ SendToHCRevision uuid data ] ->
+                [ SendToHCRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1482,14 +2617,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ HealthEducationRevision uuid data ] ->
+                [ HealthEducationRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1497,14 +2632,14 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ AcuteIllnessFollowUpRevision uuid data ] ->
+                [ AcuteIllnessFollowUpRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             data.encounterId
-                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw newModel)
+                                |> Maybe.map (generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw newModel)
                                 |> Maybe.withDefault []
                     in
                     ( newModel
@@ -1512,7 +2647,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionHeightRevision uuid data ] ->
+                [ NutritionHeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -1522,7 +2657,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionMuacRevision uuid data ] ->
+                [ NutritionMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -1532,7 +2667,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionNutritionRevision uuid data ] ->
+                [ NutritionNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -1542,7 +2677,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ NutritionWeightRevision uuid data ] ->
+                [ NutritionWeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessNutritionIndividual data.participantId data.encounterId
@@ -1592,10 +2727,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ DangerSignsRevision uuid data ] ->
+                [ DangerSignsRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            -- This is the only place where we ask to update assemssment, since
+                            -- This is the only place where we ask to update assessment for CHW, since
                             -- only thing that affects it is the Danger signs measurement.
                             processRevisionAndAssessPrenatal data.participantId data.encounterId True
                     in
@@ -1604,7 +2739,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ LastMenstrualPeriodRevision uuid data ] ->
+                [ PrenatalSymptomReviewRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -1614,7 +2749,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ PregnancyTestingRevision uuid data ] ->
+                [ CorePhysicalExamRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessPrenatal data.participantId data.encounterId False
@@ -1624,7 +2759,378 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildHeightRevision uuid data ] ->
+                [ LastMenstrualPeriodRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PregnancyTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ MedicationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ VitalsRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processVitalsRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                data.value
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ MalariaPreventionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalSendToHCRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalMedicationDistributionRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processPrenatalRevisionPossiblyCompletingRecurrentPhase data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalHIVTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalPartnerHIVTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsg ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestPartnerHIV
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsg
+                    )
+
+                [ PrenatalHIVPCRTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHIVPCR
+                                data.value.executionNote
+                                (isJust data.value.hivViralLoadStatus)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalSyphilisTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestSyphilis
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId ->
+                                    ( originatingEncounterId
+                                    , Pages.Prenatal.Utils.syphilisDiagnosesIncludingNeurosyphilisRecurrentPhase
+                                    )
+                                )
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalHepatitisBTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHepatitisB
+                                data.value.executionNote
+                                (isJust data.value.testResult)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisHepatitisBRecurrentPhase ] ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalMalariaTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            let
+                                executionNote =
+                                    if data.value.bloodSmearResult == BloodSmearPendingInput then
+                                        TestNoteRunToday
+
+                                    else
+                                        data.value.executionNote
+
+                                resultsAdded =
+                                    isJust data.value.testResult
+                                        || bloodSmearResultSet data.value.bloodSmearResult
+                            in
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestMalaria
+                                executionNote
+                                resultsAdded
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalUrineDipstickTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestUrineDipstick
+                                data.value.executionNote
+                                (isJust data.value.protein)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalBloodGpRsTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to the model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestBloodGpRs
+                                data.value.executionNote
+                                (isJust data.value.bloodGroup)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, [ DiagnosisRhesusNegativeRecurrentPhase ] ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalHemoglobinTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestHemoglobin
+                                data.value.executionNote
+                                (isJust data.value.hemoglobinCount)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalRandomBloodSugarTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessPrenatal`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdatePrenatalLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestRandomBloodSugar
+                                data.value.executionNote
+                                (isJust data.value.sugarCount)
+                                data.value.testPrerequisites
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            Maybe.map
+                                (\originatingEncounterId -> ( originatingEncounterId, Pages.Prenatal.Utils.diabetesDiagnosesRecurrentPhase ))
+                                data.value.originatingEncounter
+                                |> processRevisionAndAssessPrenatalWithReportToOrigin data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ PrenatalMentalHealthRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ BreastExamRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalBreastfeedingRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ PrenatalGUExamRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessPrenatal data.participantId data.encounterId False
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildHeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -1634,7 +3140,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildHeadCircumferenceRevision uuid data ] ->
+                [ WellChildHeadCircumferenceRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -1644,7 +3150,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildMuacRevision uuid data ] ->
+                [ WellChildMuacRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -1654,7 +3160,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildNutritionRevision uuid data ] ->
+                [ WellChildNutritionRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -1664,7 +3170,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildWeightRevision uuid data ] ->
+                [ WellChildWeightRevision _ data ] ->
                     let
                         ( newModel, extraMsgs ) =
                             processRevisionAndAssessWellChild data.participantId data.encounterId
@@ -1674,7 +3180,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildSymptomsReviewRevision uuid data ] ->
+                [ WellChildSymptomsReviewRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -1687,7 +3193,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildVitalsRevision uuid data ] ->
+                [ WellChildVitalsRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
@@ -1700,13 +3206,439 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , extraMsgs
                     )
 
-                [ WellChildECDRevision uuid data ] ->
+                [ WellChildECDRevision _ data ] ->
                     let
                         ( newModel, _ ) =
                             List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
 
                         extraMsgs =
                             processWellChildECDRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildBCGImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildDTPImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildDTPStandaloneImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildHPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildIPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildMRImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildOPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildPCV13ImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ WellChildRotarixImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            processWellChildImmunisationRevision data.participantId data.encounterId newModel
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDRandomBloodSugarTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestRandomBloodSugar
+                                data.value.executionNote
+                                (isJust data.value.sugarCount)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDUrineDipstickTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestUrineDipstick
+                                data.value.executionNote
+                                (isJust data.value.protein)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDCreatinineTestRevision _ data ] ->
+                    let
+                        -- We do not catch changes done to model, because
+                        -- it's handled by `processRevisionAndAssessNCD`
+                        -- activation that comes bellow.
+                        ( _, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestCreatinine
+                                data.value.executionNote
+                                (isJust data.value.creatinineResult)
+
+                        ( newModel, extraMsgsForAssessment ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults ++ extraMsgsForAssessment
+                    )
+
+                [ NCDLiverFunctionTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLiverFunction
+                                data.value.executionNote
+                                (isJust data.value.altResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
+                [ NCDCoMorbiditiesRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDVitalsRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processRevisionAndAssessNCD data.participantId data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ NCDLipidPanelTestRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgsForLabsResults ) =
+                            processRevisionAndUpdateNCDLabsResults
+                                data.participantId
+                                data.encounterId
+                                Backend.Measurement.Model.TestLipidPanel
+                                data.value.executionNote
+                                (isJust data.value.totalCholesterolResult)
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgsForLabsResults
+                    )
+
+                [ ChildScoreboardNCDARevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardBCGImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardDTPImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardDTPStandaloneImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardIPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardMRImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardOPVImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardPCV13ImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ ChildScoreboardRotarixImmunisationRevision _ data ] ->
+                    let
+                        ( newModel, _ ) =
+                            List.foldl (handleRevision currentDate healthCenterId villageId) ( model, False ) revisions
+
+                        extraMsgs =
+                            Maybe.map (generateChildScoreboardAssesmentCompletedMsgs currentDate site newModel) data.encounterId
+                                |> Maybe.withDefault []
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisDOTRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisFollowUpRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisHealthEducationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisMedicationRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisReferralRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisSymptomReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
+                    in
+                    ( newModel
+                    , Cmd.none
+                    , extraMsgs
+                    )
+
+                [ TuberculosisTreatmentReviewRevision _ data ] ->
+                    let
+                        ( newModel, extraMsgs ) =
+                            processTuberculosisRevisionAndNavigateToProgressReport data.encounterId
                     in
                     ( newModel
                     , Cmd.none
@@ -1743,137 +3675,241 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     , []
                     )
 
+        ResetFailedToFetchAuthorities ->
+            let
+                failureToNotAsked webData =
+                    case webData of
+                        Failure _ ->
+                            NotAsked
+
+                        _ ->
+                            webData
+            in
+            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            , Cmd.none
+            , []
+            )
+
         MsgPrenatalEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.prenatalEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.prenatalEncounterRequests
                         |> Maybe.withDefault Backend.PrenatalEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.PrenatalEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.PrenatalEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | prenatalEncounterRequests = Dict.insert encounterId subModel model.prenatalEncounterRequests }
             , Cmd.map (MsgPrenatalEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgNutritionEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.nutritionEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.nutritionEncounterRequests
                         |> Maybe.withDefault Backend.NutritionEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.NutritionEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.NutritionEncounter.Update.update currentDate
+                        nurseId
+                        healthCenterId
+                        encounterId
+                        encounter
+                        subMsg
+                        requests
             in
             ( { model | nutritionEncounterRequests = Dict.insert encounterId subModel model.nutritionEncounterRequests }
             , Cmd.map (MsgNutritionEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgAcuteIllnessEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.acuteIllnessEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.acuteIllnessEncounterRequests
                         |> Maybe.withDefault Backend.AcuteIllnessEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.AcuteIllnessEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.AcuteIllnessEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | acuteIllnessEncounterRequests = Dict.insert encounterId subModel model.acuteIllnessEncounterRequests }
             , Cmd.map (MsgAcuteIllnessEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgHomeVisitEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.homeVisitEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.homeVisitEncounterRequests
                         |> Maybe.withDefault Backend.HomeVisitEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.HomeVisitEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HomeVisitEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | homeVisitEncounterRequests = Dict.insert encounterId subModel model.homeVisitEncounterRequests }
             , Cmd.map (MsgHomeVisitEncounter encounterId) subCmd
-            , []
+            , appMsgs
             )
 
         MsgWellChildEncounter encounterId subMsg ->
             let
                 encounter =
                     Dict.get encounterId model.wellChildEncounters
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get encounterId model.wellChildEncounterRequests
                         |> Maybe.withDefault Backend.WellChildEncounter.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.WellChildEncounter.Update.update nurseId healthCenterId encounterId encounter currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.WellChildEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
             in
             ( { model | wellChildEncounterRequests = Dict.insert encounterId subModel model.wellChildEncounterRequests }
             , Cmd.map (MsgWellChildEncounter encounterId) subCmd
-            , []
+            , appMsgs
+            )
+
+        MsgNCDEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.ncdEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.ncdEncounterRequests
+                        |> Maybe.withDefault Backend.NCDEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.NCDEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | ncdEncounterRequests = Dict.insert encounterId subModel model.ncdEncounterRequests }
+            , Cmd.map (MsgNCDEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgChildScoreboardEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.childScoreboardEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.childScoreboardEncounterRequests
+                        |> Maybe.withDefault Backend.ChildScoreboardEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.ChildScoreboardEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | childScoreboardEncounterRequests = Dict.insert encounterId subModel model.childScoreboardEncounterRequests }
+            , Cmd.map (MsgChildScoreboardEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgTuberculosisEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.tuberculosisEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.tuberculosisEncounterRequests
+                        |> Maybe.withDefault Backend.TuberculosisEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.TuberculosisEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | tuberculosisEncounterRequests = Dict.insert encounterId subModel model.tuberculosisEncounterRequests }
+            , Cmd.map (MsgTuberculosisEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgHIVEncounter encounterId subMsg ->
+            let
+                encounter =
+                    Dict.get encounterId model.hivEncounters
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get encounterId model.hivEncounterRequests
+                        |> Maybe.withDefault Backend.HIVEncounter.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.HIVEncounter.Update.update currentDate nurseId healthCenterId encounterId encounter subMsg requests
+            in
+            ( { model | hivEncounterRequests = Dict.insert encounterId subModel model.hivEncounterRequests }
+            , Cmd.map (MsgHIVEncounter encounterId) subCmd
+            , appMsgs
+            )
+
+        MsgEducationSession sessionId subMsg ->
+            let
+                encounter =
+                    Dict.get sessionId model.educationSessions
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                requests =
+                    Dict.get sessionId model.educationSessionRequests
+                        |> Maybe.withDefault Backend.EducationSession.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.EducationSession.Update.update currentDate sessionId encounter subMsg requests
+            in
+            ( { model | educationSessionRequests = Dict.insert sessionId subModel model.educationSessionRequests }
+            , Cmd.map (MsgEducationSession sessionId) subCmd
+            , appMsgs
             )
 
         MsgTraceContact traceContactId subMsg ->
             let
                 traceContact =
                     Dict.get traceContactId model.traceContacts
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
                     Dict.get traceContactId model.traceContactRequests
                         |> Maybe.withDefault Backend.TraceContact.Model.emptyModel
 
-                ( subModel, subCmd ) =
+                ( subModel, subCmd, appMsgs ) =
                     Backend.TraceContact.Update.update traceContactId traceContact subMsg requests
             in
             ( { model | traceContactRequests = Dict.insert traceContactId subModel model.traceContactRequests }
             , Cmd.map (MsgTraceContact traceContactId) subCmd
-            , []
+            , appMsgs
             )
 
-        MsgIndividualSession participantId subMsg ->
+        MsgIndividualEncounterParticipant participantId subMsg ->
             let
                 participant =
                     Dict.get participantId model.individualParticipants
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
+                        |> Maybe.andThen RemoteData.toMaybe
 
                 requests =
-                    Dict.get participantId model.individualSessionRequests
+                    Dict.get participantId model.individualEncounterParticipantRequests
                         |> Maybe.withDefault Backend.IndividualEncounterParticipant.Model.emptyModel
 
-                ( subModel, subCmd ) =
-                    Backend.IndividualEncounterParticipant.Update.update participantId participant currentDate subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.IndividualEncounterParticipant.Update.update currentDate participantId participant subMsg requests
             in
-            ( { model | individualSessionRequests = Dict.insert participantId subModel model.individualSessionRequests }
-            , Cmd.map (MsgIndividualSession participantId) subCmd
-            , []
+            ( { model | individualEncounterParticipantRequests = Dict.insert participantId subModel model.individualEncounterParticipantRequests }
+            , Cmd.map (MsgIndividualEncounterParticipant participantId) subCmd
+            , appMsgs
             )
 
         MsgSession sessionId subMsg ->
@@ -1888,14 +3924,54 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                     Dict.get sessionId model.sessionRequests
                         |> Maybe.withDefault Backend.Session.Model.emptyModel
 
-                ( subModel, subCmd, fetchMsgs ) =
-                    Backend.Session.Update.update nurseId sessionId session currentDate model subMsg requests
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.Session.Update.update currentDate nurseId sessionId session model subMsg requests
             in
             ( { model | sessionRequests = Dict.insert sessionId subModel model.sessionRequests }
             , Cmd.map (MsgSession sessionId) subCmd
-            , fetchMsgs
-                |> List.filter (Backend.Fetch.shouldFetch currentTime model)
-                |> List.map App.Model.MsgIndexedDb
+            , appMsgs
+            )
+
+        MsgNurse updatedNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updatedNurseId model.nurseRequests
+                        |> Maybe.withDefault Backend.Nurse.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.Nurse.Update.update currentDate subMsg requests
+            in
+            ( { model | nurseRequests = Dict.insert updatedNurseId subModel model.nurseRequests }
+            , Cmd.map (MsgNurse updatedNurseId) subCmd
+            , appMsgs
+            )
+
+        MsgResilienceSurvey surveyNurseId subMsg ->
+            let
+                requests =
+                    Dict.get surveyNurseId model.resilienceSurveyRequests
+                        |> Maybe.withDefault Backend.ResilienceSurvey.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.ResilienceSurvey.Update.update currentDate subMsg requests
+            in
+            ( { model | resilienceSurveyRequests = Dict.insert surveyNurseId subModel model.resilienceSurveyRequests }
+            , Cmd.map (MsgResilienceSurvey surveyNurseId) subCmd
+            , appMsgs
+            )
+
+        MsgStockUpdate updateNurseId subMsg ->
+            let
+                requests =
+                    Dict.get updateNurseId model.stockUpdateRequests
+                        |> Maybe.withDefault Backend.StockUpdate.Model.emptyModel
+
+                ( subModel, subCmd, appMsgs ) =
+                    Backend.StockUpdate.Update.update currentDate subMsg requests
+            in
+            ( { model | stockUpdateRequests = Dict.insert updateNurseId subModel model.stockUpdateRequests }
+            , Cmd.map (MsgStockUpdate updateNurseId) subCmd
+            , appMsgs
             )
 
         PostPmtctParticipant initiator data ->
@@ -1907,6 +3983,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedPmtctParticipant id initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
                     case initiator of
                         -- When in session context, automaticaly create
@@ -1931,7 +4010,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postPmtctParticipant = Dict.insert id data model.postPmtctParticipant }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostRelationship personId myRelationship addGroup initiator ->
@@ -1984,15 +4063,11 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                 (Dict.get clinicId
                                                     >> Maybe.andThen
                                                         (\clinic ->
-                                                            let
-                                                                graduationDate =
-                                                                    Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
-                                                            in
                                                             if List.member clinic.clinicType [ Sorwathe, Achi ] then
                                                                 Nothing
 
                                                             else
-                                                                graduationDate
+                                                                Maybe.map (Date.add Months graduatingAgeInMonth) childBirthDate
                                                         )
                                                 )
                                 in
@@ -2062,10 +4137,28 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             , relationshipCmd
             , []
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
         HandlePostedRelationship personId initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
                     data
                         |> RemoteData.map
@@ -2099,7 +4192,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postRelationship = Dict.insert personId data model.postRelationship }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostPerson relation initiator person ->
@@ -2111,6 +4204,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 
         HandlePostedPerson relation initiator data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 ( appMsgs, extraMsgs ) =
                     -- If we succeed, we reset the form, and go to the page
                     -- showing the new person.
@@ -2147,22 +4243,34 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                             nextPage =
                                                 case encounterType of
                                                     AcuteIllnessEncounter ->
-                                                        AcuteIllnessParticipantPage personId
+                                                        AcuteIllnessParticipantPage InitiatorParticipantsPage personId
 
                                                     AntenatalEncounter ->
-                                                        PrenatalParticipantPage personId
+                                                        PrenatalParticipantPage InitiatorParticipantsPage personId
 
-                                                    NutritionEncounter ->
-                                                        NutritionParticipantPage personId
+                                                    ChildScoreboardEncounter ->
+                                                        ChildScoreboardParticipantPage personId
 
-                                                    WellChildEncounter ->
-                                                        WellChildParticipantPage personId
+                                                    HIVEncounter ->
+                                                        HIVParticipantPage personId
 
                                                     -- We do not have a direct access to Home Visit
                                                     -- encounter, since it resides under Nutrition menu.
                                                     -- Providing 'default' page, to satisfy compiler.
                                                     HomeVisitEncounter ->
                                                         IndividualEncounterTypesPage
+
+                                                    NCDEncounter ->
+                                                        NCDParticipantPage InitiatorParticipantsPage personId
+
+                                                    NutritionEncounter ->
+                                                        NutritionParticipantPage InitiatorParticipantsPage personId
+
+                                                    TuberculosisEncounter ->
+                                                        TuberculosisParticipantPage personId
+
+                                                    WellChildEncounter ->
+                                                        WellChildParticipantPage InitiatorParticipantsPage personId
 
                                                     -- Note yet implemented. Providing 'default'
                                                     -- page, to satisfy compiler.
@@ -2173,7 +4281,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         , []
                                         )
 
-                                    GroupEncounterOrigin sessionId ->
+                                    GroupEncounterOrigin _ ->
                                         let
                                             nextPage =
                                                 case relation of
@@ -2198,7 +4306,7 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                                     |> Maybe.map
                                                         (\encounter ->
                                                             [ Backend.IndividualEncounterParticipant.Model.SetNewborn personId
-                                                                |> MsgIndividualSession encounter.participant
+                                                                |> MsgIndividualEncounterParticipant encounter.participant
                                                             ]
                                                         )
                                                     |> Maybe.withDefault []
@@ -2225,10 +4333,10 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                     AcuteIllnessContactsTracingActivityOrigin encounterId ->
                                         let
                                             setContactsTracingFormStateMsg =
-                                                Pages.AcuteIllnessActivity.Model.ContactsTracingFormRecordContactDetails
+                                                Pages.AcuteIllness.Activity.Model.ContactsTracingFormRecordContactDetails
                                                     personId
-                                                    Pages.AcuteIllnessActivity.Model.emptyRecordContactDetailsData
-                                                    |> Pages.AcuteIllnessActivity.Model.SetContactsTracingFormState
+                                                    Pages.AcuteIllness.Activity.Model.emptyRecordContactDetailsData
+                                                    |> Pages.AcuteIllness.Activity.Model.SetContactsTracingFormState
                                                     |> App.Model.MsgPageAcuteIllnessActivity encounterId Backend.AcuteIllnessActivity.Model.AcuteIllnessNextSteps
                                                     |> App.Model.MsgLoggedIn
                                                     |> List.singleton
@@ -2241,91 +4349,103 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             in
             ( { model | postPerson = data }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
-                |> sequenceExtra (updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId villageId isChw activePage syncManager) extraMsgs
+                |> sequenceExtra
+                    (updateIndexedDb language
+                        currentDate
+                        currentTime
+                        zscores
+                        site
+                        features
+                        nurseId
+                        healthCenterId
+                        villageId
+                        isChw
+                        isLabTech
+                        activePage
+                        syncManager
+                    )
+                    extraMsgs
 
-        PatchPerson personId person ->
+        PatchPerson origin personId person ->
             ( { model | postPerson = Loading }
             , sw.patchFull personEndpoint personId person
-                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson personId)
+                |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
             )
 
-        HandlePatchedPerson personId data ->
+        HandlePatchedPerson origin personId data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 appMsgs =
-                    -- If we succeed, we reset the form, and go to the page
-                    -- showing the new person.
-                    data
-                        |> RemoteData.map
-                            (\person ->
-                                [ Pages.Person.Model.ResetEditForm
-                                    |> App.Model.MsgPageEditPerson personId
-                                    |> App.Model.MsgLoggedIn
-                                , PersonPage personId ParticipantDirectoryOrigin
-                                    |> UserPage
-                                    |> App.Model.SetActivePage
-                                ]
-                            )
-                        |> RemoteData.withDefault []
+                    case origin of
+                        InitiatorEditForm ->
+                            -- If we succeed, we reset the form, and go to the page
+                            -- showing the new person.
+                            RemoteData.map
+                                (\_ ->
+                                    [ Pages.Person.Model.ResetEditForm
+                                        |> App.Model.MsgPageEditPerson personId
+                                        |> App.Model.MsgLoggedIn
+                                    , PersonPage personId ParticipantDirectoryOrigin
+                                        |> UserPage
+                                        |> App.Model.SetActivePage
+                                    ]
+                                )
+                                data
+                                |> RemoteData.withDefault []
+
+                        InitiatorProgressReport ->
+                            []
             in
             ( { model | postPerson = Success personId }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostSession session ->
             ( { model | postSession = Loading }
             , sw.post sessionEndpoint session
-                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession session.clinicType)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedSession)
             , []
             )
 
-        HandlePostedSession clinicType data ->
+        HandlePostedSession data ->
             let
-                msgs =
-                    if clinicType == Chw then
-                        data
-                            |> RemoteData.map
-                                (\sessionId ->
-                                    SessionPage sessionId AttendancePage
-                                        |> UserPage
-                                        |> App.Model.SetActivePage
-                                        |> List.singleton
-                                )
-                            |> RemoteData.withDefault []
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
 
-                    else
-                        []
+                appMsgs =
+                    RemoteData.map
+                        (\sessionId ->
+                            SessionPage sessionId AttendancePage
+                                |> UserPage
+                                |> App.Model.SetActivePage
+                                |> List.singleton
+                        )
+                        data
+                        |> RemoteData.withDefault []
             in
             ( { model | postSession = data }
             , Cmd.none
-            , msgs
+            , rollbarOnFailure ++ appMsgs
             )
 
-        FetchVillages ->
-            ( { model | villages = Loading }
-            , sw.select villageEndpoint ()
-                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedVillages)
-            , []
-            )
-
-        HandleFetchedVillages data ->
-            ( { model | villages = data }
-            , Cmd.none
-            , []
-            )
-
-        PostIndividualSession extraData session ->
-            ( { model | postIndividualSession = Dict.insert session.person Loading model.postIndividualSession }
+        PostIndividualEncounterParticipant extraData session ->
+            ( { model | postIndividualEncounterParticipant = Dict.insert session.person Loading model.postIndividualEncounterParticipant }
             , sw.post individualEncounterParticipantEndpoint session
-                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualSession session.person session.encounterType extraData)
+                |> toCmd (RemoteData.fromResult >> HandlePostedIndividualEncounterParticipant session.person session.encounterType extraData)
             , []
             )
 
-        HandlePostedIndividualSession personId encounterType extraData data ->
+        HandlePostedIndividualEncounterParticipant personId encounterType extraData data ->
             let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
                 -- We automatically create new encounter for newly created  session.
                 appMsgs =
                     RemoteData.map
@@ -2353,15 +4473,44 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                                         _ ->
                                             []
 
-                                NutritionEncounter ->
-                                    [ emptyNutritionEncounter sessionId currentDate healthCenterId
-                                        |> Backend.Model.PostNutritionEncounter
+                                ChildScoreboardEncounter ->
+                                    [ Backend.ChildScoreboardEncounter.Model.emptyChildScoreboardEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostChildScoreboardEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                HIVEncounter ->
+                                    [ Backend.HIVEncounter.Model.emptyHIVEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostHIVEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
                                 HomeVisitEncounter ->
                                     [ emptyHomeVisitEncounter sessionId currentDate healthCenterId
                                         |> Backend.Model.PostHomeVisitEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                NCDEncounter ->
+                                    [ Backend.NCDEncounter.Model.emptyNCDEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostNCDEncounter
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+
+                                NutritionEncounter ->
+                                    case extraData of
+                                        NutritionData nutritionEncounterType ->
+                                            [ emptyNutritionEncounter sessionId currentDate nutritionEncounterType healthCenterId
+                                                |> Backend.Model.PostNutritionEncounter
+                                                |> App.Model.MsgIndexedDb
+                                            ]
+
+                                        _ ->
+                                            []
+
+                                TuberculosisEncounter ->
+                                    [ Backend.TuberculosisEncounter.Model.emptyTuberculosisEncounter sessionId currentDate healthCenterId
+                                        |> Backend.Model.PostTuberculosisEncounter
                                         |> App.Model.MsgIndexedDb
                                     ]
 
@@ -2382,9 +4531,9 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
                         data
                         |> RemoteData.withDefault []
             in
-            ( { model | postIndividualSession = Dict.insert personId data model.postIndividualSession }
+            ( { model | postIndividualEncounterParticipant = Dict.insert personId data model.postIndividualEncounterParticipant }
             , Cmd.none
-            , appMsgs
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostPrenatalEncounter postCreateDestination prenatalEncounter ->
@@ -2395,36 +4544,43 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedPrenatalEncounter participantId postCreateDestination data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( prenatalEncounterId, _ ) ->
+                            let
+                                destinationPage =
+                                    case postCreateDestination of
+                                        DestinationEncounterPage ->
+                                            UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                        DestinationEncounterPageWithWarningPopup ->
+                                            UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
+
+                                        DestinationClinicalProgressReportPage ->
+                                            UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
+
+                                setWarningDialogStateMsg =
+                                    if postCreateDestination == DestinationEncounterPageWithWarningPopup then
+                                        [ Pages.Prenatal.Encounter.Model.SetChwWarningVisible True
+                                            |> App.Model.MsgPagePrenatalEncounter prenatalEncounterId
+                                            |> App.Model.MsgLoggedIn
+                                        ]
+
+                                    else
+                                        []
+                            in
+                            App.Model.SetActivePage destinationPage :: setWarningDialogStateMsg
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postPrenatalEncounter = Dict.insert participantId data model.postPrenatalEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( prenatalEncounterId, _ ) ->
-                    let
-                        destinationPage =
-                            case postCreateDestination of
-                                DestinationEncounterPage ->
-                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
-
-                                DestinationEncounterPageWithWarningPopup ->
-                                    UserPage <| Pages.Page.PrenatalEncounterPage prenatalEncounterId
-
-                                DestinationClinicalProgressReportPage ->
-                                    UserPage <| ClinicalProgressReportPage (InitiatorNewEncounter prenatalEncounterId) prenatalEncounterId
-
-                        setWarningDialogStateMsg =
-                            if postCreateDestination == DestinationEncounterPageWithWarningPopup then
-                                [ Pages.PrenatalEncounter.Model.SetChwWarningVisible True
-                                    |> App.Model.MsgPagePrenatalEncounter prenatalEncounterId
-                                    |> App.Model.MsgLoggedIn
-                                ]
-
-                            else
-                                []
-                    in
-                    App.Model.SetActivePage destinationPage :: setWarningDialogStateMsg
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostNutritionEncounter nutritionEncounter ->
@@ -2435,17 +4591,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedNutritionEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( nutritionEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.NutritionEncounterPage nutritionEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postNutritionEncounter = Dict.insert participantId data model.postNutritionEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( nutritionEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.NutritionEncounterPage nutritionEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostHomeVisitEncounter homeVisitEncounter ->
@@ -2456,17 +4619,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedHomeVisitEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( homeVisitEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postHomeVisitEncounter = Dict.insert participantId data model.postHomeVisitEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( homeVisitEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.HomeVisitEncounterPage homeVisitEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostWellChildEncounter wellChildEncounter ->
@@ -2477,17 +4647,24 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedWellChildEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( wellChildEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.WellChildEncounterPage wellChildEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postWellChildEncounter = Dict.insert participantId data model.postWellChildEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( wellChildEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.WellChildEncounterPage wellChildEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
         PostAcuteIllnessEncounter acuteIllnessEncounter ->
@@ -2498,45 +4675,164 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
             )
 
         HandlePostedAcuteIllnessEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( acuteIllnessEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
             ( { model | postAcuteIllnessEncounter = Dict.insert participantId data model.postAcuteIllnessEncounter }
             , Cmd.none
-            , RemoteData.map
-                (\( acuteIllnessEncounterId, _ ) ->
-                    [ App.Model.SetActivePage <|
-                        UserPage <|
-                            Pages.Page.AcuteIllnessEncounterPage acuteIllnessEncounterId
-                    ]
-                )
-                data
-                |> RemoteData.withDefault []
+            , rollbarOnFailure ++ appMsgs
             )
 
-        ResetFailedToFetchAuthorities ->
+        PostNCDEncounter ncdEncounter ->
+            ( { model | postNCDEncounter = Dict.insert ncdEncounter.participant Loading model.postNCDEncounter }
+            , sw.post ncdEncounterEndpoint ncdEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedNCDEncounter ncdEncounter.participant)
+            , []
+            )
+
+        HandlePostedNCDEncounter participantId data ->
             let
-                failureToNotAsked webData =
-                    case webData of
-                        Failure _ ->
-                            NotAsked
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
 
-                        _ ->
-                            webData
+                appMsgs =
+                    RemoteData.map
+                        (\( ncdEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.NCDEncounterPage ncdEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
             in
-            ( { model | healthCenters = failureToNotAsked model.healthCenters, villages = failureToNotAsked model.villages }
+            ( { model | postNCDEncounter = Dict.insert participantId data model.postNCDEncounter }
             , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostChildScoreboardEncounter childScoreboardEncounter ->
+            ( { model | postChildScoreboardEncounter = Dict.insert childScoreboardEncounter.participant Loading model.postChildScoreboardEncounter }
+            , sw.post childScoreboardEncounterEndpoint childScoreboardEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedChildScoreboardEncounter childScoreboardEncounter.participant)
             , []
             )
 
-        FetchTraceContact id ->
-            ( { model | traceContacts = Dict.insert id Loading model.traceContacts }
-            , sw.get acuteIllnessTraceContactEndpoint id
-                |> toCmd (RemoteData.fromResult >> HandleFetchedTraceContact id)
+        HandlePostedChildScoreboardEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( childScoreboardEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.ChildScoreboardEncounterPage childScoreboardEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postChildScoreboardEncounter = Dict.insert participantId data model.postChildScoreboardEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostTuberculosisEncounter tuberculosisEncounter ->
+            ( { model | postTuberculosisEncounter = Dict.insert tuberculosisEncounter.participant Loading model.postTuberculosisEncounter }
+            , sw.post tuberculosisEncounterEndpoint tuberculosisEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedTuberculosisEncounter tuberculosisEncounter.participant)
             , []
             )
 
-        HandleFetchedTraceContact id data ->
-            ( { model | traceContacts = Dict.insert id data model.traceContacts }
+        HandlePostedTuberculosisEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( tuberculosisEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.TuberculosisEncounterPage tuberculosisEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postTuberculosisEncounter = Dict.insert participantId data model.postTuberculosisEncounter }
             , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostHIVEncounter hivEncounter ->
+            ( { model | postHIVEncounter = Dict.insert hivEncounter.participant Loading model.postHIVEncounter }
+            , sw.post hivEncounterEndpoint hivEncounter
+                |> toCmd (RemoteData.fromResult >> HandlePostedHIVEncounter hivEncounter.participant)
             , []
+            )
+
+        HandlePostedHIVEncounter participantId data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( hivEncounterId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.HIVEncounterPage hivEncounterId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postHIVEncounter = Dict.insert participantId data model.postHIVEncounter }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
+            )
+
+        PostEducationSession educationSession ->
+            ( { model | postEducationSession = Loading }
+            , sw.post educationSessionEndpoint educationSession
+                |> toCmd (RemoteData.fromResult >> HandlePostedEducationSession)
+            , []
+            )
+
+        HandlePostedEducationSession data ->
+            let
+                rollbarOnFailure =
+                    triggerRollbarOnFailure data
+
+                appMsgs =
+                    RemoteData.map
+                        (\( educationSessionId, _ ) ->
+                            [ App.Model.SetActivePage <|
+                                UserPage <|
+                                    Pages.Page.EducationSessionPage educationSessionId
+                            ]
+                        )
+                        data
+                        |> RemoteData.withDefault []
+            in
+            ( { model | postEducationSession = data }
+            , Cmd.none
+            , rollbarOnFailure ++ appMsgs
             )
 
 
@@ -2544,7 +4840,13 @@ updateIndexedDb language currentDate currentTime zscores nurseId healthCenterId 
 successful EditableSessions. Ideally, we would handle this in a more
 nuanced way.
 -}
-handleRevision : NominalDate -> Maybe HealthCenterId -> Maybe VillageId -> Revision -> ( ModelIndexedDb, Bool ) -> ( ModelIndexedDb, Bool )
+handleRevision :
+    NominalDate
+    -> Maybe HealthCenterId
+    -> Maybe VillageId
+    -> Revision
+    -> ( ModelIndexedDb, Bool )
+    -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
     case revision of
         AcuteFindingsRevision uuid data ->
@@ -2688,14 +4990,31 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        CatchmentAreaRevision uuid data ->
+        CatchmentAreaRevision _ _ ->
             noChange
 
         ChildFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -2705,6 +5024,93 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
                 model
             , True
+            )
+
+        ChildScoreboardEncounterRevision uuid data ->
+            let
+                childScoreboardEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.childScoreboardEncounters
+
+                childScoreboardEncountersByParticipant =
+                    Dict.remove data.participant model.childScoreboardEncountersByParticipant
+            in
+            ( { model
+                | childScoreboardEncounters = childScoreboardEncounters
+                , childScoreboardEncountersByParticipant = childScoreboardEncountersByParticipant
+              }
+            , recalc
+            )
+
+        ChildScoreboardBCGImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardDTPImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardDTPStandaloneImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardIPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardMRImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardNCDARevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardOPVImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardPCV13ImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        ChildScoreboardRotarixImmunisationRevision uuid data ->
+            ( mapChildScoreboardMeasurements
+                data.encounterId
+                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         ClinicRevision uuid data ->
@@ -2732,7 +5138,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        CounselingScheduleRevision uuid data ->
+        CounselingScheduleRevision _ _ ->
             -- Just invalidate our value ... if someone wants it, we'll refetch it.
             ( { model | everyCounselingSchedule = NotAsked }
             , True
@@ -2746,7 +5152,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        CounselingTopicRevision uuid data ->
+        CounselingTopicRevision _ _ ->
             ( { model | everyCounselingSchedule = NotAsked }
             , True
             )
@@ -2786,6 +5192,36 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( { model | computedDashboards = Dict.insert uuid updatedComputedDashboard model.computedDashboards }, recalc )
 
+        EducationSessionRevision uuid data ->
+            let
+                educationSessions =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+
+                -- For every session participant, we check if it has data at
+                -- educationSessionsByPerson dict. If so, we add the session to
+                -- that data.
+                updatedEducationSessionsByPerson =
+                    EverySet.toList data.participants
+                        |> List.foldl
+                            (\personId accum ->
+                                Dict.get personId model.educationSessionsByPerson
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map
+                                        (\sessionsDict ->
+                                            let
+                                                updatedSessionsDict =
+                                                    Dict.insert uuid data sessionsDict
+                                            in
+                                            Dict.insert personId (Success updatedSessionsDict) accum
+                                        )
+                                    |> Maybe.withDefault accum
+                            )
+                            model.educationSessionsByPerson
+            in
+            ( { model | educationSessions = educationSessions, educationSessionsByPerson = updatedEducationSessionsByPerson }
+            , recalc
+            )
+
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
@@ -2821,6 +5257,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapChildMeasurements
                 data.participantId
                 (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
+                model
+            , True
+            )
+
+        GroupNCDARevision uuid data ->
+            ( mapChildMeasurements
+                data.participantId
+                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
                 model
             , True
             )
@@ -2864,6 +5308,84 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
                 model
             , True
+            )
+
+        HIVDiagnosticsRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVEncounterRevision uuid data ->
+            let
+                hivEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+
+                hivEncountersByParticipant =
+                    Dict.remove data.participant model.hivEncountersByParticipant
+            in
+            ( { model
+                | hivEncounters = hivEncounters
+                , hivEncountersByParticipant = hivEncountersByParticipant
+              }
+            , recalc
+            )
+
+        HIVFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
+                        model
+            in
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        HIVHealthEducationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVMedicationRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVReferralRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVSymptomReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        HIVTreatmentReviewRevision uuid data ->
+            ( mapHIVMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                model
+            , recalc
             )
 
         HomeVisitEncounterRevision uuid data ->
@@ -2953,10 +5475,27 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
         MotherFbfRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
             ( mapMotherMeasurements
                 data.participantId
                 (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
-                model
+                modelWithMappedStockManagement
             , True
             )
 
@@ -2968,7 +5507,205 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        NurseRevision uuid data ->
+        NCDCoMorbiditiesRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coMorbidities = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCoreExamRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDCreatinineTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | creatinineTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDDangerSignsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDEncounterRevision uuid data ->
+            let
+                ncdEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+
+                ncdEncountersByParticipant =
+                    Dict.remove data.participant model.ncdEncountersByParticipant
+            in
+            ( { model
+                | ncdEncounters = ncdEncounters
+                , ncdEncountersByParticipant = ncdEncountersByParticipant
+              }
+            , recalc
+            )
+
+        NCDFamilyHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDFamilyPlanningRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHbA1cTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hba1cTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHealthEducationRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDHIVTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLabsResultsRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | ncdLabs = Dict.insert uuid data measurements.ncdLabs })
+                        model
+            in
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        NCDLipidPanelTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDLiverFunctionTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | liverFunctionTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationDistributionRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDMedicationHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDOutsideCareRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDPregnancyTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDRandomBloodSugarTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDReferralRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSocialHistoryRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDSymptomReviewRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDUrineDipstickTestRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NCDVitalsRevision uuid data ->
+            ( mapNCDMeasurements
+                data.encounterId
+                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        NurseRevision _ _ ->
             -- Nothing to do in ModelIndexedDb yet. App.Update does do something with this one.
             noChange
 
@@ -3066,6 +5803,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        NutritionNCDARevision uuid data ->
+            ( mapNutritionMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         NutritionNutritionRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
@@ -3155,7 +5900,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        PmtctParticipantRevision uuid data ->
+        PmtctParticipantRevision _ data ->
             ( { model
                 | expectedSessions =
                     model.expectedSessions
@@ -3171,7 +5916,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , True
             )
 
-        PregnancyTestingRevision uuid data ->
+        PregnancyTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
@@ -3179,10 +5924,18 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        PrenatalHealthEducationRevision uuid data ->
+        PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements -> { measurements | bloodGpRsTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalBreastfeedingRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3225,10 +5978,113 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalGUExamRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | guExam = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHealthEducationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHemoglobinTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hemoglobinTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHepatitisBTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hepatitisBTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHIVTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalHIVPCRTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hivPCRTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalLabsResultsRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | prenatalLabs = Dict.insert uuid data measurements.prenatalLabs })
+                        model
+            in
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        PrenatalMalariaTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | malariaTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMentalHealthRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mentalHealth = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMedicationDistributionRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalNutritionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalOutsideCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalPartnerHIVTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | partnerHIVTest = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3241,6 +6097,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalRandomBloodSugarTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalSendToHCRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
@@ -3249,15 +6113,77 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
-        RelationshipRevision uuid data ->
+        PrenatalSpecialityCareRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | specialityCare = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalSymptomReviewRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalSyphilisTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | syphilisTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalTetanusImmunisationRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | tetanusImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalUrineDipstickTestRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        RelationshipRevision _ _ ->
             ( { model | relationshipsByPerson = Dict.empty }
             , True
             )
 
-        ResourceRevision uuid data ->
+        ResilienceSurveyRevision uuid data ->
+            let
+                nurseSurveys =
+                    Dict.get data.nurse model.resilienceSurveysByNurse
+                        |> Maybe.andThen RemoteData.toMaybe
+
+                resilienceSurveysByNurse =
+                    Maybe.map
+                        (\surveys ->
+                            let
+                                updatedSurveys =
+                                    Dict.insert uuid data surveys
+                            in
+                            Dict.insert data.nurse (Success updatedSurveys) model.resilienceSurveysByNurse
+                        )
+                        nurseSurveys
+                        |> Maybe.withDefault (Dict.insert data.nurse (Success (Dict.singleton uuid data)) model.resilienceSurveysByNurse)
+            in
+            ( { model | resilienceSurveysByNurse = resilienceSurveysByNurse }
+            , recalc
+            )
+
+        MalariaPreventionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | resource = Just ( uuid, data ) })
+                (\measurements -> { measurements | malariaPrevention = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3294,6 +6220,32 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
                 model
+            , recalc
+            )
+
+        StockUpdateRevision uuid data ->
+            let
+                modelWithMappedStockManagement =
+                    mapStockManagementMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
+                        modelWithStockUpdateRecalc
+
+                -- This revision may cause stock management data to become obsolete,
+                -- therefore, we 'mark' it for recalculation.
+                modelWithStockUpdateRecalc =
+                    Maybe.map
+                        (\id ->
+                            { model | stockManagementData = Dict.insert id NotAsked model.stockManagementData }
+                        )
+                        healthCenterId
+                        |> Maybe.withDefault model
+            in
+            ( { modelWithMappedStockManagement
+                | stockUpdates =
+                    RemoteData.map (Dict.insert uuid data)
+                        modelWithMappedStockManagement.stockUpdates
+              }
             , recalc
             )
 
@@ -3345,6 +6297,92 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        TuberculosisDiagnosticsRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisDOTRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dot = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisEncounterRevision uuid data ->
+            let
+                tuberculosisEncounters =
+                    Dict.update uuid (Maybe.map (always (Success data))) model.tuberculosisEncounters
+
+                tuberculosisEncountersByParticipant =
+                    Dict.remove data.participant model.tuberculosisEncountersByParticipant
+            in
+            ( { model
+                | tuberculosisEncounters = tuberculosisEncounters
+                , tuberculosisEncountersByParticipant = tuberculosisEncountersByParticipant
+              }
+            , recalc
+            )
+
+        TuberculosisFollowUpRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | tuberculosis = Dict.insert uuid data measurements.tuberculosis })
+                        model
+            in
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                modelWithMappedFollowUp
+            , recalc
+            )
+
+        TuberculosisHealthEducationRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisMedicationRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisReferralRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisSymptomReviewRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        TuberculosisTreatmentReviewRevision uuid data ->
+            ( mapTuberculosisMeasurements
+                data.encounterId
+                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         VillageRevision uuid data ->
             let
                 villages =
@@ -3386,6 +6424,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildCaringRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
@@ -3398,6 +6444,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildDTPStandaloneImmunisationRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3425,6 +6479,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildFeedingRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildFollowUpRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -3437,6 +6499,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 data.encounterId
                 (\measurements -> { measurements | followUp = Just ( uuid, data ) })
                 modelWithMappedFollowUp
+            , recalc
+            )
+
+        WellChildFoodSecurityRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                model
             , recalc
             )
 
@@ -3460,6 +6530,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | height = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        WellChildHygieneRevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -3504,11 +6582,26 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        WellChildNCDARevision uuid data ->
+            ( mapWellChildMeasurements
+                data.encounterId
+                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         WellChildNextVisitRevision uuid data ->
+            let
+                modelWithMappedFollowUp =
+                    mapFollowUpMeasurements
+                        healthCenterId
+                        (\measurements -> { measurements | nextVisit = Dict.insert uuid data measurements.nextVisit })
+                        model
+            in
             ( mapWellChildMeasurements
                 data.encounterId
                 (\measurements -> { measurements | nextVisit = Just ( uuid, data ) })
-                model
+                modelWithMappedFollowUp
             , recalc
             )
 
@@ -3601,21 +6694,45 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             )
 
 
-generatePrenatalAssesmentMsgs : NominalDate -> Language -> Bool -> Bool -> ModelIndexedDb -> PrenatalEncounterId -> List App.Model.Msg
-generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after id =
-    if not isChw then
-        -- Assement is done only for CHW.
-        []
+generatePrenatalAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Site
+    -> Bool
+    -> Bool
+    -> Page
+    -> Bool
+    -> Maybe ( PrenatalEncounterId, List PrenatalDiagnosis )
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activePage updateAssesment originData after id =
+    Maybe.map
+        (\assembledAfter ->
+            let
+                mandatoryActivitiesCompleted =
+                    Pages.Prenatal.Activity.Utils.mandatoryActivitiesForAssessmentCompleted
+                        currentDate
+                        site
+                        assembledAfter
 
-    else
-        Maybe.map
-            (\assembledAfter ->
+                initialEncounterNextStepsMsg =
+                    PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
+                        |> UserPage
+                        |> App.Model.SetActivePage
+
+                initialEncounterWarningPopupMsg state =
+                    Pages.Prenatal.Activity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
+                        |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
+                        |> App.Model.MsgLoggedIn
+
+                recurrentEncounterWarningPopupMsg state =
+                    Pages.Prenatal.RecurrentActivity.Model.SetWarningPopupState (Just <| WarningPopupUrgent state)
+                        |> App.Model.MsgPagePrenatalRecurrentActivity id Backend.PrenatalActivity.Model.RecurrentNextSteps
+                        |> App.Model.MsgLoggedIn
+            in
+            if isChw then
                 let
-                    mandatoryActivitiesCompleted =
-                        Pages.PrenatalEncounter.Utils.mandatoryActivitiesForNextStepsCompleted
-                            currentDate
-                            assembledAfter
-
                     updateAssesmentMsg =
                         if updateAssesment then
                             assembledAfter.measurements.followUp
@@ -3624,7 +6741,11 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                                         let
                                             updatedValue =
                                                 measurement.value
-                                                    |> (\value -> { value | assesment = Pages.PrenatalActivity.Utils.generatePrenatalAssesment assembledAfter })
+                                                    |> (\value ->
+                                                            { value
+                                                                | assesment = Pages.Prenatal.Activity.Utils.generatePrenatalAssesmentForChw assembledAfter
+                                                            }
+                                                       )
                                         in
                                         Backend.PrenatalEncounter.Model.SaveFollowUp assembledAfter.participant.person (Just measurementId) updatedValue
                                             |> Backend.Model.MsgPrenatalEncounter id
@@ -3645,7 +6766,7 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
                 else
                     let
                         dangerSignsList =
-                            Pages.PrenatalEncounter.Utils.generateDangerSignsList language
+                            Pages.Prenatal.Activity.Utils.generateDangerSignsListForChw language
                                 assembledAfter
                     in
                     if List.isEmpty dangerSignsList then
@@ -3653,37 +6774,687 @@ generatePrenatalAssesmentMsgs currentDate language isChw updateAssesment after i
 
                     else
                         updateAssesmentMsg
-                            ++ [ -- Navigate to NextSteps activty page.
-                                 PrenatalActivityPage id Backend.PrenatalActivity.Model.NextSteps
-                                    |> UserPage
-                                    |> App.Model.SetActivePage
-                               , String.join ", " dangerSignsList
-                                    |> Just
-                                    |> Pages.PrenatalActivity.Model.SetWarningPopupState
-                                    |> App.Model.MsgPagePrenatalActivity id Backend.PrenatalActivity.Model.NextSteps
-                                    |> App.Model.MsgLoggedIn
+                            ++ [ -- Navigate to Next Steps activty page.
+                                 initialEncounterNextStepsMsg
+                               , initialEncounterWarningPopupMsg
+                                    ( String.join ", " dangerSignsList
+                                    , translate language Translate.EmergencyReferralHelperReferToHC
+                                    )
                                ]
+
+            else
+            -- Logic for nurse.
+            if
+                mandatoryActivitiesCompleted
+            then
+                let
+                    diagnosesBefore =
+                        -- At this stage new diagnoses were not updated yet, therefore,
+                        -- we can use the dignoses set for the encounter.
+                        assembledAfter.encounter.diagnoses
+
+                    diagnosesAfter =
+                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembledAfter
+                in
+                if everySetsEqual diagnosesBefore diagnosesAfter then
+                    []
+
+                else
+                    -- Here we know that trigger for update came form another encounter.
+                    -- Therefore, we only need to perform actions for that originating encounter.
+                    let
+                        addedDiagnoses =
+                            EverySet.diff diagnosesAfter diagnosesBefore
+                                |> EverySet.toList
+                    in
+                    Maybe.map
+                        (\( originatingEncounterId, targetDiagnoses ) ->
+                            let
+                                reportedDiagnoses =
+                                    List.filter (\diagnosis -> List.member diagnosis targetDiagnoses) addedDiagnoses
+                                        |> EverySet.fromList
+
+                                diabetesDiagnosed =
+                                    EverySet.toList reportedDiagnoses
+                                        |> List.any
+                                            (\diagnosis ->
+                                                List.member diagnosis Pages.Prenatal.Utils.diabetesDiagnoses
+                                            )
+                            in
+                            if EverySet.isEmpty reportedDiagnoses then
+                                []
+
+                            else
+                                let
+                                    rhNegativeDiagnosis =
+                                        EverySet.member DiagnosisRhesusNegativeRecurrentPhase reportedDiagnoses
+                                in
+                                if
+                                    (-- Reporting back about previous diagnosis results in hospital referral
+                                     -- at Next steps. For Diabetes, we have logic saying that when it's first
+                                     -- diagnosed, the patient is referred to hospital.
+                                     -- On next occasions, no next steps are required.
+                                     -- Therefore, if we know that Diabetes was already diagnosed, we will not
+                                     -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                     diabetesDiagnosed
+                                        && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf Pages.Prenatal.Utils.diabetesDiagnoses assembledAfter
+                                    )
+                                        || (-- Reporting back about previous diagnosis results in hospital referral
+                                            -- at Next steps.
+                                            -- Even though the Blood group and rhesus test are supposed to be run once,
+                                            -- we continue offering it until we get a result.
+                                            -- This way, theoretically, it's possible to have multiple tests pending,
+                                            -- and results can be entered multiple times.
+                                            -- Therefore, if we know that Rhesus Negative was already diagnosed, we will not
+                                            -- report back about this diagnosis, to prevent unnecessary referral to the hospital.
+                                            rhNegativeDiagnosis
+                                                && Pages.Prenatal.Utils.diagnosedPreviouslyAnyOf
+                                                    [ DiagnosisRhesusNegativeInitialPhase
+                                                    , DiagnosisRhesusNegativeRecurrentPhase
+                                                    ]
+                                                    assembledAfter
+                                           )
+                                then
+                                    []
+
+                                else
+                                    Backend.PrenatalEncounter.Model.SetPastPrenatalDiagnoses reportedDiagnoses
+                                        |> Backend.Model.MsgPrenatalEncounter originatingEncounterId
+                                        |> App.Model.MsgIndexedDb
+                                        |> List.singleton
+                        )
+                        originData
+                        |> -- No originating encounter data, therefore, perform
+                           -- required actions for current encounter.
+                           Maybe.withDefault
+                            (let
+                                updateDiagnosesMsg =
+                                    Backend.PrenatalEncounter.Model.SetPrenatalDiagnoses diagnosesAfter
+                                        |> Backend.Model.MsgPrenatalEncounter id
+                                        |> App.Model.MsgIndexedDb
+
+                                initialEncounterMsgs =
+                                    let
+                                        urgentDiagnoses =
+                                            List.filter
+                                                Pages.Prenatal.Encounter.Utils.diagnosisRequiresEmergencyReferal
+                                                addedDiagnoses
+
+                                        additionalMsgs =
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
+                                                []
+
+                                            else
+                                                -- View warning popup with instructions for Emergency
+                                                -- Referral and navigate to Next Steps activity.
+                                                [ Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> initialEncounterWarningPopupMsg
+                                                , initialEncounterNextStepsMsg
+                                                ]
+                                    in
+                                    -- These messages are sent when diagnoses set has changed.
+                                    -- Therefore, in any case, we need to send command to update
+                                    -- diagnoses set.
+                                    updateDiagnosesMsg
+                                        :: -- For urgent diagnoses, we show warning popup and
+                                           -- navigate to Next Steps activity.
+                                           additionalMsgs
+
+                                recurrentEncounterMsgs =
+                                    let
+                                        urgentDiagnoses =
+                                            List.filter
+                                                Pages.Prenatal.RecurrentActivity.Utils.diagnosisRequiresEmergencyReferal
+                                                addedDiagnoses
+
+                                        additionalMsgs =
+                                            if isLabTech || List.isEmpty urgentDiagnoses then
+                                                []
+
+                                            else
+                                                [ PrenatalRecurrentActivityPage id Backend.PrenatalActivity.Model.RecurrentNextSteps
+                                                    |> UserPage
+                                                    |> App.Model.SetActivePage
+                                                , Pages.Prenatal.Activity.Utils.resolveWarningPopupContentForUrgentDiagnoses
+                                                    language
+                                                    urgentDiagnoses
+                                                    |> recurrentEncounterWarningPopupMsg
+                                                ]
+                                    in
+                                    -- These messages are sent when diagnoses set has changed.
+                                    -- Therefore, in any case, we need to send command to update
+                                    -- diagnoses set.
+                                    updateDiagnosesMsg
+                                        :: -- For urgent diagnoses, we show warning popup and
+                                           -- navigate to Next Steps activity.
+                                           additionalMsgs
+                             in
+                             case activePage of
+                                UserPage (PrenatalEncounterPage _) ->
+                                    initialEncounterMsgs
+
+                                UserPage (PrenatalActivityPage _ _) ->
+                                    initialEncounterMsgs
+
+                                UserPage (ClinicalProgressReportPage (InitiatorEncounterPage _) _) ->
+                                    initialEncounterMsgs
+
+                                UserPage (PrenatalRecurrentEncounterPage _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (PrenatalRecurrentActivityPage _ _) ->
+                                    recurrentEncounterMsgs
+
+                                UserPage (ClinicalProgressReportPage (InitiatorRecurrentEncounterPage _) _) ->
+                                    recurrentEncounterMsgs
+
+                                _ ->
+                                    []
+                            )
+
+            else
+                []
+        )
+        (RemoteData.toMaybe <| Pages.Prenatal.Encounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
+generatePrenatalLabsTestAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> Backend.Measurement.Model.TestExecutionNote
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalLabsTestAddedMsgs currentDate after test executionNote id =
+    Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                if
+                    -- We allow Vitals recheck only during initial encounter.
+                    -- At subsequent encounter, no need to retake blood preasure.
+                    (test == Backend.Measurement.Model.TestVitalsRecheck)
+                        && (not <| List.isEmpty assembled.nursePreviousEncountersData)
+                then
+                    []
+
+                else
+                    let
+                        testExecuted =
+                            testPerformedByExecutionNote executionNote
+                    in
+                    Maybe.map
+                        (\( resultsId, measurement ) ->
+                            let
+                                updatedValue =
+                                    (\value ->
+                                        { value
+                                            | performedTests =
+                                                if testExecuted then
+                                                    EverySet.insert test value.performedTests
+
+                                                else
+                                                    EverySet.remove test value.performedTests
+
+                                            -- When we have universal form, it's possible to change if test is performed
+                                            -- at lab, or at point of care.
+                                            -- Therefore, we need to make sure that test does not appear as completed,
+                                            -- which can happen, when nurse switches from point of care to lab.
+                                            , completedTests = EverySet.remove test value.completedTests
+                                            , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                        }
+                                    )
+                                        measurement.value
+                            in
+                            [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                        )
+                        assembled.measurements.labsResults
+                        |> Maybe.withDefault
+                            (if testExecuted then
+                                let
+                                    resultsValue =
+                                        Backend.Measurement.Model.LabsResultsValue
+                                            (EverySet.singleton test)
+                                            EverySet.empty
+                                            (Date.add Days labExpirationPeriod currentDate)
+                                            False
+                                            Nothing
+                                            Nothing
+                                in
+                                [ savePrenatalLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+
+                             else
+                                []
+                            )
             )
-            (RemoteData.toMaybe <| Pages.PrenatalEncounter.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
+generatePrenatalLabsResultsAddedMsgs :
+    NominalDate
+    -> Bool
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> Maybe (EverySet TestPrerequisite)
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrerequisites id =
+    Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.andThen
+            (\assembled ->
+                Maybe.map
+                    (\( resultsId, results ) ->
+                        let
+                            ( performedTests, completedTests ) =
+                                Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+
+                            updatedValue =
+                                (\value ->
+                                    let
+                                        -- Since lab results can be entered right away (at poit of care),
+                                        -- or at latter stage (after test was ordered at lab), we
+                                        -- update both performed and completed tests.
+                                        -- Since data structure is EverySet, it will not create duplicacies.
+                                        updatedPerformedTests =
+                                            EverySet.insert test performedTests
+
+                                        updatedCompletedTests =
+                                            EverySet.insert test completedTests
+
+                                        allLabsCompleted =
+                                            EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests
+
+                                        updatedTestsWithFollowUp =
+                                            -- Mark tests which results were entered by Lab Tech, and got
+                                            -- follow up questions that will have to be completed by nurse.
+                                            if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
+                                                Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
+                                                    |> Maybe.withDefault (Just <| EverySet.singleton test)
+
+                                            else
+                                                value.testsWithFollowUp
+
+                                        reviewState =
+                                            if isLabTech && isNothing value.reviewState && allLabsCompleted then
+                                                -- For lab technician, request review if all labs were
+                                                -- completed, and review state was not set previously.
+                                                Just LabsResultsReviewRequested
+
+                                            else if not isLabTech && allLabsCompleted then
+                                                -- For nurse, set review state to completed,
+                                                -- if all labs were completed.
+                                                Just LabsResultsReviewCompleted
+
+                                            else
+                                                value.reviewState
+
+                                        resolutionDate =
+                                            if not isLabTech && allLabsCompleted then
+                                                currentDate
+
+                                            else
+                                                value.resolutionDate
+                                    in
+                                    { value
+                                        | performedTests = updatedPerformedTests
+                                        , completedTests = updatedCompletedTests
+                                        , testsWithFollowUp = updatedTestsWithFollowUp
+                                        , reviewState = reviewState
+                                        , resolutionDate = resolutionDate
+                                    }
+                                )
+                                    results.value
+                        in
+                        [ savePrenatalLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                    )
+                    assembled.measurements.labsResults
+            )
+        |> Maybe.withDefault []
+
+
+generatePrenatalInitialPhaseCompletedMsgs :
+    NominalDate
+    -> Site
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalInitialPhaseCompletedMsgs currentDate site after id =
+    Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled_ ->
+                let
+                    -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                    -- we don't have it set at generated assembled data.
+                    -- Therefore, we update diagnoses manually and set them into data.
+                    encounterWithDiagnoses =
+                        (\encounter ->
+                            { encounter
+                                | diagnoses =
+                                    Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                            }
+                        )
+                            assembled_.encounter
+
+                    assembled =
+                        { assembled_ | encounter = encounterWithDiagnoses }
+
+                    ( _, pendingActivities ) =
+                        Pages.Prenatal.Encounter.Utils.getAllActivities assembled
+                            |> List.filter (Pages.Prenatal.Activity.Utils.expectActivity currentDate site assembled)
+                            |> List.partition (Pages.Prenatal.Activity.Utils.activityCompleted currentDate site assembled)
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <|
+                        UserPage <|
+                            ClinicalProgressReportPage
+                                (Backend.PrenatalEncounter.Model.InitiatorEncounterPage id)
+                                id
+                    ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []
+
+
+generatePrenatalRecurrentPhaseCompletedMsgs :
+    NominalDate
+    -> Bool
+    -> ModelIndexedDb
+    -> PrenatalEncounterId
+    -> List App.Model.Msg
+generatePrenatalRecurrentPhaseCompletedMsgs currentDate isLabTech after id =
+    if isLabTech then
+        []
+
+    else
+        Pages.Prenatal.Encounter.Utils.generateAssembledData id after
+            |> RemoteData.toMaybe
+            |> Maybe.andThen
+                (\assembled_ ->
+                    let
+                        -- Since diagnostics is performed at Backend.Update, and set using Msg,
+                        -- we don't have it set at generated assembled data.
+                        -- Therefore, we update diagnoses manually and set them into data.
+                        encounterWithDiagnoses =
+                            (\encounter ->
+                                { encounter
+                                    | diagnoses =
+                                        Pages.Prenatal.Activity.Utils.generatePrenatalDiagnosesForNurse currentDate assembled_
+                                }
+                            )
+                                assembled_.encounter
+
+                        assembled =
+                            { assembled_ | encounter = encounterWithDiagnoses }
+
+                        ( _, pendingActivities ) =
+                            Pages.Prenatal.RecurrentEncounter.Utils.getAllActivities isLabTech
+                                |> List.filter (Pages.Prenatal.RecurrentActivity.Utils.expectActivity currentDate isLabTech assembled)
+                                |> List.partition (Pages.Prenatal.RecurrentActivity.Utils.activityCompleted currentDate isLabTech assembled)
+                    in
+                    if List.isEmpty pendingActivities then
+                        Maybe.map
+                            (\( resultsId, results ) ->
+                                let
+                                    value =
+                                        results.value
+                                in
+                                [ savePrenatalLabsResultsMsg id
+                                    assembled.participant.person
+                                    (Just resultsId)
+                                    { value | resolutionDate = currentDate }
+                                , App.Model.SetActivePage <|
+                                    UserPage <|
+                                        ClinicalProgressReportPage
+                                            (Backend.PrenatalEncounter.Model.InitiatorRecurrentEncounterPage id)
+                                            id
+                                ]
+                            )
+                            assembled.measurements.labsResults
+
+                    else
+                        Nothing
+                )
             |> Maybe.withDefault []
+
+
+atPrenatalInitialPhase : Page -> Bool
+atPrenatalInitialPhase activePage =
+    case activePage of
+        UserPage (PrenatalEncounterPage _) ->
+            True
+
+        UserPage (PrenatalActivityPage _ _) ->
+            True
+
+        _ ->
+            False
+
+
+atPrenatalRecurrentPhase : Page -> Bool
+atPrenatalRecurrentPhase activePage =
+    case activePage of
+        UserPage (PrenatalRecurrentEncounterPage _) ->
+            True
+
+        UserPage (PrenatalRecurrentActivityPage _ _) ->
+            True
+
+        _ ->
+            False
+
+
+savePrenatalLabsResultsMsg :
+    PrenatalEncounterId
+    -> PersonId
+    -> Maybe PrenatalLabsResultsId
+    -> Backend.Measurement.Model.LabsResultsValue
+    -> App.Model.Msg
+savePrenatalLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
+    Backend.PrenatalEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue
+        |> Backend.Model.MsgPrenatalEncounter encounterId
+        |> App.Model.MsgIndexedDb
+
+
+generateNCDAssessmentMsgs :
+    NominalDate
+    -> Language
+    -> Page
+    -> ModelIndexedDb
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDAssessmentMsgs currentDate language activePage after id =
+    Maybe.map
+        (\assembledAfter ->
+            let
+                diagnosesBefore =
+                    -- At this stage new diagnoses were not updated yet, therefore,
+                    -- we can use the dignoses set for the encounter.
+                    assembledAfter.encounter.diagnoses
+
+                diagnosesAfter =
+                    Pages.NCD.Utils.generateNCDDiagnoses currentDate assembledAfter
+            in
+            if everySetsEqual diagnosesBefore diagnosesAfter then
+                []
+
+            else
+                [ Backend.NCDEncounter.Model.SetNCDDiagnoses diagnosesAfter
+                    |> Backend.Model.MsgNCDEncounter id
+                    |> App.Model.MsgIndexedDb
+                ]
+        )
+        (RemoteData.toMaybe <| Pages.NCD.Utils.generateAssembledData id after)
+        |> Maybe.withDefault []
+
+
+generateNCDLabsTestAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> Backend.Measurement.Model.TestExecutionNote
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDLabsTestAddedMsgs currentDate after test executionNote id =
+    Pages.NCD.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    testExecuted =
+                        testPerformedByExecutionNote executionNote
+                in
+                Maybe.map
+                    (\( resultsId, measurement ) ->
+                        let
+                            updatedValue =
+                                measurement.value
+                                    |> (\value ->
+                                            { value
+                                                | performedTests =
+                                                    if testExecuted then
+                                                        EverySet.insert test value.performedTests
+
+                                                    else
+                                                        EverySet.remove test value.performedTests
+
+                                                -- When we have universal form, it's possible to change if test is performed
+                                                -- at lab, or at point of care.
+                                                -- Therefore, we need to make sure that test does not appear as completed,
+                                                -- which can happen, when nurse switches from point of care to lab.
+                                                , completedTests = EverySet.remove test value.completedTests
+                                                , resolutionDate = Date.add Days labExpirationPeriod currentDate
+                                            }
+                                       )
+                        in
+                        [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                    )
+                    assembled.measurements.labsResults
+                    |> Maybe.withDefault
+                        (if testExecuted then
+                            let
+                                resultsValue =
+                                    Backend.Measurement.Model.LabsResultsValue
+                                        (EverySet.singleton test)
+                                        EverySet.empty
+                                        (Date.add Days labExpirationPeriod currentDate)
+                                        False
+                                        Nothing
+                                        Nothing
+                            in
+                            [ saveNCDLabsResultsMsg id assembled.participant.person Nothing resultsValue ]
+
+                         else
+                            []
+                        )
+            )
+        |> Maybe.withDefault []
+
+
+generateNCDLabsResultsAddedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> Backend.Measurement.Model.LaboratoryTest
+    -> NCDEncounterId
+    -> List App.Model.Msg
+generateNCDLabsResultsAddedMsgs currentDate after test id =
+    Pages.NCD.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.andThen
+            (\assembled ->
+                Maybe.map
+                    (\( resultsId, results ) ->
+                        if
+                            EverySet.member test results.value.completedTests
+                                && EverySet.member test results.value.performedTests
+                        then
+                            -- Do not update value if we have it set up properly already.
+                            []
+
+                        else
+                            let
+                                ( performedTests, completedTests ) =
+                                    Pages.GlobalCaseManagement.Utils.labsResultsTestData currentDate results
+
+                                updatedValue =
+                                    (\value ->
+                                        let
+                                            -- Since lab results can be entered right away (at poit of care),
+                                            -- or at latter stage (after test was ordered at lab), we
+                                            -- update both performed and completed tests.
+                                            -- Since data structure is EverySet, it will not create duplicacies.
+                                            updatedPerformedTests =
+                                                EverySet.insert test performedTests
+
+                                            updatedCompletedTests =
+                                                EverySet.insert test completedTests
+
+                                            resolutionDate =
+                                                -- When all performed tests are completed, and Next Steps are either
+                                                -- completed, or not required, setting today as resolution date.
+                                                if
+                                                    (EverySet.size updatedCompletedTests == EverySet.size updatedPerformedTests)
+                                                        && Pages.NCD.RecurrentActivity.Utils.activityCompleted
+                                                            currentDate
+                                                            assembled
+                                                            Backend.NCDActivity.Model.RecurrentNextSteps
+                                                then
+                                                    currentDate
+
+                                                else
+                                                    value.resolutionDate
+                                        in
+                                        { value
+                                            | performedTests = updatedPerformedTests
+                                            , completedTests = updatedCompletedTests
+                                            , resolutionDate = resolutionDate
+                                        }
+                                    )
+                                        results.value
+                            in
+                            [ saveNCDLabsResultsMsg id assembled.participant.person (Just resultsId) updatedValue ]
+                    )
+                    assembled.measurements.labsResults
+            )
+        |> Maybe.withDefault []
+
+
+saveNCDLabsResultsMsg :
+    NCDEncounterId
+    -> PersonId
+    -> Maybe NCDLabsResultsId
+    -> Backend.Measurement.Model.LabsResultsValue
+    -> App.Model.Msg
+saveNCDLabsResultsMsg encounterId personId labsResultsId labsResultsValue =
+    Backend.NCDEncounter.Model.SaveLabsResults personId labsResultsId labsResultsValue
+        |> Backend.Model.MsgNCDEncounter encounterId
+        |> App.Model.MsgIndexedDb
 
 
 generateNutritionAssessmentIndividualMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> NutritionEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after id =
+generateNutritionAssessmentIndividualMsgs currentDate zscores features isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                    Pages.NutritionActivity.Utils.mandatoryActivitiesCompleted
+                    Pages.Nutrition.Activity.Utils.mandatoryActivitiesCompleted
                         currentDate
                         zscores
+                        features
                         assembledAfter.person
                         isChw
                         assembledAfter
@@ -3696,11 +7467,11 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
             else
                 let
                     assessmentBefore =
-                        Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledBefore
+                        Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledBefore
                             |> nutritionAssessmentForBackend
 
                     assessmentAfter =
-                        Pages.NutritionActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                        Pages.Nutrition.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
 
                     assessmentForBackend =
                         nutritionAssessmentForBackend assessmentAfter
@@ -3760,19 +7531,20 @@ generateNutritionAssessmentIndividualMsgs currentDate zscores isChw before after
                              App.Model.SetActivePage (UserPage (NutritionActivityPage id Backend.NutritionActivity.Model.NextSteps))
 
                            -- Show warning popup with new assesment.
-                           , Pages.NutritionActivity.Model.SetWarningPopupState assessmentAfter
+                           , Pages.Nutrition.Activity.Model.SetWarningPopupState assessmentAfter
                                 |> App.Model.MsgPageNutritionActivity id Backend.NutritionActivity.Model.NextSteps
                                 |> App.Model.MsgLoggedIn
                            ]
         )
-        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id before)
-        (RemoteData.toMaybe <| Pages.NutritionEncounter.Utils.generateAssembledData id after)
+        (RemoteData.toMaybe <| Pages.Nutrition.Encounter.Utils.generateAssembledData id before)
+        (RemoteData.toMaybe <| Pages.Nutrition.Encounter.Utils.generateAssembledData id after)
         |> Maybe.withDefault []
 
 
 generateNutritionAssessmentGroupMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> EverySet SiteFeature
     -> Bool
     -> PersonId
     -> SessionId
@@ -3780,7 +7552,7 @@ generateNutritionAssessmentGroupMsgs :
     -> (ChildMeasurements -> ChildMeasurements)
     -> ModelIndexedDb
     -> List App.Model.Msg
-generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId activePage updateFunc db =
+generateNutritionAssessmentGroupMsgs currentDate zscores features isChw childId sessionId activePage updateFunc db =
     Dict.get sessionId db.editableSessions
         |> Maybe.andThen RemoteData.toMaybe
         |> Maybe.map
@@ -3794,6 +7566,7 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                         Activity.Utils.mandatoryActivitiesCompleted
                             currentDate
                             zscores
+                            features
                             offlineSessionAfter
                             childId
                             isChw
@@ -3847,15 +7620,15 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 mapMeasurementData .followUp measurements
                                                     |> .current
 
-                                            followUpId =
-                                                Maybe.map Tuple.first followUp
-
                                             followUpValue =
                                                 getMeasurementValueFunc followUp
                                         in
                                         Maybe.map
                                             (\value ->
                                                 let
+                                                    followUpId =
+                                                        Maybe.map Tuple.first followUp
+
                                                     updatedValue =
                                                         { value | assesment = assessmentForBackend }
                                                 in
@@ -3879,15 +7652,15 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                                 mapMeasurementData .nutrition measurements
                                                     |> .current
 
-                                            nutritionId =
-                                                Maybe.map Tuple.first nutrition
-
                                             nutritionValue =
                                                 getMeasurementValueFunc nutrition
                                         in
                                         Maybe.map
                                             (\value ->
                                                 let
+                                                    nutritionId =
+                                                        Maybe.map Tuple.first nutrition
+
                                                     updatedValue =
                                                         { value | assesment = assessmentForBackend }
                                                 in
@@ -3900,14 +7673,6 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                                             nutritionValue
                                             |> Maybe.withDefault []
                                     )
-
-                        personByPersonMsgs =
-                            updateAssesmentMsgs
-                                ++ [ Pages.Participant.Model.SetWarningPopupState assessmentAfter
-                                        |> Pages.Session.Model.MsgChild childId
-                                        |> App.Model.MsgPageSession sessionId
-                                        |> App.Model.MsgLoggedIn
-                                   ]
 
                         activityByActivityMsgs childActivity =
                             updateAssesmentMsgs
@@ -3927,7 +7692,14 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
                     else
                         case activePage of
                             UserPage (SessionPage _ (ChildPage _)) ->
-                                personByPersonMsgs
+                                updateAssesmentMsgs
+                                    ++ [ Pages.Participant.Model.DialogWarning assessmentAfter
+                                            |> Just
+                                            |> Pages.Participant.Model.SetDialogState
+                                            |> Pages.Session.Model.MsgChild childId
+                                            |> App.Model.MsgPageSession sessionId
+                                            |> App.Model.MsgLoggedIn
+                                       ]
 
                             UserPage (SessionPage _ (ActivityPage (ChildActivity Muac))) ->
                                 activityByActivityMsgs Muac
@@ -3947,21 +7719,20 @@ generateNutritionAssessmentGroupMsgs currentDate zscores isChw childId sessionId
 generateNutritionAssessmentWellChildlMsgs :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> ModelIndexedDb
     -> ModelIndexedDb
     -> WellChildEncounterId
     -> List App.Model.Msg
-generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after id =
+generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before after id =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             let
                 mandatoryActivitiesCompleted =
-                    Pages.WellChildActivity.Utils.mandatoryNutritionAssessmentTasksCompleted
+                    Pages.WellChild.Activity.Utils.mandatoryNutritionAssessmentTasksCompleted
                         currentDate
-                        isChw
                         assembledAfter
-                        after
             in
             if not mandatoryActivitiesCompleted then
                 -- Assement is done only when all mandatory measurements were recorded.
@@ -3970,11 +7741,11 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
             else
                 let
                     assessmentBefore =
-                        Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
+                        Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores before assembledBefore
                             |> nutritionAssessmentForBackend
 
                     assessmentForBackend =
-                        Pages.WellChildActivity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
+                        Pages.WellChild.Activity.Utils.generateNutritionAssessment currentDate zscores after assembledAfter
                             |> nutritionAssessmentForBackend
 
                     -- Update the assesment field on Follow Up measurement (if it exists already).
@@ -4020,23 +7791,23 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores isChw before after
                 else
                     []
         )
-        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id before)
-        (RemoteData.toMaybe <| Pages.WellChildEncounter.Utils.generateAssembledData id after)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData site id before)
+        (RemoteData.toMaybe <| Pages.WellChild.Encounter.Utils.generateAssembledData site id after)
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgs : NominalDate -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
-generateSuspectedDiagnosisMsgs currentDate isChw before after id person =
+generateSuspectedDiagnosisMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
             if assembledAfter.initialEncounter then
                 generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter
 
             else
-                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw assembledAfter
+                generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw assembledAfter
         )
-        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw before)
-        (RemoteData.toMaybe <| Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw after)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw before)
+        (RemoteData.toMaybe <| Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw after)
         |> Maybe.withDefault []
 
 
@@ -4045,8 +7816,8 @@ generateSuspectedDiagnosisMsgsFirstEncounter :
     -> Bool
     -> AcuteIllnessEncounterId
     -> Person
-    -> Pages.AcuteIllnessEncounter.Model.AssembledData
-    -> Pages.AcuteIllnessEncounter.Model.AssembledData
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
     -> List App.Model.Msg
 generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembledBefore assembledAfter =
     let
@@ -4059,13 +7830,13 @@ generateSuspectedDiagnosisMsgsFirstEncounter currentDate isChw id person assembl
         msgsForDiagnosisUpdate =
             case diagnosisAfterChange of
                 Just newDiagnosis ->
-                    updateDiagnosisMsg id newDiagnosis
+                    updateAcuteIllnessDiagnosisMsg id newDiagnosis
                         :: (resolveNextStepFirstEncounter currentDate isChw assembledAfter
                                 |> generateMsgsForNewDiagnosis currentDate isChw id newDiagnosis
                            )
 
                 Nothing ->
-                    [ updateDiagnosisMsg id NoAcuteIllnessDiagnosis ]
+                    [ updateAcuteIllnessDiagnosisMsg id NoAcuteIllnessDiagnosis ]
     in
     if diagnosisBeforeChange /= diagnosisAfterChange then
         msgsForDiagnosisUpdate
@@ -4079,7 +7850,7 @@ generateMsgsForNewDiagnosis :
     -> Bool
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosis currentDate isChw id diagnosis nextStep =
     if isChw then
@@ -4093,7 +7864,7 @@ generateMsgsForNewDiagnosisForNurse :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
     case diagnosis of
@@ -4101,12 +7872,12 @@ generateMsgsForNewDiagnosisForNurse currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness Laboratory activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessLaboratory))
             , -- Focus on Covid testing task.
-              Pages.AcuteIllnessActivity.Model.SetActiveLaboratoryTask Pages.AcuteIllnessActivity.Types.LaboratoryCovidTesting
+              Pages.AcuteIllness.Activity.Model.SetActiveLaboratoryTask Pages.AcuteIllness.Activity.Types.LaboratoryCovidTesting
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessLaboratory
                 |> App.Model.MsgLoggedIn
             ]
@@ -4119,7 +7890,7 @@ generateCustomMsgsForNewDiagnosis :
     NominalDate
     -> AcuteIllnessEncounterId
     -> AcuteIllnessDiagnosis
-    -> Maybe Pages.AcuteIllnessActivity.Types.NextStepsTask
+    -> Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask
     -> List App.Model.Msg
 generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
     case nextStep of
@@ -4127,12 +7898,12 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
             [ -- Navigate to Acute Ilness NextSteps activty page.
               App.Model.SetActivePage (UserPage (AcuteIllnessActivityPage id AcuteIllnessNextSteps))
             , -- Focus on first task on that page.
-              Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask step
+              Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask step
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            , Pages.AcuteIllnessActivity.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Activity.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessActivity id AcuteIllnessNextSteps
                 |> App.Model.MsgLoggedIn
             ]
@@ -4142,30 +7913,35 @@ generateCustomMsgsForNewDiagnosis currentDate id diagnosis nextStep =
               App.Model.SetActivePage (UserPage (AcuteIllnessEncounterPage id))
 
             -- Focus on 'Todo' tab.
-            , Pages.AcuteIllnessEncounter.Model.SetSelectedTab Pages.AcuteIllnessEncounter.Model.Pending
+            , Pages.AcuteIllness.Encounter.Model.SetSelectedTab Pages.AcuteIllness.Encounter.Model.Pending
                 |> App.Model.MsgPageAcuteIllnessEncounter id
                 |> App.Model.MsgLoggedIn
 
             -- Show warning popup with new diagnosis.
-            , Pages.AcuteIllnessEncounter.Model.SetWarningPopupState (Just diagnosis)
+            , Pages.AcuteIllness.Encounter.Model.SetWarningPopupState (Just diagnosis)
                 |> App.Model.MsgPageAcuteIllnessEncounter id
                 |> App.Model.MsgLoggedIn
             ]
 
 
-generateSuspectedDiagnosisMsgsSubsequentEncounter : NominalDate -> Bool -> Pages.AcuteIllnessEncounter.Model.AssembledData -> List App.Model.Msg
-generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
+generateSuspectedDiagnosisMsgsSubsequentEncounter :
+    NominalDate
+    -> EverySet SiteFeature
+    -> Bool
+    -> Pages.AcuteIllness.Encounter.Model.AssembledData
+    -> List App.Model.Msg
+generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate features isChw data =
     if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw data then
         let
             diagnosisByCurrentEncounterMeasurements =
-                resolveAcuteIllnessDiagnosis currentDate isChw data
+                resolveAcuteIllnessDiagnosis currentDate features isChw data
                     |> Maybe.withDefault NoAcuteIllnessDiagnosis
 
             setDiagnosisMsg =
                 -- We have an update to diagnosis based on current measurements,
                 -- and it is not yet set for the encounter.
                 if data.encounter.diagnosis == NoAcuteIllnessDiagnosis && diagnosisByCurrentEncounterMeasurements /= NoAcuteIllnessDiagnosis then
-                    [ updateDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
+                    [ updateAcuteIllnessDiagnosisMsg data.id diagnosisByCurrentEncounterMeasurements ]
 
                 else
                     []
@@ -4173,7 +7949,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
             setActiveTaskMsg =
                 resolveNextStepSubsequentEncounter currentDate isChw data
                     |> Maybe.map
-                        (Pages.AcuteIllnessActivity.Model.SetActiveNextStepsTask
+                        (Pages.AcuteIllness.Activity.Model.SetActiveNextStepsTask
                             >> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
                             >> App.Model.MsgLoggedIn
                             >> List.singleton
@@ -4185,7 +7961,7 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
 
         -- Show warning popup with new diagnosis.
         , Maybe.map Tuple.second data.diagnosis
-            |> Pages.AcuteIllnessActivity.Model.SetWarningPopupState
+            |> Pages.AcuteIllness.Activity.Model.SetWarningPopupState
             |> App.Model.MsgPageAcuteIllnessActivity data.id AcuteIllnessNextSteps
             |> App.Model.MsgLoggedIn
         ]
@@ -4198,34 +7974,35 @@ generateSuspectedDiagnosisMsgsSubsequentEncounter currentDate isChw data =
         []
 
 
-updateDiagnosisMsg : AcuteIllnessEncounterId -> AcuteIllnessDiagnosis -> App.Model.Msg
-updateDiagnosisMsg id diagnosis =
+updateAcuteIllnessDiagnosisMsg : AcuteIllnessEncounterId -> AcuteIllnessDiagnosis -> App.Model.Msg
+updateAcuteIllnessDiagnosisMsg id diagnosis =
     Backend.AcuteIllnessEncounter.Model.SetAcuteIllnessDiagnosis diagnosis
         |> Backend.Model.MsgAcuteIllnessEncounter id
         |> App.Model.MsgIndexedDb
 
 
-generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
-generateAcuteIllnessAssesmentCompletedMsgs currentDate isChw after id =
-    Pages.AcuteIllnessEncounter.Utils.generateAssembledData currentDate id isChw after
+generateAcuteIllnessAssesmentCompletedMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> AcuteIllnessEncounterId -> List App.Model.Msg
+generateAcuteIllnessAssesmentCompletedMsgs currentDate features isChw after id =
+    Pages.AcuteIllness.Encounter.Utils.generateAssembledData currentDate features id isChw after
         |> RemoteData.toMaybe
         |> Maybe.map
             (\assembled ->
-                let
-                    navigateToProgressReportMsg =
-                        App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Model.InitiatorEncounterPage id))
-                in
                 if not <| activityCompleted currentDate isChw assembled AcuteIllnessNextSteps then
                     []
 
-                else if assembled.initialEncounter then
-                    [ navigateToProgressReportMsg ]
-
-                else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
-                    [ navigateToProgressReportMsg ]
-
                 else
-                    [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
+                    let
+                        navigateToProgressReportMsg =
+                            App.Model.SetActivePage (UserPage (AcuteIllnessProgressReportPage Backend.AcuteIllnessEncounter.Types.InitiatorEncounterPage id))
+                    in
+                    if assembled.initialEncounter then
+                        [ navigateToProgressReportMsg ]
+
+                    else if noImprovementOnSubsequentVisit currentDate assembled.person assembled.measurements then
+                        [ navigateToProgressReportMsg ]
+
+                    else
+                        [ App.Model.SetActivePage (UserPage (AcuteIllnessOutcomePage assembled.encounter.participant)) ]
             )
         |> Maybe.withDefault []
 
@@ -4234,16 +8011,36 @@ generateWellChildDangerSignsAlertMsgs : NominalDate -> Maybe WellChildEncounterI
 generateWellChildDangerSignsAlertMsgs currentDate maybeId =
     Maybe.map
         (\id ->
-            [ -- Navigate to Well Child encouner page, because that's where we show alert popup.
+            [ -- Navigate to Well Child encounter page, because that's where we show alert popup.
               App.Model.SetActivePage (UserPage (WellChildEncounterPage id))
 
             -- Show danger signs alert popup.
-            , Pages.WellChildEncounter.Model.SetWarningPopupState (Just Pages.WellChildEncounter.Model.PopupDangerSigns)
+            , Pages.WellChild.Encounter.Model.DialogWarning Pages.WellChild.Encounter.Model.PopupDangerSigns
+                |> Just
+                |> Pages.WellChild.Encounter.Model.SetDialogState
                 |> App.Model.MsgPageWellChildEncounter id
                 |> App.Model.MsgLoggedIn
             ]
         )
         maybeId
+        |> Maybe.withDefault []
+
+
+generateChildScoreboardAssesmentCompletedMsgs : NominalDate -> Site -> ModelIndexedDb -> ChildScoreboardEncounterId -> List App.Model.Msg
+generateChildScoreboardAssesmentCompletedMsgs currentDate site after id =
+    Pages.ChildScoreboard.Encounter.Utils.generateAssembledData site id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                if
+                    List.all (Pages.ChildScoreboard.Activity.Utils.activityCompleted currentDate site assembled after)
+                        Backend.ChildScoreboardActivity.Utils.allActivities
+                then
+                    [ App.Model.SetActivePage (UserPage (ChildScoreboardProgressReportPage id)) ]
+
+                else
+                    []
+            )
         |> Maybe.withDefault []
 
 
@@ -4273,10 +8070,16 @@ makeEditableSession sessionId db =
             hasNoSuccessValues db.childMeasurements
 
         noPeopleLoaded =
-            db.people
-                |> Dict.values
-                |> List.filter (\v -> RemoteData.isSuccess v)
-                |> List.isEmpty
+            -- There are groups that got all participants graduated,
+            -- which causes noone to be loaded.
+            -- In such cases, Attendance page shows constant spinner.
+            -- Therefore, we will not raise red flag when no people
+            -- need loading.
+            (Dict.size db.people > 0)
+                && (Dict.values db.people
+                        |> List.filter (\v -> RemoteData.isSuccess v)
+                        |> List.isEmpty
+                   )
     in
     -- Make sure we don't still have measurements being lazy loaded, and at least
     -- some of the people have loaded. Otherwise, allow rebuilding the `EditableSession`.
@@ -4371,19 +8174,27 @@ makeEditableSession sessionId db =
 for our UI, when we're focused on participants. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByParticipant : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByParticipant
-summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
+summarizeByParticipant :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> LocalData CheckedIn
+    -> Bool
+    -> ModelIndexedDb
+    -> LocalData SummaryByParticipant
+summarizeByParticipant currentDate zscores features session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
                 children =
                     Dict.map
-                        (\childId _ -> summarizeChildParticipant currentDate zscores childId session isChw db)
+                        (\childId _ -> summarizeChildParticipant currentDate zscores features childId session isChw db)
                         checkedIn.children
 
                 mothers =
                     Dict.map
-                        (\motherId _ -> summarizeMotherParticipant currentDate zscores motherId session isChw db)
+                        (\motherId _ -> summarizeMotherParticipant currentDate zscores features motherId session isChw db)
                         checkedIn.mothers
             in
             { children = children
@@ -4397,8 +8208,16 @@ summarizeByParticipant currentDate zscores session checkedIn_ isChw db =
 for our UI, when we're focused on activities. This only considers children &
 mothers who are checked in to the session.
 -}
-summarizeByActivity : NominalDate -> ZScore.Model.Model -> OfflineSession -> LocalData CheckedIn -> Bool -> ModelIndexedDb -> LocalData SummaryByActivity
-summarizeByActivity currentDate zscores session checkedIn_ isChw db =
+summarizeByActivity :
+    NominalDate
+    -> ZScore.Model.Model
+    -> EverySet SiteFeature
+    -> OfflineSession
+    -> LocalData CheckedIn
+    -> Bool
+    -> ModelIndexedDb
+    -> LocalData SummaryByActivity
+summarizeByActivity currentDate zscores features session checkedIn_ isChw db =
     LocalData.map
         (\checkedIn ->
             let
@@ -4407,7 +8226,7 @@ summarizeByActivity currentDate zscores session checkedIn_ isChw db =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeChildActivity currentDate zscores activity session isChw db checkedIn
+                                , summarizeChildActivity currentDate zscores features activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -4417,7 +8236,7 @@ summarizeByActivity currentDate zscores session checkedIn_ isChw db =
                         |> List.map
                             (\activity ->
                                 ( activity
-                                , summarizeMotherActivity currentDate zscores activity session isChw db checkedIn
+                                , summarizeMotherActivity currentDate zscores features activity session isChw db checkedIn
                                 )
                             )
                         |> Dict.fromList
@@ -4572,3 +8391,26 @@ generateInitialComputedDashboard currentDate healthCenterId villageId statsRaw d
             ( programTypeFilter, selectedVillage )
             (Pages.Dashboard.Utils.generateAssembledData currentDate healthCenterId statsRaw db programTypeFilter selectedVillage)
     }
+
+
+generateTuberculosisEncounterCompletedMsgs :
+    NominalDate
+    -> ModelIndexedDb
+    -> TuberculosisEncounterId
+    -> List App.Model.Msg
+generateTuberculosisEncounterCompletedMsgs currentDate after id =
+    Pages.Tuberculosis.Encounter.Utils.generateAssembledData id after
+        |> RemoteData.toMaybe
+        |> Maybe.map
+            (\assembled ->
+                let
+                    ( _, pendingActivities ) =
+                        Pages.Tuberculosis.Encounter.Utils.partitionActivities currentDate assembled
+                in
+                if List.isEmpty pendingActivities then
+                    [ App.Model.SetActivePage <| UserPage <| TuberculosisProgressReportPage id ]
+
+                else
+                    []
+            )
+        |> Maybe.withDefault []

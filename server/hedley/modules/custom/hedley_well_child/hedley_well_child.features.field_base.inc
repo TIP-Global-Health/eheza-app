@@ -31,6 +31,7 @@ function hedley_well_child_field_default_field_bases() {
         'dose-2' => 'Dose 2',
         'dose-3' => 'Dose 3',
         'dose-4' => 'Dose 4',
+        'dose-5' => 'Dose 5',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -96,6 +97,115 @@ function hedley_well_child_field_default_field_bases() {
         'patient-unable-to-afford' => 'Not administered - Patient unable to afford',
         'childs-condition' => 'Not administered - Childs condition',
         'other' => 'Not administered - Other',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_apgar_five_min'.
+  $field_bases['field_apgar_five_min'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_apgar_five_min',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_apgar_one_min'.
+  $field_bases['field_apgar_one_min'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_apgar_one_min',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(
+      'decimal_separator' => '.',
+    ),
+    'translatable' => 0,
+    'type' => 'number_float',
+  );
+
+  // Exported field_base: 'field_asap_immunisation_date'.
+  $field_bases['field_asap_immunisation_date'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_asap_immunisation_date',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'date',
+    'settings' => array(
+      'granularity' => array(
+        'day' => 'day',
+        'hour' => 0,
+        'minute' => 0,
+        'month' => 'month',
+        'second' => 0,
+        'year' => 'year',
+      ),
+      'timezone_db' => '',
+      'todate' => '',
+      'tz_handling' => 'none',
+    ),
+    'translatable' => 0,
+    'type' => 'datetime',
+  );
+
+  // Exported field_base: 'field_birth_defects'.
+  $field_bases['field_birth_defects'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_birth_defects',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'birth-injury' => 'Birth Injury',
+        'cleft-lip-with-cleft-palate' => 'Cleft Lip With Cleft Palate',
+        'cleft-palate' => 'Cleft Palate',
+        'club-foot' => 'Club Foot',
+        'macrocephaly' => 'Macrocephaly',
+        'gastroschisis' => 'Gastroschisis',
+        'hearing-loss' => 'Hearing Loss',
+        'undescended-testes' => 'Undescended Testes',
+        'hypospadias' => 'Hypospadias',
+        'inguinal-hernia' => 'Inguinal Hernia',
+        'microcephaly' => 'Microcephaly',
+        'neural-tubes' => 'Neural Tubes',
+        'down-syndrome' => 'Down Syndrome',
+        'congenital-heart' => 'Congenital Heart',
+        'ventrical-septal' => 'Ventrical Septal',
+        'pulmonary-valve-atresia-and-stenosis' => 'Pulmonary Valve Atresia And Stenosis',
+        'none' => 'None',
       ),
       'allowed_values_function' => '',
     ),
@@ -282,6 +392,33 @@ function hedley_well_child_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_pregnancy_summary_signs'.
+  $field_bases['field_pregnancy_summary_signs'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_pregnancy_summary_signs',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'apgar-scores' => 'Apgar Scores',
+        'birth-length' => 'Birth Length',
+        'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_well_child_encounter'.
   $field_bases['field_well_child_encounter'] = array(
     'active' => 1,
@@ -334,6 +471,7 @@ function hedley_well_child_field_default_field_bases() {
     'settings' => array(
       'allowed_values' => array(
         'pediatric-care' => 'Pediatric Care',
+        'pediatric-care-chw' => 'Pediatric Care for CHW',
         'newborn-exam' => 'Newborn Exam',
       ),
       'allowed_values_function' => '',

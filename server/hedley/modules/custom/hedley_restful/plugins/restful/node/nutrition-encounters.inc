@@ -12,6 +12,6 @@ $plugin = array(
   'entity_type' => 'node',
   'bundle' => 'nutrition_encounter',
   'description' => t('Exports the Nutrition Encounter bundle.'),
-  'class' => 'HedleyRestfulIndividualEncounter',
+  'class' => 'HedleyRestfulNutritionEncounter',
   'authentication_types' => TRUE,
 );

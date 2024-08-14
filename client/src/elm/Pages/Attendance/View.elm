@@ -10,36 +10,23 @@ at a session.
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Person.Model exposing (Initiator(..), Person)
 import Backend.Session.Model exposing (EditableSession)
 import Backend.Session.Utils exposing (getChildren, getMotherMeasurementData)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
-import LocalData exposing (LocalData(..))
+import Html.Events exposing (onClick)
+import LocalData
 import Pages.Attendance.Model exposing (..)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (backFromSessionPage, matchFilter, matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
+import Pages.Utils exposing (matchMotherAndHerChildren, normalizeFilter, viewNameFilter)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (thumbnailImage)
 
 
-view : Language -> Nurse -> ( SessionId, EditableSession ) -> Model -> Html Msg
-view language nurse ( sessionId, session ) model =
+view : Language -> Bool -> ( SessionId, EditableSession ) -> Model -> Html Msg
+view language isChw ( sessionId, session ) model =
     let
-        filter =
-            normalizeFilter model.filter
-
-        matches =
-            if String.isEmpty filter then
-                \_ _ ->
-                    -- No input entered, so show all values.
-                    True
-
-            else
-                matchMotherAndHerChildren filter session.offlineSession
-
         mothers =
             if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
                 []
@@ -52,6 +39,18 @@ view language nurse ( sessionId, session ) model =
 
             else
                 let
+                    filter =
+                        normalizeFilter model.filter
+
+                    matches =
+                        if String.isEmpty filter then
+                            \_ _ ->
+                                -- No input entered, so show all values.
+                                True
+
+                        else
+                            matchMotherAndHerChildren filter session.offlineSession
+
                     matching =
                         Dict.filter matches session.offlineSession.mothers
                 in
@@ -64,7 +63,11 @@ view language nurse ( sessionId, session ) model =
                         |> Dict.values
 
         goBackPage =
-            backFromSessionPage nurse session.offlineSession
+            if isChw then
+                UserPage GroupEncounterTypesPage
+
+            else
+                UserPage ClinicsPage
     in
     div [ class "wrap wrap-alt-2 page-attendance" ]
         [ div
@@ -72,13 +75,11 @@ view language nurse ( sessionId, session ) model =
             [ h1
                 [ class "ui header" ]
                 [ text <| translate language Translate.Attendance ]
-            , a
+            , span
                 [ class "link-back"
                 , onClick <| SetActivePage goBackPage
                 ]
-                [ span [ class "icon-back" ] []
-                , span [] []
-                ]
+                [ span [ class "icon-back" ] [] ]
             , ul [ class "links-head" ]
                 [ li
                     [ class "active" ]

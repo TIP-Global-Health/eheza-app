@@ -67,6 +67,7 @@
                 dbSync[table.name] = table;
             });
 
+            // This hook is activated as a result of new content being created on device.
             dbSync.shards.hook('creating', function (primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (typeof obj.label == 'string') {
@@ -75,6 +76,7 @@
               }
             });
 
+            // This hook is activated as a result of content being edited on device.
             dbSync.shards.hook('updating', function (mods, primKey, obj, trans) {
               if (obj.type === 'person') {
                 if (mods.hasOwnProperty("label")) {
@@ -122,8 +124,26 @@
                 else if (type === 'well-child-measurements') {
                     return viewMeasurements('well_child_encounter', uuid);
                 }
+                else if (type === 'ncd-measurements') {
+                    return viewMeasurements('ncd_encounter', uuid);
+                }
+                else if (type === 'child-scoreboard-measurements') {
+                  return viewMeasurements('child_scoreboard_encounter', uuid);
+                }
+                else if (type === 'tuberculosis-measurements') {
+                  return viewMeasurements('tuberculosis_encounter', uuid);
+                }
+                else if (type === 'hiv-measurements') {
+                    return viewMeasurements('hiv_encounter', uuid);
+                }
                 else if (type === 'follow-up-measurements') {
                     return viewFollowUpMeasurements(uuid);
+                }
+                else if (type === 'stock-management-measurements') {
+                    return viewStockManagementMeasurements(uuid);
+                }
+                else if (type === 'pregnancy-by-newborn') {
+                    return viewMeasurements('newborn', uuid);
                 }
                 else {
                     return view(type, uuid);
@@ -141,8 +161,10 @@
 
         if (event.request.method === 'PUT') {
             if (uuid) {
-                return putNode(event.request, type, uuid);
+                return patchNode(event.request, type, uuid);
             }
+
+            return postNode(event.request, type);
         }
 
         if (event.request.method === 'POST') {
@@ -214,41 +236,6 @@
         }).catch(sendErrorResponses);
     }
 
-    function putNode (request, type, uuid) {
-        return dbSync.open().catch(databaseError).then(function () {
-            return getTableForType(type).then(function (table) {
-                return request.json().catch(jsonError).then(function (json) {
-                    json.uuid = uuid;
-                    json.type = type;
-
-                    return table.put(json).catch(databaseError).then(function () {
-                        return sendRevisedNode(table, uuid).then(function () {
-                            // For hooks to be able to work, we need to declare the
-                            // tables that may be altered due to a change. In this case
-                            // We want to allow adding pending upload photos.
-                            // See for example dbSync.nodeChanges.hook().
-                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
-                                var body = JSON.stringify({
-                                    data: [json]
-                                });
-
-                                var response = new Response(body, {
-                                    status: 200,
-                                    statusText: 'OK',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    }
-                                });
-
-                                return Promise.resolve(response);
-                            });
-                        });
-                    });
-                });
-            });
-        }).catch(sendErrorResponses);
-    }
-
     function patchNode (request, type, uuid) {
         return dbSync.open().catch(databaseError).then(function () {
             return getTableForType(type).then(function (table) {
@@ -279,7 +266,9 @@
                                             uuid: uuid,
                                             method: 'PATCH',
                                             data: json,
-                                            timestamp: Date.now()
+                                            timestamp: Date.now(),
+                                            // Mark entity as not synced.
+                                            isSynced: 0
                                         };
 
                                         var changeTable = dbSync.nodeChanges;
@@ -299,8 +288,21 @@
                                         }
 
                                         return addShard.then(function () {
-                                            change.isSynced = 0;
-                                            return changeTable.add(change).then(function (localId) {
+                                            return changeTable.add(change).catch(function (err) {
+                                                // If there was a failure, we try again, assuming it
+                                                // may have been a glitch. If operation fails again,
+                                                // we log error with Rollbar.
+                                                return changeTable.add(change).catch(function (err) {
+                                                    var reject = new Response(body, {
+                                                        status: 400,
+                                                        statusText: 'Failure: PATCH at changes table'
+                                                    });
+
+                                                    return Promise.resolve(reject);
+                                                }).then(function (localId) {
+                                                    return Promise.resolve(response);
+                                                });
+                                            }).then(function (localId) {
                                                 return Promise.resolve(response);
                                             });
                                         });
@@ -375,7 +377,21 @@
                                               change.shard = json.shard;
                                           }
 
-                                          return changeTable.add(change).then(function (localId) {
+                                          return changeTable.add(change).catch(function (err) {
+                                              // If there was a failure, we try again, assuming it
+                                              // may have been a glitch. If operation fails again,
+                                              // we log error with Rollbar.
+                                              return changeTable.add(change).catch(function (err) {
+                                                  var reject = new Response(body, {
+                                                      status: 400,
+                                                      statusText: 'Failure: POST at changes table'
+                                                  });
+
+                                                  return Promise.resolve(reject);
+                                              }).then(function (localId) {
+                                                  return Promise.resolve(response);
+                                              });
+                                          }).then(function (localId) {
                                               return Promise.resolve(response);
                                           });
                                     });
@@ -440,6 +456,7 @@
       'family_planning',
       'follow_up',
       'group_health_education',
+      'group_ncda',
       'group_send_to_hc',
       'height',
       'lactation',
@@ -499,12 +516,32 @@
                     else if (key === 'well_child_encounter') {
                         target = node.well_child_encounter;
                     }
+                    else if (key === 'ncd_encounter') {
+                        target = node.ncd_encounter;
+                    }
+                    else if (key === 'child_scoreboard_encounter') {
+                        target = node.child_scoreboard_encounter;
+                    }
+                    else if (key === 'tuberculosis_encounter') {
+                        target = node.tuberculosis_encounter;
+                    }
+                    else if (key === 'hiv_encounter') {
+                        target = node.hiv_encounter;
+                    }
+                    else if (key === 'newborn') {
+                        target = node.newborn;
+                    }
 
                     data[target] = data[target] || {};
                     if (data[target][node.type]) {
                         data[target][node.type].push(node);
+                        if (key !== 'person') {
+                          // Sorting DESC, so that node with highest vid
+                          // is selected first, as it was edited last, and
+                          // got most recent data.
+                          data[target][node.type].sort((a,b) => (b.vid - a.vid));
+                        }
                     } else {
-                        data[target] = data[target] || {};
                         data[target][node.type] = [node];
                     }
                 });
@@ -535,18 +572,195 @@
     }
 
     // List with all types of Follow Up measurements.
+    // Follow Ups get resolved using date_concluded field.
     var followUpMeasurementsTypes = [
       'acute_illness_follow_up',
       'follow_up',
       'nutrition_follow_up',
       'prenatal_follow_up',
       'well_child_follow_up',
-      'acute_illness_trace_contact'
+      'tuberculosis_follow_up',
+      'hiv_follow_up',
+      'acute_illness_trace_contact',
+      'prenatal_labs_results',
+      'ncd_labs_results',
+      'well_child_next_visit'
     ];
 
+    // These are types of follow-ups that need to be loaded, even if they
+    // were resolved during period of past 6 months.
+    // This is required to present data at Dashboard statistics.
+    var followUpMeasurementsTypesUsedByDashboard = [
+      'acute_illness_follow_up',
+      'follow_up',
+      'nutrition_follow_up',
+      'prenatal_follow_up',
+      'well_child_follow_up',
+    ];
+
+    // These are HIV tests, where HIV positive patient can be diagnosed.
+    // We need them since HIV followup at case management should appear
+    // when patient was diagniosed with HIV when taking a test, and did not
+    // have HIV encounter after.
+    var hivTestTypes = [
+      'ncd_hiv_test',
+      'prenatal_hiv_test',
+    ]
+
     function viewFollowUpMeasurements (shard) {
+        // Load all types of follow up measurements, and HIV test results
+        // that belong to provided healh center.
+        var typesToLoad = followUpMeasurementsTypes.concat(hivTestTypes);
+        var query = dbSync.shards.where('type').anyOf(typesToLoad).and(function (item) {
+          return item.shard === shard;
+        });
+
+        // Build an empty list of measurements, so we return some value, even
+        // if no measurements were ever taken.
+        var data = {};
+        // Decoder is expecting to have the health center UUID.
+        data.uuid = shard;
+
+        return query.toArray().catch(databaseError).then(function (nodes) {
+            if (nodes) {
+                var today = new Date();
+                var patientsWithHIVFollowUps = [];
+                nodes.forEach(function (node) {
+                    // Do not process nodes that are not follow ups.
+                    if (hivTestTypes.includes(node.type)) {
+                      return;
+                    }
+
+                    // Record IDs of patients that have any HIV follow up.
+                    if (node.type == 'hiv_follow_up') {
+                      if (patientsWithHIVFollowUps.indexOf(node.person) === -1) {
+                        patientsWithHIVFollowUps.push(node.person);
+                      }
+                    }
+
+                    if (node.date_concluded != undefined && typeof node.date_concluded != 'undefined') {
+                        var resolutionDate = new Date(node.date_concluded);
+                        if (followUpMeasurementsTypesUsedByDashboard.includes(node.type)) {
+                          resolutionDate.setMonth(today.getMonth() + 6);
+                        }
+
+                        if (resolutionDate < today) {
+                          return;
+                        }
+                    }
+
+                    if (data[node.type]) {
+                        data[node.type].push(node);
+                    } else {
+                        data[node.type] = [node];
+                    }
+                });
+
+                // Recording all patients that had posiitve HIV test result.
+                // In case of multiple posiitve results for a patient, we
+                // record most recent test date.
+                var positiveHIVMap = {};
+                nodes.forEach(function (node) {
+                  // Do not process follow ups nodes.
+                  if (!hivTestTypes.includes(node.type)) {
+                    return;
+                  }
+
+                  // Do not process, if test result is not positive.
+                  if (node.test_result !== 'positive') {
+                    return;
+                  }
+
+                  // First time positive result for patient is found - recorded.
+                  if (!positiveHIVMap[node.person]) {
+                    positiveHIVMap[node.person] = {id: node.person, date: node.date_measured, uuid: node.uuid};
+                    return;
+                  }
+
+                  // Another positive result for patient is found - record the
+                  // most recent one.
+                  var current = new Date(positiveHIVMap[node.person].date);
+                  var candidate = new Date(node.date_measured);
+                  if (current < candidate) {
+                    positiveHIVMap[node.person] = {id: node.person, date: node.date_measured, uuid: node.uuid};
+                  }
+                });
+
+                // Creating 'dummy' HIV follow ups for patients that have positive HIV
+                // result, and never had HIV follow up (which means that they were)
+                // never diagnosed HIV posiitve during HIV encounter.
+                Object.values(positiveHIVMap).forEach((item) => {
+                  if (patientsWithHIVFollowUps.indexOf(item.id) !== -1) {
+                    // Patinet has HIV follow up - skip to next one.
+                    return;
+                  }
+
+                  // Create 'dummy' HIV follow up.
+                  var hivFollowUp = {
+                    date_concluded: null,
+                    // Positive HIV test result date.
+                    date_measured: item.date,
+                    deleted: false,
+                    // Per requirements, positive HIV test result follow up is
+                    // to be scheduled to 1 week.
+                    follow_up_options: ['1-w'],
+                    health_center: null,
+                    // This will be uesd as an indicator for front-end, to understand
+                    // that this follow up represents positive HIV test.
+                    hiv_encounter: 'dummy',
+                    nurse: 'dummy',
+                    person: item.id,
+                    shard: 'dummy',
+                    type: 'hiv_follow_up',
+                    // We only need to have the UUID unique, so we use
+                    // the UUID pf positive HIV test node.
+                    // We don't perform any editing on fornt-end, so it's
+                    // sufficient.
+                    uuid: item.uuid
+                  };
+
+                  // Add 'dummy' HIV follow up to the data.
+                  if (data['hiv_follow_up']) {
+                      data['hiv_follow_up'].push(hivFollowUp);
+                  } else {
+                      data['hiv_follow_up'] = [hivFollowUp];
+                  }
+                });
+
+                var body = JSON.stringify({
+                    // Decoder is expecting a list.
+                    data: [data]
+                });
+
+                var response = new Response(body, {
+                    status: 200,
+                    statusText: 'OK',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                return Promise.resolve(response);
+            } else {
+                response = new Response('', {
+                    status: 404,
+                    statusText: 'Not found'
+                });
+
+                return Promise.reject(response);
+            }
+        }).catch(sendErrorResponses);
+    }
+
+    var stockManagementMeasurementsTypes = [
+      'child_fbf',
+      'mother_fbf',
+      'stock_update'
+    ];
+
+    function viewStockManagementMeasurements (shard) {
         // Load all types of follow up measurements that belong to provided healh center.
-        var query = dbSync.shards.where('type').anyOf(followUpMeasurementsTypes).and(function (item) {
+        var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
           return item.shard === shard;
         });
 
@@ -559,17 +773,7 @@
 
         return query.toArray().catch(databaseError).then(function (nodes) {
             if (nodes) {
-                var today = new Date();
-
                 nodes.forEach(function (node) {
-                    if (node.type === 'acute_illness_trace_contact') {
-                      // Do not load resolved items.
-                      var resolutionDate = new Date(node.date_concluded);
-                      if (resolutionDate <= today) {
-                        return;
-                      }
-                    }
-
                     if (data[node.type]) {
                         data[node.type].push(node);
                     } else {
@@ -655,7 +859,6 @@
 
                 if (type === 'person') {
                     var nameContains = params.get('name_contains');
-
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
                         // we generate an array of lowercase words.
@@ -699,6 +902,24 @@
                             return Promise.resolve();
                         });
                     }
+                    else {
+                        var geoFields = params.get('geo_fields');
+                        if (geoFields) {
+                            var fields = geoFields.split('|');
+                            modifyQuery = modifyQuery.then(function () {
+                                criteria.province = fields[0];
+                                criteria.district = fields[1];
+                                criteria.sector = fields[2];
+                                criteria.cell = fields[3];
+                                criteria.village = fields[4];
+                                query = table.where(criteria);
+
+                                countQuery = query.clone();
+
+                                return Promise.resolve();
+                            });
+                        }
+                    }
                 }
 
                 // For PmtctParticipant, check the session param and (if
@@ -732,25 +953,52 @@
                     }
                 }
 
-                var encounterTypes = [
-                  'prenatal_encounter',
-                  'nutrition_encounter',
-                  'acute_illness_encounter',
-                  'home_visit_encounter',
-                  'well_child_encounter'
-                ];
-
-                if (encounterTypes.includes(type)) {
-                  var individualSessionId = params.get('individual_participant');
-                  if (individualSessionId) {
+                if (type === 'individual_participant') {
+                  var people = params.get('people');
+                  if (people) {
+                    var uuids = people.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
                     modifyQuery = modifyQuery.then(function () {
-                        criteria.individual_participant = individualSessionId;
-                        query = table.where(criteria).and(function (encounter) {
-                            // If encounter is marked as deleted, do not include it in results.
-                            return encounter.deleted === false;
+                        query = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            // If participant is marked as deleted, do not include it in results.
+                            return participant.deleted === false;
                         });
 
-                        countQuery = query.clone();
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+person]').anyOf(tuples).and(function (participant) {
+                            return participant.deleted === false;
+                        });;
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
+                var encounterTypes = [
+                  'acute_illness_encounter',
+                  'child_scoreboard_encounter',
+                  'hiv_encounter',
+                  'home_visit_encounter',
+                  'ncd_encounter',
+                  'nutrition_encounter',
+                  'prenatal_encounter',
+                  'tuberculosis_encounter',
+                  'well_child_encounter'
+                ];
+                if (encounterTypes.includes(type)) {
+                  var participantIds = params.get('individual_participants');
+                  if (participantIds) {
+                    var uuids = participantIds.split(',');
+                    var tuples = uuids.map((uuid) => [type, uuid]);
+                    modifyQuery = modifyQuery.then(function () {
+                        // Encounters curently don't have option to be deleted,
+                        // so there's no need to check for that.
+                        query = table.where('[type+individual_participant]').anyOf(tuples);
+
+                        // Cloning doesn't seem to work for this one.
+                        // If done, it corrupts the results of original query.
+                        countQuery = table.where('[type+individual_participant]').anyOf(tuples);
 
                         return Promise.resolve();
                     });
@@ -778,12 +1026,45 @@
                                 query = table.where('[type+clinic]').anyOf(clinics);
 
                                 // Cloning doesn't seem to work for this one.
+                                // If done, it corrupts the results of original query.
                                 countQuery = table.where('[type+clinic]').anyOf(clinics);
 
                                 return Promise.resolve();
                             });
                         });
                     }
+                }
+
+                // Resilience surveys are pulled for a nurse,
+                // so we add criteria to filter by provided nurse ID.
+                if (type === 'resilience_survey') {
+                  var nurseId = params.get('nurse');
+                  if (nurseId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.nurse = nurseId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
+                }
+
+                // For education_session endpoint, check participant param and
+                // only return those sessions were participant has participated.
+                if (type === 'education_session') {
+                  var personId = params.get('participant');
+                  if (personId) {
+                    modifyQuery = modifyQuery.then(function () {
+                        criteria.participating_patients = personId;
+                        query = table.where(criteria);
+
+                        countQuery = query.clone();
+
+                        return Promise.resolve();
+                    });
+                  }
                 }
 
                 return modifyQuery.then(function () {
@@ -927,12 +1208,20 @@
      * Helper function to add a record to authority PhotoUploadChanges.
      */
     function addPhotoUploadChanges(tableHook, table, obj) {
-        if (!obj.data.hasOwnProperty('photo')) {
-            // Entity doesn't have a photo.
-            return;
+        var url;
+
+        if (obj.data.hasOwnProperty('photo')) {
+          url = obj.data.photo;
+        }
+        else if (obj.data.hasOwnProperty('signature')) {
+          url = obj.data.signature;
+        }
+        else {
+          // Entity doesn't have an image.
+          return;
         }
 
-        if (!photosUploadUrlRegex.test(obj.data.photo)) {
+        if (!photosUploadUrlRegex.test(url)) {
             // Photo URL doesn't point to the local cache.
             return;
         }
@@ -943,7 +1232,7 @@
             const result = await table.add({
                 localId : primaryKey,
                 uuid: obj.uuid,
-                photo: obj.data.photo,
+                photo: url,
                 // Drupal's file ID.
                 fileId: null,
                 // The file name on Drupal.

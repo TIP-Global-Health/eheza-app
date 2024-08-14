@@ -17,7 +17,7 @@ fetch id initiator db =
             accum
                 |> EverySet.insert participant.child
                 |> EverySet.insert participant.adult
-                >> EverySet.remove id
+                |> EverySet.remove id
 
         -- We also need to fetch the person data for the other half of
         -- participant pairings even if not a family member.
@@ -54,6 +54,7 @@ fetchForCreateOrEdit : Maybe PersonId -> ModelIndexedDb -> List MsgIndexedDb
 fetchForCreateOrEdit related db =
     [ FetchHealthCenters
     , FetchVillages
+    , FetchClinics
     ]
         ++ (related
                 |> Maybe.map (\id -> FetchPerson id :: fetchFamilyMembers id db)

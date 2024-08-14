@@ -5,7 +5,7 @@ import Gizra.NominalDate exposing (encodeYYYYMMDD)
 import Json.Encode exposing (..)
 import Json.Encode.Extra exposing (maybe)
 import Restful.Endpoint exposing (encodeEntityUuid)
-import Utils.Json exposing (encodeIfExists)
+import Utils.Json exposing (encodeIfSet)
 
 
 {-| Encodes a `HomeVisitEncounter`.
@@ -22,4 +22,4 @@ encodeHomeVisitEncounter session =
     , ( "deleted", bool False )
     , ( "type", string "home_visit_encounter" )
     ]
-        ++ encodeIfExists "shard" session.shard encodeEntityUuid
+        ++ encodeIfSet "shard" session.shard encodeEntityUuid

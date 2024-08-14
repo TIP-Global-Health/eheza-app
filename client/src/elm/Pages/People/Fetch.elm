@@ -1,8 +1,8 @@
 module Pages.People.Fetch exposing (fetch)
 
 import Backend.Entities exposing (..)
-import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.Person.Model exposing (Initiator(..))
+import Backend.Model exposing (MsgIndexedDb(..))
+import Backend.Person.Model exposing (Initiator)
 import Maybe.Extra
 import Pages.People.Model exposing (..)
 
@@ -11,8 +11,7 @@ fetch : Maybe PersonId -> Initiator -> Model -> List MsgIndexedDb
 fetch relation initiator model =
     let
         trimmed =
-            model.search
-                |> Maybe.withDefault ""
+            Maybe.withDefault "" model.search
                 |> String.trim
 
         fetchPeople =
@@ -20,12 +19,10 @@ fetch relation initiator model =
                 []
 
             else
-                [ FetchPeopleByName trimmed
-                ]
+                [ FetchPeopleByName trimmed ]
 
         fetchRelation =
-            relation
-                |> Maybe.map FetchPerson
+            Maybe.map FetchPerson relation
                 |> Maybe.Extra.toList
     in
     fetchPeople ++ fetchRelation ++ [ FetchHealthCenters, FetchVillages ]

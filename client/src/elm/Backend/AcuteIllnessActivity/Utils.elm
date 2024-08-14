@@ -10,9 +10,7 @@ expected (and not completed).
 
 -}
 
-import AssocList as Dict exposing (Dict)
 import Backend.AcuteIllnessActivity.Model exposing (..)
-import Translate exposing (Language, translate)
 
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translate
