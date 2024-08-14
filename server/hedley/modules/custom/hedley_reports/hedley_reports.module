@@ -1853,3 +1853,17 @@ function hedley_reports_filter_impacted_ids(array $ids, array $impacted) {
     return in_array($id, $impacted);
   });
 }
+
+/**
+ * Implements hook_query_TAG_alter().
+ *
+ * Adds a condition to select entities that don't have field_reports_data set.
+ */
+function hedley_ncda_query_exclude_set_reports_data_alter(QueryAlterableInterface $query) {
+  $query->leftJoin('field_data_field_reports_data', 'fnd', 'node.nid = fnd.entity_id');
+  $query->isNull('fnd.field_reports_data_value');
+}
+
+function hedley_reports_generate_completion_data_for_nutrition_encounter($encounter) {
+
+}

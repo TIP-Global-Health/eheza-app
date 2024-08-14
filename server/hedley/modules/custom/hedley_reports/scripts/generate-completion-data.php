@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Generates aggregated NCDA data for all children.
+ * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-completion-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -19,25 +19,21 @@ $nid = drush_get_option('nid', 0);
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 50);
 
-// Flag to generate NCDA data only if it was not generated already.
+// Flag to generate data only if it was not generated already.
 $exclude_set = drush_get_option('exclude_set', FALSE);
 
-// Minimal child birthdate, from which we perform calculations.
-$birthdate_from = drush_get_option('birthdate_from', "2016-01-01");
-
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 240);
+$memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'person';
+$type = 'nutrition_encounter';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->addTag('exclude_deleted');
+  ->propertyCondition('status', NODE_PUBLISHED);
 
 if ($exclude_set) {
-  $base_query->addTag('exclude_set_ncda_data');
+  $base_query->addTag('exclude_set_reports_data');
 }
 
 $count_query = clone $base_query;
@@ -70,10 +66,8 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $success = hedley_ncda_calculate_aggregated_data_for_person($node, $birthdate_from);
-    if ($success) {
-      $total++;
-    }
+    hedley_reports_generate_completion_data_for_nutrition_encounter($node);
+    $total++;
 
     $memory = round(memory_get_usage() / 1048576);
     if ($memory >= $memory_limit) {
@@ -91,4 +85,4 @@ while (TRUE) {
   $nid = end($ids);
 }
 
-drush_print("Done! NCDA data calculated for $total children.");
+drush_print("Done! Completion data calculated for $total encounters.");
