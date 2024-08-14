@@ -45,6 +45,8 @@ if ($count == 0) {
   exit;
 }
 
+$nurses = hedley_ncda_resolve_nurses_ids();
+
 $total = 0;
 drush_print("$count nodes of type $type located.");
 
@@ -66,7 +68,9 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    hedley_reports_generate_completion_data_for_nutrition_encounter($node);
+    $completion_data = hedley_reports_generate_completion_data_for_nutrition_encounter($node, $nurses);
+    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($node);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);
