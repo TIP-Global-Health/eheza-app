@@ -21,21 +21,21 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries'] = array(
     'title' => 'Statistical Queries',
     'description' => 'View Statistical Queries',
-    'page callback' => 'hedley_reports_aggregated_callback_menu',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_menu',
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
   $items['admin/reports/statistical-queries/all'] = array(
     'title' => 'Entire Population',
     'description' => 'View report for Entire Population',
-    'page callback' => 'hedley_reports_aggregated_callback_global',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_global',
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
   $items['admin/reports/statistical-queries/demographics/%'] = array(
     'title' => 'Province',
     'description' => 'View report for province',
-    'page callback' => 'hedley_reports_aggregated_callback_province',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_province',
     'page arguments' => [4],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -43,7 +43,7 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries/demographics/%/%'] = array(
     'title' => 'District',
     'description' => 'View report for district',
-    'page callback' => 'hedley_reports_aggregated_callback_district',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_district',
     'page arguments' => [4, 5],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -51,7 +51,7 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
     'title' => 'Sector',
     'description' => 'View report for sector',
-    'page callback' => 'hedley_reports_aggregated_callback_sector',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_sector',
     'page arguments' => [4, 5, 6],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -59,7 +59,7 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
     'title' => 'Cell',
     'description' => 'View report for cell',
-    'page callback' => 'hedley_reports_aggregated_callback_cell',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_cell',
     'page arguments' => [4, 5, 6, 7],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -67,7 +67,7 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
     'title' => 'Village',
     'description' => 'View report for village',
-    'page callback' => 'hedley_reports_aggregated_callback_village',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_village',
     'page arguments' => [4, 5, 6, 7, 8],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -75,7 +75,7 @@ function hedley_reports_menu() {
   $items['admin/reports/statistical-queries/health-center/%'] = array(
     'title' => 'Health center',
     'description' => 'View report for health center',
-    'page callback' => 'hedley_reports_aggregated_callback_health_center',
+    'page callback' => 'hedley_reports_statistical_queries_report_callback_health_center',
     'page arguments' => [4],
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
@@ -175,12 +175,16 @@ function hedley_reports_calculate_aggregated_data_worker($queue_item) {
 }
 
 /**
- * Callback for Elm application of administrative division selection.
+ * Callback for Elm application of Statistical Queries menu.
  *
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_menu() {
+function hedley_reports_statistical_queries_report_callback_menu() {
+  return hedley_reports_callback_menu_by_page('reports-menu');
+}
+
+function hedley_reports_callback_menu_by_page($page) {
   $site = variable_get('hedley_general_site_name', '');
 
   $health_centers_data = [];
@@ -193,7 +197,7 @@ function hedley_reports_aggregated_callback_menu() {
     ];
   }
 
-  return hedley_general_build_elm_app('reports-menu', [
+  return hedley_general_build_elm_app($page, [
     'site' => $site,
     'health_centers' => $health_centers_data,
   ]);
@@ -584,7 +588,7 @@ function hedley_reports_nutrition_metrics_to_string($values) {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_global() {
+function hedley_reports_statistical_queries_report_callback_global() {
   return hedley_reports_build_results_app();
 }
 
@@ -597,7 +601,7 @@ function hedley_reports_aggregated_callback_global() {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_province($province) {
+function hedley_reports_statistical_queries_report_callback_province($province) {
   return hedley_reports_build_results_app($province);
 }
 
@@ -612,7 +616,7 @@ function hedley_reports_aggregated_callback_province($province) {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_district($province, $district) {
+function hedley_reports_statistical_queries_report_callback_district($province, $district) {
   return hedley_reports_build_results_app($province, $district);
 }
 
@@ -629,7 +633,7 @@ function hedley_reports_aggregated_callback_district($province, $district) {
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_sector($province, $district, $sector) {
+function hedley_reports_statistical_queries_report_callback_sector($province, $district, $sector) {
   return hedley_reports_build_results_app($province, $district, $sector);
 }
 
@@ -648,7 +652,7 @@ function hedley_reports_aggregated_callback_sector($province, $district, $sector
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_cell($province, $district, $sector, $cell) {
+function hedley_reports_statistical_queries_report_callback_cell($province, $district, $sector, $cell) {
   return hedley_reports_build_results_app($province, $district, $sector, $cell);
 }
 
@@ -669,7 +673,7 @@ function hedley_reports_aggregated_callback_cell($province, $district, $sector, 
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_village($province, $district, $sector, $cell, $village) {
+function hedley_reports_statistical_queries_report_callback_village($province, $district, $sector, $cell, $village) {
   return hedley_reports_build_results_app($province, $district, $sector, $cell, $village);
 }
 
@@ -682,7 +686,7 @@ function hedley_reports_aggregated_callback_village($province, $district, $secto
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_aggregated_callback_health_center($health_center) {
+function hedley_reports_statistical_queries_report_callback_health_center($health_center) {
   return hedley_reports_build_results_app(NULL, NULL, NULL, NULL, NULL, $health_center);
 }
 
