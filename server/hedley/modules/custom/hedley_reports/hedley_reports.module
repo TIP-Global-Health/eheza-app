@@ -88,6 +88,23 @@ function hedley_reports_menu() {
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
+  $items['admin/reports/completion/all'] = array(
+    'title' => 'Entire Population',
+    'description' => 'View Completion report for Entire Population',
+    'page callback' => 'hedley_reports_completion_report_callback_global',
+    // @todo : what access do we need here?
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
+  $items['admin/reports/completion/health-center/%'] = array(
+    'title' => 'Health center',
+    'description' => 'View Completion report for health center',
+    'page callback' => 'hedley_reports_completion_report_callback_health_center',
+    'page arguments' => [4],
+    // @todo : what access do we need here?
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
   return $items;
 }
 
@@ -597,7 +614,7 @@ function hedley_reports_nutrition_metrics_to_string($values) {
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_global() {
-  return hedley_reports_build_results_app();
+  return hedley_reports_build_statistical_queries_results_app();
 }
 
 /**
@@ -610,7 +627,7 @@ function hedley_reports_statistical_queries_report_callback_global() {
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_province($province) {
-  return hedley_reports_build_results_app($province);
+  return hedley_reports_build_statistical_queries_results_app($province);
 }
 
 /**
@@ -625,7 +642,7 @@ function hedley_reports_statistical_queries_report_callback_province($province) 
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_district($province, $district) {
-  return hedley_reports_build_results_app($province, $district);
+  return hedley_reports_build_statistical_queries_results_app($province, $district);
 }
 
 /**
@@ -642,7 +659,7 @@ function hedley_reports_statistical_queries_report_callback_district($province, 
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_sector($province, $district, $sector) {
-  return hedley_reports_build_results_app($province, $district, $sector);
+  return hedley_reports_build_statistical_queries_results_app($province, $district, $sector);
 }
 
 /**
@@ -661,7 +678,7 @@ function hedley_reports_statistical_queries_report_callback_sector($province, $d
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_cell($province, $district, $sector, $cell) {
-  return hedley_reports_build_results_app($province, $district, $sector, $cell);
+  return hedley_reports_build_statistical_queries_results_app($province, $district, $sector, $cell);
 }
 
 /**
@@ -682,7 +699,7 @@ function hedley_reports_statistical_queries_report_callback_cell($province, $dis
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_village($province, $district, $sector, $cell, $village) {
-  return hedley_reports_build_results_app($province, $district, $sector, $cell, $village);
+  return hedley_reports_build_statistical_queries_results_app($province, $district, $sector, $cell, $village);
 }
 
 /**
@@ -695,7 +712,7 @@ function hedley_reports_statistical_queries_report_callback_village($province, $
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_statistical_queries_report_callback_health_center($health_center) {
-  return hedley_reports_build_results_app(NULL, NULL, NULL, NULL, NULL, $health_center);
+  return hedley_reports_build_statistical_queries_results_app(NULL, NULL, NULL, NULL, NULL, $health_center);
 }
 
 /**
@@ -720,7 +737,7 @@ function hedley_reports_statistical_queries_report_callback_health_center($healt
  * @return string
  *   The HTML markup for the Elm application.
  */
-function hedley_reports_build_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
+function hedley_reports_build_statistical_queries_results_app($province = NULL, $district = NULL, $sector = NULL, $cell = NULL, $village = NULL, $health_center = NULL) {
   $data = [];
 
   if (empty($province)) {
@@ -1894,7 +1911,126 @@ function hedley_reports_completion_report_callback_menu() {
   return hedley_reports_callback_menu_by_page('completion-menu');
 }
 
-function hedley_reports_generate_completion_data_for_nutrition_encounter($encounter, $nurses) {
+/**
+ * Callback for Completion report of all patients.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_completion_report_callback_global() {
+  return hedley_reports_build_completion_results_app();
+}
+
+/**
+ * Callback for Completion report of health center.
+ *
+ * @param int $health_center
+ *   Health center ID.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_completion_report_callback_health_center($health_center) {
+  return  hedley_reports_build_completion_results_app($health_center);
+}
+
+/**
+ * Build results app for Completion Report.
+ *
+ * Based on input fields, determines administrative divisions for which
+ * data is provided.
+ *
+ * @param int|null $health_center
+ *   Health center ID (optional).
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_build_completion_results_app($health_center = NULL) {
+  $data = [];
+
+  if (empty($health_center)) {
+    $data['entity_name'] = 'Global';
+    $data['entity_type'] = 'global';
+  }
+  else {
+    $wrapper = entity_metadata_wrapper('node', $health_center);
+    $data['entity_name'] = $wrapper->label();
+    $data['entity_type'] = 'health-center';
+  }
+
+  $data['site'] = variable_get('hedley_general_site_name', '');
+
+  $data['results'] = hedley_reports_generate_completion_results_data($health_center);
+
+  return hedley_general_build_elm_app('completion-results', $data);
+}
+
+/**
+ * Generate Completion report data which is stored on person nodes.
+ *
+ * @param int|null $health_center
+ *   Health center ID.
+ *
+ * @return array
+ *   An array of generated data.
+ */
+function hedley_reports_generate_completion_results_data($health_center) {
+  $base_query = new EntityFieldQuery();
+  $base_query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'nutrition_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
+    ->propertyOrderBy('nid');
+
+  if (!empty($health_center)) {
+    $base_query->fieldCondition('field_shards', 'target_id', $health_center);
+  }
+
+  $data = [];
+  $nid = 0;
+  $batch = 400;
+  while (TRUE) {
+    // Free up memory.
+    drupal_static_reset();
+
+    $query = clone $base_query;
+    if ($nid) {
+      $query->propertyCondition('nid', $nid, '>');
+    }
+
+    $result = $query
+      ->range(0, $batch)
+      ->execute();
+
+    if (empty($result['node'])) {
+      // No more items left.
+      break;
+    }
+
+    $ids = array_keys($result['node']);
+    $nodes = node_load_multiple($ids);
+    foreach ($nodes as $node) {
+      $json_data = $node->field_reports_data[LANGUAGE_NONE][0]['value'];
+      if (empty($json_data)) {
+        continue;
+      }
+
+      $data[] = json_decode($json_data);
+      // Explicitly unset large variables after use for memory optimization.
+      unset($json_data);
+    }
+
+    $nid = end($ids);
+    // Explicitly unset large variables after use for memory optimization.
+    unset($nodes);
+  }
+
+  return $data;
+}
+
+function hedley_reports_generate_completion_data_for_nutrition_encounter($encounter) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
     'nutrition_height' => 'a',
@@ -1919,7 +2055,9 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   $completed = [];
 
   // Was encounter recorded by nurse or CHW?
-  $taken_by =  $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
+  $taken_by = $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
+  // Resolve encounter start date.
+  $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
 
   // Loading all measurements that belong to encounter.
   $query = db_select('field_data_field_nutrition_encounter', 'ne');
@@ -1928,7 +2066,7 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   $measurements_ids = $query->execute()->fetchCol();
 
   if (empty($measurements_ids)) {
-    return hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping);
+    return hedley_reports_generate_completion_result($expected, $completed, $start_date, $taken_by, $mapping);
   }
 
   // Try to resolve age in months at a time encounter was performed.
@@ -1943,12 +2081,11 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
 
     // Get birthdate and date measured.
     $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
-    $date_measured = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
 
     // Calculate age in months.
     $birth_date_obj = new DateTime($birth_date);
-    $date_measured_obj = new DateTime($date_measured);
-    $interval = $date_measured_obj->diff($birth_date_obj);
+    $start_date_obj = new DateTime($start_date);
+    $interval = $start_date_obj->diff($birth_date_obj);
     $age_in_months = ($interval->y * 12) + $interval->m;
   } catch (Exception $e) {
     $age_in_months = NULL;
@@ -1996,7 +2133,7 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   $ncda_launch_date = '2023-11-20';
   $ncda_launch_date_obj = new DateTime($ncda_launch_date);
 
-  if ($ncda_enabled && $date_measured >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+  if ($ncda_enabled && $start_date >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
     $expected[] = 'nutrition_ncda';
   }
 
@@ -2006,10 +2143,10 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
     }
   }
 
-  return hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping);
+  return hedley_reports_generate_completion_result($expected, $completed, $start_date, $taken_by, $mapping);
 }
 
-function hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping) {
+function hedley_reports_generate_completion_result($expected, $completed, $start_date, $taken_by, $mapping) {
   foreach ($expected as $index => $measurement_type) {
     $expected[$index] = $mapping[$measurement_type];
   }
@@ -2019,6 +2156,7 @@ function hedley_reports_generate_completion_result($expected, $completed, $taken
   }
 
   return [
+    'start_date' => $start_date,
     'expected' => implode(',', $expected),
     'completed' => implode(',', $completed),
     'taken_by' => $taken_by,

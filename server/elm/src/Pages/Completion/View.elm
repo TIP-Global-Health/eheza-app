@@ -36,4 +36,8 @@ view language currentDate themePath modelBackend model =
 
 viewCompletionData : Language -> NominalDate -> String -> CompletionData -> Model -> Html Msg
 viewCompletionData language currentDate themePath data model =
+    let
+        _ =
+            Debug.log "" data
+    in
     text "viewCompletionData"

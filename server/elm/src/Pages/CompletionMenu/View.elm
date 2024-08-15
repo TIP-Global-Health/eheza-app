@@ -60,7 +60,7 @@ viewMenu language themePath data model =
                 (\populationSelection ->
                     case populationSelection of
                         SelectionOptionGlobal ->
-                            ( [], viewLoadDataButton language "/admin/completion/completion/all" SelectionMade )
+                            ( [], viewLoadDataButton language "/admin/reports/completion/all" SelectionMade )
 
                         SelectionOptionHealthCenter ->
                             let
@@ -80,7 +80,7 @@ viewMenu language themePath data model =
                             , Maybe.map
                                 (\selectedHealthCenter ->
                                     viewLoadDataButton language
-                                        ("/admin/completion/completion/health-center/" ++ String.fromInt selectedHealthCenter)
+                                        ("/admin/reports/completion/health-center/" ++ String.fromInt selectedHealthCenter)
                                         SelectionMade
                                 )
                                 model.selectedHealthCenter
