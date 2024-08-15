@@ -2133,7 +2133,7 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   $ncda_launch_date = '2023-11-20';
   $ncda_launch_date_obj = new DateTime($ncda_launch_date);
 
-  if ($ncda_enabled && $start_date >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+  if ($ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
     $expected[] = 'nutrition_ncda';
   }
 

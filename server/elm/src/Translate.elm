@@ -850,7 +850,7 @@ translationSet transId =
                     }
 
                 NutritionNCDA ->
-                    { english = "NutritionNCDA"
+                    { english = "NCDA"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
