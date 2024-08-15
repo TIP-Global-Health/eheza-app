@@ -1872,7 +1872,31 @@ function hedley_ncda_resolve_nurses_ids() {
   return $query->execute()->fetchCol();
 }
 
+/**
+ * Callback for Elm application of Completion report menu.
+ *
+ * @return string
+ *   The HTML markup for the Elm application.
+ */
+function hedley_reports_completion_report_callback_menu() {
+  return hedley_reports_callback_menu_by_page('completion-menu');
+}
+
 function hedley_reports_generate_completion_data_for_nutrition_encounter($encounter, $nurses) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'nutrition_height' => 'a',
+    'nutrition_nutrition' => 'b',
+    'nutrition_photo' => 'c',
+    'nutrition_weight' => 'd',
+    'nutrition_muac' => 'e',
+    'nutrition_contributing_factors' => 'f',
+    'nutrition_follow_up' => 'g',
+    'nutrition_health_education' => 'h',
+    'nutrition_send_to_hc' => 'i',
+    'nutrition_ncda' => 'j',
+  ];
+
   // Activities that are always taken during encounter.
   $expected = [
     'nutrition_height',
@@ -1882,37 +1906,50 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   ];
   $completed = [];
 
-  $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-  $participant = node_load($participant_id);
-  $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
-  $person = node_load($person_id);
-  $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
-  $date_measured = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
-  $birth_date_obj = new DateTime($birth_date);
-  $date_measured_obj = new DateTime($date_measured);
-  $interval = $date_measured_obj->diff($birth_date_obj);
-  $age_in_months = ($interval->y * 12) + $interval->m;
-  // MUAC is taken starting age of 6 months.
-  if ($age_in_months >= 6) {
-    $expected[] = 'nutrition_muac';
-  }
+  // Was encounter recorded by nurse or CHW?
+  $taken_by =  $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
 
   // Loading all measurements that belong to encounter.
   $query = db_select('field_data_field_nutrition_encounter', 'ne');
   $query->addField('ne', 'entity_id');
   $query->condition('ne.field_nutrition_encounter_target_id', $encounter->nid);
-  $ids = $query->execute()->fetchCol();
+  $measurements_ids = $query->execute()->fetchCol();
 
-  if (empty($ids)) {
-    return [
-      'expected' => implode(', ', $expected),
-      'completed' => '',
-    ];
+  if (empty($measurements_ids)) {
+    return hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping);
+  }
+
+  // Try to resolve age in months at a time encounter was performed.
+  try {
+    // Get participant ID and node.
+    $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    $participant = node_load($participant_id);
+
+    // Get person ID and node
+    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    $person = node_load($person_id);
+
+    // Get birthdate and date measured.
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $date_measured = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+
+    // Calculate age in months.
+    $birth_date_obj = new DateTime($birth_date);
+    $date_measured_obj = new DateTime($date_measured);
+    $interval = $date_measured_obj->diff($birth_date_obj);
+    $age_in_months = ($interval->y * 12) + $interval->m;
+  } catch (Exception $e) {
+    $age_in_months = NULL;
+  }
+
+  // MUAC is taken starting age of 6 months.
+  if (isset($age_in_months) && $age_in_months >= 6) {
+    $expected[] = 'nutrition_muac';
   }
 
   // Ordering measurements by type.
   $measurements_by_type = [];
-  $measurements = node_load_multiple($ids);
+  $measurements = node_load_multiple($measurements_ids);
   foreach ($measurements as $measurement) {
     $measurements_by_type[$measurement->type] = $measurement;
   }
@@ -1933,7 +1970,7 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
         'nutrition_contributing_factors',
         'nutrition_follow_up',
         'nutrition_health_education',
-        'nutrition_send_to_hc'
+        'nutrition_send_to_hc',
       ]
     );
   }
@@ -1946,10 +1983,8 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
   $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
   $ncda_launch_date = '2023-11-20';
   $ncda_launch_date_obj = new DateTime($ncda_launch_date);
-  $nurse_id = reset($measurements_by_type)->field_nurse[LANGUAGE_NONE][0]['target_id'];
-  $is_nurse = in_array($nurse_id, $nurses);
 
-  if ($ncda_enabled && $date_measured >= $ncda_launch_date_obj && $is_nurse && $age_in_months < 24) {
+  if ($ncda_enabled && $date_measured >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
     $expected[] = 'nutrition_ncda';
   }
 
@@ -1959,8 +1994,21 @@ function hedley_reports_generate_completion_data_for_nutrition_encounter($encoun
     }
   }
 
+  return hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping);
+}
+
+function hedley_reports_generate_completion_result($expected, $completed, $taken_by, $mapping) {
+  foreach ($expected as $index => $measurement_type) {
+    $expected[$index] = $mapping[$measurement_type];
+  }
+
+  foreach ($completed as $index => $measurement_type) {
+    $completed[$index] = $mapping[$measurement_type];
+  }
+
   return [
     'expected' => implode(',', $expected),
     'completed' => implode(',', $completed),
+    'taken_by' => $taken_by,
   ];
 }
