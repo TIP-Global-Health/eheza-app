@@ -1,13 +1,11 @@
-module Pages.ReportsMenu.Model exposing (..)
+module Pages.CompletionMenu.Model exposing (..)
 
 import Backend.Components.Model exposing (HealthCenterId)
-import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption)
 
 
 type alias Model =
     { populationSelection : Maybe PopulationSelectionOption
-    , selectedDemographics : DemographicsSelection
     , selectedHealthCenter : Maybe HealthCenterId
     , selected : Bool
     }
@@ -16,7 +14,6 @@ type alias Model =
 emptyModel : Model
 emptyModel =
     { populationSelection = Nothing
-    , selectedDemographics = emptyDemographicsSelection
     , selectedHealthCenter = Nothing
     , selected = False
     }
@@ -24,6 +21,5 @@ emptyModel =
 
 type Msg
     = SetPopulationSelection String
-    | SetGeoLocation (String -> DemographicsSelection -> DemographicsSelection) String
     | SetHealthCenter String
     | SelectionMade

@@ -1,9 +1,9 @@
-module Pages.ReportsMenu.Update exposing (update)
+module Pages.CompletionMenu.Update exposing (update)
 
 import App.Model exposing (PagesReturn)
 import Error.Utils exposing (noError)
+import Pages.CompletionMenu.Model exposing (..)
 import Pages.Components.Utils exposing (populationSelectionOptionFromString)
-import Pages.ReportsMenu.Model exposing (..)
 
 
 update : Msg -> Model -> PagesReturn Model Msg
@@ -12,13 +12,6 @@ update msg model =
         SetPopulationSelection value ->
             PagesReturn
                 { model | populationSelection = populationSelectionOptionFromString value }
-                Cmd.none
-                noError
-                []
-
-        SetGeoLocation updatedFunc value ->
-            PagesReturn
-                { model | selectedDemographics = updatedFunc value model.selectedDemographics }
                 Cmd.none
                 noError
                 []

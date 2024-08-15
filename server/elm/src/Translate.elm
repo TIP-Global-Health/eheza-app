@@ -8,8 +8,8 @@ import App.Types exposing (Language(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
+import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Reports.Model exposing (ReportType(..))
-import Pages.ReportsMenu.Types exposing (PopulationSelectionOption(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 

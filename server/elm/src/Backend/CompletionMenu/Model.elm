@@ -1,4 +1,4 @@
-module Backend.ReportsMenu.Model exposing (..)
+module Backend.CompletionMenu.Model exposing (..)
 
 import App.Types exposing (Site)
 import Backend.Components.Model exposing (HealthCenterData)

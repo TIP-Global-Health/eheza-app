@@ -10,9 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
-import Pages.ReportsMenu.Model exposing (..)
-import Pages.ReportsMenu.Types exposing (..)
-import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
         ( viewCustomLabel

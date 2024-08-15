@@ -80,6 +80,14 @@ function hedley_reports_menu() {
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
+  $items['admin/reports/completion'] = array(
+    'title' => 'Completion report',
+    'description' => 'View Completion report',
+    'page callback' => 'hedley_reports_completion_report_callback_menu',
+    // @todo : what access do we need here?
+    'access callback' => 'hedley_reports_statistical_queries_report_access',
+  );
+
   return $items;
 }
 

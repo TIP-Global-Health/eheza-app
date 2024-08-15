@@ -6,10 +6,12 @@ module App.Types exposing
 
 
 type Page
-    = ScoreboardMenu
-    | Scoreboard
+    = CompletionMenu
+    | Completion
     | ReportsMenu
     | Reports
+    | ScoreboardMenu
+    | Scoreboard
     | NotFound
 
 

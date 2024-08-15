@@ -1,25 +1,24 @@
-module Pages.ReportsMenu.View exposing (view)
+module Pages.CompletionMenu.View exposing (view)
 
 import App.Types exposing (Language)
 import AssocList as Dict
+import Backend.CompletionMenu.Model exposing (MenuData)
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
-import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, onInput)
 import List.Extra
 import Maybe.Extra exposing (isJust)
+import Pages.CompletionMenu.Model exposing (..)
 import Pages.Components.Model exposing (DemographicsSelection)
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Components.Utils exposing (populationSelectionOptionToString)
+import Pages.Components.Utils exposing (populationSelectionOptionFromString, populationSelectionOptionToString)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
-import Pages.ReportsMenu.Model exposing (..)
 import Pages.Utils
     exposing
-        ( generateReportsHeaderImage
-        , viewCustomLabel
+        ( viewCustomLabel
         , viewCustomSelectListInput
         , viewGeoLocationSelectListInput
         , viewLoadDataButton
@@ -32,7 +31,7 @@ import Utils.GeoLocation exposing (..)
 
 view : Language -> String -> ModelBackend -> Model -> Html Msg
 view language themePath modelBackend model =
-    case modelBackend.reportsMenuData of
+    case modelBackend.completionMenuData of
         Just (Ok data) ->
             viewMenu language themePath data model
 
@@ -49,7 +48,7 @@ viewMenu language themePath data model =
         populationSelectionInput =
             viewSelectListInput language
                 model.populationSelection
-                [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
+                [ SelectionOptionGlobal, SelectionOptionHealthCenter ]
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
@@ -61,21 +60,7 @@ viewMenu language themePath data model =
                 (\populationSelection ->
                     case populationSelection of
                         SelectionOptionGlobal ->
-                            ( [], viewLoadDataButton language "/admin/reports/statistical-queries/all" SelectionMade )
-
-                        SelectionOptionDemographics ->
-                            ( viewDemographicsSelection language data.site SetGeoLocation model.selectedDemographics
-                            , if isJust model.selectedDemographics.province then
-                                viewDemographicsSelectionActionButton language
-                                    data.site
-                                    "/admin/reports/statistical-queries/demographics"
-                                    Translate.LoadData
-                                    SelectionMade
-                                    model.selectedDemographics
-
-                              else
-                                emptyNode
-                            )
+                            ( [], viewLoadDataButton language "/admin/completion/completion/all" SelectionMade )
 
                         SelectionOptionHealthCenter ->
                             let
@@ -95,12 +80,16 @@ viewMenu language themePath data model =
                             , Maybe.map
                                 (\selectedHealthCenter ->
                                     viewLoadDataButton language
-                                        ("/admin/reports/statistical-queries/health-center/" ++ String.fromInt selectedHealthCenter)
+                                        ("/admin/completion/completion/health-center/" ++ String.fromInt selectedHealthCenter)
                                         SelectionMade
                                 )
                                 model.selectedHealthCenter
                                 |> Maybe.withDefault emptyNode
                             )
+
+                        -- This option is not in use.
+                        SelectionOptionDemographics ->
+                            ( [], emptyNode )
                 )
                 model.populationSelection
                 |> Maybe.withDefault ( [], emptyNode )
@@ -112,9 +101,8 @@ viewMenu language themePath data model =
             else
                 actionButton_
     in
-    div [ class "page-content reports-menu" ]
-        [ generateReportsHeaderImage themePath
-        , viewCustomLabel language Translate.SelectScope ":" "header"
+    div [ class "page-content completion-menu" ]
+        [ viewCustomLabel language Translate.SelectScope ":" "header"
         , div [ class "inputs" ] <|
             populationSelectionInput
                 :: derivedInputs
