@@ -25,9 +25,19 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
-import Pages.Utils exposing (generateReportsHeaderImage, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils
+    exposing
+        ( generateReportsHeaderImage
+        , viewCustomCells
+        , viewCustomLabel
+        , viewSelectListInput
+        , viewStandardCells
+        , viewStandardRow
+        , wrapSelectListInput
+        )
 import RemoteData exposing (RemoteData(..))
 import Round
 import Time exposing (Month(..))
@@ -1741,32 +1751,6 @@ generateAcuteIllnessReportData language startDate records =
         ]
     , rows = rows ++ [ totalsRow ] ++ [ noneRow ]
     }
-
-
-viewStandardRow : List String -> Html any
-viewStandardRow =
-    viewStandardCells
-        >> div [ class "row" ]
-
-
-viewStandardCells : List String -> List (Html any)
-viewStandardCells =
-    viewCustomCells "label" "value"
-
-
-viewCustomCells : String -> String -> List String -> List (Html any)
-viewCustomCells labelClass valueClass =
-    List.indexedMap
-        (\index cellText ->
-            div
-                [ classList
-                    [ ( "item", True )
-                    , ( labelClass, index == 0 )
-                    , ( valueClass, index /= 0 )
-                    ]
-                ]
-                [ text cellText ]
-        )
 
 
 viewDownloadCSVButton : Language -> String -> String -> Html Msg

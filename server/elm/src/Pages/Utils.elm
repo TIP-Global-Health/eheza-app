@@ -249,3 +249,33 @@ viewMenuActionButton language path label selectionMadeMsg =
 generateReportsHeaderImage : String -> Html any
 generateReportsHeaderImage themePath =
     img [ src <| "/" ++ themePath ++ "/icons/statistical-queries.png" ] []
+
+
+
+-- Table
+
+
+viewStandardRow : List String -> Html any
+viewStandardRow =
+    viewStandardCells
+        >> div [ class "row" ]
+
+
+viewStandardCells : List String -> List (Html any)
+viewStandardCells =
+    viewCustomCells "label" "value"
+
+
+viewCustomCells : String -> String -> List String -> List (Html any)
+viewCustomCells labelClass valueClass =
+    List.indexedMap
+        (\index cellText ->
+            div
+                [ classList
+                    [ ( "item", True )
+                    , ( labelClass, index == 0 )
+                    , ( valueClass, index /= 0 )
+                    ]
+                ]
+                [ text cellText ]
+        )

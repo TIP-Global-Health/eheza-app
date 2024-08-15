@@ -5,6 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
+import Backend.Completion.Model exposing (NutritionActivity(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
@@ -52,6 +53,7 @@ type StringIdHttpError
 
 type TranslationId
     = ACHI
+    | Activity
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessTotal
     | AcuteMalnutrition
@@ -66,6 +68,7 @@ type TranslationId
     | Colline
     | CollineSub
     | Commune
+    | Completed
     | Diagnosis
     | District
     | Demographics
@@ -73,6 +76,7 @@ type TranslationId
     | EmptyString
     | Encounters
     | EncounterType
+    | Expected
     | FBF
     | Female
     | GenerateReport
@@ -111,7 +115,9 @@ type TranslationId
     | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
+    | NutritionActivity NutritionActivity
     | NutritionBehavior
+    | NutritionIndividual
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | PleaseWaitMessage
@@ -167,6 +173,12 @@ translationSet transId =
     case transId of
         ACHI ->
             { english = "ACHI"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Activity ->
+            { english = "Activity"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -323,6 +335,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Completed ->
+            { english = "Completed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CBNP ->
             { english = "CBNP"
             , kinyarwanda = Nothing
@@ -379,6 +397,12 @@ translationSet transId =
 
         EncounterType ->
             { english = "Encounter Type"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Expected ->
+            { english = "Expected"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -769,8 +793,76 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        NutritionActivity activity ->
+            case activity of
+                NutritionHeight ->
+                    { english = "Height"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionWeight ->
+                    { english = "Weight"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionMUAC ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionSendToHC ->
+                    { english = "Referal"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionNCDA ->
+                    { english = "NutritionNCDA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         NutritionBehavior ->
             { english = "Nutrition Behavior"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NutritionIndividual ->
+            { english = "Nutrition Individual"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

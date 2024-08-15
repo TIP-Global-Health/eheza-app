@@ -291,19 +291,25 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content.reports,
-.page-content.reports-menu {
+.page-content.reports-menu,
+.page-content.completion,
+.page-content.completion-menu {
   background: white;
   margin-top: 0;
   padding-top: 0;
 }
 
 .page-content.reports .select-input-wrapper .select-input,
-.page-content.reports-menu .select-input-wrapper .select-input {
+.page-content.reports-menu .select-input-wrapper .select-input,
+.page-content.completion .select-input-wrapper .select-input,
+.page-content.completion-menu .select-input-wrapper .select-input {
   border: 2px solid #3b3b3b;
 }
 
 .page-content.reports .select-input-wrapper .select-input:focus,
-.page-content.reports-menu .select-input-wrapper .select-input:focus {
+.page-content.reports-menu .select-input-wrapper .select-input:focus,
+.page-content.completion .select-input-wrapper .select-input:focus,
+.page-content.completion-menu .select-input-wrapper .select-input:focus {
   outline-color: #3b3b3b;
 }
 
@@ -399,6 +405,8 @@ body.admin-menu #page-wrapper #header {
 
 .page-content.reports-menu .actions a button,
 .page-content.reports .top-bar .new-selection a button,
+.page-content.completion-menu .actions a button,
+.page-content.completion .top-bar .new-selection a button,
 .page-content.reports .inputs .report button.download-csv {
   background-color: white;
   border: 2px solid #3b3b3b;

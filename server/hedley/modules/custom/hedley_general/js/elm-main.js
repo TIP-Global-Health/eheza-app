@@ -9644,6 +9644,8 @@ var $author$project$Translate$translationSet = function (transId) {
 		switch (transId.$) {
 			case 'ACHI':
 				return {english: 'ACHI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Activity':
+				return {english: 'Activity', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'AcuteIllnessDiagnosis':
 				var diagnosis = transId.a;
 				switch (diagnosis.$) {
@@ -9758,6 +9760,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				};
 			case 'Commune':
 				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Completed':
+				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CBNP':
 				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Cell':
@@ -9778,6 +9782,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Encounters', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EncounterType':
 				return {english: 'Encounter Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Expected':
+				return {english: 'Expected', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FBF':
 				return {english: 'FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Female':
@@ -10025,8 +10031,34 @@ var $author$project$Translate$translationSet = function (transId) {
 				});
 			case 'NumberOfVisitsLabel':
 				return {english: '# Visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NutritionActivity':
+				var activity = transId.a;
+				switch (activity.$) {
+					case 'NutritionHeight':
+						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionNutrition':
+						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionPhoto':
+						return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionWeight':
+						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionMUAC':
+						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionContributingFactors':
+						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionFollowUp':
+						return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionHealthEducation':
+						return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionSendToHC':
+						return {english: 'Referal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'NutritionNCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'NutritionBehavior':
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NutritionIndividual':
+				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionReportTableType':
 				var tableType = transId.a;
 				switch (tableType.$) {
@@ -10385,11 +10417,464 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
-var $elm$core$Debug$log = _Debug_log;
+var $author$project$Translate$NewScope = {$: 'NewScope'};
+var $author$project$Translate$Scope = {$: 'Scope'};
+var $elm$html$Html$a = _VirtualDom_node('a');
+var $elm$html$Html$button = _VirtualDom_node('button');
+var $author$project$Translate$Activity = {$: 'Activity'};
+var $author$project$Translate$Completed = {$: 'Completed'};
+var $author$project$Translate$Expected = {$: 'Expected'};
+var $author$project$Translate$NutritionActivity = function (a) {
+	return {$: 'NutritionActivity', a: a};
+};
+var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
+var $author$project$Pages$Completion$Model$allNutritionActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$NutritionHeight, $author$project$Backend$Completion$Model$NutritionNutrition, $author$project$Backend$Completion$Model$NutritionPhoto, $author$project$Backend$Completion$Model$NutritionWeight, $author$project$Backend$Completion$Model$NutritionMUAC, $author$project$Backend$Completion$Model$NutritionContributingFactors, $author$project$Backend$Completion$Model$NutritionFollowUp, $author$project$Backend$Completion$Model$NutritionHealthEducation, $author$project$Backend$Completion$Model$NutritionSendToHC, $author$project$Backend$Completion$Model$NutritionNCDA]);
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $myrho$elm_round$Round$addSign = F2(
+	function (signed, str) {
+		var isNotZero = A2(
+			$elm$core$List$any,
+			function (c) {
+				return (!_Utils_eq(
+					c,
+					_Utils_chr('0'))) && (!_Utils_eq(
+					c,
+					_Utils_chr('.')));
+			},
+			$elm$core$String$toList(str));
+		return _Utils_ap(
+			(signed && isNotZero) ? '-' : '',
+			str);
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$String$cons = _String_cons;
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $myrho$elm_round$Round$increaseNum = function (_v0) {
+	var head = _v0.a;
+	var tail = _v0.b;
+	if (_Utils_eq(
+		head,
+		_Utils_chr('9'))) {
+		var _v1 = $elm$core$String$uncons(tail);
+		if (_v1.$ === 'Nothing') {
+			return '01';
+		} else {
+			var headtail = _v1.a;
+			return A2(
+				$elm$core$String$cons,
+				_Utils_chr('0'),
+				$myrho$elm_round$Round$increaseNum(headtail));
+		}
+	} else {
+		var c = $elm$core$Char$toCode(head);
+		return ((c >= 48) && (c < 57)) ? A2(
+			$elm$core$String$cons,
+			$elm$core$Char$fromCode(c + 1),
+			tail) : '0';
+	}
+};
+var $elm$core$Basics$isInfinite = _Basics_isInfinite;
+var $elm$core$Basics$isNaN = _Basics_isNaN;
+var $elm$core$String$fromChar = function (_char) {
+	return A2($elm$core$String$cons, _char, '');
+};
+var $elm$core$Bitwise$and = _Bitwise_and;
+var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
+var $elm$core$String$repeatHelp = F3(
+	function (n, chunk, result) {
+		return (n <= 0) ? result : A3(
+			$elm$core$String$repeatHelp,
+			n >> 1,
+			_Utils_ap(chunk, chunk),
+			(!(n & 1)) ? result : _Utils_ap(result, chunk));
+	});
+var $elm$core$String$repeat = F2(
+	function (n, chunk) {
+		return A3($elm$core$String$repeatHelp, n, chunk, '');
+	});
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
+var $elm$core$String$reverse = _String_reverse;
+var $myrho$elm_round$Round$splitComma = function (str) {
+	var _v0 = A2($elm$core$String$split, '.', str);
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var before = _v0.a;
+			var _v1 = _v0.b;
+			var after = _v1.a;
+			return _Utils_Tuple2(before, after);
+		} else {
+			var before = _v0.a;
+			return _Utils_Tuple2(before, '0');
+		}
+	} else {
+		return _Utils_Tuple2('0', '0');
+	}
+};
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $myrho$elm_round$Round$toDecimal = function (fl) {
+	var _v0 = A2(
+		$elm$core$String$split,
+		'e',
+		$elm$core$String$fromFloat(
+			$elm$core$Basics$abs(fl)));
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var num = _v0.a;
+			var _v1 = _v0.b;
+			var exp = _v1.a;
+			var e = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				$elm$core$String$toInt(
+					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
+			var _v2 = $myrho$elm_round$Round$splitComma(num);
+			var before = _v2.a;
+			var after = _v2.b;
+			var total = _Utils_ap(before, after);
+			var zeroed = (e < 0) ? A2(
+				$elm$core$Maybe$withDefault,
+				'0',
+				A2(
+					$elm$core$Maybe$map,
+					function (_v3) {
+						var a = _v3.a;
+						var b = _v3.b;
+						return a + ('.' + b);
+					},
+					A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
+						$elm$core$String$uncons(
+							_Utils_ap(
+								A2(
+									$elm$core$String$repeat,
+									$elm$core$Basics$abs(e),
+									'0'),
+								total))))) : A3(
+				$elm$core$String$padRight,
+				e + 1,
+				_Utils_chr('0'),
+				total);
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				zeroed);
+		} else {
+			var num = _v0.a;
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				num);
+		}
+	} else {
+		return '';
+	}
+};
+var $myrho$elm_round$Round$roundFun = F3(
+	function (functor, s, fl) {
+		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
+			return $elm$core$String$fromFloat(fl);
+		} else {
+			var signed = fl < 0;
+			var _v0 = $myrho$elm_round$Round$splitComma(
+				$myrho$elm_round$Round$toDecimal(
+					$elm$core$Basics$abs(fl)));
+			var before = _v0.a;
+			var after = _v0.b;
+			var r = $elm$core$String$length(before) + s;
+			var normalized = _Utils_ap(
+				A2($elm$core$String$repeat, (-r) + 1, '0'),
+				A3(
+					$elm$core$String$padRight,
+					r,
+					_Utils_chr('0'),
+					_Utils_ap(before, after)));
+			var totalLen = $elm$core$String$length(normalized);
+			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
+			var increase = A2(
+				functor,
+				signed,
+				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
+			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
+			var num = increase ? $elm$core$String$reverse(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'1',
+					A2(
+						$elm$core$Maybe$map,
+						$myrho$elm_round$Round$increaseNum,
+						$elm$core$String$uncons(
+							$elm$core$String$reverse(remains))))) : remains;
+			var numLen = $elm$core$String$length(num);
+			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
+				num,
+				A2(
+					$elm$core$String$repeat,
+					$elm$core$Basics$abs(s),
+					'0')) : ((_Utils_cmp(
+				s,
+				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
+				before + '.',
+				A3(
+					$elm$core$String$padRight,
+					s,
+					_Utils_chr('0'),
+					after))));
+			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
+		}
+	});
+var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
+	F2(
+		function (signed, str) {
+			var _v0 = $elm$core$String$uncons(str);
+			if (_v0.$ === 'Nothing') {
+				return false;
+			} else {
+				if ('5' === _v0.a.a.valueOf()) {
+					if (_v0.a.b === '') {
+						var _v1 = _v0.a;
+						return !signed;
+					} else {
+						var _v2 = _v0.a;
+						return true;
+					}
+				} else {
+					var _v3 = _v0.a;
+					var _int = _v3.a;
+					return function (i) {
+						return ((i > 53) && signed) || ((i >= 53) && (!signed));
+					}(
+						$elm$core$Char$toCode(_int));
+				}
+			}
+		}));
+var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
+	function (language, records) {
+		var count = F2(
+			function (resolveFunc, activity) {
+				return $elm$core$List$length(
+					A2(
+						$elm$core$List$filter,
+						A2(
+							$elm$core$Basics$composeR,
+							resolveFunc,
+							$elm$core$List$member(activity)),
+						records));
+			});
+		var calcualtePercentage = F2(
+			function (nominator, total) {
+				return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 3, (nominator / total) * 100) + '%');
+			});
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
+					'%'
+				]),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionIndividual),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A2(
+						count,
+						function ($) {
+							return $.expectedActivities;
+						},
+						activity);
+					var completed = A2(
+						count,
+						function ($) {
+							return $.completedActivities;
+						},
+						activity);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$NutritionActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2(calcualtePercentage, completed, expected)
+						]);
+				},
+				$author$project$Pages$Completion$Model$allNutritionActivities)
+		};
+	});
+var $elm$html$Html$Attributes$href = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
+};
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $author$project$Pages$Utils$viewCustomCells = F2(
+	function (labelClass, valueClass) {
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, cellText) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(labelClass, !index),
+										_Utils_Tuple2(valueClass, !(!index))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(cellText)
+							]));
+				}));
+	});
+var $author$project$Pages$Utils$viewStandardCells = A2($author$project$Pages$Utils$viewCustomCells, 'label', 'value');
+var $author$project$Pages$Utils$viewStandardRow = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Pages$Utils$viewStandardCells,
+	$elm$html$Html$div(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			])));
 var $author$project$Pages$Completion$View$viewCompletionData = F5(
 	function (language, currentDate, themePath, data, model) {
-		var _v0 = A2($elm$core$Debug$log, '', data);
-		return $elm$html$Html$text('viewCompletionData');
+		var topBar = function () {
+			var scopeLabel = function () {
+				var _v0 = data.entityType;
+				if (_v0.$ === 'EntityGlobal') {
+					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+				} else {
+					return data.entityName;
+				}
+			}();
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('top-bar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/completion')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('scope')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+							]))
+					]));
+		}();
+		var reportData = A2($author$project$Pages$Completion$View$generateNutritionReportData, language, data.nutritionIndividualData);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Utils$viewStandardCells(reportData.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content completion')
+				]),
+			_List_fromArray(
+				[
+					topBar,
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('report')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('table')
+										]),
+									A2(
+										$elm$core$List$cons,
+										captionsRow,
+										A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, reportData.rows)))
+								]))
+						]))
+				]));
 	});
 var $author$project$Pages$Completion$View$view = F5(
 	function (language, currentDate, themePath, modelBackend, model) {
@@ -10411,7 +10896,6 @@ var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
 var $author$project$Translate$PopulationSelectionOption = function (a) {
 	return {$: 'PopulationSelectionOption', a: a};
 };
-var $author$project$Translate$Scope = {$: 'Scope'};
 var $author$project$Translate$SelectScope = {$: 'SelectScope'};
 var $author$project$Pages$CompletionMenu$Model$SelectionMade = {$: 'SelectionMade'};
 var $author$project$Pages$CompletionMenu$Model$SetHealthCenter = function (a) {
@@ -10538,14 +11022,6 @@ var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
 					options)));
 	});
 var $author$project$Translate$LoadData = {$: 'LoadData'};
-var $elm$html$Html$a = _VirtualDom_node('a');
-var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -10605,16 +11081,6 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			options);
 		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
 	});
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
 var $author$project$Pages$Utils$viewLabel = F2(
 	function (language, translationId) {
 		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
@@ -10752,7 +11218,6 @@ var $author$project$Pages$CompletionMenu$View$view = F4(
 			return $author$project$Gizra$Html$emptyNode;
 		}
 	});
-var $author$project$Translate$NewScope = {$: 'NewScope'};
 var $author$project$Translate$ReportType = function (a) {
 	return {$: 'ReportType', a: a};
 };
@@ -10822,24 +11287,6 @@ var $justinmimbs$date$Date$ordinalDay = A2(
 	function ($) {
 		return $.ordinalDay;
 	});
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$Bitwise$and = _Bitwise_and;
-var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var $elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			$elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var $elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3($elm$core$String$repeatHelp, n, chunk, '');
-	});
 var $elm$core$String$padLeft = F3(
 	function (n, _char, string) {
 		return _Utils_ap(
@@ -10849,9 +11296,6 @@ var $elm$core$String$padLeft = F3(
 				$elm$core$String$fromChar(_char)),
 			string);
 	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
 var $justinmimbs$date$Date$padSignedInt = F2(
 	function (length, _int) {
 		return _Utils_ap(
@@ -11221,10 +11665,6 @@ var $elm$parser$Parser$Advanced$getOffset = $elm$parser$Parser$Advanced$Parser(
 		return A3($elm$parser$Parser$Advanced$Good, false, s.offset, s);
 	});
 var $elm$parser$Parser$getOffset = $elm$parser$Parser$Advanced$getOffset;
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
 var $justinmimbs$date$Pattern$fieldRepeats = function (str) {
 	var _v0 = $elm$core$String$toList(str);
 	if (_v0.b && (!_v0.b.b)) {
@@ -11659,38 +12099,6 @@ var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
 						]))
 				]));
 	});
-var $author$project$Pages$Reports$View$viewCustomCells = F2(
-	function (labelClass, valueClass) {
-		return $elm$core$List$indexedMap(
-			F2(
-				function (index, cellText) {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('item', true),
-										_Utils_Tuple2(labelClass, !index),
-										_Utils_Tuple2(valueClass, !(!index))
-									]))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(cellText)
-							]));
-				}));
-	});
-var $author$project$Pages$Reports$View$viewStandardCells = A2($author$project$Pages$Reports$View$viewCustomCells, 'label', 'value');
-var $author$project$Pages$Reports$View$viewStandardRow = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Pages$Reports$View$viewStandardCells,
-	$elm$html$Html$div(
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			])));
 var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 	function (language, limitDate, startDate, scopeLabel, records) {
 		var data = A3($author$project$Pages$Reports$View$generateAcuteIllnessReportData, language, startDate, records);
@@ -11703,7 +12111,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 				[
 					$elm$html$Html$Attributes$class('row captions')
 				]),
-			$author$project$Pages$Reports$View$viewStandardCells(data.captions));
+			$author$project$Pages$Utils$viewStandardCells(data.captions));
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -11722,7 +12130,7 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 						A2(
 							$elm$core$List$cons,
 							captionsRow,
-							A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, data.rows)))
+							A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, data.rows)))
 					]),
 				_List_fromArray(
 					[
@@ -13309,7 +13717,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Reports$View$viewStandardCells(data.captions))
+							$author$project$Pages$Utils$viewStandardCells(data.captions))
 						]),
 					_Utils_ap(
 						A2($elm$core$List$map, viewRow, data.rows),
@@ -13321,7 +13729,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 									[
 										$elm$html$Html$Attributes$class('row encounters-totals')
 									]),
-								$author$project$Pages$Reports$View$viewStandardCells(
+								$author$project$Pages$Utils$viewStandardCells(
 									_List_fromArray(
 										[data.totals.label, data.totals.total, data.totals.unique])))
 							]))))
@@ -13345,9 +13753,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Reports$View$viewStandardCells(tableData.captions))
+							$author$project$Pages$Utils$viewStandardCells(tableData.captions))
 						]),
-					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)));
+					A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, tableData.rows)));
 		};
 		return A2(
 			$elm$core$List$cons,
@@ -14357,219 +14765,6 @@ var $author$project$Pages$Reports$Utils$resolvePreviousDataSetForMonth = F3(
 				},
 				A2($elm$core$List$range, 1, 3)));
 	});
-var $myrho$elm_round$Round$addSign = F2(
-	function (signed, str) {
-		var isNotZero = A2(
-			$elm$core$List$any,
-			function (c) {
-				return (!_Utils_eq(
-					c,
-					_Utils_chr('0'))) && (!_Utils_eq(
-					c,
-					_Utils_chr('.')));
-			},
-			$elm$core$String$toList(str));
-		return _Utils_ap(
-			(signed && isNotZero) ? '-' : '',
-			str);
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $myrho$elm_round$Round$increaseNum = function (_v0) {
-	var head = _v0.a;
-	var tail = _v0.b;
-	if (_Utils_eq(
-		head,
-		_Utils_chr('9'))) {
-		var _v1 = $elm$core$String$uncons(tail);
-		if (_v1.$ === 'Nothing') {
-			return '01';
-		} else {
-			var headtail = _v1.a;
-			return A2(
-				$elm$core$String$cons,
-				_Utils_chr('0'),
-				$myrho$elm_round$Round$increaseNum(headtail));
-		}
-	} else {
-		var c = $elm$core$Char$toCode(head);
-		return ((c >= 48) && (c < 57)) ? A2(
-			$elm$core$String$cons,
-			$elm$core$Char$fromCode(c + 1),
-			tail) : '0';
-	}
-};
-var $elm$core$Basics$isInfinite = _Basics_isInfinite;
-var $elm$core$Basics$isNaN = _Basics_isNaN;
-var $elm$core$String$padRight = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			string,
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)));
-	});
-var $elm$core$String$reverse = _String_reverse;
-var $myrho$elm_round$Round$splitComma = function (str) {
-	var _v0 = A2($elm$core$String$split, '.', str);
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var before = _v0.a;
-			var _v1 = _v0.b;
-			var after = _v1.a;
-			return _Utils_Tuple2(before, after);
-		} else {
-			var before = _v0.a;
-			return _Utils_Tuple2(before, '0');
-		}
-	} else {
-		return _Utils_Tuple2('0', '0');
-	}
-};
-var $elm$core$Tuple$mapFirst = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var $myrho$elm_round$Round$toDecimal = function (fl) {
-	var _v0 = A2(
-		$elm$core$String$split,
-		'e',
-		$elm$core$String$fromFloat(
-			$elm$core$Basics$abs(fl)));
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var num = _v0.a;
-			var _v1 = _v0.b;
-			var exp = _v1.a;
-			var e = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				$elm$core$String$toInt(
-					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
-			var _v2 = $myrho$elm_round$Round$splitComma(num);
-			var before = _v2.a;
-			var after = _v2.b;
-			var total = _Utils_ap(before, after);
-			var zeroed = (e < 0) ? A2(
-				$elm$core$Maybe$withDefault,
-				'0',
-				A2(
-					$elm$core$Maybe$map,
-					function (_v3) {
-						var a = _v3.a;
-						var b = _v3.b;
-						return a + ('.' + b);
-					},
-					A2(
-						$elm$core$Maybe$map,
-						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
-						$elm$core$String$uncons(
-							_Utils_ap(
-								A2(
-									$elm$core$String$repeat,
-									$elm$core$Basics$abs(e),
-									'0'),
-								total))))) : A3(
-				$elm$core$String$padRight,
-				e + 1,
-				_Utils_chr('0'),
-				total);
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				zeroed);
-		} else {
-			var num = _v0.a;
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				num);
-		}
-	} else {
-		return '';
-	}
-};
-var $myrho$elm_round$Round$roundFun = F3(
-	function (functor, s, fl) {
-		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
-			return $elm$core$String$fromFloat(fl);
-		} else {
-			var signed = fl < 0;
-			var _v0 = $myrho$elm_round$Round$splitComma(
-				$myrho$elm_round$Round$toDecimal(
-					$elm$core$Basics$abs(fl)));
-			var before = _v0.a;
-			var after = _v0.b;
-			var r = $elm$core$String$length(before) + s;
-			var normalized = _Utils_ap(
-				A2($elm$core$String$repeat, (-r) + 1, '0'),
-				A3(
-					$elm$core$String$padRight,
-					r,
-					_Utils_chr('0'),
-					_Utils_ap(before, after)));
-			var totalLen = $elm$core$String$length(normalized);
-			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
-			var increase = A2(
-				functor,
-				signed,
-				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
-			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
-			var num = increase ? $elm$core$String$reverse(
-				A2(
-					$elm$core$Maybe$withDefault,
-					'1',
-					A2(
-						$elm$core$Maybe$map,
-						$myrho$elm_round$Round$increaseNum,
-						$elm$core$String$uncons(
-							$elm$core$String$reverse(remains))))) : remains;
-			var numLen = $elm$core$String$length(num);
-			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
-				num,
-				A2(
-					$elm$core$String$repeat,
-					$elm$core$Basics$abs(s),
-					'0')) : ((_Utils_cmp(
-				s,
-				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
-				before + '.',
-				A3(
-					$elm$core$String$padRight,
-					s,
-					_Utils_chr('0'),
-					after))));
-			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
-		}
-	});
-var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
-	F2(
-		function (signed, str) {
-			var _v0 = $elm$core$String$uncons(str);
-			if (_v0.$ === 'Nothing') {
-				return false;
-			} else {
-				if ('5' === _v0.a.a.valueOf()) {
-					if (_v0.a.b === '') {
-						var _v1 = _v0.a;
-						return !signed;
-					} else {
-						var _v2 = _v0.a;
-						return true;
-					}
-				} else {
-					var _v3 = _v0.a;
-					var _int = _v3.a;
-					return function (i) {
-						return ((i > 53) && signed) || ((i >= 53) && (!signed));
-					}(
-						$elm$core$Char$toCode(_int));
-				}
-			}
-		}));
 var $author$project$Pages$Reports$View$toMetricsResultsTableData = F3(
 	function (language, heading, data) {
 		var generateRow = function (label) {
@@ -14978,7 +15173,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = functi
 				[
 					$elm$html$Html$Attributes$class('row')
 				]),
-			A3($author$project$Pages$Reports$View$viewCustomCells, 'row-label', 'value', cells));
+			A3($author$project$Pages$Utils$viewCustomCells, 'row-label', 'value', cells));
 	};
 	var captionsRow = A2(
 		$elm$html$Html$div,
@@ -14986,7 +15181,7 @@ var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = functi
 			[
 				$elm$html$Html$Attributes$class('row')
 			]),
-		A3($author$project$Pages$Reports$View$viewCustomCells, 'row-label', 'heading', data.captions));
+		A3($author$project$Pages$Utils$viewCustomCells, 'row-label', 'heading', data.captions));
 	return _List_fromArray(
 		[
 			A2(
@@ -15289,8 +15484,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Reports$View$viewStandardCells(tableData.captions)),
-						A2($elm$core$List$map, $author$project$Pages$Reports$View$viewStandardRow, tableData.rows)))
+							$author$project$Pages$Utils$viewStandardCells(tableData.captions)),
+						A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, tableData.rows)))
 				]);
 		};
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
