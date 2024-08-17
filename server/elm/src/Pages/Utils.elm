@@ -11,6 +11,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icons
 import Svg.Attributes
+import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
@@ -252,30 +253,11 @@ generateReportsHeaderImage themePath =
 
 
 
--- Table
+-- Constants
 
 
-viewStandardRow : List String -> Html any
-viewStandardRow =
-    viewStandardCells
-        >> div [ class "row" ]
-
-
-viewStandardCells : List String -> List (Html any)
-viewStandardCells =
-    viewCustomCells "label" "value"
-
-
-viewCustomCells : String -> String -> List String -> List (Html any)
-viewCustomCells labelClass valueClass =
-    List.indexedMap
-        (\index cellText ->
-            div
-                [ classList
-                    [ ( "item", True )
-                    , ( labelClass, index == 0 )
-                    , ( valueClass, index /= 0 )
-                    ]
-                ]
-                [ text cellText ]
-        )
+{-| The date system became live, and first content was uploaded.
+-}
+launchDate : NominalDate
+launchDate =
+    Date.fromCalendarDate 2018 Jan 1

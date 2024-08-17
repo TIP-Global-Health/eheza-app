@@ -5505,7 +5505,7 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$Completion$Model$emptyModel = {};
+var $author$project$Pages$Completion$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
 var $author$project$Pages$CompletionMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $krisajenkins$remotedata$RemoteData$NotAsked = {$: 'NotAsked'};
 var $author$project$Pages$Reports$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
@@ -5807,10 +5807,114 @@ var $author$project$App$Model$PagesReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
 var $author$project$Error$Utils$noError = $elm$core$Maybe$Nothing;
+var $elm_community$maybe_extra$Maybe$Extra$or = F2(
+	function (ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return mb;
+		} else {
+			return ma;
+		}
+	});
+var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
+var $author$project$Pages$Completion$Utils$reportTypeFromString = function (reportType) {
+	if (reportType === 'nutrition-individual') {
+		return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Pages$Completion$Update$update = F4(
 	function (currentDate, modelBackend, msg, model) {
-		return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+		switch (msg.$) {
+			case 'NoOp':
+				return A4($author$project$App$Model$PagesReturn, model, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
+			case 'SetReportType':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							limitDate: $elm$core$Maybe$Nothing,
+							reportType: $author$project$Pages$Completion$Utils$reportTypeFromString(value),
+							startDate: $elm$core$Maybe$Nothing
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetStartDate':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							startDate: $elm$core$Maybe$Just(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetStartDateSelectorState':
+				var state = msg.a;
+				var defaultSelection = A2(
+					$elm_community$maybe_extra$Maybe$Extra$or,
+					model.startDate,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.dateDefault;
+						},
+						state));
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{startDate: defaultSelection, startDateSelectorPopupState: state}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetLimitDate':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							limitDate: $elm$core$Maybe$Just(value)
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			default:
+				var state = msg.a;
+				var defaultSelection = A2(
+					$elm_community$maybe_extra$Maybe$Extra$or,
+					model.limitDate,
+					A2(
+						$elm$core$Maybe$andThen,
+						function ($) {
+							return $.dateDefault;
+						},
+						state));
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{limitDate: defaultSelection, limitDateSelectorPopupState: state}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+		}
 	});
 var $author$project$Pages$Components$Types$SelectionOptionDemographics = {$: 'SelectionOptionDemographics'};
 var $author$project$Pages$Components$Types$SelectionOptionGlobal = {$: 'SelectionOptionGlobal'};
@@ -5866,15 +5970,6 @@ var $author$project$Pages$CompletionMenu$Update$update = F2(
 		}
 	});
 var $krisajenkins$remotedata$RemoteData$Loading = {$: 'Loading'};
-var $elm$core$Maybe$andThen = F2(
-	function (callback, maybeValue) {
-		if (maybeValue.$ === 'Just') {
-			var value = maybeValue.a;
-			return callback(value);
-		} else {
-			return $elm$core$Maybe$Nothing;
-		}
-	});
 var $elm$json$Json$Encode$list = F2(
 	function (func, entries) {
 		return _Json_wrap(
@@ -5963,14 +6058,6 @@ var $author$project$Pages$Reports$Utils$isWideScope = function (selectedEntity) 
 		_List_fromArray(
 			[$author$project$Backend$Reports$Model$EntityGlobal, $author$project$Backend$Reports$Model$EntityProvince, $author$project$Backend$Reports$Model$EntityDistrict, $author$project$Backend$Reports$Model$EntityHealthCenter]));
 };
-var $elm_community$maybe_extra$Maybe$Extra$or = F2(
-	function (ma, mb) {
-		if (ma.$ === 'Nothing') {
-			return mb;
-		} else {
-			return ma;
-		}
-	});
 var $author$project$Pages$Reports$Model$NutritionReportDataCalculationCompleted = function (a) {
 	return {$: 'NutritionReportDataCalculationCompleted', a: a};
 };
@@ -9762,6 +9849,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Commune', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Completed':
 				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'CompletionReportType':
+				var reportType = transId.a;
+				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CBNP':
 				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Cell':
@@ -10417,71 +10507,44 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Translate$CompletionReportType = function (a) {
+	return {$: 'CompletionReportType', a: a};
+};
 var $author$project$Translate$NewScope = {$: 'NewScope'};
+var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
 var $author$project$Translate$Scope = {$: 'Scope'};
+var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
+var $author$project$Translate$SelectStartDate = {$: 'SelectStartDate'};
+var $author$project$Pages$Completion$Model$SetLimitDate = function (a) {
+	return {$: 'SetLimitDate', a: a};
+};
+var $author$project$Pages$Completion$Model$SetLimitDateSelectorState = function (a) {
+	return {$: 'SetLimitDateSelectorState', a: a};
+};
+var $author$project$Pages$Completion$Model$SetReportType = function (a) {
+	return {$: 'SetReportType', a: a};
+};
+var $author$project$Pages$Completion$Model$SetStartDate = function (a) {
+	return {$: 'SetStartDate', a: a};
+};
+var $author$project$Pages$Completion$Model$SetStartDateSelectorState = function (a) {
+	return {$: 'SetStartDateSelectorState', a: a};
+};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $author$project$Translate$Activity = {$: 'Activity'};
-var $author$project$Translate$Completed = {$: 'Completed'};
-var $author$project$Translate$Expected = {$: 'Expected'};
-var $author$project$Translate$NutritionActivity = function (a) {
-	return {$: 'NutritionActivity', a: a};
-};
-var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
-var $author$project$Pages$Completion$Model$allNutritionActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$NutritionHeight, $author$project$Backend$Completion$Model$NutritionNutrition, $author$project$Backend$Completion$Model$NutritionPhoto, $author$project$Backend$Completion$Model$NutritionWeight, $author$project$Backend$Completion$Model$NutritionMUAC, $author$project$Backend$Completion$Model$NutritionContributingFactors, $author$project$Backend$Completion$Model$NutritionFollowUp, $author$project$Backend$Completion$Model$NutritionHealthEducation, $author$project$Backend$Completion$Model$NutritionSendToHC, $author$project$Backend$Completion$Model$NutritionNCDA]);
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $elm$core$String$foldr = _String_foldr;
-var $elm$core$String$toList = function (string) {
-	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
-};
-var $myrho$elm_round$Round$addSign = F2(
-	function (signed, str) {
-		var isNotZero = A2(
-			$elm$core$List$any,
-			function (c) {
-				return (!_Utils_eq(
-					c,
-					_Utils_chr('0'))) && (!_Utils_eq(
-					c,
-					_Utils_chr('.')));
-			},
-			$elm$core$String$toList(str));
-		return _Utils_ap(
-			(signed && isNotZero) ? '-' : '',
-			str);
+var $justinmimbs$date$Date$day = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toCalendarDate,
+	function ($) {
+		return $.day;
 	});
-var $elm$core$String$fromFloat = _String_fromNumber;
+var $justinmimbs$date$Date$ordinalDay = A2(
+	$elm$core$Basics$composeR,
+	$justinmimbs$date$Date$toOrdinalDate,
+	function ($) {
+		return $.ordinalDay;
+	});
 var $elm$core$String$cons = _String_cons;
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $myrho$elm_round$Round$increaseNum = function (_v0) {
-	var head = _v0.a;
-	var tail = _v0.b;
-	if (_Utils_eq(
-		head,
-		_Utils_chr('9'))) {
-		var _v1 = $elm$core$String$uncons(tail);
-		if (_v1.$ === 'Nothing') {
-			return '01';
-		} else {
-			var headtail = _v1.a;
-			return A2(
-				$elm$core$String$cons,
-				_Utils_chr('0'),
-				$myrho$elm_round$Round$increaseNum(headtail));
-		}
-	} else {
-		var c = $elm$core$Char$toCode(head);
-		return ((c >= 48) && (c < 57)) ? A2(
-			$elm$core$String$cons,
-			$elm$core$Char$fromCode(c + 1),
-			tail) : '0';
-	}
-};
-var $elm$core$Basics$isInfinite = _Basics_isInfinite;
-var $elm$core$Basics$isNaN = _Basics_isNaN;
 var $elm$core$String$fromChar = function (_char) {
 	return A2($elm$core$String$cons, _char, '');
 };
@@ -10499,794 +10562,6 @@ var $elm$core$String$repeat = F2(
 	function (n, chunk) {
 		return A3($elm$core$String$repeatHelp, n, chunk, '');
 	});
-var $elm$core$String$padRight = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			string,
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)));
-	});
-var $elm$core$String$reverse = _String_reverse;
-var $myrho$elm_round$Round$splitComma = function (str) {
-	var _v0 = A2($elm$core$String$split, '.', str);
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var before = _v0.a;
-			var _v1 = _v0.b;
-			var after = _v1.a;
-			return _Utils_Tuple2(before, after);
-		} else {
-			var before = _v0.a;
-			return _Utils_Tuple2(before, '0');
-		}
-	} else {
-		return _Utils_Tuple2('0', '0');
-	}
-};
-var $elm$core$Tuple$mapFirst = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var $myrho$elm_round$Round$toDecimal = function (fl) {
-	var _v0 = A2(
-		$elm$core$String$split,
-		'e',
-		$elm$core$String$fromFloat(
-			$elm$core$Basics$abs(fl)));
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var num = _v0.a;
-			var _v1 = _v0.b;
-			var exp = _v1.a;
-			var e = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				$elm$core$String$toInt(
-					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
-			var _v2 = $myrho$elm_round$Round$splitComma(num);
-			var before = _v2.a;
-			var after = _v2.b;
-			var total = _Utils_ap(before, after);
-			var zeroed = (e < 0) ? A2(
-				$elm$core$Maybe$withDefault,
-				'0',
-				A2(
-					$elm$core$Maybe$map,
-					function (_v3) {
-						var a = _v3.a;
-						var b = _v3.b;
-						return a + ('.' + b);
-					},
-					A2(
-						$elm$core$Maybe$map,
-						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
-						$elm$core$String$uncons(
-							_Utils_ap(
-								A2(
-									$elm$core$String$repeat,
-									$elm$core$Basics$abs(e),
-									'0'),
-								total))))) : A3(
-				$elm$core$String$padRight,
-				e + 1,
-				_Utils_chr('0'),
-				total);
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				zeroed);
-		} else {
-			var num = _v0.a;
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				num);
-		}
-	} else {
-		return '';
-	}
-};
-var $myrho$elm_round$Round$roundFun = F3(
-	function (functor, s, fl) {
-		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
-			return $elm$core$String$fromFloat(fl);
-		} else {
-			var signed = fl < 0;
-			var _v0 = $myrho$elm_round$Round$splitComma(
-				$myrho$elm_round$Round$toDecimal(
-					$elm$core$Basics$abs(fl)));
-			var before = _v0.a;
-			var after = _v0.b;
-			var r = $elm$core$String$length(before) + s;
-			var normalized = _Utils_ap(
-				A2($elm$core$String$repeat, (-r) + 1, '0'),
-				A3(
-					$elm$core$String$padRight,
-					r,
-					_Utils_chr('0'),
-					_Utils_ap(before, after)));
-			var totalLen = $elm$core$String$length(normalized);
-			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
-			var increase = A2(
-				functor,
-				signed,
-				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
-			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
-			var num = increase ? $elm$core$String$reverse(
-				A2(
-					$elm$core$Maybe$withDefault,
-					'1',
-					A2(
-						$elm$core$Maybe$map,
-						$myrho$elm_round$Round$increaseNum,
-						$elm$core$String$uncons(
-							$elm$core$String$reverse(remains))))) : remains;
-			var numLen = $elm$core$String$length(num);
-			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
-				num,
-				A2(
-					$elm$core$String$repeat,
-					$elm$core$Basics$abs(s),
-					'0')) : ((_Utils_cmp(
-				s,
-				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
-				before + '.',
-				A3(
-					$elm$core$String$padRight,
-					s,
-					_Utils_chr('0'),
-					after))));
-			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
-		}
-	});
-var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
-	F2(
-		function (signed, str) {
-			var _v0 = $elm$core$String$uncons(str);
-			if (_v0.$ === 'Nothing') {
-				return false;
-			} else {
-				if ('5' === _v0.a.a.valueOf()) {
-					if (_v0.a.b === '') {
-						var _v1 = _v0.a;
-						return !signed;
-					} else {
-						var _v2 = _v0.a;
-						return true;
-					}
-				} else {
-					var _v3 = _v0.a;
-					var _int = _v3.a;
-					return function (i) {
-						return ((i > 53) && signed) || ((i >= 53) && (!signed));
-					}(
-						$elm$core$Char$toCode(_int));
-				}
-			}
-		}));
-var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
-	function (language, records) {
-		var count = F2(
-			function (resolveFunc, activity) {
-				return $elm$core$List$length(
-					A2(
-						$elm$core$List$filter,
-						A2(
-							$elm$core$Basics$composeR,
-							resolveFunc,
-							$elm$core$List$member(activity)),
-						records));
-			});
-		var calcualtePercentage = F2(
-			function (nominator, total) {
-				return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 3, (nominator / total) * 100) + '%');
-			});
-		return {
-			captions: _List_fromArray(
-				[
-					A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
-					'%'
-				]),
-			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionIndividual),
-			rows: A2(
-				$elm$core$List$map,
-				function (activity) {
-					var expected = A2(
-						count,
-						function ($) {
-							return $.expectedActivities;
-						},
-						activity);
-					var completed = A2(
-						count,
-						function ($) {
-							return $.completedActivities;
-						},
-						activity);
-					return _List_fromArray(
-						[
-							A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$NutritionActivity(activity)),
-							$elm$core$String$fromInt(expected),
-							$elm$core$String$fromInt(completed),
-							A2(calcualtePercentage, completed, expected)
-						]);
-				},
-				$author$project$Pages$Completion$Model$allNutritionActivities)
-		};
-	});
-var $elm$html$Html$Attributes$href = function (url) {
-	return A2(
-		$elm$html$Html$Attributes$stringProperty,
-		'href',
-		_VirtualDom_noJavaScriptUri(url));
-};
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
-var $author$project$Pages$Utils$viewCustomCells = F2(
-	function (labelClass, valueClass) {
-		return $elm$core$List$indexedMap(
-			F2(
-				function (index, cellText) {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('item', true),
-										_Utils_Tuple2(labelClass, !index),
-										_Utils_Tuple2(valueClass, !(!index))
-									]))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(cellText)
-							]));
-				}));
-	});
-var $author$project$Pages$Utils$viewStandardCells = A2($author$project$Pages$Utils$viewCustomCells, 'label', 'value');
-var $author$project$Pages$Utils$viewStandardRow = A2(
-	$elm$core$Basics$composeR,
-	$author$project$Pages$Utils$viewStandardCells,
-	$elm$html$Html$div(
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			])));
-var $author$project$Pages$Completion$View$viewCompletionData = F5(
-	function (language, currentDate, themePath, data, model) {
-		var topBar = function () {
-			var scopeLabel = function () {
-				var _v0 = data.entityType;
-				if (_v0.$ === 'EntityGlobal') {
-					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
-				} else {
-					return data.entityName;
-				}
-			}();
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('top-bar')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('new-selection')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$a,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$href('/admin/reports/completion')
-									]),
-								_List_fromArray(
-									[
-										A2(
-										$elm$html$Html$button,
-										_List_Nil,
-										_List_fromArray(
-											[
-												$elm$html$Html$text(
-												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
-											]))
-									]))
-							])),
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('scope')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(
-								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
-							]))
-					]));
-		}();
-		var reportData = A2($author$project$Pages$Completion$View$generateNutritionReportData, language, data.nutritionIndividualData);
-		var captionsRow = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row captions')
-				]),
-			$author$project$Pages$Utils$viewStandardCells(reportData.captions));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content completion')
-				]),
-			_List_fromArray(
-				[
-					topBar,
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('inputs')
-						]),
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('report')
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$elm$html$Html$div,
-									_List_fromArray(
-										[
-											$elm$html$Html$Attributes$class('table')
-										]),
-									A2(
-										$elm$core$List$cons,
-										captionsRow,
-										A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, reportData.rows)))
-								]))
-						]))
-				]));
-	});
-var $author$project$Pages$Completion$View$view = F5(
-	function (language, currentDate, themePath, modelBackend, model) {
-		var _v0 = modelBackend.completionData;
-		if (_v0.$ === 'Just') {
-			if (_v0.a.$ === 'Ok') {
-				var data = _v0.a.a;
-				return A5($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, themePath, data, model);
-			} else {
-				var err = _v0.a.a;
-				return $elm$html$Html$text(
-					$elm$core$Debug$toString(err));
-			}
-		} else {
-			return $author$project$Gizra$Html$emptyNode;
-		}
-	});
-var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
-var $author$project$Translate$PopulationSelectionOption = function (a) {
-	return {$: 'PopulationSelectionOption', a: a};
-};
-var $author$project$Translate$SelectScope = {$: 'SelectScope'};
-var $author$project$Pages$CompletionMenu$Model$SelectionMade = {$: 'SelectionMade'};
-var $author$project$Pages$CompletionMenu$Model$SetHealthCenter = function (a) {
-	return {$: 'SetHealthCenter', a: a};
-};
-var $author$project$Pages$CompletionMenu$Model$SetPopulationSelection = function (a) {
-	return {$: 'SetPopulationSelection', a: a};
-};
-var $author$project$Pages$Components$Utils$populationSelectionOptionToString = function (selectionOption) {
-	switch (selectionOption.$) {
-		case 'SelectionOptionGlobal':
-			return 'all';
-		case 'SelectionOptionDemographics':
-			return 'demographics';
-		default:
-			return 'hc';
-	}
-};
-var $elm$core$List$sortBy = _List_sortBy;
-var $author$project$Pages$Utils$viewCustomLabel = F4(
-	function (language, translationId, suffix, class_) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class(class_)
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(
-					_Utils_ap(
-						A2($author$project$Translate$translate, language, translationId),
-						suffix))
-				]));
-	});
-var $elm$html$Html$option = _VirtualDom_node('option');
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
-var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
-var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
-	return A2(
-		$elm$html$Html$option,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$value(''),
-				$elm$html$Html$Attributes$selected(isSelected)
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('')
-			]));
-};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $elm$html$Html$select = _VirtualDom_node('select');
-var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
-	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
-		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
-			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
-		return A2(
-			$elm$html$Html$select,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onInput(setMsg),
-					$elm$html$Html$Attributes$class(inputClass)
-				]),
-			A2(
-				$elm$core$List$cons,
-				emptyOption,
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var label = _v0.a;
-						var value_ = _v0.b;
-						return A2(
-							$elm$html$Html$option,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$value(
-									toStringFunc(value_)),
-									$elm$html$Html$Attributes$selected(
-									_Utils_eq(
-										currentValue,
-										$elm$core$Maybe$Just(value_)))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(label)
-								]));
-					},
-					options)));
-	});
-var $author$project$Translate$LoadData = {$: 'LoadData'};
-var $elm$virtual_dom$VirtualDom$Normal = function (a) {
-	return {$: 'Normal', a: a};
-};
-var $elm$html$Html$Events$on = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$Normal(decoder));
-	});
-var $elm$html$Html$Events$onClick = function (msg) {
-	return A2(
-		$elm$html$Html$Events$on,
-		'click',
-		$elm$json$Json$Decode$succeed(msg));
-};
-var $author$project$Pages$Utils$viewMenuActionButton = F4(
-	function (language, path, label, selectionMadeMsg) {
-		return A2(
-			$elm$html$Html$a,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$href(path)
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					_List_fromArray(
-						[
-							$elm$html$Html$Events$onClick(selectionMadeMsg)
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, label))
-						]))
-				]));
-	});
-var $author$project$Pages$Utils$viewLoadDataButton = F3(
-	function (language, path, selectionMadeMsg) {
-		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
-	});
-var $author$project$Pages$Utils$viewSelectListInput = F7(
-	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
-		var transFunc = A2(
-			$elm$core$Basics$composeR,
-			transId,
-			$author$project$Translate$translate(language));
-		var optionsPairs = A2(
-			$elm$core$List$map,
-			function (option) {
-				return _Utils_Tuple2(
-					transFunc(option),
-					option);
-			},
-			options);
-		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
-	});
-var $author$project$Pages$Utils$viewLabel = F2(
-	function (language, translationId) {
-		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
-	});
-var $author$project$Pages$Utils$wrapSelectListInput = F4(
-	function (language, labelTransId, disabled, selectList) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$classList(
-					_List_fromArray(
-						[
-							_Utils_Tuple2('select-input-wrapper', true),
-							_Utils_Tuple2('disabled', disabled)
-						]))
-				]),
-			_List_fromArray(
-				[
-					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
-					selectList
-				]));
-	});
-var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
-	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
-				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$CompletionMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
-		var _v0 = A2(
-			$elm$core$Maybe$withDefault,
-			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
-			A2(
-				$elm$core$Maybe$map,
-				function (populationSelection) {
-					switch (populationSelection.$) {
-						case 'SelectionOptionGlobal':
-							return _Utils_Tuple2(
-								_List_Nil,
-								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/completion/all', $author$project$Pages$CompletionMenu$Model$SelectionMade));
-						case 'SelectionOptionHealthCenter':
-							var options = A2(
-								$elm$core$List$map,
-								function (healthCenter) {
-									return _Utils_Tuple2(healthCenter.name, healthCenter.id);
-								},
-								A2(
-									$elm$core$List$sortBy,
-									function ($) {
-										return $.name;
-									},
-									data.healthCenters));
-							return _Utils_Tuple2(
-								_List_fromArray(
-									[
-										A4(
-										$author$project$Pages$Utils$wrapSelectListInput,
-										language,
-										$author$project$Translate$HealthCenter,
-										false,
-										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$CompletionMenu$Model$SetHealthCenter, 'select-input', true))
-									]),
-								A2(
-									$elm$core$Maybe$withDefault,
-									$author$project$Gizra$Html$emptyNode,
-									A2(
-										$elm$core$Maybe$map,
-										function (selectedHealthCenter) {
-											return A3(
-												$author$project$Pages$Utils$viewLoadDataButton,
-												language,
-												'/admin/reports/completion/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
-												$author$project$Pages$CompletionMenu$Model$SelectionMade);
-										},
-										model.selectedHealthCenter)));
-						default:
-							return _Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode);
-					}
-				},
-				model.populationSelection));
-		var derivedInputs = _v0.a;
-		var actionButton_ = _v0.b;
-		var actionButton = model.selected ? $elm$html$Html$text(
-			A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage)) : actionButton_;
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('page-content completion-menu')
-				]),
-			_List_fromArray(
-				[
-					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectScope, ':', 'header'),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('inputs')
-						]),
-					A2($elm$core$List$cons, populationSelectionInput, derivedInputs)),
-					A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('actions')
-						]),
-					_List_fromArray(
-						[actionButton]))
-				]));
-	});
-var $author$project$Pages$CompletionMenu$View$view = F4(
-	function (language, themePath, modelBackend, model) {
-		var _v0 = modelBackend.completionMenuData;
-		if (_v0.$ === 'Just') {
-			if (_v0.a.$ === 'Ok') {
-				var data = _v0.a.a;
-				return A4($author$project$Pages$CompletionMenu$View$viewMenu, language, themePath, data, model);
-			} else {
-				var err = _v0.a.a;
-				return $elm$html$Html$text(
-					$elm$core$Debug$toString(err));
-			}
-		} else {
-			return $author$project$Gizra$Html$emptyNode;
-		}
-	});
-var $author$project$Translate$ReportType = function (a) {
-	return {$: 'ReportType', a: a};
-};
-var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
-var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
-var $author$project$Translate$SelectStartDate = {$: 'SelectStartDate'};
-var $author$project$Translate$SelectedScope = function (a) {
-	return {$: 'SelectedScope', a: a};
-};
-var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
-	return {$: 'SetLimitDate', a: a};
-};
-var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a) {
-	return {$: 'SetLimitDateSelectorState', a: a};
-};
-var $author$project$Pages$Reports$Model$SetReportType = function (a) {
-	return {$: 'SetReportType', a: a};
-};
-var $author$project$Pages$Reports$Model$SetStartDate = function (a) {
-	return {$: 'SetStartDate', a: a};
-};
-var $author$project$Pages$Reports$Model$SetStartDateSelectorState = function (a) {
-	return {$: 'SetStartDateSelectorState', a: a};
-};
-var $author$project$Translate$WideScopeNote = {$: 'WideScopeNote'};
-var $elm$core$Basics$min = F2(
-	function (x, y) {
-		return (_Utils_cmp(x, y) < 0) ? x : y;
-	});
-var $justinmimbs$date$Date$add = F3(
-	function (unit, n, _v0) {
-		var rd = _v0.a;
-		switch (unit.$) {
-			case 'Years':
-				return A3(
-					$justinmimbs$date$Date$add,
-					$justinmimbs$date$Date$Months,
-					12 * n,
-					$justinmimbs$date$Date$RD(rd));
-			case 'Months':
-				var date = $justinmimbs$date$Date$toCalendarDate(
-					$justinmimbs$date$Date$RD(rd));
-				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
-				var m = $justinmimbs$date$Date$numberToMonth(
-					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
-				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
-				return $justinmimbs$date$Date$RD(
-					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
-						$elm$core$Basics$min,
-						date.day,
-						A2($justinmimbs$date$Date$daysInMonth, y, m)));
-			case 'Weeks':
-				return $justinmimbs$date$Date$RD(rd + (7 * n));
-			default:
-				return $justinmimbs$date$Date$RD(rd + n);
-		}
-	});
-var $justinmimbs$date$Date$day = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toCalendarDate,
-	function ($) {
-		return $.day;
-	});
-var $justinmimbs$date$Date$ordinalDay = A2(
-	$elm$core$Basics$composeR,
-	$justinmimbs$date$Date$toOrdinalDate,
-	function ($) {
-		return $.ordinalDay;
-	});
 var $elm$core$String$padLeft = F3(
 	function (n, _char, string) {
 		return _Utils_ap(
@@ -11296,6 +10571,9 @@ var $elm$core$String$padLeft = F3(
 				$elm$core$String$fromChar(_char)),
 			string);
 	});
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
 var $justinmimbs$date$Date$padSignedInt = F2(
 	function (length, _int) {
 		return _Utils_ap(
@@ -11371,6 +10649,10 @@ var $justinmimbs$date$Date$weekYear = A2(
 		return $.weekYear;
 	});
 var $justinmimbs$date$Date$weekday = A2($elm$core$Basics$composeR, $justinmimbs$date$Date$weekdayNumber, $justinmimbs$date$Date$numberToWeekday);
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
 var $justinmimbs$date$Date$ordinalSuffix = function (n) {
 	var nn = A2($elm$core$Basics$modBy, 100, n);
 	var _v0 = A2(
@@ -11665,6 +10947,10 @@ var $elm$parser$Parser$Advanced$getOffset = $elm$parser$Parser$Advanced$Parser(
 		return A3($elm$parser$Parser$Advanced$Good, false, s.offset, s);
 	});
 var $elm$parser$Parser$getOffset = $elm$parser$Parser$Advanced$getOffset;
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
 var $justinmimbs$date$Pattern$fieldRepeats = function (str) {
 	var _v0 = $elm$core$String$toList(str);
 	if (_v0.b && (!_v0.b.b)) {
@@ -11877,21 +11163,11 @@ var $author$project$Gizra$NominalDate$customFormatDDMMYYYY = function (delimiter
 	return $justinmimbs$date$Date$format('dd' + (delimiter + ('MM' + (delimiter + 'yyyy'))));
 };
 var $author$project$Gizra$NominalDate$formatDDMMYYYY = $author$project$Gizra$NominalDate$customFormatDDMMYYYY('/');
-var $elm$html$Html$img = _VirtualDom_node('img');
-var $elm$html$Html$Attributes$src = function (url) {
+var $elm$html$Html$Attributes$href = function (url) {
 	return A2(
 		$elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
-var $author$project$Pages$Utils$generateReportsHeaderImage = function (themePath) {
-	return A2(
-		$elm$html$Html$img,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$src('/' + (themePath + '/icons/statistical-queries.png'))
-			]),
-		_List_Nil);
+		'href',
+		_VirtualDom_noJavaScriptUri(url));
 };
 var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	if (m.$ === 'Nothing') {
@@ -11900,6 +11176,7 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 		return true;
 	}
 };
+var $author$project$Pages$Utils$launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 var $elm$core$Maybe$map3 = F4(
 	function (func, ma, mb, mc) {
 		if (ma.$ === 'Nothing') {
@@ -11920,223 +11197,26 @@ var $elm$core$Maybe$map3 = F4(
 			}
 		}
 	});
-var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
-	switch (reportType.$) {
-		case 'ReportAcuteIllness':
-			return 'acute-illness';
-		case 'ReportDemographics':
-			return 'demographics';
-		case 'ReportNutrition':
-			return 'nutrition';
-		default:
-			return 'prenatal';
-	}
+var $elm$virtual_dom$VirtualDom$Normal = function (a) {
+	return {$: 'Normal', a: a};
 };
-var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
-	return {$: 'AcuteIllnessDiagnosis', a: a};
-};
-var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
-var $author$project$Translate$NoDiagnosis = {$: 'NoDiagnosis'};
-var $author$project$Translate$Total = {$: 'Total'};
-var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
-	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
-var $author$project$Gizra$NominalDate$sortByDateDesc = F3(
-	function (getDateFunc, entity1, entity2) {
+var $elm$virtual_dom$VirtualDom$on = _VirtualDom_on;
+var $elm$html$Html$Events$on = F2(
+	function (event, decoder) {
 		return A2(
-			$justinmimbs$date$Date$compare,
-			getDateFunc(entity2),
-			getDateFunc(entity1));
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$Normal(decoder));
 	});
-var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
-	function (language, startDate, records) {
-		var generateRow = F2(
-			function (label, value) {
-				return _List_fromArray(
-					[
-						A2($author$project$Translate$translate, language, label),
-						$elm$core$String$fromInt(value)
-					]);
-			});
-		var acuteIllnessParticipantRecords = $elm$core$List$concat(
-			$elm_community$maybe_extra$Maybe$Extra$values(
-				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.acuteIllnessData;
-					},
-					records)));
-		var diagnosesCountDict = A3(
-			$elm$core$List$foldl,
-			F2(
-				function (diagnosis, accum) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						A3($pzp1997$assoc_list$AssocList$insert, diagnosis, 1, accum),
-						A2(
-							$elm$core$Maybe$map,
-							function (value) {
-								return A3($pzp1997$assoc_list$AssocList$insert, diagnosis, value + 1, accum);
-							},
-							A2($pzp1997$assoc_list$AssocList$get, diagnosis, accum)));
-				}),
-			$pzp1997$assoc_list$AssocList$empty,
-			$elm_community$maybe_extra$Maybe$Extra$values(
-				A2(
-					$elm$core$List$map,
-					function ($) {
-						return $.diagnosis;
-					},
-					$elm$core$List$concat(acuteIllnessParticipantRecords))));
-		var rows = A2(
-			$elm$core$List$map,
-			function (diagnosis) {
-				return A2(
-					generateRow,
-					$author$project$Translate$AcuteIllnessDiagnosis(diagnosis),
-					A2(
-						$elm$core$Maybe$withDefault,
-						0,
-						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
-			},
-			$author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses);
-		var totalsRow = A2(
-			generateRow,
-			$author$project$Translate$Total,
-			$elm$core$List$sum(
-				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
-		var illnessesWithNoDiagnosis = $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				function (encountersList) {
-					return A2(
-						$elm$core$Maybe$withDefault,
-						false,
-						A2(
-							$elm$core$Maybe$map,
-							function (encounter) {
-								return (!_Utils_eq(
-									A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
-									$elm$core$Basics$LT)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(encounter.diagnosis);
-							},
-							$elm$core$List$head(
-								A2(
-									$elm$core$List$sortWith,
-									$author$project$Gizra$NominalDate$sortByDateDesc(
-										function ($) {
-											return $.startDate;
-										}),
-									encountersList))));
-				},
-				acuteIllnessParticipantRecords));
-		var noneRow = A2(generateRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
-		return {
-			captions: _List_fromArray(
-				[
-					A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis),
-					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
-				]),
-			heading: '',
-			rows: _Utils_ap(
-				rows,
-				_Utils_ap(
-					_List_fromArray(
-						[totalsRow]),
-					_List_fromArray(
-						[noneRow])))
-		};
-	});
-var $elm$core$String$replace = F3(
-	function (before, after, string) {
-		return A2(
-			$elm$core$String$join,
-			after,
-			A2($elm$core$String$split, before, string));
-	});
-var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+var $elm$html$Html$Events$onClick = function (msg) {
 	return A2(
-		$elm$core$String$join,
-		'\n',
-		_List_fromArray(
-			[
-				tableData.heading,
-				A2($elm$core$String$join, ',', tableData.captions),
-				A2(
-				$elm$core$String$join,
-				'\n',
-				A2(
-					$elm$core$List$map,
-					$elm$core$String$join(','),
-					tableData.rows))
-			]));
+		$elm$html$Html$Events$on,
+		'click',
+		$elm$json$Json$Decode$succeed(msg));
 };
-var $author$project$Pages$Reports$Model$DownloadCSV = F2(
-	function (a, b) {
-		return {$: 'DownloadCSV', a: a, b: b};
-	});
-var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
-var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
-	function (language, csvFileName, csvContent) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('download-csv-wrapper')
-				]),
-			_List_fromArray(
-				[
-					A2(
-					$elm$html$Html$button,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class('download-csv'),
-							$elm$html$Html$Events$onClick(
-							A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
-						]),
-					_List_fromArray(
-						[
-							$elm$html$Html$text(
-							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
-						]))
-				]));
-	});
-var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
-	function (language, limitDate, startDate, scopeLabel, records) {
-		var data = A3($author$project$Pages$Reports$View$generateAcuteIllnessReportData, language, startDate, records);
-		var csvFileName = 'acute-illness-report-' + ($elm$core$String$toLower(
-			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', startDate) + ('-to-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')))));
-		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
-		var captionsRow = A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row captions')
-				]),
-			$author$project$Pages$Utils$viewStandardCells(data.captions));
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('report acute-illness')
-				]),
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('table')
-							]),
-						A2(
-							$elm$core$List$cons,
-							captionsRow,
-							A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, data.rows)))
-					]),
-				_List_fromArray(
-					[
-						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
-					])));
-	});
+var $author$project$Pages$Completion$Utils$reportTypeToString = function (reportType) {
+	return 'nutrition-individual';
+};
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
 var $author$project$Translate$YearLabel = {$: 'YearLabel'};
@@ -12338,6 +11418,34 @@ var $author$project$DateSelector$Selector$isSelectable = function (state) {
 var $justinmimbs$date$Date$Day = {$: 'Day'};
 var $justinmimbs$date$Date$Days = {$: 'Days'};
 var $justinmimbs$date$Date$Monday = {$: 'Monday'};
+var $justinmimbs$date$Date$add = F3(
+	function (unit, n, _v0) {
+		var rd = _v0.a;
+		switch (unit.$) {
+			case 'Years':
+				return A3(
+					$justinmimbs$date$Date$add,
+					$justinmimbs$date$Date$Months,
+					12 * n,
+					$justinmimbs$date$Date$RD(rd));
+			case 'Months':
+				var date = $justinmimbs$date$Date$toCalendarDate(
+					$justinmimbs$date$Date$RD(rd));
+				var wholeMonths = ((12 * (date.year - 1)) + ($justinmimbs$date$Date$monthToNumber(date.month) - 1)) + n;
+				var m = $justinmimbs$date$Date$numberToMonth(
+					A2($elm$core$Basics$modBy, 12, wholeMonths) + 1);
+				var y = A2($justinmimbs$date$Date$floorDiv, wholeMonths, 12) + 1;
+				return $justinmimbs$date$Date$RD(
+					($justinmimbs$date$Date$daysBeforeYear(y) + A2($justinmimbs$date$Date$daysBeforeMonth, y, m)) + A2(
+						$elm$core$Basics$min,
+						date.day,
+						A2($justinmimbs$date$Date$daysInMonth, y, m)));
+			case 'Weeks':
+				return $justinmimbs$date$Date$RD(rd + (7 * n));
+			default:
+				return $justinmimbs$date$Date$RD(rd + n);
+		}
+	});
 var $justinmimbs$date$Date$weekdayToNumber = function (wd) {
 	switch (wd.$) {
 		case 'Mon':
@@ -12733,6 +11841,18 @@ var $author$project$DateSelector$Selector$dateWithMonth = F2(
 				d,
 				A2($author$project$DateSelector$Selector$daysInMonth, y, m)));
 	});
+var $elm$html$Html$option = _VirtualDom_node('option');
+var $elm$html$Html$select = _VirtualDom_node('select');
+var $elm$json$Json$Encode$bool = _Json_wrap;
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$selected = $elm$html$Html$Attributes$boolProperty('selected');
+var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
 var $author$project$DateSelector$Selector$viewMonthSelectList = F4(
 	function (language, minimum, maximum, selectedDate) {
 		var isInvertedMinMax = _Utils_eq(
@@ -13037,6 +12157,1170 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 						]));
 			},
 			popupState);
+	});
+var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
+var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
+	var classes = A2(
+		$elm$core$String$join,
+		' ',
+		A2($elm$core$List$cons, 'overlay', extraClasses));
+	return A2(
+		$elm$core$Basics$composeL,
+		$author$project$Gizra$Html$showMaybe,
+		$elm$core$Maybe$map(
+			function (modal) {
+				return A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class(classes)
+						]),
+					_List_fromArray(
+						[modal]));
+			}));
+};
+var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Translate$Activity = {$: 'Activity'};
+var $author$project$Translate$Completed = {$: 'Completed'};
+var $author$project$Translate$Expected = {$: 'Expected'};
+var $author$project$Translate$NutritionActivity = function (a) {
+	return {$: 'NutritionActivity', a: a};
+};
+var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
+var $author$project$Pages$Completion$Model$allNutritionActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$NutritionHeight, $author$project$Backend$Completion$Model$NutritionNutrition, $author$project$Backend$Completion$Model$NutritionPhoto, $author$project$Backend$Completion$Model$NutritionWeight, $author$project$Backend$Completion$Model$NutritionMUAC, $author$project$Backend$Completion$Model$NutritionContributingFactors, $author$project$Backend$Completion$Model$NutritionFollowUp, $author$project$Backend$Completion$Model$NutritionHealthEducation, $author$project$Backend$Completion$Model$NutritionSendToHC, $author$project$Backend$Completion$Model$NutritionNCDA]);
+var $myrho$elm_round$Round$addSign = F2(
+	function (signed, str) {
+		var isNotZero = A2(
+			$elm$core$List$any,
+			function (c) {
+				return (!_Utils_eq(
+					c,
+					_Utils_chr('0'))) && (!_Utils_eq(
+					c,
+					_Utils_chr('.')));
+			},
+			$elm$core$String$toList(str));
+		return _Utils_ap(
+			(signed && isNotZero) ? '-' : '',
+			str);
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $myrho$elm_round$Round$increaseNum = function (_v0) {
+	var head = _v0.a;
+	var tail = _v0.b;
+	if (_Utils_eq(
+		head,
+		_Utils_chr('9'))) {
+		var _v1 = $elm$core$String$uncons(tail);
+		if (_v1.$ === 'Nothing') {
+			return '01';
+		} else {
+			var headtail = _v1.a;
+			return A2(
+				$elm$core$String$cons,
+				_Utils_chr('0'),
+				$myrho$elm_round$Round$increaseNum(headtail));
+		}
+	} else {
+		var c = $elm$core$Char$toCode(head);
+		return ((c >= 48) && (c < 57)) ? A2(
+			$elm$core$String$cons,
+			$elm$core$Char$fromCode(c + 1),
+			tail) : '0';
+	}
+};
+var $elm$core$Basics$isInfinite = _Basics_isInfinite;
+var $elm$core$Basics$isNaN = _Basics_isNaN;
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
+var $elm$core$String$reverse = _String_reverse;
+var $myrho$elm_round$Round$splitComma = function (str) {
+	var _v0 = A2($elm$core$String$split, '.', str);
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var before = _v0.a;
+			var _v1 = _v0.b;
+			var after = _v1.a;
+			return _Utils_Tuple2(before, after);
+		} else {
+			var before = _v0.a;
+			return _Utils_Tuple2(before, '0');
+		}
+	} else {
+		return _Utils_Tuple2('0', '0');
+	}
+};
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $myrho$elm_round$Round$toDecimal = function (fl) {
+	var _v0 = A2(
+		$elm$core$String$split,
+		'e',
+		$elm$core$String$fromFloat(
+			$elm$core$Basics$abs(fl)));
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var num = _v0.a;
+			var _v1 = _v0.b;
+			var exp = _v1.a;
+			var e = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				$elm$core$String$toInt(
+					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
+			var _v2 = $myrho$elm_round$Round$splitComma(num);
+			var before = _v2.a;
+			var after = _v2.b;
+			var total = _Utils_ap(before, after);
+			var zeroed = (e < 0) ? A2(
+				$elm$core$Maybe$withDefault,
+				'0',
+				A2(
+					$elm$core$Maybe$map,
+					function (_v3) {
+						var a = _v3.a;
+						var b = _v3.b;
+						return a + ('.' + b);
+					},
+					A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
+						$elm$core$String$uncons(
+							_Utils_ap(
+								A2(
+									$elm$core$String$repeat,
+									$elm$core$Basics$abs(e),
+									'0'),
+								total))))) : A3(
+				$elm$core$String$padRight,
+				e + 1,
+				_Utils_chr('0'),
+				total);
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				zeroed);
+		} else {
+			var num = _v0.a;
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				num);
+		}
+	} else {
+		return '';
+	}
+};
+var $myrho$elm_round$Round$roundFun = F3(
+	function (functor, s, fl) {
+		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
+			return $elm$core$String$fromFloat(fl);
+		} else {
+			var signed = fl < 0;
+			var _v0 = $myrho$elm_round$Round$splitComma(
+				$myrho$elm_round$Round$toDecimal(
+					$elm$core$Basics$abs(fl)));
+			var before = _v0.a;
+			var after = _v0.b;
+			var r = $elm$core$String$length(before) + s;
+			var normalized = _Utils_ap(
+				A2($elm$core$String$repeat, (-r) + 1, '0'),
+				A3(
+					$elm$core$String$padRight,
+					r,
+					_Utils_chr('0'),
+					_Utils_ap(before, after)));
+			var totalLen = $elm$core$String$length(normalized);
+			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
+			var increase = A2(
+				functor,
+				signed,
+				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
+			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
+			var num = increase ? $elm$core$String$reverse(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'1',
+					A2(
+						$elm$core$Maybe$map,
+						$myrho$elm_round$Round$increaseNum,
+						$elm$core$String$uncons(
+							$elm$core$String$reverse(remains))))) : remains;
+			var numLen = $elm$core$String$length(num);
+			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
+				num,
+				A2(
+					$elm$core$String$repeat,
+					$elm$core$Basics$abs(s),
+					'0')) : ((_Utils_cmp(
+				s,
+				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
+				before + '.',
+				A3(
+					$elm$core$String$padRight,
+					s,
+					_Utils_chr('0'),
+					after))));
+			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
+		}
+	});
+var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
+	F2(
+		function (signed, str) {
+			var _v0 = $elm$core$String$uncons(str);
+			if (_v0.$ === 'Nothing') {
+				return false;
+			} else {
+				if ('5' === _v0.a.a.valueOf()) {
+					if (_v0.a.b === '') {
+						var _v1 = _v0.a;
+						return !signed;
+					} else {
+						var _v2 = _v0.a;
+						return true;
+					}
+				} else {
+					var _v3 = _v0.a;
+					var _int = _v3.a;
+					return function (i) {
+						return ((i > 53) && signed) || ((i >= 53) && (!signed));
+					}(
+						$elm$core$Char$toCode(_int));
+				}
+			}
+		}));
+var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
+	function (language, records) {
+		var count = F2(
+			function (resolveFunc, activity) {
+				return $elm$core$List$length(
+					A2(
+						$elm$core$List$filter,
+						A2(
+							$elm$core$Basics$composeR,
+							resolveFunc,
+							$elm$core$List$member(activity)),
+						records));
+			});
+		var calcualtePercentage = F2(
+			function (nominator, total) {
+				return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 3, (nominator / total) * 100) + '%');
+			});
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
+					'%'
+				]),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionIndividual),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A2(
+						count,
+						function ($) {
+							return $.expectedActivities;
+						},
+						activity);
+					var completed = A2(
+						count,
+						function ($) {
+							return $.completedActivities;
+						},
+						activity);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$NutritionActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2(calcualtePercentage, completed, expected)
+						]);
+				},
+				$author$project$Pages$Completion$Model$allNutritionActivities)
+		};
+	});
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $author$project$Pages$Components$View$viewCustomCells = F2(
+	function (labelClass, valueClass) {
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, cellText) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(labelClass, !index),
+										_Utils_Tuple2(valueClass, !(!index))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(cellText)
+							]));
+				}));
+	});
+var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = function (data) {
+	var viewRow = function (cells) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
+			A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'value', cells));
+	};
+	var captionsRow = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			]),
+		A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'heading', data.captions));
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table wide')
+				]),
+			A2(
+				$elm$core$List$cons,
+				captionsRow,
+				A2($elm$core$List$map, viewRow, data.rows)))
+		]);
+};
+var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F4(
+	function (language, startDate, limitDate, reportData) {
+		var filteredData = A2(
+			$author$project$Pages$Completion$View$generateNutritionReportData,
+			language,
+			A2(
+				$elm$core$List$filter,
+				function (encounter) {
+					return (!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+						$elm$core$Basics$LT)) && (!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+						$elm$core$Basics$GT));
+				},
+				reportData));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report nutrition-individual')
+				]),
+			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(filteredData));
+	});
+var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
+	return A2(
+		$elm$html$Html$option,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$value(''),
+				$elm$html$Html$Attributes$selected(isSelected)
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('')
+			]));
+};
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
+	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
+		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
+			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onInput(setMsg),
+					$elm$html$Html$Attributes$class(inputClass)
+				]),
+			A2(
+				$elm$core$List$cons,
+				emptyOption,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var label = _v0.a;
+						var value_ = _v0.b;
+						return A2(
+							$elm$html$Html$option,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(
+									toStringFunc(value_)),
+									$elm$html$Html$Attributes$selected(
+									_Utils_eq(
+										currentValue,
+										$elm$core$Maybe$Just(value_)))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								]));
+					},
+					options)));
+	});
+var $author$project$Pages$Utils$viewSelectListInput = F7(
+	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
+		var transFunc = A2(
+			$elm$core$Basics$composeR,
+			transId,
+			$author$project$Translate$translate(language));
+		var optionsPairs = A2(
+			$elm$core$List$map,
+			function (option) {
+				return _Utils_Tuple2(
+					transFunc(option),
+					option);
+			},
+			options);
+		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
+	});
+var $author$project$Pages$Utils$viewCustomLabel = F4(
+	function (language, translationId, suffix, class_) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class(class_)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(
+					_Utils_ap(
+						A2($author$project$Translate$translate, language, translationId),
+						suffix))
+				]));
+	});
+var $author$project$Pages$Utils$viewLabel = F2(
+	function (language, translationId) {
+		return A4($author$project$Pages$Utils$viewCustomLabel, language, translationId, ':', 'label');
+	});
+var $author$project$Pages$Utils$wrapSelectListInput = F4(
+	function (language, labelTransId, disabled, selectList) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$classList(
+					_List_fromArray(
+						[
+							_Utils_Tuple2('select-input-wrapper', true),
+							_Utils_Tuple2('disabled', disabled)
+						]))
+				]),
+			_List_fromArray(
+				[
+					A2($author$project$Pages$Utils$viewLabel, language, labelTransId),
+					selectList
+				]));
+	});
+var $author$project$Pages$Completion$View$viewCompletionData = F5(
+	function (language, currentDate, themePath, data, model) {
+		var topBar = function () {
+			var scopeLabel = function () {
+				var _v1 = data.entityType;
+				if (_v1.$ === 'EntityGlobal') {
+					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
+				} else {
+					return data.entityName;
+				}
+			}();
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('top-bar')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('new-selection')
+							]),
+						_List_fromArray(
+							[
+								A2(
+								$elm$html$Html$a,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$href('/admin/reports/completion')
+									]),
+								_List_fromArray(
+									[
+										A2(
+										$elm$html$Html$button,
+										_List_Nil,
+										_List_fromArray(
+											[
+												$elm$html$Html$text(
+												A2($author$project$Translate$translate, language, $author$project$Translate$NewScope))
+											]))
+									]))
+							])),
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('scope')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(
+								A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
+							]))
+					]));
+		}();
+		var dateInputs = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (reportType) {
+					var startDateInput = function () {
+						var dateSelectorConfig = {
+							close: $author$project$Pages$Completion$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
+							dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+							dateFrom: $author$project$Pages$Utils$launchDate,
+							dateTo: currentDate,
+							select: $author$project$Pages$Completion$Model$SetStartDate
+						};
+						var dateForView = A2(
+							$elm$core$Maybe$withDefault,
+							'',
+							A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.startDate));
+						return A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
+							$author$project$Translate$SelectStartDate,
+							false,
+							A2(
+								$elm$html$Html$div,
+								_List_fromArray(
+									[
+										$elm$html$Html$Attributes$class('form-input date'),
+										$elm$html$Html$Events$onClick(
+										$author$project$Pages$Completion$Model$SetStartDateSelectorState(
+											$elm$core$Maybe$Just(dateSelectorConfig)))
+									]),
+								_List_fromArray(
+									[
+										$elm$html$Html$text(dateForView)
+									])));
+					}();
+					var limitDateInput = function () {
+						if ($elm_community$maybe_extra$Maybe$Extra$isNothing(model.startDate)) {
+							return $author$project$Gizra$Html$emptyNode;
+						} else {
+							var limitDateForView = A2(
+								$elm$core$Maybe$withDefault,
+								'',
+								A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
+							var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
+							var dateSelectorConfig = {
+								close: $author$project$Pages$Completion$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
+								dateDefault: $elm$core$Maybe$Just(currentDate),
+								dateFrom: dateFrom,
+								dateTo: currentDate,
+								select: $author$project$Pages$Completion$Model$SetLimitDate
+							};
+							return A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$SelectLimitDate,
+								false,
+								A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('form-input date'),
+											$elm$html$Html$Events$onClick(
+											$author$project$Pages$Completion$Model$SetLimitDateSelectorState(
+												$elm$core$Maybe$Just(dateSelectorConfig)))
+										]),
+									_List_fromArray(
+										[
+											$elm$html$Html$text(limitDateForView)
+										])));
+						}
+					}();
+					return _List_fromArray(
+						[startDateInput, limitDateInput]);
+				},
+				model.reportType));
+		var content = ($elm_community$maybe_extra$Maybe$Extra$isJust(model.startDateSelectorPopupState) || $elm_community$maybe_extra$Maybe$Extra$isJust(model.limitDateSelectorPopupState)) ? $author$project$Gizra$Html$emptyNode : A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A4(
+				$elm$core$Maybe$map3,
+				F3(
+					function (reportType, startDate, limitDate) {
+						return A4($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, data.nutritionIndividualData);
+					}),
+				model.reportType,
+				model.startDate,
+				model.limitDate));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content completion')
+				]),
+			_List_fromArray(
+				[
+					topBar,
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					_Utils_ap(
+						_List_fromArray(
+							[
+								A4(
+								$author$project$Pages$Utils$wrapSelectListInput,
+								language,
+								$author$project$Translate$ReportTypeLabel,
+								false,
+								A7(
+									$author$project$Pages$Utils$viewSelectListInput,
+									language,
+									model.reportType,
+									_List_fromArray(
+										[$author$project$Pages$Completion$Model$ReportNutritionIndividual]),
+									$author$project$Pages$Completion$Utils$reportTypeToString,
+									$author$project$Pages$Completion$Model$SetReportType,
+									$author$project$Translate$CompletionReportType,
+									'select-input'))
+							]),
+						_Utils_ap(
+							dateInputs,
+							_List_fromArray(
+								[content])))),
+					$author$project$Utils$Html$viewModal(
+					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.startDateSelectorPopupState, model.startDate)),
+					$author$project$Utils$Html$viewModal(
+					A3($author$project$DateSelector$SelectorPopup$viewCalendarPopup, language, model.limitDateSelectorPopupState, model.limitDate))
+				]));
+	});
+var $author$project$Pages$Completion$View$view = F5(
+	function (language, currentDate, themePath, modelBackend, model) {
+		var _v0 = modelBackend.completionData;
+		if (_v0.$ === 'Just') {
+			if (_v0.a.$ === 'Ok') {
+				var data = _v0.a.a;
+				return A5($author$project$Pages$Completion$View$viewCompletionData, language, currentDate, themePath, data, model);
+			} else {
+				var err = _v0.a.a;
+				return $elm$html$Html$text(
+					$elm$core$Debug$toString(err));
+			}
+		} else {
+			return $author$project$Gizra$Html$emptyNode;
+		}
+	});
+var $author$project$Translate$PleaseWaitMessage = {$: 'PleaseWaitMessage'};
+var $author$project$Translate$PopulationSelectionOption = function (a) {
+	return {$: 'PopulationSelectionOption', a: a};
+};
+var $author$project$Translate$SelectScope = {$: 'SelectScope'};
+var $author$project$Pages$CompletionMenu$Model$SelectionMade = {$: 'SelectionMade'};
+var $author$project$Pages$CompletionMenu$Model$SetHealthCenter = function (a) {
+	return {$: 'SetHealthCenter', a: a};
+};
+var $author$project$Pages$CompletionMenu$Model$SetPopulationSelection = function (a) {
+	return {$: 'SetPopulationSelection', a: a};
+};
+var $author$project$Pages$Components$Utils$populationSelectionOptionToString = function (selectionOption) {
+	switch (selectionOption.$) {
+		case 'SelectionOptionGlobal':
+			return 'all';
+		case 'SelectionOptionDemographics':
+			return 'demographics';
+		default:
+			return 'hc';
+	}
+};
+var $elm$core$List$sortBy = _List_sortBy;
+var $author$project$Translate$LoadData = {$: 'LoadData'};
+var $author$project$Pages$Utils$viewMenuActionButton = F4(
+	function (language, path, label, selectionMadeMsg) {
+		return A2(
+			$elm$html$Html$a,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$href(path)
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Events$onClick(selectionMadeMsg)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, label))
+						]))
+				]));
+	});
+var $author$project$Pages$Utils$viewLoadDataButton = F3(
+	function (language, path, selectionMadeMsg) {
+		return A4($author$project$Pages$Utils$viewMenuActionButton, language, path, $author$project$Translate$LoadData, selectionMadeMsg);
+	});
+var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
+	function (language, themePath, data, model) {
+		var populationSelectionInput = A4(
+			$author$project$Pages$Utils$wrapSelectListInput,
+			language,
+			$author$project$Translate$Scope,
+			false,
+			A7(
+				$author$project$Pages$Utils$viewSelectListInput,
+				language,
+				model.populationSelection,
+				_List_fromArray(
+					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
+				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
+				$author$project$Pages$CompletionMenu$Model$SetPopulationSelection,
+				$author$project$Translate$PopulationSelectionOption,
+				'select-input'));
+		var _v0 = A2(
+			$elm$core$Maybe$withDefault,
+			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
+			A2(
+				$elm$core$Maybe$map,
+				function (populationSelection) {
+					switch (populationSelection.$) {
+						case 'SelectionOptionGlobal':
+							return _Utils_Tuple2(
+								_List_Nil,
+								A3($author$project$Pages$Utils$viewLoadDataButton, language, '/admin/reports/completion/all', $author$project$Pages$CompletionMenu$Model$SelectionMade));
+						case 'SelectionOptionHealthCenter':
+							var options = A2(
+								$elm$core$List$map,
+								function (healthCenter) {
+									return _Utils_Tuple2(healthCenter.name, healthCenter.id);
+								},
+								A2(
+									$elm$core$List$sortBy,
+									function ($) {
+										return $.name;
+									},
+									data.healthCenters));
+							return _Utils_Tuple2(
+								_List_fromArray(
+									[
+										A4(
+										$author$project$Pages$Utils$wrapSelectListInput,
+										language,
+										$author$project$Translate$HealthCenter,
+										false,
+										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$CompletionMenu$Model$SetHealthCenter, 'select-input', true))
+									]),
+								A2(
+									$elm$core$Maybe$withDefault,
+									$author$project$Gizra$Html$emptyNode,
+									A2(
+										$elm$core$Maybe$map,
+										function (selectedHealthCenter) {
+											return A3(
+												$author$project$Pages$Utils$viewLoadDataButton,
+												language,
+												'/admin/reports/completion/health-center/' + $elm$core$String$fromInt(selectedHealthCenter),
+												$author$project$Pages$CompletionMenu$Model$SelectionMade);
+										},
+										model.selectedHealthCenter)));
+						default:
+							return _Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode);
+					}
+				},
+				model.populationSelection));
+		var derivedInputs = _v0.a;
+		var actionButton_ = _v0.b;
+		var actionButton = model.selected ? $elm$html$Html$text(
+			A2($author$project$Translate$translate, language, $author$project$Translate$PleaseWaitMessage)) : actionButton_;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('page-content completion-menu')
+				]),
+			_List_fromArray(
+				[
+					A4($author$project$Pages$Utils$viewCustomLabel, language, $author$project$Translate$SelectScope, ':', 'header'),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('inputs')
+						]),
+					A2($elm$core$List$cons, populationSelectionInput, derivedInputs)),
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('actions')
+						]),
+					_List_fromArray(
+						[actionButton]))
+				]));
+	});
+var $author$project$Pages$CompletionMenu$View$view = F4(
+	function (language, themePath, modelBackend, model) {
+		var _v0 = modelBackend.completionMenuData;
+		if (_v0.$ === 'Just') {
+			if (_v0.a.$ === 'Ok') {
+				var data = _v0.a.a;
+				return A4($author$project$Pages$CompletionMenu$View$viewMenu, language, themePath, data, model);
+			} else {
+				var err = _v0.a.a;
+				return $elm$html$Html$text(
+					$elm$core$Debug$toString(err));
+			}
+		} else {
+			return $author$project$Gizra$Html$emptyNode;
+		}
+	});
+var $author$project$Translate$ReportType = function (a) {
+	return {$: 'ReportType', a: a};
+};
+var $author$project$Translate$SelectedScope = function (a) {
+	return {$: 'SelectedScope', a: a};
+};
+var $author$project$Pages$Reports$Model$SetLimitDate = function (a) {
+	return {$: 'SetLimitDate', a: a};
+};
+var $author$project$Pages$Reports$Model$SetLimitDateSelectorState = function (a) {
+	return {$: 'SetLimitDateSelectorState', a: a};
+};
+var $author$project$Pages$Reports$Model$SetReportType = function (a) {
+	return {$: 'SetReportType', a: a};
+};
+var $author$project$Pages$Reports$Model$SetStartDate = function (a) {
+	return {$: 'SetStartDate', a: a};
+};
+var $author$project$Pages$Reports$Model$SetStartDateSelectorState = function (a) {
+	return {$: 'SetStartDateSelectorState', a: a};
+};
+var $author$project$Translate$WideScopeNote = {$: 'WideScopeNote'};
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $author$project$Pages$Utils$generateReportsHeaderImage = function (themePath) {
+	return A2(
+		$elm$html$Html$img,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$src('/' + (themePath + '/icons/statistical-queries.png'))
+			]),
+		_List_Nil);
+};
+var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportType) {
+	switch (reportType.$) {
+		case 'ReportAcuteIllness':
+			return 'acute-illness';
+		case 'ReportDemographics':
+			return 'demographics';
+		case 'ReportNutrition':
+			return 'nutrition';
+		default:
+			return 'prenatal';
+	}
+};
+var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
+	return {$: 'AcuteIllnessDiagnosis', a: a};
+};
+var $author$project$Translate$Diagnosis = {$: 'Diagnosis'};
+var $author$project$Translate$NoDiagnosis = {$: 'NoDiagnosis'};
+var $author$project$Translate$Total = {$: 'Total'};
+var $author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisCovid19Suspect, $author$project$Backend$Reports$Model$DiagnosisSevereCovid19, $author$project$Backend$Reports$Model$DiagnosisPneuminialCovid19, $author$project$Backend$Reports$Model$DiagnosisLowRiskCovid19, $author$project$Backend$Reports$Model$DiagnosisMalariaComplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicated, $author$project$Backend$Reports$Model$DiagnosisMalariaUncomplicatedAndPregnant, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisGastrointestinalInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisSimpleColdAndCough, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionComplicated, $author$project$Backend$Reports$Model$DiagnosisRespiratoryInfectionUncomplicated, $author$project$Backend$Reports$Model$DiagnosisFeverOfUnknownOrigin, $author$project$Backend$Reports$Model$DiagnosisUndeterminedMoreEvaluationNeeded, $author$project$Backend$Reports$Model$DiagnosisTuberculosisSuspect]);
+var $author$project$Gizra$NominalDate$sortByDateDesc = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity2),
+			getDateFunc(entity1));
+	});
+var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
+	function (language, startDate, records) {
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var acuteIllnessParticipantRecords = $elm$core$List$concat(
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.acuteIllnessData;
+					},
+					records)));
+		var diagnosesCountDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (diagnosis, accum) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A3($pzp1997$assoc_list$AssocList$insert, diagnosis, 1, accum),
+						A2(
+							$elm$core$Maybe$map,
+							function (value) {
+								return A3($pzp1997$assoc_list$AssocList$insert, diagnosis, value + 1, accum);
+							},
+							A2($pzp1997$assoc_list$AssocList$get, diagnosis, accum)));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			$elm_community$maybe_extra$Maybe$Extra$values(
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.diagnosis;
+					},
+					$elm$core$List$concat(acuteIllnessParticipantRecords))));
+		var rows = A2(
+			$elm$core$List$map,
+			function (diagnosis) {
+				return A2(
+					generateRow,
+					$author$project$Translate$AcuteIllnessDiagnosis(diagnosis),
+					A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
+			},
+			$author$project$Backend$Reports$Utils$allAcuteIllnessDiagnoses);
+		var totalsRow = A2(
+			generateRow,
+			$author$project$Translate$Total,
+			$elm$core$List$sum(
+				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
+		var illnessesWithNoDiagnosis = $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				function (encountersList) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						false,
+						A2(
+							$elm$core$Maybe$map,
+							function (encounter) {
+								return (!_Utils_eq(
+									A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+									$elm$core$Basics$LT)) && $elm_community$maybe_extra$Maybe$Extra$isNothing(encounter.diagnosis);
+							},
+							$elm$core$List$head(
+								A2(
+									$elm$core$List$sortWith,
+									$author$project$Gizra$NominalDate$sortByDateDesc(
+										function ($) {
+											return $.startDate;
+										}),
+									encountersList))));
+				},
+				acuteIllnessParticipantRecords));
+		var noneRow = A2(generateRow, $author$project$Translate$NoDiagnosis, illnessesWithNoDiagnosis);
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _Utils_ap(
+				rows,
+				_Utils_ap(
+					_List_fromArray(
+						[totalsRow]),
+					_List_fromArray(
+						[noneRow])))
+		};
+	});
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $author$project$Pages$Reports$View$reportTableDataToCSV = function (tableData) {
+	return A2(
+		$elm$core$String$join,
+		'\n',
+		_List_fromArray(
+			[
+				tableData.heading,
+				A2($elm$core$String$join, ',', tableData.captions),
+				A2(
+				$elm$core$String$join,
+				'\n',
+				A2(
+					$elm$core$List$map,
+					$elm$core$String$join(','),
+					tableData.rows))
+			]));
+};
+var $author$project$Pages$Reports$Model$DownloadCSV = F2(
+	function (a, b) {
+		return {$: 'DownloadCSV', a: a, b: b};
+	});
+var $author$project$Translate$DownloadCSV = {$: 'DownloadCSV'};
+var $author$project$Pages$Reports$View$viewDownloadCSVButton = F3(
+	function (language, csvFileName, csvContent) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('download-csv-wrapper')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('download-csv'),
+							$elm$html$Html$Events$onClick(
+							A2($author$project$Pages$Reports$Model$DownloadCSV, csvFileName, csvContent))
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							A2($author$project$Translate$translate, language, $author$project$Translate$DownloadCSV))
+						]))
+				]));
+	});
+var $author$project$Pages$Components$View$viewStandardCells = A2($author$project$Pages$Components$View$viewCustomCells, 'label', 'value');
+var $author$project$Pages$Components$View$viewStandardRow = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Pages$Components$View$viewStandardCells,
+	$elm$html$Html$div(
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			])));
+var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
+	function (language, limitDate, startDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generateAcuteIllnessReportData, language, startDate, records);
+		var csvFileName = 'acute-illness-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', startDate) + ('-to-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')))));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report acute-illness')
+				]),
+			_Utils_ap(
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('table')
+							]),
+						A2(
+							$elm$core$List$cons,
+							captionsRow,
+							A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows)))
+					]),
+				_List_fromArray(
+					[
+						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+					])));
 	});
 var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
 	return A2(
@@ -13717,7 +14001,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Utils$viewStandardCells(data.captions))
+							$author$project$Pages$Components$View$viewStandardCells(data.captions))
 						]),
 					_Utils_ap(
 						A2($elm$core$List$map, viewRow, data.rows),
@@ -13729,7 +14013,7 @@ var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
 									[
 										$elm$html$Html$Attributes$class('row encounters-totals')
 									]),
-								$author$project$Pages$Utils$viewStandardCells(
+								$author$project$Pages$Components$View$viewStandardCells(
 									_List_fromArray(
 										[data.totals.label, data.totals.total, data.totals.unique])))
 							]))))
@@ -13753,9 +14037,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Utils$viewStandardCells(tableData.captions))
+							$author$project$Pages$Components$View$viewStandardCells(tableData.captions))
 						]),
-					A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, tableData.rows)));
+					A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)));
 		};
 		return A2(
 			$elm$core$List$cons,
@@ -13793,28 +14077,6 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 						]))));
 	});
-var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
-var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
-	var classes = A2(
-		$elm$core$String$join,
-		' ',
-		A2($elm$core$List$cons, 'overlay', extraClasses));
-	return A2(
-		$elm$core$Basics$composeL,
-		$author$project$Gizra$Html$showMaybe,
-		$elm$core$Maybe$map(
-			function (modal) {
-				return A2(
-					$elm$html$Html$div,
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$class(classes)
-						]),
-					_List_fromArray(
-						[modal]));
-			}));
-};
-var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
 var $author$project$Translate$MonthYear = F3(
 	function (a, b, c) {
 		return {$: 'MonthYear', a: a, b: b, c: c};
@@ -15165,47 +15427,6 @@ var $author$project$Pages$Reports$View$reportTablesDataToCSV = A2(
 	$elm$core$Basics$composeR,
 	$elm$core$List$map($author$project$Pages$Reports$View$reportTableDataToCSV),
 	$elm$core$String$join('\n\n'));
-var $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable = function (data) {
-	var viewRow = function (cells) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row')
-				]),
-			A3($author$project$Pages$Utils$viewCustomCells, 'row-label', 'value', cells));
-	};
-	var captionsRow = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			]),
-		A3($author$project$Pages$Utils$viewCustomCells, 'row-label', 'heading', data.captions));
-	return _List_fromArray(
-		[
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('section heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(data.heading)
-				])),
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table wide')
-				]),
-			A2(
-				$elm$core$List$cons,
-				captionsRow,
-				A2($elm$core$List$map, viewRow, data.rows)))
-		]);
-};
 var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 	function (language, currentDate, scopeLabel, mBackendGeneratedData, reportData) {
 		var generatedData = A2(
@@ -15226,7 +15447,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 				]),
 			_Utils_ap(
 				$elm$core$List$concat(
-					A2($elm$core$List$map, $author$project$Pages$Reports$View$viewNutritionMetricsResultsTable, generatedData)),
+					A2($elm$core$List$map, $author$project$Pages$Components$View$viewNutritionMetricsResultsTable, generatedData)),
 				_List_fromArray(
 					[
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
@@ -15484,8 +15705,8 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 								[
 									$elm$html$Html$Attributes$class('row captions')
 								]),
-							$author$project$Pages$Utils$viewStandardCells(tableData.captions)),
-						A2($elm$core$List$map, $author$project$Pages$Utils$viewStandardRow, tableData.rows)))
+							$author$project$Pages$Components$View$viewStandardCells(tableData.captions)),
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)))
 				]);
 		};
 		var data = A3($author$project$Pages$Reports$View$generatePrenatalReportData, language, limitDate, records);
@@ -15569,7 +15790,6 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							A2($author$project$Translate$translate, language, $author$project$Translate$Scope) + (': ' + scopeLabel))
 						]))
 				]));
-		var launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
 		var dateInputs = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
@@ -15582,8 +15802,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 						var startDateInput = function () {
 							var dateSelectorConfig = {
 								close: $author$project$Pages$Reports$Model$SetStartDateSelectorState($elm$core$Maybe$Nothing),
-								dateDefault: $elm$core$Maybe$Just(launchDate),
-								dateFrom: launchDate,
+								dateDefault: $elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
+								dateFrom: $author$project$Pages$Utils$launchDate,
 								dateTo: currentDate,
 								select: $author$project$Pages$Reports$Model$SetStartDate
 							};
@@ -15618,10 +15838,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 									$elm$core$Maybe$withDefault,
 									'',
 									A2($elm$core$Maybe$map, $author$project$Gizra$NominalDate$formatDDMMYYYY, model.limitDate));
-								var dateFrom = A2(
-									$elm$core$Maybe$withDefault,
-									A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Years, -6, currentDate),
-									model.startDate);
+								var dateFrom = A2($elm$core$Maybe$withDefault, $author$project$Pages$Utils$launchDate, model.startDate);
 								var dateSelectorConfig = {
 									close: $author$project$Pages$Reports$Model$SetLimitDateSelectorState($elm$core$Maybe$Nothing),
 									dateDefault: $elm$core$Maybe$Just(currentDate),
@@ -15657,7 +15874,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 		var _v0 = _Utils_eq(
 			model.reportType,
 			$elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition)) ? _Utils_Tuple2(
-			$elm$core$Maybe$Just(launchDate),
+			$elm$core$Maybe$Just($author$project$Pages$Utils$launchDate),
 			$elm$core$Maybe$Just(currentDate)) : _Utils_Tuple2(model.startDate, model.limitDate);
 		var startDateByReportType = _v0.a;
 		var limitDateByReportType = _v0.b;
@@ -15669,7 +15886,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 				F3(
 					function (reportType, startDate, limitDate) {
 						var recordsTillLimitDate = (_Utils_eq(
-							A2($justinmimbs$date$Date$compare, startDate, launchDate),
+							A2($justinmimbs$date$Date$compare, startDate, $author$project$Pages$Utils$launchDate),
 							$elm$core$Basics$EQ) && _Utils_eq(
 							A2($justinmimbs$date$Date$compare, limitDate, currentDate),
 							$elm$core$Basics$EQ)) ? data.records : A2(

@@ -14,8 +14,10 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (..)
+import Pages.Completion.Utils exposing (reportTypeToString)
+import Pages.Components.View exposing (viewNutritionMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Utils exposing (viewStandardCells, viewStandardRow)
+import Pages.Utils exposing (launchDate, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
 import Time exposing (Month(..))
@@ -60,23 +62,122 @@ viewCompletionData language currentDate themePath data model =
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
 
-        reportData =
-            generateNutritionReportData language data.nutritionIndividualData
+        dateInputs =
+            Maybe.map
+                (\reportType ->
+                    let
+                        startDateInput =
+                            let
+                                dateSelectorConfig =
+                                    { select = SetStartDate
+                                    , close = SetStartDateSelectorState Nothing
+                                    , dateFrom = launchDate
+                                    , dateTo = currentDate
+                                    , dateDefault = Just launchDate
+                                    }
 
-        captionsRow =
-            viewStandardCells reportData.captions
-                |> div [ class "row captions" ]
+                                dateForView =
+                                    Maybe.map formatDDMMYYYY model.startDate
+                                        |> Maybe.withDefault ""
+                            in
+                            div
+                                [ class "form-input date"
+                                , onClick <| SetStartDateSelectorState (Just dateSelectorConfig)
+                                ]
+                                [ text dateForView ]
+                                |> wrapSelectListInput language Translate.SelectStartDate False
+
+                        limitDateInput =
+                            if
+                                -- Reports requires setting start date before
+                                -- limit date can be shown.
+                                isNothing model.startDate
+                            then
+                                emptyNode
+
+                            else
+                                let
+                                    dateFrom =
+                                        Maybe.withDefault launchDate model.startDate
+
+                                    dateSelectorConfig =
+                                        { select = SetLimitDate
+                                        , close = SetLimitDateSelectorState Nothing
+                                        , dateFrom = dateFrom
+                                        , dateTo = currentDate
+                                        , dateDefault = Just currentDate
+                                        }
+
+                                    limitDateForView =
+                                        Maybe.map formatDDMMYYYY model.limitDate
+                                            |> Maybe.withDefault ""
+                                in
+                                div
+                                    [ class "form-input date"
+                                    , onClick <| SetLimitDateSelectorState (Just dateSelectorConfig)
+                                    ]
+                                    [ text limitDateForView ]
+                                    |> wrapSelectListInput language Translate.SelectLimitDate False
+                    in
+                    [ startDateInput, limitDateInput ]
+                )
+                model.reportType
+                |> Maybe.withDefault []
+
+        content =
+            if
+                isJust model.startDateSelectorPopupState
+                    || isJust model.limitDateSelectorPopupState
+            then
+                -- Date selector is open, so no need to calcualte
+                -- intermediate results.
+                emptyNode
+
+            else
+                Maybe.map3
+                    (\reportType startDate limitDate ->
+                        case reportType of
+                            ReportNutritionIndividual ->
+                                viewNutritionIndividualReport language startDate limitDate data.nutritionIndividualData
+                    )
+                    model.reportType
+                    model.startDate
+                    model.limitDate
+                    |> Maybe.withDefault emptyNode
     in
     div [ class "page-content completion" ]
         [ topBar
-        , div [ class "inputs" ]
-            [ div [ class "report" ]
-                [ div [ class "table" ] <|
-                    captionsRow
-                        :: List.map viewStandardRow reportData.rows
-                ]
+        , div [ class "inputs" ] <|
+            [ viewSelectListInput language
+                model.reportType
+                [ ReportNutritionIndividual ]
+                reportTypeToString
+                SetReportType
+                Translate.CompletionReportType
+                "select-input"
+                |> wrapSelectListInput language Translate.ReportTypeLabel False
             ]
+                ++ dateInputs
+                ++ [ content ]
+        , viewModal <| viewCalendarPopup language model.startDateSelectorPopupState model.startDate
+        , viewModal <| viewCalendarPopup language model.limitDateSelectorPopupState model.limitDate
         ]
+
+
+viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> List (EncounterData NutritionActivity) -> Html Msg
+viewNutritionIndividualReport language startDate limitDate reportData =
+    let
+        filteredData =
+            List.filter
+                (\encounter ->
+                    (not <| Date.compare encounter.startDate startDate == LT)
+                        && (not <| Date.compare encounter.startDate limitDate == GT)
+                )
+                reportData
+                |> generateNutritionReportData language
+    in
+    div [ class "report nutrition-individual" ] <|
+        viewNutritionMetricsResultsTable filteredData
 
 
 generateNutritionReportData :

@@ -9,6 +9,7 @@ import Backend.Completion.Model exposing (NutritionActivity(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
+import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
 import Pages.Reports.Model exposing (ReportType(..))
 import Pages.Scoreboard.Model exposing (..)
@@ -69,6 +70,7 @@ type TranslationId
     | CollineSub
     | Commune
     | Completed
+    | CompletionReportType Pages.Completion.Model.ReportType
     | Diagnosis
     | District
     | Demographics
@@ -340,6 +342,14 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        CompletionReportType reportType ->
+            case reportType of
+                Pages.Completion.Model.ReportNutritionIndividual ->
+                    { english = "Nutrition Individual"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         CBNP ->
             { english = "CBNP"
