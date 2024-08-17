@@ -89,7 +89,7 @@ viewMenu language themePath data model =
                                     String.fromInt
                                     SetHealthCenter
                                     "select-input"
-                                    True
+                                    (Just "")
                                     |> wrapSelectListInput language Translate.HealthCenter False
                               ]
                             , Maybe.map

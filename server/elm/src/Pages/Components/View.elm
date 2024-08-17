@@ -15,7 +15,6 @@ import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
         ( viewCustomLabel
-        , viewCustomSelectListInput
         , viewGeoLocationSelectListInput
         , viewMenuActionButton
         , viewSelectListInput

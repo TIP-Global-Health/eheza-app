@@ -1,5 +1,6 @@
 module Pages.Completion.Utils exposing (..)
 
+import Backend.Completion.Model exposing (TakenBy(..))
 import Pages.Completion.Model exposing (ReportType(..))
 
 

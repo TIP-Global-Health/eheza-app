@@ -102,7 +102,7 @@ viewSelectListInput language currentValue options toStringFunc setMsg transId in
         toStringFunc
         setMsg
         inputClass
-        True
+        (Just "")
 
 
 viewCustomSelectListInput :
@@ -111,16 +111,17 @@ viewCustomSelectListInput :
     -> (a -> String)
     -> (String -> msg)
     -> String
-    -> Bool
+    -> Maybe String
     -> Html msg
-viewCustomSelectListInput currentValue options toStringFunc setMsg inputClass withEmptyOption =
+viewCustomSelectListInput currentValue options toStringFunc setMsg inputClass emptyOptionLabel =
     let
         emptyOption =
-            if withEmptyOption then
-                emptySelectOption (currentValue == Nothing)
-
-            else
-                emptyNode
+            Maybe.map
+                (\label ->
+                    customEmptySelectOption label (currentValue == Nothing)
+                )
+                emptyOptionLabel
+                |> Maybe.withDefault emptyNode
     in
     emptyOption
         :: List.map
@@ -195,12 +196,17 @@ wrapSelectListInput language labelTransId disabled selectList =
 
 
 emptySelectOption : Bool -> Html any
-emptySelectOption isSelected =
+emptySelectOption =
+    customEmptySelectOption ""
+
+
+customEmptySelectOption : String -> Bool -> Html any
+customEmptySelectOption label isSelected =
     option
         [ value ""
         , selected isSelected
         ]
-        [ text "" ]
+        [ text label ]
 
 
 

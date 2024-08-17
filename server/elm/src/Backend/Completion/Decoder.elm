@@ -2,6 +2,7 @@ module Backend.Completion.Decoder exposing (decodeCompletionData)
 
 import AssocList as Dict
 import Backend.Completion.Model exposing (..)
+import Backend.Completion.Utils exposing (..)
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Date
 import EverySet exposing (EverySet)
@@ -58,58 +59,12 @@ decodeNutritionActivities =
             )
 
 
-nutritionActivityFromMapping : String -> Maybe NutritionActivity
-nutritionActivityFromMapping mapped =
-    case mapped of
-        "a" ->
-            Just NutritionHeight
-
-        "b" ->
-            Just NutritionNutrition
-
-        "c" ->
-            Just NutritionPhoto
-
-        "d" ->
-            Just NutritionWeight
-
-        "e" ->
-            Just NutritionMUAC
-
-        "f" ->
-            Just NutritionContributingFactors
-
-        "g" ->
-            Just NutritionFollowUp
-
-        "h" ->
-            Just NutritionHealthEducation
-
-        "i" ->
-            Just NutritionSendToHC
-
-        "j" ->
-            Just NutritionNCDA
-
-        _ ->
-            Nothing
-
-
 decodeTakenBy : Decoder TakenBy
 decodeTakenBy =
     string
         |> andThen
             (\takenBy ->
-                case takenBy of
-                    "nurse" ->
-                        succeed TakenByNurse
-
-                    "chw" ->
-                        succeed TakenByCHW
-
-                    "unknown" ->
-                        succeed TakenByUnknown
-
-                    _ ->
-                        fail <| takenBy ++ " is unknown TakenBy type"
+                takenByFromString takenBy
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| takenBy ++ " is unknown TakenBy type")
             )

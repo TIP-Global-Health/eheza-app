@@ -3,6 +3,7 @@ module Pages.Completion.Update exposing (update)
 import App.Model exposing (PagesReturn)
 import App.Ports
 import AssocList as Dict exposing (Dict)
+import Backend.Completion.Utils exposing (takenByFromString)
 import Backend.Model exposing (ModelBackend)
 import Date exposing (Interval(..), Unit(..))
 import Error.Utils exposing (noError)
@@ -28,9 +29,17 @@ update currentDate modelBackend msg model =
             PagesReturn
                 { model
                     | reportType = reportTypeFromString value
+                    , takenBy = Nothing
                     , startDate = Nothing
                     , limitDate = Nothing
                 }
+                Cmd.none
+                noError
+                []
+
+        SetTakenBy value ->
+            PagesReturn
+                { model | takenBy = takenByFromString value }
                 Cmd.none
                 noError
                 []

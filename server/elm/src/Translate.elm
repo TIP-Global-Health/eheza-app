@@ -5,7 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
-import Backend.Completion.Model exposing (NutritionActivity(..))
+import Backend.Completion.Model exposing (NutritionActivity(..), TakenBy(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
@@ -62,6 +62,7 @@ type TranslationId
     | All
     | ANCNewborn
     | ANCTotal
+    | Any
     | CBNP
     | Cell
     | ChildScorecard
@@ -153,6 +154,8 @@ type TranslationId
     | StuntingModerate
     | StuntingSevere
     | Status
+    | TakenBy TakenBy
+    | TakenByLabel
     | TargetedInterventions
     | Total
     | Tuberculosis
@@ -309,6 +312,12 @@ translationSet transId =
 
         ANCTotal ->
             { english = "ANC (total)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Any ->
+            { english = "Any"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1147,6 +1156,32 @@ translationSet transId =
 
         Status ->
             { english = "Status"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        TakenBy value ->
+            case value of
+                TakenByNurse ->
+                    { english = "Nurse"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TakenByCHW ->
+                    { english = "CHW"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TakenByUnknown ->
+                    { english = "Unknown"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        TakenByLabel ->
+            { english = "Taken By"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

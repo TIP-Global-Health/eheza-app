@@ -2,7 +2,8 @@ module Pages.Completion.View exposing (view)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
-import Backend.Completion.Model exposing (CompletionData, EncounterData, NutritionActivity(..), SelectedEntity(..))
+import Backend.Completion.Model exposing (CompletionData, EncounterData, NutritionActivity(..), SelectedEntity(..), TakenBy(..))
+import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -17,7 +18,7 @@ import Pages.Completion.Model exposing (..)
 import Pages.Completion.Utils exposing (reportTypeToString)
 import Pages.Components.View exposing (viewNutritionMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Utils exposing (launchDate, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Round
 import Time exposing (Month(..))
@@ -61,6 +62,28 @@ viewCompletionData language currentDate themePath data model =
                 , div [ class "scope" ]
                     [ text <| translate language Translate.Scope ++ ": " ++ scopeLabel ]
                 ]
+
+        takenByInput =
+            let
+                options =
+                    List.map
+                        (\option ->
+                            ( translate language <| Translate.TakenBy option, option )
+                        )
+                        [ TakenByNurse, TakenByCHW ]
+            in
+            if isJust model.reportType then
+                viewCustomSelectListInput
+                    model.takenBy
+                    options
+                    takenByToString
+                    SetTakenBy
+                    "select-input"
+                    (Just <| translate language Translate.Any)
+                    |> wrapSelectListInput language Translate.TakenByLabel False
+
+            else
+                emptyNode
 
         dateInputs =
             Maybe.map
@@ -138,7 +161,7 @@ viewCompletionData language currentDate themePath data model =
                     (\reportType startDate limitDate ->
                         case reportType of
                             ReportNutritionIndividual ->
-                                viewNutritionIndividualReport language startDate limitDate data.nutritionIndividualData
+                                viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
                     )
                     model.reportType
                     model.startDate
@@ -156,6 +179,7 @@ viewCompletionData language currentDate themePath data model =
                 Translate.CompletionReportType
                 "select-input"
                 |> wrapSelectListInput language Translate.ReportTypeLabel False
+            , takenByInput
             ]
                 ++ dateInputs
                 ++ [ content ]
@@ -164,14 +188,24 @@ viewCompletionData language currentDate themePath data model =
         ]
 
 
-viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> List (EncounterData NutritionActivity) -> Html Msg
-viewNutritionIndividualReport language startDate limitDate reportData =
+viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionActivity) -> Html Msg
+viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
     let
         filteredData =
             List.filter
                 (\encounter ->
+                    let
+                        takenByCondition =
+                            Maybe.map
+                                (\takenBy ->
+                                    encounter.takenBy == Just takenBy
+                                )
+                                mTakenBy
+                                |> Maybe.withDefault True
+                    in
                     (not <| Date.compare encounter.startDate startDate == LT)
                         && (not <| Date.compare encounter.startDate limitDate == GT)
+                        && takenByCondition
                 )
                 reportData
                 |> generateNutritionReportData language

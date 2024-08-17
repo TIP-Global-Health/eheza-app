@@ -5505,7 +5505,7 @@ var $elm$core$Basics$composeR = F3(
 	});
 var $author$project$App$Types$English = {$: 'English'};
 var $author$project$App$Types$NotFound = {$: 'NotFound'};
-var $author$project$Pages$Completion$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
+var $author$project$Pages$Completion$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing, takenBy: $elm$core$Maybe$Nothing};
 var $author$project$Pages$CompletionMenu$Model$emptyModel = {populationSelection: $elm$core$Maybe$Nothing, selected: false, selectedHealthCenter: $elm$core$Maybe$Nothing};
 var $krisajenkins$remotedata$RemoteData$NotAsked = {$: 'NotAsked'};
 var $author$project$Pages$Reports$Model$emptyModel = {limitDate: $elm$core$Maybe$Nothing, limitDateSelectorPopupState: $elm$core$Maybe$Nothing, nutritionReportData: $krisajenkins$remotedata$RemoteData$NotAsked, reportType: $elm$core$Maybe$Nothing, startDate: $elm$core$Maybe$Nothing, startDateSelectorPopupState: $elm$core$Maybe$Nothing};
@@ -5833,6 +5833,21 @@ var $author$project$Pages$Completion$Utils$reportTypeFromString = function (repo
 		return $elm$core$Maybe$Nothing;
 	}
 };
+var $author$project$Backend$Completion$Model$TakenByCHW = {$: 'TakenByCHW'};
+var $author$project$Backend$Completion$Model$TakenByNurse = {$: 'TakenByNurse'};
+var $author$project$Backend$Completion$Model$TakenByUnknown = {$: 'TakenByUnknown'};
+var $author$project$Backend$Completion$Utils$takenByFromString = function (value) {
+	switch (value) {
+		case 'nurse':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TakenByNurse);
+		case 'chw':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TakenByCHW);
+		case 'unknown':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TakenByUnknown);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Pages$Completion$Update$update = F4(
 	function (currentDate, modelBackend, msg, model) {
 		switch (msg.$) {
@@ -5847,7 +5862,20 @@ var $author$project$Pages$Completion$Update$update = F4(
 						{
 							limitDate: $elm$core$Maybe$Nothing,
 							reportType: $author$project$Pages$Completion$Utils$reportTypeFromString(value),
-							startDate: $elm$core$Maybe$Nothing
+							startDate: $elm$core$Maybe$Nothing,
+							takenBy: $elm$core$Maybe$Nothing
+						}),
+					$elm$core$Platform$Cmd$none,
+					$author$project$Error$Utils$noError,
+					_List_Nil);
+			case 'SetTakenBy':
+				var value = msg.a;
+				return A4(
+					$author$project$App$Model$PagesReturn,
+					_Utils_update(
+						model,
+						{
+							takenBy: $author$project$Backend$Completion$Utils$takenByFromString(value)
 						}),
 					$elm$core$Platform$Cmd$none,
 					$author$project$Error$Utils$noError,
@@ -6815,24 +6843,18 @@ var $author$project$Backend$Completion$Model$EncounterData = F4(
 	function (startDate, expectedActivities, completedActivities, takenBy) {
 		return {completedActivities: completedActivities, expectedActivities: expectedActivities, startDate: startDate, takenBy: takenBy};
 	});
-var $author$project$Backend$Completion$Model$TakenByUnknown = {$: 'TakenByUnknown'};
-var $author$project$Backend$Completion$Model$TakenByCHW = {$: 'TakenByCHW'};
-var $author$project$Backend$Completion$Model$TakenByNurse = {$: 'TakenByNurse'};
 var $elm$json$Json$Decode$fail = _Json_fail;
 var $elm$json$Json$Decode$string = _Json_decodeString;
 var $author$project$Backend$Completion$Decoder$decodeTakenBy = A2(
 	$elm$json$Json$Decode$andThen,
 	function (takenBy) {
-		switch (takenBy) {
-			case 'nurse':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$TakenByNurse);
-			case 'chw':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$TakenByCHW);
-			case 'unknown':
-				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$TakenByUnknown);
-			default:
-				return $elm$json$Json$Decode$fail(takenBy + ' is unknown TakenBy type');
-		}
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(takenBy + ' is unknown TakenBy type'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Completion$Utils$takenByFromString(takenBy)));
 	},
 	$elm$json$Json$Decode$string);
 var $elm$json$Json$Decode$oneOf = _Json_oneOf;
@@ -7651,7 +7673,7 @@ var $author$project$Backend$Completion$Model$NutritionNutrition = {$: 'Nutrition
 var $author$project$Backend$Completion$Model$NutritionPhoto = {$: 'NutritionPhoto'};
 var $author$project$Backend$Completion$Model$NutritionSendToHC = {$: 'NutritionSendToHC'};
 var $author$project$Backend$Completion$Model$NutritionWeight = {$: 'NutritionWeight'};
-var $author$project$Backend$Completion$Decoder$nutritionActivityFromMapping = function (mapped) {
+var $author$project$Backend$Completion$Utils$nutritionActivityFromMapping = function (mapped) {
 	switch (mapped) {
 		case 'a':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHeight);
@@ -7684,7 +7706,7 @@ var $author$project$Backend$Completion$Decoder$decodeNutritionActivities = A2(
 		$elm$core$String$split(','),
 		A2(
 			$elm$core$Basics$composeR,
-			$elm$core$List$map($author$project$Backend$Completion$Decoder$nutritionActivityFromMapping),
+			$elm$core$List$map($author$project$Backend$Completion$Utils$nutritionActivityFromMapping),
 			A2($elm$core$Basics$composeR, $elm_community$maybe_extra$Maybe$Extra$values, $elm$json$Json$Decode$succeed))),
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$EntityGlobal = {$: 'EntityGlobal'};
@@ -9835,6 +9857,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'ANC + Newborn', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ANCTotal':
 				return {english: 'ANC (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Any':
+				return {english: 'Any', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Colline':
 				return {english: 'Colline', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CollineSub':
@@ -10327,6 +10351,18 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Stunting Severe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Status':
 				return {english: 'Status', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'TakenBy':
+				var value = transId.a;
+				switch (value.$) {
+					case 'TakenByNurse':
+						return {english: 'Nurse', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'TakenByCHW':
+						return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Unknown', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
+			case 'TakenByLabel':
+				return {english: 'Taken By', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TargetedInterventions':
 				return {english: 'Targeted Interventions', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Total':
@@ -10507,6 +10543,7 @@ var $author$project$Error$View$view = F2(
 	});
 var $author$project$Gizra$Html$emptyNode = $elm$html$Html$text('');
 var $elm$core$Debug$toString = _Debug_toString;
+var $author$project$Translate$Any = {$: 'Any'};
 var $author$project$Translate$CompletionReportType = function (a) {
 	return {$: 'CompletionReportType', a: a};
 };
@@ -10530,6 +10567,13 @@ var $author$project$Pages$Completion$Model$SetStartDate = function (a) {
 var $author$project$Pages$Completion$Model$SetStartDateSelectorState = function (a) {
 	return {$: 'SetStartDateSelectorState', a: a};
 };
+var $author$project$Pages$Completion$Model$SetTakenBy = function (a) {
+	return {$: 'SetTakenBy', a: a};
+};
+var $author$project$Translate$TakenBy = function (a) {
+	return {$: 'TakenBy', a: a};
+};
+var $author$project$Translate$TakenByLabel = {$: 'TakenByLabel'};
 var $elm$html$Html$a = _VirtualDom_node('a');
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $justinmimbs$date$Date$day = A2(
@@ -11216,6 +11260,16 @@ var $elm$html$Html$Events$onClick = function (msg) {
 };
 var $author$project$Pages$Completion$Utils$reportTypeToString = function (reportType) {
 	return 'nutrition-individual';
+};
+var $author$project$Backend$Completion$Utils$takenByToString = function (value) {
+	switch (value.$) {
+		case 'TakenByNurse':
+			return 'nurse';
+		case 'TakenByCHW':
+			return 'chw';
+		default:
+			return 'unknown';
+	}
 };
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
@@ -12158,6 +12212,94 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			},
 			popupState);
 	});
+var $author$project$Pages$Utils$customEmptySelectOption = F2(
+	function (label, isSelected) {
+		return A2(
+			$elm$html$Html$option,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$value(''),
+					$elm$html$Html$Attributes$selected(isSelected)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(label)
+				]));
+	});
+var $elm$html$Html$Events$alwaysStop = function (x) {
+	return _Utils_Tuple2(x, true);
+};
+var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
+	return {$: 'MayStopPropagation', a: a};
+};
+var $elm$html$Html$Events$stopPropagationOn = F2(
+	function (event, decoder) {
+		return A2(
+			$elm$virtual_dom$VirtualDom$on,
+			event,
+			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
+	});
+var $elm$html$Html$Events$targetValue = A2(
+	$elm$json$Json$Decode$at,
+	_List_fromArray(
+		['target', 'value']),
+	$elm$json$Json$Decode$string);
+var $elm$html$Html$Events$onInput = function (tagger) {
+	return A2(
+		$elm$html$Html$Events$stopPropagationOn,
+		'input',
+		A2(
+			$elm$json$Json$Decode$map,
+			$elm$html$Html$Events$alwaysStop,
+			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
+};
+var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
+	function (currentValue, options, toStringFunc, setMsg, inputClass, emptyOptionLabel) {
+		var emptyOption = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (label) {
+					return A2(
+						$author$project$Pages$Utils$customEmptySelectOption,
+						label,
+						_Utils_eq(currentValue, $elm$core$Maybe$Nothing));
+				},
+				emptyOptionLabel));
+		return A2(
+			$elm$html$Html$select,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onInput(setMsg),
+					$elm$html$Html$Attributes$class(inputClass)
+				]),
+			A2(
+				$elm$core$List$cons,
+				emptyOption,
+				A2(
+					$elm$core$List$map,
+					function (_v0) {
+						var label = _v0.a;
+						var value_ = _v0.b;
+						return A2(
+							$elm$html$Html$option,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$value(
+									toStringFunc(value_)),
+									$elm$html$Html$Attributes$selected(
+									_Utils_eq(
+										currentValue,
+										$elm$core$Maybe$Just(value_)))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(label)
+								]));
+					},
+					options)));
+	});
 var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
 var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 	var classes = A2(
@@ -12531,19 +12673,30 @@ var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = fun
 				A2($elm$core$List$map, viewRow, data.rows)))
 		]);
 };
-var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F4(
-	function (language, startDate, limitDate, reportData) {
+var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
+	function (language, startDate, limitDate, mTakenBy, reportData) {
 		var filteredData = A2(
 			$author$project$Pages$Completion$View$generateNutritionReportData,
 			language,
 			A2(
 				$elm$core$List$filter,
 				function (encounter) {
+					var takenByCondition = A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A2(
+							$elm$core$Maybe$map,
+							function (takenBy) {
+								return _Utils_eq(
+									encounter.takenBy,
+									$elm$core$Maybe$Just(takenBy));
+							},
+							mTakenBy));
 					return (!_Utils_eq(
 						A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
-						$elm$core$Basics$LT)) && (!_Utils_eq(
+						$elm$core$Basics$LT)) && ((!_Utils_eq(
 						A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
-						$elm$core$Basics$GT));
+						$elm$core$Basics$GT)) && takenByCondition);
 				},
 				reportData));
 		return A2(
@@ -12553,83 +12706,6 @@ var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F4(
 					$elm$html$Html$Attributes$class('report nutrition-individual')
 				]),
 			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(filteredData));
-	});
-var $author$project$Pages$Utils$emptySelectOption = function (isSelected) {
-	return A2(
-		$elm$html$Html$option,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$value(''),
-				$elm$html$Html$Attributes$selected(isSelected)
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('')
-			]));
-};
-var $elm$html$Html$Events$alwaysStop = function (x) {
-	return _Utils_Tuple2(x, true);
-};
-var $elm$virtual_dom$VirtualDom$MayStopPropagation = function (a) {
-	return {$: 'MayStopPropagation', a: a};
-};
-var $elm$html$Html$Events$stopPropagationOn = F2(
-	function (event, decoder) {
-		return A2(
-			$elm$virtual_dom$VirtualDom$on,
-			event,
-			$elm$virtual_dom$VirtualDom$MayStopPropagation(decoder));
-	});
-var $elm$html$Html$Events$targetValue = A2(
-	$elm$json$Json$Decode$at,
-	_List_fromArray(
-		['target', 'value']),
-	$elm$json$Json$Decode$string);
-var $elm$html$Html$Events$onInput = function (tagger) {
-	return A2(
-		$elm$html$Html$Events$stopPropagationOn,
-		'input',
-		A2(
-			$elm$json$Json$Decode$map,
-			$elm$html$Html$Events$alwaysStop,
-			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
-};
-var $author$project$Pages$Utils$viewCustomSelectListInput = F6(
-	function (currentValue, options, toStringFunc, setMsg, inputClass, withEmptyOption) {
-		var emptyOption = withEmptyOption ? $author$project$Pages$Utils$emptySelectOption(
-			_Utils_eq(currentValue, $elm$core$Maybe$Nothing)) : $author$project$Gizra$Html$emptyNode;
-		return A2(
-			$elm$html$Html$select,
-			_List_fromArray(
-				[
-					$elm$html$Html$Events$onInput(setMsg),
-					$elm$html$Html$Attributes$class(inputClass)
-				]),
-			A2(
-				$elm$core$List$cons,
-				emptyOption,
-				A2(
-					$elm$core$List$map,
-					function (_v0) {
-						var label = _v0.a;
-						var value_ = _v0.b;
-						return A2(
-							$elm$html$Html$option,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$value(
-									toStringFunc(value_)),
-									$elm$html$Html$Attributes$selected(
-									_Utils_eq(
-										currentValue,
-										$elm$core$Maybe$Just(value_)))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text(label)
-								]));
-					},
-					options)));
 	});
 var $author$project$Pages$Utils$viewSelectListInput = F7(
 	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
@@ -12645,7 +12721,14 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 					option);
 			},
 			options);
-		return A6($author$project$Pages$Utils$viewCustomSelectListInput, currentValue, optionsPairs, toStringFunc, setMsg, inputClass, true);
+		return A6(
+			$author$project$Pages$Utils$viewCustomSelectListInput,
+			currentValue,
+			optionsPairs,
+			toStringFunc,
+			setMsg,
+			inputClass,
+			$elm$core$Maybe$Just(''));
 	});
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
@@ -12744,6 +12827,34 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							]))
 					]));
 		}();
+		var takenByInput = function () {
+			var options = A2(
+				$elm$core$List$map,
+				function (option) {
+					return _Utils_Tuple2(
+						A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$TakenBy(option)),
+						option);
+				},
+				_List_fromArray(
+					[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+			return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
+				language,
+				$author$project$Translate$TakenByLabel,
+				false,
+				A6(
+					$author$project$Pages$Utils$viewCustomSelectListInput,
+					model.takenBy,
+					options,
+					$author$project$Backend$Completion$Utils$takenByToString,
+					$author$project$Pages$Completion$Model$SetTakenBy,
+					'select-input',
+					$elm$core$Maybe$Just(
+						A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
+		}();
 		var dateInputs = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
@@ -12828,7 +12939,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 				$elm$core$Maybe$map3,
 				F3(
 					function (reportType, startDate, limitDate) {
-						return A4($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, data.nutritionIndividualData);
+						return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
 					}),
 				model.reportType,
 				model.startDate,
@@ -12865,7 +12976,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,
-									'select-input'))
+									'select-input')),
+								takenByInput
 							]),
 						_Utils_ap(
 							dateInputs,
@@ -12992,7 +13104,14 @@ var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 										language,
 										$author$project$Translate$HealthCenter,
 										false,
-										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$CompletionMenu$Model$SetHealthCenter, 'select-input', true))
+										A6(
+											$author$project$Pages$Utils$viewCustomSelectListInput,
+											model.selectedHealthCenter,
+											options,
+											$elm$core$String$fromInt,
+											$author$project$Pages$CompletionMenu$Model$SetHealthCenter,
+											'select-input',
+											$elm$core$Maybe$Just('')))
 									]),
 								A2(
 									$elm$core$Maybe$withDefault,
@@ -35382,6 +35501,7 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel5 = function (
 			return $author$project$Translate$EmptyString;
 	}
 };
+var $author$project$Pages$Utils$emptySelectOption = $author$project$Pages$Utils$customEmptySelectOption('');
 var $author$project$Pages$Utils$viewGeoLocationSelectListInput = F6(
 	function (language, currentValue, options, setMsg, labelTransId, disabled) {
 		var emptyOption = $author$project$Pages$Utils$emptySelectOption(
@@ -35715,7 +35835,14 @@ var $author$project$Pages$ReportsMenu$View$viewMenu = F4(
 										language,
 										$author$project$Translate$HealthCenter,
 										false,
-										A6($author$project$Pages$Utils$viewCustomSelectListInput, model.selectedHealthCenter, options, $elm$core$String$fromInt, $author$project$Pages$ReportsMenu$Model$SetHealthCenter, 'select-input', true))
+										A6(
+											$author$project$Pages$Utils$viewCustomSelectListInput,
+											model.selectedHealthCenter,
+											options,
+											$elm$core$String$fromInt,
+											$author$project$Pages$ReportsMenu$Model$SetHealthCenter,
+											'select-input',
+											$elm$core$Maybe$Just('')))
 									]),
 								A2(
 									$elm$core$Maybe$withDefault,
