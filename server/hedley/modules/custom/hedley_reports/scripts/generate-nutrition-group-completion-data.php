@@ -46,9 +46,6 @@ if ($count == 0) {
   exit;
 }
 
-// @todo: do we need this?
-$nurses = hedley_ncda_resolve_nurses_ids();
-
 $total = 0;
 drush_print("$count nodes of type $type located.");
 
