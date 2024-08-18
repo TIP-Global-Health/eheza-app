@@ -2278,10 +2278,11 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
           $expected[] = 'lactation';
 
           // Mother FBF activity is shown if Lactation activity indicated
-          // that mother is breastfeeding.
+          // that mother is breastfeeding, and mother Ubudehe is 1 or 2.
           if (!empty($measurements_by_type['lactation'])) {
             $lactation_sign = $measurements_by_type['lactation']->field_lactation_signs[LANGUAGE_NONE][0]['value'];
-            if ($lactation_sign == 'breastfeeding') {
+            $ubudehe = $person->field_ubudehe[LANGUAGE_NONE][0]['value'];
+            if ($lactation_sign == 'breastfeeding' && in_array($ubudehe, [1, 2])) {
               $expected[] = 'mother_fbf';
             }
           }
