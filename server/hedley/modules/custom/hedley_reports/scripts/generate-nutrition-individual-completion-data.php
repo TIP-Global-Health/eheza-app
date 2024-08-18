@@ -5,7 +5,7 @@
  * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-nutrition-individual-completion-data.php.
  */
 
 if (!drupal_is_cli()) {
