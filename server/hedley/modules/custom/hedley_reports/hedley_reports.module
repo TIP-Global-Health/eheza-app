@@ -2196,7 +2196,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   $mapping_mother = [
     'family_planning' => 'a',
     'mother_fbf' => 'b',
-    'lactation' =>'c',
+    'lactation' => 'c',
   ];
 
   // Attendance points to mother. We need to resolve the child (or children)
@@ -2216,17 +2216,20 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     ->addTag('exclude_deleted')
     ->execute();
 
-  $session_participants_ids = [$adult_id];
-  $participants_ids = array_keys($result['node']);
-  $participants = node_load_multiple($participants_ids);
   // Flag that signals that adult is mother to a child (or children),
   // and therefore, we expect to find mother activities.
   $is_mother = FALSE;
-  foreach ($participants as $participant) {
-    $session_participants_ids[] = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
-    // It's enough to determine that we found mother for one of the children.
-    if (!$is_mother) {
-      $is_mother = $participant->field_adult_activities[LANGUAGE_NONE][0]['value'] == 'mother';
+  $session_participants_ids = [$adult_id];
+
+  if (!empty($result['node'])) {
+    $participants_ids = array_keys($result['node']);
+    $participants = node_load_multiple($participants_ids);
+    foreach ($participants as $participant) {
+      $session_participants_ids[] = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+      // It's enough to determine that we found mother for one of the children.
+      if (!$is_mother) {
+        $is_mother = $participant->field_adult_activities[LANGUAGE_NONE][0]['value'] == 'mother';
+      }
     }
   }
 
