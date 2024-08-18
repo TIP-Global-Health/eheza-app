@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Generates completion data for different types of encounters.
+ * Generates completion data for Nutrition group encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-nutrition-group-completion-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,11 +25,12 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'nutrition_encounter';
+$type = 'attendance';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
+  ->fieldCondition('field_attended', 'value', TRUE)
   ->propertyCondition('status', NODE_PUBLISHED);
 
 if ($exclude_set) {
@@ -69,9 +70,9 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $completion_data = hedley_reports_generate_completion_data_for_nutrition_individual_encounter($node);
-    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($node);
+    $completion_data = hedley_reports_generate_completion_data_for_nutrition_group_encounter($node);
+//    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+//    node_save($node);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);
