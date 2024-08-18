@@ -5825,12 +5825,16 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 			return ma;
 		}
 	});
+var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
 var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
 var $author$project$Pages$Completion$Utils$reportTypeFromString = function (reportType) {
-	if (reportType === 'nutrition-individual') {
-		return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
-	} else {
-		return $elm$core$Maybe$Nothing;
+	switch (reportType) {
+		case 'nutrition-individual':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
+		case 'nutrition-group':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionGroup);
+		default:
+			return $elm$core$Maybe$Nothing;
 	}
 };
 var $author$project$Backend$Completion$Model$TakenByCHW = {$: 'TakenByCHW'};
@@ -6836,8 +6840,8 @@ var $author$project$Backend$Types$BackendReturn = F4(
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
 var $author$project$Backend$Completion$Model$CompletionData = F5(
-	function (site, entityName, entityType, nutritionIndividualData, nutritionGropData) {
-		return {entityName: entityName, entityType: entityType, nutritionGropData: nutritionGropData, nutritionIndividualData: nutritionIndividualData, site: site};
+	function (site, entityName, entityType, nutritionIndividualData, nutritionGroupData) {
+		return {entityName: entityName, entityType: entityType, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site};
 	});
 var $author$project$Backend$Completion$Model$EncounterData = F4(
 	function (startDate, expectedActivities, completedActivities, takenBy) {
@@ -9960,7 +9964,11 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CompletionReportType':
 				var reportType = transId.a;
-				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				if (reportType.$ === 'ReportNutritionIndividual') {
+					return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				} else {
+					return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'CBNP':
 				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Cell':
@@ -10256,10 +10264,22 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {english: 'Child FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
+			case 'NutritionMotherActivity':
+				var activity = transId.a;
+				switch (activity.$) {
+					case 'NutritionFamilyPlanning':
+						return {english: 'Family Planning', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'NutritionLactation':
+						return {english: 'Lactation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Mother FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'NutritionBehavior':
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionIndividual':
 				return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NutritionGroup':
+				return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionReportTableType':
 				var tableType = transId.a;
 				switch (tableType.$) {
@@ -11308,7 +11328,6 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	}
 };
 var $author$project$Pages$Utils$launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
-var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Maybe$map3 = F4(
 	function (func, ma, mb, mc) {
 		if (ma.$ === 'Nothing') {
@@ -11347,7 +11366,11 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Pages$Completion$Utils$reportTypeToString = function (reportType) {
-	return 'nutrition-individual';
+	if (reportType.$ === 'ReportNutritionIndividual') {
+		return 'nutrition-individual';
+	} else {
+		return 'nutrition-group';
+	}
 };
 var $author$project$Backend$Completion$Utils$takenByToString = function (value) {
 	switch (value.$) {
@@ -12416,9 +12439,18 @@ var $author$project$Translate$Expected = {$: 'Expected'};
 var $author$project$Translate$NutritionChildActivity = function (a) {
 	return {$: 'NutritionChildActivity', a: a};
 };
-var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
-var $author$project$Pages$Completion$Model$allNutritionActivities = _List_fromArray(
+var $author$project$Translate$NutritionGroup = {$: 'NutritionGroup'};
+var $author$project$Translate$NutritionMotherActivity = function (a) {
+	return {$: 'NutritionMotherActivity', a: a};
+};
+var $author$project$Pages$Completion$Model$allNutritionIndividualActivities = _List_fromArray(
 	[$author$project$Backend$Completion$Model$NutritionHeight, $author$project$Backend$Completion$Model$NutritionNutrition, $author$project$Backend$Completion$Model$NutritionPhoto, $author$project$Backend$Completion$Model$NutritionWeight, $author$project$Backend$Completion$Model$NutritionMUAC, $author$project$Backend$Completion$Model$NutritionContributingFactors, $author$project$Backend$Completion$Model$NutritionFollowUp, $author$project$Backend$Completion$Model$NutritionHealthEducation, $author$project$Backend$Completion$Model$NutritionSendToHC, $author$project$Backend$Completion$Model$NutritionNCDA]);
+var $author$project$Pages$Completion$Model$allNutritionChildGroupActivities = _Utils_ap(
+	$author$project$Pages$Completion$Model$allNutritionIndividualActivities,
+	_List_fromArray(
+		[$author$project$Backend$Completion$Model$NutritionChildFbf]));
+var $author$project$Pages$Completion$Model$allNutritionMotherGroupActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$NutritionFamilyPlanning, $author$project$Backend$Completion$Model$NutritionLactation, $author$project$Backend$Completion$Model$NutritionMotherFbf]);
 var $myrho$elm_round$Round$addSign = F2(
 	function (signed, str) {
 		var isNotZero = A2(
@@ -12632,10 +12664,16 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
+var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 	function (language, records) {
-		var count = F2(
-			function (resolveFunc, activity) {
+		var motherData = A2(
+			$elm$core$List$filterMap,
+			function ($) {
+				return $.motherData;
+			},
+			records);
+		var count = F3(
+			function (resolveFunc, activity, data) {
 				return $elm$core$List$length(
 					A2(
 						$elm$core$List$filter,
@@ -12643,12 +12681,51 @@ var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
 							$elm$core$Basics$composeR,
 							resolveFunc,
 							$elm$core$List$member(activity)),
-						records));
+						data));
 			});
+		var childrenData = $elm$core$List$concat(
+			A2(
+				$elm$core$List$map,
+				function ($) {
+					return $.childrenData;
+				},
+				records));
 		var calcualtePercentage = F2(
 			function (nominator, total) {
 				return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 3, (nominator / total) * 100) + '%');
 			});
+		var generateActivityRows = F2(
+			function (activityTransId, data) {
+				return $elm$core$List$map(
+					function (activity) {
+						var expected = A3(
+							count,
+							function ($) {
+								return $.expectedActivities;
+							},
+							activity,
+							data);
+						var completed = A3(
+							count,
+							function ($) {
+								return $.completedActivities;
+							},
+							activity,
+							data);
+						return _List_fromArray(
+							[
+								A2(
+								$author$project$Translate$translate,
+								language,
+								activityTransId(activity)),
+								$elm$core$String$fromInt(expected),
+								$elm$core$String$fromInt(completed),
+								A2(calcualtePercentage, completed, expected)
+							]);
+					});
+			});
+		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Model$allNutritionChildGroupActivities);
+		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Model$allNutritionMotherGroupActivities);
 		return {
 			captions: _List_fromArray(
 				[
@@ -12657,34 +12734,8 @@ var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
 					A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
 					'%'
 				]),
-			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionIndividual),
-			rows: A2(
-				$elm$core$List$map,
-				function (activity) {
-					var expected = A2(
-						count,
-						function ($) {
-							return $.expectedActivities;
-						},
-						activity);
-					var completed = A2(
-						count,
-						function ($) {
-							return $.completedActivities;
-						},
-						activity);
-					return _List_fromArray(
-						[
-							A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$NutritionChildActivity(activity)),
-							$elm$core$String$fromInt(expected),
-							$elm$core$String$fromInt(completed),
-							A2(calcualtePercentage, completed, expected)
-						]);
-				},
-				$author$project$Pages$Completion$Model$allNutritionActivities)
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionGroup),
+			rows: _Utils_ap(motherActivityRows, childrenActivityRows)
 		};
 	});
 var $elm$html$Html$Attributes$classList = function (classes) {
@@ -12761,10 +12812,100 @@ var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = fun
 				A2($elm$core$List$map, viewRow, data.rows)))
 		]);
 };
+var $author$project$Pages$Completion$View$viewNutritionGroupReport = F5(
+	function (language, startDate, limitDate, mTakenBy, reportData) {
+		var filteredData = A2(
+			$author$project$Pages$Completion$View$generateNutritionGroupReportData,
+			language,
+			A2(
+				$elm$core$List$filter,
+				function (encounter) {
+					var takenByCondition = A2(
+						$elm$core$Maybe$withDefault,
+						true,
+						A2(
+							$elm$core$Maybe$map,
+							function (takenBy) {
+								return _Utils_eq(
+									encounter.takenBy,
+									$elm$core$Maybe$Just(takenBy));
+							},
+							mTakenBy));
+					return (!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+						$elm$core$Basics$LT)) && ((!_Utils_eq(
+						A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+						$elm$core$Basics$GT)) && takenByCondition);
+				},
+				reportData));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report nutrition-individual')
+				]),
+			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(filteredData));
+	});
+var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
+var $author$project$Pages$Completion$View$generateNutritionIndividualReportData = F2(
+	function (language, records) {
+		var count = F2(
+			function (resolveFunc, activity) {
+				return $elm$core$List$length(
+					A2(
+						$elm$core$List$filter,
+						A2(
+							$elm$core$Basics$composeR,
+							resolveFunc,
+							$elm$core$List$member(activity)),
+						records));
+			});
+		var calcualtePercentage = F2(
+			function (nominator, total) {
+				return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 3, (nominator / total) * 100) + '%');
+			});
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
+					'%'
+				]),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionIndividual),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A2(
+						count,
+						function ($) {
+							return $.expectedActivities;
+						},
+						activity);
+					var completed = A2(
+						count,
+						function ($) {
+							return $.completedActivities;
+						},
+						activity);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$NutritionChildActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2(calcualtePercentage, completed, expected)
+						]);
+				},
+				$author$project$Pages$Completion$Model$allNutritionIndividualActivities)
+		};
+	});
 var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
 	function (language, startDate, limitDate, mTakenBy, reportData) {
 		var filteredData = A2(
-			$author$project$Pages$Completion$View$generateNutritionReportData,
+			$author$project$Pages$Completion$View$generateNutritionIndividualReportData,
 			language,
 			A2(
 				$elm$core$List$filter,
@@ -12861,8 +13002,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v2 = data.entityType;
-				if (_v2.$ === 'EntityGlobal') {
+				var _v1 = data.entityType;
+				if (_v1.$ === 'EntityGlobal') {
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				} else {
 					return data.entityName;
@@ -13027,12 +13168,15 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 				$elm$core$Maybe$map3,
 				F3(
 					function (reportType, startDate, limitDate) {
-						return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
+						if (reportType.$ === 'ReportNutritionIndividual') {
+							return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
+						} else {
+							return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
+						}
 					}),
 				model.reportType,
 				model.startDate,
 				model.limitDate));
-		var _v0 = A2($elm$core$Debug$log, '', data.nutritionGropData);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -13061,7 +13205,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									language,
 									model.reportType,
 									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportNutritionIndividual]),
+										[$author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportNutritionGroup]),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,

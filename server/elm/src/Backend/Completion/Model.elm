@@ -12,7 +12,7 @@ type alias CompletionData =
     , entityName : String
     , entityType : SelectedEntity
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
-    , nutritionGropData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     }
 
 

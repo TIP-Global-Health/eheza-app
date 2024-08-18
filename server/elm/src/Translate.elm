@@ -5,7 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
-import Backend.Completion.Model exposing (NutritionChildActivity(..), TakenBy(..))
+import Backend.Completion.Model exposing (NutritionChildActivity(..), NutritionMotherActivity(..), TakenBy(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
@@ -119,8 +119,10 @@ type TranslationId
     | NumberOfVisits Int
     | NumberOfVisitsLabel
     | NutritionChildActivity NutritionChildActivity
+    | NutritionMotherActivity NutritionMotherActivity
     | NutritionBehavior
     | NutritionIndividual
+    | NutritionGroup
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | PleaseWaitMessage
@@ -356,6 +358,12 @@ translationSet transId =
             case reportType of
                 Pages.Completion.Model.ReportNutritionIndividual ->
                     { english = "Nutrition Individual"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Pages.Completion.Model.ReportNutritionGroup ->
+                    { english = "Nutrition Group"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -880,6 +888,26 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+        NutritionMotherActivity activity ->
+            case activity of
+                NutritionFamilyPlanning ->
+                    { english = "Family Planning"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionLactation ->
+                    { english = "Lactation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionMotherFbf ->
+                    { english = "Mother FBF"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         NutritionBehavior ->
             { english = "Nutrition Behavior"
             , kinyarwanda = Nothing
@@ -888,6 +916,12 @@ translationSet transId =
 
         NutritionIndividual ->
             { english = "Nutrition Individual"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NutritionGroup ->
+            { english = "Nutrition Group"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

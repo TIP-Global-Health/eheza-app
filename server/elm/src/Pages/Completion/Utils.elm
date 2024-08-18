@@ -10,12 +10,18 @@ reportTypeToString reportType =
         ReportNutritionIndividual ->
             "nutrition-individual"
 
+        ReportNutritionGroup ->
+            "nutrition-group"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
     case reportType of
         "nutrition-individual" ->
             Just ReportNutritionIndividual
+
+        "nutrition-group" ->
+            Just ReportNutritionGroup
 
         _ ->
             Nothing

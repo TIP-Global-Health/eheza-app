@@ -1,6 +1,6 @@
 module Pages.Completion.Model exposing (..)
 
-import Backend.Completion.Model exposing (NutritionChildActivity(..), TakenBy)
+import Backend.Completion.Model exposing (NutritionChildActivity(..), NutritionMotherActivity(..), TakenBy)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 
@@ -28,6 +28,7 @@ emptyModel =
 
 type ReportType
     = ReportNutritionIndividual
+    | ReportNutritionGroup
 
 
 type Msg
@@ -40,8 +41,8 @@ type Msg
     | SetLimitDateSelectorState (Maybe (DateSelectorConfig Msg))
 
 
-allNutritionActivities : List NutritionChildActivity
-allNutritionActivities =
+allNutritionIndividualActivities : List NutritionChildActivity
+allNutritionIndividualActivities =
     [ NutritionHeight
     , NutritionNutrition
     , NutritionPhoto
@@ -52,4 +53,17 @@ allNutritionActivities =
     , NutritionHealthEducation
     , NutritionSendToHC
     , NutritionNCDA
+    ]
+
+
+allNutritionChildGroupActivities : List NutritionChildActivity
+allNutritionChildGroupActivities =
+    allNutritionIndividualActivities ++ [ NutritionChildFbf ]
+
+
+allNutritionMotherGroupActivities : List NutritionMotherActivity
+allNutritionMotherGroupActivities =
+    [ NutritionFamilyPlanning
+    , NutritionLactation
+    , NutritionMotherFbf
     ]
