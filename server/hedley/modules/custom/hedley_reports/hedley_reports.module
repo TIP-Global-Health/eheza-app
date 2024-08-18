@@ -2156,9 +2156,9 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     'muac' => 'e',
     'contributing_factors' => 'f',
     'follow_up' => 'g',
-    'health_education' => 'h',
-    'send_to_hc' => 'i',
-    'ncda' => 'j',
+    'group_health_education' => 'h',
+    'group_send_to_hc' => 'i',
+    'group_ncda' => 'j',
   ];
 
   // Activities that are always taken during encounter.
