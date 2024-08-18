@@ -1,6 +1,6 @@
 module Pages.Completion.Model exposing (..)
 
-import Backend.Completion.Model exposing (NutritionActivity(..), TakenBy)
+import Backend.Completion.Model exposing (NutritionChildActivity(..), TakenBy)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 
@@ -40,7 +40,7 @@ type Msg
     | SetLimitDateSelectorState (Maybe (DateSelectorConfig Msg))
 
 
-allNutritionActivities : List NutritionActivity
+allNutritionActivities : List NutritionChildActivity
 allNutritionActivities =
     [ NutritionHeight
     , NutritionNutrition

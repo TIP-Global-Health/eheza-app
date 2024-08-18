@@ -2,7 +2,7 @@ module Pages.Completion.View exposing (view)
 
 import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
-import Backend.Completion.Model exposing (CompletionData, EncounterData, NutritionActivity(..), SelectedEntity(..), TakenBy(..))
+import Backend.Completion.Model exposing (CompletionData, EncounterData, NutritionChildActivity(..), SelectedEntity(..), TakenBy(..))
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
 import Date exposing (Interval(..), Unit(..))
@@ -42,6 +42,9 @@ view language currentDate themePath modelBackend model =
 viewCompletionData : Language -> NominalDate -> String -> CompletionData -> Model -> Html Msg
 viewCompletionData language currentDate themePath data model =
     let
+        _ =
+            Debug.log "" data.nutritionGropData
+
         topBar =
             let
                 scopeLabel =
@@ -188,7 +191,7 @@ viewCompletionData language currentDate themePath data model =
         ]
 
 
-viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionActivity) -> Html Msg
+viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionChildActivity) -> Html Msg
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
     let
         filteredData =
@@ -216,7 +219,7 @@ viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
 
 generateNutritionReportData :
     Language
-    -> List (EncounterData NutritionActivity)
+    -> List (EncounterData NutritionChildActivity)
     -> MetricsResultsTableData
 generateNutritionReportData language records =
     let
@@ -248,7 +251,7 @@ generateNutritionReportData language records =
                     completed =
                         count .completedActivities activity
                 in
-                [ translate language <| Translate.NutritionActivity activity
+                [ translate language <| Translate.NutritionChildActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
                 , calcualtePercentage completed expected

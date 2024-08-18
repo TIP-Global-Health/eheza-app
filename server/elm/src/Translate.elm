@@ -5,7 +5,7 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
-import Backend.Completion.Model exposing (NutritionActivity(..), TakenBy(..))
+import Backend.Completion.Model exposing (NutritionChildActivity(..), TakenBy(..))
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
@@ -118,7 +118,7 @@ type TranslationId
     | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
-    | NutritionActivity NutritionActivity
+    | NutritionChildActivity NutritionChildActivity
     | NutritionBehavior
     | NutritionIndividual
     | NutritionReportTableType NutritionReportTableType
@@ -812,7 +812,7 @@ translationSet transId =
             , kirundi = Nothing
             }
 
-        NutritionActivity activity ->
+        NutritionChildActivity activity ->
             case activity of
                 NutritionHeight ->
                     { english = "Height"
@@ -870,6 +870,12 @@ translationSet transId =
 
                 NutritionNCDA ->
                     { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NutritionChildFbf ->
+                    { english = "Child FBF"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

@@ -9,7 +9,7 @@ import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Maybe.Extra exposing (isNothing)
 
 
@@ -19,7 +19,9 @@ decodeCompletionData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list (decodeEncounterData decodeNutritionActivities))
+        |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData decodeNutritionChildActivities))
+        |> requiredAt [ "results", "nutrition_group" ]
+            (list (decodeNutritionGroupEncounterData decodeNutritionMotherActivities decodeNutritionChildActivities))
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -48,12 +50,42 @@ decodeEncounterData activitiesDecoder =
         |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
 
 
-decodeNutritionActivities : Decoder (List NutritionActivity)
-decodeNutritionActivities =
+decodeNutritionChildActivities : Decoder (List NutritionChildActivity)
+decodeNutritionChildActivities =
     string
         |> andThen
             (String.split ","
-                >> List.map nutritionActivityFromMapping
+                >> List.map nutritionChildActivityFromMapping
+                >> Maybe.Extra.values
+                >> succeed
+            )
+
+
+decodeNutritionGroupEncounterData :
+    Decoder (List motherActivity)
+    -> Decoder (List childActivity)
+    -> Decoder (NutritionGroupEncounterData motherActivity childActivity)
+decodeNutritionGroupEncounterData motherActivitiesDecoder childActivitiesDecoder =
+    succeed NutritionGroupEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "mother" (nullable (decodeActivitiesCompletionData motherActivitiesDecoder)) Nothing
+        |> required "children" (list (decodeActivitiesCompletionData childActivitiesDecoder))
+        |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+
+
+decodeActivitiesCompletionData : Decoder (List activity) -> Decoder (ActivitiesCompletionData activity)
+decodeActivitiesCompletionData activitiesDecoder =
+    succeed ActivitiesCompletionData
+        |> required "expected" activitiesDecoder
+        |> required "completed" activitiesDecoder
+
+
+decodeNutritionMotherActivities : Decoder (List NutritionMotherActivity)
+decodeNutritionMotherActivities =
+    string
+        |> andThen
+            (String.split ","
+                >> List.map nutritionMotherActivityFromMapping
                 >> Maybe.Extra.values
                 >> succeed
             )

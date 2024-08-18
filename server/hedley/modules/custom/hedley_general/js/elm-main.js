@@ -6835,9 +6835,9 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Completion$Model$CompletionData = F4(
-	function (site, entityName, entityType, nutritionIndividualData) {
-		return {entityName: entityName, entityType: entityType, nutritionIndividualData: nutritionIndividualData, site: site};
+var $author$project$Backend$Completion$Model$CompletionData = F5(
+	function (site, entityName, entityType, nutritionIndividualData, nutritionGropData) {
+		return {entityName: entityName, entityType: entityType, nutritionGropData: nutritionGropData, nutritionIndividualData: nutritionIndividualData, site: site};
 	});
 var $author$project$Backend$Completion$Model$EncounterData = F4(
 	function (startDate, expectedActivities, completedActivities, takenBy) {
@@ -7663,6 +7663,7 @@ var $author$project$Backend$Completion$Decoder$decodeEncounterData = function (a
 					$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 					$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$EncounterData)))));
 };
+var $author$project$Backend$Completion$Model$NutritionChildFbf = {$: 'NutritionChildFbf'};
 var $author$project$Backend$Completion$Model$NutritionContributingFactors = {$: 'NutritionContributingFactors'};
 var $author$project$Backend$Completion$Model$NutritionFollowUp = {$: 'NutritionFollowUp'};
 var $author$project$Backend$Completion$Model$NutritionHealthEducation = {$: 'NutritionHealthEducation'};
@@ -7673,7 +7674,7 @@ var $author$project$Backend$Completion$Model$NutritionNutrition = {$: 'Nutrition
 var $author$project$Backend$Completion$Model$NutritionPhoto = {$: 'NutritionPhoto'};
 var $author$project$Backend$Completion$Model$NutritionSendToHC = {$: 'NutritionSendToHC'};
 var $author$project$Backend$Completion$Model$NutritionWeight = {$: 'NutritionWeight'};
-var $author$project$Backend$Completion$Utils$nutritionActivityFromMapping = function (mapped) {
+var $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping = function (mapped) {
 	switch (mapped) {
 		case 'a':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHeight);
@@ -7695,18 +7696,134 @@ var $author$project$Backend$Completion$Utils$nutritionActivityFromMapping = func
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionSendToHC);
 		case 'j':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionNCDA);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionChildFbf);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
 };
-var $author$project$Backend$Completion$Decoder$decodeNutritionActivities = A2(
+var $author$project$Backend$Completion$Decoder$decodeNutritionChildActivities = A2(
 	$elm$json$Json$Decode$andThen,
 	A2(
 		$elm$core$Basics$composeR,
 		$elm$core$String$split(','),
 		A2(
 			$elm$core$Basics$composeR,
-			$elm$core$List$map($author$project$Backend$Completion$Utils$nutritionActivityFromMapping),
+			$elm$core$List$map($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping),
+			A2($elm$core$Basics$composeR, $elm_community$maybe_extra$Maybe$Extra$values, $elm$json$Json$Decode$succeed))),
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Completion$Model$NutritionGroupEncounterData = F4(
+	function (startDate, motherData, childrenData, takenBy) {
+		return {childrenData: childrenData, motherData: motherData, startDate: startDate, takenBy: takenBy};
+	});
+var $author$project$Backend$Completion$Model$ActivitiesCompletionData = F2(
+	function (expectedActivities, completedActivities) {
+		return {completedActivities: completedActivities, expectedActivities: expectedActivities};
+	});
+var $author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData = function (activitiesDecoder) {
+	return A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'completed',
+		activitiesDecoder,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'expected',
+			activitiesDecoder,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$ActivitiesCompletionData)));
+};
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
+	function (pathDecoder, valDecoder, fallback) {
+		var nullOr = function (decoder) {
+			return $elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						decoder,
+						$elm$json$Json$Decode$null(fallback)
+					]));
+		};
+		var handleResult = function (input) {
+			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
+			if (_v0.$ === 'Ok') {
+				var rawValue = _v0.a;
+				var _v1 = A2(
+					$elm$json$Json$Decode$decodeValue,
+					nullOr(valDecoder),
+					rawValue);
+				if (_v1.$ === 'Ok') {
+					var finalResult = _v1.a;
+					return $elm$json$Json$Decode$succeed(finalResult);
+				} else {
+					var finalErr = _v1.a;
+					return $elm$json$Json$Decode$fail(
+						$elm$json$Json$Decode$errorToString(finalErr));
+				}
+			} else {
+				return $elm$json$Json$Decode$succeed(fallback);
+			}
+		};
+		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
+	function (key, valDecoder, fallback, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
+				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
+				valDecoder,
+				fallback),
+			decoder);
+	});
+var $author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData = F2(
+	function (motherActivitiesDecoder, childActivitiesDecoder) {
+		return A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'taken_by',
+			$elm$json$Json$Decode$nullable(
+				A2($author$project$Backend$Decoder$decodeWithFallback, $author$project$Backend$Completion$Model$TakenByUnknown, $author$project$Backend$Completion$Decoder$decodeTakenBy)),
+			A3(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+				'children',
+				$elm$json$Json$Decode$list(
+					$author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData(childActivitiesDecoder)),
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'mother',
+					$elm$json$Json$Decode$nullable(
+						$author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData(motherActivitiesDecoder)),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'start_date',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$NutritionGroupEncounterData)))));
+	});
+var $author$project$Backend$Completion$Model$NutritionFamilyPlanning = {$: 'NutritionFamilyPlanning'};
+var $author$project$Backend$Completion$Model$NutritionLactation = {$: 'NutritionLactation'};
+var $author$project$Backend$Completion$Model$NutritionMotherFbf = {$: 'NutritionMotherFbf'};
+var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionFamilyPlanning);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionMotherFbf);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionLactation);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Completion$Decoder$decodeNutritionMotherActivities = A2(
+	$elm$json$Json$Decode$andThen,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$String$split(','),
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$List$map($author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping),
 			A2($elm$core$Basics$composeR, $elm_community$maybe_extra$Maybe$Extra$values, $elm$json$Json$Decode$succeed))),
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$EntityGlobal = {$: 'EntityGlobal'};
@@ -7743,26 +7860,42 @@ var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
+	function (path, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$at, path, valDecoder),
+			decoder);
+	});
 var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'results',
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+	_List_fromArray(
+		['results', 'nutrition_group']),
 	$elm$json$Json$Decode$list(
-		$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Decoder$decodeNutritionActivities)),
+		A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Decoder$decodeNutritionMotherActivities, $author$project$Backend$Completion$Decoder$decodeNutritionChildActivities)),
 	A3(
-		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'entity_type',
-		$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+		_List_fromArray(
+			['results', 'nutrition_individual']),
+		$elm$json$Json$Decode$list(
+			$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Decoder$decodeNutritionChildActivities)),
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_name',
-			$elm$json$Json$Decode$string,
+			'entity_type',
+			$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'site',
-				$author$project$Backend$Decoder$decodeSite,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))));
-var $elm$json$Json$Decode$decodeValue = _Json_run;
+				'entity_name',
+				$elm$json$Json$Decode$string,
+				A3(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+					'site',
+					$author$project$Backend$Decoder$decodeSite,
+					$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -8256,50 +8389,6 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 		return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 	},
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$value = _Json_decodeValue;
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder = F3(
-	function (pathDecoder, valDecoder, fallback) {
-		var nullOr = function (decoder) {
-			return $elm$json$Json$Decode$oneOf(
-				_List_fromArray(
-					[
-						decoder,
-						$elm$json$Json$Decode$null(fallback)
-					]));
-		};
-		var handleResult = function (input) {
-			var _v0 = A2($elm$json$Json$Decode$decodeValue, pathDecoder, input);
-			if (_v0.$ === 'Ok') {
-				var rawValue = _v0.a;
-				var _v1 = A2(
-					$elm$json$Json$Decode$decodeValue,
-					nullOr(valDecoder),
-					rawValue);
-				if (_v1.$ === 'Ok') {
-					var finalResult = _v1.a;
-					return $elm$json$Json$Decode$succeed(finalResult);
-				} else {
-					var finalErr = _v1.a;
-					return $elm$json$Json$Decode$fail(
-						$elm$json$Json$Decode$errorToString(finalErr));
-				}
-			} else {
-				return $elm$json$Json$Decode$succeed(fallback);
-			}
-		};
-		return A2($elm$json$Json$Decode$andThen, handleResult, $elm$json$Json$Decode$value);
-	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional = F4(
-	function (key, valDecoder, fallback, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalDecoder,
-				A2($elm$json$Json$Decode$field, key, $elm$json$Json$Decode$value),
-				valDecoder,
-				fallback),
-			decoder);
-	});
 var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
 	'encounters',
@@ -8319,10 +8408,6 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 				'created',
 				$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))));
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
-	});
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -10145,7 +10230,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				});
 			case 'NumberOfVisitsLabel':
 				return {english: '# Visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'NutritionActivity':
+			case 'NutritionChildActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'NutritionHeight':
@@ -10166,8 +10251,10 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NutritionSendToHC':
 						return {english: 'Referal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-					default:
+					case 'NutritionNCDA':
 						return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Child FBF', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'NutritionBehavior':
 				return {english: 'Nutrition Behavior', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -11221,6 +11308,7 @@ var $elm_community$maybe_extra$Maybe$Extra$isJust = function (m) {
 	}
 };
 var $author$project$Pages$Utils$launchDate = A3($justinmimbs$date$Date$fromCalendarDate, 2018, $elm$time$Time$Jan, 1);
+var $elm$core$Debug$log = _Debug_log;
 var $elm$core$Maybe$map3 = F4(
 	function (func, ma, mb, mc) {
 		if (ma.$ === 'Nothing') {
@@ -12325,8 +12413,8 @@ var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustom
 var $author$project$Translate$Activity = {$: 'Activity'};
 var $author$project$Translate$Completed = {$: 'Completed'};
 var $author$project$Translate$Expected = {$: 'Expected'};
-var $author$project$Translate$NutritionActivity = function (a) {
-	return {$: 'NutritionActivity', a: a};
+var $author$project$Translate$NutritionChildActivity = function (a) {
+	return {$: 'NutritionChildActivity', a: a};
 };
 var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
 var $author$project$Pages$Completion$Model$allNutritionActivities = _List_fromArray(
@@ -12590,7 +12678,7 @@ var $author$project$Pages$Completion$View$generateNutritionReportData = F2(
 							A2(
 							$author$project$Translate$translate,
 							language,
-							$author$project$Translate$NutritionActivity(activity)),
+							$author$project$Translate$NutritionChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
 							A2(calcualtePercentage, completed, expected)
@@ -12773,8 +12861,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v1 = data.entityType;
-				if (_v1.$ === 'EntityGlobal') {
+				var _v2 = data.entityType;
+				if (_v2.$ === 'EntityGlobal') {
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				} else {
 					return data.entityName;
@@ -12944,6 +13032,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 				model.reportType,
 				model.startDate,
 				model.limitDate));
+		var _v0 = A2($elm$core$Debug$log, '', data.nutritionGropData);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(

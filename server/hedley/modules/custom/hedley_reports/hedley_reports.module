@@ -1976,10 +1976,15 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
  *   An array of generated data.
  */
 function hedley_reports_generate_completion_results_data($health_center) {
+  $bundles = [
+    'nutrition_encounter', //  Nutrition Individual data.
+    'attendance', //  Nutrition Group data.
+  ];
+
   $base_query = new EntityFieldQuery();
   $base_query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'nutrition_encounter')
+    ->entityCondition('bundle', $bundles, 'IN')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
     ->propertyOrderBy('nid');
@@ -1988,7 +1993,11 @@ function hedley_reports_generate_completion_results_data($health_center) {
     $base_query->fieldCondition('field_shards', 'target_id', $health_center);
   }
 
-  $data = [];
+  $data = [
+    'nutrition_individual' => [],
+    'nutrition_group' => [],
+  ];
+
   $nid = 0;
   $batch = 400;
   while (TRUE) {
@@ -2017,7 +2026,15 @@ function hedley_reports_generate_completion_results_data($health_center) {
         continue;
       }
 
-      $data[] = json_decode($json_data);
+      switch ($node->type) {
+        case 'nutrition_encounter':
+          $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'attendance':
+          $data['nutrition_group'][] = json_decode($json_data);
+      }
+
       // Explicitly unset large variables after use for memory optimization.
       unset($json_data);
     }
