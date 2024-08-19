@@ -2406,8 +2406,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   return $return;
 }
 
-
-function hedley_reports_generate_completion_data_for_aculte_illness($attendance) {
+function hedley_reports_generate_completion_data_for_aculte_illness($participant) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
     'acute_findings' => 'a',
@@ -2434,6 +2433,46 @@ function hedley_reports_generate_completion_data_for_aculte_illness($attendance)
     'treatment_history' => 'v',
     'treatment_ongoing' => 'w',
   ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'acute_illness_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  $encounters = node_load_multiple(array_keys($result['node']));
+  // Sort encounters by field_scheduled_date and field_sequence_number in ascending order.
+  usort($encounters, function($a, $b) {
+    $date_a = strtotime($a->field_scheduled_date[LANGUAGE_NONE][0]['value']);
+    $date_b = strtotime($b->field_scheduled_date[LANGUAGE_NONE][0]['value']);
+
+    // If dates are the same, compare by field_sequence_number
+    if ($date_a !== $date_b) {
+      return $date_a - $date_b;
+    }
+
+    $seq_a = isset($a->field_sequence_number[LANGUAGE_NONE][0]['value']) ? $a->field_sequence_number[LANGUAGE_NONE][0]['value'] : 0;
+    $seq_b = isset($b->field_sequence_number[LANGUAGE_NONE][0]['value']) ? $b->field_sequence_number[LANGUAGE_NONE][0]['value'] : 0;
+    return $seq_a - $seq_b;
+  });
+
+
+
+  // If encounter type field is empty, we default to CHW, since
+  // CHW mode was developed before nurse mode.
+//  $taken_by = 'chw';
+//  $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
+//  if (!empty($encounter_type) && $encounter_type !== 'chw-encounter') {
+//    $taken_by = 'nurse';
+//  }
+
 }
 
 function hedley_reports_generate_completion_result($expected, $completed, $mapping) {
