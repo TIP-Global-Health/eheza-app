@@ -5,7 +5,7 @@
  * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-nutrition-individual-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-acute-illness-completion-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,11 +25,12 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'nutrition_encounter';
+$type = 'individual_participant';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
+  ->fieldCondition('field_encounter_type', 'target_id', 'acute-illness')
   ->propertyCondition('status', NODE_PUBLISHED);
 
 if ($exclude_set) {
@@ -41,12 +42,12 @@ $count_query->propertyCondition('nid', $nid, '>');
 $count = $count_query->count()->execute();
 
 if ($count == 0) {
-  drush_print("There are no nodes of type $type in DB.");
+  drush_print("There are no nodes of type $type for acute illness encounters in DB.");
   exit;
 }
 
 $total = 0;
-drush_print("$count nodes of type $type located.");
+drush_print("$count nodes of type $type for acute illness encounters located.");
 
 while (TRUE) {
   $query = clone $base_query;
@@ -66,8 +67,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $completion_data = hedley_reports_generate_completion_data_for_nutrition_individual_encounter($node);
-    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    hedley_reports_generate_completion_data_for_aculte_illness($node);
     node_save($node);
     $total++;
 
@@ -87,4 +87,4 @@ while (TRUE) {
   $nid = end($ids);
 }
 
-drush_print("Done! Completion data calculated for $total encounters.");
+drush_print("Done! Completion data calculated for $total participants.");
