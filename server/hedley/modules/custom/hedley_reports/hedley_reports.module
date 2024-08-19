@@ -2406,6 +2406,36 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   return $return;
 }
 
+
+function hedley_reports_generate_completion_data_for_aculte_illness($attendance) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'acute_findings' => 'a',
+    'acute_illness_contacts_tracing' => 'b',
+    'acute_illness_core_exam' => 'c',
+    'acute_illness_danger_signs' => 'd',
+    'acute_illness_follow_up' => 'e',
+    'acute_illness_muac' => 'f',
+    'acute_illness_nutrition' => 'g',
+    'acute_illness_vitals' => 'h',
+    'call_114' => 'i',
+    'covid_testing' => 'j',
+    'exposure' => 'k',
+    'hc_contact' => 'l',
+    'health_education' => 'm',
+    'isolation' => 'n',
+    'malaria_testing' => 'o',
+    'medication_distribution' => 'p',
+    'send_to_hc' => 'q',
+    'symptoms_general' => 'r',
+    'symptoms_gi' => 's',
+    'symptoms_respiratory' => 't',
+    'travel_history' => 'u',
+    'treatment_history' => 'v',
+    'treatment_ongoing' => 'w',
+  ];
+}
+
 function hedley_reports_generate_completion_result($expected, $completed, $mapping) {
   foreach ($expected as $index => $measurement_type) {
     $expected[$index] = $mapping[$measurement_type];
