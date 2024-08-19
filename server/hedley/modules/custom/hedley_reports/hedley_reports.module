@@ -1961,7 +1961,7 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
 
   $data['site'] = variable_get('hedley_general_site_name', '');
 
-  $data['results'] = hedley_reports_generate_completion_results_data($health_center);
+  list($data['results'], $data['additional']) = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
 
   return hedley_general_build_elm_app('completion-results', $data);
 }
