@@ -202,28 +202,48 @@ viewCompletionData language currentDate themePath data model =
 
 viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionChildActivity) -> Html Msg
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
-    let
-        filteredData =
-            List.filter
-                (\encounter ->
-                    let
-                        takenByCondition =
-                            Maybe.map
-                                (\takenBy ->
-                                    encounter.takenBy == Just takenBy
-                                )
-                                mTakenBy
-                                |> Maybe.withDefault True
-                    in
-                    (not <| Date.compare encounter.startDate startDate == LT)
-                        && (not <| Date.compare encounter.startDate limitDate == GT)
-                        && takenByCondition
-                )
-                reportData
-                |> generateNutritionIndividualReportData language
-    in
-    div [ class "report nutrition-individual" ] <|
-        viewNutritionMetricsResultsTable filteredData
+    applyFilters startDate limitDate mTakenBy reportData
+        |> generateNutritionIndividualReportData language
+        |> viewNutritionMetricsResultsTable
+        |> div [ class "report nutrition-individual" ]
+
+
+viewNutritionGroupReport :
+    Language
+    -> NominalDate
+    -> NominalDate
+    -> Maybe TakenBy
+    -> List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    -> Html Msg
+viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
+    applyFilters startDate limitDate mTakenBy reportData
+        |> generateNutritionGroupReportData language
+        |> viewNutritionMetricsResultsTable
+        |> div [ class "report nutrition-individual" ]
+
+
+applyFilters :
+    NominalDate
+    -> NominalDate
+    -> Maybe TakenBy
+    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
+    -> List { a | startDate : Date.Date, takenBy : Maybe TakenBy }
+applyFilters startDate limitDate mTakenBy =
+    List.filter
+        (\encounter ->
+            let
+                takenByCondition =
+                    Maybe.map
+                        (\takenBy ->
+                            encounter.takenBy == Just takenBy
+                        )
+                        mTakenBy
+                        |> Maybe.withDefault True
+            in
+            (not <| Date.compare encounter.startDate startDate == LT)
+                && (not <| Date.compare encounter.startDate limitDate == GT)
+                && takenByCondition
+        )
 
 
 generateNutritionIndividualReportData :
@@ -231,34 +251,17 @@ generateNutritionIndividualReportData :
     -> List (EncounterData NutritionChildActivity)
     -> MetricsResultsTableData
 generateNutritionIndividualReportData language records =
-    let
-        count resolveFunc activity =
-            List.filter (resolveFunc >> List.member activity) records
-                |> List.length
-
-        calcualtePercentage nominator total =
-            if total == 0 then
-                "0"
-
-            else
-                Round.round 3 ((toFloat nominator / toFloat total) * 100) ++ "%"
-    in
     { heading = translate language Translate.NutritionIndividual
-    , captions =
-        [ translate language Translate.Activity
-        , translate language Translate.Expected
-        , translate language Translate.Completed
-        , "%"
-        ]
+    , captions = generateCaptionsList language
     , rows =
         List.map
             (\activity ->
                 let
                     expected =
-                        count (.completion >> .expectedActivities) activity
+                        countOccurrences (.completion >> .expectedActivities) activity records
 
                     completed =
-                        count (.completion >> .completedActivities) activity
+                        countOccurrences (.completion >> .completedActivities) activity records
                 in
                 [ translate language <| Translate.NutritionChildActivity activity
                 , String.fromInt expected
@@ -270,55 +273,12 @@ generateNutritionIndividualReportData language records =
     }
 
 
-viewNutritionGroupReport :
-    Language
-    -> NominalDate
-    -> NominalDate
-    -> Maybe TakenBy
-    -> List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
-    -> Html Msg
-viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
-    let
-        filteredData =
-            List.filter
-                (\encounter ->
-                    let
-                        takenByCondition =
-                            Maybe.map
-                                (\takenBy ->
-                                    encounter.takenBy == Just takenBy
-                                )
-                                mTakenBy
-                                |> Maybe.withDefault True
-                    in
-                    (not <| Date.compare encounter.startDate startDate == LT)
-                        && (not <| Date.compare encounter.startDate limitDate == GT)
-                        && takenByCondition
-                )
-                reportData
-                |> generateNutritionGroupReportData language
-    in
-    div [ class "report nutrition-individual" ] <|
-        viewNutritionMetricsResultsTable filteredData
-
-
 generateNutritionGroupReportData :
     Language
     -> List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     -> MetricsResultsTableData
 generateNutritionGroupReportData language records =
     let
-        count resolveFunc activity data =
-            List.filter (resolveFunc >> List.member activity) data
-                |> List.length
-
-        calcualtePercentage nominator total =
-            if total == 0 then
-                "0"
-
-            else
-                Round.round 3 ((toFloat nominator / toFloat total) * 100) ++ "%"
-
         motherData =
             List.filterMap .motherData records
 
@@ -331,10 +291,10 @@ generateNutritionGroupReportData language records =
                 (\activity ->
                     let
                         expected =
-                            count .expectedActivities activity data
+                            countOccurrences .expectedActivities activity data
 
                         completed =
-                            count .completedActivities activity data
+                            countOccurrences .completedActivities activity data
                     in
                     [ translate language <| activityTransId activity
                     , String.fromInt expected
@@ -350,11 +310,29 @@ generateNutritionGroupReportData language records =
             generateActivityRows Translate.NutritionChildActivity childrenData allNutritionChildGroupActivities
     in
     { heading = translate language Translate.NutritionGroup
-    , captions =
-        [ translate language Translate.Activity
-        , translate language Translate.Expected
-        , translate language Translate.Completed
-        , "%"
-        ]
+    , captions = generateCaptionsList language
     , rows = motherActivityRows ++ childrenActivityRows
     }
+
+
+generateCaptionsList : Language -> List String
+generateCaptionsList language =
+    [ translate language Translate.Activity
+    , translate language Translate.Expected
+    , translate language Translate.Completed
+    , "%"
+    ]
+
+
+countOccurrences resolveFunc activity data =
+    List.filter (resolveFunc >> List.member activity) data
+        |> List.length
+
+
+calcualtePercentage : Int -> Int -> String
+calcualtePercentage nominator total =
+    if total == 0 then
+        "0"
+
+    else
+        Round.round 2 ((toFloat nominator / toFloat total) * 100) ++ "%"

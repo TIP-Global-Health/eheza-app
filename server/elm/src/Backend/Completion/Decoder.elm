@@ -74,13 +74,16 @@ decodeActivitiesCompletionData activityFromString =
 
 decodeActivitiesCompletionDataList : (String -> Maybe activity) -> Decoder (List (ActivitiesCompletionData activity))
 decodeActivitiesCompletionDataList activityFromString =
-    string
-        |> andThen
-            (\s ->
-                String.split "$" s
-                    |> List.filterMap (activitiesCompletionDataFromString activityFromString)
-                    |> succeed
-            )
+    oneOf
+        [ string
+            |> andThen
+                (\s ->
+                    String.split "$" s
+                        |> List.filterMap (activitiesCompletionDataFromString activityFromString)
+                        |> succeed
+                )
+        , succeed []
+        ]
 
 
 activitiesCompletionDataFromString : (String -> Maybe activity) -> String -> Maybe (ActivitiesCompletionData activity)
