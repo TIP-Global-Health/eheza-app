@@ -255,10 +255,10 @@ generateNutritionIndividualReportData language records =
             (\activity ->
                 let
                     expected =
-                        count .expectedActivities activity
+                        count (.completion >> .expectedActivities) activity
 
                     completed =
-                        count .completedActivities activity
+                        count (.completion >> .completedActivities) activity
                 in
                 [ translate language <| Translate.NutritionChildActivity activity
                 , String.fromInt expected

@@ -19,9 +19,9 @@ decodeCompletionData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData decodeNutritionChildActivities))
+        |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
-            (list (decodeNutritionGroupEncounterData decodeNutritionMotherActivities decodeNutritionChildActivities))
+            (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -41,54 +41,73 @@ decodeSelectedEntity =
             )
 
 
-decodeEncounterData : Decoder (List activity) -> Decoder (EncounterData activity)
-decodeEncounterData activitiesDecoder =
+decodeEncounterData : (String -> Maybe activity) -> Decoder (EncounterData activity)
+decodeEncounterData activityFromString =
     succeed EncounterData
         |> required "start_date" decodeYYYYMMDD
-        |> required "expected" activitiesDecoder
-        |> required "completed" activitiesDecoder
         |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
-
-
-decodeNutritionChildActivities : Decoder (List NutritionChildActivity)
-decodeNutritionChildActivities =
-    string
-        |> andThen
-            (String.split ","
-                >> List.map nutritionChildActivityFromMapping
-                >> Maybe.Extra.values
-                >> succeed
-            )
+        |> required "completion" (decodeActivitiesCompletionData activityFromString)
 
 
 decodeNutritionGroupEncounterData :
-    Decoder (List motherActivity)
-    -> Decoder (List childActivity)
+    (String -> Maybe motherActivity)
+    -> (String -> Maybe childActivity)
     -> Decoder (NutritionGroupEncounterData motherActivity childActivity)
-decodeNutritionGroupEncounterData motherActivitiesDecoder childActivitiesDecoder =
+decodeNutritionGroupEncounterData motherActivityFromString childActivityFromString =
     succeed NutritionGroupEncounterData
         |> required "start_date" decodeYYYYMMDD
-        |> optional "mother" (nullable (decodeActivitiesCompletionData motherActivitiesDecoder)) Nothing
-        |> required "children" (list (decodeActivitiesCompletionData childActivitiesDecoder))
         |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+        |> optional "mother" (nullable (decodeActivitiesCompletionData motherActivityFromString)) Nothing
+        |> required "children" (decodeActivitiesCompletionDataList childActivityFromString)
 
 
-decodeActivitiesCompletionData : Decoder (List activity) -> Decoder (ActivitiesCompletionData activity)
-decodeActivitiesCompletionData activitiesDecoder =
-    succeed ActivitiesCompletionData
-        |> required "expected" activitiesDecoder
-        |> required "completed" activitiesDecoder
-
-
-decodeNutritionMotherActivities : Decoder (List NutritionMotherActivity)
-decodeNutritionMotherActivities =
+decodeActivitiesCompletionData : (String -> Maybe activity) -> Decoder (ActivitiesCompletionData activity)
+decodeActivitiesCompletionData activityFromString =
     string
         |> andThen
-            (String.split ","
-                >> List.map nutritionMotherActivityFromMapping
-                >> Maybe.Extra.values
-                >> succeed
+            (\s ->
+                activitiesCompletionDataFromString activityFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is unknown ActivitiesCompletionData type")
             )
+
+
+decodeActivitiesCompletionDataList : (String -> Maybe activity) -> Decoder (List (ActivitiesCompletionData activity))
+decodeActivitiesCompletionDataList activityFromString =
+    string
+        |> andThen
+            (\s ->
+                String.split "$" s
+                    |> List.filterMap (activitiesCompletionDataFromString activityFromString)
+                    |> succeed
+            )
+
+
+activitiesCompletionDataFromString : (String -> Maybe activity) -> String -> Maybe (ActivitiesCompletionData activity)
+activitiesCompletionDataFromString activityFromString s =
+    let
+        splitActivities =
+            String.split "," >> List.filterMap activityFromString
+    in
+    case String.split "|" (String.trim s) of
+        [ expected, completed ] ->
+            ActivitiesCompletionData
+                (splitActivities expected)
+                (splitActivities completed)
+                |> Just
+
+        [ expected ] ->
+            ActivitiesCompletionData
+                (splitActivities expected)
+                []
+                |> Just
+
+        [] ->
+            ActivitiesCompletionData [] []
+                |> Just
+
+        _ ->
+            Nothing
 
 
 decodeTakenBy : Decoder TakenBy

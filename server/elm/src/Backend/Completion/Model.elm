@@ -23,17 +23,16 @@ type SelectedEntity
 
 type alias EncounterData activity =
     { startDate : NominalDate
-    , expectedActivities : List activity
-    , completedActivities : List activity
     , takenBy : Maybe TakenBy
+    , completion : ActivitiesCompletionData activity
     }
 
 
 type alias NutritionGroupEncounterData motherActivity childActivity =
     { startDate : NominalDate
+    , takenBy : Maybe TakenBy
     , motherData : Maybe (ActivitiesCompletionData motherActivity)
     , childrenData : List (ActivitiesCompletionData childActivity)
-    , takenBy : Maybe TakenBy
     }
 
 
