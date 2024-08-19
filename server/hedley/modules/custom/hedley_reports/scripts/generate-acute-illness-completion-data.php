@@ -30,7 +30,7 @@ $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->fieldCondition('field_encounter_type', 'target_id', 'acute-illness')
+  ->fieldCondition('field_encounter_type', 'value', 'acute-illness')
   ->propertyCondition('status', NODE_PUBLISHED);
 
 if ($exclude_set) {
