@@ -1753,7 +1753,7 @@ expectLaboratoryTask currentDate isChw assembled task =
                         else
                             assembled.secondInitialWithSubsequent
                 in
-                -- If pשtient was not diagnosed with Covid, and fever is recorded
+                -- If patient was not diagnosed with Covid, and fever is recorded
                 -- on current encounter, and patient did not test positive
                 -- to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
@@ -2323,7 +2323,7 @@ covid19SuspectDiagnosed measurements =
         generalSymptomsCount =
             let
                 excludesGeneral =
-                    [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+                    [ SymptomGeneralFever ] ++ symptomsGeneralDangerSigns
             in
             countGeneralSymptoms measurements excludesGeneral
 
@@ -2358,7 +2358,10 @@ covid19SuspectDiagnosed measurements =
             malariaRapidTestResult measurements
 
         feverAndRdtNotPositive =
-            feverOnRecord && isJust malariaRDTResult && malariaRDTResult /= Just RapidTestPositive
+            feverOnRecord
+                && isJust malariaRDTResult
+                && (malariaRDTResult /= Just RapidTestPositive)
+                && (malariaRDTResult /= Just RapidTestPositiveAndPregnant)
     in
     (signsIndicateCovid && symptomsIndicateCovid)
         || (signsIndicateCovid && feverOnRecord)
