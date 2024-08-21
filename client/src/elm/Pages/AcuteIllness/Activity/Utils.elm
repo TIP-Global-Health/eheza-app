@@ -55,6 +55,11 @@ expectActivity currentDate isChw assembled activity =
         AcuteIllnessDangerSigns ->
             not assembled.initialEncounter
 
+        AcuteIllnessPhysicalExam ->
+            List.filter (expectPhysicalExamTask currentDate assembled.person isChw assembled.initialEncounter) physicalExamTasks
+                |> List.isEmpty
+                |> not
+
         AcuteIllnessLaboratory ->
             List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
                 |> List.isEmpty
@@ -103,9 +108,6 @@ expectActivity currentDate isChw assembled activity =
                 |> List.isEmpty
                 |> not
 
-        _ ->
-            True
-
 
 activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 activityCompleted currentDate isChw assembled activity =
@@ -151,6 +153,16 @@ activityCompleted currentDate isChw assembled activity =
 
         AcuteIllnessOngoingTreatment ->
             mandatoryActivityCompletedSubsequentVisit currentDate isChw assembled AcuteIllnessOngoingTreatment
+
+
+physicalExamTasks : List PhysicalExamTask
+physicalExamTasks =
+    [ PhysicalExamVitals
+    , PhysicalExamCoreExam
+    , PhysicalExamMuac
+    , PhysicalExamNutrition
+    , PhysicalExamAcuteFindings
+    ]
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
