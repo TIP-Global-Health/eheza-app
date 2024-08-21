@@ -224,8 +224,8 @@ viewDemographicsSelectionActionButton language site pathPrefix label selectionMa
 -- Table
 
 
-viewNutritionMetricsResultsTable : MetricsResultsTableData -> List (Html any)
-viewNutritionMetricsResultsTable data =
+viewMetricsResultsTable : MetricsResultsTableData -> List (Html any)
+viewMetricsResultsTable data =
     let
         captionsRow =
             div [ class "row" ] <|

@@ -26,7 +26,7 @@ import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (..)
 import Pages.Completion.Utils exposing (..)
-import Pages.Components.View exposing (viewNutritionMetricsResultsTable)
+import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
@@ -208,7 +208,7 @@ viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe 
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
     applyFilters startDate limitDate mTakenBy reportData
         |> generateNutritionIndividualReportData language
-        |> viewNutritionMetricsResultsTable
+        |> viewMetricsResultsTable
         |> div [ class "report nutrition-individual" ]
 
 
@@ -222,15 +222,15 @@ viewNutritionGroupReport :
 viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
     applyFilters startDate limitDate mTakenBy reportData
         |> generateNutritionGroupReportData language
-        |> viewNutritionMetricsResultsTable
-        |> div [ class "report nutrition-individual" ]
+        |> viewMetricsResultsTable
+        |> div [ class "report nutrition-group" ]
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData AcuteIllnessActivity) -> Html Msg
 viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
     applyFilters startDate limitDate mTakenBy reportData
         |> generateAcuteIllnessReportData language
-        |> viewNutritionMetricsResultsTable
+        |> viewMetricsResultsTable
         |> div [ class "report acute-illness" ]
 
 

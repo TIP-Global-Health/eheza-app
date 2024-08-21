@@ -11907,7 +11907,7 @@ var $author$project$Pages$Components$View$viewCustomCells = F2(
 							]));
 				}));
 	});
-var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = function (data) {
+var $author$project$Pages$Components$View$viewMetricsResultsTable = function (data) {
 	var viewRow = function (cells) {
 		return A2(
 			$elm$html$Html$div,
@@ -11956,7 +11956,7 @@ var $author$project$Pages$Completion$View$viewAcuteIllnessReport = F5(
 				[
 					$elm$html$Html$Attributes$class('report acute-illness')
 				]),
-			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
 				A2(
 					$author$project$Pages$Completion$View$generateAcuteIllnessReportData,
 					language,
@@ -13087,9 +13087,9 @@ var $author$project$Pages$Completion$View$viewNutritionGroupReport = F5(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('report nutrition-individual')
+					$elm$html$Html$Attributes$class('report nutrition-group')
 				]),
-			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
 				A2(
 					$author$project$Pages$Completion$View$generateNutritionGroupReportData,
 					language,
@@ -13150,7 +13150,7 @@ var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
 				[
 					$elm$html$Html$Attributes$class('report nutrition-individual')
 				]),
-			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
 				A2(
 					$author$project$Pages$Completion$View$generateNutritionIndividualReportData,
 					language,
@@ -16022,7 +16022,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 				]),
 			_Utils_ap(
 				$elm$core$List$concat(
-					A2($elm$core$List$map, $author$project$Pages$Components$View$viewNutritionMetricsResultsTable, generatedData)),
+					A2($elm$core$List$map, $author$project$Pages$Components$View$viewMetricsResultsTable, generatedData)),
 				_List_fromArray(
 					[
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
