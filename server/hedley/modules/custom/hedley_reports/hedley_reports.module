@@ -2536,6 +2536,22 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     hedley_reports_acute_illness_add_physical_exam_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
     hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
+
+    $completed = [];
+    foreach ($expected as $measurement_type) {
+      if (!empty($measurements_by_type[$measurement_type])) {
+        $completed[] = $measurement_type;
+      }
+    }
+
+    $completion_data =  [
+      'start_date' => $start_date,
+      'taken_by' => $encounter_data['taken_by'],
+      'completion' => hedley_reports_generate_completion_result($expected, $completed, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
   }
 }
 
