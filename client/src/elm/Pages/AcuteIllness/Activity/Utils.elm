@@ -43,6 +43,18 @@ import Translate exposing (Language, TranslationId)
 expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 expectActivity currentDate isChw assembled activity =
     case activity of
+        AcuteIllnessSymptoms ->
+            assembled.initialEncounter
+
+        AcuteIllnessExposure ->
+            assembled.initialEncounter
+
+        AcuteIllnessPriorTreatment ->
+            assembled.initialEncounter
+
+        AcuteIllnessDangerSigns ->
+            not assembled.initialEncounter
+
         AcuteIllnessLaboratory ->
             List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
                 |> List.isEmpty
