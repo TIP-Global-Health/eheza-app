@@ -2091,25 +2091,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   }
 
   // Try to resolve age in months at a time encounter was performed.
-  try {
-    // Get participant ID and node.
-    $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
-    $participant = node_load($participant_id);
-
-    // Get person ID and node
-    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
-    $person = node_load($person_id);
-
-    // Get birthdate and date measured.
-    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
-
-    // Calculate age in months.
-    $birth_date_obj = new DateTime($birth_date);
-    $interval = $start_date_obj->diff($birth_date_obj);
-    $age_in_months = ($interval->y * 12) + $interval->m;
-  } catch (Exception $e) {
-    $age_in_months = NULL;
-  }
+  $age_in_months = hedley_reports_resolve_age_in_months_for_individual_encounter($$encounter, $start_date_obj);
 
   // MUAC is taken starting age of 6 months.
   if (isset($age_in_months) && $age_in_months >= 6) {
@@ -2483,6 +2465,10 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     $start_date_obj = new DateTime($start_date);
     $encounter_data['start_date_obj'] = $start_date_obj;
 
+    // Try to resolve age in months at a time encounter was performed.
+    $age_in_months = hedley_reports_resolve_age_in_months_for_individual_encounter($$encounter, $start_date_obj);
+    $encounter_data['age_in_months'] = $age_in_months;
+
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
     $is_initial = ($encounter_type == 'nurse-encounter') || (($encounter_type == 'chw-encounter') && empty($previous_encounters_data));
     $illness_diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
@@ -2513,9 +2499,8 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
       $first_initial_with_subsequents = array_slice($previous_encounters_data, 0, $initial_nurse_encounter_index + 1);
       $second_initial_with_subsequents = array_slice($previous_encounters_data, $initial_nurse_encounter_index + 1);
     }
-
-    $encounter_data['first_initial_with_subsequents'] = $first_initial_with_subsequents;
-    $encounter_data['second_initial_with_subsequents'] = $second_initial_with_subsequents;
+    $initial_with_subsequents = empty($second_initial_with_subsequents) ? $first_initial_with_subsequents : $second_initial_with_subsequents;
+    $encounter_data['initial_with_subsequents'] = $initial_with_subsequents;
 
     $fever_at_symptoms = FALSE;
     if (!empty($measurements_by_type['symptoms_general'])) {
@@ -2543,6 +2528,10 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
     // If conditions match, add covid_testing activity.
     hedley_reports_acute_illness_add_expected_covid_testing($encounter_data, $expected);
+    // If conditions match, add treatment_ongoing activity.
+    hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_data, $expected);
+    // If conditions match, add physical exam activities.
+    hedley_reports_acute_illness_add_physical_exam_activities($encounter_data, $expected);
   }
 }
 
@@ -2550,7 +2539,6 @@ function hedley_reports_generate_acute_illness_expected_initial_activities($star
   // Activities that are shown at any encounter unconditionally,
   // as they existed with initial launch of the feature.
   $expected = [
-    'acute_findings',
     'acute_illness_vitals',
     'exposure',
     'symptoms_general',
@@ -2560,23 +2548,10 @@ function hedley_reports_generate_acute_illness_expected_initial_activities($star
     'treatment_history',
   ];
 
-  $launch_date = '2022-12-22';
-  $launch_date_obj = new DateTime($launch_date);
-  if ($start_date_obj >= $launch_date_obj) {
-    $expected[] = 'acute_illness_core_exam';
-  }
-
-  $launch_date = '2021-04-21';
+  $launch_date = '2021-03-11';
   $launch_date_obj = new DateTime($launch_date);
   if ($start_date_obj >= $launch_date_obj) {
     $expected[] = 'acute_illness_danger_signs';
-  }
-
-  $launch_date = '2020-12-10';
-  $launch_date_obj = new DateTime($launch_date);
-  if ($start_date_obj >= $launch_date_obj) {
-    $expected[] = 'acute_illness_muac';
-    $expected[] = 'acute_illness_nutrition';
   }
 
   return $expected;
@@ -2586,8 +2561,6 @@ function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_da
   $encounter = $encounter_data['encounter'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
   $fever = $encounter_data['fever'];
-  $first_initial_with_subsequents = $encounter_data['first_initial_with_subsequents'];
-  $second_initial_with_subsequents = $encounter_data['second_initial_with_subsequents'];
 
   $current_encounter_diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
   $covid_diagnoses = ['covid19-severe', 'covid19-pneumonia', 'covid19-low-risk'];
@@ -2618,9 +2591,9 @@ function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_da
     // is recorded on current encounter, and patient did not test positive
     // to Malaria during one of previous encounters, we expect patient to take
     // Malaria test.
-    $initial_with_subsequents = empty($second_initial_with_subsequents) ? $first_initial_with_subsequents : $second_initial_with_subsequents;
     $diagnosed_with_malaria_previously = FALSE;
     $rdt_positive_values = ['positive', 'positive-and-pregnant'];
+    $initial_with_subsequents = $encounter_data['initial_with_subsequents'];
     foreach ($initial_with_subsequents as $prev_encounter_data) {
       $prev_measurements_by_type = $prev_encounter_data['measurements_by_type'];
       if (!empty($prev_measurements_by_type['malaria_testing'])) {
@@ -2689,6 +2662,79 @@ function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data
     (!$symptoms_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_respiratory > 0) ||
     (!$symptoms_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_general > 1)) {
     $expected[] = 'covid_testing';
+  }
+}
+
+function hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_data, &$expected) {
+  if ($encounter_data['is_initial']) {
+    // Ongoing treatment is available only for subsequent encounters.
+    return;
+  }
+
+  $launch_date = '2021-03-11';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] < $launch_date_obj) {
+    // Feature was not yet launched.
+    return;
+  }
+
+  // Activity is expected, if medication was prescribed at any of previous encounters.
+  $medication_prescribed = FALSE;
+  $initial_with_subsequents = $encounter_data['initial_with_subsequents'];
+  foreach ($initial_with_subsequents as $prev_encounter_data) {
+    $measurements_by_type = $prev_encounter_data['measurements_by_type'];
+    if (empty($measurements_by_type['medication_distribution'])) {
+      continue;
+    }
+    $prescribed_medication = $measurements_by_type['medication_distribution']->field_prescribed_medication[LANGUAGE_NONE];
+    $total_prescribed = count($prescribed_medication);
+
+    if ($total_prescribed == 0) {
+      continue;
+    };
+
+    if ($total_prescribed > 1) {
+      $medication_prescribed = TRUE;
+      break;
+    }
+
+    // If we got so far, $total_prescribed == 1.
+    $medication = $prescribed_medication[0]['value'];
+    if (!in_array($medication, ['lemon-juice-or-honey', 'none'])) {
+      $medication_prescribed = TRUE;
+      break;
+    }
+  }
+
+  if ($medication_prescribed) {
+    $expected[] = 'treatment_ongoing';
+  }
+}
+
+function hedley_reports_acute_illness_add_physical_exam_activities($encounter_data, &$expected) {
+  if ($encounter_data['is_initial']) {
+    // Acute findings is available only for initial encounter.
+    $expected[] = 'acute_findings';
+  }
+
+  $launch_date = '2022-12-22';
+  $launch_date_obj = new DateTime($launch_date);
+  // Core exam is taken only by nurse.
+  if ($encounter_data['start_date_obj'] >= $launch_date_obj && $encounter_data['taken_by'] == 'nurse') {
+    $expected[] = 'acute_illness_core_exam';
+  }
+
+  $launch_date = '2020-12-10';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
+    // MUAC is taken for children that are 6 months to 5 years old.
+    if ($encounter_data['age_in_months'] >= 6 && $encounter_data['age_in_months'] < 60) {
+      $expected[] = 'acute_illness_muac';
+    }
+    // Nutrition is taken for children that bellow age of 5 years.
+    if ($encounter_data['age_in_months'] < 60) {
+      $expected[] = 'acute_illness_nutrition';
+    }
   }
 }
 
@@ -2767,6 +2813,27 @@ function hedley_reports_count_acute_illness_signs($values) {
   return $count;
 }
 
+function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj) {
+  try {
+    // Get participant ID and node.
+    $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    $participant = node_load($participant_id);
+
+    // Get person ID and node
+    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    $person = node_load($person_id);
+
+    // Get birthdate and date measured.
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+
+    // Calculate age in months.
+    $birth_date_obj = new DateTime($birth_date);
+    $interval = $start_date_obj->diff($birth_date_obj);
+    return ($interval->y * 12) + $interval->m;
+  } catch (Exception $e) {
+    return NULL;
+  }
+}
 
 function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
   $bundle = $encounter->type;
