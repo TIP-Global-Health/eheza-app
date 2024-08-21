@@ -2845,11 +2845,11 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   $launch_date_obj = new DateTime($launch_date);
   if (($encounter_data['start_date_obj'] >= $launch_date_obj) && !in_array($diagnosis, ['covid19-severe', 'fever-of-unknown-origin'])) {
     if (($diagnosis == 'tuberculosis-suspect') ||
-      !empty($expected['isolation']) ||
-      !empty($expected['call_114']) ||
-      !empty($expected['hc_contact']) ||
-      !empty($expected['medication_distribution']) ||
-      !empty($expected['send_to_hc'])) {
+      in_array('isolation', $expected) ||
+      in_array('call_114', $expected) ||
+      in_array('hc_contact', $expected) ||
+      in_array('medication_distribution', $expected) ||
+      in_array('send_to_hc', $expected)) {
       $expected[] = 'acute_illness_follow_up';
     }
   }
@@ -2945,9 +2945,9 @@ function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encou
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
   if (($encounter_data['start_date_obj'] >= $launch_date_obj)) {
-    if (!empty($expected['hc_contact']) ||
-      !empty($expected['medication_distribution']) ||
-      !empty($expected['send_to_hc'])) {
+    if (in_array('hc_contact', $expected) ||
+      in_array('medication_distribution', $expected) ||
+      in_array('send_to_hc', $expected)) {
       $expected[] = 'acute_illness_follow_up';
     }
   }
