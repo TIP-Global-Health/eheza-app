@@ -1891,7 +1891,10 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
             isChw && (diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsContactHC ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect) && isJust measurements.call114 && (not <| talkedTo114 measurements)
+            isChw
+                && (diagnosis == Just DiagnosisCovid19Suspect)
+                && isJust measurements.call114
+                && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
             medicationPrescribed
@@ -1972,9 +1975,11 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                     || -- No improvement, with danger signs, and diagnosis is not Covid19 suspect.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
+                       (dangerSignPresentOnSubsequentVisit measurements
+                            && (diagnosis /= Just DiagnosisCovid19Suspect)
+                       )
                     || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+                       (dangerSignPresentOnSubsequentVisit measurements
                             && (diagnosis == Just DiagnosisCovid19Suspect)
                             && healthCenterRecommendedToCome measurements
                        )
@@ -1982,7 +1987,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
         NextStepsContactHC ->
             not malariaDiagnosedAtCurrentEncounter
                 && -- No improvement, with danger signs, and diagnosis is Covid19.
-                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19Suspect)
+                   (dangerSignPresentOnSubsequentVisit measurements && diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -2083,7 +2088,7 @@ sendToHCByMalariaTesting ageMonths0To6 diagnosis =
 noImprovementOnSubsequentVisit : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 noImprovementOnSubsequentVisit currentDate person measurements =
     noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
-        || noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+        || dangerSignPresentOnSubsequentVisit measurements
 
 
 noImprovementOnSubsequentVisitWithoutDangerSigns : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
@@ -2094,11 +2099,6 @@ noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                 || sendToHCOnSubsequentVisitByMuac measurements
                 || sendToHCOnSubsequentVisitByNutrition measurements
            )
-
-
-noImprovementOnSubsequentVisitWithDangerSigns : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements =
-    dangerSignPresentOnSubsequentVisit measurements
 
 
 conditionNotImprovingOnSubsequentVisit : AcuteIllnessMeasurements -> Bool
@@ -2756,15 +2756,13 @@ covidCaseConfirmed measurements =
 
 covidRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 covidRapidTestResult measurements =
-    measurements.covidTesting
-        |> getMeasurementValueFunc
+    getMeasurementValueFunc measurements.covidTesting
         |> Maybe.map .result
 
 
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 malariaRapidTestResult measurements =
-    measurements.malariaTesting
-        |> getMeasurementValueFunc
+    getMeasurementValueFunc measurements.malariaTesting
 
 
 malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool
