@@ -2522,8 +2522,8 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
 
-    // Load all activities expected only by encounter start date.
-    $expected = hedley_reports_generate_acute_illness_expected_initial_activities($start_date_obj);
+    // Load all activities expected only by encounter type and start date.
+    $expected = hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data);
     // If conditions match, add malaria_testing activity.
     hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
     // If conditions match, add covid_testing activity.
@@ -2535,23 +2535,33 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
   }
 }
 
-function hedley_reports_generate_acute_illness_expected_initial_activities($start_date_obj) {
-  // Activities that are shown at any encounter unconditionally,
-  // as they existed with initial launch of the feature.
+function hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data, $start_date_obj) {
+  // Activities that are shown at any type of encounter,
+  // unconditionally. Existed with initial launch of the feature.
   $expected = [
     'acute_illness_vitals',
-    'exposure',
-    'symptoms_general',
-    'symptoms_gi',
-    'symptoms_respiratory',
-    'travel_history',
-    'treatment_history',
   ];
 
-  $launch_date = '2021-03-11';
-  $launch_date_obj = new DateTime($launch_date);
-  if ($start_date_obj >= $launch_date_obj) {
-    $expected[] = 'acute_illness_danger_signs';
+  // Activities that are only shown at initial encounter.
+  if ($encounter_data['is_initial']) {
+    // Exposure activity.
+    $expected[] = 'exposure';
+    $expected[] = 'travel_history';
+    // Symptoms activity.
+    $expected[] = 'symptoms_general';
+    $expected[] = 'symptoms_gi';
+    $expected[] = 'symptoms_respiratory';
+    // Treatment review activity.
+    $expected[] = 'treatment_history';
+  }
+
+  // Activities that are only shown at subsequent encounters.
+  if (!$encounter_data['is_initial']) {
+    $launch_date = '2021-03-11';
+    $launch_date_obj = new DateTime($launch_date);
+    if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
+      $expected[] = 'acute_illness_danger_signs';
+    }
   }
 
   return $expected;
