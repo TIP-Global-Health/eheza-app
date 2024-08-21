@@ -1979,8 +1979,9 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
  */
 function hedley_reports_generate_completion_results_data($health_center) {
   $bundles = [
-    'nutrition_encounter', //  Nutrition Individual data.
+    'acute_illness_encounter', // Acute Illness data.
     'attendance', //  Nutrition Group data.
+    'nutrition_encounter', //  Nutrition Individual data.
   ];
 
   $base_query = new EntityFieldQuery();
@@ -1996,6 +1997,7 @@ function hedley_reports_generate_completion_results_data($health_center) {
   }
 
   $data = [
+    'acute_illness' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
   ];
@@ -2029,12 +2031,17 @@ function hedley_reports_generate_completion_results_data($health_center) {
       }
 
       switch ($node->type) {
-        case 'nutrition_encounter':
-          $data['nutrition_individual'][] = json_decode($json_data);
+        case 'acute_illness_encounter':
+          $data['acute_illness'][] = json_decode($json_data);
           break;
 
         case 'attendance':
           $data['nutrition_group'][] = json_decode($json_data);
+          break;
+
+        case 'nutrition_encounter':
+          $data['nutrition_individual'][] = json_decode($json_data);
+          break;
       }
 
       // Explicitly unset large variables after use for memory optimization.
