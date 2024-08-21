@@ -5825,14 +5825,17 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 			return ma;
 		}
 	});
+var $author$project$Pages$Completion$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
 var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
 var $author$project$Pages$Completion$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
-		case 'nutrition-individual':
-			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
+		case 'acute-illness':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportAcuteIllness);
 		case 'nutrition-group':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionGroup);
+		case 'nutrition-individual':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -6839,10 +6842,85 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Completion$Model$CompletionData = F5(
-	function (site, entityName, entityType, nutritionIndividualData, nutritionGroupData) {
-		return {entityName: entityName, entityType: entityType, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site};
+var $author$project$Backend$Completion$Model$CompletionData = F6(
+	function (site, entityName, entityType, acuteIllnessData, nutritionIndividualData, nutritionGroupData) {
+		return {acuteIllnessData: acuteIllnessData, entityName: entityName, entityType: entityType, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site};
 	});
+var $author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings = {$: 'AcuteIllnessAcuteFindings'};
+var $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting = {$: 'AcuteIllnessCOVIDTesting'};
+var $author$project$Backend$Completion$Model$AcuteIllnessCall114 = {$: 'AcuteIllnessCall114'};
+var $author$project$Backend$Completion$Model$AcuteIllnessContactHC = {$: 'AcuteIllnessContactHC'};
+var $author$project$Backend$Completion$Model$AcuteIllnessContactsTracing = {$: 'AcuteIllnessContactsTracing'};
+var $author$project$Backend$Completion$Model$AcuteIllnessCoreExam = {$: 'AcuteIllnessCoreExam'};
+var $author$project$Backend$Completion$Model$AcuteIllnessDangerSigns = {$: 'AcuteIllnessDangerSigns'};
+var $author$project$Backend$Completion$Model$AcuteIllnessExposure = {$: 'AcuteIllnessExposure'};
+var $author$project$Backend$Completion$Model$AcuteIllnessFollowUp = {$: 'AcuteIllnessFollowUp'};
+var $author$project$Backend$Completion$Model$AcuteIllnessHealthEducation = {$: 'AcuteIllnessHealthEducation'};
+var $author$project$Backend$Completion$Model$AcuteIllnessIsolation = {$: 'AcuteIllnessIsolation'};
+var $author$project$Backend$Completion$Model$AcuteIllnessMUAC = {$: 'AcuteIllnessMUAC'};
+var $author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting = {$: 'AcuteIllnessMalariaTesting'};
+var $author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution = {$: 'AcuteIllnessMedicationDistribution'};
+var $author$project$Backend$Completion$Model$AcuteIllnessNutrition = {$: 'AcuteIllnessNutrition'};
+var $author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment = {$: 'AcuteIllnessOngoingTreatment'};
+var $author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment = {$: 'AcuteIllnessPriorTreatment'};
+var $author$project$Backend$Completion$Model$AcuteIllnessSendToHC = {$: 'AcuteIllnessSendToHC'};
+var $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI = {$: 'AcuteIllnessSymptomsGI'};
+var $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGeneral = {$: 'AcuteIllnessSymptomsGeneral'};
+var $author$project$Backend$Completion$Model$AcuteIllnessSymptomsRespiratory = {$: 'AcuteIllnessSymptomsRespiratory'};
+var $author$project$Backend$Completion$Model$AcuteIllnessTravelHistory = {$: 'AcuteIllnessTravelHistory'};
+var $author$project$Backend$Completion$Model$AcuteIllnessVitals = {$: 'AcuteIllnessVitals'};
+var $author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessContactsTracing);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessCoreExam);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessDangerSigns);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessFollowUp);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessMUAC);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessNutrition);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessVitals);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessCall114);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessExposure);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessContactHC);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessHealthEducation);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessIsolation);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessSendToHC);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessSymptomsGeneral);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessSymptomsRespiratory);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessTravelHistory);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Completion$Model$EncounterData = F3(
 	function (startDate, takenBy, completion) {
 		return {completion: completion, startDate: startDate, takenBy: takenBy};
@@ -7921,18 +7999,24 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 		$elm$json$Json$Decode$list(
 			$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 		A3(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-			'entity_type',
-			$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+			_List_fromArray(
+				['results', 'acute_illness']),
+			$elm$json$Json$Decode$list(
+				$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'entity_name',
-				$elm$json$Json$Decode$string,
+				'entity_type',
+				$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'site',
-					$author$project$Backend$Decoder$decodeSite,
-					$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))));
+					'entity_name',
+					$elm$json$Json$Decode$string,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'site',
+						$author$project$Backend$Decoder$decodeSite,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -9688,6 +9772,7 @@ var $author$project$Translate$HttpError = function (a) {
 	return {$: 'HttpError', a: a};
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$District = {$: 'District'};
 var $author$project$Translate$Global = {$: 'Global'};
@@ -9876,6 +9961,58 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'ACHI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Activity':
 				return {english: 'Activity', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'AcuteIllness':
+				return {english: 'Acute Illness', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'AcuteIllnessActivity':
+				var activity = transId.a;
+				switch (activity.$) {
+					case 'AcuteIllnessAcuteFindings':
+						return {english: 'Acute Findings', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessContactsTracing':
+						return {english: 'Contacts Tracing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessCoreExam':
+						return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessDangerSigns':
+						return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessFollowUp':
+						return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessMUAC':
+						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessNutrition':
+						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessVitals':
+						return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessCall114':
+						return {english: 'Call 114', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessCOVIDTesting':
+						return {english: 'COVID Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessExposure':
+						return {english: 'Exposure', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessContactHC':
+						return {english: 'Contact HC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessHealthEducation':
+						return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessIsolation':
+						return {english: 'Isolation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessMalariaTesting':
+						return {english: 'Malaria Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessMedicationDistribution':
+						return {english: 'MedicationDistribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessSendToHC':
+						return {english: 'Referal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessSymptomsGeneral':
+						return {english: 'Symptoms General', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessSymptomsGI':
+						return {english: 'Symptoms GI', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessSymptomsRespiratory':
+						return {english: 'Symptoms Respiratory', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessTravelHistory':
+						return {english: 'Travel History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'AcuteIllnessPriorTreatment':
+						return {english: 'Prior Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Ongoing Treatment', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'AcuteIllnessDiagnosis':
 				var diagnosis = transId.a;
 				switch (diagnosis.$) {
@@ -9996,10 +10133,15 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Completed', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'CompletionReportType':
 				var reportType = transId.a;
-				if (reportType.$ === 'ReportNutritionIndividual') {
-					return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-				} else {
-					return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				switch (reportType.$) {
+					case 'ReportAcuteIllness':
+						var $temp$transId = $author$project$Translate$AcuteIllness;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ReportNutritionGroup':
+						return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					default:
+						return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'CBNP':
 				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -10392,7 +10534,9 @@ var $author$project$Translate$translationSet = function (transId) {
 				var reportType = transId.a;
 				switch (reportType.$) {
 					case 'ReportAcuteIllness':
-						return {english: 'Acute Illness', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$AcuteIllness;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
@@ -11398,10 +11542,13 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$json$Json$Decode$succeed(msg));
 };
 var $author$project$Pages$Completion$Utils$reportTypeToString = function (reportType) {
-	if (reportType.$ === 'ReportNutritionIndividual') {
-		return 'nutrition-individual';
-	} else {
-		return 'nutrition-group';
+	switch (reportType.$) {
+		case 'ReportAcuteIllness':
+			return 'acute-illness';
+		case 'ReportNutritionGroup':
+			return 'nutrition-group';
+		default:
+			return 'nutrition-individual';
 	}
 };
 var $author$project$Backend$Completion$Utils$takenByToString = function (value) {
@@ -11414,6 +11561,407 @@ var $author$project$Backend$Completion$Utils$takenByToString = function (value) 
 			return 'unknown';
 	}
 };
+var $author$project$Pages$Completion$View$applyFilters = F3(
+	function (startDate, limitDate, mTakenBy) {
+		return $elm$core$List$filter(
+			function (encounter) {
+				var takenByCondition = A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						function (takenBy) {
+							return _Utils_eq(
+								encounter.takenBy,
+								$elm$core$Maybe$Just(takenBy));
+						},
+						mTakenBy));
+				return (!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+					$elm$core$Basics$LT)) && ((!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+					$elm$core$Basics$GT)) && takenByCondition);
+			});
+	});
+var $author$project$Translate$AcuteIllnessActivity = function (a) {
+	return {$: 'AcuteIllnessActivity', a: a};
+};
+var $author$project$Pages$Completion$Utils$allAcuteIllnessActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings, $author$project$Backend$Completion$Model$AcuteIllnessContactsTracing, $author$project$Backend$Completion$Model$AcuteIllnessCoreExam, $author$project$Backend$Completion$Model$AcuteIllnessDangerSigns, $author$project$Backend$Completion$Model$AcuteIllnessFollowUp, $author$project$Backend$Completion$Model$AcuteIllnessMUAC, $author$project$Backend$Completion$Model$AcuteIllnessNutrition, $author$project$Backend$Completion$Model$AcuteIllnessVitals, $author$project$Backend$Completion$Model$AcuteIllnessCall114, $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting, $author$project$Backend$Completion$Model$AcuteIllnessExposure, $author$project$Backend$Completion$Model$AcuteIllnessContactHC, $author$project$Backend$Completion$Model$AcuteIllnessHealthEducation, $author$project$Backend$Completion$Model$AcuteIllnessIsolation, $author$project$Backend$Completion$Model$AcuteIllnessMalariaTesting, $author$project$Backend$Completion$Model$AcuteIllnessMedicationDistribution, $author$project$Backend$Completion$Model$AcuteIllnessSendToHC, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGeneral, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsGI, $author$project$Backend$Completion$Model$AcuteIllnessSymptomsRespiratory, $author$project$Backend$Completion$Model$AcuteIllnessTravelHistory, $author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment, $author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment]);
+var $myrho$elm_round$Round$addSign = F2(
+	function (signed, str) {
+		var isNotZero = A2(
+			$elm$core$List$any,
+			function (c) {
+				return (!_Utils_eq(
+					c,
+					_Utils_chr('0'))) && (!_Utils_eq(
+					c,
+					_Utils_chr('.')));
+			},
+			$elm$core$String$toList(str));
+		return _Utils_ap(
+			(signed && isNotZero) ? '-' : '',
+			str);
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $elm$core$Char$fromCode = _Char_fromCode;
+var $myrho$elm_round$Round$increaseNum = function (_v0) {
+	var head = _v0.a;
+	var tail = _v0.b;
+	if (_Utils_eq(
+		head,
+		_Utils_chr('9'))) {
+		var _v1 = $elm$core$String$uncons(tail);
+		if (_v1.$ === 'Nothing') {
+			return '01';
+		} else {
+			var headtail = _v1.a;
+			return A2(
+				$elm$core$String$cons,
+				_Utils_chr('0'),
+				$myrho$elm_round$Round$increaseNum(headtail));
+		}
+	} else {
+		var c = $elm$core$Char$toCode(head);
+		return ((c >= 48) && (c < 57)) ? A2(
+			$elm$core$String$cons,
+			$elm$core$Char$fromCode(c + 1),
+			tail) : '0';
+	}
+};
+var $elm$core$Basics$isInfinite = _Basics_isInfinite;
+var $elm$core$Basics$isNaN = _Basics_isNaN;
+var $elm$core$String$padRight = F3(
+	function (n, _char, string) {
+		return _Utils_ap(
+			string,
+			A2(
+				$elm$core$String$repeat,
+				n - $elm$core$String$length(string),
+				$elm$core$String$fromChar(_char)));
+	});
+var $elm$core$String$reverse = _String_reverse;
+var $myrho$elm_round$Round$splitComma = function (str) {
+	var _v0 = A2($elm$core$String$split, '.', str);
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var before = _v0.a;
+			var _v1 = _v0.b;
+			var after = _v1.a;
+			return _Utils_Tuple2(before, after);
+		} else {
+			var before = _v0.a;
+			return _Utils_Tuple2(before, '0');
+		}
+	} else {
+		return _Utils_Tuple2('0', '0');
+	}
+};
+var $elm$core$Tuple$mapFirst = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			func(x),
+			y);
+	});
+var $myrho$elm_round$Round$toDecimal = function (fl) {
+	var _v0 = A2(
+		$elm$core$String$split,
+		'e',
+		$elm$core$String$fromFloat(
+			$elm$core$Basics$abs(fl)));
+	if (_v0.b) {
+		if (_v0.b.b) {
+			var num = _v0.a;
+			var _v1 = _v0.b;
+			var exp = _v1.a;
+			var e = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				$elm$core$String$toInt(
+					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
+			var _v2 = $myrho$elm_round$Round$splitComma(num);
+			var before = _v2.a;
+			var after = _v2.b;
+			var total = _Utils_ap(before, after);
+			var zeroed = (e < 0) ? A2(
+				$elm$core$Maybe$withDefault,
+				'0',
+				A2(
+					$elm$core$Maybe$map,
+					function (_v3) {
+						var a = _v3.a;
+						var b = _v3.b;
+						return a + ('.' + b);
+					},
+					A2(
+						$elm$core$Maybe$map,
+						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
+						$elm$core$String$uncons(
+							_Utils_ap(
+								A2(
+									$elm$core$String$repeat,
+									$elm$core$Basics$abs(e),
+									'0'),
+								total))))) : A3(
+				$elm$core$String$padRight,
+				e + 1,
+				_Utils_chr('0'),
+				total);
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				zeroed);
+		} else {
+			var num = _v0.a;
+			return _Utils_ap(
+				(fl < 0) ? '-' : '',
+				num);
+		}
+	} else {
+		return '';
+	}
+};
+var $myrho$elm_round$Round$roundFun = F3(
+	function (functor, s, fl) {
+		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
+			return $elm$core$String$fromFloat(fl);
+		} else {
+			var signed = fl < 0;
+			var _v0 = $myrho$elm_round$Round$splitComma(
+				$myrho$elm_round$Round$toDecimal(
+					$elm$core$Basics$abs(fl)));
+			var before = _v0.a;
+			var after = _v0.b;
+			var r = $elm$core$String$length(before) + s;
+			var normalized = _Utils_ap(
+				A2($elm$core$String$repeat, (-r) + 1, '0'),
+				A3(
+					$elm$core$String$padRight,
+					r,
+					_Utils_chr('0'),
+					_Utils_ap(before, after)));
+			var totalLen = $elm$core$String$length(normalized);
+			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
+			var increase = A2(
+				functor,
+				signed,
+				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
+			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
+			var num = increase ? $elm$core$String$reverse(
+				A2(
+					$elm$core$Maybe$withDefault,
+					'1',
+					A2(
+						$elm$core$Maybe$map,
+						$myrho$elm_round$Round$increaseNum,
+						$elm$core$String$uncons(
+							$elm$core$String$reverse(remains))))) : remains;
+			var numLen = $elm$core$String$length(num);
+			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
+				num,
+				A2(
+					$elm$core$String$repeat,
+					$elm$core$Basics$abs(s),
+					'0')) : ((_Utils_cmp(
+				s,
+				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
+				before + '.',
+				A3(
+					$elm$core$String$padRight,
+					s,
+					_Utils_chr('0'),
+					after))));
+			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
+		}
+	});
+var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
+	F2(
+		function (signed, str) {
+			var _v0 = $elm$core$String$uncons(str);
+			if (_v0.$ === 'Nothing') {
+				return false;
+			} else {
+				if ('5' === _v0.a.a.valueOf()) {
+					if (_v0.a.b === '') {
+						var _v1 = _v0.a;
+						return !signed;
+					} else {
+						var _v2 = _v0.a;
+						return true;
+					}
+				} else {
+					var _v3 = _v0.a;
+					var _int = _v3.a;
+					return function (i) {
+						return ((i > 53) && signed) || ((i >= 53) && (!signed));
+					}(
+						$elm$core$Char$toCode(_int));
+				}
+			}
+		}));
+var $author$project$Pages$Completion$View$calcualtePercentage = F2(
+	function (nominator, total) {
+		return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 2, (nominator / total) * 100) + '%');
+	});
+var $author$project$Pages$Completion$View$countOccurrences = F3(
+	function (resolveFunc, activity, data) {
+		return $elm$core$List$length(
+			A2(
+				$elm$core$List$filter,
+				A2(
+					$elm$core$Basics$composeR,
+					resolveFunc,
+					$elm$core$List$member(activity)),
+				data));
+	});
+var $author$project$Translate$Activity = {$: 'Activity'};
+var $author$project$Translate$Completed = {$: 'Completed'};
+var $author$project$Translate$Expected = {$: 'Expected'};
+var $author$project$Pages$Completion$View$generateCaptionsList = function (language) {
+	return _List_fromArray(
+		[
+			A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
+			A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
+			A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
+			'%'
+		]);
+};
+var $author$project$Pages$Completion$View$generateAcuteIllnessReportData = F2(
+	function (language, records) {
+		return {
+			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$AcuteIllness),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.expectedActivities;
+							}),
+						activity,
+						records);
+					var completed = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.completedActivities;
+							}),
+						activity,
+						records);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$AcuteIllnessActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+						]);
+				},
+				$author$project$Pages$Completion$Utils$allAcuteIllnessActivities)
+		};
+	});
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
+var $author$project$Pages$Components$View$viewCustomCells = F2(
+	function (labelClass, valueClass) {
+		return $elm$core$List$indexedMap(
+			F2(
+				function (index, cellText) {
+					return A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$classList(
+								_List_fromArray(
+									[
+										_Utils_Tuple2('item', true),
+										_Utils_Tuple2(labelClass, !index),
+										_Utils_Tuple2(valueClass, !(!index))
+									]))
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(cellText)
+							]));
+				}));
+	});
+var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = function (data) {
+	var viewRow = function (cells) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
+			A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'value', cells));
+	};
+	var captionsRow = A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('row')
+			]),
+		A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'heading', data.captions));
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table wide')
+				]),
+			A2(
+				$elm$core$List$cons,
+				captionsRow,
+				A2($elm$core$List$map, viewRow, data.rows)))
+		]);
+};
+var $author$project$Pages$Completion$View$viewAcuteIllnessReport = F5(
+	function (language, startDate, limitDate, mTakenBy, reportData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report acute-illness')
+				]),
+			$author$project$Pages$Components$View$viewNutritionMetricsResultsTable(
+				A2(
+					$author$project$Pages$Completion$View$generateAcuteIllnessReportData,
+					language,
+					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
+	});
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
 var $author$project$Translate$YearLabel = {$: 'YearLabel'};
@@ -12465,28 +13013,6 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
-var $author$project$Pages$Completion$View$applyFilters = F3(
-	function (startDate, limitDate, mTakenBy) {
-		return $elm$core$List$filter(
-			function (encounter) {
-				var takenByCondition = A2(
-					$elm$core$Maybe$withDefault,
-					true,
-					A2(
-						$elm$core$Maybe$map,
-						function (takenBy) {
-							return _Utils_eq(
-								encounter.takenBy,
-								$elm$core$Maybe$Just(takenBy));
-						},
-						mTakenBy));
-				return (!_Utils_eq(
-					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
-					$elm$core$Basics$LT)) && ((!_Utils_eq(
-					A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
-					$elm$core$Basics$GT)) && takenByCondition);
-			});
-	});
 var $author$project$Translate$NutritionChildActivity = function (a) {
 	return {$: 'NutritionChildActivity', a: a};
 };
@@ -12494,254 +13020,14 @@ var $author$project$Translate$NutritionGroup = {$: 'NutritionGroup'};
 var $author$project$Translate$NutritionMotherActivity = function (a) {
 	return {$: 'NutritionMotherActivity', a: a};
 };
-var $author$project$Pages$Completion$Model$allNutritionIndividualActivities = _List_fromArray(
+var $author$project$Pages$Completion$Utils$allNutritionIndividualActivities = _List_fromArray(
 	[$author$project$Backend$Completion$Model$NutritionHeight, $author$project$Backend$Completion$Model$NutritionNutrition, $author$project$Backend$Completion$Model$NutritionPhoto, $author$project$Backend$Completion$Model$NutritionWeight, $author$project$Backend$Completion$Model$NutritionMUAC, $author$project$Backend$Completion$Model$NutritionContributingFactors, $author$project$Backend$Completion$Model$NutritionFollowUp, $author$project$Backend$Completion$Model$NutritionHealthEducation, $author$project$Backend$Completion$Model$NutritionSendToHC, $author$project$Backend$Completion$Model$NutritionNCDA]);
-var $author$project$Pages$Completion$Model$allNutritionChildGroupActivities = _Utils_ap(
-	$author$project$Pages$Completion$Model$allNutritionIndividualActivities,
+var $author$project$Pages$Completion$Utils$allNutritionChildGroupActivities = _Utils_ap(
+	$author$project$Pages$Completion$Utils$allNutritionIndividualActivities,
 	_List_fromArray(
 		[$author$project$Backend$Completion$Model$NutritionChildFbf]));
-var $author$project$Pages$Completion$Model$allNutritionMotherGroupActivities = _List_fromArray(
+var $author$project$Pages$Completion$Utils$allNutritionMotherGroupActivities = _List_fromArray(
 	[$author$project$Backend$Completion$Model$NutritionFamilyPlanning, $author$project$Backend$Completion$Model$NutritionLactation, $author$project$Backend$Completion$Model$NutritionMotherFbf]);
-var $myrho$elm_round$Round$addSign = F2(
-	function (signed, str) {
-		var isNotZero = A2(
-			$elm$core$List$any,
-			function (c) {
-				return (!_Utils_eq(
-					c,
-					_Utils_chr('0'))) && (!_Utils_eq(
-					c,
-					_Utils_chr('.')));
-			},
-			$elm$core$String$toList(str));
-		return _Utils_ap(
-			(signed && isNotZero) ? '-' : '',
-			str);
-	});
-var $elm$core$String$fromFloat = _String_fromNumber;
-var $elm$core$Char$fromCode = _Char_fromCode;
-var $myrho$elm_round$Round$increaseNum = function (_v0) {
-	var head = _v0.a;
-	var tail = _v0.b;
-	if (_Utils_eq(
-		head,
-		_Utils_chr('9'))) {
-		var _v1 = $elm$core$String$uncons(tail);
-		if (_v1.$ === 'Nothing') {
-			return '01';
-		} else {
-			var headtail = _v1.a;
-			return A2(
-				$elm$core$String$cons,
-				_Utils_chr('0'),
-				$myrho$elm_round$Round$increaseNum(headtail));
-		}
-	} else {
-		var c = $elm$core$Char$toCode(head);
-		return ((c >= 48) && (c < 57)) ? A2(
-			$elm$core$String$cons,
-			$elm$core$Char$fromCode(c + 1),
-			tail) : '0';
-	}
-};
-var $elm$core$Basics$isInfinite = _Basics_isInfinite;
-var $elm$core$Basics$isNaN = _Basics_isNaN;
-var $elm$core$String$padRight = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			string,
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)));
-	});
-var $elm$core$String$reverse = _String_reverse;
-var $myrho$elm_round$Round$splitComma = function (str) {
-	var _v0 = A2($elm$core$String$split, '.', str);
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var before = _v0.a;
-			var _v1 = _v0.b;
-			var after = _v1.a;
-			return _Utils_Tuple2(before, after);
-		} else {
-			var before = _v0.a;
-			return _Utils_Tuple2(before, '0');
-		}
-	} else {
-		return _Utils_Tuple2('0', '0');
-	}
-};
-var $elm$core$Tuple$mapFirst = F2(
-	function (func, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return _Utils_Tuple2(
-			func(x),
-			y);
-	});
-var $myrho$elm_round$Round$toDecimal = function (fl) {
-	var _v0 = A2(
-		$elm$core$String$split,
-		'e',
-		$elm$core$String$fromFloat(
-			$elm$core$Basics$abs(fl)));
-	if (_v0.b) {
-		if (_v0.b.b) {
-			var num = _v0.a;
-			var _v1 = _v0.b;
-			var exp = _v1.a;
-			var e = A2(
-				$elm$core$Maybe$withDefault,
-				0,
-				$elm$core$String$toInt(
-					A2($elm$core$String$startsWith, '+', exp) ? A2($elm$core$String$dropLeft, 1, exp) : exp));
-			var _v2 = $myrho$elm_round$Round$splitComma(num);
-			var before = _v2.a;
-			var after = _v2.b;
-			var total = _Utils_ap(before, after);
-			var zeroed = (e < 0) ? A2(
-				$elm$core$Maybe$withDefault,
-				'0',
-				A2(
-					$elm$core$Maybe$map,
-					function (_v3) {
-						var a = _v3.a;
-						var b = _v3.b;
-						return a + ('.' + b);
-					},
-					A2(
-						$elm$core$Maybe$map,
-						$elm$core$Tuple$mapFirst($elm$core$String$fromChar),
-						$elm$core$String$uncons(
-							_Utils_ap(
-								A2(
-									$elm$core$String$repeat,
-									$elm$core$Basics$abs(e),
-									'0'),
-								total))))) : A3(
-				$elm$core$String$padRight,
-				e + 1,
-				_Utils_chr('0'),
-				total);
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				zeroed);
-		} else {
-			var num = _v0.a;
-			return _Utils_ap(
-				(fl < 0) ? '-' : '',
-				num);
-		}
-	} else {
-		return '';
-	}
-};
-var $myrho$elm_round$Round$roundFun = F3(
-	function (functor, s, fl) {
-		if ($elm$core$Basics$isInfinite(fl) || $elm$core$Basics$isNaN(fl)) {
-			return $elm$core$String$fromFloat(fl);
-		} else {
-			var signed = fl < 0;
-			var _v0 = $myrho$elm_round$Round$splitComma(
-				$myrho$elm_round$Round$toDecimal(
-					$elm$core$Basics$abs(fl)));
-			var before = _v0.a;
-			var after = _v0.b;
-			var r = $elm$core$String$length(before) + s;
-			var normalized = _Utils_ap(
-				A2($elm$core$String$repeat, (-r) + 1, '0'),
-				A3(
-					$elm$core$String$padRight,
-					r,
-					_Utils_chr('0'),
-					_Utils_ap(before, after)));
-			var totalLen = $elm$core$String$length(normalized);
-			var roundDigitIndex = A2($elm$core$Basics$max, 1, r);
-			var increase = A2(
-				functor,
-				signed,
-				A3($elm$core$String$slice, roundDigitIndex, totalLen, normalized));
-			var remains = A3($elm$core$String$slice, 0, roundDigitIndex, normalized);
-			var num = increase ? $elm$core$String$reverse(
-				A2(
-					$elm$core$Maybe$withDefault,
-					'1',
-					A2(
-						$elm$core$Maybe$map,
-						$myrho$elm_round$Round$increaseNum,
-						$elm$core$String$uncons(
-							$elm$core$String$reverse(remains))))) : remains;
-			var numLen = $elm$core$String$length(num);
-			var numZeroed = (num === '0') ? num : ((s <= 0) ? _Utils_ap(
-				num,
-				A2(
-					$elm$core$String$repeat,
-					$elm$core$Basics$abs(s),
-					'0')) : ((_Utils_cmp(
-				s,
-				$elm$core$String$length(after)) < 0) ? (A3($elm$core$String$slice, 0, numLen - s, num) + ('.' + A3($elm$core$String$slice, numLen - s, numLen, num))) : _Utils_ap(
-				before + '.',
-				A3(
-					$elm$core$String$padRight,
-					s,
-					_Utils_chr('0'),
-					after))));
-			return A2($myrho$elm_round$Round$addSign, signed, numZeroed);
-		}
-	});
-var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
-	F2(
-		function (signed, str) {
-			var _v0 = $elm$core$String$uncons(str);
-			if (_v0.$ === 'Nothing') {
-				return false;
-			} else {
-				if ('5' === _v0.a.a.valueOf()) {
-					if (_v0.a.b === '') {
-						var _v1 = _v0.a;
-						return !signed;
-					} else {
-						var _v2 = _v0.a;
-						return true;
-					}
-				} else {
-					var _v3 = _v0.a;
-					var _int = _v3.a;
-					return function (i) {
-						return ((i > 53) && signed) || ((i >= 53) && (!signed));
-					}(
-						$elm$core$Char$toCode(_int));
-				}
-			}
-		}));
-var $author$project$Pages$Completion$View$calcualtePercentage = F2(
-	function (nominator, total) {
-		return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 2, (nominator / total) * 100) + '%');
-	});
-var $author$project$Pages$Completion$View$countOccurrences = F3(
-	function (resolveFunc, activity, data) {
-		return $elm$core$List$length(
-			A2(
-				$elm$core$List$filter,
-				A2(
-					$elm$core$Basics$composeR,
-					resolveFunc,
-					$elm$core$List$member(activity)),
-				data));
-	});
-var $author$project$Translate$Activity = {$: 'Activity'};
-var $author$project$Translate$Completed = {$: 'Completed'};
-var $author$project$Translate$Expected = {$: 'Expected'};
-var $author$project$Pages$Completion$View$generateCaptionsList = function (language) {
-	return _List_fromArray(
-		[
-			A2($author$project$Translate$translate, language, $author$project$Translate$Activity),
-			A2($author$project$Translate$translate, language, $author$project$Translate$Expected),
-			A2($author$project$Translate$translate, language, $author$project$Translate$Completed),
-			'%'
-		]);
-};
 var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 	function (language, records) {
 		var motherData = A2(
@@ -12780,7 +13066,7 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 							]);
 					});
 			});
-		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Model$allNutritionMotherGroupActivities);
+		var motherActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionMotherActivity, motherData, $author$project$Pages$Completion$Utils$allNutritionMotherGroupActivities);
 		var childrenData = $elm$core$List$concat(
 			A2(
 				$elm$core$List$map,
@@ -12788,87 +13074,13 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 					return $.childrenData;
 				},
 				records));
-		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Model$allNutritionChildGroupActivities);
+		var childrenActivityRows = A3(generateActivityRows, $author$project$Translate$NutritionChildActivity, childrenData, $author$project$Pages$Completion$Utils$allNutritionChildGroupActivities);
 		return {
 			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
 			heading: A2($author$project$Translate$translate, language, $author$project$Translate$NutritionGroup),
 			rows: _Utils_ap(motherActivityRows, childrenActivityRows)
 		};
 	});
-var $elm$html$Html$Attributes$classList = function (classes) {
-	return $elm$html$Html$Attributes$class(
-		A2(
-			$elm$core$String$join,
-			' ',
-			A2(
-				$elm$core$List$map,
-				$elm$core$Tuple$first,
-				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
-};
-var $author$project$Pages$Components$View$viewCustomCells = F2(
-	function (labelClass, valueClass) {
-		return $elm$core$List$indexedMap(
-			F2(
-				function (index, cellText) {
-					return A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$classList(
-								_List_fromArray(
-									[
-										_Utils_Tuple2('item', true),
-										_Utils_Tuple2(labelClass, !index),
-										_Utils_Tuple2(valueClass, !(!index))
-									]))
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text(cellText)
-							]));
-				}));
-	});
-var $author$project$Pages$Components$View$viewNutritionMetricsResultsTable = function (data) {
-	var viewRow = function (cells) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('row')
-				]),
-			A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'value', cells));
-	};
-	var captionsRow = A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('row')
-			]),
-		A3($author$project$Pages$Components$View$viewCustomCells, 'row-label', 'heading', data.captions));
-	return _List_fromArray(
-		[
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('section heading')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text(data.heading)
-				])),
-			A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('table wide')
-				]),
-			A2(
-				$elm$core$List$cons,
-				captionsRow,
-				A2($elm$core$List$map, viewRow, data.rows)))
-		]);
-};
 var $author$project$Pages$Completion$View$viewNutritionGroupReport = F5(
 	function (language, startDate, limitDate, mTakenBy, reportData) {
 		return A2(
@@ -12927,7 +13139,7 @@ var $author$project$Pages$Completion$View$generateNutritionIndividualReportData 
 							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
 						]);
 				},
-				$author$project$Pages$Completion$Model$allNutritionIndividualActivities)
+				$author$project$Pages$Completion$Utils$allNutritionIndividualActivities)
 		};
 	});
 var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
@@ -13176,10 +13388,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 				$elm$core$Maybe$map3,
 				F3(
 					function (reportType, startDate, limitDate) {
-						if (reportType.$ === 'ReportNutritionIndividual') {
-							return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
-						} else {
-							return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
+						switch (reportType.$) {
+							case 'ReportAcuteIllness':
+								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
+							case 'ReportNutritionGroup':
+								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
+							default:
+								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
 						}
 					}),
 				model.reportType,
@@ -13213,7 +13428,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									language,
 									model.reportType,
 									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportNutritionGroup]),
+										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual]),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,

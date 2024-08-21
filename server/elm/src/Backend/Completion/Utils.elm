@@ -59,6 +59,82 @@ nutritionMotherActivityFromMapping mapped =
             Nothing
 
 
+acuteIllnessActivityFromMapping : String -> Maybe AcuteIllnessActivity
+acuteIllnessActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just AcuteIllnessAcuteFindings
+
+        "b" ->
+            Just AcuteIllnessContactsTracing
+
+        "c" ->
+            Just AcuteIllnessCoreExam
+
+        "d" ->
+            Just AcuteIllnessDangerSigns
+
+        "e" ->
+            Just AcuteIllnessFollowUp
+
+        "f" ->
+            Just AcuteIllnessMUAC
+
+        "g" ->
+            Just AcuteIllnessNutrition
+
+        "h" ->
+            Just AcuteIllnessVitals
+
+        "i" ->
+            Just AcuteIllnessCall114
+
+        "j" ->
+            Just AcuteIllnessCOVIDTesting
+
+        "k" ->
+            Just AcuteIllnessExposure
+
+        "l" ->
+            Just AcuteIllnessContactHC
+
+        "m" ->
+            Just AcuteIllnessHealthEducation
+
+        "n" ->
+            Just AcuteIllnessIsolation
+
+        "o" ->
+            Just AcuteIllnessMalariaTesting
+
+        "p" ->
+            Just AcuteIllnessMedicationDistribution
+
+        "q" ->
+            Just AcuteIllnessSendToHC
+
+        "r" ->
+            Just AcuteIllnessSymptomsGeneral
+
+        "s" ->
+            Just AcuteIllnessSymptomsGI
+
+        "t" ->
+            Just AcuteIllnessSymptomsRespiratory
+
+        "u" ->
+            Just AcuteIllnessTravelHistory
+
+        "v" ->
+            Just AcuteIllnessPriorTreatment
+
+        "w" ->
+            Just AcuteIllnessOngoingTreatment
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of
