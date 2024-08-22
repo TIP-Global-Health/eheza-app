@@ -2601,7 +2601,7 @@ function hedley_reports_generate_acute_illness_expected_initial_activities($enco
 
 function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, &$expected) {
   // Malaria test is suggested only if fever is recorder.
-  if ($encounter_data['fever']) {
+  if (!$encounter_data['fever']) {
     return;
   }
   $measurements_by_type = $encounter_data['measurements_by_type'];
@@ -2696,17 +2696,16 @@ function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data
   }
   $signs_indicate_covid = ($total_exposure_signs + $total_travel_history_signs) > 0;
 
-  $malaria_rapid_test_result = FALSE;
+  $malaria_rdt_run_and_not_positive = FALSE;
   if (!empty($measurements_by_type['malaria_testing'])) {
     $malaria_rapid_test_result = $measurements_by_type['malaria_testing']->field_malaria_rapid_test[LANGUAGE_NONE][0]['value'];
+    $malaria_rdt_run_and_not_positive = !in_array($malaria_rapid_test_result, RDT_POSITIVE_VALUES);
   }
 
-  $malaria_rdt_run_and_not_positive = !empty($malaria_rapid_test_result) && !in_array($malaria_rapid_test_result, RDT_POSITIVE_VALUES);
-
-  if (($symptoms_indicate_covid && $signs_indicate_covid) ||
+  if (($signs_indicate_covid && $symptoms_indicate_covid) ||
     ($signs_indicate_covid && $fever) ||
-    (!$symptoms_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_respiratory > 0) ||
-    (!$symptoms_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_general > 1)) {
+    (!$signs_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_respiratory > 0) ||
+    (!$signs_indicate_covid && $fever && $malaria_rdt_run_and_not_positive && $total_symptoms_general > 1)) {
     $expected[] = 'covid_testing';
   }
 }
