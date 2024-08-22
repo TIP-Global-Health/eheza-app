@@ -9997,7 +9997,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'AcuteIllnessMalariaTesting':
 						return {english: 'Malaria Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessMedicationDistribution':
-						return {english: 'MedicationDistribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Medication Distribution', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSendToHC':
 						return {english: 'Referal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessSymptomsGeneral':

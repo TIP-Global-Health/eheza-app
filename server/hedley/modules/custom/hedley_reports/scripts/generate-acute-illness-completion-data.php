@@ -33,10 +33,6 @@ $base_query
   ->fieldCondition('field_encounter_type', 'value', 'acute-illness')
   ->propertyCondition('status', NODE_PUBLISHED);
 
-if ($exclude_set) {
-  $base_query->addTag('exclude_set_reports_data');
-}
-
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
 $count = $count_query->count()->execute();
@@ -67,8 +63,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    hedley_reports_generate_completion_data_for_aculte_illness($node);
-    node_save($node);
+    hedley_reports_generate_completion_data_for_aculte_illness($node, $exclude_set);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);

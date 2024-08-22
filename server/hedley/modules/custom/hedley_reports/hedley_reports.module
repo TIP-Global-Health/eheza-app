@@ -2394,7 +2394,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   return $return;
 }
 
-function hedley_reports_generate_completion_data_for_aculte_illness($participant) {
+function hedley_reports_generate_completion_data_for_aculte_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
     'acute_findings' => 'a',
@@ -2440,6 +2440,11 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
   $encounters = node_load_multiple(array_keys($result['node']));
   $encounters_data = [];
   foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
     $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
@@ -2595,34 +2600,40 @@ function hedley_reports_generate_acute_illness_expected_initial_activities($enco
 }
 
 function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, &$expected) {
-  $encounter = $encounter_data['encounter'];
+  // Malaria test is suggested only if fever is recorder.
+  if ($encounter_data['fever']) {
+    return;
+  }
   $measurements_by_type = $encounter_data['measurements_by_type'];
-  $fever = $encounter_data['fever'];
-
-  $current_encounter_diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+  $diagnosis = $encounter_data['illness_diagnosis'];
   $covid_diagnoses = ['covid19-severe', 'covid19-pneumonia', 'covid19-low-risk'];
-  $covid_diagnosed = FALSE;
+  $covid_not_diagnosed = TRUE;
   if (!empty($current_encounter_diagnosis)) {
-    $covid_diagnosed = !in_array($current_encounter_diagnosis, $covid_diagnoses);
+    $covid_not_diagnosed = !in_array($diagnosis, $covid_diagnoses);
   }
 
+  // Initial encounter logic.
   if ($encounter_data['is_initial']) {
-    // If patient was not diagnosed with Covid, and fever is recorded
-    // on current encounter, and patient was suggested to take
-    // COVID test, but did not run it, we expect patient to take Malaria test.
-    $covid_rapid_test_suggested_but_not_run = FALSE;
-    if (!empty($measurements_by_type['covid_testing'])) {
-      $covid_rapid_test_result = $measurements_by_type['covid_testing']->field_rapid_test_result[LANGUAGE_NONE][0]['value'];
-      if (!empty($covid_rapid_test_result)) {
-        $not_run_values = ['unable-to-run', 'unable-to-run-and-pregnant'];
-        $covid_rapid_test_suggested_but_not_run = in_array($covid_rapid_test_result, $not_run_values);
+    if ($covid_not_diagnosed) {
+      $expected[] = 'malaria_testing';
+    }
+    else {
+      // Patient was not diagnosed with Covid, and patient was suggested to take
+      // COVID test, but did not run it, we expect patient to take Malaria test.
+      $covid_rapid_test_suggested_but_not_run = FALSE;
+      if (!empty($measurements_by_type['covid_testing'])) {
+        $covid_rapid_test_result = $measurements_by_type['covid_testing']->field_rapid_test_result[LANGUAGE_NONE][0]['value'];
+        if (!empty($covid_rapid_test_result)) {
+          $not_run_values = ['unable-to-run', 'unable-to-run-and-pregnant'];
+          $covid_rapid_test_suggested_but_not_run = in_array($covid_rapid_test_result, $not_run_values);
+        }
       }
-
-      if (!$covid_diagnosed && $fever && $covid_rapid_test_suggested_but_not_run) {
+      if ($covid_rapid_test_suggested_but_not_run) {
         $expected[] = 'malaria_testing';
       }
     }
   }
+  // Subsequent encounter logic.
   else {
     // If patient was not diagnosed with Covid on current encounter, and fever
     // is recorded on current encounter, and patient did not test positive
@@ -2643,7 +2654,7 @@ function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_da
       }
     }
 
-    if (!$covid_diagnosed && $fever && !$diagnosed_with_malaria_previously) {
+    if ($covid_not_diagnosed && !$diagnosed_with_malaria_previously) {
       $expected[] = 'malaria_testing';
     }
   }

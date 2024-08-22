@@ -297,7 +297,7 @@ translationSet transId =
                     }
 
                 AcuteIllnessMedicationDistribution ->
-                    { english = "MedicationDistribution"
+                    { english = "Medication Distribution"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
