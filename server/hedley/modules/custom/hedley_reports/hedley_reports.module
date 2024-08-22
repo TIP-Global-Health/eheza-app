@@ -2818,12 +2818,12 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
 
   // Adding Contact HC activity.
   if ($is_chw && $diagnosis == 'covid19' && !empty($measurements_by_type['call_114']) ) {
-    $signs = $measurements_by_type['call_114']->field_114_contact[LANGUAGE_NONE];
-    foreach ($signs as $sign) {
-      if ($sign['value'] == 'call-114') {
-        $expected[] = 'hc_contact';
-        break;
-      }
+    // If suspected COVID case, but call to 114 was not made, need
+    // to contact HC. This means that 114 contact filed got single
+    // value set to 'none'.
+    $sign = $measurements_by_type['call_114']->field_114_contact[LANGUAGE_NONE][0]['value'];
+    if ($sign == 'none') {
+      $expected[] = 'hc_contact';
     }
   }
 
@@ -2876,7 +2876,7 @@ function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounte
     in_array($diagnosis, ['gi-complicated', 'ri-complicated', 'fever-of-unknown-origin', 'undetermined', 'covid19-severe']) ||
     ($medication_prescribed && $diagnosis != 'covid19-pneumonia' &&
       hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administration($encounter_data)) ||
-    ($encounter_data['taken_by'] == 'chw' && $diagnosis != 'tuberculosis-suspect')
+    ($encounter_data['taken_by'] == 'chw' && $diagnosis == 'tuberculosis-suspect')
   ) {
     $expected[] = 'send_to_hc';
   }
