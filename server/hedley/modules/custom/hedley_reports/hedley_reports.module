@@ -2524,8 +2524,8 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
       }
     }
     $fever_at_vitals = FALSE;
-    if (!empty($measurements_by_type['vitals'])) {
-      $body_temperature = $measurements_by_type['vitals']->field_body_temperature[LANGUAGE_NONE][0]['value'];
+    if (!empty($measurements_by_type['acute_illness_vitals'])) {
+      $body_temperature = $measurements_by_type['acute_illness_vitals']->field_body_temperature[LANGUAGE_NONE][0]['value'];
       if (!empty($body_temperature)) {
         $fever_at_vitals = $body_temperature >= 37.5;
       }
@@ -2550,6 +2550,7 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
 
     $completed = [];
+    // $expected = array_unique(array_merge($expected, array_keys($measurements_by_type)));
     foreach ($expected as $measurement_type) {
       if (!empty($measurements_by_type[$measurement_type])) {
         $completed[] = $measurement_type;
@@ -3113,6 +3114,15 @@ function hedley_reports_get_acute_illness_diagnosis_by_previous_encounters($enco
   return NULL;
 }
 
+/**
+ * Count acute illness general symptoms.
+ *
+ * @param object $measurement
+ *   The measurement object containing symptom data.
+ *
+ * @return int
+ *   The count of general symptoms.
+ */
 function hedley_reports_count_acute_illness_symptoms_general($measurement) {
   $fields = [
     'field_chills_period',
@@ -3124,8 +3134,18 @@ function hedley_reports_count_acute_illness_symptoms_general($measurement) {
   return hedley_reports_count_acute_illness_symptoms($measurement, $fields);
 }
 
+/**
+ * Count acute illness respiratory symptoms.
+ *
+ * @param object $measurement
+ *   The measurement object containing symptom data.
+ *
+ * @return int
+ *   The count of respiratory symptoms.
+ */
 function hedley_reports_count_acute_illness_symptoms_respiratory($measurement) {
   $fields = [
+    'field_cough_period',
     'field_shortness_of_breath_period',
     'field_nasal_congestion_period',
     'field_blood_in_sputum_period',
@@ -3137,6 +3157,15 @@ function hedley_reports_count_acute_illness_symptoms_respiratory($measurement) {
   return hedley_reports_count_acute_illness_symptoms($measurement, $fields);
 }
 
+/**
+ * Count acute illness gastrointestinal symptoms.
+ *
+ * @param object $measurement
+ *   The measurement object containing symptom data.
+ *
+ * @return int
+ *   The count of gastrointestinal symptoms.
+ */
 function hedley_reports_count_acute_illness_symptoms_gi($measurement) {
   $fields = [
     'field_bloody_diarrhea_period',
@@ -3149,7 +3178,18 @@ function hedley_reports_count_acute_illness_symptoms_gi($measurement) {
   return hedley_reports_count_acute_illness_symptoms($measurement, $fields);
 }
 
-function hedley_reports_count_acute_illness_symptoms($measurement, $fields) {
+/**
+ * Helper function to count the number of acute illness symptoms present.
+ *
+ * @param object $measurement
+ *   The measurement object containing symptom data.
+ * @param array $fields
+ *   An array of field names to check within the measurement object.
+ *
+ * @return int
+ *   The count of symptoms that are present.
+ */
+function hedley_reports_count_acute_illness_symptoms($measurement, array $fields) {
   $count = 0;
   if (empty($measurement)) {
     return $count;
@@ -3165,7 +3205,16 @@ function hedley_reports_count_acute_illness_symptoms($measurement, $fields) {
   return $count;
 }
 
-function hedley_reports_count_acute_illness_signs($values) {
+/**
+ * Count the number of acute illness signs present.
+ *
+ * @param array $values
+ *   An array of values, where each value represents a sign of illness.
+ *
+ * @return int
+ *   The count of signs that are present (i.e., not equal to 'none').
+ */
+function hedley_reports_count_acute_illness_signs(array $values) {
   $count = 0;
   foreach ($values as $value) {
     if ($value['value'] != 'none') {
@@ -3176,6 +3225,17 @@ function hedley_reports_count_acute_illness_signs($values) {
   return $count;
 }
 
+/**
+ * Resolve the age in months for an individual at the time of a specific encounter.
+ *
+ * @param object $encounter
+ *   The encounter object, which includes the participant and person data.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ *
+ * @return int|null
+ *   The age in months of the individual at the time of the encounter, or NULL if an error occurs.
+ */
 function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj) {
   try {
     // Get participant ID and node.
@@ -3194,6 +3254,7 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
     $interval = $start_date_obj->diff($birth_date_obj);
     return ($interval->y * 12) + $interval->m;
   } catch (Exception $e) {
+    watchdog('hedley_reports', "Failed to resolve patient age at encounter ID $encounter->nid.");
     return NULL;
   }
 }
