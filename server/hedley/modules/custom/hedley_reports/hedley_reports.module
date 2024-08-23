@@ -2539,7 +2539,6 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     // If conditions match, add next steps activities.
     hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
 
-    $expected = array_unique(array_merge($expected, array_keys($measurements_by_type)));
     $completion_data =  [
       'start_date' => $start_date,
       'taken_by' => $encounter_data['taken_by'],
@@ -2863,7 +2862,10 @@ function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounte
     in_array($diagnosis, ['gi-complicated', 'ri-complicated', 'fever-of-unknown-origin', 'undetermined', 'covid19-severe']) ||
     ($medication_prescribed && $diagnosis != 'covid19-pneumonia' &&
       hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administration($encounter_data)) ||
-    ($encounter_data['taken_by'] == 'chw' && $diagnosis == 'tuberculosis-suspect')
+    ($encounter_data['taken_by'] == 'chw' && $diagnosis == 'tuberculosis-suspect') ||
+    // DB data shows that in some cases, referral activity was completed, but
+    // diagnosis was not set properly.
+    ($diagnosis == 'none' && !empty($measurements_by_type['send_to_hc']))
   ) {
     $expected[] = 'send_to_hc';
   }
@@ -2894,15 +2896,26 @@ function hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administr
   return FALSE;
 }
 
-function hedley_reports_ends_with($haystack, $needle) {
-  $length = strlen($needle);
-  if(!$length) {
-    return TRUE;
-  }
-  return substr($haystack, -$length) === $needle;
-}
-
-function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encounter($encounter_data, &$expected) {
+/**
+ * Determine and add next steps activities for a subsequent encounter.
+ *
+ * This function evaluates the encounter data to determine and add the next
+ * steps activities to be performed based on diagnosis, measurements, and
+ * various conditions. Activities include medication distribution, health
+ * education, contacting healthcare, sending to healthcare, and follow-up.
+ *
+ * @param array $encounter_data
+ *   An array containing data for the encounter, including illness diagnosis,
+ *   measurements by type, and other relevant information.
+ * @param array &$expected
+ *   An array to which the next steps activities will be added based on the
+ *   conditions evaluated. Activities are added if specific criteria are met.
+ *
+ * @return void
+ *   This function does not return a value but modifies the $expected array
+ *   with the activities to be performed.
+ */
+function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encounter(array $encounter_data, array &$expected) {
   $diagnosis = $encounter_data['illness_diagnosis'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
 
@@ -2951,7 +2964,20 @@ function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encou
   }
 }
 
-function hedley_reports_acute_illness_danger_sign_present_on_subsequent_visit($encounter_data) {
+/**
+ * Check if any of acute illness danger signs are present on a subsequent visit.
+ *
+ * This function examines the encounter data to determine if any of the recorded
+ * danger signs match predefined signs list indicating serious conditions.
+ *
+ * @param array $encounter_data
+ *   An array containing measurement data for the encounter, including
+ *   'measurements_by_type' which holds the measurements for various types.
+ *
+ * @return bool
+ *   TRUE if any of the danger signs are present, FALSE otherwise.
+ */
+function hedley_reports_acute_illness_danger_sign_present_on_subsequent_visit(array $encounter_data) {
   $measurements_by_type = $encounter_data['measurements_by_type'];
 
   if (empty($measurements_by_type['acute_illness_danger_signs'])) {
@@ -2979,13 +3005,33 @@ function hedley_reports_acute_illness_danger_sign_present_on_subsequent_visit($e
   return FALSE;
 }
 
+/**
+ * Determine if referral activity is expected, based on various conditions.
+ *
+ * @param array $encounter_data
+ *   An array containing data for the encounter, including illness diagnosis,
+ *   measurements by type, and age in months.
+ * @param bool $malaria_diagnosed_at_current_encounter
+ *   TRUE if malaria was diagnosed at the current encounter, FALSE otherwise.
+ * @param bool $send_to_hc_by_malaria_testing
+ *   TRUE if the case should be sent to healthcare based on malaria testing,
+ *   FALSE otherwise.
+ * @param bool $danger_sign_present_on_subsequent_visit
+ *   TRUE if danger signs are present on a subsequent visit, FALSE otherwise.
+ * @param array &$expected
+ *   An array to which the result ('send_to_hc') will be added if conditions are met.
+ *
+ * @return void
+ *   This function does not return a value but modifies the $expected array
+ *   if certain conditions are met.
+ */
 function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
 (
-  $encounter_data,
+  array $encounter_data,
   $malaria_diagnosed_at_current_encounter,
   $send_to_hc_by_malaria_testing,
   $danger_sign_present_on_subsequent_visit,
-  &$expected
+  array &$expected
 ) {
   $diagnosis = $encounter_data['illness_diagnosis'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
@@ -3071,7 +3117,21 @@ function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
   }
 }
 
-function hedley_reports_acute_illness_conditions_not_improving_on_subsequent_visit($encounter_data) {
+/**
+ * Check if any patients condition is not improving on a subsequent visit.
+ *
+ * This function examines the provided encounter data to determine if any of
+ * the recorded danger signs indicate that a condition is not improving.
+ *
+ * @param array $encounter_data
+ *   An array containing measurement data for the encounter, including
+ *   'measurements_by_type' which holds the measurements.
+ *
+ * @return bool
+ *   TRUE if there are signs indicating that the condition is not improving,
+ *   FALSE otherwise.
+ */
+function hedley_reports_acute_illness_conditions_not_improving_on_subsequent_visit(array $encounter_data) {
   $measurements_by_type = $encounter_data['measurements_by_type'];
 
   if (empty($measurements_by_type['acute_illness_danger_signs'])) {
@@ -3318,4 +3378,23 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
   }
 
   return implode(',', $expected) . '|' . implode(',', $completed);
+}
+
+/**
+ * Check if a string ends with a given substring.
+ *
+ * @param string $haystack
+ *   The string to search within.
+ * @param string $needle
+ *   The substring to check for at the end of the `$haystack` string.
+ *
+ * @return bool
+ *   TRUE if `$haystack` ends with `$needle`, FALSE otherwise.
+ */
+function hedley_reports_ends_with($haystack, $needle) {
+  $length = strlen($needle);
+  if(!$length) {
+    return TRUE;
+  }
+  return substr($haystack, -$length) === $needle;
 }
