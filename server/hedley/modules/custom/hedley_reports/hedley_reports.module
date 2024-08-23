@@ -2426,11 +2426,13 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
 
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
-    $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
     // If encounter type field is empty, we default to CHW, since
     // CHW mode was developed before nurse mode.
-    if (empty($encounter_type)) {
+    if (empty($encounter->field_ai_encounter_type)) {
       $encounter_type = 'chw-encounter';
+    }
+    else {
+      $encounter_type = $encounter->field_ai_encounter_type[LANGUAGE_NONE][0]['value'];
     }
 
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -2446,6 +2448,15 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
       'taken_by' => $encounter_type == 'chw-encounter' ? 'chw' : 'nurse',
       'measurements_by_type' => $measurements_by_type,
     ];
+  }
+
+  // If we have more than one encounter for illness, and first
+  // encounter got no measurements, we drop that encounter.
+  // This case should not be happening, because no diagnosis at
+  // first encounter should prevent running additional encounters,
+  // but actual data at DB shows these cases are present.
+  if (count($encounters_data) > 1 && empty($encounters_data[0]['measurements_by_type'])) {
+    array_shift($encounters_data);
   }
 
   foreach ($encounters_data as $index => $encounter_data) {
@@ -2464,12 +2475,12 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
 
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
     $is_initial = ($encounter_type == 'nurse-encounter') || (($encounter_type == 'chw-encounter') && empty($previous_encounters_data));
+    $encounter_data['is_initial'] = $is_initial;
     $illness_diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
     if (!$is_initial && (empty($diagnosis) || $diagnosis == 'none')) {
       // Reversing passed array, to have the encounters sorted DESC.
       $illness_diagnosis = hedley_reports_get_acute_illness_diagnosis_by_previous_encounters(array_reverse($previous_encounters_data));
     }
-    $encounter_data['is_initial'] = $is_initial;
     $encounter_data['illness_diagnosis'] = $illness_diagnosis;
 
     // Acute illness module defines following logic:
@@ -2774,7 +2785,11 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   $medication_prescribed = FALSE;
   if ((($diagnosis == 'malaria-uncomplicated') && $age_in_months >= 6) ||
     (in_array($diagnosis, ['cough-and-cold', 'ri-uncomplicated']) && ($age_in_months >= 2 && $age_in_months < 60)) ||
-    (in_array($diagnosis, ['gi-uncomplicated', 'covid19-pneumonia']))) {
+    (in_array($diagnosis, ['gi-uncomplicated', 'covid19-pneumonia'])) ||
+    // DB data shows that in some cases, medication was distributed, but
+    // diagnosis was not set properly.
+    ($diagnosis == 'none' && !empty($measurements_by_type['medication_distribution']))
+  ) {
     $medication_prescribed = TRUE;
   }
 
