@@ -2078,7 +2078,6 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
     'nutrition_photo',
     'nutrition_weight',
   ];
-  $completed = [];
 
   // Was encounter recorded by nurse or CHW.
   $taken_by = $encounter->field_nutrition_encounter_type[LANGUAGE_NONE][0]['value'];
@@ -2090,7 +2089,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
 
   if (empty($measurements_ids)) {
-    $completion = hedley_reports_generate_completion_result($expected, $completed, $mapping);
+    $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
 
     return [
       'start_date' => $start_date,
@@ -2148,13 +2147,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
     $expected[] = 'nutrition_ncda';
   }
 
-  foreach ($expected as $measurement_type) {
-    if (!empty($measurements_by_type[$measurement_type])) {
-      $completed[] = $measurement_type;
-    }
-  }
-
-  $completion = hedley_reports_generate_completion_result($expected, $completed, $mapping);
+  $completion = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping);
 
   return [
     'start_date' => $start_date,
@@ -2295,14 +2288,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
           }
         }
 
-        $completed = [];
-        foreach ($expected as $measurement_type) {
-          if (!empty($measurements_by_type[$measurement_type])) {
-            $completed[] = $measurement_type;
-          }
-        }
-
-        $return['mother'] = hedley_reports_generate_completion_result($expected, $completed, $mapping_mother);
+        $return['mother'] = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping_mother);
       }
     }
     // Handling child.
@@ -2378,14 +2364,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         $expected[] = 'group_ncda';
       }
 
-      $completed = [];
-      foreach ($expected as $measurement_type) {
-        if (!empty($measurements_by_type[$measurement_type])) {
-          $completed[] = $measurement_type;
-        }
-      }
-
-      $return['children'][] = hedley_reports_generate_completion_result($expected, $completed, $mapping_child);
+      $return['children'][] = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping_child);
     }
   }
 
@@ -2549,18 +2528,11 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     // If conditions match, add next steps activities.
     hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
 
-    $completed = [];
-    // $expected = array_unique(array_merge($expected, array_keys($measurements_by_type)));
-    foreach ($expected as $measurement_type) {
-      if (!empty($measurements_by_type[$measurement_type])) {
-        $completed[] = $measurement_type;
-      }
-    }
-
+    $expected = array_unique(array_merge($expected, array_keys($measurements_by_type)));
     $completion_data =  [
       'start_date' => $start_date,
       'taken_by' => $encounter_data['taken_by'],
-      'completion' => hedley_reports_generate_completion_result($expected, $completed, $mapping),
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
     $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
@@ -3268,7 +3240,37 @@ function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
   return $query->execute()->fetchCol();
 }
 
-function hedley_reports_generate_completion_result($expected, $completed, $mapping) {
+
+/**
+ * Generate a completion result string per expected and completed measurements.
+ *
+ * This function checks which expected measurements have been completed based on
+ * the provided measurements by type, maps both the expected and completed
+ * measurement types using the provided mapping array, and then generates a string
+ * representing the completion result.
+ *
+ * @param array $expected
+ *   An array of expected measurement types.
+ * @param array $measurements_by_type
+ *   An associative array where the keys are measurement types and the values
+ *   indicate whether the measurement has been completed.
+ * @param array $mapping
+ *   An associative array where keys are measurement types and values are their
+ *   corresponding mapped values.
+ *
+ * @return string
+ *   A string that concatenates the mapped expected and completed measurement
+ *   types, separated by a '|' character. The expected and completed values are
+ *   each comma-separated within their respective sections.
+ */
+function hedley_reports_generate_completion_result(array $expected, array $measurements_by_type, array $mapping) {
+  $completed = [];
+  foreach ($expected as $measurement_type) {
+    if (!empty($measurements_by_type[$measurement_type])) {
+      $completed[] = $measurement_type;
+    }
+  }
+
   foreach ($expected as $index => $measurement_type) {
     $expected[$index] = $mapping[$measurement_type];
   }
