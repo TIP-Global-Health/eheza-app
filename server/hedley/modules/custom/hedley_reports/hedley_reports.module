@@ -2735,7 +2735,7 @@ function hedley_reports_acute_illness_add_physical_exam_activities($encounter_da
     $expected[] = 'acute_findings';
   }
 
-  $launch_date = '2022-12-22';
+  $launch_date = '2021-12-22';
   $launch_date_obj = new DateTime($launch_date);
   // Core exam is taken only by nurse.
   if ($encounter_data['start_date_obj'] >= $launch_date_obj && $encounter_data['taken_by'] == 'nurse') {
@@ -2814,7 +2814,7 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   $launch_date = '2021-12-22';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
-    if (in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk'])) {
+    if (in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk', 'covid19-severe'])) {
       $expected[] = 'acute_illness_contacts_tracing';
     }
   }
@@ -3074,6 +3074,18 @@ function hedley_reports_acute_illness_conditions_not_improving_on_subsequent_vis
   return FALSE;
 }
 
+/**
+ * Retrieve the acute illness diagnosis for given list of encounters.
+ *
+ * This function iterates through an array of encounter data to find and return
+ * the first non-empty acute illness diagnosis that is not 'none'.
+ *
+ * @param array $encounters_data
+ *   An array of encounter data, where each item contains an 'encounter' object.
+ *
+ * @return string|null
+ *   The acute illness diagnosis if found, or NULL if no valid diagnosis is found.
+ */
 function hedley_reports_get_acute_illness_diagnosis_by_previous_encounters($encounters_data) {
   foreach ($encounters_data as $encounter_data) {
     $encounter = $encounter_data['encounter'];
@@ -3231,6 +3243,18 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
   }
 }
 
+/**
+ * Load the measurement IDs associated with an individual encounter.
+ *
+ * This function retrieves the IDs of measurements related to a specific
+ * encounter by querying the database for entities linked to the encounter node.
+ *
+ * @param object $encounter
+ *   The encounter object, which includes the node ID and bundle type.
+ *
+ * @return array
+ *   An array of measurement entity IDs associated with the encounter.
+ */
 function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
   $bundle = $encounter->type;
   $encounter_field ="field_$bundle";
@@ -3239,7 +3263,6 @@ function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
   $query->condition("ef.{$encounter_field}_target_id", $encounter->nid);
   return $query->execute()->fetchCol();
 }
-
 
 /**
  * Generate a completion result string per expected and completed measurements.
