@@ -2666,7 +2666,7 @@ function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data
     return;
   }
 
-  $launch_date = '2022-02-06';
+  $launch_date = '2021-12-22';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
     // Feature was not yet launched.
@@ -2769,7 +2769,7 @@ function hedley_reports_acute_illness_add_physical_exam_activities($encounter_da
     $expected[] = 'acute_illness_core_exam';
   }
 
-  $launch_date = '2020-12-10';
+  $launch_date = '2020-12-06';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
     // MUAC is taken for children that are 6 months to 5 years old.
@@ -2838,7 +2838,7 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   }
 
   // Adding Contacts Tracing activity.
-  $launch_date = '2022-02-06';
+  $launch_date = '2021-12-22';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
     if (in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk'])) {
