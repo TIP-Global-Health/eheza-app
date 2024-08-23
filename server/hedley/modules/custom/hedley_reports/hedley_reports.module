@@ -2855,6 +2855,7 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
 function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounter_data, $medication_prescribed, &$expected) {
   $age_in_months = $encounter_data['age_in_months'];
   $diagnosis = $encounter_data['illness_diagnosis'];
+  $measurements_by_type = $encounter_data['measurements_by_type'];
 
   if (
     hedley_reports_acute_illness_send_to_hc_by_malaria_testing($encounter_data) ||
