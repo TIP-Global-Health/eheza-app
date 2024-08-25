@@ -211,6 +211,16 @@ function hedley_reports_statistical_queries_report_callback_menu() {
   return hedley_reports_callback_menu_by_page('reports-menu');
 }
 
+/**
+ * Generates data for a callback menu page.
+ *
+ * @param string $page
+ *   The page identifier used to build the Elm app.
+ *
+ * @return array
+ *   A renderable array containing the Elm app with site name
+ *   and health centers data.
+ */
 function hedley_reports_callback_menu_by_page($page) {
   $site = variable_get('hedley_general_site_name', '');
 
@@ -1895,8 +1905,16 @@ function hedley_ncda_query_exclude_set_reports_data_alter(QueryAlterableInterfac
   $query->isNull('fnd.field_reports_data_value');
 }
 
+/**
+ * Resolves all Nurse IDs.
+ *
+ * This function  queries the database for all entities
+ * with the role of 'nurse' and returns their IDs.
+ *
+ * @return array
+ *   An array of nurse node IDs.
+ */
 function hedley_ncda_resolve_nurses_ids() {
-  // Resolve all Nurses. We need to determine if measurement was taken by nurse or CHW.
   $query = db_select('field_data_field_role', 'fr');
   $query->addField('fr', 'entity_id');
   $query->condition('fr.field_role_value', 'nurse');
@@ -1933,7 +1951,7 @@ function hedley_reports_completion_report_callback_global() {
  *   The HTML markup for the Elm application.
  */
 function hedley_reports_completion_report_callback_health_center($health_center) {
-  return  hedley_reports_build_completion_results_app($health_center);
+  return hedley_reports_build_completion_results_app($health_center);
 }
 
 /**
@@ -1979,9 +1997,12 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
  */
 function hedley_reports_generate_completion_results_data($health_center) {
   $bundles = [
-    'acute_illness_encounter', // Acute Illness data.
-    'attendance', //  Nutrition Group data.
-    'nutrition_encounter', //  Nutrition Individual data.
+    // Acute Illness data.
+    'acute_illness_encounter',
+    // Nutrition Group data.
+    'attendance',
+    // Nutrition Individual data.
+    'nutrition_encounter',
   ];
 
   $base_query = new EntityFieldQuery();
@@ -2056,6 +2077,15 @@ function hedley_reports_generate_completion_results_data($health_center) {
   return $data;
 }
 
+/**
+ * Generates completion data for an individual nutrition encounter.
+ *
+ * @param object $encounter
+ *   The encounter node object.
+ *
+ * @return array
+ *   An array containing the completion data for given encounter.
+ */
 function hedley_reports_generate_completion_data_for_nutrition_individual_encounter($encounter) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
@@ -2117,7 +2147,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   if (!empty($measurements_by_type['nutrition_nutrition'])) {
     $assessment = $measurements_by_type['nutrition_nutrition']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
   }
-  else if (!empty($measurements_by_type['nutrition_follow_up'])) {
+  elseif (!empty($measurements_by_type['nutrition_follow_up'])) {
     $assessment = $measurements_by_type['nutrition_follow_up']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
   }
 
@@ -2156,6 +2186,18 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   ];
 }
 
+/**
+ * Generates completion data for a group nutrition encounter.
+ *
+ * Nutrition group encounter is done for adult+child pair, where for both
+ * measurements are recorded.
+ *
+ * @param object $attendance
+ *   The attendance node object.
+ *
+ * @return array
+ *   An array containing the completion data for group encounter.
+ */
 function hedley_reports_generate_completion_data_for_nutrition_group_encounter($attendance) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping_child = [
@@ -2310,7 +2352,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         $birth_date_obj = new DateTime($birth_date);
         $interval = $start_date_obj->diff($birth_date_obj);
         $age_in_months = ($interval->y * 12) + $interval->m;
-      } catch (Exception $e) {
+      }
+      catch (Exception $e) {
         $age_in_months = NULL;
       }
 
@@ -2329,7 +2372,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         if (!empty($measurements_by_type['nutrition'])) {
           $assessment = $measurements_by_type['nutrition']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
         }
-        else if (!empty($measurements_by_type['follow_up'])) {
+        elseif (!empty($measurements_by_type['follow_up'])) {
           $assessment = $measurements_by_type['follow_up']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
         }
 
@@ -2347,7 +2390,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         }
       }
 
-      // Child FBF activity is shown for sessions taking place at FBF and ACHI clinics.
+      // Child FBF activity is shown for sessions taking
+      // place at FBF and ACHI clinics.
       if ($start_date_obj >= $fbf_launch_date_obj && in_array($clinic_type, ['fbf', 'achi'])) {
         $expected[] = 'child_fbf';
       }
@@ -2373,6 +2417,14 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   return $return;
 }
 
+/**
+ * Generates completion data for acute illness encounters taken during illness.
+ *
+ * @param object $participant
+ *   The participant node object representing illness.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
 function hedley_reports_generate_completion_data_for_aculte_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
@@ -2476,12 +2528,12 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
     $is_initial = ($encounter_type == 'nurse-encounter') || (($encounter_type == 'chw-encounter') && empty($previous_encounters_data));
     $encounter_data['is_initial'] = $is_initial;
-    $illness_diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
+    $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
     if (!$is_initial && (empty($diagnosis) || $diagnosis == 'none')) {
       // Reversing passed array, to have the encounters sorted DESC.
-      $illness_diagnosis = hedley_reports_get_acute_illness_diagnosis_by_previous_encounters(array_reverse($previous_encounters_data));
+      $diagnosis = hedley_reports_get_acute_illness_diagnosis_by_previous_encounters(array_reverse($previous_encounters_data));
     }
-    $encounter_data['illness_diagnosis'] = $illness_diagnosis;
+    $encounter_data['illness_diagnosis'] = $diagnosis;
 
     // Acute illness module defines following logic:
     // If first encounter(s) were taken by CHW, but then
@@ -2499,7 +2551,8 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     if ($initial_nurse_encounter_index == -1) {
       $first_initial_with_subsequents = $previous_encounters_data;
       $second_initial_with_subsequents = [];
-    } else {
+    }
+    else {
       $first_initial_with_subsequents = array_slice($previous_encounters_data, 0, $initial_nurse_encounter_index + 1);
       $second_initial_with_subsequents = array_slice($previous_encounters_data, $initial_nurse_encounter_index + 1);
     }
@@ -2525,7 +2578,6 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
-
     // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data);
     // If conditions match, add malaria_testing activity.
@@ -2539,7 +2591,7 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
     // If conditions match, add next steps activities.
     hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
 
-    $completion_data =  [
+    $completion_data = [
       'start_date' => $start_date,
       'taken_by' => $encounter_data['taken_by'],
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
@@ -2550,7 +2602,16 @@ function hedley_reports_generate_completion_data_for_aculte_illness($participant
   }
 }
 
-function hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data) {
+/**
+ * Generates the list of expected activities for an acute illness encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return array
+ *   An array of expected activity names.
+ */
+function hedley_reports_generate_acute_illness_expected_initial_activities(array $encounter_data) {
   // Activities that are shown at any type of encounter,
   // unconditionally. Existed with initial launch of the feature.
   $expected = [
@@ -2582,7 +2643,15 @@ function hedley_reports_generate_acute_illness_expected_initial_activities($enco
   return $expected;
 }
 
-function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, &$expected) {
+/**
+ * Adds Malaria Testing as expected activity, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_expected_malaria_testing(array $encounter_data, array &$expected) {
   // Malaria test is suggested only if fever is recorder.
   if (!$encounter_data['fever']) {
     return;
@@ -2591,7 +2660,7 @@ function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_da
   $diagnosis = $encounter_data['illness_diagnosis'];
   $covid_diagnoses = ['covid19-severe', 'covid19-pneumonia', 'covid19-low-risk'];
   $covid_not_diagnosed = TRUE;
-  if (!empty($current_encounter_diagnosis)) {
+  if (!empty($diagnosis)) {
     $covid_not_diagnosed = !in_array($diagnosis, $covid_diagnoses);
   }
 
@@ -2643,7 +2712,15 @@ function hedley_reports_acute_illness_add_expected_malaria_testing($encounter_da
   }
 }
 
-function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data, &$expected) {
+/**
+ * Adds expected COVID-19 as expected activity, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_expected_covid_testing(array $encounter_data, array &$expected) {
   if ($encounter_data['taken_by'] != 'nurse') {
     // COVID lab check is available for nurse only.
     return;
@@ -2659,13 +2736,13 @@ function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data
   $measurements_by_type = $encounter_data['measurements_by_type'];
   $fever = $encounter_data['fever'];
 
-  $total_symptoms_respiratory =  hedley_reports_count_acute_illness_symptoms_respiratory($measurements_by_type['symptoms_respiratory']);
-  $total_symptoms_gi =  hedley_reports_count_acute_illness_symptoms_gi($measurements_by_type['symptoms_gi']);
+  $total_symptoms_respiratory = hedley_reports_count_acute_illness_symptoms_respiratory($measurements_by_type['symptoms_respiratory']);
+  $total_symptoms_gi = hedley_reports_count_acute_illness_symptoms_gi($measurements_by_type['symptoms_gi']);
   if ($total_symptoms_gi > 0) {
     $symptoms_indicate_covid = $total_symptoms_respiratory > 0;
   }
   else {
-    $total_symptoms_general =  hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
+    $total_symptoms_general = hedley_reports_count_acute_illness_symptoms_general($measurements_by_type['symptoms_general']);
     $symptoms_indicate_covid = ($total_symptoms_general + $total_symptoms_respiratory + $total_symptoms_gi) > 1;
   }
 
@@ -2693,7 +2770,15 @@ function hedley_reports_acute_illness_add_expected_covid_testing($encounter_data
   }
 }
 
-function hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_data, &$expected) {
+/**
+ * Adds Ongoing Treatment as expected activity, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_expected_treatment_ongoing(array $encounter_data, array &$expected) {
   if ($encounter_data['is_initial']) {
     // Ongoing treatment is available only for subsequent encounters.
     return;
@@ -2706,7 +2791,8 @@ function hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_
     return;
   }
 
-  // Activity is expected, if medication was prescribed at any of previous encounters.
+  // Activity is expected, if medication was prescribed at any
+  // of previous encounters.
   $medication_prescribed = FALSE;
   $initial_with_subsequents = $encounter_data['initial_with_subsequents'];
   foreach ($initial_with_subsequents as $prev_encounter_data) {
@@ -2739,7 +2825,15 @@ function hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_
   }
 }
 
-function hedley_reports_acute_illness_add_physical_exam_activities($encounter_data, &$expected) {
+/**
+ * Adds Physical Exam activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_physical_exam_activities(array $encounter_data, array &$expected) {
   if ($encounter_data['is_initial']) {
     // Acute findings is available only for initial encounter.
     $expected[] = 'acute_findings';
@@ -2766,7 +2860,15 @@ function hedley_reports_acute_illness_add_physical_exam_activities($encounter_da
   }
 }
 
-function hedley_reports_acute_illness_add_next_steps_activities($encounter_data, &$expected) {
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_next_steps_activities(array $encounter_data, array &$expected) {
   if ($encounter_data['is_initial']) {
     hedley_reports_acute_illness_add_next_steps_activities_initial_encounter($encounter_data, $expected);
   }
@@ -2775,7 +2877,15 @@ function hedley_reports_acute_illness_add_next_steps_activities($encounter_data,
   }
 }
 
-function hedley_reports_acute_illness_add_next_steps_activities_initial_encounter($encounter_data, &$expected) {
+/**
+ * Adds Next Steps activities for the initial encounter, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_next_steps_activities_initial_encounter(array $encounter_data, array &$expected) {
   $age_in_months = $encounter_data['age_in_months'];
   $diagnosis = $encounter_data['illness_diagnosis'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
@@ -2803,7 +2913,7 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   }
 
   // Adding Contact HC activity.
-  if ($is_chw && $diagnosis == 'covid19' && !empty($measurements_by_type['call_114']) ) {
+  if ($is_chw && $diagnosis == 'covid19' && !empty($measurements_by_type['call_114'])) {
     // If suspected COVID case, but call to 114 was not made, need
     // to contact HC. This means that 114 contact filed got single
     // value set to 'none'.
@@ -2828,7 +2938,11 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   $launch_date = '2021-12-22';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
-    if (in_array($diagnosis, ['covid19-pneumonia', 'covid19-low-risk', 'covid19-severe'])) {
+    if (in_array($diagnosis, [
+      'covid19-pneumonia',
+      'covid19-low-risk',
+      'covid19-severe',
+    ])) {
       $expected[] = 'acute_illness_contacts_tracing';
     }
   }
@@ -2852,7 +2966,17 @@ function hedley_reports_acute_illness_add_next_steps_activities_initial_encounte
   }
 }
 
-function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounter_data, $medication_prescribed, &$expected) {
+/**
+ * Adds "Send to HC" activity during initial encounter, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param bool $medication_prescribed
+ *   Whether medication was prescribed during the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_acute_illness_add_send_to_hc_initial_encounter(array $encounter_data, $medication_prescribed, array &$expected) {
   $age_in_months = $encounter_data['age_in_months'];
   $diagnosis = $encounter_data['illness_diagnosis'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
@@ -2860,7 +2984,13 @@ function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounte
   if (
     hedley_reports_acute_illness_send_to_hc_by_malaria_testing($encounter_data) ||
     (in_array($diagnosis, ['cough-and-cold', 'ri-uncomplicated']) && $age_in_months < 2) ||
-    in_array($diagnosis, ['gi-complicated', 'ri-complicated', 'fever-of-unknown-origin', 'undetermined', 'covid19-severe']) ||
+    in_array($diagnosis, [
+      'gi-complicated',
+      'ri-complicated',
+      'fever-of-unknown-origin',
+      'undetermined',
+      'covid19-severe',
+    ]) ||
     ($medication_prescribed && $diagnosis != 'covid19-pneumonia' &&
       hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administration($encounter_data)) ||
     ($encounter_data['taken_by'] == 'chw' && $diagnosis == 'tuberculosis-suspect') ||
@@ -2872,16 +3002,33 @@ function hedley_reports_acute_illness_add_send_to_hc_initial_encounter($encounte
   }
 }
 
-function hedley_reports_acute_illness_send_to_hc_by_malaria_testing($encounter_data) {
+/**
+ * Determines whether "Send to HC" activity is triggered per malaria testing.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return bool
+ *   TRUE if the activity should be triggered, FALSE otherwise.
+ */
+function hedley_reports_acute_illness_send_to_hc_by_malaria_testing(array $encounter_data) {
   $age_in_months = $encounter_data['age_in_months'];
   $diagnosis = $encounter_data['illness_diagnosis'];
 
-  return
-    ($diagnosis == 'malaria-uncomplicated' && $age_in_months < 6) ||
+  return ($diagnosis == 'malaria-uncomplicated' && $age_in_months < 6) ||
     in_array($diagnosis, ['malaria-complicated', 'malaria-uncomplicated-pregnant']);
 }
 
-function hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administration($encounter_data) {
+/**
+ * Determines if "Send to HC" activity is triggered per medication medication.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return bool
+ *   TRUE if the activity should be triggered, FALSE otherwise.
+ */
+function hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administration(array $encounter_data) {
   $measurements_by_type = $encounter_data['measurements_by_type'];
   if (empty($measurements_by_type['medication_distribution'])) {
     return FALSE;
@@ -2898,23 +3045,12 @@ function hedley_reports_acute_illness_send_to_hc_due_to_medication_non_administr
 }
 
 /**
- * Determine and add next steps activities for a subsequent encounter.
- *
- * This function evaluates the encounter data to determine and add the next
- * steps activities to be performed based on diagnosis, measurements, and
- * various conditions. Activities include medication distribution, health
- * education, contacting healthcare, sending to healthcare, and follow-up.
+ * Adds expected Next Steps activities for the subsequent encounter.
  *
  * @param array $encounter_data
- *   An array containing data for the encounter, including illness diagnosis,
- *   measurements by type, and other relevant information.
+ *   An associative array containing data about the encounter.
  * @param array &$expected
- *   An array to which the next steps activities will be added based on the
- *   conditions evaluated. Activities are added if specific criteria are met.
- *
- * @return void
- *   This function does not return a value but modifies the $expected array
- *   with the activities to be performed.
+ *   An array of expected activity names, passed by reference.
  */
 function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encounter(array $encounter_data, array &$expected) {
   $diagnosis = $encounter_data['illness_diagnosis'];
@@ -2937,7 +3073,7 @@ function hedley_reports_acute_illness_add_next_steps_activities_subsequent_encou
     $expected[] = 'health_education';
   }
 
-    // Adding Contact HC activity.
+  // Adding Contact HC activity.
   $danger_sign_present_on_subsequent_visit = hedley_reports_acute_illness_danger_sign_present_on_subsequent_visit($encounter_data);
   if (!$malaria_diagnosed_at_current_encounter &&
     ($danger_sign_present_on_subsequent_visit && $diagnosis == 'covid19')) {
@@ -3020,14 +3156,9 @@ function hedley_reports_acute_illness_danger_sign_present_on_subsequent_visit(ar
  * @param bool $danger_sign_present_on_subsequent_visit
  *   TRUE if danger signs are present on a subsequent visit, FALSE otherwise.
  * @param array &$expected
- *   An array to which the result ('send_to_hc') will be added if conditions are met.
- *
- * @return void
- *   This function does not return a value but modifies the $expected array
- *   if certain conditions are met.
+ *   An array to which the result will be added if conditions are met.
  */
-function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
-(
+function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter(
   array $encounter_data,
   $malaria_diagnosed_at_current_encounter,
   $send_to_hc_by_malaria_testing,
@@ -3053,7 +3184,7 @@ function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
     if ($age_in_months < 12) {
       $respiratory_rate_elevated = $respiratory_rate >= 50;
     }
-    else if ($age_in_months < 60) {
+    elseif ($age_in_months < 60) {
       $respiratory_rate_elevated = $respiratory_rate >= 40;
     }
     else {
@@ -3083,7 +3214,7 @@ function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
       if ($sign['value'] == 'brittle-hair') {
         $brittle_hair = TRUE;
       }
-      else if ($sign['value'] == 'dry-skin') {
+      elseif ($sign['value'] == 'dry-skin') {
         $dry_skin = TRUE;
       }
 
@@ -3101,7 +3232,7 @@ function hedley_reports_acute_illness_add_send_to_hc_subsequent_encounter
 
   $hc_recommended_to_come = FALSE;
   if (!empty($measurements_by_type['hc_contact'])) {
-    $recommendations = $measurements_by_type['hc_contact'] ->field_hc_recommendation[LANGUAGE_NONE];
+    $recommendations = $measurements_by_type['hc_contact']->field_hc_recommendation[LANGUAGE_NONE];
     foreach ($recommendations as $recommendation) {
       if ($recommendation['value'] == 'come-to-hc') {
         $hc_recommended_to_come = TRUE;
@@ -3160,9 +3291,9 @@ function hedley_reports_acute_illness_conditions_not_improving_on_subsequent_vis
  *   An array of encounter data, where each item contains an 'encounter' object.
  *
  * @return string|null
- *   The acute illness diagnosis if found, or NULL if no valid diagnosis is found.
+ *   The acute illness diagnosis if found, or NULL if nothing valid resolved.
  */
-function hedley_reports_get_acute_illness_diagnosis_by_previous_encounters($encounters_data) {
+function hedley_reports_get_acute_illness_diagnosis_by_previous_encounters(array $encounters_data) {
   foreach ($encounters_data as $encounter_data) {
     $encounter = $encounter_data['encounter'];
     $diagnosis = $encounter->field_acute_illness_diagnosis[LANGUAGE_NONE][0]['value'];
@@ -3286,7 +3417,7 @@ function hedley_reports_count_acute_illness_signs(array $values) {
 }
 
 /**
- * Resolve the age in months for an individual at the time of a specific encounter.
+ * Resolve the age in months for patient at the time of a specific encounter.
  *
  * @param object $encounter
  *   The encounter object, which includes the participant and person data.
@@ -3294,15 +3425,16 @@ function hedley_reports_count_acute_illness_signs(array $values) {
  *   The date object representing the start date of the encounter.
  *
  * @return int|null
- *   The age in months of the individual at the time of the encounter, or NULL if an error occurs.
+ *   The age in months of the individual at the time of the encounter,
+ *   or NULL if an error occurs.
  */
-function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj) {
+function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, DateTime $start_date_obj) {
   try {
     // Get participant ID and node.
     $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
     $participant = node_load($participant_id);
 
-    // Get person ID and node
+    // Get person ID and node.
     $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
     $person = node_load($person_id);
 
@@ -3313,7 +3445,8 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
     $birth_date_obj = new DateTime($birth_date);
     $interval = $start_date_obj->diff($birth_date_obj);
     return ($interval->y * 12) + $interval->m;
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     watchdog('hedley_reports', "Failed to resolve patient age at encounter ID $encounter->nid.");
     return NULL;
   }
@@ -3333,7 +3466,7 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
  */
 function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
   $bundle = $encounter->type;
-  $encounter_field ="field_$bundle";
+  $encounter_field = "field_$bundle";
   $query = db_select("field_data_$encounter_field", 'ef');
   $query->addField('ef', 'entity_id');
   $query->condition("ef.{$encounter_field}_target_id", $encounter->nid);
@@ -3345,8 +3478,8 @@ function hedley_reports_load_individual_encounter_measurements_ids($encounter) {
  *
  * This function checks which expected measurements have been completed based on
  * the provided measurements by type, maps both the expected and completed
- * measurement types using the provided mapping array, and then generates a string
- * representing the completion result.
+ * measurement types using the provided mapping array, and then generates
+ * a string representing the completion result.
  *
  * @param array $expected
  *   An array of expected measurement types.
@@ -3394,7 +3527,7 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
  */
 function hedley_reports_ends_with($haystack, $needle) {
   $length = strlen($needle);
-  if(!$length) {
+  if (!$length) {
     return TRUE;
   }
   return substr($haystack, -$length) === $needle;
