@@ -2425,7 +2425,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
  * @param bool $exclude_set
  *   Indicate whether to exclude encounters with report data already set.
  */
-function hedley_reports_generate_completion_data_for_aculte_illness($participant, $exclude_set) {
+function hedley_reports_generate_completion_data_for_acute_illness($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
     'acute_findings' => 'a',
