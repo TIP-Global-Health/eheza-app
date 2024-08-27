@@ -1187,7 +1187,7 @@ expectMedicationByAge currentDate site person task =
 
                             -- 6 months to 6 years.
                             TaskVitaminA ->
-                                ageMonths >= 6 && ageMonths < (6 * 6)
+                                ageMonths >= 6 && ageMonths < (6 * 12)
 
                     _ ->
                         case task of
