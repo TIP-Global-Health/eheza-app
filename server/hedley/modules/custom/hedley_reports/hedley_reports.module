@@ -2164,16 +2164,8 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
     );
   }
 
-  // NCDA activity is expected if:
-  // 1. NCDA feature is enabled.
-  // 2. Encounter was performed after NCDA launch date.
-  // 3. Encounter was recorded by nurse (and not by CHW).
-  // 4. Child was under age of 24 months.
-  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
-  $ncda_launch_date = '2023-11-20';
-  $ncda_launch_date_obj = new DateTime($ncda_launch_date);
-
-  if ($ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+  // NCDA activity is taken by nurse only.
+  if ($taken_by == 'nurse' && hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
     $expected[] = 'nutrition_ncda';
   }
 
@@ -2396,15 +2388,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         $expected[] = 'child_fbf';
       }
 
-      // NCDA activity is expected if:
-      // 1. NCDA feature is enabled.
-      // 2. Encounter was performed after NCDA launch date.
-      // 3. Encounter was recorded by nurse (and not by CHW).
-      // 4. Child was under age of 24 months.
-      $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
-      $ncda_launch_date = '2023-11-20';
-      $ncda_launch_date_obj = new DateTime($ncda_launch_date);
-      if ($ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+      // NCDA activity is taken by nurse only.
+      if ($taken_by == 'nurse' && hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
         $expected[] = 'group_ncda';
       }
 
@@ -2579,7 +2564,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
-    $expected = hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data);
+    $expected = hedley_reports_acute_illness_generate_expected_initial_activities($encounter_data);
     // If conditions match, add malaria_testing activity.
     hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
     // If conditions match, add covid_testing activity.
@@ -2611,7 +2596,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
  * @return array
  *   An array of expected activity names.
  */
-function hedley_reports_generate_acute_illness_expected_initial_activities(array $encounter_data) {
+function hedley_reports_acute_illness_generate_expected_initial_activities(array $encounter_data) {
   // Activities that are shown at any type of encounter,
   // unconditionally. Existed with initial launch of the feature.
   $expected = [
@@ -3417,19 +3402,6 @@ function hedley_reports_count_acute_illness_signs(array $values) {
 }
 
 /**
- * Resolve the age in months for patient at the time of a specific encounter.
- *
- * @param object $encounter
- *   The encounter object, which includes the participant and person data.
- * @param DateTime $start_date_obj
- *   The date object representing the start date of the encounter.
- *
- * @return int|null
- *   The age in months of the individual at the time of the encounter,
- *   or NULL if an error occurs.
- */
-
-/**
  * Generates completion data for well child encounters for patient.
  *
  * @param object $participant
@@ -3533,21 +3505,16 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['age_in_months'] = $age_in_months;
 
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
+    $encounter_data['previous_encounters_data'] = $previous_encounters_data;
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
-    $expected = hedley_reports_generate_well_child_expected_initial_activities($encounter_data);
-    // If conditions match, add malaria_testing activity.
-    hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
-    // If conditions match, add covid_testing activity.
-    hedley_reports_acute_illness_add_expected_covid_testing($encounter_data, $expected);
-    // If conditions match, add treatment_ongoing activity.
-    hedley_reports_acute_illness_add_expected_treatment_ongoing($encounter_data, $expected);
-    // If conditions match, add physical exam activities.
-    hedley_reports_acute_illness_add_physical_exam_activities($encounter_data, $expected);
+    $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
+    // If conditions match, add medication activities.
+    hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
-    hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
+//    hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -3569,6 +3536,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
  *  - Nutrition Assessment.
  *  - Child Photo.
  *  - Home Visit.
+ *  - NCDA.
  *
  * @param array $encounter_data
  *   An associative array containing data about the encounter.
@@ -3576,9 +3544,10 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
  * @return array
  *   An array of expected activity names.
  */
-function hedley_reports_generate_well_child_expected_initial_activities(array $encounter_data) {
+function hedley_reports_well_child_generate_expected_initial_activities(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
   $age_in_months = $encounter_data['age_in_months'];
+  $start_date_obj = $encounter_data['start_date_obj'];
 
   // Activities that are shown at any type of encounter,
   // unconditionally. Existed with initial launch of the feature.
@@ -3610,11 +3579,12 @@ function hedley_reports_generate_well_child_expected_initial_activities(array $e
     'well_child_vitals',
   ]);
 
-  // Home Visit vas added only for SPV encounter by CHW, on Feb 18, 2024.
+  // CHW SPV encounters.
   if ($encounter_type == 'pediatric-care-chw') {
+    // Home Visit vas added only for SPV encounter by CHW, on Feb 18, 2024.
     $launch_date = '2024-02-18';
     $launch_date_obj = new DateTime($launch_date);
-    if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
+    if ($start_date_obj >= $launch_date_obj) {
       $expected = array_merge($expected, [
         'well_child_caring',
         'well_child_feeding',
@@ -3623,10 +3593,108 @@ function hedley_reports_generate_well_child_expected_initial_activities(array $e
       ]);
     }
   }
+  // Nurse SPV encounters.
+  else {
+    if (hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
+      $expected[] = 'well_child_ncda';
+    }
+  }
 
   return $expected;
 }
 
+function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
+  $age_in_months = $encounter_data['age_in_months'];
+  $start_date_obj = $encounter_data['start_date_obj'];
+  // Reversing array, to have the encounters sorted DESC.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+
+  // Resolving all activities representing medications that are required,
+  // per child age at a time when encounter was run.
+  $expected_activities_by_age = hedley_reports_well_child_genrate_expected_medication_activities_by_age($age_in_months);
+  foreach ($expected_activities_by_age as $expected_activity) {
+    // Searching for date on which last dose of medication was administered.
+    $last_administration_date_obj = NULL;
+    foreach ($previous_encounters_data as $previous_encounter_data) {
+      $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+      $measurement = $measurements_by_type[$expected_activity];
+      if (empty($measurement) || empty($measurement->field_administration_note)) {
+        continue;
+      }
+
+      $administration_note = $measurement->field_administration_note[LANGUAGE_NONE][0]['value'];
+      if ($administration_note == 'administered-today') {
+        $last_administration_date_obj = $previous_encounter_data['start_date_obj'];
+        break;
+      }
+    }
+
+    if (is_null($last_administration_date_obj)) {
+      // Medication was not administered previously - add it as expected.
+      $expected[] = $expected_activity;
+    }
+    else {
+      $next_administration_date_obj = $last_administration_date_obj->add(new DateInterval('P6M'));
+      if ($start_date_obj >= $next_administration_date_obj) {
+        // Medication was administered previously more than 6 months
+        // ago - add it as expected.
+        $expected[] = $expected_activity;
+      }
+    }
+  }
+}
+
+function hedley_reports_well_child_genrate_expected_medication_activities_by_age($age_in_months) {
+  if (!isset($age_in_months)) {
+    return [];
+  }
+
+  $site = variable_get('hedley_general_site_name', '');
+  $expected = [];
+
+  switch ($site) {
+    case 'burundi':
+      // 6 months to 12 years.
+      if ($age_in_months >= 6 && $age_in_months < (12 * 12)) {
+        $expected[] = 'well_child_albendazole';
+      }
+      // 6 months to 6 years.
+      if ($age_in_months >= 6 && $age_in_months < (6 * 12)) {
+        $expected[] = 'well_child_vitamin_a';
+      }
+      break;
+
+    default:
+       // 6 years to 12 years.
+       if ($age_in_months >= (6 * 12) && $age_in_months < (12 * 12)) {
+         $expected[] = 'well_child_albendazole';
+       }
+      // 1 year to 6 years.
+      if ($age_in_months >= 12 && $age_in_months < (6 * 12)) {
+         $expected[] = 'well_child_mebendezole';
+       }
+      // 6 months to 12 years.
+      if ($age_in_months >= 6 && $age_in_months < (6 * 12)) {
+         $expected[] = 'well_child_vitamin_a';
+       }
+       break;
+  }
+
+  return $expected;
+}
+
+/**
+ * Resolve the age in months for patient at the time of a specific encounter.
+ *
+ * @param object $encounter
+ *   The encounter object, which includes the participant and person data.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ *
+ * @return int|null
+ *   The age in months of the individual at the time of the encounter,
+ *   or NULL if an error occurs.
+ */
 function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, DateTime $start_date_obj) {
   try {
     // Get participant ID and node.
@@ -3649,6 +3717,30 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
     watchdog('hedley_reports', "Failed to resolve patient age at encounter ID $encounter->nid.");
     return NULL;
   }
+}
+
+/**
+ * Whether NCDA activity is expected.
+ *
+ * Conditions for NCDA:
+ *  - NCDA feature is enabled.
+ *  - Encounter was performed after NCDA launch date.
+ *  - Child was under age of 24 months.
+ *
+ * @param int $age_in_months
+ *   Age of the child at a time when encounter was performed.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ *
+ * @return bool
+ *   True, if NCDA activity is expected.
+ */
+function hedley_reports_ncda_expected($age_in_months, $start_date_obj) {
+  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
+  $ncda_launch_date = '2023-11-20';
+  $ncda_launch_date_obj = new DateTime($ncda_launch_date);
+
+  return $ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && isset($age_in_months) && $age_in_months < 24;
 }
 
 /**
