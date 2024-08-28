@@ -2271,7 +2271,6 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $session_participants_ids, 'IN')
     ->fieldCondition('field_session', 'target_id', $session_id)
-    ->addTag('exclude_deleted')
     ->execute();
 
   if (empty($result['node'])) {
@@ -3511,6 +3510,9 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
+    // If conditions match, add immunisation activities.
+    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    hedley_reports_well_child_add_immunisation_activities($encounter_data,$expected);
     // If conditions match, add medication activities.
     hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
@@ -3525,6 +3527,80 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
     node_save($encounter);
   }
+}
+
+function hedley_reports_well_child_generate_vaccination_progress_data($person_id, array $encounter_data) {
+
+}
+
+function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
+  if (empty($person_id)) {
+    return [];
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'individual_participant')
+    ->fieldCondition('field_encounter_type', 'value', 'child-scoreboard')
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->addTag('exclude_deleted');
+
+  $result = $query
+    ->range(0, 1)
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return [];
+  }
+
+  $participant_id = key($result['node']);
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'child_scoreboard_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return [];
+  }
+
+  $immunisation_types = [
+    'child_scoreboard_bcg_immunisation',
+    'child_scoreboard_dtp_immunisation',
+    'child_scoreboard_ipv_immunisation',
+    'child_scoreboard_mr_immunisation',
+    'child_scoreboard_opv_immunisation',
+    'child_scoreboard_pcv13_immunisation',
+    'child_scoreboard_rotarix_immunisation',
+  ];
+
+  $encounters = node_load_multiple(array_keys($result['node']));
+  foreach ($encounters as $encounter) {
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+    if ($start_date_obj > $well_child_encounter_start_date_obj) {
+      // This encounter started after well child encounter, so, skip it.
+      continue;
+    }
+
+    // Loading all immunisation activities recorded during the encounter.
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $immunisation_types, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_child_scoreboard_encounter', 'target_id', $encounter->nid)
+      ->execute();
+  }
+
+  return [];
 }
 
 /**
@@ -3601,6 +3677,9 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   }
 
   return $expected;
+}
+
+function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, array &$expected) {
 }
 
 function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
