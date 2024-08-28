@@ -3514,7 +3514,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // If conditions match, add medication activities.
     hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
-//    hedley_reports_acute_illness_add_next_steps_activities($encounter_data, $expected);
+    hedley_reports_well_child_add_next_steps_activities($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -3681,6 +3681,36 @@ function hedley_reports_well_child_genrate_expected_medication_activities_by_age
   }
 
   return $expected;
+}
+
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_well_child_add_next_steps_activities(array $encounter_data, array &$expected) {
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+
+  $assessment = '';
+  if (!empty($measurements_by_type['well_child_nutrition'])) {
+    $assessment = $measurements_by_type['well_child_nutrition']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
+  }
+  elseif (!empty($measurements_by_type['well_child_follow_up'])) {
+    $assessment = $measurements_by_type['well_child_follow_up']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
+  }
+
+  if (!empty($assessment) && $assessment !== 'none') {
+    $expected = array_merge(
+      $expected,
+      [
+        'well_child_contributing_factors',
+        'well_child_follow_up',
+      ]
+    );
+  }
 }
 
 /**
