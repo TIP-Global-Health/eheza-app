@@ -19,6 +19,7 @@ decodeCompletionData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
+        |> requiredAt [ "results", "acute_illness" ] (list (decodeEncounterData acuteIllnessActivityFromMapping))
         |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
             (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))

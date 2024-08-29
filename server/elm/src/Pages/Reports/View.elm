@@ -25,7 +25,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
-import Pages.Components.View exposing (viewCustomCells, viewNutritionMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
@@ -1022,7 +1022,7 @@ viewNutritionReport language currentDate scopeLabel mBackendGeneratedData report
             reportTablesDataToCSV generatedData
     in
     div [ class "report nutrition" ] <|
-        (List.map viewNutritionMetricsResultsTable generatedData
+        (List.map viewMetricsResultsTable generatedData
             |> List.concat
         )
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]

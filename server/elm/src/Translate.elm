@@ -5,7 +5,13 @@ module Translate exposing
     )
 
 import App.Types exposing (Language(..))
-import Backend.Completion.Model exposing (NutritionChildActivity(..), NutritionMotherActivity(..), TakenBy(..))
+import Backend.Completion.Model
+    exposing
+        ( AcuteIllnessActivity(..)
+        , NutritionChildActivity(..)
+        , NutritionMotherActivity(..)
+        , TakenBy(..)
+        )
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
 import Date
@@ -55,6 +61,8 @@ type StringIdHttpError
 type TranslationId
     = ACHI
     | Activity
+    | AcuteIllness
+    | AcuteIllnessActivity AcuteIllnessActivity
     | AcuteIllnessDiagnosis AcuteIllnessDiagnosis
     | AcuteIllnessTotal
     | AcuteMalnutrition
@@ -189,6 +197,152 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        AcuteIllness ->
+            { english = "Acute Illness"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        AcuteIllnessActivity activity ->
+            case activity of
+                AcuteIllnessAcuteFindings ->
+                    { english = "Acute Findings"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessContactsTracing ->
+                    { english = "Contacts Tracing"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessCoreExam ->
+                    { english = "Core Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessDangerSigns ->
+                    { english = "Danger Signs"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessMUAC ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessCall114 ->
+                    { english = "Call 114"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessCOVIDTesting ->
+                    { english = "COVID Testing"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessExposure ->
+                    { english = "Exposure"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessContactHC ->
+                    { english = "Contact HC"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessIsolation ->
+                    { english = "Isolation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessMalariaTesting ->
+                    { english = "Malaria Testing"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessMedicationDistribution ->
+                    { english = "Medication Distribution"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessSendToHC ->
+                    { english = "Referal"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessSymptomsGeneral ->
+                    { english = "Symptoms General"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessSymptomsGI ->
+                    { english = "Symptoms GI"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessSymptomsRespiratory ->
+                    { english = "Symptoms Respiratory"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessTravelHistory ->
+                    { english = "Travel History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessPriorTreatment ->
+                    { english = "Prior Treatment"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessOngoingTreatment ->
+                    { english = "Ongoing Treatment"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
@@ -356,14 +510,17 @@ translationSet transId =
 
         CompletionReportType reportType ->
             case reportType of
-                Pages.Completion.Model.ReportNutritionIndividual ->
-                    { english = "Nutrition Individual"
+                Pages.Completion.Model.ReportAcuteIllness ->
+                    translationSet AcuteIllness
+
+                Pages.Completion.Model.ReportNutritionGroup ->
+                    { english = "Nutrition Group"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
-                Pages.Completion.Model.ReportNutritionGroup ->
-                    { english = "Nutrition Group"
+                Pages.Completion.Model.ReportNutritionIndividual ->
+                    { english = "Nutrition Individual"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1047,10 +1204,7 @@ translationSet transId =
         ReportType reportType ->
             case reportType of
                 ReportAcuteIllness ->
-                    { english = "Acute Illness"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet AcuteIllness
 
                 ReportDemographics ->
                     { english = "Demographics"

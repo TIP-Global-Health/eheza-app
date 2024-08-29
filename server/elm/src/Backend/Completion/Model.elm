@@ -11,6 +11,7 @@ type alias CompletionData =
     { site : Site
     , entityName : String
     , entityType : SelectedEntity
+    , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     }
@@ -40,6 +41,32 @@ type alias ActivitiesCompletionData activity =
     { expectedActivities : List activity
     , completedActivities : List activity
     }
+
+
+type AcuteIllnessActivity
+    = AcuteIllnessAcuteFindings
+    | AcuteIllnessContactsTracing
+    | AcuteIllnessCoreExam
+    | AcuteIllnessDangerSigns
+    | AcuteIllnessFollowUp
+    | AcuteIllnessMUAC
+    | AcuteIllnessNutrition
+    | AcuteIllnessVitals
+    | AcuteIllnessCall114
+    | AcuteIllnessCOVIDTesting
+    | AcuteIllnessExposure
+    | AcuteIllnessContactHC
+    | AcuteIllnessHealthEducation
+    | AcuteIllnessIsolation
+    | AcuteIllnessMalariaTesting
+    | AcuteIllnessMedicationDistribution
+    | AcuteIllnessSendToHC
+    | AcuteIllnessSymptomsGeneral
+    | AcuteIllnessSymptomsGI
+    | AcuteIllnessSymptomsRespiratory
+    | AcuteIllnessTravelHistory
+    | AcuteIllnessPriorTreatment
+    | AcuteIllnessOngoingTreatment
 
 
 type NutritionChildActivity

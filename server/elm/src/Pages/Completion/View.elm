@@ -4,7 +4,8 @@ import App.Types exposing (Language, Site)
 import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
-        ( CompletionData
+        ( AcuteIllnessActivity(..)
+        , CompletionData
         , EncounterData
         , NutritionChildActivity(..)
         , NutritionGroupEncounterData
@@ -24,8 +25,8 @@ import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
 import Pages.Completion.Model exposing (..)
-import Pages.Completion.Utils exposing (reportTypeToString)
-import Pages.Components.View exposing (viewNutritionMetricsResultsTable)
+import Pages.Completion.Utils exposing (..)
+import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils exposing (launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
@@ -169,11 +170,14 @@ viewCompletionData language currentDate themePath data model =
                 Maybe.map3
                     (\reportType startDate limitDate ->
                         case reportType of
-                            ReportNutritionIndividual ->
-                                viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
+                            ReportAcuteIllness ->
+                                viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
 
                             ReportNutritionGroup ->
                                 viewNutritionGroupReport language startDate limitDate model.takenBy data.nutritionGroupData
+
+                            ReportNutritionIndividual ->
+                                viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
                     )
                     model.reportType
                     model.startDate
@@ -185,7 +189,7 @@ viewCompletionData language currentDate themePath data model =
         , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType
-                [ ReportNutritionIndividual, ReportNutritionGroup ]
+                [ ReportAcuteIllness, ReportNutritionGroup, ReportNutritionIndividual ]
                 reportTypeToString
                 SetReportType
                 Translate.CompletionReportType
@@ -204,7 +208,7 @@ viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe 
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
     applyFilters startDate limitDate mTakenBy reportData
         |> generateNutritionIndividualReportData language
-        |> viewNutritionMetricsResultsTable
+        |> viewMetricsResultsTable
         |> div [ class "report nutrition-individual" ]
 
 
@@ -218,8 +222,16 @@ viewNutritionGroupReport :
 viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
     applyFilters startDate limitDate mTakenBy reportData
         |> generateNutritionGroupReportData language
-        |> viewNutritionMetricsResultsTable
-        |> div [ class "report nutrition-individual" ]
+        |> viewMetricsResultsTable
+        |> div [ class "report nutrition-group" ]
+
+
+viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData AcuteIllnessActivity) -> Html Msg
+viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
+    applyFilters startDate limitDate mTakenBy reportData
+        |> generateAcuteIllnessReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report acute-illness" ]
 
 
 applyFilters :
@@ -313,6 +325,37 @@ generateNutritionGroupReportData language records =
     , captions = generateCaptionsList language
     , rows = motherActivityRows ++ childrenActivityRows
     }
+
+
+generateAcuteIllnessReportData :
+    Language
+    -> List (EncounterData AcuteIllnessActivity)
+    -> MetricsResultsTableData
+generateAcuteIllnessReportData language records =
+    { heading = translate language Translate.AcuteIllness
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.AcuteIllnessActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allAcuteIllnessActivities
+    }
+
+
+
+-- Helper functions.
 
 
 generateCaptionsList : Language -> List String
