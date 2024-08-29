@@ -3441,6 +3441,8 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     'well_child_vitals' => '2',
     'well_child_vitamin_a' => '3',
     'well_child_weight' => '4',
+    'well_child_hpv_immunisation' => '5',
+    'well_child_dtp_sa_immunisation' => '6',
   ];
 
   // Load all encounters of current participant.
@@ -3506,12 +3508,14 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
     $encounter_data['previous_encounters_data'] = $previous_encounters_data;
 
+    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    list($vaccination_history, $vaccination_progress) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
     // If conditions match, add immunisation activities.
-    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
     hedley_reports_well_child_add_immunisation_activities($encounter_data,$expected);
     // If conditions match, add medication activities.
     hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
@@ -3530,12 +3534,121 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 }
 
 function hedley_reports_well_child_generate_vaccination_progress_data($person_id, array $encounter_data) {
+  $previous_encounters_data = $encounter_data['previous_encounters_data'];
 
+  $immunisation_types = [
+    'well_child_bcg_immunisation',
+    'well_child_dtp_immunisation',
+    'well_child_dtp_sa_immunisation',
+    'well_child_ipv_immunisation',
+    'well_child_mr_immunisation',
+    'well_child_opv_immunisation',
+    'well_child_pcv13_immunisation',
+    'well_child_rotarix_immunisation',
+    'well_child_hpv_immunisation',
+  ];
+
+  $immunisations_from_previous_encounters = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_from_previous_encounters[$immunisation_type] = [];
+  }
+
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    foreach ($immunisation_types as $immunisation_type) {
+      if (empty($measurements_by_type[$immunisation_type])) {
+        continue;
+      }
+      $immunisations_from_previous_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+    }
+  }
+
+  $immunisations_from_all_encounters = $immunisations_from_previous_encounters;
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  foreach ($immunisation_types as $immunisation_type) {
+    if (empty($measurements_by_type[$immunisation_type])) {
+      continue;
+    }
+    $immunisations_from_all_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+  }
+
+  $history_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_previous_encounters);
+  $progress_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_all_encounters);
+  $progress_data_by_child_scoreboard = hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, $encounter_data['start_date_obj']);
+
+  return [
+    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $history_data_by_well_child, $progress_data_by_child_scoreboard),
+    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $progress_data_by_well_child, $progress_data_by_child_scoreboard),
+  ];
+}
+
+function hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_encounters) {
+  $return = [];
+  $immunisations_by_type = [];
+  foreach ($immunisations_from_encounters as $immunisation_type => $immunisations) {
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      if (empty($immunisations_by_type[$immunisation_type]['doses'])) {
+        $immunisations_by_type[$immunisation_type]['doses'] = $encounter_doses;
+      }
+      else {
+        $immunisations_by_type[$immunisation_type]['doses'] = array_merge($immunisations_by_type[$immunisation_type]['doses'], $encounter_doses);
+      }
+
+      if (empty($immunisations_by_type[$immunisation_type]['dates'])) {
+        $immunisations_by_type[$immunisation_type]['dates'] = $encounter_dates;
+      }
+      else {
+        $immunisations_by_type[$immunisation_type]['dates'] = array_merge($immunisations_by_type[$immunisation_type]['dates'], $encounter_dates);
+      }
+    }
+  }
+
+  foreach ($immunisations_by_type as $type => $item) {
+    if (empty($item['doses']) || empty($item['dates'])) {
+      continue;
+    }
+
+    $immunisations_by_type[$type]['doses'] = array_unique($item['doses']);
+    sort($immunisations_by_type[$type]['doses']);
+    $immunisations_by_type[$type]['dates'] = array_unique($item['dates']);
+    sort($immunisations_by_type[$type]['dates']);
+    $total_doses = count($immunisations_by_type[$type]['doses']);
+    $total_dates = count($immunisations_by_type[$type]['dates']);
+
+    // Make sure number of doses matches the number of dates.
+    if ($total_doses != $total_dates) {
+      $common_size = min($total_doses, $total_dates);
+      $immunisations_by_type[$type]['doses'] = array_slice( $immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice( $immunisations_by_type[$type]['dates'], 0, $common_size);
+    }
+
+    foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
+      $common_type = hedley_reports_drop_preffix_and_suffix($type, 'well_child_', '_immunisation');
+      $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
+    }
+  }
+
+  return $return;
 }
 
 function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
+  $return = [];
   if (empty($person_id)) {
-    return [];
+    return $return;
   }
 
   $query = new EntityFieldQuery();
@@ -3553,7 +3666,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
 
   if (empty($result['node'])) {
     // No more items left.
-    return [];
+    return $return;
   }
 
   $participant_id = key($result['node']);
@@ -3568,12 +3681,13 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     ->execute();
 
   if (empty($result['node'])) {
-    return [];
+    return $return;
   }
 
   $immunisation_types = [
     'child_scoreboard_bcg_iz',
     'child_scoreboard_dtp_iz',
+    'child_scoreboard_dtp_sa_iz',
     'child_scoreboard_ipv_iz',
     'child_scoreboard_mr_iz',
     'child_scoreboard_opv_iz',
@@ -3612,22 +3726,72 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
 
     $immunisations = node_load_multiple(array_keys($result['node']));
     foreach ($immunisations as $immunisation) {
-      $administration_note = $immunisation->field_administration_note[LANGUAGE_NONE][0]['value'];
-      if (!in_array($administration_note, ['administered-today', 'administered-previously'])) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
         continue;
       }
-      $doses = $immunisation->field_administered_doses[LANGUAGE_NONE];
-      foreach ($doses as $dose) {
-        $immunisations_by_type[$immunisation->type]['doses'][] = $dose['value'];
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
       }
-      $dates = $immunisation->field_administered_dates[LANGUAGE_NONE];
-      foreach ($dates as $date) {
-        $immunisations_by_type[$immunisation->type]['dates'][] = explode(' ', $date['value'])[0];
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
       }
+
+      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
+      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
     }
   }
 
-  return [];
+  foreach ($immunisations_by_type as $type => $item) {
+    if (empty($item['doses']) || empty($item['dates'])) {
+      continue;
+    }
+
+    $immunisations_by_type[$type]['doses'] = array_unique($item['doses']);
+    sort($immunisations_by_type[$type]['doses']);
+    $immunisations_by_type[$type]['dates'] = array_unique($item['dates']);
+    sort($immunisations_by_type[$type]['dates']);
+    $total_doses = count($immunisations_by_type[$type]['doses']);
+    $total_dates = count($immunisations_by_type[$type]['dates']);
+
+    // Make sure number of doses matches the number of dates.
+    if ($total_doses != $total_dates) {
+      $common_size = min($total_doses, $total_dates);
+      $immunisations_by_type[$type]['doses'] = array_slice( $immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice( $immunisations_by_type[$type]['dates'], 0, $common_size);
+    }
+
+    foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
+      $common_type = hedley_reports_drop_preffix_and_suffix($type, 'child_scoreboard_', '_iz');
+      $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
+    }
+  }
+
+  return $return;
+}
+
+function hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $first, $second) {
+  $return = [];
+  foreach ($immunisation_types as $type) {
+    $common_type = hedley_reports_drop_preffix_and_suffix($type, 'well_child_', '_immunisation');
+    if (!empty($first[$common_type]) && !empty($second[$common_type])) {
+      $return[$common_type] = array_merge($first[$common_type], $second[$common_type]);
+    }
+    elseif (!empty($first[$common_type])) {
+      $return[$common_type] = $first[$common_type];
+    }
+    elseif (!empty($second[$common_type])) {
+      $return[$common_type] = $second[$common_type];
+    }
+    else {
+      $return[$common_type] = [];
+    }
+  }
+
+  return $return;
 }
 
 /**
@@ -3958,4 +4122,16 @@ function hedley_reports_ends_with($haystack, $needle) {
     return TRUE;
   }
   return substr($haystack, -$length) === $needle;
+}
+
+function hedley_reports_drop_preffix_and_suffix(string $string, string $pref, string $suff) {
+  if (strpos($string, $pref) !== 0 || substr($string, -strlen($suff)) !== $suff) {
+    return $string;
+  }
+
+  // Extract the part between the prefix and suffix
+  $start = strlen($pref);
+  $length = strlen($string) - $start - strlen($suff);
+
+  return substr($string, $start, $length);
 }
