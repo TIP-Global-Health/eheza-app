@@ -3459,6 +3459,19 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     return;
   }
 
+  // Get birthdate.
+  try {
+    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+    $person = node_load($person_id);
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $birth_date_obj = new DateTime($birth_date);
+    $gender = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  }
+  catch (Exception $e) {
+    $birth_date_obj = NULL;
+    $gender = 'male';
+  }
+
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
   $encounters_data = [];
@@ -3502,21 +3515,18 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['start_date_obj'] = $start_date_obj;
 
     // Try to resolve age in months at a time encounter was performed.
-    $age_in_months = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
-    $encounter_data['age_in_months'] = $age_in_months;
-
-    $previous_encounters_data = array_slice($encounters_data, 0, $index);
-    $encounter_data['previous_encounters_data'] = $previous_encounters_data;
+    $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+    $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
     $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
-    list($vaccination_history, $vaccination_progress) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+    list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
     // If conditions match, add immunisation activities.
-    hedley_reports_well_child_add_immunisation_activities($encounter_data,$expected);
+    hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add medication activities.
     hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
@@ -3524,7 +3534,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
     $completion_data = [
       'start_date' => $start_date,
-      'taken_by' => $encounter_data['taken_by'],
+      'taken_by' => $encounter_data['encounter_type'] == 'pediatric-care' ? 'nurse' : 'chw',
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
@@ -3870,7 +3880,152 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   return $expected;
 }
 
-function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, array &$expected) {
+function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
+  $vaccination_history = $encounter_data['vaccination_history'];
+  $vaccination_progress = $encounter_data['vaccination_progress'];
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  $initial_opv_administered = hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj);
+  $interval = $start_date_obj->diff($birth_date_obj);
+  $age_in_days = $interval->days;
+
+  $possible_immunisations = ['bcg', 'opv'];
+  if ($age_in_days >= (6 * 7)) {
+    $possible_immunisations = array_merge($possible_immunisations, ['dtp', 'pcv13', 'rotarix']);
+  }
+  if ($age_in_days >= (14 * 7)) {
+    $possible_immunisations[] = 'ipv';
+  }
+  if ($age_in_days >= (36 * 7)) {
+    $possible_immunisations[] = 'mr';
+  }
+
+  $site = variable_get('hedley_general_site_name', '');
+  if ($site == 'burundi') {
+    // All 3 dosed of DTP were given, it has passed at least 28 days since
+    // third dose, and, child is at last 18 months old.
+    if (!empty($vaccination_progress['dtp']['dose-3'])) {
+      $age_in_months = ($interval->y * 12) + $interval->m;
+      $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
+      $interval = $start_date_obj->diff($third_dose_date_obj);
+      $days_since_third_dose = $interval->days;
+
+      if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
+        $possible_immunisations[] = 'dtp_sa';
+      }
+    }
+  }
+  else {
+    $age_in_years = $interval->y;
+    if ($age_in_years >= 12 && $gender == 'female') {
+      $possible_immunisations[] = 'hpv';
+    }
+  }
+
+  foreach ($possible_immunisations as $immunisation_type) {
+    $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
+    if (empty($vaccination_history)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $performed = $vaccination_history[$immunisation_type];
+    if (empty($performed)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $doses = array_keys($performed);
+    sort($doses);
+    $last_dose = array_reverse($doses)[0];
+    $last_dose_for_immunisation = hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
+    // If all doses we administered, skipping to next immunisation type.
+    if ($last_dose == $last_dose_for_immunisation) {
+      continue;
+    }
+
+    // Calculating when next dose is supposed to be administered.
+    $last_dose_as_number = (int) explode('-', $last_dose)[1];
+    $next_dose_as_number = $last_dose_as_number + 1;
+    $last_dose_date = $performed[$last_dose];
+    $interval_between_dosed = hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site);
+    $last_dose_date_obj = new DateTime($last_dose_date);
+    $next_dose_date_obj = clone $last_dose_date_obj;
+    $next_dose_date_obj->modify($interval_between_dosed);
+    if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
+      $six_weeks_old_date_obj = clone $birth_date_obj;
+      $six_weeks_old_date_obj->modify('+6 weeks');
+
+      if ($six_weeks_old_date_obj > $next_dose_date_obj) {
+        $next_dose_date_obj = $six_weeks_old_date_obj;
+      }
+    }
+
+    // If encounter started after the date when immunisation was supposed
+    // to be administered, adding it as expected.
+    if ($start_date_obj >= $next_dose_date_obj) {
+      $expected[] = $immunisation_full_name;
+    }
+  }
+}
+
+function hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj) {
+  $vaccination_progress = $encounter_data['vaccination_progress'];
+
+  if (empty($vaccination_progress['opv']) || empty($vaccination_progress['opv']['dose-1'])) {
+    return FALSE;
+  }
+
+  $first_dose_date_obj = new DateTime($vaccination_progress['opv']['dose-1']);
+  $interval = $first_dose_date_obj->diff($birth_date_obj);
+
+  return $interval->days < 14;
+}
+
+function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
+  switch ($immunisation_type) {
+    case 'bcg':
+    case 'ipv':
+    case 'dtp_sa':
+      return 'dose-1';
+
+    case 'rotarix':
+    case 'mr':
+    case 'hpv':
+      return 'dose-2';
+
+    case 'dtp':
+    case 'pcv13':
+      return 'dose-3';
+
+    case 'opv':
+      return $initial_opv_administered ? 'dose-4' : 'dose-3';
+  }
+
+  return FALSE;
+}
+
+function hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site) {
+  switch ($immunisation_type) {
+    case 'bcg':
+    case 'ipv':
+    case 'dtp_sa':
+      return '+0 days';
+
+    case 'opv':
+    case 'dtp':
+    case 'pcv13':
+    case 'rotarix':
+      return '+4 weeks';
+
+    case 'mr':
+      return $site == 'burundi' ? '+9 months' : '+6 months';
+
+    case 'hpv':
+      return '+6 months';
+  }
+
+  return FALSE;
 }
 
 function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
@@ -3887,8 +4042,12 @@ function hedley_reports_well_child_add_medication_activities(array $encounter_da
     $last_administration_date_obj = NULL;
     foreach ($previous_encounters_data as $previous_encounter_data) {
       $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+      if (empty($measurements_by_type[$expected_activity])) {
+        continue;
+      }
+
       $measurement = $measurements_by_type[$expected_activity];
-      if (empty($measurement) || empty($measurement->field_administration_note)) {
+      if (empty($measurement->field_administration_note)) {
         continue;
       }
 
@@ -3996,6 +4155,24 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
  *   or NULL if an error occurs.
  */
 function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, DateTime $start_date_obj) {
+  return hedley_reports_resolve_age_for_individual_encounter($encounter, $start_date_obj);
+}
+
+/**
+ * Resolve the age for patient at the time of a specific encounter.
+ *
+ * @param object $encounter
+ *   The encounter object, which includes the participant and person data.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ * @param string $unit
+ *   Units for the age. Supports 'day' and 'month'.
+ *
+ * @return int|null
+ *   The age (in units) of the individual at the time of the encounter,
+ *   or NULL if an error occurs / incorrect unit set.
+ */
+function hedley_reports_resolve_age_for_individual_encounter($encounter, DateTime $start_date_obj, $unit = 'month') {
   try {
     // Get participant ID and node.
     $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
@@ -4011,7 +4188,17 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
     // Calculate age in months.
     $birth_date_obj = new DateTime($birth_date);
     $interval = $start_date_obj->diff($birth_date_obj);
-    return ($interval->y * 12) + $interval->m;
+
+    switch($unit) {
+      case 'day':
+        return $interval->days;
+
+      case 'month':
+        return ($interval->y * 12) + $interval->m;
+
+      default:
+        return NULL;
+    }
   }
   catch (Exception $e) {
     watchdog('hedley_reports', "Failed to resolve patient age at encounter ID $encounter->nid.");
