@@ -3572,15 +3572,22 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
   }
 
   $immunisation_types = [
-    'child_scoreboard_bcg_immunisation',
-    'child_scoreboard_dtp_immunisation',
-    'child_scoreboard_ipv_immunisation',
-    'child_scoreboard_mr_immunisation',
-    'child_scoreboard_opv_immunisation',
-    'child_scoreboard_pcv13_immunisation',
-    'child_scoreboard_rotarix_immunisation',
+    'child_scoreboard_bcg_iz',
+    'child_scoreboard_dtp_iz',
+    'child_scoreboard_ipv_iz',
+    'child_scoreboard_mr_iz',
+    'child_scoreboard_opv_iz',
+    'child_scoreboard_pcv13_iz',
+    'child_scoreboard_rotarix_iz',
   ];
 
+  $immunisations_by_type = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_by_type[$immunisation_type] = [
+      'doses' => [],
+      'dates' => [],
+    ];
+  }
   $encounters = node_load_multiple(array_keys($result['node']));
   foreach ($encounters as $encounter) {
     $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
@@ -3598,6 +3605,26 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_child_scoreboard_encounter', 'target_id', $encounter->nid)
       ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $immunisations = node_load_multiple(array_keys($result['node']));
+    foreach ($immunisations as $immunisation) {
+      $administration_note = $immunisation->field_administration_note[LANGUAGE_NONE][0]['value'];
+      if (!in_array($administration_note, ['administered-today', 'administered-previously'])) {
+        continue;
+      }
+      $doses = $immunisation->field_administered_doses[LANGUAGE_NONE];
+      foreach ($doses as $dose) {
+        $immunisations_by_type[$immunisation->type]['doses'][] = $dose['value'];
+      }
+      $dates = $immunisation->field_administered_dates[LANGUAGE_NONE];
+      foreach ($dates as $date) {
+        $immunisations_by_type[$immunisation->type]['dates'][] = explode(' ', $date['value'])[0];
+      }
+    }
   }
 
   return [];
