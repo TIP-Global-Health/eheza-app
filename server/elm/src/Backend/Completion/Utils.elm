@@ -3,8 +3,8 @@ module Backend.Completion.Utils exposing (..)
 import Backend.Completion.Model exposing (..)
 
 
-nutritionActivityFromMapping : String -> Maybe NutritionActivity
-nutritionActivityFromMapping mapped =
+nutritionChildActivityFromMapping : String -> Maybe NutritionChildActivity
+nutritionChildActivityFromMapping mapped =
     case mapped of
         "a" ->
             Just NutritionHeight
@@ -35,6 +35,25 @@ nutritionActivityFromMapping mapped =
 
         "j" ->
             Just NutritionNCDA
+
+        "k" ->
+            Just NutritionChildFbf
+
+        _ ->
+            Nothing
+
+
+nutritionMotherActivityFromMapping : String -> Maybe NutritionMotherActivity
+nutritionMotherActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just NutritionFamilyPlanning
+
+        "b" ->
+            Just NutritionMotherFbf
+
+        "c" ->
+            Just NutritionLactation
 
         _ ->
             Nothing

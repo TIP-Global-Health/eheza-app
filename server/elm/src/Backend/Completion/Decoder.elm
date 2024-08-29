@@ -9,7 +9,7 @@ import EverySet exposing (EverySet)
 import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, maybe, nullable, oneOf, string, succeed)
-import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Maybe.Extra exposing (isNothing)
 
 
@@ -19,7 +19,9 @@ decodeCompletionData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
-        |> required "results" (list (decodeEncounterData decodeNutritionActivities))
+        |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
+        |> requiredAt [ "results", "nutrition_group" ]
+            (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -39,24 +41,76 @@ decodeSelectedEntity =
             )
 
 
-decodeEncounterData : Decoder (List activity) -> Decoder (EncounterData activity)
-decodeEncounterData activitiesDecoder =
+decodeEncounterData : (String -> Maybe activity) -> Decoder (EncounterData activity)
+decodeEncounterData activityFromString =
     succeed EncounterData
         |> required "start_date" decodeYYYYMMDD
-        |> required "expected" activitiesDecoder
-        |> required "completed" activitiesDecoder
         |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+        |> required "completion" (decodeActivitiesCompletionData activityFromString)
 
 
-decodeNutritionActivities : Decoder (List NutritionActivity)
-decodeNutritionActivities =
+decodeNutritionGroupEncounterData :
+    (String -> Maybe motherActivity)
+    -> (String -> Maybe childActivity)
+    -> Decoder (NutritionGroupEncounterData motherActivity childActivity)
+decodeNutritionGroupEncounterData motherActivityFromString childActivityFromString =
+    succeed NutritionGroupEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+        |> optional "mother" (nullable (decodeActivitiesCompletionData motherActivityFromString)) Nothing
+        |> required "children" (decodeActivitiesCompletionDataList childActivityFromString)
+
+
+decodeActivitiesCompletionData : (String -> Maybe activity) -> Decoder (ActivitiesCompletionData activity)
+decodeActivitiesCompletionData activityFromString =
     string
         |> andThen
-            (String.split ","
-                >> List.map nutritionActivityFromMapping
-                >> Maybe.Extra.values
-                >> succeed
+            (\s ->
+                activitiesCompletionDataFromString activityFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (fail <| s ++ " is unknown ActivitiesCompletionData type")
             )
+
+
+decodeActivitiesCompletionDataList : (String -> Maybe activity) -> Decoder (List (ActivitiesCompletionData activity))
+decodeActivitiesCompletionDataList activityFromString =
+    oneOf
+        [ string
+            |> andThen
+                (\s ->
+                    String.split "$" s
+                        |> List.filterMap (activitiesCompletionDataFromString activityFromString)
+                        |> succeed
+                )
+        , succeed []
+        ]
+
+
+activitiesCompletionDataFromString : (String -> Maybe activity) -> String -> Maybe (ActivitiesCompletionData activity)
+activitiesCompletionDataFromString activityFromString s =
+    let
+        splitActivities =
+            String.split "," >> List.filterMap activityFromString
+    in
+    case String.split "|" (String.trim s) of
+        [ expected, completed ] ->
+            ActivitiesCompletionData
+                (splitActivities expected)
+                (splitActivities completed)
+                |> Just
+
+        [ expected ] ->
+            ActivitiesCompletionData
+                (splitActivities expected)
+                []
+                |> Just
+
+        [] ->
+            ActivitiesCompletionData [] []
+                |> Just
+
+        _ ->
+            Nothing
 
 
 decodeTakenBy : Decoder TakenBy

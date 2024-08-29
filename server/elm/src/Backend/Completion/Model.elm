@@ -11,7 +11,8 @@ type alias CompletionData =
     { site : Site
     , entityName : String
     , entityType : SelectedEntity
-    , nutritionIndividualData : List (EncounterData NutritionActivity)
+    , nutritionIndividualData : List (EncounterData NutritionChildActivity)
+    , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     }
 
 
@@ -22,13 +23,26 @@ type SelectedEntity
 
 type alias EncounterData activity =
     { startDate : NominalDate
-    , expectedActivities : List activity
-    , completedActivities : List activity
     , takenBy : Maybe TakenBy
+    , completion : ActivitiesCompletionData activity
     }
 
 
-type NutritionActivity
+type alias NutritionGroupEncounterData motherActivity childActivity =
+    { startDate : NominalDate
+    , takenBy : Maybe TakenBy
+    , motherData : Maybe (ActivitiesCompletionData motherActivity)
+    , childrenData : List (ActivitiesCompletionData childActivity)
+    }
+
+
+type alias ActivitiesCompletionData activity =
+    { expectedActivities : List activity
+    , completedActivities : List activity
+    }
+
+
+type NutritionChildActivity
     = NutritionHeight
     | NutritionNutrition
     | NutritionPhoto
@@ -39,6 +53,13 @@ type NutritionActivity
     | NutritionHealthEducation
     | NutritionSendToHC
     | NutritionNCDA
+    | NutritionChildFbf
+
+
+type NutritionMotherActivity
+    = NutritionFamilyPlanning
+    | NutritionLactation
+    | NutritionMotherFbf
 
 
 type TakenBy
