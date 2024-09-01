@@ -1625,7 +1625,7 @@ translationSet transId =
                     }
 
                 WellChildVitaminA ->
-                    { english = "vVitamin A"
+                    { english = "Vitamin A"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
