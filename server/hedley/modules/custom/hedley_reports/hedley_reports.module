@@ -2003,6 +2003,8 @@ function hedley_reports_generate_completion_results_data($health_center) {
     'attendance',
     // Nutrition Individual data.
     'nutrition_encounter',
+    // Well Child data.
+    'well_child_encounter',
   ];
 
   $base_query = new EntityFieldQuery();
@@ -2021,6 +2023,7 @@ function hedley_reports_generate_completion_results_data($health_center) {
     'acute_illness' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
+    'well_child' => [],
   ];
 
   $nid = 0;
@@ -2062,6 +2065,10 @@ function hedley_reports_generate_completion_results_data($health_center) {
 
         case 'nutrition_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'well_child_encounter':
+          $data['well_child'][] = json_decode($json_data);
           break;
       }
 
