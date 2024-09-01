@@ -3530,7 +3530,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // If conditions match, add medication activities.
     hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
     // If conditions match, add next steps activities.
-    hedley_reports_well_child_add_next_steps_activities($encounter_data, $expected);
+    hedley_reports_well_child_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -3881,8 +3881,18 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
 }
 
 function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
-  $vaccination_history = $encounter_data['vaccination_history'];
+  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender,'history');
+  foreach ($expected_by_history as $activity) {
+    $expected[] = $activity;
+  }
+}
+
+function hedley_reports_well_child_get_expected_immunisation_activites(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
   $vaccination_progress = $encounter_data['vaccination_progress'];
+  // History mode looks at vaccination status excluding vaccinations done at
+  // current encounter. Progress mode includes vaccinations done at current
+  // encounter.
+  $vaccination_history = $mode == 'history' ? $encounter_data['vaccination_history'] : $vaccination_progress;
   $start_date_obj = $encounter_data['start_date_obj'];
 
   $initial_opv_administered = hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj);
@@ -3922,6 +3932,7 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
     }
   }
 
+  $expected = [];
   foreach ($possible_immunisations as $immunisation_type) {
     $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
     if (empty($vaccination_history)) {
@@ -3967,6 +3978,8 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
       $expected[] = $immunisation_full_name;
     }
   }
+
+  return $expected;
 }
 
 function hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj) {
@@ -4120,7 +4133,7 @@ function hedley_reports_well_child_genrate_expected_medication_activities_by_age
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
-function hedley_reports_well_child_add_next_steps_activities(array $encounter_data, array &$expected) {
+function hedley_reports_well_child_add_next_steps_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
   $measurements_by_type = $encounter_data['measurements_by_type'];
 
   $assessment = '';
@@ -4137,8 +4150,28 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
       [
         'well_child_contributing_factors',
         'well_child_follow_up',
+        'well_child_health_education',
+        'well_child_send_to_hc',
       ]
     );
+  }
+  else {
+    $immunisation_activities_completed = TRUE;
+    foreach ($expected as $activity) {
+      if (hedley_reports_ends_with($activity, '_immunisation')) {
+        if (empty($measurements_by_type[$activity])) {
+          $immunisation_activities_completed = FALSE;
+          break;
+        }
+      }
+    }
+
+    if ($immunisation_activities_completed) {
+      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender,'progress');
+      if (empty($expected_by_progress)) {
+        $expected = array_merge($expected, ['well_child_health_education', 'well_child_send_to_hc']);
+      }
+    }
   }
 }
 
