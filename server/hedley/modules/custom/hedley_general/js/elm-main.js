@@ -10841,7 +10841,7 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'WellChildVitals':
 						return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildVitaminA':
-						return {english: 'vVitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildWeight':
 						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildHPVImmunisation':
