@@ -5828,6 +5828,7 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 var $author$project$Pages$Completion$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
 var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
 var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
+var $author$project$Pages$Completion$Model$ReportWellChild = {$: 'ReportWellChild'};
 var $author$project$Pages$Completion$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
 		case 'acute-illness':
@@ -5836,6 +5837,8 @@ var $author$project$Pages$Completion$Utils$reportTypeFromString = function (repo
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionGroup);
 		case 'nutrition-individual':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
+		case 'well-child':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportWellChild);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -11010,7 +11013,6 @@ var $author$project$Translate$CompletionReportType = function (a) {
 };
 var $author$project$Translate$NewScope = {$: 'NewScope'};
 var $author$project$Translate$ReportTypeLabel = {$: 'ReportTypeLabel'};
-var $author$project$Pages$Completion$Model$ReportWellChild = {$: 'ReportWellChild'};
 var $author$project$Translate$Scope = {$: 'Scope'};
 var $author$project$Translate$SelectLimitDate = {$: 'SelectLimitDate'};
 var $author$project$Translate$SelectStartDate = {$: 'SelectStartDate'};

@@ -39,6 +39,9 @@ reportTypeFromString reportType =
         "nutrition-individual" ->
             Just ReportNutritionIndividual
 
+        "well-child" ->
+            Just ReportWellChild
+
         _ ->
             Nothing
 
