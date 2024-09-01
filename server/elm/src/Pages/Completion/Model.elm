@@ -30,6 +30,7 @@ type ReportType
     = ReportAcuteIllness
     | ReportNutritionGroup
     | ReportNutritionIndividual
+    | ReportWellChild
 
 
 type Msg

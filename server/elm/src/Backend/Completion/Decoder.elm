@@ -23,6 +23,7 @@ decodeCompletionData =
         |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
             (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
+        |> requiredAt [ "results", "well_child" ] (list (decodeEncounterData wellChildActivityFromMapping))
 
 
 decodeSelectedEntity : Decoder SelectedEntity

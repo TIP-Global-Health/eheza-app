@@ -12,6 +12,7 @@ import Backend.Completion.Model
         , NutritionMotherActivity(..)
         , SelectedEntity(..)
         , TakenBy(..)
+        , WellChildActivity(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
@@ -178,6 +179,9 @@ viewCompletionData language currentDate themePath data model =
 
                             ReportNutritionIndividual ->
                                 viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
+
+                            ReportWellChild ->
+                                viewWellChildReport language startDate limitDate model.takenBy data.wellChildData
                     )
                     model.reportType
                     model.startDate
@@ -189,7 +193,11 @@ viewCompletionData language currentDate themePath data model =
         , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType
-                [ ReportAcuteIllness, ReportNutritionGroup, ReportNutritionIndividual ]
+                [ ReportAcuteIllness
+                , ReportNutritionGroup
+                , ReportNutritionIndividual
+                , ReportWellChild
+                ]
                 reportTypeToString
                 SetReportType
                 Translate.CompletionReportType
@@ -232,6 +240,14 @@ viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
         |> generateAcuteIllnessReportData language
         |> viewMetricsResultsTable
         |> div [ class "report acute-illness" ]
+
+
+viewWellChildReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData WellChildActivity) -> Html Msg
+viewWellChildReport language startDate limitDate mTakenBy reportData =
+    applyFilters startDate limitDate mTakenBy reportData
+        |> generateWellChildReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report well-child" ]
 
 
 applyFilters :
@@ -351,6 +367,33 @@ generateAcuteIllnessReportData language records =
                 ]
             )
             allAcuteIllnessActivities
+    }
+
+
+generateWellChildReportData :
+    Language
+    -> List (EncounterData WellChildActivity)
+    -> MetricsResultsTableData
+generateWellChildReportData language records =
+    { heading = translate language Translate.StandardPediatricVisit
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.WellChildActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allWellChildActivities
     }
 
 

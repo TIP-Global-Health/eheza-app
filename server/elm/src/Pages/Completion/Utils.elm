@@ -6,6 +6,7 @@ import Backend.Completion.Model
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
+        , WellChildActivity(..)
         )
 import Pages.Completion.Model exposing (ReportType(..))
 
@@ -21,6 +22,9 @@ reportTypeToString reportType =
 
         ReportNutritionIndividual ->
             "nutrition-individual"
+
+        ReportWellChild ->
+            "well-child"
 
 
 reportTypeFromString : String -> Maybe ReportType
@@ -92,4 +96,41 @@ allNutritionMotherGroupActivities =
     [ NutritionFamilyPlanning
     , NutritionLactation
     , NutritionMotherFbf
+    ]
+
+
+allWellChildActivities : List WellChildActivity
+allWellChildActivities =
+    [ WellChildAlbendazole
+    , WellChildBCGImmunisation
+    , WellChildCaring
+    , WellChildContributingFactors
+    , WellChildDTPImmunisation
+    , WellChildECD
+    , WellChildFeeding
+    , WellChildFollowUp
+    , WellChildFoodSecurity
+    , WellChildHeadCircumference
+    , WellChildHealthEducation
+    , WellChildHeight
+    , WellChildHygiene
+    , WellChildIPVImmunisation
+    , WellChildMebendezole
+    , WellChildMRImmunisation
+    , WellChildMUAC
+    , WellChildNCDA
+    , WellChildNextVisit
+    , WellChildNutrition
+    , WellChildOPVImmunisation
+    , WellChildPCV13Immunisation
+    , WellChildPhoto
+    , WellChildPregnancySummary
+    , WellChildRotarixImmunisation
+    , WellChildSendToHC
+    , WellChildSymptomsReview
+    , WellChildVitals
+    , WellChildVitaminA
+    , WellChildWeight
+    , WellChildHPVImmunisation
+    , WellChildDTPSAImmunisation
     ]
