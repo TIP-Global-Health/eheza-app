@@ -20986,7 +20986,7 @@ translationSet trans =
         SoreThroatLabel ->
             { english = "Sore Throat"
             , kinyarwanda = Just "Kubabara mu muhogo"
-            , kirundi = Just ""
+            , kirundi = Nothing
             }
 
         SpecialityCareHeaderPrefix ->
@@ -23502,7 +23502,7 @@ translationSet trans =
                 SymptomCoughingOrTearingWhileFeeding ->
                     { english = "Coughing/tearing while feeding (<6 months)"
                     , kinyarwanda = Just "Gukorora/Kwiriza iyo atangiye kurya (munsi y'amezi 6)"
-                    , kirundi = Just ""
+                    , kirundi = Nothing
                     }
 
                 SymptomRigidMusclesOrJawClenchingPreventingFeeding ->
