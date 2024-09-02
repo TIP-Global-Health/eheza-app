@@ -7709,7 +7709,7 @@ translationSet trans =
                 NCDEncounter ->
                     { english = "Select NCD Visit"
                     , kinyarwanda = Just "Hitamo Isuzuma Kuburwayi Butandura"
-                    , kirundi = Just "Hitamo Isusuma kuvyerekeye ingwara zitandukira"
+                    , kirundi = Just "Hitamo Isuzuma kuvyerekeye ingwara zitandukira"
                     }
 
                 NutritionEncounter ->
@@ -7721,7 +7721,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Select Tuberculosis Visit"
                     , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
-                    , kirundi = Just "Hitamwo isu kuvyerekeye indwara y'igituntu"
+                    , kirundi = Just "Hitamwo isura kuvyerekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
