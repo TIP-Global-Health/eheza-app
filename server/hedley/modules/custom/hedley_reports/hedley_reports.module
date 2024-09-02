@@ -3849,7 +3849,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
 
   // Head Circumference is taken for children bellow age of 3 years.
   if (isset($age_in_months) && $age_in_months < 36) {
-    $expected[] = 'well_child_muac';
+    $expected[] = 'well_child_head_circumference';
   }
 
   if ($encounter_type == 'newborn-exam') {
