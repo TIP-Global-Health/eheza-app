@@ -3541,7 +3541,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
     $completion_data = [
       'start_date' => $start_date,
-      'taken_by' => $encounter_data['encounter_type'] == 'pediatric-care' ? 'nurse' : 'chw',
+      'encounter_type' => $encounter_data['encounter_type'],
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
