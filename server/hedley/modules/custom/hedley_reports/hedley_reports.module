@@ -4175,7 +4175,9 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
 
     if ($immunisation_activities_completed) {
       $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender,'progress');
-      if (empty($expected_by_progress)) {
+      if (!empty($expected_by_progress)) {
+        // Immunisation activity completed, but child is still behind
+        // on vaccinations.
         $expected = array_merge($expected, ['well_child_health_education', 'well_child_send_to_hc']);
       }
     }

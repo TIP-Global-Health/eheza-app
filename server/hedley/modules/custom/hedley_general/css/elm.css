@@ -397,7 +397,7 @@ body.admin-menu #page-wrapper #header {
 .page-content .inputs .report.acute-illness .table .row .item.row-label,
 .page-content .inputs .report.nutrition-group .table .row .item.row-label,
 .page-content .inputs .report.nutrition-individual .table .row .item.row-label,
-  .page-content .inputs .report.well-child .table .row .item.row-label {
+.page-content .inputs .report.well-child .table .row .item.row-label {
   width: 30%;
 }
 
