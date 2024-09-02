@@ -5826,6 +5826,7 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 		}
 	});
 var $author$project$Pages$Completion$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
+var $author$project$Pages$Completion$Model$ReportNewbornExam = {$: 'ReportNewbornExam'};
 var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
 var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
 var $author$project$Pages$Completion$Model$ReportWellChild = {$: 'ReportWellChild'};
@@ -5833,6 +5834,8 @@ var $author$project$Pages$Completion$Utils$reportTypeFromString = function (repo
 	switch (reportType) {
 		case 'acute-illness':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportAcuteIllness);
+		case 'newborn-exam':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNewbornExam);
 		case 'nutrition-group':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionGroup);
 		case 'nutrition-individual':
@@ -7923,72 +7926,28 @@ var $author$project$Backend$Decoder$decodeSite = A2(
 	$elm$json$Json$Decode$andThen,
 	A2($elm$core$Basics$composeR, $author$project$Backend$Decoder$siteFromString, $elm$json$Json$Decode$succeed),
 	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $author$project$Backend$Completion$Model$NutritionChildFbf = {$: 'NutritionChildFbf'};
-var $author$project$Backend$Completion$Model$NutritionContributingFactors = {$: 'NutritionContributingFactors'};
-var $author$project$Backend$Completion$Model$NutritionFollowUp = {$: 'NutritionFollowUp'};
-var $author$project$Backend$Completion$Model$NutritionHealthEducation = {$: 'NutritionHealthEducation'};
-var $author$project$Backend$Completion$Model$NutritionHeight = {$: 'NutritionHeight'};
-var $author$project$Backend$Completion$Model$NutritionMUAC = {$: 'NutritionMUAC'};
-var $author$project$Backend$Completion$Model$NutritionNCDA = {$: 'NutritionNCDA'};
-var $author$project$Backend$Completion$Model$NutritionNutrition = {$: 'NutritionNutrition'};
-var $author$project$Backend$Completion$Model$NutritionPhoto = {$: 'NutritionPhoto'};
-var $author$project$Backend$Completion$Model$NutritionSendToHC = {$: 'NutritionSendToHC'};
-var $author$project$Backend$Completion$Model$NutritionWeight = {$: 'NutritionWeight'};
-var $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping = function (mapped) {
-	switch (mapped) {
-		case 'a':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHeight);
-		case 'b':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionNutrition);
-		case 'c':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionPhoto);
-		case 'd':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionWeight);
-		case 'e':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionMUAC);
-		case 'f':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionContributingFactors);
-		case 'g':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionFollowUp);
-		case 'h':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHealthEducation);
-		case 'i':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionSendToHC);
-		case 'j':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionNCDA);
-		case 'k':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionChildFbf);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $author$project$Backend$Completion$Model$NutritionFamilyPlanning = {$: 'NutritionFamilyPlanning'};
-var $author$project$Backend$Completion$Model$NutritionLactation = {$: 'NutritionLactation'};
-var $author$project$Backend$Completion$Model$NutritionMotherFbf = {$: 'NutritionMotherFbf'};
-var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping = function (mapped) {
-	switch (mapped) {
-		case 'a':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionFamilyPlanning);
-		case 'b':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionMotherFbf);
-		case 'c':
-			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionLactation);
-		default:
-			return $elm$core$Maybe$Nothing;
-	}
-};
-var $elm$json$Json$Decode$at = F2(
-	function (fields, decoder) {
-		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+var $author$project$Backend$Completion$Model$WellChildEncounterData = F3(
+	function (startDate, encounterType, completion) {
+		return {completion: completion, encounterType: encounterType, startDate: startDate};
 	});
-var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
-	function (path, valDecoder, decoder) {
-		return A2(
-			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
-			A2($elm$json$Json$Decode$at, path, valDecoder),
-			decoder);
-	});
+var $author$project$Backend$Completion$Model$NewbornExam = {$: 'NewbornExam'};
+var $author$project$Backend$Completion$Model$PediatricCare = {$: 'PediatricCare'};
+var $author$project$Backend$Completion$Model$PediatricCareChw = {$: 'PediatricCareChw'};
+var $author$project$Backend$Completion$Decoder$decodeWellChildEncounterType = A2(
+	$elm$json$Json$Decode$andThen,
+	function (encounterType) {
+		switch (encounterType) {
+			case 'pediatric-care':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$PediatricCare);
+			case 'pediatric-care-chw':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$PediatricCareChw);
+			case 'newborn-exam':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$NewbornExam);
+			default:
+				return $elm$json$Json$Decode$fail(encounterType + ' is not a recognized WellChildEncounterType');
+		}
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Completion$Model$WellChildAlbendazole = {$: 'WellChildAlbendazole'};
 var $author$project$Backend$Completion$Model$WellChildBCGImmunisation = {$: 'WellChildBCGImmunisation'};
 var $author$project$Backend$Completion$Model$WellChildCaring = {$: 'WellChildCaring'};
@@ -8091,12 +8050,90 @@ var $author$project$Backend$Completion$Utils$wellChildActivityFromMapping = func
 			return $elm$core$Maybe$Nothing;
 	}
 };
+var $author$project$Backend$Completion$Decoder$decodeWellChildEncounterData = A3(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+	'completion',
+	$author$project$Backend$Completion$Decoder$decodeActivitiesCompletionData($author$project$Backend$Completion$Utils$wellChildActivityFromMapping),
+	A3(
+		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+		'encounter_type',
+		$author$project$Backend$Completion$Decoder$decodeWellChildEncounterType,
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'start_date',
+			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+			$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$WellChildEncounterData))));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Backend$Completion$Model$NutritionChildFbf = {$: 'NutritionChildFbf'};
+var $author$project$Backend$Completion$Model$NutritionContributingFactors = {$: 'NutritionContributingFactors'};
+var $author$project$Backend$Completion$Model$NutritionFollowUp = {$: 'NutritionFollowUp'};
+var $author$project$Backend$Completion$Model$NutritionHealthEducation = {$: 'NutritionHealthEducation'};
+var $author$project$Backend$Completion$Model$NutritionHeight = {$: 'NutritionHeight'};
+var $author$project$Backend$Completion$Model$NutritionMUAC = {$: 'NutritionMUAC'};
+var $author$project$Backend$Completion$Model$NutritionNCDA = {$: 'NutritionNCDA'};
+var $author$project$Backend$Completion$Model$NutritionNutrition = {$: 'NutritionNutrition'};
+var $author$project$Backend$Completion$Model$NutritionPhoto = {$: 'NutritionPhoto'};
+var $author$project$Backend$Completion$Model$NutritionSendToHC = {$: 'NutritionSendToHC'};
+var $author$project$Backend$Completion$Model$NutritionWeight = {$: 'NutritionWeight'};
+var $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHeight);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionNutrition);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionPhoto);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionWeight);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionMUAC);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionContributingFactors);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionFollowUp);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionHealthEducation);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionSendToHC);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionNCDA);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionChildFbf);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Completion$Model$NutritionFamilyPlanning = {$: 'NutritionFamilyPlanning'};
+var $author$project$Backend$Completion$Model$NutritionLactation = {$: 'NutritionLactation'};
+var $author$project$Backend$Completion$Model$NutritionMotherFbf = {$: 'NutritionMotherFbf'};
+var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionFamilyPlanning);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionMotherFbf);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NutritionLactation);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
+	function (path, valDecoder, decoder) {
+		return A2(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$custom,
+			A2($elm$json$Json$Decode$at, path, valDecoder),
+			decoder);
+	});
 var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 	_List_fromArray(
 		['results', 'well_child']),
-	$elm$json$Json$Decode$list(
-		$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$wellChildActivityFromMapping)),
+	$elm$json$Json$Decode$list($author$project$Backend$Completion$Decoder$decodeWellChildEncounterData),
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 		_List_fromArray(
@@ -10249,6 +10286,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$AcuteIllness;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'ReportNewbornExam':
+						return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutritionGroup':
 						return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutritionIndividual':
@@ -11722,10 +11761,30 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
 };
+var $elm$core$List$partition = F2(
+	function (pred, list) {
+		var step = F2(
+			function (x, _v0) {
+				var trues = _v0.a;
+				var falses = _v0.b;
+				return pred(x) ? _Utils_Tuple2(
+					A2($elm$core$List$cons, x, trues),
+					falses) : _Utils_Tuple2(
+					trues,
+					A2($elm$core$List$cons, x, falses));
+			});
+		return A3(
+			$elm$core$List$foldr,
+			step,
+			_Utils_Tuple2(_List_Nil, _List_Nil),
+			list);
+	});
 var $author$project$Pages$Completion$Utils$reportTypeToString = function (reportType) {
 	switch (reportType.$) {
 		case 'ReportAcuteIllness':
 			return 'acute-illness';
+		case 'ReportNewbornExam':
+			return 'newborn-exam';
 		case 'ReportNutritionGroup':
 			return 'nutrition-group';
 		case 'ReportNutritionIndividual':
@@ -13362,6 +13421,28 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			inputClass,
 			$elm$core$Maybe$Just(''));
 	});
+var $author$project$Pages$Completion$View$customApplyFilters = F4(
+	function (startDate, limitDate, resolveTakenByFunc, mTakenBy) {
+		return $elm$core$List$filter(
+			function (encounter) {
+				var takenByCondition = A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						function (takenBy) {
+							return _Utils_eq(
+								resolveTakenByFunc(encounter),
+								takenBy);
+						},
+						mTakenBy));
+				return (!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+					$elm$core$Basics$LT)) && ((!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+					$elm$core$Basics$GT)) && takenByCondition);
+			});
+	});
 var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
 var $author$project$Translate$WellChildActivity = function (a) {
 	return {$: 'WellChildActivity', a: a};
@@ -13426,7 +13507,15 @@ var $author$project$Pages$Completion$View$viewWellChildReport = F5(
 				A2(
 					$author$project$Pages$Completion$View$generateWellChildReportData,
 					language,
-					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
+					A5(
+						$author$project$Pages$Completion$View$customApplyFilters,
+						startDate,
+						limitDate,
+						function (encounter) {
+							return _Utils_eq(encounter.encounterType, $author$project$Backend$Completion$Model$PediatricCare) ? $author$project$Backend$Completion$Model$TakenByNurse : $author$project$Backend$Completion$Model$TakenByCHW;
+						},
+						mTakenBy,
+						reportData))));
 	});
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
@@ -13471,8 +13560,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 	function (language, currentDate, themePath, data, model) {
 		var topBar = function () {
 			var scopeLabel = function () {
-				var _v1 = data.entityType;
-				if (_v1.$ === 'EntityGlobal') {
+				var _v2 = data.entityType;
+				if (_v2.$ === 'EntityGlobal') {
 					return A2($author$project$Translate$translate, language, $author$project$Translate$Global);
 				} else {
 					return data.entityName;
@@ -13637,15 +13726,28 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 				$elm$core$Maybe$map3,
 				F3(
 					function (reportType, startDate, limitDate) {
+						var _v0 = A2(
+							$elm$core$List$partition,
+							A2(
+								$elm$core$Basics$composeR,
+								function ($) {
+									return $.encounterType;
+								},
+								$elm$core$Basics$eq($author$project$Backend$Completion$Model$NewbornExam)),
+							data.wellChildData);
+						var newbornExamData = _v0.a;
+						var spvData = _v0.b;
 						switch (reportType.$) {
 							case 'ReportAcuteIllness':
 								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
+							case 'ReportNewbornExam':
+								return A5($author$project$Pages$Completion$View$viewWellChildReport, language, startDate, limitDate, model.takenBy, newbornExamData);
 							case 'ReportNutritionGroup':
 								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
 							case 'ReportNutritionIndividual':
 								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
 							default:
-								return A5($author$project$Pages$Completion$View$viewWellChildReport, language, startDate, limitDate, model.takenBy, data.wellChildData);
+								return A5($author$project$Pages$Completion$View$viewWellChildReport, language, startDate, limitDate, model.takenBy, spvData);
 						}
 					}),
 				model.reportType,
@@ -13679,7 +13781,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									language,
 									model.reportType,
 									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild]),
+										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild]),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,
@@ -14531,24 +14633,6 @@ var $author$project$Pages$Reports$Utils$countTotalEncounters = function (data) {
 				}),
 			data.prenatalData))) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.homeVisitData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.childScorecardData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.ncdData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.hivData)) + $author$project$Pages$Reports$Utils$countIndividualDataEncounters(data.tuberculosisData);
 };
-var $elm$core$List$partition = F2(
-	function (pred, list) {
-		var step = F2(
-			function (x, _v0) {
-				var trues = _v0.a;
-				var falses = _v0.b;
-				return pred(x) ? _Utils_Tuple2(
-					A2($elm$core$List$cons, x, trues),
-					falses) : _Utils_Tuple2(
-					trues,
-					A2($elm$core$List$cons, x, falses));
-			});
-		return A3(
-			$elm$core$List$foldr,
-			step,
-			_Utils_Tuple2(_List_Nil, _List_Nil),
-			list);
-	});
 var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = F3(
 	function (language, limitDate, records) {
 		var labels = _List_fromArray(

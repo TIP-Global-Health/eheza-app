@@ -13,6 +13,8 @@ import Backend.Completion.Model
         , SelectedEntity(..)
         , TakenBy(..)
         , WellChildActivity(..)
+        , WellChildEncounterData
+        , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
@@ -170,9 +172,16 @@ viewCompletionData language currentDate themePath data model =
             else
                 Maybe.map3
                     (\reportType startDate limitDate ->
+                        let
+                            ( newbornExamData, spvData ) =
+                                List.partition (.encounterType >> (==) NewbornExam) data.wellChildData
+                        in
                         case reportType of
                             ReportAcuteIllness ->
                                 viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
+
+                            ReportNewbornExam ->
+                                viewWellChildReport language startDate limitDate model.takenBy newbornExamData
 
                             ReportNutritionGroup ->
                                 viewNutritionGroupReport language startDate limitDate model.takenBy data.nutritionGroupData
@@ -181,7 +190,7 @@ viewCompletionData language currentDate themePath data model =
                                 viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
 
                             ReportWellChild ->
-                                viewWellChildReport language startDate limitDate model.takenBy data.wellChildData
+                                viewWellChildReport language startDate limitDate model.takenBy spvData
                     )
                     model.reportType
                     model.startDate
@@ -194,6 +203,7 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
                 , ReportWellChild
@@ -242,9 +252,19 @@ viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
         |> div [ class "report acute-illness" ]
 
 
-viewWellChildReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData WellChildActivity) -> Html Msg
+viewWellChildReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
 viewWellChildReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    customApplyFilters startDate
+        limitDate
+        (\encounter ->
+            if encounter.encounterType == PediatricCare then
+                TakenByNurse
+
+            else
+                TakenByCHW
+        )
+        mTakenBy
+        reportData
         |> generateWellChildReportData language
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
@@ -264,6 +284,31 @@ applyFilters startDate limitDate mTakenBy =
                     Maybe.map
                         (\takenBy ->
                             encounter.takenBy == Just takenBy
+                        )
+                        mTakenBy
+                        |> Maybe.withDefault True
+            in
+            (not <| Date.compare encounter.startDate startDate == LT)
+                && (not <| Date.compare encounter.startDate limitDate == GT)
+                && takenByCondition
+        )
+
+
+customApplyFilters :
+    NominalDate
+    -> NominalDate
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date.Date } -> TakenBy)
+    -> Maybe TakenBy
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
+    List.filter
+        (\encounter ->
+            let
+                takenByCondition =
+                    Maybe.map
+                        (\takenBy ->
+                            resolveTakenByFunc encounter == takenBy
                         )
                         mTakenBy
                         |> Maybe.withDefault True
@@ -372,7 +417,7 @@ generateAcuteIllnessReportData language records =
 
 generateWellChildReportData :
     Language
-    -> List (EncounterData WellChildActivity)
+    -> List WellChildEncounterData
     -> MetricsResultsTableData
 generateWellChildReportData language records =
     { heading = translate language Translate.StandardPediatricVisit

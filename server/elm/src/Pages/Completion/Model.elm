@@ -28,6 +28,7 @@ emptyModel =
 
 type ReportType
     = ReportAcuteIllness
+    | ReportNewbornExam
     | ReportNutritionGroup
     | ReportNutritionIndividual
     | ReportWellChild

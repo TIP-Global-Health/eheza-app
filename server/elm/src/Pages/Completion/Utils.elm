@@ -17,6 +17,9 @@ reportTypeToString reportType =
         ReportAcuteIllness ->
             "acute-illness"
 
+        ReportNewbornExam ->
+            "newborn-exam"
+
         ReportNutritionGroup ->
             "nutrition-group"
 
@@ -32,6 +35,9 @@ reportTypeFromString reportType =
     case reportType of
         "acute-illness" ->
             Just ReportAcuteIllness
+
+        "newborn-exam" ->
+            Just ReportNewbornExam
 
         "nutrition-group" ->
             Just ReportNutritionGroup

@@ -14,7 +14,7 @@ type alias CompletionData =
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
-    , wellChildData : List (EncounterData WellChildActivity)
+    , wellChildData : List WellChildEncounterData
     }
 
 
@@ -36,6 +36,19 @@ type alias NutritionGroupEncounterData motherActivity childActivity =
     , motherData : Maybe (ActivitiesCompletionData motherActivity)
     , childrenData : List (ActivitiesCompletionData childActivity)
     }
+
+
+type alias WellChildEncounterData =
+    { startDate : NominalDate
+    , encounterType : WellChildEncounterType
+    , completion : ActivitiesCompletionData WellChildActivity
+    }
+
+
+type WellChildEncounterType
+    = PediatricCare
+    | PediatricCareChw
+    | NewbornExam
 
 
 type alias ActivitiesCompletionData activity =

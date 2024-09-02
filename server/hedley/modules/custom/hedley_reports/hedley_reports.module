@@ -3467,8 +3467,8 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
   }
 
   // Get birthdate.
+  $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
   try {
-    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
     $person = node_load($person_id);
     $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
     $birth_date_obj = new DateTime($birth_date);
@@ -3525,7 +3525,6 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-    $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
     list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
 
     // So far we were constructing data structures to resolve encounter data.

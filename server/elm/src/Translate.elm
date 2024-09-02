@@ -515,6 +515,12 @@ translationSet transId =
                 Pages.Completion.Model.ReportAcuteIllness ->
                     translationSet AcuteIllness
 
+                Pages.Completion.Model.ReportNewbornExam ->
+                    { english = "Newborn Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 Pages.Completion.Model.ReportNutritionGroup ->
                     { english = "Nutrition Group"
                     , kinyarwanda = Nothing
