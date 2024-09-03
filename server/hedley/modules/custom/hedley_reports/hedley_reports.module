@@ -4168,7 +4168,7 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
       ]
     );
   }
-  else {
+  elseif ($encounter_data['encounter_type'] != 'pediatric-care') {
     $immunisation_activities_completed = TRUE;
     foreach ($expected as $activity) {
       if (hedley_reports_ends_with($activity, '_immunisation')) {

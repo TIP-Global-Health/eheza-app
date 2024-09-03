@@ -176,7 +176,6 @@ resolveSPVActivities site =
     , WellChildOPVImmunisation
     , WellChildPCV13Immunisation
     , WellChildPhoto
-    , WellChildPregnancySummary
     , WellChildRotarixImmunisation
     , WellChildSendToHC
     , WellChildSymptomsReview
