@@ -121,6 +121,7 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
+    | NewbornExam
     | NewScope
     | NewSelection
     | NoDiagnosis
@@ -516,10 +517,7 @@ translationSet transId =
                     translationSet AcuteIllness
 
                 Pages.Completion.Model.ReportNewbornExam ->
-                    { english = "Newborn Exam"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet NewbornExam
 
                 Pages.Completion.Model.ReportNutritionGroup ->
                     { english = "Nutrition Group"
@@ -534,10 +532,7 @@ translationSet transId =
                     }
 
                 Pages.Completion.Model.ReportWellChild ->
-                    { english = "Well Child"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet StandardPediatricVisit
 
         CBNP ->
             { english = "CBNP"
@@ -941,6 +936,12 @@ translationSet transId =
                     , kinyarwanda = Just "Umwana yahawe servise n'ikigo mboneza mikurire"
                     , kirundi = Nothing
                     }
+
+        NewbornExam ->
+            { english = "Newborn Exam"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         NewScope ->
             { english = "New Scope"

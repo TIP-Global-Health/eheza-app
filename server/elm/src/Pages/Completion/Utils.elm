@@ -1,5 +1,6 @@
 module Pages.Completion.Utils exposing (..)
 
+import App.Types exposing (Site(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
@@ -142,4 +143,67 @@ allWellChildActivities =
     , WellChildWeight
     , WellChildHPVImmunisation
     , WellChildDTPSAImmunisation
+    ]
+
+
+resolveSPVActivities : Site -> List WellChildActivity
+resolveSPVActivities site =
+    [ WellChildAlbendazole
+    , WellChildBCGImmunisation
+    , WellChildCaring
+    , WellChildContributingFactors
+    , WellChildDTPImmunisation
+
+    -- Not implemented at current phase.
+    -- , WellChildECD
+    , WellChildFeeding
+    , WellChildFollowUp
+    , WellChildFoodSecurity
+    , WellChildHeadCircumference
+    , WellChildHealthEducation
+    , WellChildHeight
+    , WellChildHygiene
+    , WellChildIPVImmunisation
+    , WellChildMebendezole
+    , WellChildMRImmunisation
+    , WellChildMUAC
+    , WellChildNCDA
+
+    -- This is just an indication that next visit notice
+    -- was presented. Not showign it.
+    -- , WellChildNextVisit
+    , WellChildNutrition
+    , WellChildOPVImmunisation
+    , WellChildPCV13Immunisation
+    , WellChildPhoto
+    , WellChildPregnancySummary
+    , WellChildRotarixImmunisation
+    , WellChildSendToHC
+    , WellChildSymptomsReview
+    , WellChildVitals
+    , WellChildVitaminA
+    , WellChildWeight
+    ]
+        ++ (case site of
+                SiteBurundi ->
+                    [ WellChildDTPSAImmunisation ]
+
+                _ ->
+                    [ WellChildHPVImmunisation ]
+           )
+
+
+newbornExamActivities : List WellChildActivity
+newbornExamActivities =
+    [ WellChildBCGImmunisation
+    , WellChildContributingFactors
+    , WellChildFollowUp
+    , WellChildHeadCircumference
+    , WellChildHealthEducation
+    , WellChildNutrition
+    , WellChildOPVImmunisation
+    , WellChildPhoto
+    , WellChildPregnancySummary
+    , WellChildSendToHC
+    , WellChildWeight
     ]

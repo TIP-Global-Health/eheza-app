@@ -9931,10 +9931,12 @@ var $author$project$Translate$IncidenceByQuarterOneVisitOrMore = {$: 'IncidenceB
 var $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore = {$: 'IncidenceByQuarterTwoVisitsOrMore'};
 var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYearOneVisitOrMore'};
 var $author$project$Translate$IncidenceByYearTwoVisitsOrMore = {$: 'IncidenceByYearTwoVisitsOrMore'};
+var $author$project$Translate$NewbornExam = {$: 'NewbornExam'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
 var $author$project$Translate$Province = {$: 'Province'};
 var $author$project$Translate$Sector = {$: 'Sector'};
+var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
 var $author$project$Translate$Village = {$: 'Village'};
 var $author$project$Translate$translateHttpError = function (transId) {
 	switch (transId.$) {
@@ -10287,13 +10289,17 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'ReportNewbornExam':
-						return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$NewbornExam;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'ReportNutritionGroup':
 						return {english: 'Nutrition Group', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutritionIndividual':
 						return {english: 'Nutrition Individual', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'Well Child', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$StandardPediatricVisit;
+						transId = $temp$transId;
+						continue translationSet;
 				}
 			case 'CBNP':
 				return {english: 'CBNP', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -10539,6 +10545,8 @@ var $author$project$Translate$translationSet = function (transId) {
 							kirundi: $elm$core$Maybe$Nothing
 						};
 				}
+			case 'NewbornExam':
+				return {english: 'Newborn Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewScope':
 				return {english: 'New Scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NewSelection':
@@ -13255,6 +13263,101 @@ var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
 			}));
 };
 var $author$project$Utils$Html$viewModal = $author$project$Utils$Html$viewCustomModal(_List_Nil);
+var $author$project$Pages$Completion$View$customApplyFilters = F4(
+	function (startDate, limitDate, resolveTakenByFunc, mTakenBy) {
+		return $elm$core$List$filter(
+			function (encounter) {
+				var takenByCondition = A2(
+					$elm$core$Maybe$withDefault,
+					true,
+					A2(
+						$elm$core$Maybe$map,
+						function (takenBy) {
+							return _Utils_eq(
+								resolveTakenByFunc(encounter),
+								takenBy);
+						},
+						mTakenBy));
+				return (!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
+					$elm$core$Basics$LT)) && ((!_Utils_eq(
+					A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
+					$elm$core$Basics$GT)) && takenByCondition);
+			});
+	});
+var $author$project$Translate$WellChildActivity = function (a) {
+	return {$: 'WellChildActivity', a: a};
+};
+var $author$project$Pages$Completion$View$generateWellChildReportData = F4(
+	function (language, labelTransId, activities, records) {
+		return {
+			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
+			heading: A2($author$project$Translate$translate, language, labelTransId),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.expectedActivities;
+							}),
+						activity,
+						records);
+					var completed = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.completedActivities;
+							}),
+						activity,
+						records);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$WellChildActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+						]);
+				},
+				activities)
+		};
+	});
+var $author$project$Pages$Completion$Utils$newbornExamActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$WellChildBCGImmunisation, $author$project$Backend$Completion$Model$WellChildContributingFactors, $author$project$Backend$Completion$Model$WellChildFollowUp, $author$project$Backend$Completion$Model$WellChildHeadCircumference, $author$project$Backend$Completion$Model$WellChildHealthEducation, $author$project$Backend$Completion$Model$WellChildNutrition, $author$project$Backend$Completion$Model$WellChildOPVImmunisation, $author$project$Backend$Completion$Model$WellChildPhoto, $author$project$Backend$Completion$Model$WellChildPregnancySummary, $author$project$Backend$Completion$Model$WellChildSendToHC, $author$project$Backend$Completion$Model$WellChildWeight]);
+var $author$project$Pages$Completion$View$viewNewbornExamReport = F5(
+	function (language, startDate, limitDate, mTakenBy, reportData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report well-child')
+				]),
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
+				A4(
+					$author$project$Pages$Completion$View$generateWellChildReportData,
+					language,
+					$author$project$Translate$NewbornExam,
+					$author$project$Pages$Completion$Utils$newbornExamActivities,
+					A5(
+						$author$project$Pages$Completion$View$customApplyFilters,
+						startDate,
+						limitDate,
+						$elm$core$Basics$always($author$project$Backend$Completion$Model$TakenByCHW),
+						mTakenBy,
+						reportData))));
+	});
 var $author$project$Translate$NutritionChildActivity = function (a) {
 	return {$: 'NutritionChildActivity', a: a};
 };
@@ -13398,6 +13501,44 @@ var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
 					language,
 					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
 	});
+var $author$project$Pages$Completion$Utils$resolveSPVActivities = function (site) {
+	return _Utils_ap(
+		_List_fromArray(
+			[$author$project$Backend$Completion$Model$WellChildAlbendazole, $author$project$Backend$Completion$Model$WellChildBCGImmunisation, $author$project$Backend$Completion$Model$WellChildCaring, $author$project$Backend$Completion$Model$WellChildContributingFactors, $author$project$Backend$Completion$Model$WellChildDTPImmunisation, $author$project$Backend$Completion$Model$WellChildFeeding, $author$project$Backend$Completion$Model$WellChildFollowUp, $author$project$Backend$Completion$Model$WellChildFoodSecurity, $author$project$Backend$Completion$Model$WellChildHeadCircumference, $author$project$Backend$Completion$Model$WellChildHealthEducation, $author$project$Backend$Completion$Model$WellChildHeight, $author$project$Backend$Completion$Model$WellChildHygiene, $author$project$Backend$Completion$Model$WellChildIPVImmunisation, $author$project$Backend$Completion$Model$WellChildMebendezole, $author$project$Backend$Completion$Model$WellChildMRImmunisation, $author$project$Backend$Completion$Model$WellChildMUAC, $author$project$Backend$Completion$Model$WellChildNCDA, $author$project$Backend$Completion$Model$WellChildNutrition, $author$project$Backend$Completion$Model$WellChildOPVImmunisation, $author$project$Backend$Completion$Model$WellChildPCV13Immunisation, $author$project$Backend$Completion$Model$WellChildPhoto, $author$project$Backend$Completion$Model$WellChildPregnancySummary, $author$project$Backend$Completion$Model$WellChildRotarixImmunisation, $author$project$Backend$Completion$Model$WellChildSendToHC, $author$project$Backend$Completion$Model$WellChildSymptomsReview, $author$project$Backend$Completion$Model$WellChildVitals, $author$project$Backend$Completion$Model$WellChildVitaminA, $author$project$Backend$Completion$Model$WellChildWeight]),
+		function () {
+			if (site.$ === 'SiteBurundi') {
+				return _List_fromArray(
+					[$author$project$Backend$Completion$Model$WellChildDTPSAImmunisation]);
+			} else {
+				return _List_fromArray(
+					[$author$project$Backend$Completion$Model$WellChildHPVImmunisation]);
+			}
+		}());
+};
+var $author$project$Pages$Completion$View$viewSPVReport = F6(
+	function (language, site, startDate, limitDate, mTakenBy, reportData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report well-child')
+				]),
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
+				A4(
+					$author$project$Pages$Completion$View$generateWellChildReportData,
+					language,
+					$author$project$Translate$StandardPediatricVisit,
+					$author$project$Pages$Completion$Utils$resolveSPVActivities(site),
+					A5(
+						$author$project$Pages$Completion$View$customApplyFilters,
+						startDate,
+						limitDate,
+						function (encounter) {
+							return _Utils_eq(encounter.encounterType, $author$project$Backend$Completion$Model$PediatricCare) ? $author$project$Backend$Completion$Model$TakenByNurse : $author$project$Backend$Completion$Model$TakenByCHW;
+						},
+						mTakenBy,
+						reportData))));
+	});
 var $author$project$Pages$Utils$viewSelectListInput = F7(
 	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
 		var transFunc = A2(
@@ -13420,102 +13561,6 @@ var $author$project$Pages$Utils$viewSelectListInput = F7(
 			setMsg,
 			inputClass,
 			$elm$core$Maybe$Just(''));
-	});
-var $author$project$Pages$Completion$View$customApplyFilters = F4(
-	function (startDate, limitDate, resolveTakenByFunc, mTakenBy) {
-		return $elm$core$List$filter(
-			function (encounter) {
-				var takenByCondition = A2(
-					$elm$core$Maybe$withDefault,
-					true,
-					A2(
-						$elm$core$Maybe$map,
-						function (takenBy) {
-							return _Utils_eq(
-								resolveTakenByFunc(encounter),
-								takenBy);
-						},
-						mTakenBy));
-				return (!_Utils_eq(
-					A2($justinmimbs$date$Date$compare, encounter.startDate, startDate),
-					$elm$core$Basics$LT)) && ((!_Utils_eq(
-					A2($justinmimbs$date$Date$compare, encounter.startDate, limitDate),
-					$elm$core$Basics$GT)) && takenByCondition);
-			});
-	});
-var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
-var $author$project$Translate$WellChildActivity = function (a) {
-	return {$: 'WellChildActivity', a: a};
-};
-var $author$project$Pages$Completion$Utils$allWellChildActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$WellChildAlbendazole, $author$project$Backend$Completion$Model$WellChildBCGImmunisation, $author$project$Backend$Completion$Model$WellChildCaring, $author$project$Backend$Completion$Model$WellChildContributingFactors, $author$project$Backend$Completion$Model$WellChildDTPImmunisation, $author$project$Backend$Completion$Model$WellChildECD, $author$project$Backend$Completion$Model$WellChildFeeding, $author$project$Backend$Completion$Model$WellChildFollowUp, $author$project$Backend$Completion$Model$WellChildFoodSecurity, $author$project$Backend$Completion$Model$WellChildHeadCircumference, $author$project$Backend$Completion$Model$WellChildHealthEducation, $author$project$Backend$Completion$Model$WellChildHeight, $author$project$Backend$Completion$Model$WellChildHygiene, $author$project$Backend$Completion$Model$WellChildIPVImmunisation, $author$project$Backend$Completion$Model$WellChildMebendezole, $author$project$Backend$Completion$Model$WellChildMRImmunisation, $author$project$Backend$Completion$Model$WellChildMUAC, $author$project$Backend$Completion$Model$WellChildNCDA, $author$project$Backend$Completion$Model$WellChildNextVisit, $author$project$Backend$Completion$Model$WellChildNutrition, $author$project$Backend$Completion$Model$WellChildOPVImmunisation, $author$project$Backend$Completion$Model$WellChildPCV13Immunisation, $author$project$Backend$Completion$Model$WellChildPhoto, $author$project$Backend$Completion$Model$WellChildPregnancySummary, $author$project$Backend$Completion$Model$WellChildRotarixImmunisation, $author$project$Backend$Completion$Model$WellChildSendToHC, $author$project$Backend$Completion$Model$WellChildSymptomsReview, $author$project$Backend$Completion$Model$WellChildVitals, $author$project$Backend$Completion$Model$WellChildVitaminA, $author$project$Backend$Completion$Model$WellChildWeight, $author$project$Backend$Completion$Model$WellChildHPVImmunisation, $author$project$Backend$Completion$Model$WellChildDTPSAImmunisation]);
-var $author$project$Pages$Completion$View$generateWellChildReportData = F2(
-	function (language, records) {
-		return {
-			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
-			heading: A2($author$project$Translate$translate, language, $author$project$Translate$StandardPediatricVisit),
-			rows: A2(
-				$elm$core$List$map,
-				function (activity) {
-					var expected = A3(
-						$author$project$Pages$Completion$View$countOccurrences,
-						A2(
-							$elm$core$Basics$composeR,
-							function ($) {
-								return $.completion;
-							},
-							function ($) {
-								return $.expectedActivities;
-							}),
-						activity,
-						records);
-					var completed = A3(
-						$author$project$Pages$Completion$View$countOccurrences,
-						A2(
-							$elm$core$Basics$composeR,
-							function ($) {
-								return $.completion;
-							},
-							function ($) {
-								return $.completedActivities;
-							}),
-						activity,
-						records);
-					return _List_fromArray(
-						[
-							A2(
-							$author$project$Translate$translate,
-							language,
-							$author$project$Translate$WellChildActivity(activity)),
-							$elm$core$String$fromInt(expected),
-							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
-						]);
-				},
-				$author$project$Pages$Completion$Utils$allWellChildActivities)
-		};
-	});
-var $author$project$Pages$Completion$View$viewWellChildReport = F5(
-	function (language, startDate, limitDate, mTakenBy, reportData) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('report well-child')
-				]),
-			$author$project$Pages$Components$View$viewMetricsResultsTable(
-				A2(
-					$author$project$Pages$Completion$View$generateWellChildReportData,
-					language,
-					A5(
-						$author$project$Pages$Completion$View$customApplyFilters,
-						startDate,
-						limitDate,
-						function (encounter) {
-							return _Utils_eq(encounter.encounterType, $author$project$Backend$Completion$Model$PediatricCare) ? $author$project$Backend$Completion$Model$TakenByNurse : $author$project$Backend$Completion$Model$TakenByCHW;
-						},
-						mTakenBy,
-						reportData))));
 	});
 var $author$project$Pages$Utils$viewCustomLabel = F4(
 	function (language, translationId, suffix, class_) {
@@ -13614,34 +13659,44 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							]))
 					]));
 		}();
-		var takenByInput = function () {
-			var options = A2(
-				$elm$core$List$map,
-				function (option) {
-					return _Utils_Tuple2(
-						A2(
-							$author$project$Translate$translate,
+		var takenByInput = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Gizra$Html$emptyNode,
+			A2(
+				$elm$core$Maybe$map,
+				function (reportType) {
+					if (_Utils_eq(reportType, $author$project$Pages$Completion$Model$ReportNewbornExam)) {
+						return $author$project$Gizra$Html$emptyNode;
+					} else {
+						var options = A2(
+							$elm$core$List$map,
+							function (option) {
+								return _Utils_Tuple2(
+									A2(
+										$author$project$Translate$translate,
+										language,
+										$author$project$Translate$TakenBy(option)),
+									option);
+							},
+							_List_fromArray(
+								[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
+						return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
 							language,
-							$author$project$Translate$TakenBy(option)),
-						option);
+							$author$project$Translate$TakenByLabel,
+							false,
+							A6(
+								$author$project$Pages$Utils$viewCustomSelectListInput,
+								model.takenBy,
+								options,
+								$author$project$Backend$Completion$Utils$takenByToString,
+								$author$project$Pages$Completion$Model$SetTakenBy,
+								'select-input',
+								$elm$core$Maybe$Just(
+									A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
+					}
 				},
-				_List_fromArray(
-					[$author$project$Backend$Completion$Model$TakenByNurse, $author$project$Backend$Completion$Model$TakenByCHW]));
-			return $elm_community$maybe_extra$Maybe$Extra$isJust(model.reportType) ? A4(
-				$author$project$Pages$Utils$wrapSelectListInput,
-				language,
-				$author$project$Translate$TakenByLabel,
-				false,
-				A6(
-					$author$project$Pages$Utils$viewCustomSelectListInput,
-					model.takenBy,
-					options,
-					$author$project$Backend$Completion$Utils$takenByToString,
-					$author$project$Pages$Completion$Model$SetTakenBy,
-					'select-input',
-					$elm$core$Maybe$Just(
-						A2($author$project$Translate$translate, language, $author$project$Translate$Any)))) : $author$project$Gizra$Html$emptyNode;
-		}();
+				model.reportType));
 		var dateInputs = A2(
 			$elm$core$Maybe$withDefault,
 			_List_Nil,
@@ -13741,13 +13796,13 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 							case 'ReportAcuteIllness':
 								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
 							case 'ReportNewbornExam':
-								return A5($author$project$Pages$Completion$View$viewWellChildReport, language, startDate, limitDate, model.takenBy, newbornExamData);
+								return A5($author$project$Pages$Completion$View$viewNewbornExamReport, language, startDate, limitDate, model.takenBy, newbornExamData);
 							case 'ReportNutritionGroup':
 								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
 							case 'ReportNutritionIndividual':
 								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
 							default:
-								return A5($author$project$Pages$Completion$View$viewWellChildReport, language, startDate, limitDate, model.takenBy, spvData);
+								return A6($author$project$Pages$Completion$View$viewSPVReport, language, data.site, startDate, limitDate, model.takenBy, spvData);
 						}
 					}),
 				model.reportType,

@@ -3835,14 +3835,18 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   // Activities that are shown at any type of encounter,
   // unconditionally. Existed with initial launch of the feature.
   $expected = [
-    'well_child_height',
     'well_child_nutrition',
     'well_child_photo',
     'well_child_weight',
   ];
 
+  $is_newborn_exam = $encounter_type == 'newborn-exam';
+  if (!$is_newborn_exam) {
+    $expected[] = 'well_child_height';
+  }
+
   // MUAC is taken starting age of 6 months.
-  if (isset($age_in_months) && $age_in_months >= 6) {
+  if (!$is_newborn_exam && isset($age_in_months) && $age_in_months >= 6) {
     $expected[] = 'well_child_muac';
   }
 
@@ -3851,7 +3855,7 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
     $expected[] = 'well_child_head_circumference';
   }
 
-  if ($encounter_type == 'newborn-exam') {
+  if ($is_newborn_exam) {
     $expected[] = 'well_child_pregnancy_summary';
     return $expected;
   }
@@ -3894,6 +3898,7 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
 }
 
 function hedley_reports_well_child_get_expected_immunisation_activites(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
+  $encounter_type = $encounter_data['encounter_type'];
   $vaccination_progress = $encounter_data['vaccination_progress'];
   // History mode looks at vaccination status excluding vaccinations done at
   // current encounter. Progress mode includes vaccinations done at current
@@ -3906,35 +3911,37 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
   $age_in_days = $interval->days;
 
   $possible_immunisations = ['bcg', 'opv'];
-  if ($age_in_days >= (6 * 7)) {
-    $possible_immunisations = array_merge($possible_immunisations, ['dtp', 'pcv13', 'rotarix']);
-  }
-  if ($age_in_days >= (14 * 7)) {
-    $possible_immunisations[] = 'ipv';
-  }
-  if ($age_in_days >= (36 * 7)) {
-    $possible_immunisations[] = 'mr';
-  }
+  if ($encounter_type != 'newborn-exam') {
+    if ($age_in_days >= (6 * 7)) {
+      $possible_immunisations = array_merge($possible_immunisations, ['dtp', 'pcv13', 'rotarix']);
+    }
+    if ($age_in_days >= (14 * 7)) {
+      $possible_immunisations[] = 'ipv';
+    }
+    if ($age_in_days >= (36 * 7)) {
+      $possible_immunisations[] = 'mr';
+    }
 
-  $site = variable_get('hedley_general_site_name', '');
-  if ($site == 'burundi') {
-    // All 3 dosed of DTP were given, it has passed at least 28 days since
-    // third dose, and, child is at last 18 months old.
-    if (!empty($vaccination_progress['dtp']['dose-3'])) {
-      $age_in_months = ($interval->y * 12) + $interval->m;
-      $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
-      $interval = $start_date_obj->diff($third_dose_date_obj);
-      $days_since_third_dose = $interval->days;
+    $site = variable_get('hedley_general_site_name', '');
+    if ($site == 'burundi') {
+      // All 3 dosed of DTP were given, it has passed at least 28 days since
+      // third dose, and, child is at last 18 months old.
+      if (!empty($vaccination_progress['dtp']['dose-3'])) {
+        $age_in_months = ($interval->y * 12) + $interval->m;
+        $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
+        $interval = $start_date_obj->diff($third_dose_date_obj);
+        $days_since_third_dose = $interval->days;
 
-      if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
-        $possible_immunisations[] = 'dtp_sa';
+        if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
+          $possible_immunisations[] = 'dtp_sa';
+        }
       }
     }
-  }
-  else {
-    $age_in_years = $interval->y;
-    if ($age_in_years >= 12 && $gender == 'female') {
-      $possible_immunisations[] = 'hpv';
+    else {
+      $age_in_years = $interval->y;
+      if ($age_in_years >= 12 && $gender == 'female') {
+        $possible_immunisations[] = 'hpv';
+      }
     }
   }
 
