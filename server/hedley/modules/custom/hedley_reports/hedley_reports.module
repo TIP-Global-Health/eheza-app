@@ -3549,6 +3549,25 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
   }
 }
 
+/**
+ * Generates vaccination progress data for a well-child encounter.
+ *
+ * This function processes immunization data from previous and current
+ * encounters, generating vaccination history and progress data for
+ * well-child encounters. It merges this data with child scoreboard data
+ * to produce comprehensive vaccination progress information.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose vaccination data is being
+ *   processed.
+ * @param array $encounter_data
+ *   An associative array containing details of the current encounter,
+ *   including previous encounter data and measurements.
+ *
+ * @return array
+ *   An array containing merged vaccination progress data, with history
+ *   and progress for the child.
+ */
 function hedley_reports_well_child_generate_vaccination_progress_data($person_id, array $encounter_data) {
   $previous_encounters_data = $encounter_data['previous_encounters_data'];
 
@@ -3598,7 +3617,22 @@ function hedley_reports_well_child_generate_vaccination_progress_data($person_id
   ];
 }
 
-function hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_encounters) {
+/**
+ * Generates regular vaccination progress data from encounters.
+ *
+ * Processes immunization data from a series of encounters to create
+ * a structured array of vaccination doses and dates, ensuring the data
+ * is sorted and aligned.
+ *
+ * @param array $immunisations_from_encounters
+ *   An associative array containing immunization data from previous
+ *   encounters, indexed by immunization type.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunization type.
+ */
+function hedley_reports_well_child_generate_vaccination_progress_data_regular(array $immunisations_from_encounters) {
   $return = [];
   $immunisations_by_type = [];
   foreach ($immunisations_from_encounters as $immunisation_type => $immunisations) {
@@ -3648,8 +3682,8 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular($i
     // Make sure number of doses matches the number of dates.
     if ($total_doses != $total_dates) {
       $common_size = min($total_doses, $total_dates);
-      $immunisations_by_type[$type]['doses'] = array_slice( $immunisations_by_type[$type]['doses'], 0, $common_size);
-      $immunisations_by_type[$type]['dates'] = array_slice( $immunisations_by_type[$type]['dates'], 0, $common_size);
+      $immunisations_by_type[$type]['doses'] = array_slice($immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
     }
 
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
@@ -3661,6 +3695,24 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular($i
   return $return;
 }
 
+/**
+ * Generates vaccination progress data based on child scoreboard data.
+ *
+ * Retrieves immunization data for a child from the child scoreboard,
+ * considering all encounters up to the current well-child encounter,
+ * and returns structured vaccination progress data.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose scoreboard data is being
+ *   processed.
+ * @param DateTime $well_child_encounter_start_date_obj
+ *   The DateTime object representing the start date of the current
+ *   well-child encounter.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunization type, based on child scoreboard encounters.
+ */
 function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
   $return = [];
   if (empty($person_id)) {
@@ -3776,8 +3828,8 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     // Make sure number of doses matches the number of dates.
     if ($total_doses != $total_dates) {
       $common_size = min($total_doses, $total_dates);
-      $immunisations_by_type[$type]['doses'] = array_slice( $immunisations_by_type[$type]['doses'], 0, $common_size);
-      $immunisations_by_type[$type]['dates'] = array_slice( $immunisations_by_type[$type]['dates'], 0, $common_size);
+      $immunisations_by_type[$type]['doses'] = array_slice($immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
     }
 
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
@@ -3789,7 +3841,25 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
   return $return;
 }
 
-function hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $first, $second) {
+/**
+ * Merges vaccination progress data from different sources.
+ *
+ * Combines vaccination progress data from two sources (e.g., history
+ * and child scoreboard data) into a single structured array, organized
+ * by immunization type.
+ *
+ * @param array $immunisation_types
+ *   An array of immunization types to be merged.
+ * @param array $first
+ *   The first set of vaccination progress data.
+ * @param array $second
+ *   The second set of vaccination progress data.
+ *
+ * @return array
+ *   A merged array of vaccination progress data, organized by
+ *   immunization type.
+ */
+function hedley_reports_well_child_merge_vaccination_progress_data(array $immunisation_types, array $first, array $second) {
   $return = [];
   foreach ($immunisation_types as $type) {
     $common_type = hedley_reports_drop_preffix_and_suffix($type, 'well_child_', '_immunisation');
@@ -3890,13 +3960,44 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
   return $expected;
 }
 
+/**
+ * Adds Immunisation activities as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
-  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender,'history');
+  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'history');
   foreach ($expected_by_history as $activity) {
     $expected[] = $activity;
   }
 }
 
+/**
+ * Generates a list of expected well-child immunization activities.
+ *
+ * This function determines the expected immunization activities for a
+ * well-child based on the child's encounter data, age, gender, and mode.
+ * It considers the vaccination history or progress, the site of the encounter,
+ * and other factors such as the child's age in days. It then generates a list
+ * of immunizations that should be expected during the encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the encounter, including
+ *   encounter type, vaccination progress, vaccination history, and start date.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunizations.
+ * @param string $mode
+ *   The mode of operation, either 'history' or 'progress', which determines
+ *   whether to consider the vaccination history or progress.
+ *
+ * @return array
+ *   An array of expected immunization activities based on the encounter data.
+ */
 function hedley_reports_well_child_get_expected_immunisation_activites(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
   $encounter_type = $encounter_data['encounter_type'];
   $vaccination_progress = $encounter_data['vaccination_progress'];
@@ -3913,7 +4014,10 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
   $possible_immunisations = ['bcg', 'opv'];
   if ($encounter_type != 'newborn-exam') {
     if ($age_in_days >= (6 * 7)) {
-      $possible_immunisations = array_merge($possible_immunisations, ['dtp', 'pcv13', 'rotarix']);
+      $possible_immunisations = array_merge(
+        $possible_immunisations,
+        ['dtp', 'pcv13', 'rotarix']
+      );
     }
     if ($age_in_days >= (14 * 7)) {
       $possible_immunisations[] = 'ipv';
@@ -3995,7 +4099,24 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
   return $expected;
 }
 
-function hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj) {
+/**
+ * Determines if the initial OPV dose was administered within 14 days of birth.
+ *
+ * This function checks whether the first dose of OPV (Oral Polio Vaccine) was
+ * given within 14 days of the child's birth, based on the vaccination progress
+ * data.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the encounter, including
+ *   vaccination progress.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ *
+ * @return bool
+ *   TRUE if the initial OPV dose was administered within 14 days of birth,
+ *   FALSE otherwise.
+ */
+function hedley_reports_well_child_initial_opv_administered(array $encounter_data, DateTime $birth_date_obj) {
   $vaccination_progress = $encounter_data['vaccination_progress'];
 
   if (empty($vaccination_progress['opv']) || empty($vaccination_progress['opv']['dose-1'])) {
@@ -4008,6 +4129,23 @@ function hedley_reports_well_child_initial_opv_administered($encounter_data, $bi
   return $interval->days < 14;
 }
 
+/**
+ * Retrieves the last expected dose for a specific vaccine type.
+ *
+ * This function returns the last dose that should be administered for a given
+ * initial vaccine type, based on the child's vaccination history and whether
+ * the OPV dose was administered.
+ *
+ * @param string $immunisation_type
+ *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ * @param bool $initial_opv_administered
+ *   Indicates whether the initial OPV dose was administered within 14 days
+ *   of birth.
+ *
+ * @return string|bool
+ *   The last expected dose for the vaccine (e.g., 'dose-1', 'dose-3'),
+ *   or FALSE, if the immunization type is not recognized.
+ */
 function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
   switch ($immunisation_type) {
     case 'bcg':
@@ -4031,6 +4169,22 @@ function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type,
   return FALSE;
 }
 
+/**
+ * Retrieves the interval between doses for a specific vaccine type.
+ *
+ * This function returns the time interval that should be observed between
+ * doses for a given vaccine, taking into account the site where the encounter
+ * occurs.
+ *
+ * @param string $immunisation_type
+ *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ * @param string $site
+ *   The site name, which may affect the interval for certain vaccines.
+ *
+ * @return string|bool
+ *   A string representing the interval between doses (e.g., '+4 weeks',
+ *   '+9 months'), or FALSE if the immunization type is not recognized.
+ */
 function hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site) {
   switch ($immunisation_type) {
     case 'bcg':
@@ -4054,6 +4208,14 @@ function hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, 
   return FALSE;
 }
 
+/**
+ * Adds Medication activities as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
   $age_in_months = $encounter_data['age_in_months'];
   $start_date_obj = $encounter_data['start_date_obj'];
@@ -4099,6 +4261,24 @@ function hedley_reports_well_child_add_medication_activities(array $encounter_da
   }
 }
 
+/**
+ * Generates a list of expected well-child medication activities based on age.
+ *
+ * This function determines the expected medication activities for a well-child
+ * visit based on the child's age in months. The activities may differ based
+ * on the site name, which is retrieved from the configuration.
+ *
+ * The function checks age ranges and adds specific activities to the
+ * expected list. If the site is "burundi", different rules are applied compared
+ * to the default site.
+ *
+ * @param int $age_in_months
+ *   The age of the child in months.
+ *
+ * @return array
+ *   An array of expected medication activities for the child based on their
+ *   age. Returns an empty array if the age is not provided.
+ */
 function hedley_reports_well_child_genrate_expected_medication_activities_by_age($age_in_months) {
   if (!isset($age_in_months)) {
     return [];
@@ -4120,19 +4300,19 @@ function hedley_reports_well_child_genrate_expected_medication_activities_by_age
       break;
 
     default:
-       // 6 years to 12 years.
-       if ($age_in_months >= (6 * 12) && $age_in_months < (12 * 12)) {
-         $expected[] = 'well_child_albendazole';
-       }
+      // 6 years to 12 years.
+      if ($age_in_months >= (6 * 12) && $age_in_months < (12 * 12)) {
+        $expected[] = 'well_child_albendazole';
+      }
       // 1 year to 6 years.
       if ($age_in_months >= 12 && $age_in_months < (6 * 12)) {
-         $expected[] = 'well_child_mebendezole';
-       }
+        $expected[] = 'well_child_mebendezole';
+      }
       // 6 months to 12 years.
       if ($age_in_months >= 6 && $age_in_months < (6 * 12)) {
-         $expected[] = 'well_child_vitamin_a';
-       }
-       break;
+        $expected[] = 'well_child_vitamin_a';
+      }
+      break;
   }
 
   return $expected;
@@ -4180,7 +4360,7 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
     }
 
     if ($immunisation_activities_completed) {
-      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender,'progress');
+      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'progress');
       if (!empty($expected_by_progress)) {
         // Immunisation activity completed, but child is still behind
         // on vaccinations.
@@ -4237,7 +4417,7 @@ function hedley_reports_resolve_age_for_individual_encounter($encounter, DateTim
     $birth_date_obj = new DateTime($birth_date);
     $interval = $start_date_obj->diff($birth_date_obj);
 
-    switch($unit) {
+    switch ($unit) {
       case 'day':
         return $interval->days;
 
@@ -4270,7 +4450,7 @@ function hedley_reports_resolve_age_for_individual_encounter($encounter, DateTim
  * @return bool
  *   True, if NCDA activity is expected.
  */
-function hedley_reports_ncda_expected($age_in_months, $start_date_obj) {
+function hedley_reports_ncda_expected($age_in_months, DateTime $start_date_obj) {
   $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
   $ncda_launch_date = '2023-11-20';
   $ncda_launch_date_obj = new DateTime($ncda_launch_date);
@@ -4359,12 +4539,31 @@ function hedley_reports_ends_with($haystack, $needle) {
   return substr($haystack, -$length) === $needle;
 }
 
+/**
+ * Removes the specified prefix and suffix from a string, if both are present.
+ *
+ * This function checks if the given string starts with the specified prefix
+ * and ends with the specified suffix. If both conditions are met, the function
+ * returns the substring that remains after removing the prefix and suffix.
+ * If either the prefix or suffix is not found, the original string is returned.
+ *
+ * @param string $string
+ *   The input string from which the prefix and suffix will be removed.
+ * @param string $pref
+ *   The prefix to be removed from the start of the string.
+ * @param string $suff
+ *   The suffix to be removed from the end of the string.
+ *
+ * @return string
+ *   The string without the specified prefix and suffix, or the original
+ *   string if the prefix or suffix is not found.
+ */
 function hedley_reports_drop_preffix_and_suffix(string $string, string $pref, string $suff) {
   if (strpos($string, $pref) !== 0 || substr($string, -strlen($suff)) !== $suff) {
     return $string;
   }
 
-  // Extract the part between the prefix and suffix
+  // Extract the part between the prefix and suffix.
   $start = strlen($pref);
   $length = strlen($string) - $start - strlen($suff);
 
