@@ -2021,6 +2021,7 @@ function hedley_reports_generate_completion_results_data($health_center) {
 
   $data = [
     'acute_illness' => [],
+    'home_visit' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
     'well_child' => [],
@@ -2061,6 +2062,10 @@ function hedley_reports_generate_completion_results_data($health_center) {
 
         case 'attendance':
           $data['nutrition_group'][] = json_decode($json_data);
+          break;
+
+        case 'home_visit_encounter':
+          $data['home_visit'][] = json_decode($json_data);
           break;
 
         case 'nutrition_encounter':
