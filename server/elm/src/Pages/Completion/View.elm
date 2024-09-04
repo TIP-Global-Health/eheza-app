@@ -244,7 +244,8 @@ viewCompletionData language currentDate themePath data model =
 
 viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionChildActivity) -> Html Msg
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
         |> generateNutritionIndividualReportData language
         |> viewMetricsResultsTable
         |> div [ class "report nutrition-individual" ]
@@ -266,7 +267,8 @@ viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData AcuteIllnessActivity) -> Html Msg
 viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
         |> generateAcuteIllnessReportData language
         |> viewMetricsResultsTable
         |> div [ class "report acute-illness" ]
@@ -274,17 +276,17 @@ viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
 
 viewSPVReport : Language -> Site -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
 viewSPVReport language site startDate limitDate mTakenBy reportData =
-    customApplyFilters startDate
-        limitDate
-        (\encounter ->
-            if encounter.encounterType == PediatricCare then
-                TakenByNurse
+    eliminateEmptyEncounters reportData
+        |> customApplyFilters startDate
+            limitDate
+            (\encounter ->
+                if encounter.encounterType == PediatricCare then
+                    TakenByNurse
 
-            else
-                TakenByCHW
-        )
-        mTakenBy
-        reportData
+                else
+                    TakenByCHW
+            )
+            mTakenBy
         |> generateWellChildReportData language Translate.StandardPediatricVisit (resolveSPVActivities site)
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
@@ -292,11 +294,11 @@ viewSPVReport language site startDate limitDate mTakenBy reportData =
 
 viewNewbornExamReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
 viewNewbornExamReport language startDate limitDate mTakenBy reportData =
-    customApplyFilters startDate
-        limitDate
-        (always TakenByCHW)
-        mTakenBy
-        reportData
+    eliminateEmptyEncounters reportData
+        |> customApplyFilters startDate
+            limitDate
+            (always TakenByCHW)
+            mTakenBy
         |> generateWellChildReportData language Translate.NewbornExam newbornExamActivities
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
@@ -304,10 +306,18 @@ viewNewbornExamReport language startDate limitDate mTakenBy reportData =
 
 viewHomeVisitReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData HomeVisitActivity) -> Html Msg
 viewHomeVisitReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
         |> generateHomeVisitReportData language
         |> viewMetricsResultsTable
         |> div [ class "report home-visit" ]
+
+
+eliminateEmptyEncounters :
+    List { c | completion : { b | completedActivities : List a } }
+    -> List { c | completion : { b | completedActivities : List a } }
+eliminateEmptyEncounters =
+    List.filter (.completion >> .completedActivities >> List.isEmpty >> not)
 
 
 applyFilters :

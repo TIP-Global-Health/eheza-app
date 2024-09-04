@@ -693,7 +693,10 @@ translationSet transId =
             translateHttpError val
 
         Hygiene ->
-            translationSet Hygiene
+            { english = "Hygiene"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Impacted ->
             { english = "Impacted (2+ visits)"
@@ -1571,10 +1574,7 @@ translationSet transId =
                     }
 
                 WellChildHygiene ->
-                    { english = "Hygiene"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Hygiene
 
                 WellChildIPVImmunisation ->
                     { english = "IPV Immunisation"

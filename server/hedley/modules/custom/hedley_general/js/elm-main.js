@@ -10406,9 +10406,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				var val = transId.a;
 				return $author$project$Translate$translateHttpError(val);
 			case 'Hygiene':
-				var $temp$transId = $author$project$Translate$Hygiene;
-				transId = $temp$transId;
-				continue translationSet;
+				return {english: 'Hygiene', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Impacted':
 				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthOneVisitOrMore':
@@ -10929,7 +10927,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'WellChildHeight':
 						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildHygiene':
-						return {english: 'Hygiene', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Hygiene;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildIPVImmunisation':
 						return {english: 'IPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildMebendezole':
@@ -11908,6 +11908,18 @@ var $author$project$Pages$Completion$View$applyFilters = F3(
 					$elm$core$Basics$GT)) && takenByCondition);
 			});
 	});
+var $author$project$Pages$Completion$View$eliminateEmptyEncounters = $elm$core$List$filter(
+	A2(
+		$elm$core$Basics$composeR,
+		function ($) {
+			return $.completion;
+		},
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.completedActivities;
+			},
+			A2($elm$core$Basics$composeR, $elm$core$List$isEmpty, $elm$core$Basics$not))));
 var $author$project$Translate$AcuteIllnessActivity = function (a) {
 	return {$: 'AcuteIllnessActivity', a: a};
 };
@@ -12285,7 +12297,12 @@ var $author$project$Pages$Completion$View$viewAcuteIllnessReport = F5(
 				A2(
 					$author$project$Pages$Completion$View$generateAcuteIllnessReportData,
 					language,
-					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
+					A4(
+						$author$project$Pages$Completion$View$applyFilters,
+						startDate,
+						limitDate,
+						mTakenBy,
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
 var $author$project$Translate$Save = {$: 'Save'};
 var $author$project$Translate$MonthLabel = {$: 'MonthLabel'};
@@ -13379,7 +13396,12 @@ var $author$project$Pages$Completion$View$viewHomeVisitReport = F5(
 				A2(
 					$author$project$Pages$Completion$View$generateHomeVisitReportData,
 					language,
-					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
+					A4(
+						$author$project$Pages$Completion$View$applyFilters,
+						startDate,
+						limitDate,
+						mTakenBy,
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
 var $author$project$Gizra$Html$showMaybe = $elm$core$Maybe$withDefault($author$project$Gizra$Html$emptyNode);
 var $author$project$Utils$Html$viewCustomModal = function (extraClasses) {
@@ -13496,7 +13518,7 @@ var $author$project$Pages$Completion$View$viewNewbornExamReport = F5(
 						limitDate,
 						$elm$core$Basics$always($author$project$Backend$Completion$Model$TakenByCHW),
 						mTakenBy,
-						reportData))));
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
 var $author$project$Translate$NutritionChildActivity = function (a) {
 	return {$: 'NutritionChildActivity', a: a};
@@ -13639,7 +13661,12 @@ var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
 				A2(
 					$author$project$Pages$Completion$View$generateNutritionIndividualReportData,
 					language,
-					A4($author$project$Pages$Completion$View$applyFilters, startDate, limitDate, mTakenBy, reportData))));
+					A4(
+						$author$project$Pages$Completion$View$applyFilters,
+						startDate,
+						limitDate,
+						mTakenBy,
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
 var $author$project$Pages$Completion$Utils$resolveSPVActivities = function (site) {
 	return _Utils_ap(
@@ -13677,7 +13704,7 @@ var $author$project$Pages$Completion$View$viewSPVReport = F6(
 							return _Utils_eq(encounter.encounterType, $author$project$Backend$Completion$Model$PediatricCare) ? $author$project$Backend$Completion$Model$TakenByNurse : $author$project$Backend$Completion$Model$TakenByCHW;
 						},
 						mTakenBy,
-						reportData))));
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
 var $author$project$Pages$Utils$viewSelectListInput = F7(
 	function (language, currentValue, options, toStringFunc, setMsg, transId, inputClass) {
