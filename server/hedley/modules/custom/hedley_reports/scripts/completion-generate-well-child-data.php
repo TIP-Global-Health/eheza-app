@@ -2,10 +2,10 @@
 
 /**
  * @file
- * Generates completion data for Nutrition group encounters.
+ * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-nutrition-group-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-well-child-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,29 +25,25 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'attendance';
+$type = 'individual_participant';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->fieldCondition('field_attended', 'value', TRUE)
+  ->fieldCondition('field_encounter_type', 'value', 'well-child')
   ->propertyCondition('status', NODE_PUBLISHED);
-
-if ($exclude_set) {
-  $base_query->addTag('exclude_set_reports_data');
-}
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
 $count = $count_query->count()->execute();
 
 if ($count == 0) {
-  drush_print("There are no nodes of type $type in DB.");
+  drush_print("There are no nodes of type $type for well child encounters in DB.");
   exit;
 }
 
 $total = 0;
-drush_print("$count nodes of type $type located.");
+drush_print("$count nodes of type $type for well child encounters located.");
 
 while (TRUE) {
   $query = clone $base_query;
@@ -67,9 +63,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $completion_data = hedley_reports_generate_completion_data_for_nutrition_group_encounter($node);
-    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($node);
+    hedley_reports_generate_completion_data_for_well_child($node, $exclude_set);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);
@@ -88,4 +82,4 @@ while (TRUE) {
   $nid = end($ids);
 }
 
-drush_print("Done! Completion data calculated for $total encounters.");
+drush_print("Done! Completion data calculated for $total participants.");
