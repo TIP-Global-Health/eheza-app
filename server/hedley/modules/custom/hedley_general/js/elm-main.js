@@ -6848,9 +6848,9 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Completion$Model$CompletionData = F7(
-	function (site, entityName, entityType, acuteIllnessData, nutritionIndividualData, nutritionGroupData, wellChildData) {
-		return {acuteIllnessData: acuteIllnessData, entityName: entityName, entityType: entityType, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
+var $author$project$Backend$Completion$Model$CompletionData = F8(
+	function (site, entityName, entityType, acuteIllnessData, homeVisitData, nutritionIndividualData, nutritionGroupData, wellChildData) {
+		return {acuteIllnessData: acuteIllnessData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
 	});
 var $author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings = {$: 'AcuteIllnessAcuteFindings'};
 var $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting = {$: 'AcuteIllnessCOVIDTesting'};
@@ -8063,6 +8063,24 @@ var $author$project$Backend$Completion$Decoder$decodeWellChildEncounterData = A3
 			'start_date',
 			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 			$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$WellChildEncounterData))));
+var $author$project$Backend$Completion$Model$HomeVisitCaring = {$: 'HomeVisitCaring'};
+var $author$project$Backend$Completion$Model$HomeVisitFeeding = {$: 'HomeVisitFeeding'};
+var $author$project$Backend$Completion$Model$HomeVisitFoodSecurity = {$: 'HomeVisitFoodSecurity'};
+var $author$project$Backend$Completion$Model$HomeVisitHygiene = {$: 'HomeVisitHygiene'};
+var $author$project$Backend$Completion$Utils$homeVisitActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HomeVisitCaring);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HomeVisitFeeding);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HomeVisitFoodSecurity);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HomeVisitHygiene);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$json$Json$Decode$list = _Json_decodeList;
 var $author$project$Backend$Completion$Model$NutritionChildFbf = {$: 'NutritionChildFbf'};
 var $author$project$Backend$Completion$Model$NutritionContributingFactors = {$: 'NutritionContributingFactors'};
@@ -8149,22 +8167,28 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 				_List_fromArray(
-					['results', 'acute_illness']),
+					['results', 'home_visit']),
 				$elm$json$Json$Decode$list(
-					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
 				A3(
-					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-					'entity_type',
-					$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+					_List_fromArray(
+						['results', 'acute_illness']),
+					$elm$json$Json$Decode$list(
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'entity_name',
-						$elm$json$Json$Decode$string,
+						'entity_type',
+						$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'site',
-							$author$project$Backend$Decoder$decodeSite,
-							$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))));
+							'entity_name',
+							$elm$json$Json$Decode$string,
+							A3(
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+								'site',
+								$author$project$Backend$Decoder$decodeSite,
+								$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;

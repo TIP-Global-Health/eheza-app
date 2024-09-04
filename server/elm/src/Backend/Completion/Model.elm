@@ -12,6 +12,7 @@ type alias CompletionData =
     , entityName : String
     , entityType : SelectedEntity
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
+    , homeVisitData : List (EncounterData HomeVisitActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     , wellChildData : List WellChildEncounterData
@@ -81,6 +82,13 @@ type AcuteIllnessActivity
     | AcuteIllnessTravelHistory
     | AcuteIllnessPriorTreatment
     | AcuteIllnessOngoingTreatment
+
+
+type HomeVisitActivity
+    = HomeVisitCaring
+    | HomeVisitFeeding
+    | HomeVisitFoodSecurity
+    | HomeVisitHygiene
 
 
 type NutritionChildActivity

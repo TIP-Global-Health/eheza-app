@@ -238,6 +238,25 @@ wellChildActivityFromMapping mapped =
             Nothing
 
 
+homeVisitActivityFromMapping : String -> Maybe HomeVisitActivity
+homeVisitActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just HomeVisitCaring
+
+        "b" ->
+            Just HomeVisitFeeding
+
+        "c" ->
+            Just HomeVisitFoodSecurity
+
+        "d" ->
+            Just HomeVisitHygiene
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of
