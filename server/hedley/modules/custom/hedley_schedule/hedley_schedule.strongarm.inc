@@ -205,15 +205,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__acute_illness_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__acute_illness_encounter'] = $strongarm;
 
@@ -222,15 +222,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__clinic';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__clinic'] = $strongarm;
 
@@ -239,15 +239,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__counseling_schedule';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__counseling_schedule'] = $strongarm;
 
@@ -256,15 +256,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__counseling_session';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__counseling_session'] = $strongarm;
 
@@ -273,15 +273,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__counseling_topic';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__counseling_topic'] = $strongarm;
 
@@ -290,15 +290,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__home_visit_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__home_visit_encounter'] = $strongarm;
 
@@ -307,27 +307,27 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__individual_participant';
   $strongarm->value = array(
-    'view_modes' => array(
-      'teaser' => array(
-        'custom_settings' => TRUE,
+    'extra_fields' => array(
+      'display' => array(),
+      'form' => array(
+        'title' => array(
+          'weight' => '0',
+        ),
       ),
+    ),
+    'view_modes' => array(
       'full' => array(
         'custom_settings' => FALSE,
       ),
       'rss' => array(
         'custom_settings' => FALSE,
       ),
+      'teaser' => array(
+        'custom_settings' => TRUE,
+      ),
       'token' => array(
         'custom_settings' => FALSE,
       ),
-    ),
-    'extra_fields' => array(
-      'form' => array(
-        'title' => array(
-          'weight' => '0',
-        ),
-      ),
-      'display' => array(),
     ),
   );
   $export['field_bundle_settings_node__individual_participant'] = $strongarm;
@@ -337,15 +337,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__ncd_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__ncd_encounter'] = $strongarm;
 
@@ -354,15 +354,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__nutrition_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__nutrition_encounter'] = $strongarm;
 
@@ -371,27 +371,27 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__pmtct_participant';
   $strongarm->value = array(
-    'view_modes' => array(
-      'teaser' => array(
-        'custom_settings' => TRUE,
+    'extra_fields' => array(
+      'display' => array(),
+      'form' => array(
+        'title' => array(
+          'weight' => '0',
+        ),
       ),
+    ),
+    'view_modes' => array(
       'full' => array(
         'custom_settings' => FALSE,
       ),
       'rss' => array(
         'custom_settings' => FALSE,
       ),
+      'teaser' => array(
+        'custom_settings' => TRUE,
+      ),
       'token' => array(
         'custom_settings' => FALSE,
       ),
-    ),
-    'extra_fields' => array(
-      'form' => array(
-        'title' => array(
-          'weight' => '0',
-        ),
-      ),
-      'display' => array(),
     ),
   );
   $export['field_bundle_settings_node__pmtct_participant'] = $strongarm;
@@ -401,15 +401,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__prenatal_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '1',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__prenatal_encounter'] = $strongarm;
 
@@ -418,15 +418,15 @@ function hedley_schedule_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__session';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__session'] = $strongarm;
 
