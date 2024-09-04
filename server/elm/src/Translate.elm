@@ -8,6 +8,7 @@ import App.Types exposing (Language(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
@@ -72,6 +73,7 @@ type TranslationId
     | ANCNewborn
     | ANCTotal
     | Any
+    | Caring
     | CBNP
     | Cell
     | ChildScorecard
@@ -90,14 +92,18 @@ type TranslationId
     | EncounterType
     | Expected
     | FBF
+    | Feeding
     | Female
+    | FoodSecurity
     | GenerateReport
     | Global
     | HC
     | HealthCenter
     | HIV
     | HomeVisit
+    | HomeVisitActivity HomeVisitActivity
     | HttpError StringIdHttpError
+    | Hygiene
     | Impacted
     | IncidenceByMonthOneVisitOrMore
     | IncidenceByMonthTwoVisitsOrMore
@@ -516,6 +522,9 @@ translationSet transId =
                 Pages.Completion.Model.ReportAcuteIllness ->
                     translationSet AcuteIllness
 
+                Pages.Completion.Model.ReportHomeVisit ->
+                    translationSet HomeVisit
+
                 Pages.Completion.Model.ReportNewbornExam ->
                     translationSet NewbornExam
 
@@ -536,6 +545,12 @@ translationSet transId =
 
         CBNP ->
             { english = "CBNP"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Caring ->
+            { english = "Caring"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -606,6 +621,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Feeding ->
+            { english = "Feeding"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Female ->
             { english = "Female"
             , kinyarwanda = Nothing
@@ -614,6 +635,12 @@ translationSet transId =
 
         Global ->
             { english = "Global"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FoodSecurity ->
+            { english = "Food Security"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -648,8 +675,25 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        HomeVisitActivity activity ->
+            case activity of
+                HomeVisitCaring ->
+                    translationSet Caring
+
+                HomeVisitFeeding ->
+                    translationSet Feeding
+
+                HomeVisitFoodSecurity ->
+                    translationSet FoodSecurity
+
+                HomeVisitHygiene ->
+                    translationSet Hygiene
+
         HttpError val ->
             translateHttpError val
+
+        Hygiene ->
+            translationSet Hygiene
 
         Impacted ->
             { english = "Impacted (2+ visits)"
@@ -1476,10 +1520,7 @@ translationSet transId =
                     }
 
                 WellChildCaring ->
-                    { english = "Caring"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Caring
 
                 WellChildContributingFactors ->
                     { english = "Contributing Factors"
@@ -1500,10 +1541,7 @@ translationSet transId =
                     }
 
                 WellChildFeeding ->
-                    { english = "Feeding"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Feeding
 
                 WellChildFollowUp ->
                     { english = "Follow Up"
@@ -1512,10 +1550,7 @@ translationSet transId =
                     }
 
                 WellChildFoodSecurity ->
-                    { english = "Food Security"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FoodSecurity
 
                 WellChildHeadCircumference ->
                     { english = "Head Circumference"

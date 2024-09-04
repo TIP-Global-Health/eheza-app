@@ -48,7 +48,7 @@ decodeEncounterData : (String -> Maybe activity) -> Decoder (EncounterData activ
 decodeEncounterData activityFromString =
     succeed EncounterData
         |> required "start_date" decodeYYYYMMDD
-        |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+        |> optional "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy)) Nothing
         |> required "completion" (decodeActivitiesCompletionData activityFromString)
 
 

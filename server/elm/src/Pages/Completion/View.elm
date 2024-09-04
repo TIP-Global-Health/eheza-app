@@ -7,6 +7,7 @@ import Backend.Completion.Model
         ( AcuteIllnessActivity(..)
         , CompletionData
         , EncounterData
+        , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionGroupEncounterData
         , NutritionMotherActivity(..)
@@ -79,7 +80,13 @@ viewCompletionData language currentDate themePath data model =
         takenByInput =
             Maybe.map
                 (\reportType ->
-                    if reportType == ReportNewbornExam then
+                    if
+                        List.member reportType
+                            [ -- Exclusively CHW encounters.
+                              ReportHomeVisit
+                            , ReportNewbornExam
+                            ]
+                    then
                         emptyNode
 
                     else
@@ -189,6 +196,9 @@ viewCompletionData language currentDate themePath data model =
                             ReportAcuteIllness ->
                                 viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
 
+                            ReportHomeVisit ->
+                                viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
+
                             ReportNewbornExam ->
                                 viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
 
@@ -212,6 +222,7 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportHomeVisit
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
@@ -289,6 +300,14 @@ viewNewbornExamReport language startDate limitDate mTakenBy reportData =
         |> generateWellChildReportData language Translate.NewbornExam newbornExamActivities
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
+
+
+viewHomeVisitReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData HomeVisitActivity) -> Html Msg
+viewHomeVisitReport language startDate limitDate mTakenBy reportData =
+    applyFilters startDate limitDate mTakenBy reportData
+        |> generateHomeVisitReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report home-visit" ]
 
 
 applyFilters :
@@ -462,6 +481,33 @@ generateWellChildReportData language labelTransId activities records =
                 ]
             )
             activities
+    }
+
+
+generateHomeVisitReportData :
+    Language
+    -> List (EncounterData HomeVisitActivity)
+    -> MetricsResultsTableData
+generateHomeVisitReportData language records =
+    { heading = translate language Translate.HomeVisit
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.HomeVisitActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allHomeVisitActivities
     }
 
 
