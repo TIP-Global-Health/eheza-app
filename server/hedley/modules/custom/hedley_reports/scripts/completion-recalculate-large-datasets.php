@@ -10,7 +10,7 @@
  *   - Health center.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/recalculate-completion-large-datasets.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-recalculate-large-datasets.php.
  */
 
 if (!drupal_is_cli()) {
