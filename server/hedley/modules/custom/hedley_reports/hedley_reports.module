@@ -4371,6 +4371,57 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
 }
 
 /**
+ * Generates completion data for Home Visit encounter.
+ *
+ * @param object $encounter
+ *   The encounter node object.
+ *
+ * @return array
+ *   An array containing the completion data for given encounter.
+ */
+function hedley_reports_generate_completion_data_for_home_visit_encounter($encounter) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'nutrition_caring' => 'a',
+    'nutrition_feeding' => 'b',
+    'nutrition_food_security' => 'c',
+    'nutrition_hygiene' => 'd',
+  ];
+
+  // Activities that are always taken during encounter.
+  $expected = array_keys($mapping);
+
+  // Resolve encounter start date.
+  $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+
+  // Loading all measurements that belong to encounter.
+  $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+
+  if (empty($measurements_ids)) {
+    $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
+
+    return [
+      'start_date' => $start_date,
+      'completion' => $completion,
+    ];
+  }
+
+  // Ordering measurements by type.
+  $measurements_by_type = [];
+  $measurements = node_load_multiple($measurements_ids);
+  foreach ($measurements as $measurement) {
+    $measurements_by_type[$measurement->type] = $measurement;
+  }
+
+  $completion = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping);
+
+  return [
+    'start_date' => $start_date,
+    'completion' => $completion,
+  ];
+}
+
+/**
  * Resolve the age in months for patient at the time of a specific encounter.
  *
  * @param object $encounter
