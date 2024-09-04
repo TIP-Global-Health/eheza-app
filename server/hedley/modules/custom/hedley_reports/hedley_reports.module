@@ -2136,7 +2136,7 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
   }
 
   // Try to resolve age in months at a time encounter was performed.
-  $age_in_months = hedley_reports_resolve_age_in_months_for_individual_encounter($$encounter, $start_date_obj);
+  $age_in_months = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
 
   // MUAC is taken starting age of 6 months.
   if (isset($age_in_months) && $age_in_months >= 6) {
