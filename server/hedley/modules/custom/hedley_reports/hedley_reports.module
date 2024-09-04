@@ -2001,6 +2001,8 @@ function hedley_reports_generate_completion_results_data($health_center) {
     'acute_illness_encounter',
     // Nutrition Group data.
     'attendance',
+    // Home Visit data.
+    'home_visit_encounter',
     // Nutrition Individual data.
     'nutrition_encounter',
     // Well Child data.
