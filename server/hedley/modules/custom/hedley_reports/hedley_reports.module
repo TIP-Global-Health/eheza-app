@@ -4028,7 +4028,7 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
 
     $site = variable_get('hedley_general_site_name', '');
     if ($site == 'burundi') {
-      // All 3 dosed of DTP were given, it has passed at least 28 days since
+      // All 3 doses of DTP were given, it has passed at least 28 days since
       // third dose, and, child is at last 18 months old.
       if (!empty($vaccination_progress['dtp']['dose-3'])) {
         $age_in_months = ($interval->y * 12) + $interval->m;
