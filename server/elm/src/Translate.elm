@@ -11,6 +11,7 @@ import Backend.Completion.Model
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
+        , WellChildActivity(..)
         )
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
 import Backend.Scoreboard.Model
@@ -120,6 +121,7 @@ type TranslationId
     | NCDANutritionBehaviorItemLabel NCDANutritionBehaviorItem
     | NCDATargetedInterventionsItemLabel NCDATargetedInterventionsItem
     | NCDAUniversalInterventionItemLabel NCDAUniversalInterventionItem
+    | NewbornExam
     | NewScope
     | NewSelection
     | NoDiagnosis
@@ -177,6 +179,7 @@ type TranslationId
     | UniversalIntervention
     | WastingModerate
     | WastingSevere
+    | WellChildActivity WellChildActivity
     | WideScopeNote
     | Year Int
     | YearLabel
@@ -513,6 +516,9 @@ translationSet transId =
                 Pages.Completion.Model.ReportAcuteIllness ->
                     translationSet AcuteIllness
 
+                Pages.Completion.Model.ReportNewbornExam ->
+                    translationSet NewbornExam
+
                 Pages.Completion.Model.ReportNutritionGroup ->
                     { english = "Nutrition Group"
                     , kinyarwanda = Nothing
@@ -524,6 +530,9 @@ translationSet transId =
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
+
+                Pages.Completion.Model.ReportWellChild ->
+                    translationSet StandardPediatricVisit
 
         CBNP ->
             { english = "CBNP"
@@ -927,6 +936,12 @@ translationSet transId =
                     , kinyarwanda = Just "Umwana yahawe servise n'ikigo mboneza mikurire"
                     , kirundi = Nothing
                     }
+
+        NewbornExam ->
+            { english = "Newborn Exam"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         NewScope ->
             { english = "New Scope"
@@ -1445,6 +1460,200 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        WellChildActivity activity ->
+            case activity of
+                WellChildAlbendazole ->
+                    { english = "Albendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildBCGImmunisation ->
+                    { english = "BCG Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildCaring ->
+                    { english = "Caring"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildContributingFactors ->
+                    { english = "Contributing Factors"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildDTPImmunisation ->
+                    { english = "DTP Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildECD ->
+                    { english = "ECD"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildFeeding ->
+                    { english = "Feeding"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildFollowUp ->
+                    { english = "Follow Up"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildFoodSecurity ->
+                    { english = "Food Security"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildHeadCircumference ->
+                    { english = "Head Circumference"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildHealthEducation ->
+                    { english = "Health Education"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildHeight ->
+                    { english = "Height"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildHygiene ->
+                    { english = "Hygiene"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildIPVImmunisation ->
+                    { english = "IPV Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildMebendezole ->
+                    { english = "Mebendezole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildMRImmunisation ->
+                    { english = "MR Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildMUAC ->
+                    { english = "MUAC"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildNCDA ->
+                    { english = "NCDA"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildNextVisit ->
+                    { english = "Next Visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildNutrition ->
+                    { english = "Nutrition"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildOPVImmunisation ->
+                    { english = "OPV Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildPCV13Immunisation ->
+                    { english = "PCV13 Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildPhoto ->
+                    { english = "Photo"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildPregnancySummary ->
+                    { english = "Pregnancy Summary"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildRotarixImmunisation ->
+                    { english = "Rotarix Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildSendToHC ->
+                    { english = "Referral"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildSymptomsReview ->
+                    { english = "Symptoms Review"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildVitals ->
+                    { english = "Vitals"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildVitaminA ->
+                    { english = "Vitamin A"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildWeight ->
+                    { english = "Weight"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildHPVImmunisation ->
+                    { english = "HPV Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                WellChildDTPSAImmunisation ->
+                    { english = "DTP Standalone Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         WideScopeNote ->
             { english = "The selected scope may contain a large number of patients and report generation could take several minutes."

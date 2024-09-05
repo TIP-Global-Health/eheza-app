@@ -14,6 +14,7 @@ type alias CompletionData =
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    , wellChildData : List WellChildEncounterData
     }
 
 
@@ -35,6 +36,19 @@ type alias NutritionGroupEncounterData motherActivity childActivity =
     , motherData : Maybe (ActivitiesCompletionData motherActivity)
     , childrenData : List (ActivitiesCompletionData childActivity)
     }
+
+
+type alias WellChildEncounterData =
+    { startDate : NominalDate
+    , encounterType : WellChildEncounterType
+    , completion : ActivitiesCompletionData WellChildActivity
+    }
+
+
+type WellChildEncounterType
+    = PediatricCare
+    | PediatricCareChw
+    | NewbornExam
 
 
 type alias ActivitiesCompletionData activity =
@@ -87,6 +101,41 @@ type NutritionMotherActivity
     = NutritionFamilyPlanning
     | NutritionLactation
     | NutritionMotherFbf
+
+
+type WellChildActivity
+    = WellChildAlbendazole
+    | WellChildBCGImmunisation
+    | WellChildCaring
+    | WellChildContributingFactors
+    | WellChildDTPImmunisation
+    | WellChildECD
+    | WellChildFeeding
+    | WellChildFollowUp
+    | WellChildFoodSecurity
+    | WellChildHeadCircumference
+    | WellChildHealthEducation
+    | WellChildHeight
+    | WellChildHygiene
+    | WellChildIPVImmunisation
+    | WellChildMebendezole
+    | WellChildMRImmunisation
+    | WellChildMUAC
+    | WellChildNCDA
+    | WellChildNextVisit
+    | WellChildNutrition
+    | WellChildOPVImmunisation
+    | WellChildPCV13Immunisation
+    | WellChildPhoto
+    | WellChildPregnancySummary
+    | WellChildRotarixImmunisation
+    | WellChildSendToHC
+    | WellChildSymptomsReview
+    | WellChildVitals
+    | WellChildVitaminA
+    | WellChildWeight
+    | WellChildHPVImmunisation
+    | WellChildDTPSAImmunisation
 
 
 type TakenBy

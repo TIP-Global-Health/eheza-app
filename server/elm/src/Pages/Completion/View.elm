@@ -12,6 +12,9 @@ import Backend.Completion.Model
         , NutritionMotherActivity(..)
         , SelectedEntity(..)
         , TakenBy(..)
+        , WellChildActivity(..)
+        , WellChildEncounterData
+        , WellChildEncounterType(..)
         )
 import Backend.Completion.Utils exposing (takenByToString)
 import Backend.Model exposing (ModelBackend)
@@ -74,26 +77,35 @@ viewCompletionData language currentDate themePath data model =
                 ]
 
         takenByInput =
-            let
-                options =
-                    List.map
-                        (\option ->
-                            ( translate language <| Translate.TakenBy option, option )
-                        )
-                        [ TakenByNurse, TakenByCHW ]
-            in
-            if isJust model.reportType then
-                viewCustomSelectListInput
-                    model.takenBy
-                    options
-                    takenByToString
-                    SetTakenBy
-                    "select-input"
-                    (Just <| translate language Translate.Any)
-                    |> wrapSelectListInput language Translate.TakenByLabel False
+            Maybe.map
+                (\reportType ->
+                    if reportType == ReportNewbornExam then
+                        emptyNode
 
-            else
-                emptyNode
+                    else
+                        let
+                            options =
+                                List.map
+                                    (\option ->
+                                        ( translate language <| Translate.TakenBy option, option )
+                                    )
+                                    [ TakenByNurse, TakenByCHW ]
+                        in
+                        if isJust model.reportType then
+                            viewCustomSelectListInput
+                                model.takenBy
+                                options
+                                takenByToString
+                                SetTakenBy
+                                "select-input"
+                                (Just <| translate language Translate.Any)
+                                |> wrapSelectListInput language Translate.TakenByLabel False
+
+                        else
+                            emptyNode
+                )
+                model.reportType
+                |> Maybe.withDefault emptyNode
 
         dateInputs =
             Maybe.map
@@ -169,15 +181,25 @@ viewCompletionData language currentDate themePath data model =
             else
                 Maybe.map3
                     (\reportType startDate limitDate ->
+                        let
+                            ( newbornExamData, spvData ) =
+                                List.partition (.encounterType >> (==) NewbornExam) data.wellChildData
+                        in
                         case reportType of
                             ReportAcuteIllness ->
                                 viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
+
+                            ReportNewbornExam ->
+                                viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
 
                             ReportNutritionGroup ->
                                 viewNutritionGroupReport language startDate limitDate model.takenBy data.nutritionGroupData
 
                             ReportNutritionIndividual ->
                                 viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
+
+                            ReportWellChild ->
+                                viewSPVReport language data.site startDate limitDate model.takenBy spvData
                     )
                     model.reportType
                     model.startDate
@@ -189,7 +211,12 @@ viewCompletionData language currentDate themePath data model =
         , div [ class "inputs" ] <|
             [ viewSelectListInput language
                 model.reportType
-                [ ReportAcuteIllness, ReportNutritionGroup, ReportNutritionIndividual ]
+                [ ReportAcuteIllness
+                , ReportNewbornExam
+                , ReportNutritionGroup
+                , ReportNutritionIndividual
+                , ReportWellChild
+                ]
                 reportTypeToString
                 SetReportType
                 Translate.CompletionReportType
@@ -234,6 +261,36 @@ viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
         |> div [ class "report acute-illness" ]
 
 
+viewSPVReport : Language -> Site -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
+viewSPVReport language site startDate limitDate mTakenBy reportData =
+    customApplyFilters startDate
+        limitDate
+        (\encounter ->
+            if encounter.encounterType == PediatricCare then
+                TakenByNurse
+
+            else
+                TakenByCHW
+        )
+        mTakenBy
+        reportData
+        |> generateWellChildReportData language Translate.StandardPediatricVisit (resolveSPVActivities site)
+        |> viewMetricsResultsTable
+        |> div [ class "report well-child" ]
+
+
+viewNewbornExamReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
+viewNewbornExamReport language startDate limitDate mTakenBy reportData =
+    customApplyFilters startDate
+        limitDate
+        (always TakenByCHW)
+        mTakenBy
+        reportData
+        |> generateWellChildReportData language Translate.NewbornExam newbornExamActivities
+        |> viewMetricsResultsTable
+        |> div [ class "report well-child" ]
+
+
 applyFilters :
     NominalDate
     -> NominalDate
@@ -248,6 +305,31 @@ applyFilters startDate limitDate mTakenBy =
                     Maybe.map
                         (\takenBy ->
                             encounter.takenBy == Just takenBy
+                        )
+                        mTakenBy
+                        |> Maybe.withDefault True
+            in
+            (not <| Date.compare encounter.startDate startDate == LT)
+                && (not <| Date.compare encounter.startDate limitDate == GT)
+                && takenByCondition
+        )
+
+
+customApplyFilters :
+    NominalDate
+    -> NominalDate
+    -> ({ a | encounterType : WellChildEncounterType, startDate : Date.Date } -> TakenBy)
+    -> Maybe TakenBy
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+    -> List { a | encounterType : WellChildEncounterType, startDate : Date.Date }
+customApplyFilters startDate limitDate resolveTakenByFunc mTakenBy =
+    List.filter
+        (\encounter ->
+            let
+                takenByCondition =
+                    Maybe.map
+                        (\takenBy ->
+                            resolveTakenByFunc encounter == takenBy
                         )
                         mTakenBy
                         |> Maybe.withDefault True
@@ -351,6 +433,35 @@ generateAcuteIllnessReportData language records =
                 ]
             )
             allAcuteIllnessActivities
+    }
+
+
+generateWellChildReportData :
+    Language
+    -> TranslationId
+    -> List WellChildActivity
+    -> List WellChildEncounterData
+    -> MetricsResultsTableData
+generateWellChildReportData language labelTransId activities records =
+    { heading = translate language labelTransId
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.WellChildActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            activities
     }
 
 

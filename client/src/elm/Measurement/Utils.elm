@@ -8846,7 +8846,14 @@ latestVaccinationDataForVaccine vaccinationsData vaccineType =
             )
 
 
-nextVaccinationDataForVaccine : Site -> Maybe NominalDate -> WellChildVaccineType -> Bool -> NominalDate -> VaccineDose -> Maybe ( VaccineDose, NominalDate )
+nextVaccinationDataForVaccine :
+    Site
+    -> Maybe NominalDate
+    -> WellChildVaccineType
+    -> Bool
+    -> NominalDate
+    -> VaccineDose
+    -> Maybe ( VaccineDose, NominalDate )
 nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->

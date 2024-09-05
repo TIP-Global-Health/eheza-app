@@ -2003,6 +2003,8 @@ function hedley_reports_generate_completion_results_data($health_center) {
     'attendance',
     // Nutrition Individual data.
     'nutrition_encounter',
+    // Well Child data.
+    'well_child_encounter',
   ];
 
   $base_query = new EntityFieldQuery();
@@ -2021,6 +2023,7 @@ function hedley_reports_generate_completion_results_data($health_center) {
     'acute_illness' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
+    'well_child' => [],
   ];
 
   $nid = 0;
@@ -2062,6 +2065,10 @@ function hedley_reports_generate_completion_results_data($health_center) {
 
         case 'nutrition_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'well_child_encounter':
+          $data['well_child'][] = json_decode($json_data);
           break;
       }
 
@@ -2164,16 +2171,8 @@ function hedley_reports_generate_completion_data_for_nutrition_individual_encoun
     );
   }
 
-  // NCDA activity is expected if:
-  // 1. NCDA feature is enabled.
-  // 2. Encounter was performed after NCDA launch date.
-  // 3. Encounter was recorded by nurse (and not by CHW).
-  // 4. Child was under age of 24 months.
-  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
-  $ncda_launch_date = '2023-11-20';
-  $ncda_launch_date_obj = new DateTime($ncda_launch_date);
-
-  if ($ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+  // NCDA activity is taken by nurse only.
+  if ($taken_by == 'nurse' && hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
     $expected[] = 'nutrition_ncda';
   }
 
@@ -2279,7 +2278,6 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_person', 'target_id', $session_participants_ids, 'IN')
     ->fieldCondition('field_session', 'target_id', $session_id)
-    ->addTag('exclude_deleted')
     ->execute();
 
   if (empty($result['node'])) {
@@ -2396,15 +2394,8 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
         $expected[] = 'child_fbf';
       }
 
-      // NCDA activity is expected if:
-      // 1. NCDA feature is enabled.
-      // 2. Encounter was performed after NCDA launch date.
-      // 3. Encounter was recorded by nurse (and not by CHW).
-      // 4. Child was under age of 24 months.
-      $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
-      $ncda_launch_date = '2023-11-20';
-      $ncda_launch_date_obj = new DateTime($ncda_launch_date);
-      if ($ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && ($taken_by == 'nurse') && isset($age_in_months) && $age_in_months < 24) {
+      // NCDA activity is taken by nurse only.
+      if ($taken_by == 'nurse' && hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
         $expected[] = 'group_ncda';
       }
 
@@ -2579,7 +2570,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     // Load all activities expected only by encounter type and start date.
-    $expected = hedley_reports_generate_acute_illness_expected_initial_activities($encounter_data);
+    $expected = hedley_reports_acute_illness_generate_expected_initial_activities($encounter_data);
     // If conditions match, add malaria_testing activity.
     hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
     // If conditions match, add covid_testing activity.
@@ -2611,7 +2602,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
  * @return array
  *   An array of expected activity names.
  */
-function hedley_reports_generate_acute_illness_expected_initial_activities(array $encounter_data) {
+function hedley_reports_acute_illness_generate_expected_initial_activities(array $encounter_data) {
   // Activities that are shown at any type of encounter,
   // unconditionally. Existed with initial launch of the feature.
   $expected = [
@@ -3417,6 +3408,969 @@ function hedley_reports_count_acute_illness_signs(array $values) {
 }
 
 /**
+ * Generates completion data for well child encounters for patient.
+ *
+ * @param object $participant
+ *   The participant node object representing illness.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
+function hedley_reports_generate_completion_data_for_well_child($participant, $exclude_set) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'well_child_albendazole' => 'a',
+    'well_child_bcg_immunisation' => 'b',
+    'well_child_caring' => 'c',
+    'well_child_contributing_factors' => 'd',
+    'well_child_dtp_immunisation' => 'e',
+    'well_child_ecd' => 'f',
+    'well_child_feeding' => 'g',
+    'well_child_follow_up' => 'h',
+    'well_child_food_security' => 'i',
+    'well_child_head_circumference' => 'j',
+    'well_child_health_education' => 'k',
+    'well_child_height' => 'l',
+    'well_child_hygiene' => 'm',
+    'well_child_ipv_immunisation' => 'n',
+    'well_child_mebendezole' => 'o',
+    'well_child_mr_immunisation' => 'p',
+    'well_child_muac' => 'q',
+    'well_child_ncda' => 'r',
+    'well_child_next_visit' => 's',
+    'well_child_nutrition' => 't',
+    'well_child_opv_immunisation' => 'u',
+    'well_child_pcv13_immunisation' => 'v',
+    'well_child_photo' => 'w',
+    'well_child_pregnancy_summary' => 'x',
+    'well_child_rotarix_immunisation' => 'y',
+    'well_child_send_to_hc' => 'z',
+    'well_child_symptoms_review' => '1',
+    'well_child_vitals' => '2',
+    'well_child_vitamin_a' => '3',
+    'well_child_weight' => '4',
+    'well_child_hpv_immunisation' => '5',
+    'well_child_dtp_sa_immunisation' => '6',
+  ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'well_child_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  // Get birthdate.
+  $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+  try {
+    $person = node_load($person_id);
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $birth_date_obj = new DateTime($birth_date);
+    $gender = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  }
+  catch (Exception $e) {
+    $birth_date_obj = NULL;
+    $gender = 'male';
+  }
+
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+    // If encounter type field is empty, we default to pediatric care.
+    if (empty($encounter->field_well_child_encounter_type)) {
+      $encounter_type = 'pediatric-care';
+    }
+    else {
+      $encounter_type = $encounter->field_well_child_encounter_type[LANGUAGE_NONE][0]['value'];
+    }
+
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'encounter_type' => $encounter_type,
+      'measurements_by_type' => $measurements_by_type,
+    ];
+  }
+
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+    $encounter_data['start_date_obj'] = $start_date_obj;
+
+    // Try to resolve age in months at a time encounter was performed.
+    $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+    $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
+
+    list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+
+    // So far we were constructing data structures to resolve encounter data.
+    // Now we have enough info to determine which activities were expected.
+    // Load all activities expected only by encounter type and start date.
+    $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
+    // If conditions match, add immunisation activities.
+    hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
+    // If conditions match, add medication activities.
+    hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
+    // If conditions match, add next steps activities.
+    hedley_reports_well_child_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'encounter_type' => $encounter_data['encounter_type'],
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
+}
+
+/**
+ * Generates vaccination progress data for a well-child encounter.
+ *
+ * This function processes immunization data from previous and current
+ * encounters, generating vaccination history and progress data for
+ * well-child encounters. It merges this data with child scoreboard data
+ * to produce comprehensive vaccination progress information.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose vaccination data is being
+ *   processed.
+ * @param array $encounter_data
+ *   An associative array containing details of the current encounter,
+ *   including previous encounter data and measurements.
+ *
+ * @return array
+ *   An array containing merged vaccination progress data, with history
+ *   and progress for the child.
+ */
+function hedley_reports_well_child_generate_vaccination_progress_data($person_id, array $encounter_data) {
+  $previous_encounters_data = $encounter_data['previous_encounters_data'];
+
+  $immunisation_types = [
+    'well_child_bcg_immunisation',
+    'well_child_dtp_immunisation',
+    'well_child_dtp_sa_immunisation',
+    'well_child_ipv_immunisation',
+    'well_child_mr_immunisation',
+    'well_child_opv_immunisation',
+    'well_child_pcv13_immunisation',
+    'well_child_rotarix_immunisation',
+    'well_child_hpv_immunisation',
+  ];
+
+  $immunisations_from_previous_encounters = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_from_previous_encounters[$immunisation_type] = [];
+  }
+
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    foreach ($immunisation_types as $immunisation_type) {
+      if (empty($measurements_by_type[$immunisation_type])) {
+        continue;
+      }
+      $immunisations_from_previous_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+    }
+  }
+
+  $immunisations_from_all_encounters = $immunisations_from_previous_encounters;
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  foreach ($immunisation_types as $immunisation_type) {
+    if (empty($measurements_by_type[$immunisation_type])) {
+      continue;
+    }
+    $immunisations_from_all_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+  }
+
+  $history_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_previous_encounters);
+  $progress_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_all_encounters);
+  $progress_data_by_child_scoreboard = hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, $encounter_data['start_date_obj']);
+
+  return [
+    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $history_data_by_well_child, $progress_data_by_child_scoreboard),
+    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $progress_data_by_well_child, $progress_data_by_child_scoreboard),
+  ];
+}
+
+/**
+ * Generates regular vaccination progress data from encounters.
+ *
+ * Processes immunization data from a series of encounters to create
+ * a structured array of vaccination doses and dates, ensuring the data
+ * is sorted and aligned.
+ *
+ * @param array $immunisations_from_encounters
+ *   An associative array containing immunization data from previous
+ *   encounters, indexed by immunization type.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunization type.
+ */
+function hedley_reports_well_child_generate_vaccination_progress_data_regular(array $immunisations_from_encounters) {
+  $return = [];
+  $immunisations_by_type = [];
+  foreach ($immunisations_from_encounters as $immunisation_type => $immunisations) {
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      if (empty($immunisations_by_type[$immunisation_type]['doses'])) {
+        $immunisations_by_type[$immunisation_type]['doses'] = $encounter_doses;
+      }
+      else {
+        $immunisations_by_type[$immunisation_type]['doses'] = array_merge($immunisations_by_type[$immunisation_type]['doses'], $encounter_doses);
+      }
+
+      if (empty($immunisations_by_type[$immunisation_type]['dates'])) {
+        $immunisations_by_type[$immunisation_type]['dates'] = $encounter_dates;
+      }
+      else {
+        $immunisations_by_type[$immunisation_type]['dates'] = array_merge($immunisations_by_type[$immunisation_type]['dates'], $encounter_dates);
+      }
+    }
+  }
+
+  foreach ($immunisations_by_type as $type => $item) {
+    if (empty($item['doses']) || empty($item['dates'])) {
+      continue;
+    }
+
+    $immunisations_by_type[$type]['doses'] = array_unique($item['doses']);
+    sort($immunisations_by_type[$type]['doses']);
+    $immunisations_by_type[$type]['dates'] = array_unique($item['dates']);
+    sort($immunisations_by_type[$type]['dates']);
+    $total_doses = count($immunisations_by_type[$type]['doses']);
+    $total_dates = count($immunisations_by_type[$type]['dates']);
+
+    // Make sure number of doses matches the number of dates.
+    if ($total_doses != $total_dates) {
+      $common_size = min($total_doses, $total_dates);
+      $immunisations_by_type[$type]['doses'] = array_slice($immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
+    }
+
+    foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
+      $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Generates vaccination progress data based on child scoreboard data.
+ *
+ * Retrieves immunization data for a child from the child scoreboard,
+ * considering all encounters up to the current well-child encounter,
+ * and returns structured vaccination progress data.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose scoreboard data is being
+ *   processed.
+ * @param DateTime $well_child_encounter_start_date_obj
+ *   The DateTime object representing the start date of the current
+ *   well-child encounter.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunization type, based on child scoreboard encounters.
+ */
+function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
+  $return = [];
+  if (empty($person_id)) {
+    return $return;
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'individual_participant')
+    ->fieldCondition('field_encounter_type', 'value', 'child-scoreboard')
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->addTag('exclude_deleted');
+
+  $result = $query
+    ->range(0, 1)
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return $return;
+  }
+
+  $participant_id = key($result['node']);
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'child_scoreboard_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return $return;
+  }
+
+  $immunisation_types = [
+    'child_scoreboard_bcg_iz',
+    'child_scoreboard_dtp_iz',
+    'child_scoreboard_dtp_sa_iz',
+    'child_scoreboard_ipv_iz',
+    'child_scoreboard_mr_iz',
+    'child_scoreboard_opv_iz',
+    'child_scoreboard_pcv13_iz',
+    'child_scoreboard_rotarix_iz',
+  ];
+
+  $immunisations_by_type = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_by_type[$immunisation_type] = [
+      'doses' => [],
+      'dates' => [],
+    ];
+  }
+  $encounters = node_load_multiple(array_keys($result['node']));
+  foreach ($encounters as $encounter) {
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+    if ($start_date_obj > $well_child_encounter_start_date_obj) {
+      // This encounter started after well child encounter, so, skip it.
+      continue;
+    }
+
+    // Loading all immunisation activities recorded during the encounter.
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $immunisation_types, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_child_scoreboard_encounter', 'target_id', $encounter->nid)
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $immunisations = node_load_multiple(array_keys($result['node']));
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
+      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    }
+  }
+
+  foreach ($immunisations_by_type as $type => $item) {
+    if (empty($item['doses']) || empty($item['dates'])) {
+      continue;
+    }
+
+    $immunisations_by_type[$type]['doses'] = array_unique($item['doses']);
+    sort($immunisations_by_type[$type]['doses']);
+    $immunisations_by_type[$type]['dates'] = array_unique($item['dates']);
+    sort($immunisations_by_type[$type]['dates']);
+    $total_doses = count($immunisations_by_type[$type]['doses']);
+    $total_dates = count($immunisations_by_type[$type]['dates']);
+
+    // Make sure number of doses matches the number of dates.
+    if ($total_doses != $total_dates) {
+      $common_size = min($total_doses, $total_dates);
+      $immunisations_by_type[$type]['doses'] = array_slice($immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
+    }
+
+    foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'child_scoreboard_', '_iz');
+      $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Merges vaccination progress data from different sources.
+ *
+ * Combines vaccination progress data from two sources (e.g., history
+ * and child scoreboard data) into a single structured array, organized
+ * by immunization type.
+ *
+ * @param array $immunisation_types
+ *   An array of immunization types to be merged.
+ * @param array $first
+ *   The first set of vaccination progress data.
+ * @param array $second
+ *   The second set of vaccination progress data.
+ *
+ * @return array
+ *   A merged array of vaccination progress data, organized by
+ *   immunization type.
+ */
+function hedley_reports_well_child_merge_vaccination_progress_data(array $immunisation_types, array $first, array $second) {
+  $return = [];
+  foreach ($immunisation_types as $type) {
+    $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
+    if (!empty($first[$common_type]) && !empty($second[$common_type])) {
+      $return[$common_type] = array_merge($first[$common_type], $second[$common_type]);
+    }
+    elseif (!empty($first[$common_type])) {
+      $return[$common_type] = $first[$common_type];
+    }
+    elseif (!empty($second[$common_type])) {
+      $return[$common_type] = $second[$common_type];
+    }
+    else {
+      $return[$common_type] = [];
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Generates the list of expected activities for an well child encounter.
+ *
+ * Here we add activities with simple logic from:
+ *  - Pregnancy Summary.
+ *  - Danger Signs.
+ *  - Nutrition Assessment.
+ *  - Child Photo.
+ *  - Home Visit.
+ *  - NCDA.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return array
+ *   An array of expected activity names.
+ */
+function hedley_reports_well_child_generate_expected_initial_activities(array $encounter_data) {
+  $encounter_type = $encounter_data['encounter_type'];
+  $age_in_months = $encounter_data['age_in_months'];
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  // Activities that are shown at any type of encounter,
+  // unconditionally. Existed with initial launch of the feature.
+  $expected = [
+    'well_child_nutrition',
+    'well_child_photo',
+    'well_child_weight',
+  ];
+
+  $is_newborn_exam = $encounter_type == 'newborn-exam';
+  if (!$is_newborn_exam) {
+    $expected[] = 'well_child_height';
+  }
+
+  // MUAC is taken starting age of 6 months.
+  if (!$is_newborn_exam && isset($age_in_months) && $age_in_months >= 6) {
+    $expected[] = 'well_child_muac';
+  }
+
+  // Head Circumference is taken for children bellow age of 3 years.
+  if (isset($age_in_months) && $age_in_months < 36) {
+    $expected[] = 'well_child_head_circumference';
+  }
+
+  if ($is_newborn_exam) {
+    $expected[] = 'well_child_pregnancy_summary';
+    return $expected;
+  }
+
+  // Any SPV encounters performed by CHW / nurse.
+  $expected = array_merge($expected, [
+    'well_child_symptoms_review',
+    'well_child_vitals',
+  ]);
+
+  // CHW SPV encounters.
+  if ($encounter_type == 'pediatric-care-chw') {
+    // Home Visit vas added only for SPV encounter by CHW, on Feb 18, 2024.
+    $launch_date = '2024-02-18';
+    $launch_date_obj = new DateTime($launch_date);
+    if ($start_date_obj >= $launch_date_obj) {
+      $expected = array_merge($expected, [
+        'well_child_caring',
+        'well_child_feeding',
+        'well_child_food_security',
+        'well_child_hygiene',
+      ]);
+    }
+  }
+  // Nurse SPV encounters.
+  else {
+    if (hedley_reports_ncda_expected($age_in_months, $start_date_obj)) {
+      $expected[] = 'well_child_ncda';
+    }
+  }
+
+  return $expected;
+}
+
+/**
+ * Adds Immunisation activities as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
+  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'history');
+  foreach ($expected_by_history as $activity) {
+    $expected[] = $activity;
+  }
+}
+
+/**
+ * Generates a list of expected well-child immunization activities.
+ *
+ * This function determines the expected immunization activities for a
+ * well-child based on the child's encounter data, age, gender, and mode.
+ * It considers the vaccination history or progress, the site of the encounter,
+ * and other factors such as the child's age in days. It then generates a list
+ * of immunizations that should be expected during the encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the encounter, including
+ *   encounter type, vaccination progress, vaccination history, and start date.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunizations.
+ * @param string $mode
+ *   The mode of operation, either 'history' or 'progress', which determines
+ *   whether to consider the vaccination history or progress.
+ *
+ * @return array
+ *   An array of expected immunization activities based on the encounter data.
+ */
+function hedley_reports_well_child_get_expected_immunisation_activites(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
+  $encounter_type = $encounter_data['encounter_type'];
+  $vaccination_progress = $encounter_data['vaccination_progress'];
+  // History mode looks at vaccination status excluding vaccinations done at
+  // current encounter. Progress mode includes vaccinations done at current
+  // encounter.
+  $vaccination_history = $mode == 'history' ? $encounter_data['vaccination_history'] : $vaccination_progress;
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  $initial_opv_administered = hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj);
+  $interval = $start_date_obj->diff($birth_date_obj);
+  $age_in_days = $interval->days;
+
+  $possible_immunisations = ['bcg', 'opv'];
+  if ($encounter_type != 'newborn-exam') {
+    if ($age_in_days >= (6 * 7)) {
+      $possible_immunisations = array_merge(
+        $possible_immunisations,
+        ['dtp', 'pcv13', 'rotarix']
+      );
+    }
+    if ($age_in_days >= (14 * 7)) {
+      $possible_immunisations[] = 'ipv';
+    }
+    if ($age_in_days >= (36 * 7)) {
+      $possible_immunisations[] = 'mr';
+    }
+
+    $site = variable_get('hedley_general_site_name', '');
+    if ($site == 'burundi') {
+      // All 3 doses of DTP were given, it has passed at least 28 days since
+      // third dose, and, child is at last 18 months old.
+      if (!empty($vaccination_progress['dtp']['dose-3'])) {
+        $age_in_months = ($interval->y * 12) + $interval->m;
+        $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
+        $interval = $start_date_obj->diff($third_dose_date_obj);
+        $days_since_third_dose = $interval->days;
+
+        if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
+          $possible_immunisations[] = 'dtp_sa';
+        }
+      }
+    }
+    else {
+      $age_in_years = $interval->y;
+      if ($age_in_years >= 12 && $gender == 'female') {
+        $possible_immunisations[] = 'hpv';
+      }
+    }
+  }
+
+  $expected = [];
+  foreach ($possible_immunisations as $immunisation_type) {
+    $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
+    if (empty($vaccination_history)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $performed = $vaccination_history[$immunisation_type];
+    if (empty($performed)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $doses = array_keys($performed);
+    sort($doses);
+    $last_dose = array_reverse($doses)[0];
+    $last_dose_for_immunisation = hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
+    // If all doses we administered, skipping to next immunisation type.
+    if ($last_dose == $last_dose_for_immunisation) {
+      continue;
+    }
+
+    // Calculating when next dose is supposed to be administered.
+    $last_dose_as_number = (int) explode('-', $last_dose)[1];
+    $next_dose_as_number = $last_dose_as_number + 1;
+    $last_dose_date = $performed[$last_dose];
+    $interval_between_dosed = hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site);
+    $last_dose_date_obj = new DateTime($last_dose_date);
+    $next_dose_date_obj = clone $last_dose_date_obj;
+    $next_dose_date_obj->modify($interval_between_dosed);
+    if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
+      $six_weeks_old_date_obj = clone $birth_date_obj;
+      $six_weeks_old_date_obj->modify('+6 weeks');
+
+      if ($six_weeks_old_date_obj > $next_dose_date_obj) {
+        $next_dose_date_obj = $six_weeks_old_date_obj;
+      }
+    }
+
+    // If encounter started after the date when immunisation was supposed
+    // to be administered, adding it as expected.
+    if ($start_date_obj >= $next_dose_date_obj) {
+      $expected[] = $immunisation_full_name;
+    }
+  }
+
+  return $expected;
+}
+
+/**
+ * Determines if the initial OPV dose was administered within 14 days of birth.
+ *
+ * This function checks whether the first dose of OPV (Oral Polio Vaccine) was
+ * given within 14 days of the child's birth, based on the vaccination progress
+ * data.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the encounter, including
+ *   vaccination progress.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ *
+ * @return bool
+ *   TRUE if the initial OPV dose was administered within 14 days of birth,
+ *   FALSE otherwise.
+ */
+function hedley_reports_well_child_initial_opv_administered(array $encounter_data, DateTime $birth_date_obj) {
+  $vaccination_progress = $encounter_data['vaccination_progress'];
+
+  if (empty($vaccination_progress['opv']) || empty($vaccination_progress['opv']['dose-1'])) {
+    return FALSE;
+  }
+
+  $first_dose_date_obj = new DateTime($vaccination_progress['opv']['dose-1']);
+  $interval = $first_dose_date_obj->diff($birth_date_obj);
+
+  return $interval->days < 14;
+}
+
+/**
+ * Retrieves the last expected dose for a specific vaccine type.
+ *
+ * This function returns the last dose that should be administered for a given
+ * initial vaccine type, based on the child's vaccination history and whether
+ * the OPV dose was administered.
+ *
+ * @param string $immunisation_type
+ *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ * @param bool $initial_opv_administered
+ *   Indicates whether the initial OPV dose was administered within 14 days
+ *   of birth.
+ *
+ * @return string|bool
+ *   The last expected dose for the vaccine (e.g., 'dose-1', 'dose-3'),
+ *   or FALSE, if the immunization type is not recognized.
+ */
+function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
+  switch ($immunisation_type) {
+    case 'bcg':
+    case 'ipv':
+    case 'dtp_sa':
+      return 'dose-1';
+
+    case 'rotarix':
+    case 'mr':
+    case 'hpv':
+      return 'dose-2';
+
+    case 'dtp':
+    case 'pcv13':
+      return 'dose-3';
+
+    case 'opv':
+      return $initial_opv_administered ? 'dose-4' : 'dose-3';
+  }
+
+  return FALSE;
+}
+
+/**
+ * Retrieves the interval between doses for a specific vaccine type.
+ *
+ * This function returns the time interval that should be observed between
+ * doses for a given vaccine, taking into account the site where the encounter
+ * occurs.
+ *
+ * @param string $immunisation_type
+ *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ * @param string $site
+ *   The site name, which may affect the interval for certain vaccines.
+ *
+ * @return string|bool
+ *   A string representing the interval between doses (e.g., '+4 weeks',
+ *   '+9 months'), or FALSE if the immunization type is not recognized.
+ */
+function hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site) {
+  switch ($immunisation_type) {
+    case 'bcg':
+    case 'ipv':
+    case 'dtp_sa':
+      return '+0 days';
+
+    case 'opv':
+    case 'dtp':
+    case 'pcv13':
+    case 'rotarix':
+      return '+4 weeks';
+
+    case 'mr':
+      return $site == 'burundi' ? '+9 months' : '+6 months';
+
+    case 'hpv':
+      return '+6 months';
+  }
+
+  return FALSE;
+}
+
+/**
+ * Adds Medication activities as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
+  $age_in_months = $encounter_data['age_in_months'];
+  $start_date_obj = $encounter_data['start_date_obj'];
+  // Reversing array, to have the encounters sorted DESC.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+
+  // Resolving all activities representing medications that are required,
+  // per child age at a time when encounter was run.
+  $expected_activities_by_age = hedley_reports_well_child_genrate_expected_medication_activities_by_age($age_in_months);
+  foreach ($expected_activities_by_age as $expected_activity) {
+    // Searching for date on which last dose of medication was administered.
+    $last_administration_date_obj = NULL;
+    foreach ($previous_encounters_data as $previous_encounter_data) {
+      $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+      if (empty($measurements_by_type[$expected_activity])) {
+        continue;
+      }
+
+      $measurement = $measurements_by_type[$expected_activity];
+      if (empty($measurement->field_administration_note)) {
+        continue;
+      }
+
+      $administration_note = $measurement->field_administration_note[LANGUAGE_NONE][0]['value'];
+      if ($administration_note == 'administered-today') {
+        $last_administration_date_obj = $previous_encounter_data['start_date_obj'];
+        break;
+      }
+    }
+
+    if (is_null($last_administration_date_obj)) {
+      // Medication was not administered previously - add it as expected.
+      $expected[] = $expected_activity;
+    }
+    else {
+      $next_administration_date_obj = $last_administration_date_obj->add(new DateInterval('P6M'));
+      if ($start_date_obj >= $next_administration_date_obj) {
+        // Medication was administered previously more than 6 months
+        // ago - add it as expected.
+        $expected[] = $expected_activity;
+      }
+    }
+  }
+}
+
+/**
+ * Generates a list of expected well-child medication activities based on age.
+ *
+ * This function determines the expected medication activities for a well-child
+ * visit based on the child's age in months. The activities may differ based
+ * on the site name, which is retrieved from the configuration.
+ *
+ * The function checks age ranges and adds specific activities to the
+ * expected list. If the site is "burundi", different rules are applied compared
+ * to the default site.
+ *
+ * @param int $age_in_months
+ *   The age of the child in months.
+ *
+ * @return array
+ *   An array of expected medication activities for the child based on their
+ *   age. Returns an empty array if the age is not provided.
+ */
+function hedley_reports_well_child_genrate_expected_medication_activities_by_age($age_in_months) {
+  if (!isset($age_in_months)) {
+    return [];
+  }
+
+  $site = variable_get('hedley_general_site_name', '');
+  $expected = [];
+
+  switch ($site) {
+    case 'burundi':
+      // 6 months to 12 years.
+      if ($age_in_months >= 6 && $age_in_months < (12 * 12)) {
+        $expected[] = 'well_child_albendazole';
+      }
+      // 6 months to 6 years.
+      if ($age_in_months >= 6 && $age_in_months < (6 * 12)) {
+        $expected[] = 'well_child_vitamin_a';
+      }
+      break;
+
+    default:
+      // 6 years to 12 years.
+      if ($age_in_months >= (6 * 12) && $age_in_months < (12 * 12)) {
+        $expected[] = 'well_child_albendazole';
+      }
+      // 1 year to 6 years.
+      if ($age_in_months >= 12 && $age_in_months < (6 * 12)) {
+        $expected[] = 'well_child_mebendezole';
+      }
+      // 6 months to 12 years.
+      if ($age_in_months >= 6 && $age_in_months < (6 * 12)) {
+        $expected[] = 'well_child_vitamin_a';
+      }
+      break;
+  }
+
+  return $expected;
+}
+
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_well_child_add_next_steps_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+
+  $assessment = '';
+  if (!empty($measurements_by_type['well_child_nutrition'])) {
+    $assessment = $measurements_by_type['well_child_nutrition']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
+  }
+  elseif (!empty($measurements_by_type['well_child_follow_up'])) {
+    $assessment = $measurements_by_type['well_child_follow_up']->field_nutrition_assesment[LANGUAGE_NONE][0]['value'];
+  }
+
+  if (!empty($assessment) && $assessment !== 'none') {
+    $expected = array_merge(
+      $expected,
+      [
+        'well_child_contributing_factors',
+        'well_child_follow_up',
+        'well_child_health_education',
+        'well_child_send_to_hc',
+      ]
+    );
+  }
+  elseif ($encounter_data['encounter_type'] != 'pediatric-care') {
+    $immunisation_activities_completed = TRUE;
+    foreach ($expected as $activity) {
+      if (hedley_reports_ends_with($activity, '_immunisation')) {
+        if (empty($measurements_by_type[$activity])) {
+          $immunisation_activities_completed = FALSE;
+          break;
+        }
+      }
+    }
+
+    if ($immunisation_activities_completed) {
+      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'progress');
+      if (!empty($expected_by_progress)) {
+        // Immunisation activity completed, but child is still behind
+        // on vaccinations.
+        $expected = array_merge($expected, ['well_child_health_education', 'well_child_send_to_hc']);
+      }
+    }
+  }
+}
+
+/**
  * Resolve the age in months for patient at the time of a specific encounter.
  *
  * @param object $encounter
@@ -3429,6 +4383,24 @@ function hedley_reports_count_acute_illness_signs(array $values) {
  *   or NULL if an error occurs.
  */
 function hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, DateTime $start_date_obj) {
+  return hedley_reports_resolve_age_for_individual_encounter($encounter, $start_date_obj);
+}
+
+/**
+ * Resolve the age for patient at the time of a specific encounter.
+ *
+ * @param object $encounter
+ *   The encounter object, which includes the participant and person data.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ * @param string $unit
+ *   Units for the age. Supports 'day' and 'month'.
+ *
+ * @return int|null
+ *   The age (in units) of the individual at the time of the encounter,
+ *   or NULL if an error occurs / incorrect unit set.
+ */
+function hedley_reports_resolve_age_for_individual_encounter($encounter, DateTime $start_date_obj, $unit = 'month') {
   try {
     // Get participant ID and node.
     $participant_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
@@ -3444,12 +4416,46 @@ function hedley_reports_resolve_age_in_months_for_individual_encounter($encounte
     // Calculate age in months.
     $birth_date_obj = new DateTime($birth_date);
     $interval = $start_date_obj->diff($birth_date_obj);
-    return ($interval->y * 12) + $interval->m;
+
+    switch ($unit) {
+      case 'day':
+        return $interval->days;
+
+      case 'month':
+        return ($interval->y * 12) + $interval->m;
+
+      default:
+        return NULL;
+    }
   }
   catch (Exception $e) {
     watchdog('hedley_reports', "Failed to resolve patient age at encounter ID $encounter->nid.");
     return NULL;
   }
+}
+
+/**
+ * Whether NCDA activity is expected.
+ *
+ * Conditions for NCDA:
+ *  - NCDA feature is enabled.
+ *  - Encounter was performed after NCDA launch date.
+ *  - Child was under age of 24 months.
+ *
+ * @param int $age_in_months
+ *   Age of the child at a time when encounter was performed.
+ * @param DateTime $start_date_obj
+ *   The date object representing the start date of the encounter.
+ *
+ * @return bool
+ *   True, if NCDA activity is expected.
+ */
+function hedley_reports_ncda_expected($age_in_months, DateTime $start_date_obj) {
+  $ncda_enabled = variable_get('hedley_admin_feature_ncda_enabled', FALSE);
+  $ncda_launch_date = '2023-11-20';
+  $ncda_launch_date_obj = new DateTime($ncda_launch_date);
+
+  return $ncda_enabled && $start_date_obj >= $ncda_launch_date_obj && isset($age_in_months) && $age_in_months < 24;
 }
 
 /**
@@ -3531,4 +4537,35 @@ function hedley_reports_ends_with($haystack, $needle) {
     return TRUE;
   }
   return substr($haystack, -$length) === $needle;
+}
+
+/**
+ * Removes the specified prefix and suffix from a string, if both are present.
+ *
+ * This function checks if the given string starts with the specified prefix
+ * and ends with the specified suffix. If both conditions are met, the function
+ * returns the substring that remains after removing the prefix and suffix.
+ * If either the prefix or suffix is not found, the original string is returned.
+ *
+ * @param string $string
+ *   The input string from which the prefix and suffix will be removed.
+ * @param string $pref
+ *   The prefix to be removed from the start of the string.
+ * @param string $suff
+ *   The suffix to be removed from the end of the string.
+ *
+ * @return string
+ *   The string without the specified prefix and suffix, or the original
+ *   string if the prefix or suffix is not found.
+ */
+function hedley_reports_drop_prefix_and_suffix(string $string, string $pref, string $suff) {
+  if (strpos($string, $pref) !== 0 || substr($string, -strlen($suff)) !== $suff) {
+    return $string;
+  }
+
+  // Extract the part between the prefix and suffix.
+  $start = strlen($pref);
+  $length = strlen($string) - $start - strlen($suff);
+
+  return substr($string, $start, $length);
 }
