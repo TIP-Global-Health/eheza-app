@@ -394,12 +394,21 @@ body.admin-menu #page-wrapper #header {
   width: 120%;
 }
 
-.page-content .inputs .report.nutrition-individual .table .row .item.row-label {
+.page-content .inputs .report.acute-illness .table .row .item.row-label,
+.page-content .inputs .report.nutrition-group .table .row .item.row-label,
+.page-content .inputs .report.nutrition-individual .table .row .item.row-label,
+.page-content .inputs .report.well-child .table .row .item.row-label {
   width: 30%;
 }
 
+.page-content .inputs .report.acute-illness .table .row .item.heading,
+.page-content .inputs .report.acute-illness .table .row .item.value,
+.page-content .inputs .report.nutrition-group .table .row .item.heading,
+.page-content .inputs .report.nutrition-group .table .row .item.value,
 .page-content .inputs .report.nutrition-individual .table .row .item.heading,
-.page-content .inputs .report.nutrition-individual .table .row .item.value {
+.page-content .inputs .report.nutrition-individual .table .row .item.value,
+.page-content .inputs .report.well-child .table .row .item.heading,
+.page-content .inputs .report.well-child .table .row .item.value {
   width: 20%;
 }
 

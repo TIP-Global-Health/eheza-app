@@ -1187,7 +1187,7 @@ expectMedicationByAge currentDate site person task =
 
                             -- 6 months to 6 years.
                             TaskVitaminA ->
-                                ageMonths >= 6 && ageMonths < (6 * 6)
+                                ageMonths >= 6 && ageMonths < (6 * 12)
 
                     _ ->
                         case task of
@@ -1416,7 +1416,7 @@ expectNextStepsTask currentDate zscores site features isChw assembled db task =
 
         TaskHealthEducation ->
             expectNextStepsTask currentDate zscores site features isChw assembled db TaskContributingFactors
-                || -- CHW should send patient to HC, if child is behind on vaccinatons.
+                || -- CHW should provide health education, if child is behind on vaccinatons.
                    ((assembled.encounter.encounterType /= PediatricCare)
                         && activityCompleted currentDate zscores site features isChw assembled db WellChildImmunisation
                         && isBehindOnVaccinationsByProgress currentDate site assembled.participant.person db

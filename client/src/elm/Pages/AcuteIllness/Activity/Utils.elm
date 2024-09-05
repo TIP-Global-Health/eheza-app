@@ -43,6 +43,23 @@ import Translate exposing (Language, TranslationId)
 expectActivity : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 expectActivity currentDate isChw assembled activity =
     case activity of
+        AcuteIllnessSymptoms ->
+            assembled.initialEncounter
+
+        AcuteIllnessExposure ->
+            assembled.initialEncounter
+
+        AcuteIllnessPriorTreatment ->
+            assembled.initialEncounter
+
+        AcuteIllnessDangerSigns ->
+            not assembled.initialEncounter
+
+        AcuteIllnessPhysicalExam ->
+            List.filter (expectPhysicalExamTask currentDate assembled.person isChw assembled.initialEncounter) physicalExamTasks
+                |> List.isEmpty
+                |> not
+
         AcuteIllnessLaboratory ->
             List.filter (expectLaboratoryTask currentDate isChw assembled) laboratoryTasks
                 |> List.isEmpty
@@ -91,9 +108,6 @@ expectActivity currentDate isChw assembled activity =
                 |> List.isEmpty
                 |> not
 
-        _ ->
-            True
-
 
 activityCompleted : NominalDate -> Bool -> AssembledData -> AcuteIllnessActivity -> Bool
 activityCompleted currentDate isChw assembled activity =
@@ -139,6 +153,16 @@ activityCompleted currentDate isChw assembled activity =
 
         AcuteIllnessOngoingTreatment ->
             mandatoryActivityCompletedSubsequentVisit currentDate isChw assembled AcuteIllnessOngoingTreatment
+
+
+physicalExamTasks : List PhysicalExamTask
+physicalExamTasks =
+    [ PhysicalExamVitals
+    , PhysicalExamCoreExam
+    , PhysicalExamMuac
+    , PhysicalExamNutrition
+    , PhysicalExamAcuteFindings
+    ]
 
 
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
@@ -1753,7 +1777,7 @@ expectLaboratoryTask currentDate isChw assembled task =
                         else
                             assembled.secondInitialWithSubsequent
                 in
-                -- If pשtient was not diagnosed with Covid, and fever is recorded
+                -- If patient was not diagnosed with Covid, and fever is recorded
                 -- on current encounter, and patient did not test positive
                 -- to Malaria during one of previous encounters,
                 -- we want patient to take Malaria test.
@@ -1867,7 +1891,10 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
             isChw && (diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsContactHC ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect) && isJust measurements.call114 && (not <| talkedTo114 measurements)
+            isChw
+                && (diagnosis == Just DiagnosisCovid19Suspect)
+                && isJust measurements.call114
+                && (not <| talkedTo114 measurements)
 
         NextStepsMedicationDistribution ->
             medicationPrescribed
@@ -1948,9 +1975,11 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                     || -- No improvement, with danger signs, and diagnosis is not Covid19 suspect.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
+                       (dangerSignPresentOnSubsequentVisit measurements
+                            && (diagnosis /= Just DiagnosisCovid19Suspect)
+                       )
                     || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+                       (dangerSignPresentOnSubsequentVisit measurements
                             && (diagnosis == Just DiagnosisCovid19Suspect)
                             && healthCenterRecommendedToCome measurements
                        )
@@ -1958,7 +1987,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
         NextStepsContactHC ->
             not malariaDiagnosedAtCurrentEncounter
                 && -- No improvement, with danger signs, and diagnosis is Covid19.
-                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19Suspect)
+                   (dangerSignPresentOnSubsequentVisit measurements && diagnosis == Just DiagnosisCovid19Suspect)
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -2059,7 +2088,7 @@ sendToHCByMalariaTesting ageMonths0To6 diagnosis =
 noImprovementOnSubsequentVisit : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
 noImprovementOnSubsequentVisit currentDate person measurements =
     noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
-        || noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
+        || dangerSignPresentOnSubsequentVisit measurements
 
 
 noImprovementOnSubsequentVisitWithoutDangerSigns : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
@@ -2070,11 +2099,6 @@ noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                 || sendToHCOnSubsequentVisitByMuac measurements
                 || sendToHCOnSubsequentVisitByNutrition measurements
            )
-
-
-noImprovementOnSubsequentVisitWithDangerSigns : NominalDate -> Person -> AcuteIllnessMeasurements -> Bool
-noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements =
-    dangerSignPresentOnSubsequentVisit measurements
 
 
 conditionNotImprovingOnSubsequentVisit : AcuteIllnessMeasurements -> Bool
@@ -2323,7 +2347,7 @@ covid19SuspectDiagnosed measurements =
         generalSymptomsCount =
             let
                 excludesGeneral =
-                    [ SymptomGeneralFever, NoSymptomsGeneral ] ++ symptomsGeneralDangerSigns
+                    [ SymptomGeneralFever ] ++ symptomsGeneralDangerSigns
             in
             countGeneralSymptoms measurements excludesGeneral
 
@@ -2358,7 +2382,10 @@ covid19SuspectDiagnosed measurements =
             malariaRapidTestResult measurements
 
         feverAndRdtNotPositive =
-            feverOnRecord && isJust malariaRDTResult && malariaRDTResult /= Just RapidTestPositive
+            feverOnRecord
+                && isJust malariaRDTResult
+                && (malariaRDTResult /= Just RapidTestPositive)
+                && (malariaRDTResult /= Just RapidTestPositiveAndPregnant)
     in
     (signsIndicateCovid && symptomsIndicateCovid)
         || (signsIndicateCovid && feverOnRecord)
@@ -2729,15 +2756,13 @@ covidCaseConfirmed measurements =
 
 covidRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 covidRapidTestResult measurements =
-    measurements.covidTesting
-        |> getMeasurementValueFunc
+    getMeasurementValueFunc measurements.covidTesting
         |> Maybe.map .result
 
 
 malariaRapidTestResult : AcuteIllnessMeasurements -> Maybe RapidTestResult
 malariaRapidTestResult measurements =
-    measurements.malariaTesting
-        |> getMeasurementValueFunc
+    getMeasurementValueFunc measurements.malariaTesting
 
 
 malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool

@@ -19,9 +19,11 @@ decodeCompletionData =
         |> required "site" decodeSite
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
+        |> requiredAt [ "results", "acute_illness" ] (list (decodeEncounterData acuteIllnessActivityFromMapping))
         |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
             (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
+        |> requiredAt [ "results", "well_child" ] (list decodeWellChildEncounterData)
 
 
 decodeSelectedEntity : Decoder SelectedEntity
@@ -59,6 +61,36 @@ decodeNutritionGroupEncounterData motherActivityFromString childActivityFromStri
         |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
         |> optional "mother" (nullable (decodeActivitiesCompletionData motherActivityFromString)) Nothing
         |> required "children" (decodeActivitiesCompletionDataList childActivityFromString)
+
+
+decodeWellChildEncounterData : Decoder WellChildEncounterData
+decodeWellChildEncounterData =
+    succeed WellChildEncounterData
+        |> required "start_date" decodeYYYYMMDD
+        |> required "encounter_type" decodeWellChildEncounterType
+        |> required "completion" (decodeActivitiesCompletionData wellChildActivityFromMapping)
+
+
+decodeWellChildEncounterType : Decoder WellChildEncounterType
+decodeWellChildEncounterType =
+    string
+        |> andThen
+            (\encounterType ->
+                case encounterType of
+                    "pediatric-care" ->
+                        succeed PediatricCare
+
+                    "pediatric-care-chw" ->
+                        succeed PediatricCareChw
+
+                    "newborn-exam" ->
+                        succeed NewbornExam
+
+                    _ ->
+                        fail <|
+                            encounterType
+                                ++ " is not a recognized WellChildEncounterType"
+            )
 
 
 decodeActivitiesCompletionData : (String -> Maybe activity) -> Decoder (ActivitiesCompletionData activity)
