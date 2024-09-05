@@ -170,7 +170,7 @@ resolveSPVActivities site =
     , WellChildNCDA
 
     -- This is just an indication that next visit notice
-    -- was presented. Not showign it.
+    -- was presented. Not showing it.
     -- , WellChildNextVisit
     , WellChildNutrition
     , WellChildOPVImmunisation
