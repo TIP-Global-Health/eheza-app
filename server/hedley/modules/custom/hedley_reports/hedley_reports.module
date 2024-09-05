@@ -4324,6 +4324,61 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
 }
 
 /**
+ * Generates completion data for Child Scoreboard encounter.
+ *
+ * @param object $encounter
+ *   The encounter node object.
+ *
+ * @return array
+ *   An array containing the completion data for given encounter.
+ */
+function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($encounter) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'child_scoreboard_ncda' => 'a',
+    'child_scoreboard_bcg_iz' => 'b',
+    'child_scoreboard_dtp_iz' => 'c',
+    'child_scoreboard_ipv_iz' => 'd',
+    'child_scoreboard_mr_iz' => 'e',
+    'child_scoreboard_opv_iz' => 'f',
+    'child_scoreboard_pcv13_iz' => 'g',
+    'child_scoreboard_rotarix_iz' => 'h',
+  ];
+
+  // Activities that are always taken during encounter.
+  $expected = ['child_scoreboard_ncda'];
+
+  // Resolve encounter start date.
+  $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+
+  // Loading all measurements that belong to encounter.
+  $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+
+  if (empty($measurements_ids)) {
+    $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
+
+    return [
+      'start_date' => $start_date,
+      'completion' => $completion,
+    ];
+  }
+
+  // Ordering measurements by type.
+  $measurements_by_type = [];
+  $measurements = node_load_multiple($measurements_ids);
+  foreach ($measurements as $measurement) {
+    $measurements_by_type[$measurement->type] = $measurement;
+  }
+
+  $completion = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping);
+
+  return [
+    'start_date' => $start_date,
+    'completion' => $completion,
+  ];
+}
+
+/**
  * Resolve the age in months for patient at the time of a specific encounter.
  *
  * @param object $encounter
