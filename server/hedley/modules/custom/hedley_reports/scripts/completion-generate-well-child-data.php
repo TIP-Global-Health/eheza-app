@@ -31,7 +31,8 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
   ->fieldCondition('field_encounter_type', 'value', 'well-child')
-  ->propertyCondition('status', NODE_PUBLISHED);
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->addTag('exclude_deleted');
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
@@ -39,7 +40,7 @@ $count = $count_query->count()->execute();
 
 if ($count == 0) {
   drush_print("There are no nodes of type $type for well child encounters in DB.");
-  exit;
+  exit 1;
 }
 
 $total = 0;
