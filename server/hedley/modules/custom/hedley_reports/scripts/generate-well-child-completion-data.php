@@ -39,7 +39,7 @@ $count = $count_query->count()->execute();
 
 if ($count == 0) {
   drush_print("There are no nodes of type $type for well child encounters in DB.");
-  exit;
+  exit 1;
 }
 
 $total = 0;
