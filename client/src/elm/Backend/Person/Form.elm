@@ -376,20 +376,12 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                                             Nothing ->
                                                 ExpectAdultOrChild
                                    )
-
-                nationalIdNumberValidator =
-                    case site of
-                        SiteBurundi ->
-                            nullable string
-
-                        _ ->
-                            validateNationalIdNumber
             in
             succeed Person
                 |> andMap (succeed (generateFullName firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
-                |> andMap (field nationalIdNumber nationalIdNumberValidator)
+                |> andMap (field nationalIdNumber validateNationalIdNumber)
                 |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate_)

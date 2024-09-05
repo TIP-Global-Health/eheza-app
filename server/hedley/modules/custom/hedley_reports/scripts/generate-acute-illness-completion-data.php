@@ -31,8 +31,7 @@ $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
   ->fieldCondition('field_encounter_type', 'value', 'acute-illness')
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->addTag('exclude_deleted');
+  ->propertyCondition('status', NODE_PUBLISHED);
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');

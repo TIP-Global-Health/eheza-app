@@ -709,15 +709,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_albendazole';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_albendazole'] = $strongarm;
 
@@ -726,15 +726,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_bcg_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_bcg_immunisation'] = $strongarm;
 
@@ -743,15 +743,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_caring';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_caring'] = $strongarm;
 
@@ -760,15 +760,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_contributing_factors';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_contributing_factors'] = $strongarm;
 
@@ -777,15 +777,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_dtp_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_dtp_immunisation'] = $strongarm;
 
@@ -794,15 +794,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_dtp_sa_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_dtp_sa_immunisation'] = $strongarm;
 
@@ -811,15 +811,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_ecd';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_ecd'] = $strongarm;
 
@@ -828,15 +828,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_encounter';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_encounter'] = $strongarm;
 
@@ -845,15 +845,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_feeding';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_feeding'] = $strongarm;
 
@@ -862,15 +862,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_follow_up';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_follow_up'] = $strongarm;
 
@@ -879,15 +879,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_food_security';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_food_security'] = $strongarm;
 
@@ -896,15 +896,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_head_circumference';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_head_circumference'] = $strongarm;
 
@@ -913,15 +913,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_health_education';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_health_education'] = $strongarm;
 
@@ -930,15 +930,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_height';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_height'] = $strongarm;
 
@@ -947,15 +947,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_hpv_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_hpv_immunisation'] = $strongarm;
 
@@ -964,15 +964,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_hygiene';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_hygiene'] = $strongarm;
 
@@ -981,15 +981,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_ipv_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_ipv_immunisation'] = $strongarm;
 
@@ -998,15 +998,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_mebendezole';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_mebendezole'] = $strongarm;
 
@@ -1015,15 +1015,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_mr_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_mr_immunisation'] = $strongarm;
 
@@ -1032,15 +1032,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_muac';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_muac'] = $strongarm;
 
@@ -1049,15 +1049,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_ncda';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_ncda'] = $strongarm;
 
@@ -1066,15 +1066,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_next_visit';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_next_visit'] = $strongarm;
 
@@ -1083,15 +1083,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_nutrition';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_nutrition'] = $strongarm;
 
@@ -1100,15 +1100,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_opv_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_opv_immunisation'] = $strongarm;
 
@@ -1117,15 +1117,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_pcv13_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_pcv13_immunisation'] = $strongarm;
 
@@ -1134,15 +1134,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_photo';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_photo'] = $strongarm;
 
@@ -1151,15 +1151,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_pregnancy_summary';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_pregnancy_summary'] = $strongarm;
 
@@ -1168,15 +1168,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_rotarix_immunisation';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_rotarix_immunisation'] = $strongarm;
 
@@ -1185,15 +1185,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_send_to_hc';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_send_to_hc'] = $strongarm;
 
@@ -1202,15 +1202,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_symptoms_review';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_symptoms_review'] = $strongarm;
 
@@ -1219,15 +1219,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_vitals';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_vitals'] = $strongarm;
 
@@ -1236,15 +1236,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_vitamin_a';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_vitamin_a'] = $strongarm;
 
@@ -1253,15 +1253,15 @@ function hedley_well_child_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__well_child_weight';
   $strongarm->value = array(
+    'view_modes' => array(),
     'extra_fields' => array(
-      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
+      'display' => array(),
     ),
-    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__well_child_weight'] = $strongarm;
 

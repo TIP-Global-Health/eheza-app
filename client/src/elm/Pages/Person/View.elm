@@ -973,12 +973,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             viewTextInput language Translate.SecondName Backend.Person.Form.secondName True personForm
 
         nationalIdNumberInput =
-            case site of
-                SiteBurundi ->
-                    viewTextInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
-
-                _ ->
-                    viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
+            viewNumberInput language Translate.NationalIdNumber Backend.Person.Form.nationalIdNumber False personForm
 
         demographicFields =
             viewPhoto

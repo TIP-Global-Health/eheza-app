@@ -2350,7 +2350,7 @@ translationSet trans =
                 DiagnosisRespiratoryInfectionUncomplicated ->
                     { english = "Suspected Uncomplicated Pneumonia"
                     , kinyarwanda = Just "Aracyekwaho umusonga woroheje"
-                    , kirundi = Just "Hiketswe ingwara y'umusonga igoye"
+                    , kirundi = Just "Hiketswe ingwara ingwara y'umusonga igoye"
                     }
 
                 DiagnosisFeverOfUnknownOrigin ->
@@ -6104,7 +6104,7 @@ translationSet trans =
                 Backend.Measurement.Model.Unknown ->
                     { english = "Unknown"
                     , kinyarwanda = Just "Ntibizwi"
-                    , kirundi = Just "Ntavyo azi"
+                    , kirundi = Just "Bitazwi"
                     }
 
         Fever ->
@@ -6264,7 +6264,7 @@ translationSet trans =
                 FollowUpNotNeeded ->
                     { english = "No follow up"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Kutagendera umugwayi"
+                    , kirundi = Nothing
                     }
 
         FollowUpDueOption option ->
@@ -7119,7 +7119,7 @@ translationSet trans =
                 Backend.Person.Model.Unknown ->
                     { english = "Unknown"
                     , kinyarwanda = Just "Ntabizi"
-                    , kirundi = Just "Ntavyo azi"
+                    , kirundi = Just "Bitazwi"
                     }
 
         HIVStatusLabel ->
@@ -7622,7 +7622,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Umubonano kuvyerekeye ingwara y'umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -7673,13 +7673,13 @@ translationSet trans =
                 AcuteIllnessEncounter ->
                     { english = "Select Acute Illness Visit"
                     , kinyarwanda = Just "Hitamo inshuro aje kuri ubwo burwayi butunguranye"
-                    , kirundi = Just "Hitamo isuzuma ku ngwara ikaze"
+                    , kirundi = Nothing
                     }
 
                 AntenatalEncounter ->
                     { english = "Select Antenatal Visit"
                     , kinyarwanda = Just "Hitamo isuzuma k’umugore utwite"
-                    , kirundi = Just "Hitamo isura ry'umukenyezi wibungenze"
+                    , kirundi = Nothing
                     }
 
                 ChildScoreboardEncounter ->
@@ -7691,13 +7691,13 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "Select HIV Visit"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Hitamo isuzuma kuvyerekeye ingwara y'umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
                     { english = "Select Home Visit"
                     , kinyarwanda = Just "Hitamo Gusura Umurwayi"
-                    , kirundi = Just "Hitamo Gusura Umugwayi"
+                    , kirundi = Nothing
                     }
 
                 InmmunizationEncounter ->
@@ -7709,7 +7709,7 @@ translationSet trans =
                 NCDEncounter ->
                     { english = "Select NCD Visit"
                     , kinyarwanda = Just "Hitamo Isuzuma Kuburwayi Butandura"
-                    , kirundi = Just "Hitamo Isuzuma kuvyerekeye ingwara zitandukira"
+                    , kirundi = Nothing
                     }
 
                 NutritionEncounter ->
@@ -7721,7 +7721,7 @@ translationSet trans =
                 TuberculosisEncounter ->
                     { english = "Select Tuberculosis Visit"
                     , kinyarwanda = Just "Hitamo isura ku ndwara y'igituntu"
-                    , kirundi = Just "Hitamwo isura kuvyerekeye indwara y'igituntu"
+                    , kirundi = Just "Hitamwo umubonano kuvyerekeye indwara y'igituntu"
                     }
 
                 WellChildEncounter ->
@@ -7742,13 +7742,13 @@ translationSet trans =
                 AcuteIllnessEncounter ->
                     { english = "Subsequent Acute Illness Encounter"
                     , kinyarwanda = Just "Ibikorwa bikurikiyeho kuri ubwo burwayi butunguraye"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isuzumwa ku ngwara ikaze"
+                    , kirundi = Nothing
                     }
 
                 AntenatalEncounter ->
                     { english = "Subsequent Antenatal Encounter"
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isura ry'umukenyezi wibungenze"
+                    , kirundi = Nothing
                     }
 
                 ChildScoreboardEncounter ->
@@ -7760,7 +7760,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "Subsequent HIV Visit"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Umubonano kuvyerekeye isuzuma ku ngwara y'umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -7778,13 +7778,13 @@ translationSet trans =
                 NCDEncounter ->
                     { english = "Subsequent NCD Visit"
                     , kinyarwanda = Just "Isuzuma Rikurikiyeho ku Burwayi Butandura"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isura ry'ingwara zitandukira"
+                    , kirundi = Nothing
                     }
 
                 NutritionEncounter ->
                     { english = "Subsequent Nutrition Encounter"
                     , kinyarwanda = Just "Isuzuma rikurikiyeho ku mugore utwite"
-                    , kirundi = Just "Umubonano ukurikira kuvyerekeye isuzumwa ry’ingaburo"
+                    , kirundi = Nothing
                     }
 
                 TuberculosisEncounter ->
@@ -7813,7 +7813,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "HIV Management"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Gukurikira ingwara y’umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HomeVisitEncounter ->
@@ -10985,7 +10985,7 @@ translationSet trans =
         MUAC ->
             { english = "MUAC"
             , kinyarwanda = Just "Ikizigira cy'akaboko"
-            , kirundi = Just "Intikuro y’akaboko"
+            , kirundi = Just "(CMB) Uburyo bwo gupima vuba na vuba ingwara yo gufungura nabi"
             }
 
         MyRelatedBy relationship ->
@@ -13539,13 +13539,13 @@ translationSet trans =
         Period2WeeksOrLess ->
             { english = "2 weeks or less"
             , kinyarwanda = Nothing
-            , kirundi = Just "Indwi 2 canke itagejeje indwi 2"
+            , kirundi = Nothing
             }
 
         PeriodMoreThan2Weeks ->
             { english = "More than 2 weeks"
             , kinyarwanda = Nothing
-            , kirundi = Just "Birenge indwi 2"
+            , kirundi = Nothing
             }
 
         PersistentStorage authorized ->
@@ -20986,7 +20986,7 @@ translationSet trans =
         SoreThroatLabel ->
             { english = "Sore Throat"
             , kinyarwanda = Just "Kubabara mu muhogo"
-            , kirundi = Nothing
+            , kirundi = Just ""
             }
 
         SpecialityCareHeaderPrefix ->
@@ -23466,13 +23466,13 @@ translationSet trans =
                 SymptomUmbilicalCordRedness ->
                     { english = "Umbilical Cord Redness"
                     , kinyarwanda = Just "Guhisha k'umukondo"
-                    , kirundi = Just "Urusogi rutukura"
+                    , kirundi = Nothing
                     }
 
                 SymptomStiffNeckOrBulgingFontanelle ->
                     { english = "Stiff neck or bulging fontanelle"
                     , kinyarwanda = Just "Kugagara ibikanu cyangwa igihorihori kibyimbye"
-                    , kirundi = Just "Kureba igikebu n”igihorihori cyibyimbye"
+                    , kirundi = Nothing
                     }
 
                 SymptomSevereEdema ->
@@ -23484,7 +23484,7 @@ translationSet trans =
                 SymptomPalmoplantarPallor ->
                     { english = "Palmoplantar pallor"
                     , kinyarwanda = Just "Kweruruka mu biganza no mu bworo bw'ibirenge"
-                    , kirundi = Just "Mu ntoki no mu kirenge hera"
+                    , kirundi = Nothing
                     }
 
                 SymptomHistoryOfFever ->
@@ -23496,7 +23496,7 @@ translationSet trans =
                 SymptomBabyTiresQuicklyWhenFeeding ->
                     { english = "Baby tires quickly when feeding"
                     , kinyarwanda = Just "Umwana ahita ananirwa iyo atangiye kurya"
-                    , kirundi = Just "Uruyoya ruruha vuba igihe rwonka"
+                    , kirundi = Nothing
                     }
 
                 SymptomCoughingOrTearingWhileFeeding ->
@@ -24206,13 +24206,13 @@ translateActivePage page =
                 HIVParticipantPage _ ->
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Umubonano werekeye ingwara y’umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HIVEncounterPage _ ->
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Umubonano werekeye ingwara y’umugera wa SIDA"
+                    , kirundi = Nothing
                     }
 
                 HIVActivityPage _ _ ->
@@ -24376,7 +24376,7 @@ translateDashboard trans =
         AcuteIllnessDiagnosed ->
             { english = "Acute Illness Diagnosed"
             , kinyarwanda = Just "Uburwayi bufatiyeho bwasuzumwe"
-            , kirundi = Just "Ingwara zikaze zavuwe"
+            , kirundi = Nothing
             }
 
         BeneficiariesTableColumnLabel label ->
@@ -25066,7 +25066,7 @@ translateLoginPhrase phrase =
         SignOut ->
             { english = "Sign Out"
             , kinyarwanda = Just "Gusohoka muri sisiteme"
-            , kirundi = Just "Gusohoka muri sisiteme"
+            , kirundi = Nothing
             }
 
         YouMustLoginBefore ->
