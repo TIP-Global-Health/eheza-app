@@ -3687,7 +3687,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular(ar
     }
 
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
-      $common_type = hedley_reports_drop_prefix_and_sufix($type, 'well_child_', '_immunisation');
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
       $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
     }
   }
@@ -3833,7 +3833,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     }
 
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
-      $common_type = hedley_reports_drop_prefix_and_sufix($type, 'child_scoreboard_', '_iz');
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'child_scoreboard_', '_iz');
       $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
     }
   }
@@ -3862,7 +3862,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
 function hedley_reports_well_child_merge_vaccination_progress_data(array $immunisation_types, array $first, array $second) {
   $return = [];
   foreach ($immunisation_types as $type) {
-    $common_type = hedley_reports_drop_prefix_and_sufix($type, 'well_child_', '_immunisation');
+    $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
     if (!empty($first[$common_type]) && !empty($second[$common_type])) {
       $return[$common_type] = array_merge($first[$common_type], $second[$common_type]);
     }
@@ -4558,7 +4558,7 @@ function hedley_reports_ends_with($haystack, $needle) {
  *   The string without the specified prefix and suffix, or the original
  *   string if the prefix or suffix is not found.
  */
-function hedley_reports_drop_prefix_and_sufix(string $string, string $pref, string $suff) {
+function hedley_reports_drop_prefix_and_suffix(string $string, string $pref, string $suff) {
   if (strpos($string, $pref) !== 0 || substr($string, -strlen($suff)) !== $suff) {
     return $string;
   }
