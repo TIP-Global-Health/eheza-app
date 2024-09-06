@@ -257,6 +257,40 @@ homeVisitActivityFromMapping mapped =
             Nothing
 
 
+childScoreboardActivityFromMapping : String -> Maybe ChildScoreboardActivity
+childScoreboardActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just ChildScoreboardNCDA
+
+        "b" ->
+            Just ChildScoreboardBCGImmunisation
+
+        "c" ->
+            Just ChildScoreboardDTPImmunisation
+
+        "i" ->
+            Just ChildScoreboardDTPSAImmunisation
+
+        "d" ->
+            Just ChildScoreboardIPVImmunisation
+
+        "e" ->
+            Just ChildScoreboardMRImmunisation
+
+        "f" ->
+            Just ChildScoreboardOPVImmunisation
+
+        "g" ->
+            Just ChildScoreboardPCV13Immunisation
+
+        "h" ->
+            Just ChildScoreboardRotarixImmunisation
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of

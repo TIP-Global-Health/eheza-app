@@ -6851,9 +6851,9 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Completion$Model$CompletionData = F8(
-	function (site, entityName, entityType, acuteIllnessData, homeVisitData, nutritionIndividualData, nutritionGroupData, wellChildData) {
-		return {acuteIllnessData: acuteIllnessData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
+var $author$project$Backend$Completion$Model$CompletionData = F9(
+	function (site, entityName, entityType, acuteIllnessData, childScoreboardData, homeVisitData, nutritionIndividualData, nutritionGroupData, wellChildData) {
+		return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
 	});
 var $author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings = {$: 'AcuteIllnessAcuteFindings'};
 var $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting = {$: 'AcuteIllnessCOVIDTesting'};
@@ -6926,6 +6926,39 @@ var $author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping = f
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessPriorTreatment);
 		case 'w':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$AcuteIllnessOngoingTreatment);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Completion$Model$ChildScoreboardBCGImmunisation = {$: 'ChildScoreboardBCGImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardDTPImmunisation = {$: 'ChildScoreboardDTPImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardDTPSAImmunisation = {$: 'ChildScoreboardDTPSAImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardIPVImmunisation = {$: 'ChildScoreboardIPVImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardMRImmunisation = {$: 'ChildScoreboardMRImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardNCDA = {$: 'ChildScoreboardNCDA'};
+var $author$project$Backend$Completion$Model$ChildScoreboardOPVImmunisation = {$: 'ChildScoreboardOPVImmunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardPCV13Immunisation = {$: 'ChildScoreboardPCV13Immunisation'};
+var $author$project$Backend$Completion$Model$ChildScoreboardRotarixImmunisation = {$: 'ChildScoreboardRotarixImmunisation'};
+var $author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardNCDA);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardBCGImmunisation);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardDTPImmunisation);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardDTPSAImmunisation);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardIPVImmunisation);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardMRImmunisation);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardOPVImmunisation);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardPCV13Immunisation);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$ChildScoreboardRotarixImmunisation);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -8177,22 +8210,28 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 					_List_fromArray(
-						['results', 'acute_illness']),
+						['results', 'child_scoreboard']),
 					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
 					A3(
-						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-						'entity_type',
-						$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+						_List_fromArray(
+							['results', 'acute_illness']),
+						$elm$json$Json$Decode$list(
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'entity_name',
-							$elm$json$Json$Decode$string,
+							'entity_type',
+							$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'site',
-								$author$project$Backend$Decoder$decodeSite,
-								$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))));
+								'entity_name',
+								$elm$json$Json$Decode$string,
+								A3(
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+									'site',
+									$author$project$Backend$Decoder$decodeSite,
+									$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -9958,12 +9997,22 @@ var $author$project$Translate$Global = {$: 'Global'};
 var $author$project$Translate$HealthCenter = {$: 'HealthCenter'};
 var $author$project$Translate$HomeVisit = {$: 'HomeVisit'};
 var $author$project$Translate$Hygiene = {$: 'Hygiene'};
+var $author$project$Translate$ImmunisationBCG = {$: 'ImmunisationBCG'};
+var $author$project$Translate$ImmunisationDTP = {$: 'ImmunisationDTP'};
+var $author$project$Translate$ImmunisationDTPSA = {$: 'ImmunisationDTPSA'};
+var $author$project$Translate$ImmunisationHPV = {$: 'ImmunisationHPV'};
+var $author$project$Translate$ImmunisationIPV = {$: 'ImmunisationIPV'};
+var $author$project$Translate$ImmunisationMR = {$: 'ImmunisationMR'};
+var $author$project$Translate$ImmunisationOPV = {$: 'ImmunisationOPV'};
+var $author$project$Translate$ImmunisationPCV13 = {$: 'ImmunisationPCV13'};
+var $author$project$Translate$ImmunisationRotarix = {$: 'ImmunisationRotarix'};
 var $author$project$Translate$IncidenceByMonthOneVisitOrMore = {$: 'IncidenceByMonthOneVisitOrMore'};
 var $author$project$Translate$IncidenceByMonthTwoVisitsOrMore = {$: 'IncidenceByMonthTwoVisitsOrMore'};
 var $author$project$Translate$IncidenceByQuarterOneVisitOrMore = {$: 'IncidenceByQuarterOneVisitOrMore'};
 var $author$project$Translate$IncidenceByQuarterTwoVisitsOrMore = {$: 'IncidenceByQuarterTwoVisitsOrMore'};
 var $author$project$Translate$IncidenceByYearOneVisitOrMore = {$: 'IncidenceByYearOneVisitOrMore'};
 var $author$project$Translate$IncidenceByYearTwoVisitsOrMore = {$: 'IncidenceByYearTwoVisitsOrMore'};
+var $author$project$Translate$NCDA = {$: 'NCDA'};
 var $author$project$Translate$NewbornExam = {$: 'NewbornExam'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
@@ -10346,6 +10395,46 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Cell', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ChildScorecard':
 				return {english: 'Child Scorecard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ChildScoreboardActivity':
+				var activity = transId.a;
+				switch (activity.$) {
+					case 'ChildScoreboardNCDA':
+						var $temp$transId = $author$project$Translate$NCDA;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardBCGImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationBCG;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardDTPImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationDTP;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardDTPSAImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationDTPSA;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardIPVImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationIPV;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardMRImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationMR;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardOPVImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationOPV;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ChildScoreboardPCV13Immunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationPCV13;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						var $temp$transId = $author$project$Translate$ImmunisationRotarix;
+						transId = $temp$transId;
+						continue translationSet;
+				}
 			case 'CHW':
 				return {english: 'CHW', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'District':
@@ -10407,6 +10496,24 @@ var $author$project$Translate$translationSet = function (transId) {
 				return $author$project$Translate$translateHttpError(val);
 			case 'Hygiene':
 				return {english: 'Hygiene', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationBCG':
+				return {english: 'BCG Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationDTP':
+				return {english: 'DTP Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationDTPSA':
+				return {english: 'DTP Standalone Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationHPV':
+				return {english: 'HPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationIPV':
+				return {english: 'IPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationMR':
+				return {english: 'MR Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationOPV':
+				return {english: 'OPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationPCV13':
+				return {english: 'PCV13 Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'ImmunisationRotarix':
+				return {english: 'Rotarix Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Impacted':
 				return {english: 'Impacted (2+ visits)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'IncidenceByMonthOneVisitOrMore':
@@ -10445,6 +10552,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return A3($author$project$Translate$translateMonthYY, month, year, _short);
 			case 'NCD':
 				return {english: 'NCD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'NCDA':
+				return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NCDADemographicsItemLabel':
 				var item = transId.a;
 				switch (item.$) {
@@ -10899,7 +11008,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'WellChildAlbendazole':
 						return {english: 'Albendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildBCGImmunisation':
-						return {english: 'BCG Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationBCG;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildCaring':
 						var $temp$transId = $author$project$Translate$Caring;
 						transId = $temp$transId;
@@ -10907,7 +11018,13 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'WellChildContributingFactors':
 						return {english: 'Contributing Factors', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildDTPImmunisation':
-						return {english: 'DTP Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationDTP;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'WellChildDTPSAImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationDTPSA;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildECD':
 						return {english: 'ECD', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildFeeding':
@@ -10926,34 +11043,50 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Health Education', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildHeight':
 						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'WellChildHPVImmunisation':
+						var $temp$transId = $author$project$Translate$ImmunisationHPV;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildHygiene':
 						var $temp$transId = $author$project$Translate$Hygiene;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildIPVImmunisation':
-						return {english: 'IPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationIPV;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildMebendezole':
 						return {english: 'Mebendezole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildMRImmunisation':
-						return {english: 'MR Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationMR;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildMUAC':
 						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildNCDA':
-						return {english: 'NCDA', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$NCDA;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildNextVisit':
 						return {english: 'Next Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildNutrition':
 						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildOPVImmunisation':
-						return {english: 'OPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationOPV;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildPCV13Immunisation':
-						return {english: 'PCV13 Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationPCV13;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildPhoto':
 						return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildPregnancySummary':
 						return {english: 'Pregnancy Summary', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildRotarixImmunisation':
-						return {english: 'Rotarix Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$ImmunisationRotarix;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildSendToHC':
 						return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildSymptomsReview':
@@ -10962,12 +11095,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Vitals', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildVitaminA':
 						return {english: 'Vitamin A', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-					case 'WellChildWeight':
-						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-					case 'WellChildHPVImmunisation':
-						return {english: 'HPV Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					default:
-						return {english: 'DTP Standalone Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'WideScopeNote':
 				return {english: 'The selected scope may contain a large number of patients and report generation could take several minutes.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
