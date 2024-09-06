@@ -4438,7 +4438,8 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
     $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
     $start_date_obj = new DateTime($start_date);
 
-    // Checking patient indicated at NCDA questioner that all vaccinations are up to date
+    // Checking patient indicated at NCDA questioner that all
+    // vaccinations are up to date.
     if (empty($measurements_by_type['child_scoreboard_ncda']) || empty($measurements_by_type['child_scoreboard_ncda']->field_ncda_signs)) {
       $up_to_date_by_ncda_response = FALSE;
     }
@@ -4455,9 +4456,9 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       $up_to_date_by_ncda_response = !$behind_by_ncda_response;
     }
 
-    // If patient indicated at NCDA questioner that all vaccinations are up to date,
-    // we'll check that they were all recorded. If not, we should have immunisation
-    // activities to record data currently missing.
+    // If patient indicated at NCDA questioner that all vaccinations are
+    // up to date, we'll check that they were all recorded. If not, we should
+    // have immunisation activities to record data currently missing.
     if ($up_to_date_by_ncda_response) {
       $encounter_data['start_date_obj'] = $start_date_obj;
 
