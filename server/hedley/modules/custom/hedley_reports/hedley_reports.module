@@ -4380,7 +4380,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
   $query = new EntityFieldQuery();
   $result = $query
     ->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'well_child_encounter')
+    ->entityCondition('bundle', 'child_scoreboard_encounter')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
     ->propertyOrderBy('nid')
