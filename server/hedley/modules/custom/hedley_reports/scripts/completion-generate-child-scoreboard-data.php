@@ -25,12 +25,14 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'child_scoreboard_encounter';
+$type = 'individual_participant';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->propertyCondition('status', NODE_PUBLISHED);
+  ->fieldCondition('field_encounter_type', 'value', 'child-scoreboard')
+  ->propertyCondition('status', NODE_PUBLISHED)
+  ->addTag('exclude_deleted');
 
 if ($exclude_set) {
   $base_query->addTag('exclude_set_reports_data');
@@ -67,8 +69,6 @@ while (TRUE) {
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
     $completion_data = hedley_reports_generate_completion_data_for_child_scoreboard_encounter($node);
-    $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
-    node_save($node);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);
@@ -87,4 +87,4 @@ while (TRUE) {
   $nid = end($ids);
 }
 
-drush_print("Done! Completion data calculated for $total encounters.");
+drush_print("Done! Completion data calculated for $total participants.");

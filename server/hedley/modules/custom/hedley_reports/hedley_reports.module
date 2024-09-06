@@ -3368,7 +3368,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     return;
   }
 
-  // Get birthdate.
+  // Get birthdate and gender.
   $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
   try {
     $person = node_load($person_id);
@@ -3454,7 +3454,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 /**
  * Generates vaccination progress data for a well-child encounter.
  *
- * This function processes immunization data from previous and current
+ * This function processes immunisation data from previous and current
  * encounters, generating vaccination history and progress data for
  * well-child encounters. It merges this data with child scoreboard data
  * to produce comprehensive vaccination progress information.
@@ -3509,32 +3509,35 @@ function hedley_reports_well_child_generate_vaccination_progress_data($person_id
     $immunisations_from_all_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
   }
 
-  $history_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_previous_encounters);
-  $progress_data_by_well_child = hedley_reports_well_child_generate_vaccination_progress_data_regular($immunisations_from_all_encounters);
+  $history_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'well-child');
+  $progress_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_all_encounters, 'well-child');
   $progress_data_by_child_scoreboard = hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, $encounter_data['start_date_obj']);
 
   return [
-    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $history_data_by_well_child, $progress_data_by_child_scoreboard),
-    hedley_reports_well_child_merge_vaccination_progress_data($immunisation_types, $progress_data_by_well_child, $progress_data_by_child_scoreboard),
+    hedley_reports_merge_vaccination_progress_data($immunisation_types, 'well-child', $history_data_by_well_child, $progress_data_by_child_scoreboard),
+    hedley_reports_merge_vaccination_progress_data($immunisation_types, 'well-child', $progress_data_by_well_child, $progress_data_by_child_scoreboard),
   ];
 }
 
 /**
  * Generates regular vaccination progress data from encounters.
  *
- * Processes immunization data from a series of encounters to create
+ * Processes immunisation data from a series of encounters to create
  * a structured array of vaccination doses and dates, ensuring the data
  * is sorted and aligned.
  *
  * @param array $immunisations_from_encounters
- *   An associative array containing immunization data from previous
- *   encounters, indexed by immunization type.
+ *   An associative array containing immunisation data from previous
+ *   encounters, indexed by immunisation type.
+ * @param string $module
+ *   The type of individual encounter where immunisations were taken.
+ *   Supported values: 'well-child' / 'child-scoreboard'.
  *
  * @return array
  *   A structured array of vaccination doses and dates, organized by
- *   immunization type.
+ *   immunisation type.
  */
-function hedley_reports_well_child_generate_vaccination_progress_data_regular(array $immunisations_from_encounters) {
+function hedley_reports_generate_vaccination_progress_data(array $immunisations_from_encounters, $module) {
   $return = [];
   $immunisations_by_type = [];
   foreach ($immunisations_from_encounters as $immunisation_type => $immunisations) {
@@ -3588,8 +3591,20 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular(ar
       $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
     }
 
+    $prefix = $suffix = '';
+    switch ($module) {
+      case 'child-scoreboard':
+        $prefix = 'child_scoreboard_';
+        $suffix = '_iz';
+        break;
+
+      case 'well-child':
+        $prefix = 'well_child_';
+        $suffix = '_immunisation';
+    }
+
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
-      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, $prefix, $suffix);
       $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
     }
   }
@@ -3600,7 +3615,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular(ar
 /**
  * Generates vaccination progress data based on child scoreboard data.
  *
- * Retrieves immunization data for a child from the child scoreboard,
+ * Retrieves immunisation data for a child from the child scoreboard,
  * considering all encounters up to the current well-child encounter,
  * and returns structured vaccination progress data.
  *
@@ -3613,7 +3628,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_regular(ar
  *
  * @return array
  *   A structured array of vaccination doses and dates, organized by
- *   immunization type, based on child scoreboard encounters.
+ *   immunisation type, based on child scoreboard encounters.
  */
 function hedley_reports_well_child_generate_vaccination_progress_data_by_child_scoreboard($person_id, DateTime $well_child_encounter_start_date_obj) {
   $return = [];
@@ -3748,10 +3763,13 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
  *
  * Combines vaccination progress data from two sources (e.g., history
  * and child scoreboard data) into a single structured array, organized
- * by immunization type.
+ * by immunisation type.
  *
  * @param array $immunisation_types
- *   An array of immunization types to be merged.
+ *   An array of immunisation types to be merged.
+ * @param string $module
+ *   The type of individual encounter where immunisations were taken.
+ *   Supported values: 'well-child' / 'child-scoreboard'.
  * @param array $first
  *   The first set of vaccination progress data.
  * @param array $second
@@ -3759,12 +3777,24 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
  *
  * @return array
  *   A merged array of vaccination progress data, organized by
- *   immunization type.
+ *   immunisation type.
  */
-function hedley_reports_well_child_merge_vaccination_progress_data(array $immunisation_types, array $first, array $second) {
+function hedley_reports_merge_vaccination_progress_data(array $immunisation_types, $module, array $first, array $second) {
+  $prefix = $suffix = '';
+  switch ($module) {
+    case 'child-scoreboard':
+      $prefix = 'child_scoreboard_';
+      $suffix = '_iz';
+      break;
+
+    case 'well-child':
+      $prefix = 'well_child_';
+      $suffix = '_immunisation';
+  }
+
   $return = [];
   foreach ($immunisation_types as $type) {
-    $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
+    $common_type = hedley_reports_drop_prefix_and_suffix($type, $prefix, $suffix);
     if (!empty($first[$common_type]) && !empty($second[$common_type])) {
       $return[$common_type] = array_merge($first[$common_type], $second[$common_type]);
     }
@@ -3871,20 +3901,20 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
  *   An array of expected activity names, passed by reference.
  */
 function hedley_reports_well_child_add_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
-  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'history');
+  $expected_by_history = hedley_reports_well_child_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'history');
   foreach ($expected_by_history as $activity) {
     $expected[] = $activity;
   }
 }
 
 /**
- * Generates a list of expected well-child immunization activities.
+ * Generates a list of expected well-child immunisation activities.
  *
- * This function determines the expected immunization activities for a
+ * This function determines the expected immunisation activities for a
  * well-child based on the child's encounter data, age, gender, and mode.
  * It considers the vaccination history or progress, the site of the encounter,
  * and other factors such as the child's age in days. It then generates a list
- * of immunizations that should be expected during the encounter.
+ * of immunisations that should be expected during the encounter.
  *
  * @param array $encounter_data
  *   An associative array containing details of the encounter, including
@@ -3892,15 +3922,15 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
  * @param DateTime $birth_date_obj
  *   The DateTime object representing the child's birth date.
  * @param string $gender
- *   The gender of the child, used to determine gender-specific immunizations.
+ *   The gender of the child, used to determine gender-specific immunisations.
  * @param string $mode
  *   The mode of operation, either 'history' or 'progress', which determines
  *   whether to consider the vaccination history or progress.
  *
  * @return array
- *   An array of expected immunization activities based on the encounter data.
+ *   An array of expected immunisation activities based on the encounter data.
  */
-function hedley_reports_well_child_get_expected_immunisation_activites(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
+function hedley_reports_well_child_get_expected_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
   $encounter_type = $encounter_data['encounter_type'];
   $vaccination_progress = $encounter_data['vaccination_progress'];
   // History mode looks at vaccination status excluding vaccinations done at
@@ -3909,7 +3939,7 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
   $vaccination_history = $mode == 'history' ? $encounter_data['vaccination_history'] : $vaccination_progress;
   $start_date_obj = $encounter_data['start_date_obj'];
 
-  $initial_opv_administered = hedley_reports_well_child_initial_opv_administered($encounter_data, $birth_date_obj);
+  $initial_opv_administered = hedley_reports_initial_opv_administered($encounter_data, $birth_date_obj);
   $interval = $start_date_obj->diff($birth_date_obj);
   $age_in_days = $interval->days;
 
@@ -3968,7 +3998,7 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
     $doses = array_keys($performed);
     sort($doses);
     $last_dose = array_reverse($doses)[0];
-    $last_dose_for_immunisation = hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
+    $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
     // If all doses we administered, skipping to next immunisation type.
     if ($last_dose == $last_dose_for_immunisation) {
       continue;
@@ -3978,7 +4008,7 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
     $last_dose_as_number = (int) explode('-', $last_dose)[1];
     $next_dose_as_number = $last_dose_as_number + 1;
     $last_dose_date = $performed[$last_dose];
-    $interval_between_dosed = hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site);
+    $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
     $last_dose_date_obj = new DateTime($last_dose_date);
     $next_dose_date_obj = clone $last_dose_date_obj;
     $next_dose_date_obj->modify($interval_between_dosed);
@@ -4018,7 +4048,7 @@ function hedley_reports_well_child_get_expected_immunisation_activites(array $en
  *   TRUE if the initial OPV dose was administered within 14 days of birth,
  *   FALSE otherwise.
  */
-function hedley_reports_well_child_initial_opv_administered(array $encounter_data, DateTime $birth_date_obj) {
+function hedley_reports_initial_opv_administered(array $encounter_data, DateTime $birth_date_obj) {
   $vaccination_progress = $encounter_data['vaccination_progress'];
 
   if (empty($vaccination_progress['opv']) || empty($vaccination_progress['opv']['dose-1'])) {
@@ -4039,16 +4069,16 @@ function hedley_reports_well_child_initial_opv_administered(array $encounter_dat
  * the OPV dose was administered.
  *
  * @param string $immunisation_type
- *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ *   The type of immunisation (e.g., 'bcg', 'opv', 'dtp').
  * @param bool $initial_opv_administered
  *   Indicates whether the initial OPV dose was administered within 14 days
  *   of birth.
  *
  * @return string|bool
  *   The last expected dose for the vaccine (e.g., 'dose-1', 'dose-3'),
- *   or FALSE, if the immunization type is not recognized.
+ *   or FALSE, if the immunisation type is not recognized.
  */
-function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
+function hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered) {
   switch ($immunisation_type) {
     case 'bcg':
     case 'ipv':
@@ -4079,15 +4109,15 @@ function hedley_reports_well_child_get_last_dose_for_vaccine($immunisation_type,
  * occurs.
  *
  * @param string $immunisation_type
- *   The type of immunization (e.g., 'bcg', 'opv', 'dtp').
+ *   The type of immunisation (e.g., 'bcg', 'opv', 'dtp').
  * @param string $site
  *   The site name, which may affect the interval for certain vaccines.
  *
  * @return string|bool
  *   A string representing the interval between doses (e.g., '+4 weeks',
- *   '+9 months'), or FALSE if the immunization type is not recognized.
+ *   '+9 months'), or FALSE if the immunisation type is not recognized.
  */
-function hedley_reports_well_child_get_interval_for_vaccine($immunisation_type, $site) {
+function hedley_reports_get_interval_for_vaccine($immunisation_type, $site) {
   switch ($immunisation_type) {
     case 'bcg':
     case 'ipv':
@@ -4262,7 +4292,7 @@ function hedley_reports_well_child_add_next_steps_activities(array $encounter_da
     }
 
     if ($immunisation_activities_completed) {
-      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activites($encounter_data, $birth_date_obj, $gender, 'progress');
+      $expected_by_progress = hedley_reports_well_child_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'progress');
       if (!empty($expected_by_progress)) {
         // Immunisation activity completed, but child is still behind
         // on vaccinations.
@@ -4326,13 +4356,12 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
 /**
  * Generates completion data for Child Scoreboard encounter.
  *
- * @param object $encounter
- *   The encounter node object.
- *
- * @return array
- *   An array containing the completion data for given encounter.
+ * @param object $participant
+ *   The participant node object representing illness.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
  */
-function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($encounter) {
+function hedley_reports_generate_completion_data_for_child_scoreboard_encounter($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
     'child_scoreboard_ncda' => 'a',
@@ -4343,39 +4372,446 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
     'child_scoreboard_opv_iz' => 'f',
     'child_scoreboard_pcv13_iz' => 'g',
     'child_scoreboard_rotarix_iz' => 'h',
+    'child_scoreboard_dtp_sa_iz' => 'i',
+
   ];
 
-  // Activities that are always taken during encounter.
-  $expected = ['child_scoreboard_ncda'];
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'well_child_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
 
-  // Resolve encounter start date.
-  $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+  if (empty($result['node'])) {
+    return;
+  }
 
-  // Loading all measurements that belong to encounter.
-  $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+  // Get birthdate and gender.
+  $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+  try {
+    $person = node_load($person_id);
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $birth_date_obj = new DateTime($birth_date);
+    $gender = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  }
+  catch (Exception $e) {
+    $birth_date_obj = NULL;
+    $gender = 'male';
+  }
 
-  if (empty($measurements_ids)) {
-    $completion = hedley_reports_generate_completion_result($expected, [], $mapping);
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
 
-    return [
-      'start_date' => $start_date,
-      'completion' => $completion,
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'measurements_by_type' => $measurements_by_type,
     ];
   }
 
-  // Ordering measurements by type.
-  $measurements_by_type = [];
-  $measurements = node_load_multiple($measurements_ids);
-  foreach ($measurements as $measurement) {
-    $measurements_by_type[$measurement->type] = $measurement;
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    $expected = ['child_scoreboard_ncda'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+
+    // Checking patient indicated at NCDA questioner that all vaccinations are up to date
+    if (empty($measurements_by_type['child_scoreboard_ncda']) || empty($measurements_by_type['child_scoreboard_ncda']->field_ncda_signs)) {
+      $up_to_date_by_ncda_response = FALSE;
+    }
+    else {
+      $behind_by_ncda_response = FALSE;
+      $signs = $measurements_by_type['child_scoreboard_ncda']->field_ncda_signs[LANGUAGE_NONE];
+      foreach ($signs as $sign) {
+        if ($sign['value'] == 'child-behind-on-vaccination') {
+          $behind_by_ncda_response = TRUE;
+          break;
+        }
+      }
+
+      $up_to_date_by_ncda_response = !$behind_by_ncda_response;
+    }
+
+    // If patient indicated at NCDA questioner that all vaccinations are up to date,
+    // we'll check that they were all recorded. If not, we should have immunisation
+    // activities to record data currently missing.
+    if ($up_to_date_by_ncda_response) {
+      $encounter_data['start_date_obj'] = $start_date_obj;
+
+      // Try to resolve age in months at a time encounter was performed.
+      $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+      $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
+
+      list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, $encounter_data);
+
+      $expected_immunisation_activities = hedley_reports_child_scoreboard_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'history');
+      $expected = array_merge($expected, $expected_immunisation_activities);
+    }
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
+}
+
+/**
+ * Generates vaccination progress data for a child scoreboard encounter.
+ *
+ * This function processes immunisation data from previous and current
+ * encounters, generating vaccination history and progress data for
+ * child scoreboard encounters. It merges this data with well-child
+ * data to produce comprehensive vaccination progress information.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose vaccination data is being
+ *   processed.
+ * @param array $encounter_data
+ *   An associative array containing details of the current encounter,
+ *   including previous encounter data and measurements.
+ *
+ * @return array
+ *   An array containing merged vaccination progress data, with history
+ *   and progress for the child.
+ */
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, array $encounter_data) {
+  $previous_encounters_data = $encounter_data['previous_encounters_data'];
+
+  $immunisation_types = [
+    'child_scoreboard_bcg_iz',
+    'child_scoreboard_dtp_iz',
+    'child_scoreboard_ipv_iz',
+    'child_scoreboard_mr_iz',
+    'child_scoreboard_opv_iz',
+    'child_scoreboard_pcv13_iz',
+    'child_scoreboard_rotarix_iz',
+  ];
+
+  $immunisations_from_previous_encounters = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_from_previous_encounters[$immunisation_type] = [];
   }
 
-  $completion = hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    foreach ($immunisation_types as $immunisation_type) {
+      if (empty($measurements_by_type[$immunisation_type])) {
+        continue;
+      }
+      $immunisations_from_previous_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+    }
+  }
+
+  $immunisations_from_all_encounters = $immunisations_from_previous_encounters;
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  foreach ($immunisation_types as $immunisation_type) {
+    if (empty($measurements_by_type[$immunisation_type])) {
+      continue;
+    }
+    $immunisations_from_all_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+  }
+
+  $history_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'child-scoreboard');
+  $progress_data_by_well_child = hedley_reports_generate_vaccination_progress_data($immunisations_from_all_encounters, 'child-scoreboard');
+  $progress_data_by_child_scoreboard = hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($person_id, $encounter_data['start_date_obj']);
 
   return [
-    'start_date' => $start_date,
-    'completion' => $completion,
+    hedley_reports_merge_vaccination_progress_data($immunisation_types, 'child-scoreboard', $history_data_by_well_child, $progress_data_by_child_scoreboard),
+    hedley_reports_merge_vaccination_progress_data($immunisation_types, 'child-scoreboard', $progress_data_by_well_child, $progress_data_by_child_scoreboard),
   ];
+}
+
+/**
+ * Generates a list of expected well-child immunisation activities.
+ *
+ * This function determines the expected immunisation activities for a
+ * well-child based on the child's encounter data, age, gender, and mode.
+ * It considers the vaccination history or progress, the site of the encounter,
+ * and other factors such as the child's age in days. It then generates a list
+ * of immunisations that should be expected during the encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the encounter, including
+ *   encounter type, vaccination progress, vaccination history, and start date.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunisations.
+ * @param string $mode
+ *   The mode of operation, either 'history' or 'progress', which determines
+ *   whether to consider the vaccination history or progress.
+ *
+ * @return array
+ *   An array of expected immunisation activities based on the encounter data.
+ */
+function hedley_reports_child_scoreboard_get_expected_immunisation_activities(array $encounter_data, DateTime $birth_date_obj, $gender, $mode) {
+  $vaccination_progress = $encounter_data['vaccination_progress'];
+  // History mode looks at vaccination status excluding vaccinations done at
+  // current encounter. Progress mode includes vaccinations done at current
+  // encounter.
+  $vaccination_history = $mode == 'history' ? $encounter_data['vaccination_history'] : $vaccination_progress;
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  $initial_opv_administered = hedley_reports_initial_opv_administered($encounter_data, $birth_date_obj);
+  $interval = $start_date_obj->diff($birth_date_obj);
+  $age_in_days = $interval->days;
+
+  $possible_immunisations = ['bcg', 'opv'];
+  if ($age_in_days >= (6 * 7)) {
+    $possible_immunisations = array_merge(
+      $possible_immunisations,
+      ['dtp', 'pcv13', 'rotarix']
+    );
+  }
+  if ($age_in_days >= (14 * 7)) {
+    $possible_immunisations[] = 'ipv';
+  }
+  if ($age_in_days >= (36 * 7)) {
+    $possible_immunisations[] = 'mr';
+  }
+
+  $site = variable_get('hedley_general_site_name', '');
+  if ($site == 'burundi') {
+    // All 3 doses of DTP were given, it has passed at least 28 days since
+    // third dose, and, child is at last 18 months old.
+    if (!empty($vaccination_progress['dtp']['dose-3'])) {
+      $age_in_months = ($interval->y * 12) + $interval->m;
+      $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
+      $interval = $start_date_obj->diff($third_dose_date_obj);
+      $days_since_third_dose = $interval->days;
+
+      if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
+        $possible_immunisations[] = 'dtp_sa';
+      }
+    }
+  }
+  else {
+    $age_in_years = $interval->y;
+    if ($age_in_years >= 12 && $gender == 'female') {
+      $possible_immunisations[] = 'hpv';
+    }
+  }
+
+  $expected = [];
+  foreach ($possible_immunisations as $immunisation_type) {
+    $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
+    if (empty($vaccination_history)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $performed = $vaccination_history[$immunisation_type];
+    if (empty($performed)) {
+      $expected[] = $immunisation_full_name;
+      continue;
+    }
+
+    $doses = array_keys($performed);
+    sort($doses);
+    $last_dose = array_reverse($doses)[0];
+    $last_dose_for_immunisation = hedley_reports_get_last_dose_for_vaccine($immunisation_type, $initial_opv_administered);
+    // If all doses we administered, skipping to next immunisation type.
+    if ($last_dose == $last_dose_for_immunisation) {
+      continue;
+    }
+
+    // Calculating when next dose is supposed to be administered.
+    $last_dose_as_number = (int) explode('-', $last_dose)[1];
+    $next_dose_as_number = $last_dose_as_number + 1;
+    $last_dose_date = $performed[$last_dose];
+    $interval_between_dosed = hedley_reports_get_interval_for_vaccine($immunisation_type, $site);
+    $last_dose_date_obj = new DateTime($last_dose_date);
+    $next_dose_date_obj = clone $last_dose_date_obj;
+    $next_dose_date_obj->modify($interval_between_dosed);
+    if ($immunisation_type == 'opv' && $next_dose_as_number == 2 && $initial_opv_administered) {
+      $six_weeks_old_date_obj = clone $birth_date_obj;
+      $six_weeks_old_date_obj->modify('+6 weeks');
+
+      if ($six_weeks_old_date_obj > $next_dose_date_obj) {
+        $next_dose_date_obj = $six_weeks_old_date_obj;
+      }
+    }
+
+    // If encounter started after the date when immunisation was supposed
+    // to be administered, adding it as expected.
+    if ($start_date_obj >= $next_dose_date_obj) {
+      $expected[] = $immunisation_full_name;
+    }
+  }
+
+  return $expected;
+}
+
+/**
+ * Generates vaccination progress data based on well-child data.
+ *
+ * Retrieves immunisation data for a child from the well-child,
+ * considering all encounters up to the current child scoreboard encounter,
+ * and returns structured vaccination progress data.
+ *
+ * @param int $person_id
+ *   The ID of the person (child) whose scoreboard data is being
+ *   processed.
+ * @param DateTime $child_scoreboard_encounter_start_date_obj
+ *   The DateTime object representing the start date of the current
+ *   child scoreboard encounter.
+ *
+ * @return array
+ *   A structured array of vaccination doses and dates, organized by
+ *   immunisation type, based on child scoreboard encounters.
+ */
+function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_well_child($person_id, DateTime $child_scoreboard_encounter_start_date_obj) {
+  $return = [];
+  if (empty($person_id)) {
+    return $return;
+  }
+
+  $query = new EntityFieldQuery();
+  $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'individual_participant')
+    ->fieldCondition('field_encounter_type', 'value', 'well-child')
+    ->fieldCondition('field_person', 'target_id', $person_id)
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->addTag('exclude_deleted');
+
+  $result = $query
+    ->range(0, 1)
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    return $return;
+  }
+
+  $participant_id = key($result['node']);
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'well_child_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant_id)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return $return;
+  }
+
+  $immunisation_types = [
+    'well_child_bcg_immunisation',
+    'well_child_dtp_immunisation',
+    'well_child_dtp_sa_immunisation',
+    'well_child_ipv_immunisation',
+    'well_child_mr_immunisation',
+    'well_child_opv_immunisation',
+    'well_child_pcv13_immunisation',
+    'well_child_rotarix_immunisation',
+  ];
+
+  $immunisations_by_type = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_by_type[$immunisation_type] = [
+      'doses' => [],
+      'dates' => [],
+    ];
+  }
+  $encounters = node_load_multiple(array_keys($result['node']));
+  foreach ($encounters as $encounter) {
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+    if ($start_date_obj > $child_scoreboard_encounter_start_date_obj) {
+      // This encounter started after well child encounter, so, skip it.
+      continue;
+    }
+
+    // Loading all immunisation activities recorded during the encounter.
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', $immunisation_types, 'IN')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_well_child_encounter', 'target_id', $encounter->nid)
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+
+    $immunisations = node_load_multiple(array_keys($result['node']));
+    foreach ($immunisations as $immunisation) {
+      $doses = $immunisation->field_administered_doses;
+      $dates = $immunisation->field_administration_dates;
+      if (empty($doses) || empty($dates)) {
+        continue;
+      }
+
+      $encounter_doses = $encounter_dates = [];
+      foreach ($doses[LANGUAGE_NONE] as $dose) {
+        $encounter_doses[] = $dose['value'];
+      }
+      foreach ($dates[LANGUAGE_NONE] as $date) {
+        $encounter_dates[] = explode(' ', $date['value'])[0];
+      }
+
+      $immunisations_by_type[$immunisation->type]['doses'] = array_merge($immunisations_by_type[$immunisation->type]['doses'], $encounter_doses);
+      $immunisations_by_type[$immunisation->type]['dates'] = array_merge($immunisations_by_type[$immunisation->type]['dates'], $encounter_dates);
+    }
+  }
+
+  foreach ($immunisations_by_type as $type => $item) {
+    if (empty($item['doses']) || empty($item['dates'])) {
+      continue;
+    }
+
+    $immunisations_by_type[$type]['doses'] = array_unique($item['doses']);
+    sort($immunisations_by_type[$type]['doses']);
+    $immunisations_by_type[$type]['dates'] = array_unique($item['dates']);
+    sort($immunisations_by_type[$type]['dates']);
+    $total_doses = count($immunisations_by_type[$type]['doses']);
+    $total_dates = count($immunisations_by_type[$type]['dates']);
+
+    // Make sure number of doses matches the number of dates.
+    if ($total_doses != $total_dates) {
+      $common_size = min($total_doses, $total_dates);
+      $immunisations_by_type[$type]['doses'] = array_slice($immunisations_by_type[$type]['doses'], 0, $common_size);
+      $immunisations_by_type[$type]['dates'] = array_slice($immunisations_by_type[$type]['dates'], 0, $common_size);
+    }
+
+    foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
+      $common_type = hedley_reports_drop_prefix_and_suffix($type, 'well_child_', '_immunisation');
+      $return[$common_type][$dose] = $immunisations_by_type[$type]['dates'][$index];
+    }
+  }
+
+  return $return;
 }
 
 /**

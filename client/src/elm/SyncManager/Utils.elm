@@ -61,7 +61,7 @@ determineSyncStatus activePage model =
                 UserPage (SessionPage _ (ActivityPage (ChildActivity ChildPicture))) ->
                     True
 
-                -- Participant page, where activites are taken for a child.
+                -- Participant page, where activities are taken for a child.
                 UserPage (SessionPage _ (ChildPage _)) ->
                     True
 
