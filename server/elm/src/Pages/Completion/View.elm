@@ -5,6 +5,7 @@ import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , ChildScoreboardActivity(..)
         , CompletionData
         , EncounterData
         , HomeVisitActivity(..)
@@ -83,7 +84,8 @@ viewCompletionData language currentDate themePath data model =
                     if
                         List.member reportType
                             [ -- Exclusively CHW encounters.
-                              ReportHomeVisit
+                              ReportChildScoreboard
+                            , ReportHomeVisit
                             , ReportNewbornExam
                             ]
                     then
@@ -196,6 +198,9 @@ viewCompletionData language currentDate themePath data model =
                             ReportAcuteIllness ->
                                 viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
 
+                            ReportChildScoreboard ->
+                                viewChildScoreboardReport language data.site startDate limitDate model.takenBy data.childScoreboardData
+
                             ReportHomeVisit ->
                                 viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
 
@@ -222,6 +227,7 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportChildScoreboard
                 , ReportHomeVisit
                 , ReportNewbornExam
                 , ReportNutritionGroup
@@ -311,6 +317,15 @@ viewHomeVisitReport language startDate limitDate mTakenBy reportData =
         |> generateHomeVisitReportData language
         |> viewMetricsResultsTable
         |> div [ class "report home-visit" ]
+
+
+viewChildScoreboardReport : Language -> Site -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData ChildScoreboardActivity) -> Html Msg
+viewChildScoreboardReport language site startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateChildScoreboardReportData language (resolveChildScoreboardActivities site)
+        |> viewMetricsResultsTable
+        |> div [ class "report child-scoreboard" ]
 
 
 eliminateEmptyEncounters :
@@ -518,6 +533,34 @@ generateHomeVisitReportData language records =
                 ]
             )
             allHomeVisitActivities
+    }
+
+
+generateChildScoreboardReportData :
+    Language
+    -> List ChildScoreboardActivity
+    -> List (EncounterData ChildScoreboardActivity)
+    -> MetricsResultsTableData
+generateChildScoreboardReportData language activities records =
+    { heading = translate language Translate.ChildScorecard
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.ChildScoreboardActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            activities
     }
 
 

@@ -4,6 +4,7 @@ import App.Types exposing (Site(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , ChildScoreboardActivity(..)
         , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
@@ -18,6 +19,9 @@ reportTypeToString reportType =
     case reportType of
         ReportAcuteIllness ->
             "acute-illness"
+
+        ReportChildScoreboard ->
+            "child-scoreboard"
 
         ReportHomeVisit ->
             "home-visit"
@@ -40,6 +44,9 @@ reportTypeFromString reportType =
     case reportType of
         "acute-illness" ->
             Just ReportAcuteIllness
+
+        "child-scoreboard" ->
+            Just ReportChildScoreboard
 
         "home-visit" ->
             Just ReportHomeVisit
@@ -185,3 +192,23 @@ allHomeVisitActivities =
     , HomeVisitFoodSecurity
     , HomeVisitHygiene
     ]
+
+
+resolveChildScoreboardActivities : Site -> List ChildScoreboardActivity
+resolveChildScoreboardActivities site =
+    [ ChildScoreboardNCDA
+    , ChildScoreboardBCGImmunisation
+    , ChildScoreboardDTPImmunisation
+    , ChildScoreboardIPVImmunisation
+    , ChildScoreboardMRImmunisation
+    , ChildScoreboardOPVImmunisation
+    , ChildScoreboardPCV13Immunisation
+    , ChildScoreboardRotarixImmunisation
+    ]
+        ++ (case site of
+                SiteBurundi ->
+                    [ ChildScoreboardDTPSAImmunisation ]
+
+                _ ->
+                    []
+           )

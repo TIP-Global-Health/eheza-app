@@ -5826,6 +5826,7 @@ var $elm_community$maybe_extra$Maybe$Extra$or = F2(
 		}
 	});
 var $author$project$Pages$Completion$Model$ReportAcuteIllness = {$: 'ReportAcuteIllness'};
+var $author$project$Pages$Completion$Model$ReportChildScoreboard = {$: 'ReportChildScoreboard'};
 var $author$project$Pages$Completion$Model$ReportHomeVisit = {$: 'ReportHomeVisit'};
 var $author$project$Pages$Completion$Model$ReportNewbornExam = {$: 'ReportNewbornExam'};
 var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
@@ -5835,6 +5836,8 @@ var $author$project$Pages$Completion$Utils$reportTypeFromString = function (repo
 	switch (reportType) {
 		case 'acute-illness':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportAcuteIllness);
+		case 'child-scoreboard':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportChildScoreboard);
 		case 'home-visit':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportHomeVisit);
 		case 'newborn-exam':
@@ -9990,6 +9993,7 @@ var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
 var $author$project$Translate$Caring = {$: 'Caring'};
 var $author$project$Translate$Cell = {$: 'Cell'};
+var $author$project$Translate$ChildScorecard = {$: 'ChildScorecard'};
 var $author$project$Translate$District = {$: 'District'};
 var $author$project$Translate$Feeding = {$: 'Feeding'};
 var $author$project$Translate$FoodSecurity = {$: 'FoodSecurity'};
@@ -10368,6 +10372,10 @@ var $author$project$Translate$translationSet = function (transId) {
 				switch (reportType.$) {
 					case 'ReportAcuteIllness':
 						var $temp$transId = $author$project$Translate$AcuteIllness;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ReportChildScoreboard':
+						var $temp$transId = $author$project$Translate$ChildScorecard;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'ReportHomeVisit':
@@ -11993,6 +12001,8 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 	switch (reportType.$) {
 		case 'ReportAcuteIllness':
 			return 'acute-illness';
+		case 'ReportChildScoreboard':
+			return 'child-scoreboard';
 		case 'ReportHomeVisit':
 			return 'home-visit';
 		case 'ReportNewbornExam':
@@ -13374,6 +13384,88 @@ var $author$project$DateSelector$SelectorPopup$viewCalendarPopup = F3(
 			},
 			popupState);
 	});
+var $author$project$Translate$ChildScoreboardActivity = function (a) {
+	return {$: 'ChildScoreboardActivity', a: a};
+};
+var $author$project$Pages$Completion$View$generateChildScoreboardReportData = F3(
+	function (language, activities, records) {
+		return {
+			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$ChildScorecard),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.expectedActivities;
+							}),
+						activity,
+						records);
+					var completed = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.completedActivities;
+							}),
+						activity,
+						records);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$ChildScoreboardActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+						]);
+				},
+				activities)
+		};
+	});
+var $author$project$Pages$Completion$Utils$resolveChildScoreboardActivities = function (site) {
+	return _Utils_ap(
+		_List_fromArray(
+			[$author$project$Backend$Completion$Model$ChildScoreboardNCDA, $author$project$Backend$Completion$Model$ChildScoreboardBCGImmunisation, $author$project$Backend$Completion$Model$ChildScoreboardDTPImmunisation, $author$project$Backend$Completion$Model$ChildScoreboardIPVImmunisation, $author$project$Backend$Completion$Model$ChildScoreboardMRImmunisation, $author$project$Backend$Completion$Model$ChildScoreboardOPVImmunisation, $author$project$Backend$Completion$Model$ChildScoreboardPCV13Immunisation, $author$project$Backend$Completion$Model$ChildScoreboardRotarixImmunisation]),
+		function () {
+			if (site.$ === 'SiteBurundi') {
+				return _List_fromArray(
+					[$author$project$Backend$Completion$Model$ChildScoreboardDTPSAImmunisation]);
+			} else {
+				return _List_Nil;
+			}
+		}());
+};
+var $author$project$Pages$Completion$View$viewChildScoreboardReport = F6(
+	function (language, site, startDate, limitDate, mTakenBy, reportData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report child-scoreboard')
+				]),
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
+				A3(
+					$author$project$Pages$Completion$View$generateChildScoreboardReportData,
+					language,
+					$author$project$Pages$Completion$Utils$resolveChildScoreboardActivities(site),
+					A4(
+						$author$project$Pages$Completion$View$applyFilters,
+						startDate,
+						limitDate,
+						mTakenBy,
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
+	});
 var $author$project$Pages$Utils$customEmptySelectOption = F2(
 	function (label, isSelected) {
 		return A2(
@@ -13965,7 +14057,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 						$elm$core$List$member,
 						reportType,
 						_List_fromArray(
-							[$author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam]))) {
+							[$author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam]))) {
 						return $author$project$Gizra$Html$emptyNode;
 					} else {
 						var options = A2(
@@ -14095,6 +14187,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 						switch (reportType.$) {
 							case 'ReportAcuteIllness':
 								return A5($author$project$Pages$Completion$View$viewAcuteIllnessReport, language, startDate, limitDate, model.takenBy, data.acuteIllnessData);
+							case 'ReportChildScoreboard':
+								return A6($author$project$Pages$Completion$View$viewChildScoreboardReport, language, data.site, startDate, limitDate, model.takenBy, data.childScoreboardData);
 							case 'ReportHomeVisit':
 								return A5($author$project$Pages$Completion$View$viewHomeVisitReport, language, startDate, limitDate, model.takenBy, data.homeVisitData);
 							case 'ReportNewbornExam':
@@ -14138,7 +14232,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									language,
 									model.reportType,
 									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild]),
+										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild]),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,
@@ -14668,7 +14762,6 @@ var $author$project$Translate$AcuteIllnessTotal = {$: 'AcuteIllnessTotal'};
 var $author$project$Translate$All = {$: 'All'};
 var $author$project$Translate$CBNP = {$: 'CBNP'};
 var $author$project$Translate$CHW = {$: 'CHW'};
-var $author$project$Translate$ChildScorecard = {$: 'ChildScorecard'};
 var $author$project$Translate$EncounterType = {$: 'EncounterType'};
 var $author$project$Translate$Encounters = {$: 'Encounters'};
 var $author$project$Translate$FBF = {$: 'FBF'};

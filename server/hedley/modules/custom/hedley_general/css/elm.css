@@ -395,6 +395,7 @@ body.admin-menu #page-wrapper #header {
 }
 
 .page-content .inputs .report.acute-illness .table .row .item.row-label,
+.page-content .inputs .report.child-scoreboard .table .row .item.row-label,
 .page-content .inputs .report.home-visit .table .row .item.row-label,
 .page-content .inputs .report.nutrition-group .table .row .item.row-label,
 .page-content .inputs .report.nutrition-individual .table .row .item.row-label,
@@ -404,6 +405,8 @@ body.admin-menu #page-wrapper #header {
 
 .page-content .inputs .report.acute-illness .table .row .item.heading,
 .page-content .inputs .report.acute-illness .table .row .item.value,
+.page-content .inputs .report.child-scoreboard .table .row .item.heading,
+.page-content .inputs .report.child-scoreboard .table .row .item.value,
 .page-content .inputs .report.home-visit .table .row .item.heading,
 .page-content .inputs .report.home-visit .table .row .item.value,
 .page-content .inputs .report.nutrition-group .table .row .item.heading,

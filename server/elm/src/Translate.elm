@@ -534,6 +534,9 @@ translationSet transId =
                 Pages.Completion.Model.ReportAcuteIllness ->
                     translationSet AcuteIllness
 
+                Pages.Completion.Model.ReportChildScoreboard ->
+                    translationSet ChildScorecard
+
                 Pages.Completion.Model.ReportHomeVisit ->
                     translationSet HomeVisit
 
