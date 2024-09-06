@@ -5,7 +5,7 @@
  * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-home-visit-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-child-scoreboard-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -68,7 +68,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $completion_data = hedley_reports_generate_completion_data_for_child_scoreboard_encounter($node);
+    $completion_data = hedley_reports_generate_completion_data_for_child_scoreboard_encounter($node, $exclude_set);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);
