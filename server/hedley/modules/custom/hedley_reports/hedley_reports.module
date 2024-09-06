@@ -4620,7 +4620,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
 
   $expected = [];
   foreach ($possible_immunisations as $immunisation_type) {
-    $immunisation_full_name = "well_child_{$immunisation_type}_immunisation";
+    $immunisation_full_name = "child_scoreboard_{$immunisation_type}_iz";
     if (empty($vaccination_history)) {
       $expected[] = $immunisation_full_name;
       continue;
