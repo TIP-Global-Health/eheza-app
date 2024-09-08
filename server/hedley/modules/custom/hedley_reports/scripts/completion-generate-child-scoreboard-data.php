@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Generates completion data for different types of encounters.
+ * Generates completion data for Child Scoreboard encounters.
  *
  * Execution: drush scr
  *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-child-scoreboard-data.php.
