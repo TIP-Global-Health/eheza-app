@@ -2155,7 +2155,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     }
   }
 
-  // Resolve encounter start date. We gp by the date of attendance
+  // Resolve encounter start date. We go by the date of attendance
   // measurement, since session may have lasted several days.
   $start_date = explode(' ', $attendance->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
   $start_date_obj = new DateTime($start_date);
@@ -4920,8 +4920,8 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_ncd_generate_expected_initial_activities($encounter_data, $birth_date_obj, $gender);
 
-    // If conditions match, add medication activities.
-   // hedley_reports_well_child_add_medication_activities($encounter_data, $expected);
+    // If conditions match, add labs activities.
+    hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add next steps activities.
    // hedley_reports_well_child_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
 
@@ -4955,12 +4955,210 @@ function hedley_reports_ncd_generate_expected_initial_activities($encounter_data
     }
   }
 
-  // If first encounter, add Medication History.
+  // If first encounter, add all Medical History activities.
   if (empty($encounter_data['previous_encounters_data'])) {
-    $expected[] = 'ncd_medication_history';
+    $expected = array_merge(
+      $expected,
+      [
+        'ncd_co_morbidities',
+        'ncd_medication_history',
+        'ncd_social_history',
+        'ncd_family_history',
+        'ncd_outside_care',
+      ]
+    );
+  }
+  // If subsequent encounter, add Outside Care.
+  else {
+    $expected[] = 'ncd_outside_care';
   }
 
   return $expected;
+}
+
+function hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected) {
+  // Blood sugar test is performed unconditionally.
+  $expected[] = 'ncd_random_blood_sugar_test';
+
+  $tests_dates_by_lab_type = [
+    'ncd_creatinine_test' => [],
+    'ncd_hba1c_test' => [],
+    'ncd_hiv_test' => [],
+    'ncd_lipid_panel_test' => [],
+    'ncd_liver_function_test' => [],
+    'ncd_pregnancy_test' => [],
+    'ncd_urine_dipstick_test' => [],
+  ];
+  $hiv_known_as_positive = FALSE;
+
+  // Reversing, to have most recent dates first.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+
+    $creatinine_test = $measurements_by_type['ncd_creatinine_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($creatinine_test)) {
+      $date_measured = explode(' ', $creatinine_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $results_exists = !empty($creatinine_test->field_creatinine_result) && !empty($creatinine_test->field_creatinine_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_creatinine_test'][] = explode(' ', $creatinine_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $hba1c_test = $measurements_by_type['ncd_hba1c_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($hba1c_test)) {
+      $date_measured = explode(' ', $hba1c_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $results_exists = !empty($hba1c_test->field_hba1c_result) && !empty($hba1c_test->field_hba1c_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_hba1c_test'][] = explode(' ', $hba1c_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $hiv_test = $measurements_by_type['ncd_hiv_test'];
+    if (!$hiv_known_as_positive) {
+      if (!empty($test) && !empty($test->field_test_execution_note)) {
+        $hiv_known_as_positive = $test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+        if (!$hiv_known_as_positive && hedley_reports_lab_test_performed_by_execution_note($hiv_test)) {
+          $date_measured = explode(' ', $hiv_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+          $date_measured_obj = new DateTime($date_measured);
+          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+          $valid_results_exists =
+            !empty($hiv_test->field_test_result) &&
+            !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+            $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+          if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+            $tests_dates_by_lab_type['ncd_hiv_test'][] = explode(' ', $hiv_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+          }
+        }
+      }
+    }
+
+    $lipid_panel_test = $measurements_by_type['ncd_lipid_panel_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($lipid_panel_test)) {
+      $date_measured = explode(' ', $lipid_panel_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $results_exists = !empty($lipid_panel_test->field_total_cholesterol) && !empty($lipid_panel_test->field_total_cholesterol[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_lipid_panel_test'][] = explode(' ', $lipid_panel_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $liver_function_test = $measurements_by_type['ncd_liver_function_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($liver_function_test)) {
+      $date_measured = explode(' ', $liver_function_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $results_exists = !empty($liver_function_test->field_alt_result) && !empty($liver_function_test->field_alt_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_liver_function_test'][] = explode(' ', $liver_function_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $pregnancy_test = $measurements_by_type['ncd_pregnancy_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($pregnancy_test)) {
+      $date_measured = explode(' ', $pregnancy_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $valid_results_exists =
+        !empty($hiv_test->field_test_result) &&
+        !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+        $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+      if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_pregnancy_test'][] = explode(' ', $pregnancy_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $urine_dipstick_test = $measurements_by_type['ncd_urine_dipstick_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($urine_dipstick_test)) {
+      $date_measured = explode(' ', $urine_dipstick_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $results_exists = !empty($urine_dipstick_test->field_protein) && !empty($urine_dipstick_test->field_protein[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_urine_dipstick_test'][] = explode(' ', $urine_dipstick_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+  }
+
+  foreach ($tests_dates_by_lab_type as $test_name => $dates_by_lab_type) {
+    $last_date = reset($dates_by_lab_type);
+    switch ($test_name) {
+      case 'ncd_creatinine_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_creatinine_test';
+        }
+        break;
+
+      case 'ncd_hba1c_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 6)) {
+          $expected[] = 'ncd_hba1c_test';
+        }
+        break;
+
+      case 'ncd_hiv_test':
+        if (!$hiv_known_as_positive && empty($last_date)) {
+          $expected[] = 'ncd_hiv_test';
+        }
+        break;
+
+      case 'ncd_lipid_panel_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_lipid_panel_test';
+        }
+        break;
+
+      case 'ncd_liver_function_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_liver_function_test';
+        }
+        break;
+
+      case 'ncd_pregnancy_test':
+        if (empty($last_date)) {
+          if ($gender == 'female' && !empty($birth_date_obj)) {
+            $interval = $encounter_data['start_date_obj']->diff($birth_date_obj);
+            $age_in_years = $interval->y;
+
+            if ($age_in_years >= 13 && $age_in_years <= 44) {
+              $expected[] = 'ncd_pregnancy_test';
+            }
+          }
+        }
+        break;
+
+      case 'ncd_urine_dipstick_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_urine_dipstick_test';
+        }
+        break;
+    }
+  }
+}
+
+function hedley_reports_lab_test_performed_by_execution_note($test) {
+  if (empty($test) || empty($test->field_test_execution_note)) {
+    return FALSE;
+  }
+
+  return in_array(
+    $test->field_test_execution_note[LANGUAGE_NONE][0]['value'],
+    ['run-today', 'run-previously', 'run-confirmed-by-lab-tech']
+  );
+}
+
+function hedley_reports_recurrent_test_required($last_date, $encounter_start_date_obj, $period_between_tests) {
+  if (empty($last_date)) {
+    return TRUE;
+  }
+
+  $last_date_obj = new DateTime($last_date);
+  $diff_months = $encounter_start_date_obj->diff($last_date_obj)->months;
+  return $diff_months >= $period_between_tests;
 }
 
 /**
