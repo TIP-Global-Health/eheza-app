@@ -4923,7 +4923,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     // If conditions match, add labs activities.
     hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add next steps activities.
-   // hedley_reports_well_child_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
+    hedley_reports_ncd_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -5137,6 +5137,149 @@ function hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj
         }
         break;
     }
+  }
+}
+
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
+  // Resolving diagnoses from current encounter.
+  $current_encounter = $encounter_data['encounter'];
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  $current_encounter_diagnoses = [];
+  if (!empty($current_encounter->field_ncd_diagnoses)) {
+    foreach ($current_encounter->field_ncd_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+      if ($diagnosis['value'] != 'none') {
+        $current_encounter_diagnoses[] = $diagnosis['value'];
+      }
+    }
+  }
+
+  // Resolving diagnoses from previous encounters.
+  $previous_encounters_diagnoses = [];
+  // Reversing, to have most recent dates first.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $previous_encounter = $previous_encounter_data['encounter'];
+    if (!empty($previous_encounter->field_ncd_diagnoses)) {
+      foreach ($previous_encounter->field_ncd_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+        if ($diagnosis['value'] != 'none') {
+          $previous_encounters_diagnoses[] = $diagnosis['value'];
+        }
+      }
+    }
+  }
+
+  // Checking is patient is pregnant.
+  $patient_pregnant = FALSE;
+  $pregnancy_test = $measurements_by_type['ncd_pregnancy_test'];
+  if (!empty(($pregnancy_test->field_test_execution_note))) {
+    $patient_pregnant = $pregnancy_test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+  }
+  if (!$patient_pregnant &&!empty(($pregnancy_test->field_test_result))) {
+    $patient_pregnant = $pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value'] == 'positive';
+  }
+
+  $hypertension_diagnoses = [
+    'hypertension-stage1',
+    'hypertension-stage2',
+    'hypertension-stage3'
+  ];
+  $diabetes_diagnoses = ['diabetes-initial', 'diabetes-recurrent'];
+  $diabetes_diagnoses_with_renal = array_merge($diabetes_diagnoses, ['renal-complications']);
+
+  if (
+    !$patient_pregnant &&
+    in_array('hypertension-stage1', $current_encounter_diagnoses) &&
+    empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) &&
+    empty(
+      array_intersect(
+        $current_encounter_diagnoses,
+        ['renal-complications', 'diabetes-initial']
+      )
+    ) &&
+    empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+  ) {
+    $expected[] = 'ncd_health_education';
+  }
+
+  // List of all diagnoses. Most recent one comes first.
+  $all_diagnoses = array_merge($current_encounter_diagnoses, $previous_encounters_diagnoses);
+
+  // Checking if Medication Distribution is expected.
+  $medicated_for_diabetes = !empty(array_intersect($all_diagnoses, $diabetes_diagnoses));
+
+  $current_hypertension_stage = '';
+  foreach ($all_diagnoses as $diagnosis) {
+    if (in_array($diagnosis, $hypertension_diagnoses)) {
+      $current_hypertension_stage = $diagnosis;
+      break;
+    }
+  }
+
+  $medicate_for_hypertension_initial_phase = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    if ($current_hypertension_stage == 'hypertension-stage1') {
+      if (
+        $patient_pregnant ||
+        in_array('diabetes-initial', $current_encounter_diagnoses) ||
+        !empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) ||
+        !empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+      ) {
+        $medicate_for_hypertension_initial_phase = TRUE;
+      }
+    }
+    else {
+      $medicate_for_hypertension_initial_phase = TRUE;
+    }
+  }
+
+  $medicate_for_hypertension_recurrent_phase = FALSE;
+  if (!$medicate_for_hypertension_initial_phase) {
+    if (
+      in_array('hypertension-stage1', $current_encounter_diagnoses) &&
+      !empty(
+        array_intersect(
+          $current_encounter_diagnoses,
+          ['renal-complications', 'diabetes-recurrent']
+        )
+      ) &&
+      empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) &&
+      empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+    ) {
+      $medicate_for_hypertension_recurrent_phase = TRUE;
+    }
+  }
+  $medicate_for_hypertension =  $medicate_for_hypertension_initial_phase ||  $medicate_for_hypertension_recurrent_phase;
+
+  if ($medicated_for_diabetes || $medicate_for_hypertension) {
+    $expected[] = 'ncd_medication_distribution';
+  }
+
+  // Checking if Referral is expected.
+  $refer_for_hypertension = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_hypertension = $patient_pregnant || ($current_hypertension_stage == 'hypertension-stage3');
+  }
+
+  $refer_for_diabetes = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_diabetes = !empty(array_intersect($all_diagnoses, $diabetes_diagnoses));
+  }
+
+  $refer_for_renal_omplications = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_renal_omplications = in_array('renal-complications', $all_diagnoses);
+  }
+
+  if ($refer_for_hypertension || $refer_for_diabetes || $refer_for_renal_omplications) {
+    $expected[] = 'ncd_referral';
   }
 }
 
