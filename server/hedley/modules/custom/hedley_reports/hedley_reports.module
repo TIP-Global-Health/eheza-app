@@ -4849,6 +4849,12 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     'ncd_symptom_review' => 's',
     'ncd_urine_dipstick_test' => 't',
     'ncd_vitals' => 'u',
+    // Logical activities.
+    'ncd_creatinine_test_result' => 'v',
+    'ncd_lipid_panel_test_result' => 'w',
+    'ncd_liver_function_test_result' => 'x',
+    'ncd_random_blood_sugar_test_result' => 'y',
+    'ncd_urine_dipstick_test_result' => 'z',
   ];
 
   // Load all encounters of current participant.
@@ -4924,6 +4930,66 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add next steps activities.
     hedley_reports_ncd_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
+
+    // Adding labs test results activities. Since those are logically derived,
+    // and not actual content, we apply proprietary logic per records recorded
+    // at labs results content.
+    $labs_results = $measurements_by_type['ncd_labs_results'];
+    if (!empty($abs_results)) {
+      if (!empty($labs_results->field_performed_tests)) {
+        $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
+        foreach ($performed_tests as $performed_test) {
+          switch ($performed_test['value']) {
+            case 'creatinine':
+              $expected[] = 'ncd_creatinine_test_result';
+              break;
+
+            case 'lipid-panel':
+              $expected[] = 'ncd_lipid_panel_test_result';
+              break;
+
+            case 'liver-function':
+              $expected[] = 'ncd_liver_function_test_result';
+              break;
+
+            case 'random-blood-sugar':
+              $expected[] = 'ncd_random_blood_sugar_test_result';
+              break;
+
+            case 'urine-dipstick':
+              $expected[] = 'ncd_urine_dipstick_test_result';
+              break;
+          }
+        }
+      }
+
+      if (!empty($labs_results->field_completed_tests)) {
+        $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
+        foreach ($completed_tests as $completed_test) {
+          switch ($completed_test['value']) {
+            case 'creatinine':
+              $measurements_by_type['ncd_creatinine_test_result'] = 'dummy';
+              break;
+
+            case 'lipid-panel':
+              $measurements_by_type['ncd_lipid_panel_test_result'] = 'dummy';
+              break;
+
+            case 'liver-function':
+              $measurements_by_type['ncd_liver_function_test_result'] = 'dummy';
+              break;
+
+            case 'random-blood-sugar':
+              $measurements_by_type['ncd_random_blood_sugar_test_result'] = 'dummy';
+              break;
+
+            case 'urine-dipstick':
+              $measurements_by_type['ncd_urine_dipstick_test_result'] = 'dummy';
+              break;
+          }
+        }
+      }
+    }
 
     $completion_data = [
       'start_date' => $start_date,
