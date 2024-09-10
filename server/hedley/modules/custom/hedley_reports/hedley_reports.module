@@ -4929,7 +4929,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     // If conditions match, add labs activities.
     hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add next steps activities.
-    hedley_reports_ncd_add_next_steps_activities($encounter_data, $birth_date_obj, $gender, $expected);
+    hedley_reports_ncd_add_next_steps_activities($encounter_data, $expected);
 
     // Adding labs test results activities. Since those are logically derived,
     // and not actual content, we apply proprietary logic per records recorded
@@ -5042,7 +5042,7 @@ function hedley_reports_ncd_generate_expected_initial_activities($encounter_data
   return $expected;
 }
 
-function hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected) {
+function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
   // Blood sugar test is performed unconditionally.
   $expected[] = 'ncd_random_blood_sugar_test';
 
@@ -5214,7 +5214,7 @@ function hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
-function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
+function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, array &$expected) {
   // Resolving diagnoses from current encounter.
   $current_encounter = $encounter_data['encounter'];
   $measurements_by_type = $encounter_data['measurements_by_type'];
