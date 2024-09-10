@@ -6,10 +6,12 @@ import Backend.Completion.Model
         ( AcuteIllnessActivity(..)
         , ChildScoreboardActivity(..)
         , HomeVisitActivity(..)
+        , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
         , WellChildActivity(..)
+        , WellChildEncounterType(..)
         )
 import Pages.Completion.Model exposing (ReportType(..))
 
@@ -25,6 +27,9 @@ reportTypeToString reportType =
 
         ReportHomeVisit ->
             "home-visit"
+
+        ReportNCD ->
+            "ncd"
 
         ReportNewbornExam ->
             "newborn-exam"
@@ -50,6 +55,9 @@ reportTypeFromString reportType =
 
         "home-visit" ->
             Just ReportHomeVisit
+
+        "ncd" ->
+            Just ReportNCD
 
         "newborn-exam" ->
             Just ReportNewbornExam
@@ -212,3 +220,34 @@ resolveChildScoreboardActivities site =
                 _ ->
                     []
            )
+
+
+allNCDActivities : List NCDActivity
+allNCDActivities =
+    [ NCDCoreExam
+    , NCDCoMorbidities
+    , NCDCreatinineTest
+    , NCDDangerSigns
+    , NCDFamilyHistory
+    , NCDFamilyPlanning
+    , NCDHba1cTest
+    , NCDHealthEducation
+    , NCDHIVTest
+    , NCDLipidPanelTest
+    , NCDLiverFunctionTest
+    , NCDMedicationDistribution
+    , NCDMedicationHistory
+    , NCDOutsideCare
+    , NCDPregnancyTest
+    , NCDRandomBloodSugarTest
+    , NCDReferral
+    , NCDSocialHistory
+    , NCDSymptomReview
+    , NCDUrineDipstickTest
+    , NCDVitals
+    , NCDCreatinineTestResult
+    , NCDLipidPanelTestResult
+    , NCDLiverFunctionTestResult
+    , NCDRandomBloodSugarTestResult
+    , NCDUrineDipstickTestResult
+    ]

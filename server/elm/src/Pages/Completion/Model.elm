@@ -30,6 +30,7 @@ type ReportType
     = ReportAcuteIllness
     | ReportChildScoreboard
     | ReportHomeVisit
+    | ReportNCD
     | ReportNewbornExam
     | ReportNutritionGroup
     | ReportNutritionIndividual

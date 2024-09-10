@@ -114,7 +114,7 @@ type NCDActivity
     | NCDFamilyPlanning
     | NCDHba1cTest
     | NCDHealthEducation
-    | NCDHivTest
+    | NCDHIVTest
     | NCDLipidPanelTest
     | NCDLiverFunctionTest
     | NCDMedicationDistribution

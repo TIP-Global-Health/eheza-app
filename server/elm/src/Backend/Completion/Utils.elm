@@ -319,7 +319,7 @@ ncdActivityFromMapping mapped =
             Just NCDHealthEducation
 
         "i" ->
-            Just NCDHivTest
+            Just NCDHIVTest
 
         "j" ->
             Just NCDLipidPanelTest
