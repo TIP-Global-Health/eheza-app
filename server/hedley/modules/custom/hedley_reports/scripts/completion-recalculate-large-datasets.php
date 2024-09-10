@@ -159,11 +159,11 @@ function generate_completion_results_data($health_center) {
           break;
 
         case 'ncd_encounter':
-          $data['nutrition_individual'][] = json_decode($json_data);
+          $data['ncd'][] = json_decode($json_data);
           break;
 
         case 'nutrition_encounter':
-          $data['ncd'][] = json_decode($json_data);
+          $data['nutrition_individual'][] = json_decode($json_data);
           break;
 
         case 'well_child_encounter':
