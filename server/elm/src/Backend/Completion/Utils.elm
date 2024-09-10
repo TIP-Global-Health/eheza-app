@@ -291,6 +291,91 @@ childScoreboardActivityFromMapping mapped =
             Nothing
 
 
+ncdActivityFromMapping : String -> Maybe NCDActivity
+ncdActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just NCDCoreExam
+
+        "b" ->
+            Just NCDCoMorbidities
+
+        "c" ->
+            Just NCDCreatinineTest
+
+        "d" ->
+            Just NCDDangerSigns
+
+        "e" ->
+            Just NCDFamilyHistory
+
+        "f" ->
+            Just NCDFamilyPlanning
+
+        "g" ->
+            Just NCDHba1cTest
+
+        "h" ->
+            Just NCDHealthEducation
+
+        "i" ->
+            Just NCDHivTest
+
+        "j" ->
+            Just NCDLipidPanelTest
+
+        "k" ->
+            Just NCDLiverFunctionTest
+
+        "l" ->
+            Just NCDMedicationDistribution
+
+        "m" ->
+            Just NCDMedicationHistory
+
+        "n" ->
+            Just NCDOutsideCare
+
+        "o" ->
+            Just NCDPregnancyTest
+
+        "p" ->
+            Just NCDRandomBloodSugarTest
+
+        "q" ->
+            Just NCDReferral
+
+        "r" ->
+            Just NCDSocialHistory
+
+        "s" ->
+            Just NCDSymptomReview
+
+        "t" ->
+            Just NCDUrineDipstickTest
+
+        "u" ->
+            Just NCDVitals
+
+        "v" ->
+            Just NCDCreatinineTestResult
+
+        "w" ->
+            Just NCDLipidPanelTestResult
+
+        "x" ->
+            Just NCDLiverFunctionTestResult
+
+        "y" ->
+            Just NCDRandomBloodSugarTestResult
+
+        "z" ->
+            Just NCDUrineDipstickTestResult
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of

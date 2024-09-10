@@ -6854,10 +6854,27 @@ var $author$project$Backend$Types$BackendReturn = F4(
 	function (model, cmd, error, appMsgs) {
 		return {appMsgs: appMsgs, cmd: cmd, error: error, model: model};
 	});
-var $author$project$Backend$Completion$Model$CompletionData = F9(
-	function (site, entityName, entityType, acuteIllnessData, childScoreboardData, homeVisitData, nutritionIndividualData, nutritionGroupData, wellChildData) {
-		return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
-	});
+var $author$project$Backend$Completion$Model$CompletionData = function (site) {
+	return function (entityName) {
+		return function (entityType) {
+			return function (acuteIllnessData) {
+				return function (childScoreboardData) {
+					return function (homeVisitData) {
+						return function (ncdData) {
+							return function (nutritionIndividualData) {
+								return function (nutritionGroupData) {
+									return function (wellChildData) {
+										return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
 var $author$project$Backend$Completion$Model$AcuteIllnessAcuteFindings = {$: 'AcuteIllnessAcuteFindings'};
 var $author$project$Backend$Completion$Model$AcuteIllnessCOVIDTesting = {$: 'AcuteIllnessCOVIDTesting'};
 var $author$project$Backend$Completion$Model$AcuteIllnessCall114 = {$: 'AcuteIllnessCall114'};
@@ -8122,6 +8139,90 @@ var $author$project$Backend$Completion$Utils$homeVisitActivityFromMapping = func
 	}
 };
 var $elm$json$Json$Decode$list = _Json_decodeList;
+var $author$project$Backend$Completion$Model$NCDCoMorbidities = {$: 'NCDCoMorbidities'};
+var $author$project$Backend$Completion$Model$NCDCoreExam = {$: 'NCDCoreExam'};
+var $author$project$Backend$Completion$Model$NCDCreatinineTest = {$: 'NCDCreatinineTest'};
+var $author$project$Backend$Completion$Model$NCDCreatinineTestResult = {$: 'NCDCreatinineTestResult'};
+var $author$project$Backend$Completion$Model$NCDDangerSigns = {$: 'NCDDangerSigns'};
+var $author$project$Backend$Completion$Model$NCDFamilyHistory = {$: 'NCDFamilyHistory'};
+var $author$project$Backend$Completion$Model$NCDFamilyPlanning = {$: 'NCDFamilyPlanning'};
+var $author$project$Backend$Completion$Model$NCDHba1cTest = {$: 'NCDHba1cTest'};
+var $author$project$Backend$Completion$Model$NCDHealthEducation = {$: 'NCDHealthEducation'};
+var $author$project$Backend$Completion$Model$NCDHivTest = {$: 'NCDHivTest'};
+var $author$project$Backend$Completion$Model$NCDLipidPanelTest = {$: 'NCDLipidPanelTest'};
+var $author$project$Backend$Completion$Model$NCDLipidPanelTestResult = {$: 'NCDLipidPanelTestResult'};
+var $author$project$Backend$Completion$Model$NCDLiverFunctionTest = {$: 'NCDLiverFunctionTest'};
+var $author$project$Backend$Completion$Model$NCDLiverFunctionTestResult = {$: 'NCDLiverFunctionTestResult'};
+var $author$project$Backend$Completion$Model$NCDMedicationDistribution = {$: 'NCDMedicationDistribution'};
+var $author$project$Backend$Completion$Model$NCDMedicationHistory = {$: 'NCDMedicationHistory'};
+var $author$project$Backend$Completion$Model$NCDOutsideCare = {$: 'NCDOutsideCare'};
+var $author$project$Backend$Completion$Model$NCDPregnancyTest = {$: 'NCDPregnancyTest'};
+var $author$project$Backend$Completion$Model$NCDRandomBloodSugarTest = {$: 'NCDRandomBloodSugarTest'};
+var $author$project$Backend$Completion$Model$NCDRandomBloodSugarTestResult = {$: 'NCDRandomBloodSugarTestResult'};
+var $author$project$Backend$Completion$Model$NCDReferral = {$: 'NCDReferral'};
+var $author$project$Backend$Completion$Model$NCDSocialHistory = {$: 'NCDSocialHistory'};
+var $author$project$Backend$Completion$Model$NCDSymptomReview = {$: 'NCDSymptomReview'};
+var $author$project$Backend$Completion$Model$NCDUrineDipstickTest = {$: 'NCDUrineDipstickTest'};
+var $author$project$Backend$Completion$Model$NCDUrineDipstickTestResult = {$: 'NCDUrineDipstickTestResult'};
+var $author$project$Backend$Completion$Model$NCDVitals = {$: 'NCDVitals'};
+var $author$project$Backend$Completion$Utils$ncdActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDCoreExam);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDCoMorbidities);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDCreatinineTest);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDDangerSigns);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDFamilyHistory);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDFamilyPlanning);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDHba1cTest);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDHealthEducation);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDHivTest);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDLipidPanelTest);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDLiverFunctionTest);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDMedicationDistribution);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDMedicationHistory);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDOutsideCare);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDPregnancyTest);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDRandomBloodSugarTest);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDReferral);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDSocialHistory);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDSymptomReview);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDUrineDipstickTest);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDVitals);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDCreatinineTestResult);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDLipidPanelTestResult);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDLiverFunctionTestResult);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDRandomBloodSugarTestResult);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$NCDUrineDipstickTestResult);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Completion$Model$NutritionChildFbf = {$: 'NutritionChildFbf'};
 var $author$project$Backend$Completion$Model$NutritionContributingFactors = {$: 'NutritionContributingFactors'};
 var $author$project$Backend$Completion$Model$NutritionFollowUp = {$: 'NutritionFollowUp'};
@@ -8207,34 +8308,40 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 				_List_fromArray(
-					['results', 'home_visit']),
+					['results', 'ncd']),
 				$elm$json$Json$Decode$list(
-					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
+					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 					_List_fromArray(
-						['results', 'child_scoreboard']),
+						['results', 'home_visit']),
 					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 						_List_fromArray(
-							['results', 'acute_illness']),
+							['results', 'child_scoreboard']),
 						$elm$json$Json$Decode$list(
-							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
 						A3(
-							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-							'entity_type',
-							$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+							_List_fromArray(
+								['results', 'acute_illness']),
+							$elm$json$Json$Decode$list(
+								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'entity_name',
-								$elm$json$Json$Decode$string,
+								'entity_type',
+								$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 								A3(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'site',
-									$author$project$Backend$Decoder$decodeSite,
-									$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))));
+									'entity_name',
+									$elm$json$Json$Decode$string,
+									A3(
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+										'site',
+										$author$project$Backend$Decoder$decodeSite,
+										$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
