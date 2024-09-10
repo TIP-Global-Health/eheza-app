@@ -101,6 +101,7 @@ function generate_completion_results_data($health_center) {
     'acute_illness' => [],
     'child_scoreboard' => [],
     'home_visit' => [],
+    'ncd' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
     'well_child' => [],
@@ -155,8 +156,12 @@ function generate_completion_results_data($health_center) {
           $data['home_visit'][] = json_decode($json_data);
           break;
 
-        case 'nutrition_encounter':
+        case 'ncd_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'nutrition_encounter':
+          $data['ncd'][] = json_decode($json_data);
           break;
 
         case 'well_child_encounter':
