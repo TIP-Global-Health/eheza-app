@@ -4935,7 +4935,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     // and not actual content, we apply proprietary logic per records recorded
     // at labs results content.
     $labs_results = $measurements_by_type['ncd_labs_results'];
-    if (!empty($abs_results)) {
+    if (!empty($labs_results)) {
       if (!empty($labs_results->field_performed_tests)) {
         $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
         foreach ($performed_tests as $performed_test) {

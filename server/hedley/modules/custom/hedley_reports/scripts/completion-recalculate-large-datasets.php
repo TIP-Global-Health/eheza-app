@@ -176,11 +176,14 @@ function generate_completion_results_data($health_center) {
     }
 
     $nid = end($ids);
+    $processed += count($nodes);
+
     // Explicitly unset large variables after use for memory optimization.
     unset($nodes);
 
-    $processed += 400;
-    drush_print("Processed $processed out of $total.");
+    if ($processed % 5000 == 0) {
+      drush_print("Processed $processed out of $total.");
+    }
   }
 
   return $data;
