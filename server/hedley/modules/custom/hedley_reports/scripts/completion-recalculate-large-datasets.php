@@ -79,6 +79,8 @@ function generate_completion_results_data($health_center) {
     'child_scoreboard_encounter',
     // Home Visit data.
     'home_visit_encounter',
+    // NCD Data.
+    'ncd_encounter',
     // Nutrition Individual data.
     'nutrition_encounter',
     // Well Child data.
