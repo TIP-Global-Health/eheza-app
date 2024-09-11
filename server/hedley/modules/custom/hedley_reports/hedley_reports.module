@@ -2471,7 +2471,6 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
-    // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_acute_illness_generate_expected_initial_activities($encounter_data);
     // If conditions match, add malaria_testing activity.
     hedley_reports_acute_illness_add_expected_malaria_testing($encounter_data, $expected);
@@ -3431,7 +3430,6 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
-    // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
     // If conditions match, add immunisation activities.
     hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
@@ -4927,7 +4925,6 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
-    // Load all activities expected only by encounter type and start date.
     $expected = hedley_reports_ncd_generate_expected_initial_activities($encounter_data, $birth_date_obj, $gender);
 
     // If conditions match, add labs activities.
@@ -5384,11 +5381,146 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
  * @param bool $exclude_set
  *   Indicate whether to exclude encounters with report data already set.
  */
-function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set)
-{
+function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
+    'hiv_diagnostics' => 'a',
+    'hiv_follow_up' => 'b',
+    'hiv_health_education' => 'c',
+    'hiv_medication' => 'd',
+    'hiv_referral' => 'e',
+    'hiv_symptom_review' => 'f',
+    'hiv_treatment_review' => 'g',
   ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'hiv_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'measurements_by_type' => $measurements_by_type,
+    ];
+  }
+
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $previous_encounters_data = array_slice($encounters_data, 0, $index);
+
+    // So far we were constructing data structures to resolve encounter data.
+    // Now we have enough info to determine which activities were expected.
+    $completed = array_keys($measurements_by_type);
+
+    $expected = ['hiv_medication'];
+    if (empty($previous_encounters_data)) {
+      $expected[] = 'hiv_diagnostics';
+
+      if (in_array('hiv_medication', $completed)) {
+        $expected[] = 'hiv_treatment_review';
+      }
+    }
+    else {
+      $expected = array_merge(
+        $expected,
+        ['hiv_symptom_review', 'hiv_treatment_review']
+      );
+    }
+
+    // Checking which Next Steps activities to expect.
+    $mandatory_activities = [
+      'hiv_diagnostics',
+      'hiv_medication',
+      'hiv_symptom_review',
+    ];
+    // Here we consider activity as completed, if it was expected,
+    // and we actually see it as completed at encounter measurements.
+    // If not expected, we consider it completed.
+    $mandatory_activities_completed = TRUE;
+    foreach ($mandatory_activities as $activity) {
+      if (in_array($activity, $expected) && !in_array($activity, $completed)) {
+        $mandatory_activities_completed = FALSE;
+        break;
+      }
+    }
+
+    if ($mandatory_activities_completed) {
+      $expected = array_merge(
+        $expected,
+        ['hiv_follow_up', 'hiv_health_education']
+      );
+
+      // Referral is expected, if there was reported symptom or adverse event.
+      // Checking if symptom was reported.
+      $symptom_reported = FALSE;
+      $symptom_review = $measurements_by_type['hiv_symptom_review'];
+      if (!empty($symptom_review) && !empty($symptom_review->field_hiv_symptoms)) {
+        $symptoms = $symptom_review->field_hiv_symptoms[LANGUAGE_NONE];
+        foreach ($symptoms as $symptom) {
+          if ($symptom['value'] != 'none') {
+            // Symptom was reported. Add Referral to expected list.
+            $expected[] = 'hiv_referral';
+            // Raise flag, as there's no need to check for adverse events.
+            $symptom_reported = TRUE;
+            break;
+          }
+        }
+      }
+
+      // If symptom was not reported, checking for adverse event.
+      if (!$symptom_reported) {
+        $treatment_review = $measurements_by_type['hiv_treatment_review'];
+        if (!empty($treatment_review) && !empty($treatment_review->field_adverse_events)) {
+          $adverse_events = $treatment_review->field_adverse_events[LANGUAGE_NONE];
+          foreach ($adverse_events as $adverse_event) {
+            if ($adverse_event['value'] != 'none') {
+              $expected[] = 'hiv_referral';
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
 }
 
 /**
@@ -5399,11 +5531,146 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
  * @param bool $exclude_set
  *   Indicate whether to exclude encounters with report data already set.
  */
-function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set)
-{
+function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
+    'tuberculosis_diagnostics' => 'a',
+    'tuberculosis_dot' => 'b',
+    'tuberculosis_follow_up' => 'c',
+    'tuberculosis_health_education' => 'd',
+    'tuberculosis_medication' => 'e',
+    'tuberculosis_referral' => 'f',
+    'tuberculosis_symptom_review' => 'g',
+    'tuberculosis_treatment_review' => 'h',
   ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'tuberculosis_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'measurements_by_type' => $measurements_by_type,
+    ];
+  }
+
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $previous_encounters_data = array_slice($encounters_data, 0, $index);
+
+    // So far we were constructing data structures to resolve encounter data.
+    // Now we have enough info to determine which activities were expected.
+    $completed = array_keys($measurements_by_type);
+
+    $expected = ['tuberculosis_medication'];
+    if (in_array('tuberculosis_medication', $completed)) {
+      $expected = array_merge(
+        $expected,
+        ['tuberculosis_dot', 'tuberculosis_treatment_review']
+      );
+    }
+    if (empty($previous_encounters_data)) {
+      $expected[] = 'tuberculosis_diagnostics';
+    }
+    else {
+      $expected[] = 'tuberculosis_symptom_review';
+    }
+
+    // Checking which Next Steps activities to expect.
+    $mandatory_activities = [
+      'tuberculosis_diagnostics',
+      'tuberculosis_medication',
+      'tuberculosis_symptom_review',
+    ];
+    // Here we consider activity as completed, if it was expected,
+    // and we actually see it as completed at encounter measurements.
+    // If not expected, we consider it completed.
+    $mandatory_activities_completed = TRUE;
+    foreach ($mandatory_activities as $activity) {
+      if (in_array($activity, $expected) && !in_array($activity, $completed)) {
+        $mandatory_activities_completed = FALSE;
+        break;
+      }
+    }
+
+    if ($mandatory_activities_completed) {
+      $expected = array_merge(
+        $expected,
+        ['tuberculosis_follow_up', 'tuberculosis_health_education']
+      );
+
+      // Referral is expected, if there was reported symptom or adverse event.
+      // Checking if symptom was reported.
+      $symptom_reported = FALSE;
+      $symptom_review = $measurements_by_type['tuberculosis_symptom_review'];
+      if (!empty($symptom_review) && !empty($symptom_review->field_tuberculosis_symptoms)) {
+        $symptoms = $symptom_review->field_tuberculosis_symptoms[LANGUAGE_NONE];
+        foreach ($symptoms as $symptom) {
+          if ($symptom['value'] != 'none') {
+            // Symptom was reported. Add Referral to expected list.
+            $expected[] = 'tuberculosis_referral';
+            // Raise flag, as there's no need to check for adverse events.
+            $symptom_reported = TRUE;
+            break;
+          }
+        }
+      }
+
+      // If symptom was not reported, checking for adverse event.
+      if (!$symptom_reported) {
+        $treatment_review = $measurements_by_type['tuberculosis_treatment_review'];
+        if (!empty($treatment_review) && !empty($treatment_review->field_adverse_events)) {
+          $adverse_events = $treatment_review->field_adverse_events[LANGUAGE_NONE];
+          foreach ($adverse_events as $adverse_event) {
+            if ($adverse_event['value'] != 'none') {
+              $expected[] = 'tuberculosis_referral';
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
 }
 
 
