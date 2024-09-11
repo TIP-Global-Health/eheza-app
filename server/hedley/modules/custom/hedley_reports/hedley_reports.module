@@ -3897,6 +3897,10 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
  *
  * @param array $encounter_data
  *   An associative array containing data about the encounter.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunisations.
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
@@ -3940,7 +3944,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
   $start_date_obj = $encounter_data['start_date_obj'];
 
   $initial_opv_administered = hedley_reports_initial_opv_administered($encounter_data, $birth_date_obj);
-  $interval = $start_date_obj->diff($birth_date_obj);
+  $interval = $start_date_obj->diff($birth_date_obj, TRUE);
   $age_in_days = $interval->days;
 
   $possible_immunisations = ['bcg', 'opv'];
@@ -3965,7 +3969,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
       if (!empty($vaccination_progress['dtp']['dose-3'])) {
         $age_in_months = ($interval->y * 12) + $interval->m;
         $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
-        $interval = $start_date_obj->diff($third_dose_date_obj);
+        $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
         $days_since_third_dose = $interval->days;
 
         if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
@@ -4604,7 +4608,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     if (!empty($vaccination_progress['dtp']['dose-3'])) {
       $age_in_months = ($interval->y * 12) + $interval->m;
       $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
-      $interval = $start_date_obj->diff($third_dose_date_obj);
+      $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
       $days_since_third_dose = $interval->days;
 
       if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
@@ -5001,7 +5005,18 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
   }
 }
 
-function hedley_reports_ncd_generate_expected_initial_activities($encounter_data, $birth_date_obj, $gender) {
+/**
+ * Generates the list of expected activities for an acute illness encounter.
+ *
+ * Here we add activities with simple logic.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return array
+ *   An array of expected activity names.
+ */
+function hedley_reports_ncd_generate_expected_initial_activities(array $encounter_data, $birth_date_obj, $gender) {
   $start_date_obj = $encounter_data['start_date_obj'];
 
   $expected = [
@@ -5042,7 +5057,19 @@ function hedley_reports_ncd_generate_expected_initial_activities($encounter_data
   return $expected;
 }
 
-function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_date_obj, $gender, array &$expected) {
+/**
+ * Adds Labs activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunisations.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
   // Blood sugar test is performed unconditionally.
   $expected[] = 'ncd_random_blood_sugar_test';
 
@@ -5066,7 +5093,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($creatinine_test)) {
       $date_measured = explode(' ', $creatinine_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $results_exists = !empty($creatinine_test->field_creatinine_result) && !empty($creatinine_test->field_creatinine_result[LANGUAGE_NONE][0]['value']);
       if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_creatinine_test'][] = explode(' ', $creatinine_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
@@ -5077,7 +5104,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($hba1c_test)) {
       $date_measured = explode(' ', $hba1c_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $results_exists = !empty($hba1c_test->field_hba1c_result) && !empty($hba1c_test->field_hba1c_result[LANGUAGE_NONE][0]['value']);
       if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_hba1c_test'][] = explode(' ', $hba1c_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
@@ -5086,12 +5113,12 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
 
     $hiv_test = $measurements_by_type['ncd_hiv_test'];
     if (!$hiv_known_as_positive) {
-      if (!empty($test) && !empty($test->field_test_execution_note)) {
-        $hiv_known_as_positive = $test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+      if (!empty($hiv_test) && !empty($hiv_test->field_test_execution_note)) {
+        $hiv_known_as_positive = $hiv_test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
         if (!$hiv_known_as_positive && hedley_reports_lab_test_performed_by_execution_note($hiv_test)) {
           $date_measured = explode(' ', $hiv_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
           $date_measured_obj = new DateTime($date_measured);
-          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
           $valid_results_exists =
             !empty($hiv_test->field_test_result) &&
             !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
@@ -5107,7 +5134,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($lipid_panel_test)) {
       $date_measured = explode(' ', $lipid_panel_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $results_exists = !empty($lipid_panel_test->field_total_cholesterol) && !empty($lipid_panel_test->field_total_cholesterol[LANGUAGE_NONE][0]['value']);
       if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_lipid_panel_test'][] = explode(' ', $lipid_panel_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
@@ -5118,7 +5145,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($liver_function_test)) {
       $date_measured = explode(' ', $liver_function_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $results_exists = !empty($liver_function_test->field_alt_result) && !empty($liver_function_test->field_alt_result[LANGUAGE_NONE][0]['value']);
       if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_liver_function_test'][] = explode(' ', $liver_function_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
@@ -5129,7 +5156,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($pregnancy_test)) {
       $date_measured = explode(' ', $pregnancy_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $valid_results_exists =
         !empty($hiv_test->field_test_result) &&
         !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
@@ -5143,7 +5170,7 @@ function hedley_reports_ncd_add_labs_activities(array $encounter_data, $birth_da
     if (hedley_reports_lab_test_performed_by_execution_note($urine_dipstick_test)) {
       $date_measured = explode(' ', $urine_dipstick_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
       $date_measured_obj = new DateTime($date_measured);
-      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj)->days;
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
       $results_exists = !empty($urine_dipstick_test->field_protein) && !empty($urine_dipstick_test->field_protein[LANGUAGE_NONE][0]['value']);
       if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
         $tests_dates_by_lab_type['ncd_urine_dipstick_test'][] = explode(' ', $urine_dipstick_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
@@ -5255,7 +5282,7 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
   $hypertension_diagnoses = [
     'hypertension-stage1',
     'hypertension-stage2',
-    'hypertension-stage3'
+    'hypertension-stage3',
   ];
   $diabetes_diagnoses = ['diabetes-initial', 'diabetes-recurrent'];
   $diabetes_diagnoses_with_renal = array_merge($diabetes_diagnoses, ['renal-complications']);
@@ -5322,7 +5349,7 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
       $medicate_for_hypertension_recurrent_phase = TRUE;
     }
   }
-  $medicate_for_hypertension =  $medicate_for_hypertension_initial_phase ||  $medicate_for_hypertension_recurrent_phase;
+  $medicate_for_hypertension = $medicate_for_hypertension_initial_phase || $medicate_for_hypertension_recurrent_phase;
 
   if ($medicated_for_diabetes || $medicate_for_hypertension) {
     $expected[] = 'ncd_medication_distribution';
@@ -5349,6 +5376,20 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
   }
 }
 
+/**
+ * Checks if a lab test was performed based on the test execution note.
+ *
+ * Determines if the test execution note indicates that the test was performed
+ * by checking if it matches one of the predefined statuses.
+ *
+ * @param object $test
+ *   An object representing the lab test, which contains the test execution
+ *   note field.
+ *
+ * @return bool
+ *   TRUE if the test was performed based on the execution note, FALSE
+ *   otherwise.
+ */
 function hedley_reports_lab_test_performed_by_execution_note($test) {
   if (empty($test) || empty($test->field_test_execution_note)) {
     return FALSE;
@@ -5360,13 +5401,39 @@ function hedley_reports_lab_test_performed_by_execution_note($test) {
   );
 }
 
-function hedley_reports_recurrent_test_required($last_date, $encounter_start_date_obj, $period_between_tests) {
+/**
+ * Determines if a recurrent test is required.
+ *
+ * Decision is made based on the last test date,
+ * encounter start date, and the period between tests.
+ *
+ * If the last test date is empty, a test is required. Otherwise, it calculates
+ * the time difference in months between the last test date and the encounter
+ * start date and checks if it meets or exceeds the required period.
+ *
+ * @param string|null $last_date
+ *   The date of the last test in 'Y-m-d' format, or NULL if no test was done.
+ * @param DateTime $encounter_start_date_obj
+ *   The start date of the encounter as a DateTime object.
+ * @param int $period_between_tests
+ *   The required period between tests in months.
+ *
+ * @return bool
+ *   TRUE if the recurrent test is required, FALSE otherwise.
+ */
+function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_start_date_obj, $period_between_tests) {
   if (empty($last_date)) {
     return TRUE;
   }
 
   $last_date_obj = new DateTime($last_date);
-  $diff_months = $encounter_start_date_obj->diff($last_date_obj)->months;
+  // Calculate the difference between the encounter start date
+  // and the last test date.
+  $interval = $encounter_start_date_obj->diff($last_date_obj);
+
+  // Total number of months, accounting for years as well.
+  $diff_months = ($interval->y * 12) + $interval->m;
+
   return $diff_months >= $period_between_tests;
 }
 

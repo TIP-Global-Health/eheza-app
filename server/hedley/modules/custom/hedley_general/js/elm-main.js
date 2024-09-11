@@ -10780,11 +10780,11 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDCreatinineTestResult':
-						return {english: 'Creatinine Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Creatinine Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NCDLipidPanelTestResult':
-						return {english: 'Lipid Panel Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Lipid Panel Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NCDLiverFunctionTestResult':
-						return {english: 'Liver Function Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Liver Function Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NCDRandomBloodSugarTestResult':
 						var $temp$transId = $author$project$Translate$RandomBloodSugarTestResult;
 						transId = $temp$transId;
@@ -11107,9 +11107,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					kirundi: $elm$core$Maybe$Nothing
 				};
 			case 'RandomBloodSugarTest':
-				return {english: 'Random BloodSugar Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Random Blood Sugar Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'RandomBloodSugarTestResult':
-				return {english: 'Random BloodSugar Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Random Blood Sugar Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Referral':
 				return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Registered':
@@ -11255,7 +11255,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'UrineDipstickTest':
 				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
-				return {english: 'Urine Dipstick Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Urine Dipstick Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WastingModerate':
 				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WastingSevere':
@@ -13908,7 +13908,7 @@ var $author$project$Translate$NCDActivity = function (a) {
 	return {$: 'NCDActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allNCDActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$NCDCoreExam, $author$project$Backend$Completion$Model$NCDCoMorbidities, $author$project$Backend$Completion$Model$NCDCreatinineTest, $author$project$Backend$Completion$Model$NCDDangerSigns, $author$project$Backend$Completion$Model$NCDFamilyHistory, $author$project$Backend$Completion$Model$NCDFamilyPlanning, $author$project$Backend$Completion$Model$NCDHba1cTest, $author$project$Backend$Completion$Model$NCDHealthEducation, $author$project$Backend$Completion$Model$NCDHIVTest, $author$project$Backend$Completion$Model$NCDLipidPanelTest, $author$project$Backend$Completion$Model$NCDLiverFunctionTest, $author$project$Backend$Completion$Model$NCDMedicationDistribution, $author$project$Backend$Completion$Model$NCDMedicationHistory, $author$project$Backend$Completion$Model$NCDOutsideCare, $author$project$Backend$Completion$Model$NCDPregnancyTest, $author$project$Backend$Completion$Model$NCDRandomBloodSugarTest, $author$project$Backend$Completion$Model$NCDReferral, $author$project$Backend$Completion$Model$NCDSocialHistory, $author$project$Backend$Completion$Model$NCDSymptomReview, $author$project$Backend$Completion$Model$NCDUrineDipstickTest, $author$project$Backend$Completion$Model$NCDVitals, $author$project$Backend$Completion$Model$NCDCreatinineTestResult, $author$project$Backend$Completion$Model$NCDLipidPanelTestResult, $author$project$Backend$Completion$Model$NCDLiverFunctionTestResult, $author$project$Backend$Completion$Model$NCDRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$NCDUrineDipstickTestResult]);
+	[$author$project$Backend$Completion$Model$NCDCoreExam, $author$project$Backend$Completion$Model$NCDCoMorbidities, $author$project$Backend$Completion$Model$NCDCreatinineTest, $author$project$Backend$Completion$Model$NCDCreatinineTestResult, $author$project$Backend$Completion$Model$NCDDangerSigns, $author$project$Backend$Completion$Model$NCDFamilyHistory, $author$project$Backend$Completion$Model$NCDFamilyPlanning, $author$project$Backend$Completion$Model$NCDHba1cTest, $author$project$Backend$Completion$Model$NCDHealthEducation, $author$project$Backend$Completion$Model$NCDHIVTest, $author$project$Backend$Completion$Model$NCDLipidPanelTest, $author$project$Backend$Completion$Model$NCDLipidPanelTestResult, $author$project$Backend$Completion$Model$NCDLiverFunctionTest, $author$project$Backend$Completion$Model$NCDLiverFunctionTestResult, $author$project$Backend$Completion$Model$NCDMedicationDistribution, $author$project$Backend$Completion$Model$NCDMedicationHistory, $author$project$Backend$Completion$Model$NCDOutsideCare, $author$project$Backend$Completion$Model$NCDPregnancyTest, $author$project$Backend$Completion$Model$NCDRandomBloodSugarTest, $author$project$Backend$Completion$Model$NCDRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$NCDReferral, $author$project$Backend$Completion$Model$NCDSocialHistory, $author$project$Backend$Completion$Model$NCDSymptomReview, $author$project$Backend$Completion$Model$NCDUrineDipstickTest, $author$project$Backend$Completion$Model$NCDUrineDipstickTestResult, $author$project$Backend$Completion$Model$NCDVitals]);
 var $author$project$Pages$Completion$View$generateNCDReportData = F2(
 	function (language, records) {
 		return {

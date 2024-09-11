@@ -1021,19 +1021,19 @@ translationSet transId =
                     translationSet Vitals
 
                 NCDCreatinineTestResult ->
-                    { english = "Creatinine Test Result"
+                    { english = "Creatinine Result"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 NCDLipidPanelTestResult ->
-                    { english = "Lipid Panel Test Result"
+                    { english = "Lipid Panel Result"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 NCDLiverFunctionTestResult ->
-                    { english = "Liver Function Test Result"
+                    { english = "Liver Function Result"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1514,13 +1514,13 @@ translationSet transId =
             }
 
         RandomBloodSugarTest ->
-            { english = "Random BloodSugar Test"
+            { english = "Random Blood Sugar Test"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
         RandomBloodSugarTestResult ->
-            { english = "Random BloodSugar Test Result"
+            { english = "Random Blood Sugar Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1789,7 +1789,7 @@ translationSet transId =
             }
 
         UrineDipstickTestResult ->
-            { english = "Urine Dipstick Test Result"
+            { english = "Urine Dipstick Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

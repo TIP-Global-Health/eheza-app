@@ -227,6 +227,7 @@ allNCDActivities =
     [ NCDCoreExam
     , NCDCoMorbidities
     , NCDCreatinineTest
+    , NCDCreatinineTestResult
     , NCDDangerSigns
     , NCDFamilyHistory
     , NCDFamilyPlanning
@@ -234,20 +235,19 @@ allNCDActivities =
     , NCDHealthEducation
     , NCDHIVTest
     , NCDLipidPanelTest
+    , NCDLipidPanelTestResult
     , NCDLiverFunctionTest
+    , NCDLiverFunctionTestResult
     , NCDMedicationDistribution
     , NCDMedicationHistory
     , NCDOutsideCare
     , NCDPregnancyTest
     , NCDRandomBloodSugarTest
+    , NCDRandomBloodSugarTestResult
     , NCDReferral
     , NCDSocialHistory
     , NCDSymptomReview
     , NCDUrineDipstickTest
-    , NCDVitals
-    , NCDCreatinineTestResult
-    , NCDLipidPanelTestResult
-    , NCDLiverFunctionTestResult
-    , NCDRandomBloodSugarTestResult
     , NCDUrineDipstickTestResult
+    , NCDVitals
     ]
