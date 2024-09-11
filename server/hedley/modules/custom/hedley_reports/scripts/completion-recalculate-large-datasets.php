@@ -79,6 +79,8 @@ function generate_completion_results_data($health_center) {
     'child_scoreboard_encounter',
     // Home Visit data.
     'home_visit_encounter',
+    // NCD Data.
+    'ncd_encounter',
     // Nutrition Individual data.
     'nutrition_encounter',
     // Well Child data.
@@ -101,6 +103,7 @@ function generate_completion_results_data($health_center) {
     'acute_illness' => [],
     'child_scoreboard' => [],
     'home_visit' => [],
+    'ncd' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
     'well_child' => [],
@@ -155,6 +158,10 @@ function generate_completion_results_data($health_center) {
           $data['home_visit'][] = json_decode($json_data);
           break;
 
+        case 'ncd_encounter':
+          $data['ncd'][] = json_decode($json_data);
+          break;
+
         case 'nutrition_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
           break;
@@ -169,11 +176,14 @@ function generate_completion_results_data($health_center) {
     }
 
     $nid = end($ids);
+    $processed += count($nodes);
+
     // Explicitly unset large variables after use for memory optimization.
     unset($nodes);
 
-    $processed += 400;
-    drush_print("Processed $processed out of $total.");
+    if ($processed % 5000 == 0) {
+      drush_print("Processed $processed out of $total.");
+    }
   }
 
   return $data;

@@ -10,6 +10,7 @@ import Backend.Completion.Model
         ( AcuteIllnessActivity(..)
         , ChildScoreboardActivity(..)
         , HomeVisitActivity(..)
+        , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
@@ -85,6 +86,8 @@ type TranslationId
     | Commune
     | Completed
     | CompletionReportType Pages.Completion.Model.ReportType
+    | CoreExam
+    | DangerSigns
     | Diagnosis
     | District
     | Demographics
@@ -93,6 +96,7 @@ type TranslationId
     | Encounters
     | EncounterType
     | Expected
+    | FamilyPlanning
     | FBF
     | Feeding
     | Female
@@ -101,7 +105,9 @@ type TranslationId
     | Global
     | HC
     | HealthCenter
+    | HealthEducation
     | HIV
+    | HIVTest
     | HomeVisit
     | HomeVisitActivity HomeVisitActivity
     | HttpError StringIdHttpError
@@ -126,11 +132,13 @@ type TranslationId
     | InfrastructureEnvironmentWash
     | LoadData
     | Male
+    | MedicationDistribution
     | Month Month
     | MonthLabel
     | MonthYear Int Int Bool
     | NCD
     | NCDA
+    | NCDActivity NCDActivity
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -159,10 +167,14 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnancyTest
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
     | QuarterYear Int Int
+    | RandomBloodSugarTest
+    | RandomBloodSugarTestResult
+    | Referral
     | Registered
     | RegisteredPatients
     | ReportType ReportType
@@ -189,12 +201,15 @@ type TranslationId
     | TargetedInterventions
     | Total
     | Tuberculosis
+    | Vitals
     | ViewMode
     | Village
     | UnderweightModerate
     | UnderweightSevere
     | Unique
     | UniversalIntervention
+    | UrineDipstickTest
+    | UrineDipstickTestResult
     | WastingModerate
     | WastingSevere
     | WellChildActivity WellChildActivity
@@ -240,16 +255,10 @@ translationSet transId =
                     }
 
                 AcuteIllnessCoreExam ->
-                    { english = "Core Exam"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet CoreExam
 
                 AcuteIllnessDangerSigns ->
-                    { english = "Danger Signs"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet DangerSigns
 
                 AcuteIllnessFollowUp ->
                     { english = "Follow Up"
@@ -270,10 +279,7 @@ translationSet transId =
                     }
 
                 AcuteIllnessVitals ->
-                    { english = "Vitals"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Vitals
 
                 AcuteIllnessCall114 ->
                     { english = "Call 114"
@@ -300,10 +306,7 @@ translationSet transId =
                     }
 
                 AcuteIllnessHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet HealthEducation
 
                 AcuteIllnessIsolation ->
                     { english = "Isolation"
@@ -318,10 +321,7 @@ translationSet transId =
                     }
 
                 AcuteIllnessMedicationDistribution ->
-                    { english = "Medication Distribution"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet MedicationDistribution
 
                 AcuteIllnessSendToHC ->
                     { english = "Referal"
@@ -540,6 +540,9 @@ translationSet transId =
                 Pages.Completion.Model.ReportHomeVisit ->
                     translationSet HomeVisit
 
+                Pages.Completion.Model.ReportNCD ->
+                    translationSet NCD
+
                 Pages.Completion.Model.ReportNewbornExam ->
                     translationSet NewbornExam
 
@@ -617,6 +620,18 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        CoreExam ->
+            { english = "Core Exam"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DangerSigns ->
+            { english = "Danger Signs"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         District ->
             { english = "District"
             , kinyarwanda = Nothing
@@ -655,6 +670,12 @@ translationSet transId =
 
         Expected ->
             { english = "Expected"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FamilyPlanning ->
+            { english = "Family Planning"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -707,8 +728,20 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        HealthEducation ->
+            { english = "Health Education"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         HIV ->
             { english = "HIV"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        HIVTest ->
+            { english = "HIV Test"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -862,6 +895,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        MedicationDistribution ->
+            { english = "Medication Distribution"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Month month ->
             translateMonth month False
 
@@ -885,6 +924,125 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        NCDActivity activity ->
+            case activity of
+                NCDCoreExam ->
+                    translationSet CoreExam
+
+                NCDCoMorbidities ->
+                    { english = "Co-Morbidities"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDCreatinineTest ->
+                    { english = "Creatinine Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDDangerSigns ->
+                    translationSet DangerSigns
+
+                NCDFamilyHistory ->
+                    { english = "Family History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDFamilyPlanning ->
+                    translationSet FamilyPlanning
+
+                NCDHba1cTest ->
+                    { english = "HBA1C Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDHealthEducation ->
+                    translationSet HealthEducation
+
+                NCDHIVTest ->
+                    translationSet HIVTest
+
+                NCDLipidPanelTest ->
+                    { english = "Lipid Panel Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDLiverFunctionTest ->
+                    { english = "Liver Function Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDMedicationDistribution ->
+                    translationSet MedicationDistribution
+
+                NCDMedicationHistory ->
+                    { english = "Medication History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDOutsideCare ->
+                    { english = "Outside Care"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDPregnancyTest ->
+                    translationSet PregnancyTest
+
+                NCDRandomBloodSugarTest ->
+                    translationSet RandomBloodSugarTest
+
+                NCDReferral ->
+                    translationSet Referral
+
+                NCDSocialHistory ->
+                    { english = "Social History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDSymptomReview ->
+                    { english = "Symptoms Review"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDUrineDipstickTest ->
+                    translationSet UrineDipstickTest
+
+                NCDVitals ->
+                    translationSet Vitals
+
+                NCDCreatinineTestResult ->
+                    { english = "Creatinine Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDLipidPanelTestResult ->
+                    { english = "Lipid Panel Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDLiverFunctionTestResult ->
+                    { english = "Liver Function Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NCDRandomBloodSugarTestResult ->
+                    translationSet RandomBloodSugarTestResult
+
+                NCDUrineDipstickTestResult ->
+                    translationSet UrineDipstickTestResult
 
         NCDADemographicsItemLabel item ->
             case item of
@@ -1188,10 +1346,7 @@ translationSet transId =
                     }
 
                 NutritionHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet HealthEducation
 
                 NutritionSendToHC ->
                     { english = "Referal"
@@ -1214,10 +1369,7 @@ translationSet transId =
         NutritionMotherActivity activity ->
             case activity of
                 NutritionFamilyPlanning ->
-                    { english = "Family Planning"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FamilyPlanning
 
                 NutritionLactation ->
                     { english = "Lactation"
@@ -1331,6 +1483,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PregnancyTest ->
+            { english = "Pregnancy Test"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month - one visit or more"
             , kinyarwanda = Nothing
@@ -1351,6 +1509,24 @@ translationSet transId =
 
         QuarterYear quarter year ->
             { english = String.fromInt year ++ " Q" ++ String.fromInt quarter
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        RandomBloodSugarTest ->
+            { english = "Random Blood Sugar Test"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        RandomBloodSugarTestResult ->
+            { english = "Random Blood Sugar Result"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Referral ->
+            { english = "Referral"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1570,6 +1746,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Vitals ->
+            { english = "Vitals"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Village ->
             { english = "Village"
             , kinyarwanda = Nothing
@@ -1596,6 +1778,18 @@ translationSet transId =
 
         UniversalIntervention ->
             { english = "Universal Intervention"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UrineDipstickTest ->
+            { english = "Urine Dipstick Test"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        UrineDipstickTestResult ->
+            { english = "Urine Dipstick Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1663,10 +1857,7 @@ translationSet transId =
                     }
 
                 WellChildHealthEducation ->
-                    { english = "Health Education"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet HealthEducation
 
                 WellChildHeight ->
                     { english = "Height"
@@ -1735,10 +1926,7 @@ translationSet transId =
                     translationSet ImmunisationRotarix
 
                 WellChildSendToHC ->
-                    { english = "Referral"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Referral
 
                 WellChildSymptomsReview ->
                     { english = "Symptoms Review"
@@ -1747,10 +1935,7 @@ translationSet transId =
                     }
 
                 WellChildVitals ->
-                    { english = "Vitals"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Vitals
 
                 WellChildVitaminA ->
                     { english = "Vitamin A"

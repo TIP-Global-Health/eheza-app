@@ -14,6 +14,7 @@ type alias CompletionData =
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , childScoreboardData : List (EncounterData ChildScoreboardActivity)
     , homeVisitData : List (EncounterData HomeVisitActivity)
+    , ncdData : List (EncounterData NCDActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     , wellChildData : List WellChildEncounterData
@@ -102,6 +103,35 @@ type HomeVisitActivity
     | HomeVisitFeeding
     | HomeVisitFoodSecurity
     | HomeVisitHygiene
+
+
+type NCDActivity
+    = NCDCoreExam
+    | NCDCoMorbidities
+    | NCDCreatinineTest
+    | NCDDangerSigns
+    | NCDFamilyHistory
+    | NCDFamilyPlanning
+    | NCDHba1cTest
+    | NCDHealthEducation
+    | NCDHIVTest
+    | NCDLipidPanelTest
+    | NCDLiverFunctionTest
+    | NCDMedicationDistribution
+    | NCDMedicationHistory
+    | NCDOutsideCare
+    | NCDPregnancyTest
+    | NCDRandomBloodSugarTest
+    | NCDReferral
+    | NCDSocialHistory
+    | NCDSymptomReview
+    | NCDUrineDipstickTest
+    | NCDVitals
+    | NCDCreatinineTestResult
+    | NCDLipidPanelTestResult
+    | NCDLiverFunctionTestResult
+    | NCDRandomBloodSugarTestResult
+    | NCDUrineDipstickTestResult
 
 
 type NutritionChildActivity

@@ -5,6 +5,10 @@
  * Code for the Hedley General feature.
  */
 
+// Maximal number of days that may pass between the date on which test
+// execution was recorded, and the date when the results should be set.
+define('HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD', 35);
+
 /**
  * Creating a new AQ task of a specific queue if not exist.
  *

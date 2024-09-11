@@ -2155,7 +2155,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     }
   }
 
-  // Resolve encounter start date. We gp by the date of attendance
+  // Resolve encounter start date. We go by the date of attendance
   // measurement, since session may have lasted several days.
   $start_date = explode(' ', $attendance->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
   $start_date_obj = new DateTime($start_date);
@@ -3897,6 +3897,10 @@ function hedley_reports_well_child_generate_expected_initial_activities(array $e
  *
  * @param array $encounter_data
  *   An associative array containing data about the encounter.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunisations.
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
@@ -3940,7 +3944,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
   $start_date_obj = $encounter_data['start_date_obj'];
 
   $initial_opv_administered = hedley_reports_initial_opv_administered($encounter_data, $birth_date_obj);
-  $interval = $start_date_obj->diff($birth_date_obj);
+  $interval = $start_date_obj->diff($birth_date_obj, TRUE);
   $age_in_days = $interval->days;
 
   $possible_immunisations = ['bcg', 'opv'];
@@ -3965,7 +3969,7 @@ function hedley_reports_well_child_get_expected_immunisation_activities(array $e
       if (!empty($vaccination_progress['dtp']['dose-3'])) {
         $age_in_months = ($interval->y * 12) + $interval->m;
         $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
-        $interval = $start_date_obj->diff($third_dose_date_obj);
+        $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
         $days_since_third_dose = $interval->days;
 
         if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
@@ -4357,7 +4361,7 @@ function hedley_reports_generate_completion_data_for_home_visit_encounter($encou
  * Generates completion data for Child Scoreboard encounter.
  *
  * @param object $participant
- *   The participant node object representing illness.
+ *   The participant node object with which encounters are associated.
  * @param bool $exclude_set
  *   Indicate whether to exclude encounters with report data already set.
  */
@@ -4604,7 +4608,7 @@ function hedley_reports_child_scoreboard_get_expected_immunisation_activities(ar
     if (!empty($vaccination_progress['dtp']['dose-3'])) {
       $age_in_months = ($interval->y * 12) + $interval->m;
       $third_dose_date_obj = new DateTime($vaccination_progress['dtp']['dose-3']);
-      $interval = $start_date_obj->diff($third_dose_date_obj);
+      $interval = $start_date_obj->diff($third_dose_date_obj, TRUE);
       $days_since_third_dose = $interval->days;
 
       if ($age_in_months >= 18 && $days_since_third_dose >= 28) {
@@ -4813,6 +4817,624 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
   }
 
   return $return;
+}
+
+/**
+ * Generates completion data for NCD encounters for patient.
+ *
+ * @param object $participant
+ *   The participant node object with which encounters are associated.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
+function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_set) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'ncd_core_exam' => 'a',
+    'ncd_co_morbidities' => 'b',
+    'ncd_creatinine_test' => 'c',
+    'ncd_danger_signs' => 'd',
+    'ncd_family_history' => 'e',
+    'ncd_family_planning' => 'f',
+    'ncd_hba1c_test' => 'g',
+    'ncd_health_education' => 'h',
+    'ncd_hiv_test' => 'i',
+    // Not a real activity. Used for data only.
+    'ncd_labs_results' => '',
+    'ncd_lipid_panel_test' => 'j',
+    'ncd_liver_function_test' => 'k',
+    'ncd_medication_distribution' => 'l',
+    'ncd_medication_history' => 'm',
+    'ncd_outside_care' => 'n',
+    'ncd_pregnancy_test' => 'o',
+    'ncd_random_blood_sugar_test' => 'p',
+    'ncd_referral' => 'q',
+    'ncd_social_history' => 'r',
+    'ncd_symptom_review' => 's',
+    'ncd_urine_dipstick_test' => 't',
+    'ncd_vitals' => 'u',
+    // Logical activities.
+    'ncd_creatinine_test_result' => 'v',
+    'ncd_lipid_panel_test_result' => 'w',
+    'ncd_liver_function_test_result' => 'x',
+    'ncd_random_blood_sugar_test_result' => 'y',
+    'ncd_urine_dipstick_test_result' => 'z',
+  ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'ncd_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  // Get birthdate and gender.
+  $person_id = $participant->field_person[LANGUAGE_NONE][0]['target_id'];
+  try {
+    $person = node_load($person_id);
+    $birth_date = explode(' ', $person->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $birth_date_obj = new DateTime($birth_date);
+    $gender = $person->field_gender[LANGUAGE_NONE][0]['value'];
+  }
+  catch (Exception $e) {
+    $birth_date_obj = NULL;
+    $gender = 'male';
+  }
+
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'measurements_by_type' => $measurements_by_type,
+    ];
+  }
+
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $start_date_obj = new DateTime($start_date);
+    $encounter_data['start_date_obj'] = $start_date_obj;
+
+    // Try to resolve age in months at a time encounter was performed.
+    $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
+    $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
+
+    // So far we were constructing data structures to resolve encounter data.
+    // Now we have enough info to determine which activities were expected.
+    // Load all activities expected only by encounter type and start date.
+    $expected = hedley_reports_ncd_generate_expected_initial_activities($encounter_data, $birth_date_obj, $gender);
+
+    // If conditions match, add labs activities.
+    hedley_reports_ncd_add_labs_activities($encounter_data, $birth_date_obj, $gender, $expected);
+    // If conditions match, add next steps activities.
+    hedley_reports_ncd_add_next_steps_activities($encounter_data, $expected);
+
+    // Adding labs test results activities. Since those are logically derived,
+    // and not actual content, we apply proprietary logic per records recorded
+    // at labs results content.
+    $labs_results = $measurements_by_type['ncd_labs_results'];
+    if (!empty($labs_results)) {
+      if (!empty($labs_results->field_performed_tests)) {
+        $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
+        foreach ($performed_tests as $performed_test) {
+          switch ($performed_test['value']) {
+            case 'creatinine':
+              $expected[] = 'ncd_creatinine_test_result';
+              break;
+
+            case 'lipid-panel':
+              $expected[] = 'ncd_lipid_panel_test_result';
+              break;
+
+            case 'liver-function':
+              $expected[] = 'ncd_liver_function_test_result';
+              break;
+
+            case 'random-blood-sugar':
+              $expected[] = 'ncd_random_blood_sugar_test_result';
+              break;
+
+            case 'urine-dipstick':
+              $expected[] = 'ncd_urine_dipstick_test_result';
+              break;
+          }
+        }
+      }
+
+      if (!empty($labs_results->field_completed_tests)) {
+        $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
+        foreach ($completed_tests as $completed_test) {
+          switch ($completed_test['value']) {
+            case 'creatinine':
+              $measurements_by_type['ncd_creatinine_test_result'] = 'dummy';
+              break;
+
+            case 'lipid-panel':
+              $measurements_by_type['ncd_lipid_panel_test_result'] = 'dummy';
+              break;
+
+            case 'liver-function':
+              $measurements_by_type['ncd_liver_function_test_result'] = 'dummy';
+              break;
+
+            case 'random-blood-sugar':
+              $measurements_by_type['ncd_random_blood_sugar_test_result'] = 'dummy';
+              break;
+
+            case 'urine-dipstick':
+              $measurements_by_type['ncd_urine_dipstick_test_result'] = 'dummy';
+              break;
+          }
+        }
+      }
+    }
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
+}
+
+/**
+ * Generates the list of expected activities for an acute illness encounter.
+ *
+ * Here we add activities with simple logic.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ *
+ * @return array
+ *   An array of expected activity names.
+ */
+function hedley_reports_ncd_generate_expected_initial_activities(array $encounter_data, $birth_date_obj, $gender) {
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  $expected = [
+    'ncd_danger_signs',
+    'ncd_symptom_review',
+    'ncd_core_exam',
+    'ncd_vitals',
+  ];
+
+  // If fertile woman, add Family Planning.
+  if ($gender == 'female' && !empty($birth_date_obj)) {
+    $interval = $start_date_obj->diff($birth_date_obj);
+    $age_in_years = $interval->y;
+
+    if ($age_in_years >= 13 && $age_in_years <= 44) {
+      $expected[] = 'ncd_family_planning';
+    }
+  }
+
+  // If first encounter, add all Medical History activities.
+  if (empty($encounter_data['previous_encounters_data'])) {
+    $expected = array_merge(
+      $expected,
+      [
+        'ncd_co_morbidities',
+        'ncd_medication_history',
+        'ncd_social_history',
+        'ncd_family_history',
+        'ncd_outside_care',
+      ]
+    );
+  }
+  // If subsequent encounter, add Outside Care.
+  else {
+    $expected[] = 'ncd_outside_care';
+  }
+
+  return $expected;
+}
+
+/**
+ * Adds Labs activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param string $gender
+ *   The gender of the child, used to determine gender-specific immunisations.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_ncd_add_labs_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
+  // Blood sugar test is performed unconditionally.
+  $expected[] = 'ncd_random_blood_sugar_test';
+
+  $tests_dates_by_lab_type = [
+    'ncd_creatinine_test' => [],
+    'ncd_hba1c_test' => [],
+    'ncd_hiv_test' => [],
+    'ncd_lipid_panel_test' => [],
+    'ncd_liver_function_test' => [],
+    'ncd_pregnancy_test' => [],
+    'ncd_urine_dipstick_test' => [],
+  ];
+  $hiv_known_as_positive = FALSE;
+
+  // Reversing, to have most recent dates first.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+
+    $creatinine_test = $measurements_by_type['ncd_creatinine_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($creatinine_test)) {
+      $date_measured = explode(' ', $creatinine_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $results_exists = !empty($creatinine_test->field_creatinine_result) && !empty($creatinine_test->field_creatinine_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_creatinine_test'][] = explode(' ', $creatinine_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $hba1c_test = $measurements_by_type['ncd_hba1c_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($hba1c_test)) {
+      $date_measured = explode(' ', $hba1c_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $results_exists = !empty($hba1c_test->field_hba1c_result) && !empty($hba1c_test->field_hba1c_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_hba1c_test'][] = explode(' ', $hba1c_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $hiv_test = $measurements_by_type['ncd_hiv_test'];
+    if (!$hiv_known_as_positive) {
+      if (!empty($hiv_test) && !empty($hiv_test->field_test_execution_note)) {
+        $hiv_known_as_positive = $hiv_test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+        if (!$hiv_known_as_positive && hedley_reports_lab_test_performed_by_execution_note($hiv_test)) {
+          $date_measured = explode(' ', $hiv_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+          $date_measured_obj = new DateTime($date_measured);
+          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+          $valid_results_exists =
+            !empty($hiv_test->field_test_result) &&
+            !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+            $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+          if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+            $tests_dates_by_lab_type['ncd_hiv_test'][] = explode(' ', $hiv_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+          }
+        }
+      }
+    }
+
+    $lipid_panel_test = $measurements_by_type['ncd_lipid_panel_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($lipid_panel_test)) {
+      $date_measured = explode(' ', $lipid_panel_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $results_exists = !empty($lipid_panel_test->field_total_cholesterol) && !empty($lipid_panel_test->field_total_cholesterol[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_lipid_panel_test'][] = explode(' ', $lipid_panel_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $liver_function_test = $measurements_by_type['ncd_liver_function_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($liver_function_test)) {
+      $date_measured = explode(' ', $liver_function_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $results_exists = !empty($liver_function_test->field_alt_result) && !empty($liver_function_test->field_alt_result[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_liver_function_test'][] = explode(' ', $liver_function_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $pregnancy_test = $measurements_by_type['ncd_pregnancy_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($pregnancy_test)) {
+      $date_measured = explode(' ', $pregnancy_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $valid_results_exists =
+        !empty($hiv_test->field_test_result) &&
+        !empty($hiv_test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+        $hiv_test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+      if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_pregnancy_test'][] = explode(' ', $pregnancy_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+
+    $urine_dipstick_test = $measurements_by_type['ncd_urine_dipstick_test'];
+    if (hedley_reports_lab_test_performed_by_execution_note($urine_dipstick_test)) {
+      $date_measured = explode(' ', $urine_dipstick_test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      $date_measured_obj = new DateTime($date_measured);
+      $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+      $results_exists = !empty($urine_dipstick_test->field_protein) && !empty($urine_dipstick_test->field_protein[LANGUAGE_NONE][0]['value']);
+      if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+        $tests_dates_by_lab_type['ncd_urine_dipstick_test'][] = explode(' ', $urine_dipstick_test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+      }
+    }
+  }
+
+  foreach ($tests_dates_by_lab_type as $test_name => $dates_by_lab_type) {
+    $last_date = reset($dates_by_lab_type);
+    switch ($test_name) {
+      case 'ncd_creatinine_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_creatinine_test';
+        }
+        break;
+
+      case 'ncd_hba1c_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 6)) {
+          $expected[] = 'ncd_hba1c_test';
+        }
+        break;
+
+      case 'ncd_hiv_test':
+        if (!$hiv_known_as_positive && empty($last_date)) {
+          $expected[] = 'ncd_hiv_test';
+        }
+        break;
+
+      case 'ncd_lipid_panel_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_lipid_panel_test';
+        }
+        break;
+
+      case 'ncd_liver_function_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_liver_function_test';
+        }
+        break;
+
+      case 'ncd_pregnancy_test':
+        if (empty($last_date)) {
+          if ($gender == 'female' && !empty($birth_date_obj)) {
+            $interval = $encounter_data['start_date_obj']->diff($birth_date_obj);
+            $age_in_years = $interval->y;
+
+            if ($age_in_years >= 13 && $age_in_years <= 44) {
+              $expected[] = 'ncd_pregnancy_test';
+            }
+          }
+        }
+        break;
+
+      case 'ncd_urine_dipstick_test':
+        if (hedley_reports_recurrent_test_required($last_date, $encounter_data['start_date_obj'], 12)) {
+          $expected[] = 'ncd_urine_dipstick_test';
+        }
+        break;
+    }
+  }
+}
+
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, array &$expected) {
+  // Resolving diagnoses from current encounter.
+  $current_encounter = $encounter_data['encounter'];
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  $current_encounter_diagnoses = [];
+  if (!empty($current_encounter->field_ncd_diagnoses)) {
+    foreach ($current_encounter->field_ncd_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+      if ($diagnosis['value'] != 'none') {
+        $current_encounter_diagnoses[] = $diagnosis['value'];
+      }
+    }
+  }
+
+  // Resolving diagnoses from previous encounters.
+  $previous_encounters_diagnoses = [];
+  // Reversing, to have most recent dates first.
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $previous_encounter = $previous_encounter_data['encounter'];
+    if (!empty($previous_encounter->field_ncd_diagnoses)) {
+      foreach ($previous_encounter->field_ncd_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+        if ($diagnosis['value'] != 'none') {
+          $previous_encounters_diagnoses[] = $diagnosis['value'];
+        }
+      }
+    }
+  }
+
+  // Checking is patient is pregnant.
+  $patient_pregnant = FALSE;
+  $pregnancy_test = $measurements_by_type['ncd_pregnancy_test'];
+  if (!empty(($pregnancy_test->field_test_execution_note))) {
+    $patient_pregnant = $pregnancy_test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+  }
+  if (!$patient_pregnant &&!empty(($pregnancy_test->field_test_result))) {
+    $patient_pregnant = $pregnancy_test->field_test_result[LANGUAGE_NONE][0]['value'] == 'positive';
+  }
+
+  $hypertension_diagnoses = [
+    'hypertension-stage1',
+    'hypertension-stage2',
+    'hypertension-stage3',
+  ];
+  $diabetes_diagnoses = ['diabetes-initial', 'diabetes-recurrent'];
+  $diabetes_diagnoses_with_renal = array_merge($diabetes_diagnoses, ['renal-complications']);
+
+  if (
+    !$patient_pregnant &&
+    in_array('hypertension-stage1', $current_encounter_diagnoses) &&
+    empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) &&
+    empty(
+      array_intersect(
+        $current_encounter_diagnoses,
+        ['renal-complications', 'diabetes-initial']
+      )
+    ) &&
+    empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+  ) {
+    $expected[] = 'ncd_health_education';
+  }
+
+  // List of all diagnoses. Most recent one comes first.
+  $all_diagnoses = array_merge($current_encounter_diagnoses, $previous_encounters_diagnoses);
+
+  // Checking if Medication Distribution is expected.
+  $medicated_for_diabetes = !empty(array_intersect($all_diagnoses, $diabetes_diagnoses));
+
+  $current_hypertension_stage = '';
+  foreach ($all_diagnoses as $diagnosis) {
+    if (in_array($diagnosis, $hypertension_diagnoses)) {
+      $current_hypertension_stage = $diagnosis;
+      break;
+    }
+  }
+
+  $medicate_for_hypertension_initial_phase = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    if ($current_hypertension_stage == 'hypertension-stage1') {
+      if (
+        $patient_pregnant ||
+        in_array('diabetes-initial', $current_encounter_diagnoses) ||
+        !empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) ||
+        !empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+      ) {
+        $medicate_for_hypertension_initial_phase = TRUE;
+      }
+    }
+    else {
+      $medicate_for_hypertension_initial_phase = TRUE;
+    }
+  }
+
+  $medicate_for_hypertension_recurrent_phase = FALSE;
+  if (!$medicate_for_hypertension_initial_phase) {
+    if (
+      in_array('hypertension-stage1', $current_encounter_diagnoses) &&
+      !empty(
+        array_intersect(
+          $current_encounter_diagnoses,
+          ['renal-complications', 'diabetes-recurrent']
+        )
+      ) &&
+      empty(array_intersect($previous_encounters_diagnoses, $hypertension_diagnoses)) &&
+      empty(array_intersect($previous_encounters_diagnoses, $diabetes_diagnoses_with_renal))
+    ) {
+      $medicate_for_hypertension_recurrent_phase = TRUE;
+    }
+  }
+  $medicate_for_hypertension = $medicate_for_hypertension_initial_phase || $medicate_for_hypertension_recurrent_phase;
+
+  if ($medicated_for_diabetes || $medicate_for_hypertension) {
+    $expected[] = 'ncd_medication_distribution';
+  }
+
+  // Checking if Referral is expected.
+  $refer_for_hypertension = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_hypertension = $patient_pregnant || ($current_hypertension_stage == 'hypertension-stage3');
+  }
+
+  $refer_for_diabetes = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_diabetes = !empty(array_intersect($all_diagnoses, $diabetes_diagnoses));
+  }
+
+  $refer_for_renal_omplications = FALSE;
+  if (!empty($current_hypertension_stage)) {
+    $refer_for_renal_omplications = in_array('renal-complications', $all_diagnoses);
+  }
+
+  if ($refer_for_hypertension || $refer_for_diabetes || $refer_for_renal_omplications) {
+    $expected[] = 'ncd_referral';
+  }
+}
+
+/**
+ * Checks if a lab test was performed based on the test execution note.
+ *
+ * Determines if the test execution note indicates that the test was performed
+ * by checking if it matches one of the predefined statuses.
+ *
+ * @param object $test
+ *   An object representing the lab test, which contains the test execution
+ *   note field.
+ *
+ * @return bool
+ *   TRUE if the test was performed based on the execution note, FALSE
+ *   otherwise.
+ */
+function hedley_reports_lab_test_performed_by_execution_note($test) {
+  if (empty($test) || empty($test->field_test_execution_note)) {
+    return FALSE;
+  }
+
+  return in_array(
+    $test->field_test_execution_note[LANGUAGE_NONE][0]['value'],
+    ['run-today', 'run-previously', 'run-confirmed-by-lab-tech']
+  );
+}
+
+/**
+ * Determines if a recurrent test is required.
+ *
+ * Decision is made based on the last test date,
+ * encounter start date, and the period between tests.
+ *
+ * If the last test date is empty, a test is required. Otherwise, it calculates
+ * the time difference in months between the last test date and the encounter
+ * start date and checks if it meets or exceeds the required period.
+ *
+ * @param string|null $last_date
+ *   The date of the last test in 'Y-m-d' format, or NULL if no test was done.
+ * @param DateTime $encounter_start_date_obj
+ *   The start date of the encounter as a DateTime object.
+ * @param int $period_between_tests
+ *   The required period between tests in months.
+ *
+ * @return bool
+ *   TRUE if the recurrent test is required, FALSE otherwise.
+ */
+function hedley_reports_recurrent_test_required($last_date, DateTime $encounter_start_date_obj, $period_between_tests) {
+  if (empty($last_date)) {
+    return TRUE;
+  }
+
+  $last_date_obj = new DateTime($last_date);
+  // Calculate the difference between the encounter start date
+  // and the last test date.
+  $interval = $encounter_start_date_obj->diff($last_date_obj);
+
+  // Total number of months, accounting for years as well.
+  $diff_months = ($interval->y * 12) + $interval->m;
+
+  return $diff_months >= $period_between_tests;
 }
 
 /**

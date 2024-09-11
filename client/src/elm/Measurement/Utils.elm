@@ -8229,7 +8229,11 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
         |> Maybe.andThen
             (\value ->
                 if testPerformedByExecutionNote value.executionNote then
-                    if resultsExistFunc value && (not <| resultsValidFunc value) then
+                    let
+                        resultsExist =
+                            resultsExistFunc value
+                    in
+                    if resultsExist && (not <| resultsValidFunc value) then
                         -- Entered result is not valid, therefore,
                         -- we treat the test as if it was not performed.
                         Nothing
@@ -8247,7 +8251,7 @@ resolveLabTestDate currentDate resultsExistFunc resultsValidFunc measurement =
                                 Maybe.map (Tuple.second >> .dateMeasured) measurement
                                     |> Maybe.withDefault currentDate
                         in
-                        if (not <| resultsExistFunc value) && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
+                        if not resultsExist && (Date.diff Days dateMeasured currentDate >= labExpirationPeriod) then
                             -- No results were entered for more than 35 days since the
                             -- day on which measurement was taken.
                             -- Test is considered expired, and is being ignored

@@ -9,6 +9,7 @@ import Backend.Completion.Model
         , CompletionData
         , EncounterData
         , HomeVisitActivity(..)
+        , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionGroupEncounterData
         , NutritionMotherActivity(..)
@@ -87,6 +88,9 @@ viewCompletionData language currentDate themePath data model =
                               ReportChildScoreboard
                             , ReportHomeVisit
                             , ReportNewbornExam
+
+                            -- Exclusively Nurse encounters.
+                            , ReportNCD
                             ]
                     then
                         emptyNode
@@ -204,6 +208,9 @@ viewCompletionData language currentDate themePath data model =
                             ReportHomeVisit ->
                                 viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
 
+                            ReportNCD ->
+                                viewNCDReport language startDate limitDate model.takenBy data.ncdData
+
                             ReportNewbornExam ->
                                 viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
 
@@ -229,6 +236,7 @@ viewCompletionData language currentDate themePath data model =
                 [ ReportAcuteIllness
                 , ReportChildScoreboard
                 , ReportHomeVisit
+                , ReportNCD
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
@@ -326,6 +334,15 @@ viewChildScoreboardReport language site startDate limitDate mTakenBy reportData 
         |> generateChildScoreboardReportData language (resolveChildScoreboardActivities site)
         |> viewMetricsResultsTable
         |> div [ class "report child-scoreboard" ]
+
+
+viewNCDReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NCDActivity) -> Html Msg
+viewNCDReport language startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateNCDReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report ncd" ]
 
 
 eliminateEmptyEncounters :
@@ -561,6 +578,33 @@ generateChildScoreboardReportData language activities records =
                 ]
             )
             activities
+    }
+
+
+generateNCDReportData :
+    Language
+    -> List (EncounterData NCDActivity)
+    -> MetricsResultsTableData
+generateNCDReportData language records =
+    { heading = translate language Translate.NCD
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.NCDActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allNCDActivities
     }
 
 
