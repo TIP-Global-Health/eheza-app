@@ -8,6 +8,7 @@ import Backend.Completion.Model
         , ChildScoreboardActivity(..)
         , CompletionData
         , EncounterData
+        , HIVActivity(..)
         , HomeVisitActivity(..)
         , NCDActivity(..)
         , NutritionChildActivity(..)
@@ -15,6 +16,7 @@ import Backend.Completion.Model
         , NutritionMotherActivity(..)
         , SelectedEntity(..)
         , TakenBy(..)
+        , TuberculosisActivity(..)
         , WellChildActivity(..)
         , WellChildEncounterData
         , WellChildEncounterType(..)
@@ -86,8 +88,10 @@ viewCompletionData language currentDate themePath data model =
                         List.member reportType
                             [ -- Exclusively CHW encounters.
                               ReportChildScoreboard
+                            , ReportHIV
                             , ReportHomeVisit
                             , ReportNewbornExam
+                            , ReportTuberculosis
 
                             -- Exclusively Nurse encounters.
                             , ReportNCD
@@ -205,6 +209,9 @@ viewCompletionData language currentDate themePath data model =
                             ReportChildScoreboard ->
                                 viewChildScoreboardReport language data.site startDate limitDate model.takenBy data.childScoreboardData
 
+                            ReportHIV ->
+                                viewHIVReport language startDate limitDate model.takenBy data.hivData
+
                             ReportHomeVisit ->
                                 viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
 
@@ -219,6 +226,9 @@ viewCompletionData language currentDate themePath data model =
 
                             ReportNutritionIndividual ->
                                 viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
+
+                            ReportTuberculosis ->
+                                viewTuberculosisReport language startDate limitDate model.takenBy data.tuberculosisData
 
                             ReportWellChild ->
                                 viewSPVReport language data.site startDate limitDate model.takenBy spvData
@@ -235,11 +245,13 @@ viewCompletionData language currentDate themePath data model =
                 model.reportType
                 [ ReportAcuteIllness
                 , ReportChildScoreboard
+                , ReportHIV
                 , ReportHomeVisit
                 , ReportNCD
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
+                , ReportTuberculosis
                 , ReportWellChild
                 ]
                 reportTypeToString
@@ -343,6 +355,24 @@ viewNCDReport language startDate limitDate mTakenBy reportData =
         |> generateNCDReportData language
         |> viewMetricsResultsTable
         |> div [ class "report ncd" ]
+
+
+viewHIVReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData HIVActivity) -> Html Msg
+viewHIVReport language startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateHIVReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report hiv" ]
+
+
+viewTuberculosisReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData TuberculosisActivity) -> Html Msg
+viewTuberculosisReport language startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateTuberculosisReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report tuberculosis" ]
 
 
 eliminateEmptyEncounters :
@@ -605,6 +635,60 @@ generateNCDReportData language records =
                 ]
             )
             allNCDActivities
+    }
+
+
+generateHIVReportData :
+    Language
+    -> List (EncounterData HIVActivity)
+    -> MetricsResultsTableData
+generateHIVReportData language records =
+    { heading = translate language Translate.HIV
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.HIVActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allHIVActivities
+    }
+
+
+generateTuberculosisReportData :
+    Language
+    -> List (EncounterData TuberculosisActivity)
+    -> MetricsResultsTableData
+generateTuberculosisReportData language records =
+    { heading = translate language Translate.Tuberculosis
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.TuberculosisActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allTuberculosisActivities
     }
 
 

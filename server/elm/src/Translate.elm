@@ -9,11 +9,13 @@ import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
         , ChildScoreboardActivity(..)
+        , HIVActivity(..)
         , HomeVisitActivity(..)
         , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
+        , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
 import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
@@ -89,6 +91,7 @@ type TranslationId
     | CoreExam
     | DangerSigns
     | Diagnosis
+    | Diagnostics
     | District
     | Demographics
     | DownloadCSV
@@ -100,6 +103,7 @@ type TranslationId
     | FBF
     | Feeding
     | Female
+    | FollowUp
     | FoodSecurity
     | GenerateReport
     | Global
@@ -107,6 +111,7 @@ type TranslationId
     | HealthCenter
     | HealthEducation
     | HIV
+    | HIVActivity HIVActivity
     | HIVTest
     | HomeVisit
     | HomeVisitActivity HomeVisitActivity
@@ -132,6 +137,7 @@ type TranslationId
     | InfrastructureEnvironmentWash
     | LoadData
     | Male
+    | Medication
     | MedicationDistribution
     | Month Month
     | MonthLabel
@@ -196,11 +202,14 @@ type TranslationId
     | StuntingModerate
     | StuntingSevere
     | Status
+    | SymptomsReview
     | TakenBy TakenBy
     | TakenByLabel
     | TargetedInterventions
     | Total
+    | TreatmentReview
     | Tuberculosis
+    | TuberculosisActivity TuberculosisActivity
     | Vitals
     | ViewMode
     | Village
@@ -261,10 +270,7 @@ translationSet transId =
                     translationSet DangerSigns
 
                 AcuteIllnessFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FollowUp
 
                 AcuteIllnessMUAC ->
                     { english = "MUAC"
@@ -537,6 +543,9 @@ translationSet transId =
                 Pages.Completion.Model.ReportChildScoreboard ->
                     translationSet ChildScorecard
 
+                Pages.Completion.Model.ReportHIV ->
+                    translationSet HIV
+
                 Pages.Completion.Model.ReportHomeVisit ->
                     translationSet HomeVisit
 
@@ -547,16 +556,13 @@ translationSet transId =
                     translationSet NewbornExam
 
                 Pages.Completion.Model.ReportNutritionGroup ->
-                    { english = "Nutrition Group"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet NutritionGroup
 
                 Pages.Completion.Model.ReportNutritionIndividual ->
-                    { english = "Nutrition Individual"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet NutritionIndividual
+
+                Pages.Completion.Model.ReportTuberculosis ->
+                    translationSet Tuberculosis
 
                 Pages.Completion.Model.ReportWellChild ->
                     translationSet StandardPediatricVisit
@@ -628,6 +634,12 @@ translationSet transId =
 
         DangerSigns ->
             { english = "Danger Signs"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Diagnostics ->
+            { english = "Diagnostics"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -704,6 +716,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        FollowUp ->
+            { english = "Follow Up"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         FoodSecurity ->
             { english = "Food Security"
             , kinyarwanda = Nothing
@@ -739,6 +757,29 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        HIVActivity activity ->
+            case activity of
+                HIVDiagnostics ->
+                    translationSet Diagnostics
+
+                HIVFollowUp ->
+                    translationSet FollowUp
+
+                HIVHealthEducation ->
+                    translationSet HealthEducation
+
+                HIVMedication ->
+                    translationSet Medication
+
+                HIVReferral ->
+                    translationSet Referral
+
+                HIVSymptomReview ->
+                    translationSet SymptomsReview
+
+                HIVTreatmentReview ->
+                    translationSet TreatmentReview
 
         HIVTest ->
             { english = "HIV Test"
@@ -895,6 +936,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Medication ->
+            { english = "Medication"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MedicationDistribution ->
             { english = "Medication Distribution"
             , kinyarwanda = Nothing
@@ -1009,10 +1056,7 @@ translationSet transId =
                     }
 
                 NCDSymptomReview ->
-                    { english = "Symptoms Review"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet SymptomsReview
 
                 NCDUrineDipstickTest ->
                     translationSet UrineDipstickTest
@@ -1340,19 +1384,13 @@ translationSet transId =
                     }
 
                 NutritionFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FollowUp
 
                 NutritionHealthEducation ->
                     translationSet HealthEducation
 
                 NutritionSendToHC ->
-                    { english = "Referal"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Referral
 
                 NutritionNCDA ->
                     { english = "NCDA"
@@ -1696,6 +1734,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        SymptomsReview ->
+            { english = "Symptoms Review"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         TakenBy value ->
             case value of
                 TakenByNurse ->
@@ -1734,11 +1778,46 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        TreatmentReview ->
+            { english = "Treatment Review"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Tuberculosis ->
             { english = "Tuberculosis"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        TuberculosisActivity activity ->
+            case activity of
+                TuberculosisDiagnostics ->
+                    translationSet Diagnostics
+
+                TuberculosisDOT ->
+                    { english = "DOT"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TuberculosisFollowUp ->
+                    translationSet FollowUp
+
+                TuberculosisHealthEducation ->
+                    translationSet HealthEducation
+
+                TuberculosisMedication ->
+                    translationSet Medication
+
+                TuberculosisReferral ->
+                    translationSet Referral
+
+                TuberculosisSymptomReview ->
+                    translationSet SymptomsReview
+
+                TuberculosisTreatmentReview ->
+                    translationSet TreatmentReview
 
         ViewMode ->
             { english = "View Mode"
@@ -1842,10 +1921,7 @@ translationSet transId =
                     translationSet Feeding
 
                 WellChildFollowUp ->
-                    { english = "Follow Up"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FollowUp
 
                 WellChildFoodSecurity ->
                     translationSet FoodSecurity
@@ -1929,10 +2005,7 @@ translationSet transId =
                     translationSet Referral
 
                 WellChildSymptomsReview ->
-                    { english = "Symptoms Review"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet SymptomsReview
 
                 WellChildVitals ->
                     translationSet Vitals
