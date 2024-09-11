@@ -5,7 +5,7 @@
  * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-well-child-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-acute-illness-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -30,7 +30,7 @@ $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
-  ->fieldCondition('field_encounter_type', 'value', 'well-child')
+  ->fieldCondition('field_encounter_type', 'value', 'acute-illness')
   ->propertyCondition('status', NODE_PUBLISHED)
   ->addTag('exclude_deleted');
 
@@ -39,12 +39,12 @@ $count_query->propertyCondition('nid', $nid, '>');
 $count = $count_query->count()->execute();
 
 if ($count == 0) {
-  drush_print("There are no nodes of type $type for well child encounters in DB.");
-  exit 1;
+  drush_print("There are no nodes of type $type for acute illness encounters in DB.");
+  exit;
 }
 
 $total = 0;
-drush_print("$count nodes of type $type for well child encounters located.");
+drush_print("$count nodes of type $type for acute illness encounters located.");
 
 while (TRUE) {
   $query = clone $base_query;
@@ -64,7 +64,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    hedley_reports_generate_completion_data_for_well_child($node, $exclude_set);
+    hedley_reports_generate_completion_data_for_acute_illness($node, $exclude_set);
     $total++;
 
     $memory = round(memory_get_usage() / 1048576);

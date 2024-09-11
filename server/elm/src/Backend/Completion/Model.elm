@@ -12,6 +12,8 @@ type alias CompletionData =
     , entityName : String
     , entityType : SelectedEntity
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
+    , childScoreboardData : List (EncounterData ChildScoreboardActivity)
+    , homeVisitData : List (EncounterData HomeVisitActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
     , wellChildData : List WellChildEncounterData
@@ -83,6 +85,25 @@ type AcuteIllnessActivity
     | AcuteIllnessOngoingTreatment
 
 
+type ChildScoreboardActivity
+    = ChildScoreboardNCDA
+    | ChildScoreboardBCGImmunisation
+    | ChildScoreboardDTPImmunisation
+    | ChildScoreboardDTPSAImmunisation
+    | ChildScoreboardIPVImmunisation
+    | ChildScoreboardMRImmunisation
+    | ChildScoreboardOPVImmunisation
+    | ChildScoreboardPCV13Immunisation
+    | ChildScoreboardRotarixImmunisation
+
+
+type HomeVisitActivity
+    = HomeVisitCaring
+    | HomeVisitFeeding
+    | HomeVisitFoodSecurity
+    | HomeVisitHygiene
+
+
 type NutritionChildActivity
     = NutritionHeight
     | NutritionNutrition
@@ -109,6 +130,7 @@ type WellChildActivity
     | WellChildCaring
     | WellChildContributingFactors
     | WellChildDTPImmunisation
+    | WellChildDTPSAImmunisation
     | WellChildECD
     | WellChildFeeding
     | WellChildFollowUp
@@ -116,6 +138,7 @@ type WellChildActivity
     | WellChildHeadCircumference
     | WellChildHealthEducation
     | WellChildHeight
+    | WellChildHPVImmunisation
     | WellChildHygiene
     | WellChildIPVImmunisation
     | WellChildMebendezole
@@ -134,8 +157,6 @@ type WellChildActivity
     | WellChildVitals
     | WellChildVitaminA
     | WellChildWeight
-    | WellChildHPVImmunisation
-    | WellChildDTPSAImmunisation
 
 
 type TakenBy

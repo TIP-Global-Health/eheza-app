@@ -5,8 +5,10 @@ import AssocList as Dict exposing (Dict)
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , ChildScoreboardActivity(..)
         , CompletionData
         , EncounterData
+        , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionGroupEncounterData
         , NutritionMotherActivity(..)
@@ -79,7 +81,14 @@ viewCompletionData language currentDate themePath data model =
         takenByInput =
             Maybe.map
                 (\reportType ->
-                    if reportType == ReportNewbornExam then
+                    if
+                        List.member reportType
+                            [ -- Exclusively CHW encounters.
+                              ReportChildScoreboard
+                            , ReportHomeVisit
+                            , ReportNewbornExam
+                            ]
+                    then
                         emptyNode
 
                     else
@@ -189,6 +198,12 @@ viewCompletionData language currentDate themePath data model =
                             ReportAcuteIllness ->
                                 viewAcuteIllnessReport language startDate limitDate model.takenBy data.acuteIllnessData
 
+                            ReportChildScoreboard ->
+                                viewChildScoreboardReport language data.site startDate limitDate model.takenBy data.childScoreboardData
+
+                            ReportHomeVisit ->
+                                viewHomeVisitReport language startDate limitDate model.takenBy data.homeVisitData
+
                             ReportNewbornExam ->
                                 viewNewbornExamReport language startDate limitDate model.takenBy newbornExamData
 
@@ -212,6 +227,8 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportChildScoreboard
+                , ReportHomeVisit
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
@@ -233,7 +250,8 @@ viewCompletionData language currentDate themePath data model =
 
 viewNutritionIndividualReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData NutritionChildActivity) -> Html Msg
 viewNutritionIndividualReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
         |> generateNutritionIndividualReportData language
         |> viewMetricsResultsTable
         |> div [ class "report nutrition-individual" ]
@@ -255,7 +273,8 @@ viewNutritionGroupReport language startDate limitDate mTakenBy reportData =
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData AcuteIllnessActivity) -> Html Msg
 viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
-    applyFilters startDate limitDate mTakenBy reportData
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
         |> generateAcuteIllnessReportData language
         |> viewMetricsResultsTable
         |> div [ class "report acute-illness" ]
@@ -263,17 +282,17 @@ viewAcuteIllnessReport language startDate limitDate mTakenBy reportData =
 
 viewSPVReport : Language -> Site -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
 viewSPVReport language site startDate limitDate mTakenBy reportData =
-    customApplyFilters startDate
-        limitDate
-        (\encounter ->
-            if encounter.encounterType == PediatricCare then
-                TakenByNurse
+    eliminateEmptyEncounters reportData
+        |> customApplyFilters startDate
+            limitDate
+            (\encounter ->
+                if encounter.encounterType == PediatricCare then
+                    TakenByNurse
 
-            else
-                TakenByCHW
-        )
-        mTakenBy
-        reportData
+                else
+                    TakenByCHW
+            )
+            mTakenBy
         |> generateWellChildReportData language Translate.StandardPediatricVisit (resolveSPVActivities site)
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
@@ -281,14 +300,39 @@ viewSPVReport language site startDate limitDate mTakenBy reportData =
 
 viewNewbornExamReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List WellChildEncounterData -> Html Msg
 viewNewbornExamReport language startDate limitDate mTakenBy reportData =
-    customApplyFilters startDate
-        limitDate
-        (always TakenByCHW)
-        mTakenBy
-        reportData
+    eliminateEmptyEncounters reportData
+        |> customApplyFilters startDate
+            limitDate
+            (always TakenByCHW)
+            mTakenBy
         |> generateWellChildReportData language Translate.NewbornExam newbornExamActivities
         |> viewMetricsResultsTable
         |> div [ class "report well-child" ]
+
+
+viewHomeVisitReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData HomeVisitActivity) -> Html Msg
+viewHomeVisitReport language startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateHomeVisitReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report home-visit" ]
+
+
+viewChildScoreboardReport : Language -> Site -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData ChildScoreboardActivity) -> Html Msg
+viewChildScoreboardReport language site startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generateChildScoreboardReportData language (resolveChildScoreboardActivities site)
+        |> viewMetricsResultsTable
+        |> div [ class "report child-scoreboard" ]
+
+
+eliminateEmptyEncounters :
+    List { c | completion : { b | completedActivities : List a } }
+    -> List { c | completion : { b | completedActivities : List a } }
+eliminateEmptyEncounters =
+    List.filter (.completion >> .completedActivities >> List.isEmpty >> not)
 
 
 applyFilters :
@@ -456,6 +500,61 @@ generateWellChildReportData language labelTransId activities records =
                         countOccurrences (.completion >> .completedActivities) activity records
                 in
                 [ translate language <| Translate.WellChildActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            activities
+    }
+
+
+generateHomeVisitReportData :
+    Language
+    -> List (EncounterData HomeVisitActivity)
+    -> MetricsResultsTableData
+generateHomeVisitReportData language records =
+    { heading = translate language Translate.HomeVisit
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.HomeVisitActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allHomeVisitActivities
+    }
+
+
+generateChildScoreboardReportData :
+    Language
+    -> List ChildScoreboardActivity
+    -> List (EncounterData ChildScoreboardActivity)
+    -> MetricsResultsTableData
+generateChildScoreboardReportData language activities records =
+    { heading = translate language Translate.ChildScorecard
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.ChildScoreboardActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
                 , calcualtePercentage completed expected

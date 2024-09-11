@@ -5,7 +5,7 @@
  * Generates completion data for different types of encounters.
  *
  * Execution: drush scr
- *   profiles/hedley/modules/custom/hedley_reports/scripts/generate-nutrition-individual-completion-data.php.
+ *   profiles/hedley/modules/custom/hedley_reports/scripts/completion-generate-home-visit-data.php.
  */
 
 if (!drupal_is_cli()) {
@@ -25,7 +25,7 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 500);
 
-$type = 'nutrition_encounter';
+$type = 'home_visit_encounter';
 $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
@@ -66,7 +66,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    $completion_data = hedley_reports_generate_completion_data_for_nutrition_individual_encounter($node);
+    $completion_data = hedley_reports_generate_completion_data_for_home_visit_encounter($node);
     $node->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
     node_save($node);
     $total++;

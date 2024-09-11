@@ -8,6 +8,8 @@ import App.Types exposing (Language(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , ChildScoreboardActivity(..)
+        , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
@@ -72,9 +74,11 @@ type TranslationId
     | ANCNewborn
     | ANCTotal
     | Any
+    | Caring
     | CBNP
     | Cell
     | ChildScorecard
+    | ChildScoreboardActivity ChildScoreboardActivity
     | CHW
     | Colline
     | CollineSub
@@ -90,14 +94,27 @@ type TranslationId
     | EncounterType
     | Expected
     | FBF
+    | Feeding
     | Female
+    | FoodSecurity
     | GenerateReport
     | Global
     | HC
     | HealthCenter
     | HIV
     | HomeVisit
+    | HomeVisitActivity HomeVisitActivity
     | HttpError StringIdHttpError
+    | Hygiene
+    | ImmunisationBCG
+    | ImmunisationDTP
+    | ImmunisationDTPSA
+    | ImmunisationHPV
+    | ImmunisationIPV
+    | ImmunisationMR
+    | ImmunisationOPV
+    | ImmunisationPCV13
+    | ImmunisationRotarix
     | Impacted
     | IncidenceByMonthOneVisitOrMore
     | IncidenceByMonthTwoVisitsOrMore
@@ -113,6 +130,7 @@ type TranslationId
     | MonthLabel
     | MonthYear Int Int Bool
     | NCD
+    | NCDA
     | NCDADemographicsItemLabel NCDADemographicsItem
     | NCDAAcuteMalnutritionItemLabel NCDAAcuteMalnutritionItem
     | NCDAStuntingItemLabel NCDAStuntingItem
@@ -516,6 +534,12 @@ translationSet transId =
                 Pages.Completion.Model.ReportAcuteIllness ->
                     translationSet AcuteIllness
 
+                Pages.Completion.Model.ReportChildScoreboard ->
+                    translationSet ChildScorecard
+
+                Pages.Completion.Model.ReportHomeVisit ->
+                    translationSet HomeVisit
+
                 Pages.Completion.Model.ReportNewbornExam ->
                     translationSet NewbornExam
 
@@ -540,6 +564,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Caring ->
+            { english = "Caring"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Cell ->
             { english = "Cell"
             , kinyarwanda = Nothing
@@ -551,6 +581,35 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        ChildScoreboardActivity activity ->
+            case activity of
+                ChildScoreboardNCDA ->
+                    translationSet NCDA
+
+                ChildScoreboardBCGImmunisation ->
+                    translationSet ImmunisationBCG
+
+                ChildScoreboardDTPImmunisation ->
+                    translationSet ImmunisationDTP
+
+                ChildScoreboardDTPSAImmunisation ->
+                    translationSet ImmunisationDTPSA
+
+                ChildScoreboardIPVImmunisation ->
+                    translationSet ImmunisationIPV
+
+                ChildScoreboardMRImmunisation ->
+                    translationSet ImmunisationMR
+
+                ChildScoreboardOPVImmunisation ->
+                    translationSet ImmunisationOPV
+
+                ChildScoreboardPCV13Immunisation ->
+                    translationSet ImmunisationPCV13
+
+                ChildScoreboardRotarixImmunisation ->
+                    translationSet ImmunisationRotarix
 
         CHW ->
             { english = "CHW"
@@ -606,6 +665,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Feeding ->
+            { english = "Feeding"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Female ->
             { english = "Female"
             , kinyarwanda = Nothing
@@ -614,6 +679,12 @@ translationSet transId =
 
         Global ->
             { english = "Global"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FoodSecurity ->
+            { english = "Food Security"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -648,8 +719,82 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        HomeVisitActivity activity ->
+            case activity of
+                HomeVisitCaring ->
+                    translationSet Caring
+
+                HomeVisitFeeding ->
+                    translationSet Feeding
+
+                HomeVisitFoodSecurity ->
+                    translationSet FoodSecurity
+
+                HomeVisitHygiene ->
+                    translationSet Hygiene
+
         HttpError val ->
             translateHttpError val
+
+        Hygiene ->
+            { english = "Hygiene"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationBCG ->
+            { english = "BCG Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationDTP ->
+            { english = "DTP Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationDTPSA ->
+            { english = "DTP Standalone Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationHPV ->
+            { english = "HPV Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationIPV ->
+            { english = "IPV Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationMR ->
+            { english = "MR Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationOPV ->
+            { english = "OPV Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationPCV13 ->
+            { english = "PCV13 Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ImmunisationRotarix ->
+            { english = "Rotarix Immunisation"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         Impacted ->
             { english = "Impacted (2+ visits)"
@@ -731,6 +876,12 @@ translationSet transId =
 
         NCD ->
             { english = "NCD"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NCDA ->
+            { english = "NCDA"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1470,16 +1621,10 @@ translationSet transId =
                     }
 
                 WellChildBCGImmunisation ->
-                    { english = "BCG Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationBCG
 
                 WellChildCaring ->
-                    { english = "Caring"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Caring
 
                 WellChildContributingFactors ->
                     { english = "Contributing Factors"
@@ -1488,10 +1633,10 @@ translationSet transId =
                     }
 
                 WellChildDTPImmunisation ->
-                    { english = "DTP Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationDTP
+
+                WellChildDTPSAImmunisation ->
+                    translationSet ImmunisationDTPSA
 
                 WellChildECD ->
                     { english = "ECD"
@@ -1500,10 +1645,7 @@ translationSet transId =
                     }
 
                 WellChildFeeding ->
-                    { english = "Feeding"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Feeding
 
                 WellChildFollowUp ->
                     { english = "Follow Up"
@@ -1512,10 +1654,7 @@ translationSet transId =
                     }
 
                 WellChildFoodSecurity ->
-                    { english = "Food Security"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet FoodSecurity
 
                 WellChildHeadCircumference ->
                     { english = "Head Circumference"
@@ -1535,17 +1674,14 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                WellChildHPVImmunisation ->
+                    translationSet ImmunisationHPV
+
                 WellChildHygiene ->
-                    { english = "Hygiene"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Hygiene
 
                 WellChildIPVImmunisation ->
-                    { english = "IPV Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationIPV
 
                 WellChildMebendezole ->
                     { english = "Mebendezole"
@@ -1554,10 +1690,7 @@ translationSet transId =
                     }
 
                 WellChildMRImmunisation ->
-                    { english = "MR Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationMR
 
                 WellChildMUAC ->
                     { english = "MUAC"
@@ -1566,10 +1699,7 @@ translationSet transId =
                     }
 
                 WellChildNCDA ->
-                    { english = "NCDA"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet NCDA
 
                 WellChildNextVisit ->
                     { english = "Next Visit"
@@ -1584,16 +1714,10 @@ translationSet transId =
                     }
 
                 WellChildOPVImmunisation ->
-                    { english = "OPV Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationOPV
 
                 WellChildPCV13Immunisation ->
-                    { english = "PCV13 Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationPCV13
 
                 WellChildPhoto ->
                     { english = "Photo"
@@ -1608,10 +1732,7 @@ translationSet transId =
                     }
 
                 WellChildRotarixImmunisation ->
-                    { english = "Rotarix Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet ImmunisationRotarix
 
                 WellChildSendToHC ->
                     { english = "Referral"
@@ -1639,18 +1760,6 @@ translationSet transId =
 
                 WellChildWeight ->
                     { english = "Weight"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                WellChildHPVImmunisation ->
-                    { english = "HPV Immunisation"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                WellChildDTPSAImmunisation ->
-                    { english = "DTP Standalone Immunisation"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

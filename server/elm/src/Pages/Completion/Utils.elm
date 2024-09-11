@@ -4,6 +4,8 @@ import App.Types exposing (Site(..))
 import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
+        , ChildScoreboardActivity(..)
+        , HomeVisitActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
@@ -17,6 +19,12 @@ reportTypeToString reportType =
     case reportType of
         ReportAcuteIllness ->
             "acute-illness"
+
+        ReportChildScoreboard ->
+            "child-scoreboard"
+
+        ReportHomeVisit ->
+            "home-visit"
 
         ReportNewbornExam ->
             "newborn-exam"
@@ -36,6 +44,12 @@ reportTypeFromString reportType =
     case reportType of
         "acute-illness" ->
             Just ReportAcuteIllness
+
+        "child-scoreboard" ->
+            Just ReportChildScoreboard
+
+        "home-visit" ->
+            Just ReportHomeVisit
 
         "newborn-exam" ->
             Just ReportNewbornExam
@@ -109,43 +123,6 @@ allNutritionMotherGroupActivities =
     ]
 
 
-allWellChildActivities : List WellChildActivity
-allWellChildActivities =
-    [ WellChildAlbendazole
-    , WellChildBCGImmunisation
-    , WellChildCaring
-    , WellChildContributingFactors
-    , WellChildDTPImmunisation
-    , WellChildECD
-    , WellChildFeeding
-    , WellChildFollowUp
-    , WellChildFoodSecurity
-    , WellChildHeadCircumference
-    , WellChildHealthEducation
-    , WellChildHeight
-    , WellChildHygiene
-    , WellChildIPVImmunisation
-    , WellChildMebendezole
-    , WellChildMRImmunisation
-    , WellChildMUAC
-    , WellChildNCDA
-    , WellChildNextVisit
-    , WellChildNutrition
-    , WellChildOPVImmunisation
-    , WellChildPCV13Immunisation
-    , WellChildPhoto
-    , WellChildPregnancySummary
-    , WellChildRotarixImmunisation
-    , WellChildSendToHC
-    , WellChildSymptomsReview
-    , WellChildVitals
-    , WellChildVitaminA
-    , WellChildWeight
-    , WellChildHPVImmunisation
-    , WellChildDTPSAImmunisation
-    ]
-
-
 resolveSPVActivities : Site -> List WellChildActivity
 resolveSPVActivities site =
     [ WellChildAlbendazole
@@ -206,3 +183,32 @@ newbornExamActivities =
     , WellChildSendToHC
     , WellChildWeight
     ]
+
+
+allHomeVisitActivities : List HomeVisitActivity
+allHomeVisitActivities =
+    [ HomeVisitCaring
+    , HomeVisitFeeding
+    , HomeVisitFoodSecurity
+    , HomeVisitHygiene
+    ]
+
+
+resolveChildScoreboardActivities : Site -> List ChildScoreboardActivity
+resolveChildScoreboardActivities site =
+    [ ChildScoreboardNCDA
+    , ChildScoreboardBCGImmunisation
+    , ChildScoreboardDTPImmunisation
+    , ChildScoreboardIPVImmunisation
+    , ChildScoreboardMRImmunisation
+    , ChildScoreboardOPVImmunisation
+    , ChildScoreboardPCV13Immunisation
+    , ChildScoreboardRotarixImmunisation
+    ]
+        ++ (case site of
+                SiteBurundi ->
+                    [ ChildScoreboardDTPSAImmunisation ]
+
+                _ ->
+                    []
+           )

@@ -20,6 +20,8 @@ decodeCompletionData =
         |> required "entity_name" string
         |> required "entity_type" decodeSelectedEntity
         |> requiredAt [ "results", "acute_illness" ] (list (decodeEncounterData acuteIllnessActivityFromMapping))
+        |> requiredAt [ "results", "child_scoreboard" ] (list (decodeEncounterData childScoreboardActivityFromMapping))
+        |> requiredAt [ "results", "home_visit" ] (list (decodeEncounterData homeVisitActivityFromMapping))
         |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
             (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
@@ -47,7 +49,7 @@ decodeEncounterData : (String -> Maybe activity) -> Decoder (EncounterData activ
 decodeEncounterData activityFromString =
     succeed EncounterData
         |> required "start_date" decodeYYYYMMDD
-        |> required "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy))
+        |> optional "taken_by" (nullable (decodeWithFallback TakenByUnknown decodeTakenBy)) Nothing
         |> required "completion" (decodeActivitiesCompletionData activityFromString)
 
 
