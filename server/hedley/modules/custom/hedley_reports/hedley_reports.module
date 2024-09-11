@@ -5673,7 +5673,6 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
   }
 }
 
-
 /**
  * Checks if a lab test was performed based on the test execution note.
  *
