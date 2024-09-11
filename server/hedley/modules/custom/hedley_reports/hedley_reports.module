@@ -5377,6 +5377,37 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
 }
 
 /**
+ * Generates completion data for HIV encounters for patient.
+ *
+ * @param object $participant
+ *   The participant node object with which encounters are associated.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
+function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_set)
+{
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+  ];
+}
+
+/**
+ * Generates completion data for Tuberculosis encounters for patient.
+ *
+ * @param object $participant
+ *   The participant node object with which encounters are associated.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
+function hedley_reports_generate_completion_data_for_tuberculosis($participant, $exclude_set)
+{
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+  ];
+}
+
+
+/**
  * Checks if a lab test was performed based on the test execution note.
  *
  * Determines if the test execution note indicates that the test was performed
