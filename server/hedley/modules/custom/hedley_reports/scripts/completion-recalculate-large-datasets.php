@@ -77,12 +77,16 @@ function generate_completion_results_data($health_center) {
     'attendance',
     // Child Scoreboard data.
     'child_scoreboard_encounter',
+    // HIV Data.
+    'hiv_encounter',
     // Home Visit data.
     'home_visit_encounter',
     // NCD Data.
     'ncd_encounter',
     // Nutrition Individual data.
     'nutrition_encounter',
+    // Tuberculosis Data.
+    'tuberculosis_encounter',
     // Well Child data.
     'well_child_encounter',
   ];
@@ -102,10 +106,12 @@ function generate_completion_results_data($health_center) {
   $data = [
     'acute_illness' => [],
     'child_scoreboard' => [],
+    'hiv' => [],
     'home_visit' => [],
     'ncd' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
+    'tuberculosis' => [],
     'well_child' => [],
   ];
 
@@ -154,6 +160,10 @@ function generate_completion_results_data($health_center) {
           $data['child_scoreboard'][] = json_decode($json_data);
           break;
 
+        case 'hiv_encounter':
+          $data['hiv'][] = json_decode($json_data);
+          break;
+
         case 'home_visit_encounter':
           $data['home_visit'][] = json_decode($json_data);
           break;
@@ -164,6 +174,10 @@ function generate_completion_results_data($health_center) {
 
         case 'nutrition_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'tuberculosis_encounter':
+          $data['tuberculosis'][] = json_decode($json_data);
           break;
 
         case 'well_child_encounter':
