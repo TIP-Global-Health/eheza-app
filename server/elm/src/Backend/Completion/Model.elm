@@ -13,10 +13,12 @@ type alias CompletionData =
     , entityType : SelectedEntity
     , acuteIllnessData : List (EncounterData AcuteIllnessActivity)
     , childScoreboardData : List (EncounterData ChildScoreboardActivity)
+    , hivData : List (EncounterData HIVActivity)
     , homeVisitData : List (EncounterData HomeVisitActivity)
     , ncdData : List (EncounterData NCDActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    , tuberculosisData : List (EncounterData TuberculosisActivity)
     , wellChildData : List WellChildEncounterData
     }
 
@@ -187,6 +189,27 @@ type WellChildActivity
     | WellChildVitals
     | WellChildVitaminA
     | WellChildWeight
+
+
+type HIVActivity
+    = HIVDiagnostics
+    | HIVFollowUp
+    | HIVHealthEducation
+    | HIVMedication
+    | HIVReferral
+    | HIVSymptomReview
+    | HIVTreatmentReview
+
+
+type TuberculosisActivity
+    = TuberculosisDiagnostics
+    | TuberculosisDOT
+    | TuberculosisFollowUp
+    | TuberculosisHealthEducation
+    | TuberculosisMedication
+    | TuberculosisReferral
+    | TuberculosisSymptomReview
+    | TuberculosisTreatmentReview
 
 
 type TakenBy

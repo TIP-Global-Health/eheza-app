@@ -6862,12 +6862,16 @@ var $author$project$Backend$Completion$Model$CompletionData = function (site) {
 		return function (entityType) {
 			return function (acuteIllnessData) {
 				return function (childScoreboardData) {
-					return function (homeVisitData) {
-						return function (ncdData) {
-							return function (nutritionIndividualData) {
-								return function (nutritionGroupData) {
-									return function (wellChildData) {
-										return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, wellChildData: wellChildData};
+					return function (hivData) {
+						return function (homeVisitData) {
+							return function (ncdData) {
+								return function (nutritionIndividualData) {
+									return function (nutritionGroupData) {
+										return function (tuberculosisData) {
+											return function (wellChildData) {
+												return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+											};
+										};
 									};
 								};
 							};
@@ -8123,6 +8127,33 @@ var $author$project$Backend$Completion$Decoder$decodeWellChildEncounterData = A3
 			'start_date',
 			$author$project$Gizra$NominalDate$decodeYYYYMMDD,
 			$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$WellChildEncounterData))));
+var $author$project$Backend$Completion$Model$HIVDiagnostics = {$: 'HIVDiagnostics'};
+var $author$project$Backend$Completion$Model$HIVFollowUp = {$: 'HIVFollowUp'};
+var $author$project$Backend$Completion$Model$HIVHealthEducation = {$: 'HIVHealthEducation'};
+var $author$project$Backend$Completion$Model$HIVMedication = {$: 'HIVMedication'};
+var $author$project$Backend$Completion$Model$HIVReferral = {$: 'HIVReferral'};
+var $author$project$Backend$Completion$Model$HIVSymptomReview = {$: 'HIVSymptomReview'};
+var $author$project$Backend$Completion$Model$HIVTreatmentReview = {$: 'HIVTreatmentReview'};
+var $author$project$Backend$Completion$Utils$hivActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVDiagnostics);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVFollowUp);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVHealthEducation);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVMedication);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVReferral);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVSymptomReview);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$HIVTreatmentReview);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Completion$Model$HomeVisitCaring = {$: 'HomeVisitCaring'};
 var $author$project$Backend$Completion$Model$HomeVisitFeeding = {$: 'HomeVisitFeeding'};
 var $author$project$Backend$Completion$Model$HomeVisitFoodSecurity = {$: 'HomeVisitFoodSecurity'};
@@ -8291,6 +8322,36 @@ var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt = F3(
 			A2($elm$json$Json$Decode$at, path, valDecoder),
 			decoder);
 	});
+var $author$project$Backend$Completion$Model$TuberculosisDOT = {$: 'TuberculosisDOT'};
+var $author$project$Backend$Completion$Model$TuberculosisDiagnostics = {$: 'TuberculosisDiagnostics'};
+var $author$project$Backend$Completion$Model$TuberculosisFollowUp = {$: 'TuberculosisFollowUp'};
+var $author$project$Backend$Completion$Model$TuberculosisHealthEducation = {$: 'TuberculosisHealthEducation'};
+var $author$project$Backend$Completion$Model$TuberculosisMedication = {$: 'TuberculosisMedication'};
+var $author$project$Backend$Completion$Model$TuberculosisReferral = {$: 'TuberculosisReferral'};
+var $author$project$Backend$Completion$Model$TuberculosisSymptomReview = {$: 'TuberculosisSymptomReview'};
+var $author$project$Backend$Completion$Model$TuberculosisTreatmentReview = {$: 'TuberculosisTreatmentReview'};
+var $author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisDiagnostics);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisDOT);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisFollowUp);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisHealthEducation);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisMedication);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisReferral);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisSymptomReview);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$TuberculosisTreatmentReview);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 	_List_fromArray(
@@ -8299,52 +8360,64 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 		_List_fromArray(
-			['results', 'nutrition_group']),
+			['results', 'tuberculosis']),
 		$elm$json$Json$Decode$list(
-			A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+			$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$tuberculosisActivityFromMapping)),
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 			_List_fromArray(
-				['results', 'nutrition_individual']),
+				['results', 'nutrition_group']),
 			$elm$json$Json$Decode$list(
-				$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+				A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 				_List_fromArray(
-					['results', 'ncd']),
+					['results', 'nutrition_individual']),
 				$elm$json$Json$Decode$list(
-					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
+					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 					_List_fromArray(
-						['results', 'home_visit']),
+						['results', 'ncd']),
 					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 						_List_fromArray(
-							['results', 'child_scoreboard']),
+							['results', 'home_visit']),
 						$elm$json$Json$Decode$list(
-							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 							_List_fromArray(
-								['results', 'acute_illness']),
+								['results', 'hiv']),
 							$elm$json$Json$Decode$list(
-								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
 							A3(
-								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-								'entity_type',
-								$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+								_List_fromArray(
+									['results', 'child_scoreboard']),
+								$elm$json$Json$Decode$list(
+									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
 								A3(
-									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-									'entity_name',
-									$elm$json$Json$Decode$string,
+									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+									_List_fromArray(
+										['results', 'acute_illness']),
+									$elm$json$Json$Decode$list(
+										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 									A3(
 										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'site',
-										$author$project$Backend$Decoder$decodeSite,
-										$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))))));
+										'entity_type',
+										$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+										A3(
+											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+											'entity_name',
+											$elm$json$Json$Decode$string,
+											A3(
+												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+												'site',
+												$author$project$Backend$Decoder$decodeSite,
+												$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;

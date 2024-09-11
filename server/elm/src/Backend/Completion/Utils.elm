@@ -376,6 +376,65 @@ ncdActivityFromMapping mapped =
             Nothing
 
 
+hivActivityFromMapping : String -> Maybe HIVActivity
+hivActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just HIVDiagnostics
+
+        "b" ->
+            Just HIVFollowUp
+
+        "c" ->
+            Just HIVHealthEducation
+
+        "d" ->
+            Just HIVMedication
+
+        "e" ->
+            Just HIVReferral
+
+        "f" ->
+            Just HIVSymptomReview
+
+        "g" ->
+            Just HIVTreatmentReview
+
+        _ ->
+            Nothing
+
+
+tuberculosisActivityFromMapping : String -> Maybe TuberculosisActivity
+tuberculosisActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just TuberculosisDiagnostics
+
+        "b" ->
+            Just TuberculosisDOT
+
+        "c" ->
+            Just TuberculosisFollowUp
+
+        "d" ->
+            Just TuberculosisHealthEducation
+
+        "e" ->
+            Just TuberculosisMedication
+
+        "f" ->
+            Just TuberculosisReferral
+
+        "g" ->
+            Just TuberculosisSymptomReview
+
+        "h" ->
+            Just TuberculosisTreatmentReview
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of
