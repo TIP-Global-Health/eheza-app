@@ -227,6 +227,9 @@ encodePrenatalHealthEducationSign sign =
             EducationMastitis ->
                 "mastitis"
 
+            EducationGrief ->
+                "grief"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

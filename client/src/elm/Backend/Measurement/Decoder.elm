@@ -458,6 +458,9 @@ decodePrenatalHealthEducationSign =
                     "mastitis" ->
                         succeed EducationMastitis
 
+                    "grief" ->
+                        succeed EducationGrief
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
