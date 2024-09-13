@@ -576,6 +576,7 @@ healthEducationFormWithDefault form saved =
                 , mentalHealth = EverySet.member EducationMentalHealth value.signs |> Just
                 , earlyMastitisOrEngorgment = EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just
                 , mastitis = EverySet.member EducationMastitis value.signs |> Just
+                , grief = EverySet.member EducationGrief value.signs |> Just
                 }
             )
 

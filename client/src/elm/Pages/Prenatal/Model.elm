@@ -122,6 +122,7 @@ type alias HealthEducationForm =
     , diabetes : Maybe Bool
     , earlyMastitisOrEngorgment : Maybe Bool
     , mastitis : Maybe Bool
+    , grief : Maybe Bool
     }
 
 
@@ -152,6 +153,7 @@ emptyHealthEducationForm =
     , diabetes = Nothing
     , earlyMastitisOrEngorgment = Nothing
     , mastitis = Nothing
+    , grief = Nothing
     }
 
 

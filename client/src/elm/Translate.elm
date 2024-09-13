@@ -15682,6 +15682,12 @@ translationSet trans =
                     , kirundi = Just "Ingwara y'imoko ituma amaberebere adasohoka"
                     }
 
+                EducationGrief ->
+                    { english = "Grief"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 
@@ -15764,6 +15770,12 @@ translationSet trans =
                     { english = "Have you encouraged the patient’s partner to get tested"
                     , kinyarwanda = Just "Waba washishikarije umubyueyi kubwira uwo babana kwipimisha"
                     , kirundi = Just "Mbega wateye inguvu umufasha w'umugwayi kugira yipimishe"
+                    }
+
+                EducationGrief ->
+                    { english = "Have you provided grief counseling to the patient"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 _ ->
