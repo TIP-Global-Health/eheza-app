@@ -43,18 +43,24 @@ viewContent language currentDate isChw model =
             else
                 SetActivePage <| UserPage ClinicsPage
 
-        viewButton label class_ action =
+        viewButton label class_ svg action =
             button
                 [ class <| "ui primary button " ++ class_
                 , onClick action
                 ]
-                [ span [ class "icon" ] []
+                [ img [ src <| "assets/images/" ++ svg ] []
                 , span [ class "text" ] [ text <| translate language label ]
                 , span [ class "icon-back" ] []
                 ]
     in
     div []
         [ p [] [ text <| translate language Translate.WhatDoYouWantToDo ]
-        , viewButton Translate.IndividualEncounter "individual-assessment" (SetActivePage <| UserPage IndividualEncounterTypesPage)
-        , viewButton Translate.GroupAssessment "group-assessment" groupAssessmentButtonAction
+        , viewButton Translate.IndividualEncounter
+            "individual-assessment"
+            "icon-individual-encounter.svg"
+            (SetActivePage <| UserPage IndividualEncounterTypesPage)
+        , viewButton Translate.GroupAssessment
+            "group-assessment"
+            "icon-group-encounter.svg"
+            groupAssessmentButtonAction
         ]

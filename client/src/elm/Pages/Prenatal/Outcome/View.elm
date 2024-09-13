@@ -139,16 +139,29 @@ viewPregnancyOutcome language currentDate initiator data model =
                 + taskCompleted form.pregnancyOutcome
                 + taskCompleted form.deliveryLocation
 
-        destinationPage =
-            case initiator of
-                InitiatorParticipantPage ->
-                    PinCodePage
+        saveButtonAttributes =
+            Maybe.map3
+                (\concludedDate outcome location ->
+                    let
+                        destinationPage =
+                            case initiator of
+                                InitiatorParticipantPage ->
+                                    PinCodePage
 
-                InitiatorWarningPopup ->
-                    UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
+                                InitiatorWarningPopup ->
+                                    UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
 
-                InitiatorPostpartumEncounter encounterId ->
-                    UserPage <| PrenatalEncounterPage encounterId
+                                InitiatorPostpartumEncounter encounterId ->
+                                    UserPage <| PrenatalEncounterPage encounterId
+                    in
+                    [ class "ui fluid primary button"
+                    , onClick <| SavePregnancyOutcome concludedDate outcome location destinationPage
+                    ]
+                )
+                form.pregnancyConcludedDate
+                form.pregnancyOutcome
+                form.deliveryLocation
+                |> Maybe.withDefault [ class "ui fluid primary button disabled" ]
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
@@ -172,6 +185,9 @@ viewPregnancyOutcome language currentDate initiator data model =
                     (Just ( Translate.Facility, Translate.Home ))
                 ]
             ]
-        , viewSaveAction language (SavePregnancyOutcome destinationPage) (tasksCompleted /= totalTasks)
+        , div [ class "actions" ]
+            [ button saveButtonAttributes
+                [ text <| translate language Translate.Save ]
+            ]
         ]
     ]

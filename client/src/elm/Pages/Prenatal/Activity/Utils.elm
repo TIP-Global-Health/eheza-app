@@ -2,6 +2,7 @@ module Pages.Prenatal.Activity.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import Backend.Entities exposing (PrenatalEncounterId)
+import Backend.IndividualEncounterParticipant.Model
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
@@ -464,7 +465,8 @@ expectNextStepsTask currentDate assembled task =
 
         -- Exclusive CHW task.
         NextStepsNewbornEnrolment ->
-            assembled.encounter.encounterType == ChwPostpartumEncounter
+            (assembled.encounter.encounterType == ChwPostpartumEncounter)
+                && liveChildBorn assembled.participant.outcome
 
         -- Exclusive task for Nurse.
         NextStepsMedicationDistribution ->
@@ -3062,12 +3064,6 @@ healthEducationFormInputsAndTasksForChw language assembled form =
                 Nothing
             ]
 
-        immunizationUpdateFunc value form_ =
-            { form_ | immunization = Just value }
-
-        hygieneUpdateFunc value form_ =
-            { form_ | hygiene = Just value }
-
         ( inputsFromFirst, tasksFromFirst ) =
             if healthEducationCompletedAtFirst || healthEducationCompletedAtSecond || healthEducationCompletedAtThird then
                 ( [], [] )
@@ -3124,15 +3120,42 @@ healthEducationFormInputsAndTasksForChw language assembled form =
 
         ChwPostpartumEncounter ->
             let
-                immunizationInput =
-                    [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationImmunization
-                    , viewBoolInput
-                        language
-                        form.immunization
-                        (setBoolInputMsg immunizationUpdateFunc)
-                        "immunization"
-                        Nothing
-                    ]
+                ( outcomeDependantInputs, outcomeDependantTasks ) =
+                    if liveChildBorn assembled.participant.outcome then
+                        let
+                            immunizationInput =
+                                [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationImmunization
+                                , viewBoolInput
+                                    language
+                                    form.immunization
+                                    (setBoolInputMsg immunizationUpdateFunc)
+                                    "immunization"
+                                    Nothing
+                                ]
+
+                            immunizationUpdateFunc value form_ =
+                                { form_ | immunization = Just value }
+                        in
+                        ( [ breastfeedingInput, immunizationInput ]
+                        , [ form.breastfeeding, form.immunization ]
+                        )
+
+                    else
+                        let
+                            griefUpdateFunc value form_ =
+                                { form_ | grief = Just value }
+                        in
+                        ( [ [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationGrief
+                            , viewBoolInput
+                                language
+                                form.grief
+                                (setBoolInputMsg griefUpdateFunc)
+                                "grief"
+                                Nothing
+                            ]
+                          ]
+                        , [ form.grief ]
+                        )
 
                 hygieneInput =
                     [ viewQuestionLabel language <| translatePrenatalHealthEducationQuestion EducationHygiene
@@ -3144,11 +3167,14 @@ healthEducationFormInputsAndTasksForChw language assembled form =
                         Nothing
                     ]
 
+                hygieneUpdateFunc value form_ =
+                    { form_ | hygiene = Just value }
+
                 postpartumEnconterInputs =
-                    [ breastfeedingInput, immunizationInput, hygieneInput ]
+                    outcomeDependantInputs ++ [ hygieneInput ]
 
                 postpartumEnconterTasks =
-                    [ form.breastfeeding, form.immunization, form.hygiene ]
+                    outcomeDependantTasks ++ [ form.hygiene ]
             in
             ( List.concat postpartumEnconterInputs
             , postpartumEnconterTasks
@@ -3161,6 +3187,23 @@ healthEducationFormInputsAndTasksForChw language assembled form =
         -- We should never get here, as function is only for CHW.
         NursePostpartumEncounter ->
             ( [], [] )
+
+
+liveChildBorn : Maybe Backend.IndividualEncounterParticipant.Model.IndividualEncounterParticipantOutcome -> Bool
+liveChildBorn =
+    Maybe.map
+        (\outcome ->
+            case outcome of
+                Backend.IndividualEncounterParticipant.Model.Pregnancy pregnancyOutcome ->
+                    List.member pregnancyOutcome
+                        [ Backend.IndividualEncounterParticipant.Model.OutcomeLiveAtTerm
+                        , Backend.IndividualEncounterParticipant.Model.OutcomeLivePreTerm
+                        ]
+
+                _ ->
+                    False
+        )
+        >> Maybe.withDefault False
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
@@ -5491,6 +5534,7 @@ healthEducationFormWithDefault form saved =
                 , mastitis = or form.mastitis (EverySet.member EducationMastitis value.signs |> Just)
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad value.signs |> Just)
                 , diabetes = or form.diabetes (EverySet.member EducationDiabetes value.signs |> Just)
+                , grief = or form.grief (EverySet.member EducationGrief value.signs |> Just)
                 }
             )
 
@@ -5522,6 +5566,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationMastitis form.mastitis
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     , ifNullableTrue EducationDiabetes form.diabetes
+    , ifNullableTrue EducationGrief form.grief
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
