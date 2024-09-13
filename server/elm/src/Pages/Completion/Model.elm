@@ -29,11 +29,13 @@ emptyModel =
 type ReportType
     = ReportAcuteIllness
     | ReportChildScoreboard
+    | ReportHIV
     | ReportHomeVisit
     | ReportNCD
     | ReportNewbornExam
     | ReportNutritionGroup
     | ReportNutritionIndividual
+    | ReportTuberculosis
     | ReportWellChild
 
 

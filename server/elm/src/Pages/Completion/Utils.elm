@@ -5,11 +5,13 @@ import Backend.Completion.Model
     exposing
         ( AcuteIllnessActivity(..)
         , ChildScoreboardActivity(..)
+        , HIVActivity(..)
         , HomeVisitActivity(..)
         , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
         , TakenBy(..)
+        , TuberculosisActivity(..)
         , WellChildActivity(..)
         , WellChildEncounterType(..)
         )
@@ -24,6 +26,9 @@ reportTypeToString reportType =
 
         ReportChildScoreboard ->
             "child-scoreboard"
+
+        ReportHIV ->
+            "hiv"
 
         ReportHomeVisit ->
             "home-visit"
@@ -40,6 +45,9 @@ reportTypeToString reportType =
         ReportNutritionIndividual ->
             "nutrition-individual"
 
+        ReportTuberculosis ->
+            "tuberculosis"
+
         ReportWellChild ->
             "well-child"
 
@@ -52,6 +60,9 @@ reportTypeFromString reportType =
 
         "child-scoreboard" ->
             Just ReportChildScoreboard
+
+        "hiv" ->
+            Just ReportHIV
 
         "home-visit" ->
             Just ReportHomeVisit
@@ -67,6 +78,9 @@ reportTypeFromString reportType =
 
         "nutrition-individual" ->
             Just ReportNutritionIndividual
+
+        "tuberculosis" ->
+            Just ReportTuberculosis
 
         "well-child" ->
             Just ReportWellChild
@@ -250,4 +264,29 @@ allNCDActivities =
     , NCDUrineDipstickTest
     , NCDUrineDipstickTestResult
     , NCDVitals
+    ]
+
+
+allHIVActivities : List HIVActivity
+allHIVActivities =
+    [ HIVDiagnostics
+    , HIVFollowUp
+    , HIVHealthEducation
+    , HIVMedication
+    , HIVReferral
+    , HIVSymptomReview
+    , HIVTreatmentReview
+    ]
+
+
+allTuberculosisActivities : List TuberculosisActivity
+allTuberculosisActivities =
+    [ TuberculosisDiagnostics
+    , TuberculosisDOT
+    , TuberculosisFollowUp
+    , TuberculosisHealthEducation
+    , TuberculosisMedication
+    , TuberculosisReferral
+    , TuberculosisSymptomReview
+    , TuberculosisTreatmentReview
     ]

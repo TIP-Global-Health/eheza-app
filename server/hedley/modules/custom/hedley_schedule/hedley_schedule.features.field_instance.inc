@@ -1824,7 +1824,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => -1,
+      'weight' => 2,
     ),
   );
 
@@ -1878,7 +1878,7 @@ Used to track location where pregnancies were completed.',
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => -3,
+      'weight' => 1,
     ),
   );
 
@@ -1923,7 +1923,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 3,
+      'weight' => 6,
     ),
   );
 
@@ -1963,7 +1963,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 1,
+      'weight' => 5,
     ),
   );
 

@@ -21,11 +21,18 @@ decodeCompletionData =
         |> required "entity_type" decodeSelectedEntity
         |> requiredAt [ "results", "acute_illness" ] (list (decodeEncounterData acuteIllnessActivityFromMapping))
         |> requiredAt [ "results", "child_scoreboard" ] (list (decodeEncounterData childScoreboardActivityFromMapping))
+        |> requiredAt [ "results", "hiv" ] (list (decodeEncounterData hivActivityFromMapping))
         |> requiredAt [ "results", "home_visit" ] (list (decodeEncounterData homeVisitActivityFromMapping))
         |> requiredAt [ "results", "ncd" ] (list (decodeEncounterData ncdActivityFromMapping))
         |> requiredAt [ "results", "nutrition_individual" ] (list (decodeEncounterData nutritionChildActivityFromMapping))
         |> requiredAt [ "results", "nutrition_group" ]
-            (list (decodeNutritionGroupEncounterData nutritionMotherActivityFromMapping nutritionChildActivityFromMapping))
+            (list
+                (decodeNutritionGroupEncounterData
+                    nutritionMotherActivityFromMapping
+                    nutritionChildActivityFromMapping
+                )
+            )
+        |> requiredAt [ "results", "tuberculosis" ] (list (decodeEncounterData tuberculosisActivityFromMapping))
         |> requiredAt [ "results", "well_child" ] (list decodeWellChildEncounterData)
 
 
