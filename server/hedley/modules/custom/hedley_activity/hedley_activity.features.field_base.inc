@@ -1755,6 +1755,7 @@ function hedley_activity_field_default_field_bases() {
         'mastitis' => 'Mastitis',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'diabetes' => 'Diabetes',
+        'grief' => 'Grief',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

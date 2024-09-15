@@ -140,16 +140,29 @@ viewPregnancyOutcome language currentDate initiator data model =
                 + taskCompleted form.pregnancyOutcome
                 + taskCompleted form.deliveryLocation
 
-        destinationPage =
-            case initiator of
-                InitiatorParticipantPage ->
-                    PinCodePage
+        saveButtonAttributes =
+            Maybe.map3
+                (\concludedDate outcome location ->
+                    let
+                        destinationPage =
+                            case initiator of
+                                InitiatorParticipantPage ->
+                                    PinCodePage
 
-                InitiatorWarningPopup ->
-                    UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
+                                InitiatorWarningPopup ->
+                                    UserPage <| PrenatalParticipantPage InitiatorParticipantsPage data.participant.person
 
-                InitiatorPostpartumEncounter encounterId ->
-                    UserPage <| PrenatalEncounterPage encounterId
+                                InitiatorPostpartumEncounter encounterId ->
+                                    UserPage <| PrenatalEncounterPage encounterId
+                    in
+                    [ class "ui fluid primary button"
+                    , onClick <| SavePregnancyOutcome concludedDate outcome location destinationPage
+                    ]
+                )
+                form.pregnancyConcludedDate
+                form.pregnancyOutcome
+                form.deliveryLocation
+                |> Maybe.withDefault [ class "ui fluid primary button disabled" ]
     in
     [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
     , div [ class "ui full segment" ]
@@ -174,10 +187,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                 ]
             ]
         , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick <| SavePregnancyOutcome destinationPage
-                ]
+            [ button saveButtonAttributes
                 [ text <| translate language Translate.Save ]
             ]
         ]
