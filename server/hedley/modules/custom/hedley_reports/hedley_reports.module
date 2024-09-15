@@ -5673,6 +5673,123 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
   }
 }
 
+function hedley_reports_generate_completion_data_for_prenatal($participant, $exclude_set) {
+  // To reduce memory usage, mapping measurement types as single characters.
+  $mapping = [
+    'appointment_confirmation' => 'a',
+    'birth_plan' => 'b',
+    'breast_exam' => 'c',
+    'core_physical_exam' => 'd',
+    'danger_signs' => 'e',
+    'last_menstrual_period' => 'f',
+    'medical_history' => 'g',
+    'medication' => 'h',
+    'obstetric_history' => 'i',
+    'obstetric_history_step2' => 'j',
+    'obstetrical_exam' => 'k',
+    'pregnancy_testing' => 'l',
+    'prenatal_blood_gprs_test' => 'm',
+    'prenatal_breastfeeding' => 'n',
+    'prenatal_family_planning' => 'o',
+    'prenatal_follow_up' => 'p',
+    'prenatal_gu_exam' => 'q',
+    'prenatal_health_education' => 'r',
+    'prenatal_hemoglobin_test' => 's',
+    'prenatal_hepatitis_b_test' => 't',
+    'prenatal_hiv_pcr_test' => 'u',
+    'prenatal_hiv_test' => 'v',
+    // Not a real activity. Used for data only.
+    'prenatal_labs_results' => '',
+    'prenatal_malaria_test' => 'w',
+    'prenatal_medication_distribution' => 'x',
+    'prenatal_mental_health' => 'y',
+    'prenatal_nutrition' => 'z',
+    'prenatal_outside_care' => '0',
+    'prenatal_partner_hiv_test' => '1',
+    'prenatal_photo' => '2',
+    'prenatal_random_blood_sugar_test' => '3',
+    'prenatal_send_to_hc' => '4',
+    'prenatal_speciality_care' => '5',
+    'prenatal_symptom_review' => '6',
+    'prenatal_syphilis_test' => '7',
+    'prenatal_tetanus_immunisation' => '8',
+    'prenatal_urine_dipstick_test' => '9',
+    'resource' => '@',
+    'social_history' => '#',
+    'vitals' => '$',
+  ];
+
+  // Load all encounters of current participant.
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'prenatal_encounter')
+    ->propertyCondition('status', NODE_PUBLISHED)
+    ->fieldCondition('field_individual_participant', 'target_id', $participant->nid)
+    ->propertyOrderBy('nid')
+    ->execute();
+
+  if (empty($result['node'])) {
+    return;
+  }
+
+  // Encounters are sorted ASC.
+  $encounters = node_load_multiple(array_keys($result['node']));
+  $encounters_data = [];
+  foreach ($encounters as $encounter) {
+    // Skip encounter if exclusion flag is raised and it's report data is set.
+    if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
+      continue;
+    }
+
+    // If encounter type field is empty, we default to 'nurse'.
+    if (empty($encounter->field_prenatal_encounter_type)) {
+      $encounter_type = 'nurse';
+    }
+    else {
+      $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
+    }
+
+    // Loading all measurements that belong to encounter.
+    $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
+    $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
+    // Ordering measurements by type.
+    $measurements_by_type = [];
+    foreach ($measurements as $measurement) {
+      $measurements_by_type[$measurement->type] = $measurement;
+    }
+
+    $encounters_data[] = [
+      'encounter' => $encounter,
+      'encounter_type' => $encounter_type,
+      'measurements_by_type' => $measurements_by_type,
+    ];
+  }
+
+  foreach ($encounters_data as $index => $encounter_data) {
+    $encounter = $encounter_data['encounter'];
+    $measurements_by_type = $encounter_data['measurements_by_type'];
+
+    // Resolve encounter start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    $previous_encounters_data = array_slice($encounters_data, 0, $index);
+
+    // So far we were constructing data structures to resolve encounter data.
+    // Now we have enough info to determine which activities were expected.
+    $completed = array_keys($measurements_by_type);
+
+    $expected = [];
+
+    $completion_data = [
+      'start_date' => $start_date,
+      'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
+    ];
+
+    $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
+    node_save($encounter);
+  }
+}
+
 /**
  * Checks if a lab test was performed based on the test execution note.
  *
