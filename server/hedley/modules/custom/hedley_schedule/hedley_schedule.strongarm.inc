@@ -405,7 +405,7 @@ function hedley_schedule_strongarm() {
       'display' => array(),
       'form' => array(
         'title' => array(
-          'weight' => '1',
+          'weight' => '0',
         ),
       ),
     ),
