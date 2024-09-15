@@ -5776,9 +5776,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
-    $completed = array_keys($measurements_by_type);
-
-    $expected = [];
+    $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -5788,6 +5786,12 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
     node_save($encounter);
   }
+}
+
+function hedley_reports_prenatal_generate_expected_initial_activities($encounter_data) {
+  $expected = [];
+
+  return $expected;
 }
 
 /**
