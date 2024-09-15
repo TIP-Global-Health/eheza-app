@@ -5750,6 +5750,23 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
       $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
     }
 
+    $diagnoses = $past_diagnoses = [];
+    if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+      foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+        if ($diagnosis['value'] != 'none') {
+          $diagnoses[] = $diagnosis['value'];
+        }
+      }
+    }
+
+    if (!empty($encounter->field_past_prenatal_diagnoses) && !empty($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE])) {
+      foreach ($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+        if ($diagnosis['value'] != 'none') {
+          $past_diagnoses[] = $diagnosis['value'];
+        }
+      }
+    }
+
     // Loading all measurements that belong to encounter.
     $measurements_ids = hedley_reports_load_individual_encounter_measurements_ids($encounter);
     $measurements = !empty($measurements_ids) ? node_load_multiple($measurements_ids) : [];
@@ -5762,6 +5779,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $encounters_data[] = [
       'encounter' => $encounter,
       'encounter_type' => $encounter_type,
+      'diagnoses' => $diagnoses,
+      'past_diagnoses' => $past_diagnoses,
       'measurements_by_type' => $measurements_by_type,
     ];
   }
@@ -5773,6 +5792,18 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     // Resolve encounter start date.
     $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
+    $previous_nurse_encounters_data =  $previous_chw_encounters_data = [];
+    foreach ($previous_encounters_data as $previous_encounter_data) {
+      $encounter_type = $previous_encounter_data['encounter_type'];
+      if (in_array($encounter_type, ['nurse', 'nurse-postpartum'])) {
+        $previous_nurse_encounters_data[] = $previous_encounter_data;
+      }
+      else {
+        $previous_chw_encounters_data[] = $previous_encounter_data;
+      }
+    }
+    $encounter_data['previous_nurse_encounters_data'] = $previous_nurse_encounters_data;
+    $encounter_data['previous_chw_encounters_data'] = $previous_chw_encounters_data;
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
@@ -5787,6 +5818,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     node_save($encounter);
   }
 }
+
 
 function hedley_reports_prenatal_generate_expected_initial_activities($encounter_data) {
   $expected = [];
