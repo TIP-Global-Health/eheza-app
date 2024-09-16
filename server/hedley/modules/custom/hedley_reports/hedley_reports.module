@@ -3599,6 +3599,12 @@ function hedley_reports_generate_vaccination_progress_data(array $immunisations_
       case 'well-child':
         $prefix = 'well_child_';
         $suffix = '_immunisation';
+        break;
+
+      case 'prenatal':
+        // No need to remove anything, since there's only single source
+        // of immunisations, and no merge is needed.
+        break;
     }
 
     foreach ($immunisations_by_type[$type]['doses'] as $index => $dose) {
@@ -5840,12 +5846,13 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     }
     $encounter_data['lmp_date'] = $lmp_date;
 
-
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
     hedley_reports_prenatal_add_history_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
+    hedley_reports_prenatal_add_immunisation_activities($encounter_data, $expected);
+    hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -5855,6 +5862,41 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $encounter->field_reports_data[LANGUAGE_NONE][0]['value'] = json_encode($completion_data);
     node_save($encounter);
   }
+}
+
+/**
+ * Generates vaccination history data for a prenatal encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing details of the current encounter,
+ *   including previous encounter data and measurements.
+ *
+ * @return array
+ *   Vaccination history data.
+ */
+function hedley_reports_prenatal_generate_vaccination_history_data(array $encounter_data) {
+  $previous_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+
+  $immunisation_types = [
+    'prenatal_tetanus_immunisation',
+  ];
+
+  $immunisations_from_previous_encounters = [];
+  foreach ($immunisation_types as $immunisation_type) {
+    $immunisations_from_previous_encounters[$immunisation_type] = [];
+  }
+
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+    foreach ($immunisation_types as $immunisation_type) {
+      if (empty($measurements_by_type[$immunisation_type])) {
+        continue;
+      }
+      $immunisations_from_previous_encounters[$immunisation_type][] = $measurements_by_type[$immunisation_type];
+    }
+  }
+
+  return hedley_reports_generate_vaccination_progress_data($immunisations_from_previous_encounters, 'prenatal');
 }
 
 /**
@@ -5978,11 +6020,133 @@ function hedley_reports_prenatal_add_examination_activities(array $encounter_dat
   }
   else {
     // GU Exam activity was added on Sept 25, 2022.
-    $launch_date = '2021-09-25';
+    $launch_date = '2022-09-25';
     $launch_date_obj = new DateTime($launch_date);
     if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
       $expected[] = 'prenatal_gu_exam';
     }
+  }
+}
+
+/**
+ * Adds Immunisation activities as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_immunisation_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'nurse') {
+    return;
+  }
+
+  $vaccination_history = hedley_reports_prenatal_generate_vaccination_history_data($encounter_data);
+  $start_date_obj = $encounter_data['start_date_obj'];
+
+  $immunisation_type = 'prenatal_tetanus_immunisation';
+
+  if (empty($vaccination_history)) {
+    $expected[] = $immunisation_type;
+    return;
+  }
+
+  $performed = $vaccination_history[$immunisation_type];
+  if (empty($performed)) {
+    $expected[] = $immunisation_type;
+    return;
+  }
+
+  $doses = array_keys($performed);
+  sort($doses);
+  $last_dose = array_reverse($doses)[0];
+  $last_dose_for_immunisation = 'dose-5';
+  // If all doses we administered, skipping to next immunisation type.
+  if ($last_dose == $last_dose_for_immunisation) {
+    return;
+  }
+
+  // Calculating when next dose is supposed to be administered.
+  $interval_between_dosed = '';
+  switch ($last_dose) {
+    case 'dose-1':
+      $interval_between_dosed = '+4 weeks';
+      break;
+
+    case 'dose-2':
+      $interval_between_dosed = '+6 months';
+      break;
+
+    case 'dose-3':
+    case 'dose-4':
+      $interval_between_dosed = '+12 months';
+      break;
+  }
+
+  if (empty($interval_between_dosed)) {
+    return;
+  }
+
+  $last_dose_date = $performed[$last_dose];
+  $last_dose_date_obj = new DateTime($last_dose_date);
+  $next_dose_date_obj = clone $last_dose_date_obj;
+  $next_dose_date_obj->modify($interval_between_dosed);
+
+  // If encounter started after the date when immunisation was supposed
+  // to be administered, adding it as expected.
+  if ($start_date_obj >= $next_dose_date_obj) {
+    $expected[] = $immunisation_type;
+  }
+}
+
+/**
+ * Adds Mental Health activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_mental_health_activity(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if (!in_array($encounter_type, ['nurse', 'nurse-postpartum'])) {
+    return;
+  }
+
+  $lmp_date = $encounter_data['lmp_date'];
+  if (empty($lmp_date)) {
+    return;
+  }
+
+  $start_date_obj = $encounter_data['start_date_obj'];
+  // Mental Health activity was added on Sept 25, 2022.
+  $launch_date = '2022-09-25';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($start_date_obj < $launch_date_obj) {
+    return;
+  }
+
+  $lmp_date_obj = new DateTime($lmp_date);
+  $interval = $start_date_obj->diff($lmp_date_obj, TRUE);
+  // Get the total number of days from the interval
+  $total_days = $interval->days;
+  $ega_in_weeks = floor($total_days / 7);
+  if ($ega_in_weeks < 28) {
+    return;
+  }
+
+  $performed_previously = FALSE;
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    if (!empty($previous_nurse_encounter_data['measurements_by_type']['prenatal_mental_health'])) {
+      $performed_previously = TRUE;
+      break;
+    }
+  }
+
+  if (!$performed_previously) {
+    $expected[] = 'prenatal_mental_health';
   }
 }
 
