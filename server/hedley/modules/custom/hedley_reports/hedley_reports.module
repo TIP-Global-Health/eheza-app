@@ -5805,6 +5805,38 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $encounter_data['previous_nurse_encounters_data'] = $previous_nurse_encounters_data;
     $encounter_data['previous_chw_encounters_data'] = $previous_chw_encounters_data;
 
+    // Resolving global LMP date.
+    // First, we check for value at previous nurse encounters.
+    $lmp_date = NULL;
+    foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+      $lmp_measurement = $previous_nurse_encounter_data['measurements_by_type']['last_menstrual_period'];
+      if (empty($lmp_measurement) || empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
+        continue;
+      }
+      $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+      break;
+    }
+    // No value found at previous nurse encounters - check current encounter.
+    if (empty($lmp_date)) {
+      $lmp_measurement = $measurements_by_type['last_menstrual_period'];
+      if (!empty($lmp_measurement) && !empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
+        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+      }
+    }
+    // No value found at current encounter - check previous CHW encounters.
+    if (empty($lmp_date)) {
+      foreach ($previous_chw_encounters_data as $previous_chw_encounter_data) {
+        $lmp_measurement = $previous_chw_encounter_data['measurements_by_type']['last_menstrual_period'];
+        if (empty($lmp_measurement) || empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
+          continue;
+        }
+        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+        break;
+      }
+    }
+    $encounter_data['lmp_date'] = $lmp_date;
+
+
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
