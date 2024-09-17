@@ -5853,6 +5853,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_immunisation_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_prenatal_photo_activity($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -6128,10 +6129,7 @@ function hedley_reports_prenatal_add_mental_health_activity(array $encounter_dat
   }
 
   $lmp_date_obj = new DateTime($lmp_date);
-  $interval = $start_date_obj->diff($lmp_date_obj, TRUE);
-  // Get the total number of days from the interval
-  $total_days = $interval->days;
-  $ega_in_weeks = floor($total_days / 7);
+  $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
   if ($ega_in_weeks < 28) {
     return;
   }
@@ -6148,6 +6146,71 @@ function hedley_reports_prenatal_add_mental_health_activity(array $encounter_dat
   if (!$performed_previously) {
     $expected[] = 'prenatal_mental_health';
   }
+}
+
+/**
+ * Adds Prenatal Photo activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_prenatal_photo_activity(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'nurse') {
+    return;
+  }
+
+  $lmp_date = $encounter_data['lmp_date'];
+  if (empty($lmp_date)) {
+    return;
+  }
+
+  $start_date_obj = $encounter_data['start_date_obj'];
+  $lmp_date_obj = new DateTime($lmp_date);
+  $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
+
+  $photo_taken_for_period = FALSE;
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    $prenatal_photo_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_photo'];
+    if (!empty($prenatal_photo_measurement)) {
+      $date_measured = explode(' ', $prenatal_photo_measurement->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+      if (empty($date_measured)) {
+        continue;
+      }
+      $date_measured_obj = new DateTime($date_measured);
+      $photo_ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $date_measured_obj);
+
+      // Periods, where we want to have 1 photo:
+      //  1. 12 weeks, or less.
+      //  2. Between week 13 and week 27.
+      //  3. Week 28, or more.
+      // If we found a photo that matches encounter period,
+      // activity is not expected.
+      if (
+        ($ega_in_weeks <= 12 && $photo_ega_in_weeks <= 12) ||
+        (($ega_in_weeks >= 13 && $photo_ega_in_weeks >= 13) && ($ega_in_weeks <= 27 && $photo_ega_in_weeks <= 27)) ||
+        ($ega_in_weeks >= 28 && $photo_ega_in_weeks >= 28)
+      ) {
+        $photo_taken_for_period = TRUE;
+        break;
+      }
+    }
+  }
+
+  // If we got so far, activity is expected.
+  if (!$photo_taken_for_period) {
+    $expected[] = 'prenatal_photo';
+  }
+}
+
+function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
+  $interval = $encounter_date_obj->diff($lmp_date_obj, TRUE);
+  // Get the total number of days from the interval
+  $total_days = $interval->days;
+  return floor($total_days / 7);
 }
 
 /**
