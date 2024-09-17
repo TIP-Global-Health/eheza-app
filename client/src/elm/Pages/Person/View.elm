@@ -406,7 +406,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                 )
                             |> Maybe.withDefault emptyNode
 
-                    PrenatalNextStepsActivityOrigin _ ->
+                    PrenatalNextStepsNewbornEnrolmentOrigin _ _ ->
                         -- We do not allow this actions when registering newborn child.
                         emptyNode
 
@@ -699,7 +699,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                     , title = Translate.People
                     }
 
-                PrenatalNextStepsActivityOrigin encounterId ->
+                PrenatalNextStepsNewbornEnrolmentOrigin _ encounterId ->
                     { goBackPage = UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
                     , expectedAge = ExpectChild
                     , expectedGender = ExpectMaleOrFemale
