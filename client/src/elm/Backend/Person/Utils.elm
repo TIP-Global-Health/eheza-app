@@ -199,9 +199,15 @@ initiatorFromUrlFragment s =
                 let
                     birthDateWithUuid =
                         String.dropLeft 20 s
+
+                    birthDate =
+                        String.left 10 birthDateWithUuid
+
+                    uuid =
+                        String.dropLeft 10 birthDateWithUuid
                 in
-                case String.split "-" birthDateWithUuid of
-                    [ yyyy, mm, dd, uuid ] ->
+                case String.split "-" birthDate of
+                    [ yyyy, mm, dd ] ->
                         Maybe.map3
                             (\year month day ->
                                 Just <|
