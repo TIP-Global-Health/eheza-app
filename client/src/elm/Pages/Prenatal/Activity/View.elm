@@ -416,64 +416,27 @@ viewPregnancyDatingContent language currentDate assembled data =
                         ( [], 0, 0 )
             in
             ( let
-                lmpRangeInput =
-                    viewSelectListInput language
-                        form.lmpRange
-                        [ Pages.Prenatal.Activity.Types.OneMonth
-                        , Pages.Prenatal.Activity.Types.ThreeMonths
-                        , SixMonthsOrMore
-                        ]
-                        lmpRangeToString
-                        SetLmpRange
-                        Translate.LmpRange
-                        "select"
-
                 lmpDateInput =
                     let
-                        lmpDateAction =
-                            Maybe.map
-                                (\range ->
-                                    let
-                                        ( dateFrom, dateDefault ) =
-                                            case range of
-                                                Pages.Prenatal.Activity.Types.OneMonth ->
-                                                    ( Date.add Months -1 currentDate
-                                                    , Date.add Months -1 currentDate
-                                                    )
-
-                                                Pages.Prenatal.Activity.Types.ThreeMonths ->
-                                                    ( Date.add Months -3 currentDate
-                                                    , Date.add Months -3 currentDate
-                                                    )
-
-                                                SixMonthsOrMore ->
-                                                    ( Date.add Months -12 currentDate
-                                                    , Date.add Months -6 currentDate
-                                                    )
-
-                                        dateSelectorConfig =
-                                            { select = SetLmpDate
-                                            , close = SetLmpDateSelectorState Nothing
-                                            , dateFrom = dateFrom
-                                            , dateTo = currentDate
-                                            , dateDefault = Just dateDefault
-                                            }
-                                    in
-                                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
-                                )
-                                form.lmpRange
-                                |> Maybe.withDefault []
+                        dateSelectorConfig =
+                            { select = SetLmpDate
+                            , close = SetLmpDateSelectorState Nothing
+                            , dateFrom = Date.add Months -12 currentDate
+                            , dateTo = currentDate
+                            , dateDefault = Just currentDate
+                            }
 
                         lmpdDateForView =
                             Maybe.map formatDDMMYYYY form.lmpDate
                                 |> Maybe.withDefault ""
                     in
-                    div (class "form-input date" :: lmpDateAction)
+                    div
+                        [ class "form-input date"
+                        , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
+                        ]
                         [ text lmpdDateForView ]
               in
-              [ viewQuestionLabel language Translate.LmpRangeHeader
-              , lmpRangeInput
-              , viewLabel language Translate.LmpDateHeader
+              [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
