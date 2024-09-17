@@ -204,7 +204,7 @@ initiatorFromUrlFragment s =
                         String.left 10 birthDateWithUuid
 
                     uuid =
-                        String.dropLeft 10 birthDateWithUuid
+                        String.dropLeft 11 birthDateWithUuid
                 in
                 case String.split "-" birthDate of
                     [ yyyy, mm, dd ] ->

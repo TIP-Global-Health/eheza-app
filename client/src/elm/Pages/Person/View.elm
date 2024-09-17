@@ -462,7 +462,19 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Site -> GeoInfo -> ReverseGeoInfo -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> GeoInfo
+    -> ReverseGeoInfo
+    -> Maybe VillageId
+    -> Bool
+    -> ParticipantDirectoryOperation
+    -> Initiator
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
 viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
@@ -490,7 +502,15 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate
+                site
+                reverseGeoInfo
+                maybeVillage
+                isChw
+                maybeRelatedPerson
+                operation
+                initiator
+                formBeforeDefaults
 
         request =
             db.postPerson
