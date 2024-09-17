@@ -423,7 +423,7 @@ viewPregnancyDatingContent language currentDate assembled data =
                             , close = SetLmpDateSelectorState Nothing
                             , dateFrom = Date.add Months -12 currentDate
                             , dateTo = currentDate
-                            , dateDefault = Just currentDate
+                            , dateDefault = Maybe.Extra.or form.lmpDate (Just currentDate)
                             }
 
                         lmpdDateForView =
