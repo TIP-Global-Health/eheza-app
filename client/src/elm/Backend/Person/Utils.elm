@@ -197,6 +197,7 @@ initiatorFromUrlFragment s =
 
             else if String.startsWith "prenatal-next-steps-" s then
                 let
+                    -- Format is YYYY-MM-DD-[UUID].
                     birthDateWithUuid =
                         String.dropLeft 20 s
 
