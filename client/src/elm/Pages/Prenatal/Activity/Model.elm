@@ -775,7 +775,6 @@ type alias ObstetricFormSecondStep =
     , convulsionsAndUnconsciousPreviousDelivery : Maybe Bool
     , gestationalDiabetesPreviousPregnancy : Maybe Bool
     , incompleteCervixPreviousPregnancy : Maybe Bool
-    , rhNegative : Maybe Bool
     }
 
 
@@ -799,7 +798,6 @@ emptyObstetricFormSecondStep =
     , convulsionsAndUnconsciousPreviousDelivery = Nothing
     , gestationalDiabetesPreviousPregnancy = Nothing
     , incompleteCervixPreviousPregnancy = Nothing
-    , rhNegative = Nothing
     }
 
 

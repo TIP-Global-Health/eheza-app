@@ -1586,7 +1586,6 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
-    | RhNegative
     | Right
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -20320,12 +20319,6 @@ translationSet trans =
             { english = "Review Prior Diagnosis"
             , kinyarwanda = Just "Kureba uburwayi yagize/yigeze kurwara"
             , kirundi = Just "Kongera kuraba indwara yagize"
-            }
-
-        RhNegative ->
-            { english = "RH Negative"
-            , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
-            , kirundi = Just "RH Négatif"
             }
 
         Right ->

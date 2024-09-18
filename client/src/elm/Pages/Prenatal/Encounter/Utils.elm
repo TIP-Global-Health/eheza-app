@@ -34,10 +34,10 @@ getAllActivities assembled =
                 , DangerSigns
                 , SymptomReview
                 , PrenatalImmunisation
-                , Laboratory
+                , Laboratory -- @todo
                 , MaternalMentalHealth
                 , PrenatalPhoto
-                , NextSteps
+                , NextSteps -- @todo
                 ]
 
             else
@@ -46,7 +46,7 @@ getAllActivities assembled =
                 , History
                 , Examination
                 , FamilyPlanning
-                , PrenatalTreatmentReview
+                , PrenatalTreatmentReview -- @todo
                 , Backend.PrenatalActivity.Model.MalariaPrevention
                 , PrenatalImmunisation
                 , Laboratory
