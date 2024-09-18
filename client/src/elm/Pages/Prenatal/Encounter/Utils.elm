@@ -471,7 +471,14 @@ generateRecurringHighSeverityAlertData language currentDate isChw assembled aler
                 |> List.filterMap resolveAlert
 
 
-generateObstetricalDiagnosisAlertData : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> ObstetricalDiagnosis -> Maybe String
+generateObstetricalDiagnosisAlertData :
+    Language
+    -> NominalDate
+    -> Bool
+    -> PrenatalMeasurements
+    -> AssembledData
+    -> ObstetricalDiagnosis
+    -> Maybe String
 generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled diagnosis =
     let
         transAlert diagnosis_ =
@@ -482,24 +489,48 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
     in
     case diagnosis of
         DiagnosisRhNegative ->
-            firstEncounterMeasurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .obstetricHistory
-                        in
-                        if EverySet.member Backend.Measurement.Model.GestationalDiabetesPreviousPregnancy signs then
-                            Just (transAlert diagnosis)
+            let
+                rhesusByLabTest =
+                    List.reverse assembled.nursePreviousEncountersData
+                        |> List.filterMap (.measurements >> .bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus)
+                        |> List.head
+            in
+            case rhesusByLabTest of
+                -- Rhesus was recorded at lab test.
+                Just rhesus ->
+                    case rhesus of
+                        RhesusNegative ->
+                            Just (transAlert DiagnosisRhNegative)
 
-                        else
+                        RhesusPositive ->
                             Nothing
-                    )
+
+                -- Rhesus was not recorded at lab test. Trying to check using legacy method.
+                -- If we have negative RH result recorded, we view it. If not, viewing 'Unknown'.
+                Nothing ->
+                    let
+                        negativeByObstetricHistory =
+                            getMeasurementValueFunc firstEncounterMeasurements.obstetricHistoryStep2
+                                |> Maybe.map (.obstetricHistory >> EverySet.member Backend.Measurement.Model.RhNegative)
+                                |> Maybe.withDefault False
+                    in
+                    if negativeByObstetricHistory then
+                        Just (transAlert DiagnosisRhNegative)
+
+                    else
+                        Just <| translate language Translate.RHFactorUnknown
 
         DiagnosisModerateUnderweight ->
             let
                 severeUnderweight =
-                    isJust <| generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled DiagnosisSevereUnderweight
+                    isJust <|
+                        generateObstetricalDiagnosisAlertData
+                            language
+                            currentDate
+                            isChw
+                            firstEncounterMeasurements
+                            assembled
+                            DiagnosisSevereUnderweight
             in
             if severeUnderweight then
                 Nothing

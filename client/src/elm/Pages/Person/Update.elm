@@ -48,7 +48,15 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                         |> Maybe.andThen (getVillageById db)
 
                                 formWithDefaults =
-                                    applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw related operation model.form
+                                    applyDefaultValuesForPerson currentDate
+                                        site
+                                        reverseGeoInfo
+                                        maybeVillage
+                                        isChw
+                                        related
+                                        operation
+                                        initiator
+                                        model.form
                             in
                             case operation of
                                 CreatePerson _ ->

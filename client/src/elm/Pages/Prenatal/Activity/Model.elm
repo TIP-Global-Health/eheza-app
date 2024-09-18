@@ -60,7 +60,6 @@ type Msg
     | SetConfirmLmpDate LastMenstrualPeriodValue Bool
     | SetLmpDate Date
     | SetLmpDateConfident Bool
-    | SetLmpRange String
     | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
@@ -709,8 +708,7 @@ emptyNextStepsData =
 
 
 type alias PregnancyDatingForm =
-    { lmpRange : Maybe LmpRange
-    , lmpDate : Maybe Date
+    { lmpDate : Maybe Date
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
@@ -720,7 +718,7 @@ type alias PregnancyDatingForm =
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing Nothing
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -777,7 +775,6 @@ type alias ObstetricFormSecondStep =
     , convulsionsAndUnconsciousPreviousDelivery : Maybe Bool
     , gestationalDiabetesPreviousPregnancy : Maybe Bool
     , incompleteCervixPreviousPregnancy : Maybe Bool
-    , rhNegative : Maybe Bool
     }
 
 
@@ -801,7 +798,6 @@ emptyObstetricFormSecondStep =
     , convulsionsAndUnconsciousPreviousDelivery = Nothing
     , gestationalDiabetesPreviousPregnancy = Nothing
     , incompleteCervixPreviousPregnancy = Nothing
-    , rhNegative = Nothing
     }
 
 

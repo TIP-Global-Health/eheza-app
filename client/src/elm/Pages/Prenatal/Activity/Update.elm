@@ -261,24 +261,6 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetLmpRange value ->
-            let
-                range =
-                    lmpRangeFromString value
-
-                updatedForm =
-                    model.pregnancyDatingData.form
-                        |> (\form -> { form | lmpRange = range })
-
-                updatedData =
-                    model.pregnancyDatingData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | pregnancyDatingData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetLmpDateNotConfidentReason value ->
             let
                 updatedForm =

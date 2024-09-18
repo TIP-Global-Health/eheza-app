@@ -409,64 +409,27 @@ viewPregnancyDatingContent language currentDate assembled data =
                         ( [], 0, 0 )
             in
             ( let
-                lmpRangeInput =
-                    viewSelectListInput language
-                        form.lmpRange
-                        [ Pages.Prenatal.Activity.Types.OneMonth
-                        , Pages.Prenatal.Activity.Types.ThreeMonths
-                        , SixMonthsOrMore
-                        ]
-                        lmpRangeToString
-                        SetLmpRange
-                        Translate.LmpRange
-                        "select"
-
                 lmpDateInput =
                     let
-                        lmpDateAction =
-                            Maybe.map
-                                (\range ->
-                                    let
-                                        ( dateFrom, dateDefault ) =
-                                            case range of
-                                                Pages.Prenatal.Activity.Types.OneMonth ->
-                                                    ( Date.add Months -1 currentDate
-                                                    , Date.add Months -1 currentDate
-                                                    )
-
-                                                Pages.Prenatal.Activity.Types.ThreeMonths ->
-                                                    ( Date.add Months -3 currentDate
-                                                    , Date.add Months -3 currentDate
-                                                    )
-
-                                                SixMonthsOrMore ->
-                                                    ( Date.add Months -12 currentDate
-                                                    , Date.add Months -6 currentDate
-                                                    )
-
-                                        dateSelectorConfig =
-                                            { select = SetLmpDate
-                                            , close = SetLmpDateSelectorState Nothing
-                                            , dateFrom = dateFrom
-                                            , dateTo = currentDate
-                                            , dateDefault = Just dateDefault
-                                            }
-                                    in
-                                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
-                                )
-                                form.lmpRange
-                                |> Maybe.withDefault []
+                        dateSelectorConfig =
+                            { select = SetLmpDate
+                            , close = SetLmpDateSelectorState Nothing
+                            , dateFrom = Date.add Months -12 currentDate
+                            , dateTo = currentDate
+                            , dateDefault = Maybe.Extra.or form.lmpDate (Just currentDate)
+                            }
 
                         lmpdDateForView =
                             Maybe.map formatDDMMYYYY form.lmpDate
                                 |> Maybe.withDefault ""
                     in
-                    div (class "form-input date" :: lmpDateAction)
+                    div
+                        [ class "form-input date"
+                        , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
+                        ]
                         [ text lmpdDateForView ]
               in
-              [ viewQuestionLabel language Translate.LmpRangeHeader
-              , lmpRangeInput
-              , viewLabel language Translate.LmpDateHeader
+              [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
@@ -2783,9 +2746,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
 
         incompleteCervixPreviousPregnancyUpdateFunc value form_ =
             { form_ | incompleteCervixPreviousPregnancy = Just value }
-
-        rhNegativeUpdateFunc value form_ =
-            { form_ | rhNegative = Just value }
     in
     ( cSectionsHtml
         ++ [ div [ class "ui grid" ]
@@ -2935,18 +2895,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
                 "incomplete-cervix-previous-pregnancy"
                 Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.RhNegative ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.rhNegative False ]
-                ]
-           , viewBoolInput
-                language
-                form.rhNegative
-                (SetOBBoolInput rhNegativeUpdateFunc)
-                "rh-negative"
-                Nothing
            ]
     , cSectionsTasks
         ++ [ maybeToBoolTask form.previousDeliveryPeriod
@@ -2961,7 +2909,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
            , form.convulsionsAndUnconsciousPreviousDelivery
            , form.gestationalDiabetesPreviousPregnancy
            , form.incompleteCervixPreviousPregnancy
-           , form.rhNegative
            ]
     )
 
@@ -3673,16 +3620,24 @@ viewFollowUpForm language currentDate form =
 
 viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language currentDate assembled =
+    let
+        attributes =
+            Maybe.map
+                (\birthDate ->
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                CreatePersonPage (Just assembled.participant.person) <|
+                                    Backend.Person.Model.PrenatalNextStepsNewbornEnrolmentOrigin birthDate assembled.id
+                    ]
+                )
+                assembled.participant.dateConcluded
+                |> Maybe.withDefault []
+    in
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
-        , button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
-            , onClick <|
-                SetActivePage <|
-                    UserPage <|
-                        CreatePersonPage (Just assembled.participant.person) <|
-                            Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
-            ]
+        , button attributes
             [ text <| translate language Translate.EnrolNewborn ]
         ]
 
