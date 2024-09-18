@@ -3782,16 +3782,24 @@ viewAppointmentConfirmationForm language currentDate assembled form =
 
 viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language currentDate assembled =
+    let
+        attributes =
+            Maybe.map
+                (\birthDate ->
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                CreatePersonPage (Just assembled.participant.person) <|
+                                    Backend.Person.Model.PrenatalNextStepsNewbornEnrolmentOrigin birthDate assembled.id
+                    ]
+                )
+                assembled.participant.dateConcluded
+                |> Maybe.withDefault []
+    in
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
-        , button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
-            , onClick <|
-                SetActivePage <|
-                    UserPage <|
-                        CreatePersonPage (Just assembled.participant.person) <|
-                            Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
-            ]
+        , button attributes
             [ text <| translate language Translate.EnrolNewborn ]
         ]
 
