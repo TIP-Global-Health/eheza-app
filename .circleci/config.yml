@@ -31,14 +31,14 @@ jobs:
       - run: ci-scripts/test_elm_format.sh
   lint_shellcheck:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
   test_simpletest_linux:
     machine:
-      image: ubuntu-2004:202111-01
+      image: ubuntu-2204:current
     steps:
       - checkout
       - run: ci-scripts/install_ddev.sh

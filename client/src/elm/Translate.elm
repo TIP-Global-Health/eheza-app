@@ -930,8 +930,6 @@ type TranslationId
     | LmpDateNotConfidentReasonforReport LmpDateNotConfidentReason
     | LmpDateHeader
     | LmpLabel
-    | LmpRangeHeader
-    | LmpRange Pages.Prenatal.Activity.Types.LmpRange
     | LoggedInAsPhrase
     | Location
     | LoginPhrase LoginPhrase
@@ -1588,7 +1586,7 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
-    | RhNegative
+    | RHFactorUnknown
     | Right
     | RiskFactorAlert RiskFactor
     | RiskFactors
@@ -9802,32 +9800,6 @@ translationSet trans =
             , kirundi = Just "Igihe canyuma co kuja mu kwezi"
             }
 
-        LmpRangeHeader ->
-            { english = "When was the Patient's Last Menstrual Period"
-            , kinyarwanda = Just "Ni ryari umubyeyi aherukira mu mihango?"
-            , kirundi = Just "Haheze igihe kingana iki uvuye mu maraso"
-            }
-
-        LmpRange range ->
-            case range of
-                Pages.Prenatal.Activity.Types.OneMonth ->
-                    { english = "Within 1 month"
-                    , kinyarwanda = Just "Mu kwezi kumwe"
-                    , kirundi = Just "Mu kwezi kumwe"
-                    }
-
-                Pages.Prenatal.Activity.Types.ThreeMonths ->
-                    { english = "Within 3 months"
-                    , kinyarwanda = Just "Mu mezi atatu"
-                    , kirundi = Just "Mu mezi atatu"
-                    }
-
-                Pages.Prenatal.Activity.Types.SixMonthsOrMore ->
-                    { english = "Within 6 months, or more"
-                    , kinyarwanda = Just "Mu mezi atandatu, no hejuru"
-                    , kirundi = Just "Mu mezi atandatu canke arenga"
-                    }
-
         LoggedInAsPhrase ->
             { english = "You are logged in as"
             , kinyarwanda = Just "Winjiye nka"
@@ -13043,9 +13015,9 @@ translationSet trans =
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
                 DiagnosisRhNegative ->
-                    { english = "Patient is RH Negative"
-                    , kinyarwanda = Just "Umurwayi afite Rezisi negatifu"
-                    , kirundi = Just "Umugwayi afise Rhesus Négatif"
+                    { english = "RH Factor Negative"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 DiagnosisModerateUnderweight ->
@@ -20350,10 +20322,10 @@ translationSet trans =
             , kirundi = Just "Kongera kuraba indwara yagize"
             }
 
-        RhNegative ->
-            { english = "RH Negative"
-            , kinyarwanda = Just "Ubwoko bw'amaraso ni Negatifu"
-            , kirundi = Just "RH Négatif"
+        RHFactorUnknown ->
+            { english = "RH Factor Unknown"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Right ->
