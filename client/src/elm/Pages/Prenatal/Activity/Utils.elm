@@ -3269,8 +3269,7 @@ lastMenstrualPeriodFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { lmpRange = or form.lmpRange (Just SixMonthsOrMore)
-                , lmpDate = or form.lmpDate (Just value.date)
+                { lmpDate = or form.lmpDate (Just value.date)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
@@ -5977,35 +5976,6 @@ toSpecialityCareValue form =
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoSpecialityCareSigns)
-
-
-lmpRangeToString : LmpRange -> String
-lmpRangeToString range =
-    case range of
-        Pages.Prenatal.Activity.Types.OneMonth ->
-            "one-month"
-
-        Pages.Prenatal.Activity.Types.ThreeMonths ->
-            "three-month"
-
-        SixMonthsOrMore ->
-            "six-month"
-
-
-lmpRangeFromString : String -> Maybe LmpRange
-lmpRangeFromString s =
-    case s of
-        "one-month" ->
-            Just Pages.Prenatal.Activity.Types.OneMonth
-
-        "three-month" ->
-            Just Pages.Prenatal.Activity.Types.ThreeMonths
-
-        "six-month" ->
-            Just SixMonthsOrMore
-
-        _ ->
-            Nothing
 
 
 resolveWarningPopupContentForUrgentDiagnoses : Language -> List PrenatalDiagnosis -> ( String, String )
