@@ -406,7 +406,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                                 )
                             |> Maybe.withDefault emptyNode
 
-                    PrenatalNextStepsActivityOrigin _ ->
+                    PrenatalNextStepsNewbornEnrolmentOrigin _ _ ->
                         -- We do not allow this actions when registering newborn child.
                         emptyNode
 
@@ -462,7 +462,19 @@ viewPhotoThumb url =
         ]
 
 
-viewCreateEditForm : Language -> NominalDate -> Site -> GeoInfo -> ReverseGeoInfo -> Maybe VillageId -> Bool -> ParticipantDirectoryOperation -> Initiator -> Model -> ModelIndexedDb -> Html Msg
+viewCreateEditForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> GeoInfo
+    -> ReverseGeoInfo
+    -> Maybe VillageId
+    -> Bool
+    -> ParticipantDirectoryOperation
+    -> Initiator
+    -> Model
+    -> ModelIndexedDb
+    -> Html Msg
 viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
@@ -490,7 +502,15 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             currentDate
 
         personForm =
-            applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation formBeforeDefaults
+            applyDefaultValuesForPerson currentDate
+                site
+                reverseGeoInfo
+                maybeVillage
+                isChw
+                maybeRelatedPerson
+                operation
+                initiator
+                formBeforeDefaults
 
         request =
             db.postPerson
@@ -699,7 +719,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                     , title = Translate.People
                     }
 
-                PrenatalNextStepsActivityOrigin encounterId ->
+                PrenatalNextStepsNewbornEnrolmentOrigin _ encounterId ->
                     { goBackPage = UserPage (PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps)
                     , expectedAge = ExpectChild
                     , expectedGender = ExpectMaleOrFemale

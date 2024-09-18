@@ -4172,7 +4172,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 case initiator of
                                     -- We do not use the form in this scenario,
                                     -- therefore, no need to reset it.
-                                    PrenatalNextStepsActivityOrigin _ ->
+                                    PrenatalNextStepsNewbornEnrolmentOrigin _ _ ->
                                         []
 
                                     -- When at session context, we navigate to session Attendance page.
@@ -4295,7 +4295,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         , []
                                         )
 
-                                    PrenatalNextStepsActivityOrigin encounterId ->
+                                    PrenatalNextStepsNewbornEnrolmentOrigin _ encounterId ->
                                         let
                                             nextPage =
                                                 PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps

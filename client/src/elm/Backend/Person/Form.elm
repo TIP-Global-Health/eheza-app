@@ -71,8 +71,18 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValuesForPerson : NominalDate -> Site -> ReverseGeoInfo -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson :
+    NominalDate
+    -> Site
+    -> ReverseGeoInfo
+    -> Maybe Village
+    -> Bool
+    -> Maybe Person
+    -> ParticipantDirectoryOperation
+    -> Initiator
+    -> PersonForm
+    -> PersonForm
+applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation initiator form =
     let
         defaultProvince =
             if isChw then
@@ -249,6 +259,18 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
     in
     case operation of
         CreatePerson _ ->
+            let
+                applyDefaultBirthDate form_ =
+                    case initiator of
+                        PrenatalNextStepsNewbornEnrolmentOrigin newbornBirthDate _ ->
+                            applyDefaultTextInput birthDate
+                                (Just newbornBirthDate)
+                                formatYYYYMMDD
+                                form_
+
+                        _ ->
+                            form_
+            in
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
@@ -257,6 +279,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
+                |> applyDefaultBirthDate
 
         EditPerson _ ->
             let
