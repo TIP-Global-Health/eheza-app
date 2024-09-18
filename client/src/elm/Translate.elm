@@ -16974,9 +16974,9 @@ translationSet trans =
             }
 
         PreviousCSectionScar ->
-            { english = "Previous C-section scar"
-            , kinyarwanda = Just "Inkovu yaho babaze ubushize"
-            , kirundi = Just "Igikomere c'ugukorwa guheruka"
+            { english = "Previous c-section or other abdominal scar"
+            , kinyarwanda = Just "Inkovu yaho babaze ubushize cyangwa indi nkovu ku nda"
+            , kirundi = Just "Igikomere c'ugukorwa guheruka canke ikindi gikomere ku nda"
             }
 
         PreviousDelivery ->
