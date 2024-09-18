@@ -658,7 +658,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                    )
                 |> List.sortWith (sortByDateDesc .startDate)
 
-        dignoses =
+        diganoses =
             List.concatMap
                 (\data ->
                     let
@@ -746,7 +746,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
         , div [ class "pane-content" ] <|
-            dignoses
+            diganoses
                 :: alerts
         ]
 
@@ -815,7 +815,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
                 Dict.empty
                 allNurseEncountersData
 
-        dignoses =
+        diganoses =
             List.concatMap
                 (\data ->
                     let
@@ -916,7 +916,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
 
         common =
             ul [] <|
-                dignoses
+                diganoses
                     ++ lmpDateNonConfidentEntry
 
         alerts =

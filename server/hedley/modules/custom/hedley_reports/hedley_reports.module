@@ -5723,6 +5723,14 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'resource' => '@',
     'social_history' => '#',
     'vitals' => '$',
+    // Bellow are 'virtual' activities.
+    // Treatment Review is displayed for recurrent Nurse encounter.
+    // Its data is saved into Medication CT.
+    'treatment_review' => '^',
+    // Recorded info is stored on participant node.
+    'pregnancy_outcome' => '&',
+     // Similar to Treatment Review, but for postpartum encounter.
+    'postpartum_treatment_review' => '*',
   ];
 
   // Load all encounters of current participant.
@@ -5853,7 +5861,11 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_immunisation_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
-    hedley_reports_prenatal_add_prenatal_photo_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_photo_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_treatment_review_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_pregnancy_outcome_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_postpartum_unique_nurse_activities($encounter_data, $expected);
+    hedley_reports_prenatal_add_postpartum_unique_chw_activities($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -6156,7 +6168,7 @@ function hedley_reports_prenatal_add_mental_health_activity(array $encounter_dat
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
-function hedley_reports_prenatal_add_prenatal_photo_activity(array $encounter_data, array &$expected) {
+function hedley_reports_prenatal_add_photo_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if ($encounter_type != 'nurse') {
     return;
@@ -6206,11 +6218,172 @@ function hedley_reports_prenatal_add_prenatal_photo_activity(array $encounter_da
   }
 }
 
+function hedley_reports_prenatal_add_treatment_review_activity(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'nurse') {
+    return;
+  }
+
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  if (empty($previous_nurse_encounters_data)) {
+    return;
+  }
+
+  // There will always be at least the Prenatal Medication task to complete.
+  $expected[] = 'treatment_review';
+}
+function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if (!in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
+    return;
+  }
+
+  $expected[] = 'pregnancy_outcome';
+}
+
+function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'nurse-postpartum') {
+    return;
+  }
+
+  $start_date_obj = $encounter_data['start_date_obj'];
+  // Postpartum Treatment Review, Breastfeeding and Speciality Care
+  // activities were added on Sept 25, 2022.
+  $launch_date = '2022-09-25';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($start_date_obj < $launch_date_obj) {
+    return;
+  }
+
+  $expected = array_merge(
+    $expected,
+    ['postpartum_treatment_review', 'prenatal_breastfeeding']
+  );
+
+  // Expect Speciality Care logic.
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    $encounter = $previous_nurse_encounter_data['encounter'];
+    if (empty($encounter->field_prenatal_diagnoses) || empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+      continue;
+    }
+
+    $diagnoses = [];
+    foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+      if ($diagnosis != 'none') {
+        $diagnoses[] = $diagnosis;
+      }
+    }
+
+    $triggering_diagnoses = [
+      // HIV diagnoses.
+      'hiv',
+      'hiv-recurrent',
+      'partner-hiv',
+      'partner-hiv-recurrent',
+      // Hypertension-like diagnoses.
+      'chronic-hypertension-immediate',
+      'chronic-hypertension-recheck',
+      'gestational-hypertension-immediate',
+      'gestational-hypertension-recheck',
+      'moderate-preeclampsia-initial',
+      'moderate-preeclampsia-initial-ega-37+',
+      'moderate-preeclampsia-recurrent',
+      'moderate-preeclampsia-recurrent-ega-37+',
+      'severe-preeclampsia-initial',
+      'severe-preeclampsia-initial-ega-37+',
+      'severe-preeclampsia-recurrent',
+      'severe-preeclampsia-recurrent-ega-37+',
+      // Diabetes diagnoses.
+      'diabetes-initial',
+      'diabetes',
+      'gestational-diabetes-initial',
+      'gestational-diabetes',
+    ];
+
+    if (!empty(array_intersect($triggering_diagnoses, $diagnoses))) {
+      $expected[] = 'prenatal_speciality_care';
+      return;
+    }
+
+    $hiv_test_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_hiv_test'];
+    if (!empty($hiv_test_measurement)) {
+      $execution_note = $hiv_test_measurement->field_test_execution_note[LANGUAGE_NONE][0]['value'];
+      if ($execution_note == 'known-as-positive') {
+        $expected[] = 'prenatal_speciality_care';
+        return;
+      }
+    }
+  }
+}
+
+function hedley_reports_prenatal_add_postpartum_unique_chw_activities(array $encounter_data, array &$expected) {
+
+}
+
+
 function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
   $interval = $encounter_date_obj->diff($lmp_date_obj, TRUE);
   // Get the total number of days from the interval
   $total_days = $interval->days;
   return floor($total_days / 7);
+}
+
+// @todo : is this needed?
+function hedley_reports_prenatal_get_latest_treatment_from_options(array $encounter_data, array $treatment_options) {
+  $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    $medication_distribution_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
+    if (!empty($medication_distribution_measurement)) {
+      if (empty($medication_distribution_measurement->field_recommended_treatment) || empty($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE])) {
+        continue;
+      }
+
+      foreach ($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE] as $treatment) {
+        if (in_array($treatment, $treatment_options)) {
+          return $treatment;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+// @todo : is this needed?
+function hedley_reports_prenatal_referred_to_hiv_program_previously(array $encounter_data) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    $encounter = $previous_nurse_encounter_data['encounter'];
+    if (empty($encounter->field_prenatal_diagnoses) || empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+      continue;
+    }
+
+    $diagnoses = [];
+    foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+      if ($diagnosis != 'none') {
+        $diagnoses[] = $diagnosis;
+      }
+    }
+
+    if (empty(array_intersect($diagnoses, ['hiv', 'hiv-recurrent']))) {
+      continue;
+    }
+
+    $hiv_test_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_hiv_test'];
+    if (empty($hiv_test_measurement) || (empty($hiv_test_measurement->field_hiv_signs)) || (empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE]))) {
+      continue;
+    }
+
+    foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
+      if ($sign == 'hiv-program-hc') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 /**
