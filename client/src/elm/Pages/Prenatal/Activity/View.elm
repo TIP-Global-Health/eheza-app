@@ -2816,9 +2816,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
 
         incompleteCervixPreviousPregnancyUpdateFunc value form_ =
             { form_ | incompleteCervixPreviousPregnancy = Just value }
-
-        rhNegativeUpdateFunc value form_ =
-            { form_ | rhNegative = Just value }
     in
     ( cSectionsHtml
         ++ [ div [ class "ui grid" ]
@@ -2968,18 +2965,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
                 "incomplete-cervix-previous-pregnancy"
                 Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.RhNegative ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.rhNegative False ]
-                ]
-           , viewBoolInput
-                language
-                form.rhNegative
-                (SetOBBoolInput rhNegativeUpdateFunc)
-                "rh-negative"
-                Nothing
            ]
     , cSectionsTasks
         ++ [ maybeToBoolTask form.previousDeliveryPeriod
@@ -2994,7 +2979,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
            , form.convulsionsAndUnconsciousPreviousDelivery
            , form.gestationalDiabetesPreviousPregnancy
            , form.incompleteCervixPreviousPregnancy
-           , form.rhNegative
            ]
     )
 
