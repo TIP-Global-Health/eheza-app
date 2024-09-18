@@ -20322,7 +20322,7 @@ translationSet trans =
             , kirundi = Just "Kongera kuraba indwara yagize"
             }
 
-        RHFactorUnknown  ->
+        RHFactorUnknown ->
             { english = "RH Factor Unknown"
             , kinyarwanda = Nothing
             , kirundi = Nothing
