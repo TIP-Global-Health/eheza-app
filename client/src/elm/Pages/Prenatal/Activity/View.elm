@@ -750,13 +750,26 @@ viewHistoryContent language currentDate assembled data =
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
+                                                let
+                                                    skipSecondStep =
+                                                        nurseEncounterNotPerformed assembled
+
+                                                    label =
+                                                        if skipSecondStep then
+                                                            Translate.Save
+
+                                                        else
+                                                            Translate.SaveAndNext
+                                                in
                                                 [ customSaveButton language
                                                     saveButtonActive
                                                     (SaveOBHistoryStep1
+                                                        skipSecondStep
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistory
+                                                        nextTask
                                                     )
-                                                    Translate.SaveAndNext
+                                                    label
                                                 ]
 
                                             ObstetricHistorySecondStep ->

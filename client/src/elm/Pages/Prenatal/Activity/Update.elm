@@ -356,7 +356,7 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SaveOBHistoryStep1 personId saved ->
+        SaveOBHistoryStep1 skipSecondStep personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -364,8 +364,18 @@ update language currentDate id isLabTech db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( appMsgs, updatedData ) =
-                    ( model.historyData.obstetricFormFirstStep
+                ( extraMsgs, updatedData ) =
+                    if skipSecondStep then
+                        ( generateHistoryMsgs nextTask
+                        , model.historyData
+                            |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
+                        )
+
+                    else
+                        ( [], model.historyData )
+
+                appMsgs =
+                    model.historyData.obstetricFormFirstStep
                         |> toObstetricHistoryValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId
@@ -374,14 +384,12 @@ update language currentDate id isLabTech db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
-                    , model.historyData
-                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
-                    )
             in
             ( { model | historyData = updatedData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
         SetCSectionReason reason ->
             let
