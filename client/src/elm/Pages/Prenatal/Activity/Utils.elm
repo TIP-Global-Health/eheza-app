@@ -788,8 +788,12 @@ historyTaskCompleted : AssembledData -> HistoryTask -> Bool
 historyTaskCompleted assembled task =
     case task of
         Obstetric ->
-            isJust assembled.measurements.obstetricHistory
-                && isJust assembled.measurements.obstetricHistoryStep2
+            if nurseEncounterNotPerformed assembled then
+                isJust assembled.measurements.obstetricHistory
+
+            else
+                isJust assembled.measurements.obstetricHistory
+                    && isJust assembled.measurements.obstetricHistoryStep2
 
         Medical ->
             isJust assembled.measurements.medicalHistory
