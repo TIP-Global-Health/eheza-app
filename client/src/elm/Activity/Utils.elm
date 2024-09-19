@@ -467,18 +467,7 @@ expectMotherActivity currentDate offlineSession motherId activity =
 
                                         entitledByUbudehe =
                                             Dict.get motherId offlineSession.mothers
-                                                |> Maybe.map
-                                                    (\mother ->
-                                                        case mother.ubudehe of
-                                                            Just Ubudehe1 ->
-                                                                True
-
-                                                            Just Ubudehe2 ->
-                                                                True
-
-                                                            _ ->
-                                                                False
-                                                    )
+                                                |> Maybe.map (\_ -> True)
                                                 |> Maybe.withDefault False
                                     in
                                     isBreastfeeding && entitledByUbudehe
