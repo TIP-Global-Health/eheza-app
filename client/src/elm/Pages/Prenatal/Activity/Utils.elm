@@ -79,7 +79,9 @@ expectActivity currentDate site assembled activity =
                     True
 
                 History ->
-                    True
+                    resolveHistoryTasks assembled
+                        |> List.isEmpty
+                        |> not
 
                 Examination ->
                     True
@@ -277,17 +279,8 @@ activityCompleted currentDate site assembled activity =
             isJust assembled.measurements.lastMenstrualPeriod
 
         History ->
-            if nurseEncounterNotPerformed assembled then
-                -- First antenatal encounter - all tasks should be completed
-                isJust assembled.measurements.obstetricHistory
-                    && isJust assembled.measurements.obstetricHistoryStep2
-                    && isJust assembled.measurements.medicalHistory
-                    && isJust assembled.measurements.socialHistory
-
-            else
-                -- Subsequent antenatal encounter - only Social history task
-                -- needs to be completed.
-                isJust assembled.measurements.socialHistory
+            resolveHistoryTasks assembled
+                |> List.all (historyTaskCompleted assembled)
 
         Examination ->
             resolveExaminationTasks assembled
@@ -782,10 +775,29 @@ expectHistoryTask assembled task =
             firstEnconter
 
         Social ->
-            True
+            -- Requirements are not to present this task anymore.
+            -- See https://github.com/TIP-Global-Health/eheza-app/issues/1323.
+            False
 
         OutsideCare ->
             not firstEnconter
+
+
+historyTaskCompleted : AssembledData -> HistoryTask -> Bool
+historyTaskCompleted assembled task =
+    case task of
+        Obstetric ->
+            isJust assembled.measurements.obstetricHistory
+                && isJust assembled.measurements.obstetricHistoryStep2
+
+        Medical ->
+            isJust assembled.measurements.medicalHistory
+
+        Social ->
+            isJust assembled.measurements.socialHistory
+
+        OutsideCare ->
+            isJust assembled.measurements.outsideCare
 
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
@@ -983,23 +995,6 @@ latestMedicationTreatmentForSyphilis assembled =
     in
     getLatestTreatmentByTreatmentOptions treatmentOptions assembled
         |> Maybe.map Translate.TreatmentDetailsSyphilis
-
-
-historyTaskCompleted : AssembledData -> HistoryTask -> Bool
-historyTaskCompleted assembled task =
-    case task of
-        Obstetric ->
-            isJust assembled.measurements.obstetricHistory
-                && isJust assembled.measurements.obstetricHistoryStep2
-
-        Medical ->
-            isJust assembled.measurements.medicalHistory
-
-        Social ->
-            isJust assembled.measurements.socialHistory
-
-        OutsideCare ->
-            isJust assembled.measurements.outsideCare
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
