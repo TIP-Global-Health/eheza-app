@@ -418,6 +418,7 @@ expectNextStepsTask currentDate assembled task =
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && (provideHIVEducation PrenatalEncounterPhaseInitial assembled.measurements
+                                || provideHIVPartnerPresenceEducation assembled.measurements
                                 || provideNauseaAndVomitingEducation assembled
                                 || List.any (symptomRecorded assembled.measurements)
                                     [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
@@ -5497,6 +5498,7 @@ healthEducationFormWithDefault form saved =
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad value.signs |> Just)
                 , diabetes = or form.diabetes (EverySet.member EducationDiabetes value.signs |> Just)
                 , grief = or form.grief (EverySet.member EducationGrief value.signs |> Just)
+                , hivPartnerPresence = or form.hivPartnerPresence (EverySet.member EducationHIVPartnerPresence value.signs |> Just)
                 }
             )
 
@@ -5529,6 +5531,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     , ifNullableTrue EducationDiabetes form.diabetes
     , ifNullableTrue EducationGrief form.grief
+    , ifNullableTrue EducationHIVPartnerPresence form.hivPartnerPresence
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)

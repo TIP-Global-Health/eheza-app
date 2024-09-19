@@ -461,6 +461,9 @@ decodePrenatalHealthEducationSign =
                     "grief" ->
                         succeed EducationGrief
 
+                    "hiv-partner-presence" ->
+                        succeed EducationHIVPartnerPresence
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 

@@ -15663,6 +15663,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                EducationHIVPartnerPresence ->
+                    { english = "Partner Presence"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 
@@ -15749,6 +15755,12 @@ translationSet trans =
 
                 EducationGrief ->
                     { english = "Have you provided grief counseling to the patient"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                EducationHIVPartnerPresence ->
+                    { english = "Have you provided counselling on importance of partner’s presence"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

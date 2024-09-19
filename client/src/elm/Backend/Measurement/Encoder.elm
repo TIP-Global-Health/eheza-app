@@ -230,6 +230,9 @@ encodePrenatalHealthEducationSign sign =
             EducationGrief ->
                 "grief"
 
+            EducationHIVPartnerPresence ->
+                "hiv-partner-presence"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 

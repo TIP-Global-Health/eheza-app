@@ -1756,6 +1756,7 @@ function hedley_activity_field_default_field_bases() {
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'diabetes' => 'Diabetes',
         'grief' => 'Grief',
+        'hiv-partner-presence' => 'HIV partner presence',
         'none' => 'None',
       ),
       'allowed_values_function' => '',

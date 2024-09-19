@@ -963,6 +963,7 @@ type PrenatalHealthEducationSign
     | EducationEarlyMastitisOrEngorgment
     | EducationMastitis
     | EducationGrief
+    | EducationHIVPartnerPresence
     | NoPrenatalHealthEducationSigns
 
 
