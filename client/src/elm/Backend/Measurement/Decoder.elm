@@ -953,6 +953,9 @@ decodeTestExecutionNote =
                     "run-confirmed-by-lab-tech" ->
                         succeed TestNoteRunConfirmedByLabTech
 
+                    "not-present" ->
+                        succeed TestNoteNotPresent
+
                     _ ->
                         fail <|
                             note

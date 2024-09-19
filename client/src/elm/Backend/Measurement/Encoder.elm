@@ -653,6 +653,9 @@ encodeTestExecutionNote value =
             TestNoteRunConfirmedByLabTech ->
                 "run-confirmed-by-lab-tech"
 
+            TestNoteNotPresent ->
+                "not-present"
+
 
 encodeTestResult : TestResult -> Value
 encodeTestResult =

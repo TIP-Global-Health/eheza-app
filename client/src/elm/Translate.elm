@@ -7982,6 +7982,14 @@ translationSet trans =
                     , kirundi = Just "Mbega umugwayi/umuvyeyi arazwi ko afise imbanyi"
                     }
 
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = "Is partner known to be HIV positive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
@@ -8025,11 +8033,6 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHbA1cTest ->
-                    translationSet EmptyString
-
-                -- Known as positive is not applicable for this test, therefore,
-                -- no translation is needed.
-                TaskPartnerHIVTest ->
                     translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
@@ -16879,6 +16882,12 @@ translationSet trans =
 
                 TestNoteRunConfirmedByLabTech ->
                     translationSet <| TestExecutionNote TestNoteRunToday
+
+                TestNoteNotPresent  ->
+                    { english = "Not Present"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         TestResult result ->
             case result of

@@ -1067,6 +1067,7 @@ type TestExecutionNote
     | TestNoteKnownAsPositive
     | TestNoteToBeDoneAtHospital
     | TestNoteRunConfirmedByLabTech
+    | TestNoteNotPresent
 
 
 type TestResult

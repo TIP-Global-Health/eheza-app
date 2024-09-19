@@ -4630,7 +4630,8 @@ expectLaboratoryTask currentDate assembled task =
                             assembled
 
                 TaskPartnerHIVTest ->
-                    isInitialTest TaskPartnerHIVTest
+                    (not <| isKnownAsPositive .partnerHIVTest)
+                        && isInitialTest TaskPartnerHIVTest
 
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
