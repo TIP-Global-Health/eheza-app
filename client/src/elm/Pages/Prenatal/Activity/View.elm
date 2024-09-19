@@ -626,10 +626,12 @@ viewHistoryContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+        obstetricFormFirstStep =
             getMeasurementValueFunc assembled.measurements.obstetricHistory
                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-                |> obstetricFormFirstStepInputsAndTasks language currentDate assembled
+
+        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+            obstetricFormFirstStepInputsAndTasks language currentDate assembled obstetricFormFirstStep
 
         ( obstetricFormSecondStepInputs, obstetricFormSecondStepTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricHistoryStep2
@@ -752,7 +754,8 @@ viewHistoryContent language currentDate assembled data =
                                             ObstetricHistoryFirstStep ->
                                                 let
                                                     skipSecondStep =
-                                                        nurseEncounterNotPerformed assembled
+                                                        toObstetricHistoryValue obstetricFormFirstStep
+                                                            |> skipObstetricHistorySecondStep
 
                                                     label =
                                                         if skipSecondStep then

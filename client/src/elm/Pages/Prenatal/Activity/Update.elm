@@ -368,11 +368,13 @@ update language currentDate id isLabTech db msg model =
                     if skipSecondStep then
                         ( generateHistoryMsgs nextTask
                         , model.historyData
-                            |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
                         )
 
                     else
-                        ( [], model.historyData )
+                        ( []
+                        , model.historyData
+                            |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
+                        )
 
                 appMsgs =
                     model.historyData.obstetricFormFirstStep
