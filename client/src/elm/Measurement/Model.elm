@@ -1465,8 +1465,10 @@ emptyMalariaResultForm =
 
 
 type alias PartnerHIVTestForm =
-    { -- If true, test will be performed today.
-      testPerformed : Maybe Bool
+    { knownAsPositive : Maybe Bool
+
+    -- If true, test will be performed today.
+    , testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , immediateResult : Maybe Bool
     , executionNote : Maybe TestExecutionNote
@@ -1482,7 +1484,8 @@ type alias PartnerHIVTestForm =
 
 emptyPartnerHIVTestForm : PartnerHIVTestForm
 emptyPartnerHIVTestForm =
-    { testPerformed = Nothing
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
     , testPerformedDirty = False
     , immediateResult = Nothing
     , executionNote = Nothing

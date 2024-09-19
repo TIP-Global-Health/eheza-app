@@ -1993,6 +1993,9 @@ partnerHIVTestFormWithDefault form =
         form
         (\value ->
             let
+                knownAsPositiveValue =
+                    value.executionNote == TestNoteKnownAsPositive
+
                 testPerformedValue =
                     testPerformedByExecutionNote value.executionNote
 
@@ -2000,7 +2003,8 @@ partnerHIVTestFormWithDefault form =
                     Maybe.map (EverySet.member PrerequisiteImmediateResult)
                         value.testPrerequisites
             in
-            { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+            { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+            , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
             , testPerformedDirty = form.testPerformedDirty
             , immediateResult = or form.immediateResult immediateResultValue
             , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -5755,6 +5759,9 @@ contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate confi
             case task of
                 TaskHIVTest ->
                     config.setHIVTestFormBoolInputMsg updateFunc
+
+                TaskPartnerHIVTest ->
+                    config.setPartnerHIVTestFormBoolInputMsg updateFunc
 
                 TaskHepatitisBTest ->
                     config.setHepatitisBTestFormBoolInputMsg updateFunc
