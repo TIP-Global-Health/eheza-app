@@ -16895,7 +16895,7 @@ translationSet trans =
                 TestNoteRunConfirmedByLabTech ->
                     translationSet <| TestExecutionNote TestNoteRunToday
 
-                TestNoteNotPresent  ->
+                TestNoteNotPresent ->
                     { english = "Not Present"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
