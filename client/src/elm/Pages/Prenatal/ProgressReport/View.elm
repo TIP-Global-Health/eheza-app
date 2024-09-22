@@ -714,6 +714,8 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                         -- specify the diagnosis and action that was taken only for current encounter.
                         rhesusEntry =
                             if
+                                -- When current encounter has RH Negative diagnosis, we don't add dedicated
+                                -- entry, since it will be handled using viewTreatmentForOutsideCareDiagnosis.
                                 List.any
                                     (\diagnosis ->
                                         List.member diagnosis
