@@ -429,11 +429,11 @@ generateRiskFactorAlertData language currentDate measurements factor =
                 |> Maybe.andThen
                     (\measurement ->
                         let
-                            value =
-                                Tuple.second measurement |> .value |> .cSections
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
                         in
-                        if value > 0 then
-                            Just (transAlert (FactorNumberOfCSections value))
+                        if EverySet.member Backend.Measurement.Model.CSectionInPast signs then
+                            Just (transAlert factor)
 
                         else
                             Nothing

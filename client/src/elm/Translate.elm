@@ -18369,10 +18369,7 @@ translationSet trans =
         ReportComponentAntenatal component ->
             case component of
                 ComponentAntenatalRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                    translationSet RiskFactors
 
                 ComponentAntenatalMedicalDiagnosis ->
                     { english = "Medical Diagnosis"
@@ -18413,10 +18410,7 @@ translationSet trans =
         ReportComponentNCD component ->
             case component of
                 ComponentNCDRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                    translationSet RiskFactors
 
                 ComponentNCDActiveDiagnosis ->
                     { english = "Active Diagnosis"
