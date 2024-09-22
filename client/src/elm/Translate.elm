@@ -544,7 +544,6 @@ type TranslationId
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSection
-
     | CSectionScar CSectionScar
     | CurrentMedication
     | Dashboard Dashboard
@@ -4596,8 +4595,6 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
-
-
 
         CSectionReason ->
             { english = "Reason for C-section"
