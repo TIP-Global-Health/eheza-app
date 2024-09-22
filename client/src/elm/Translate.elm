@@ -543,6 +543,8 @@ type TranslationId
     | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CSection
+
     | CSectionScar CSectionScar
     | CurrentMedication
     | Dashboard Dashboard
@@ -560,7 +562,7 @@ type TranslationId
     | CovidContactTracing
     | CovidTestingInstructions
     | CounselorSignature
-    | CSectionInPreviousDelivery
+    | CSectionInPast
     | CSectionReason
     | CSectionReasons CSectionReason
     | CreateRelationship
@@ -1012,6 +1014,7 @@ type TranslationId
     | MonthSinglePlural Int
     | MonthsOfStock
     | MostCommonAntiRetroviralMedications
+    | MostRecentPregnancyDeliveryMethod
     | MotherId
     | MotherName String
     | MotherNameLabel
@@ -1845,6 +1848,7 @@ type TranslationId
     | VaccineDoseAdministeredTodayPrenatalQuestion String
     | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType Site VaccineType
+    | VaginalDeliveryLabel
     | VaginalExamination
     | VaginalExamSign VaginalExamSign
     | ValidationErrors
@@ -4417,6 +4421,12 @@ translationSet trans =
             , kirundi = Just "Yarumvise ibizunguzungu igihe aheruka kwibaruka"
             }
 
+        CSection ->
+            { english = "C-Section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CSectionScar scar ->
             case scar of
                 Vertical ->
@@ -4581,11 +4591,13 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        CSectionInPreviousDelivery ->
-            { english = "C-section in previous delivery"
-            , kinyarwanda = Just "Yarabazwe ku nda ishize"
-            , kirundi = Just "Ugukorwa mu kwibaruka guheruka"
+        CSectionInPast ->
+            { english = "Has she ever had a cesarean section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
+
+
 
         CSectionReason ->
             { english = "Reason for C-section"
@@ -10923,6 +10935,12 @@ translationSet trans =
 
         MostCommonAntiRetroviralMedications ->
             { english = "Most Common Anti-Retroviral Medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MostRecentPregnancyDeliveryMethod ->
+            { english = "How was her most recent pregnancy delivered"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -22753,6 +22771,12 @@ translationSet trans =
                             , kinyarwanda = Just "Agakwega"
                             , kirundi = Just "Rudadaza"
                             }
+
+        VaginalDeliveryLabel ->
+            { english = "Vaginal Delivery"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         VaginalExamination ->
             { english = "Vaginal Examination"

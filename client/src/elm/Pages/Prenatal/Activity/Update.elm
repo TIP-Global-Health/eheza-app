@@ -417,34 +417,6 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetNumberOfCSections value ->
-            let
-                updatedForm =
-                    let
-                        form =
-                            model.historyData.obstetricFormSecondStep
-
-                        updatedValue =
-                            String.toInt value
-                    in
-                    { form
-                        | cSections = updatedValue
-                        , cSectionsDirty = True
-                        , cSectionInPreviousDelivery = Nothing
-                        , cSectionInPreviousDeliveryDirty = True
-                        , cSectionReason = Nothing
-                        , cSectionReasonDirty = True
-                    }
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetOBBoolInput formUpdateFunc value ->
             let
                 updatedForm =

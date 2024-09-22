@@ -2325,6 +2325,9 @@ decodePreviousDeliverySign =
         |> andThen
             (\s ->
                 case s of
+                    "c-section-in-past" ->
+                        succeed CSectionInPast
+
                     "c-section-in-previous-delivery" ->
                         succeed CSectionInPreviousDelivery
 
@@ -2389,7 +2392,7 @@ decodeObstetricHistorySign =
 decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
-        |> required "c_sections" decodeInt
+        |> optional "c_sections" decodeInt -1
         |> optional "c_section_reason" (nullable (decodeEverySet decodeCSectionReason)) Nothing
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)

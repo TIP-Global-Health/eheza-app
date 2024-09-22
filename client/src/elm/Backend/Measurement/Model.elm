@@ -804,7 +804,8 @@ type PreviousDeliveryPeriod
 
 
 type PreviousDeliverySign
-    = CSectionInPreviousDelivery
+    = CSectionInPast
+    | CSectionInPreviousDelivery
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery
