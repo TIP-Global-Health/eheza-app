@@ -20366,18 +20366,11 @@ translationSet trans =
 
         RiskFactorAlert factor ->
             case factor of
-                FactorNumberOfCSections number ->
-                    if number == 1 then
-                        { english = "1 previous C-section"
-                        , kinyarwanda = Just "Yabazwe inshuro imwe ubushize"
-                        , kirundi = Just "Ugukorwa rimwe vyabaye muri kahise kavuba"
-                        }
-
-                    else
-                        { english = String.fromInt number ++ " previous C-sections"
-                        , kinyarwanda = Just <| String.fromInt number ++ " ubushize yarabazwe"
-                        , kirundi = Just <| String.fromInt number ++ " yakozwemo mu kahise "
-                        }
+                FactorNumberOfCSections ->
+                    { english = "C-section in the past"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 FactorCSectionInPreviousDelivery ->
                     { english = "C-section in previous delivery"

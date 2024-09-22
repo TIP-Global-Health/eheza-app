@@ -411,8 +411,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
 
                 Nothing ->
                     let
-                        firstEncounterMeasurements =
-                            getFirstEncounterMeasurements isChw assembled
+                        firstNurseEncounterMeasurements =
+                            getFirstNurseEncounterMeasurements isChw assembled
 
                         labsPane =
                             Maybe.map
@@ -514,11 +514,11 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         showComponent =
                             Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                     in
-                    [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
+                    [ viewRiskFactorsPane language currentDate firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
-                    , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
@@ -641,7 +641,7 @@ viewRiskFactorsPane language currentDate measurements =
 
 
 viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
+viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -734,7 +734,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                    (generateMedicalDiagnosisAlertData language currentDate firstNurseEncounterMeasurements)
                     allMedicalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []
@@ -764,7 +764,7 @@ viewProgramReferralEntry language date diagnosis facility =
 
 
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -923,7 +923,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled)
                     allObstetricalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []

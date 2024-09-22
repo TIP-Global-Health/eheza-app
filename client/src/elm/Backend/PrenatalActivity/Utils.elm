@@ -424,7 +424,7 @@ generateRiskFactorAlertData language currentDate measurements factor =
             trans (Translate.RiskFactorAlert alert)
     in
     case factor of
-        FactorNumberOfCSections _ ->
+        FactorNumberOfCSections ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
