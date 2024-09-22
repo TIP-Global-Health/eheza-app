@@ -2702,7 +2702,7 @@ obstetricFormFirstStepInputsAndTasks language currentDate assembled form =
             form.abortions
             (SetOBIntInput abortionsUpdateFunc)
             "abortions"
-            Translate.NumberOfAbortions
+            Translate.NumberOfAbortionsLabel
             Nothing
       , viewNumberInput language
             form.liveChildren
