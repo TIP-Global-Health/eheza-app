@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
+        , Rhesus(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
@@ -706,6 +707,54 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                         diagnosesEntries =
                             List.concatMap (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
 
+                        -- RH Factor Uknown should be a default Obsteric Diagnosis on any patient who has
+                        -- not had an RH lab result (for any reason). If lab was taken and result was
+                        -- RH negative, it should be mentioned at every subssequent encounter report.
+                        -- Requirements for this diagnosis are different from all others, which require to
+                        -- specify the diagnosis and action that was taken only for current encounter.
+                        rhesusEntry =
+                            if
+                                List.any
+                                    (\diagnosis ->
+                                        List.member diagnosis
+                                            [ DiagnosisRhesusNegativeInitialPhase
+                                            , DiagnosisRhesusNegativeRecurrentPhase
+                                            ]
+                                    )
+                                    diagnosesIncludingChronic
+                            then
+                                []
+
+                            else
+                                let
+                                    nursePreviousMeasurements =
+                                        List.reverse assembled.nursePreviousEncountersData
+                                            |> List.map .measurements
+
+                                    allNurseMeasurements =
+                                        if isChw then
+                                            nursePreviousMeasurements
+
+                                        else
+                                            assembled.measurements :: nursePreviousMeasurements
+                                in
+                                List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus) allNurseMeasurements
+                                    |> List.head
+                                    |> Maybe.map
+                                        (\rhesus ->
+                                            case rhesus of
+                                                RhesusNegative ->
+                                                    translate language Translate.RHFactorNegative
+                                                        |> wrapWithLI
+
+                                                RhesusPositive ->
+                                                    []
+                                        )
+                                    |> Maybe.withDefault
+                                        (translate language Translate.RHFactorUnknown
+                                            |> wrapWithLI
+                                        )
+
                         outsideCareDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.outsideCare
                                 |> Maybe.andThen
@@ -760,6 +809,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                                 |> List.concatMap (viewTreatmentForPastDiagnosis language data.startDate)
                     in
                     knownAsPositiveEntries
+                        ++ rhesusEntry
                         ++ diagnosesEntries
                         ++ outsideCareDiagnosesEntries
                         ++ pastDiagnosesEntries

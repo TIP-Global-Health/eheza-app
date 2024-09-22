@@ -1593,6 +1593,7 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
+    | RHFactorNegative
     | RHFactorUnknown
     | Right
     | RiskFactorAlert RiskFactor
@@ -13059,10 +13060,7 @@ translationSet trans =
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
                 DiagnosisRhNegative ->
-                    { english = "RH Factor Negative"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet RHFactorNegative
 
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
@@ -20382,6 +20380,12 @@ translationSet trans =
             { english = "Review Prior Diagnosis"
             , kinyarwanda = Just "Kureba uburwayi yagize/yigeze kurwara"
             , kirundi = Just "Kongera kuraba indwara yagize"
+            }
+
+        RHFactorNegative ->
+            { english = "RH Factor Negative"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         RHFactorUnknown ->
