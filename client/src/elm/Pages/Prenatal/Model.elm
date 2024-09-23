@@ -123,6 +123,7 @@ type alias HealthEducationForm =
     , earlyMastitisOrEngorgment : Maybe Bool
     , mastitis : Maybe Bool
     , grief : Maybe Bool
+    , hivPartnerPresence : Maybe Bool
     }
 
 
@@ -154,6 +155,7 @@ emptyHealthEducationForm =
     , earlyMastitisOrEngorgment = Nothing
     , mastitis = Nothing
     , grief = Nothing
+    , hivPartnerPresence = Nothing
     }
 
 

@@ -804,7 +804,8 @@ type PreviousDeliveryPeriod
 
 
 type PreviousDeliverySign
-    = CSectionInPreviousDelivery
+    = CSectionInPast
+    | CSectionInPreviousDelivery
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery
@@ -963,6 +964,7 @@ type PrenatalHealthEducationSign
     | EducationEarlyMastitisOrEngorgment
     | EducationMastitis
     | EducationGrief
+    | EducationHIVPartnerPresence
     | NoPrenatalHealthEducationSigns
 
 
@@ -1067,6 +1069,7 @@ type TestExecutionNote
     | TestNoteKnownAsPositive
     | TestNoteToBeDoneAtHospital
     | TestNoteRunConfirmedByLabTech
+    | TestNoteNotPresent
 
 
 type TestResult

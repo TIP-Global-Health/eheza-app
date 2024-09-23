@@ -312,7 +312,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                                     |> SetState
                     in
                     viewCheckBoxMultipleSelectInput language
-                        [ ComponentAntenatalRiskFactors
+                        [ ComponentAntenatalObstetricHistory
                         , ComponentAntenatalMedicalDiagnosis
                         , ComponentAntenatalObstetricalDiagnosis
                         , ComponentAntenatalCHWActivity

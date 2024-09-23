@@ -79,7 +79,7 @@ type ReportComponentWellChild
 
 
 type ReportComponentAntenatal
-    = ComponentAntenatalRiskFactors
+    = ComponentAntenatalObstetricHistory
     | ComponentAntenatalMedicalDiagnosis
     | ComponentAntenatalObstetricalDiagnosis
     | ComponentAntenatalCHWActivity
