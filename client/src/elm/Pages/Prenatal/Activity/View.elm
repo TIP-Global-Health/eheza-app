@@ -626,10 +626,12 @@ viewHistoryContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+        obstetricFormFirstStep =
             getMeasurementValueFunc assembled.measurements.obstetricHistory
                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-                |> obstetricFormFirstStepInputsAndTasks language currentDate assembled
+
+        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+            obstetricFormFirstStepInputsAndTasks language currentDate assembled obstetricFormFirstStep
 
         ( obstetricFormSecondStepInputs, obstetricFormSecondStepTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricHistoryStep2
@@ -750,13 +752,27 @@ viewHistoryContent language currentDate assembled data =
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
+                                                let
+                                                    skipSecondStep =
+                                                        toObstetricHistoryValue obstetricFormFirstStep
+                                                            |> skipObstetricHistorySecondStep
+
+                                                    label =
+                                                        if skipSecondStep then
+                                                            Translate.Save
+
+                                                        else
+                                                            Translate.SaveAndNext
+                                                in
                                                 [ customSaveButton language
                                                     saveButtonActive
                                                     (SaveOBHistoryStep1
+                                                        skipSecondStep
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistory
+                                                        nextTask
                                                     )
-                                                    Translate.SaveAndNext
+                                                    label
                                                 ]
 
                                             ObstetricHistorySecondStep ->

@@ -67,7 +67,7 @@ type Msg
       -- HistoryMsgs, OB, Step 1
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
-    | SaveOBHistoryStep1 PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
+    | SaveOBHistoryStep1 Bool PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
     | SetNumberOfCSections String

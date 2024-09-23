@@ -40,7 +40,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -788,8 +788,16 @@ historyTaskCompleted : AssembledData -> HistoryTask -> Bool
 historyTaskCompleted assembled task =
     case task of
         Obstetric ->
-            isJust assembled.measurements.obstetricHistory
-                && isJust assembled.measurements.obstetricHistoryStep2
+            let
+                obstetricHistoryValue =
+                    getMeasurementValueFunc assembled.measurements.obstetricHistory
+            in
+            if skipObstetricHistorySecondStep obstetricHistoryValue then
+                isJust assembled.measurements.obstetricHistory
+
+            else
+                isJust assembled.measurements.obstetricHistory
+                    && isJust assembled.measurements.obstetricHistoryStep2
 
         Medical ->
             isJust assembled.measurements.medicalHistory
@@ -799,6 +807,20 @@ historyTaskCompleted assembled task =
 
         OutsideCare ->
             isJust assembled.measurements.outsideCare
+
+
+skipObstetricHistorySecondStep : Maybe ObstetricHistoryValue -> Bool
+skipObstetricHistorySecondStep obstetricHistoryValue =
+    let
+        gravida =
+            Maybe.map generateGravida obstetricHistoryValue
+                |> Maybe.withDefault ""
+
+        para =
+            Maybe.map generatePara obstetricHistoryValue
+                |> Maybe.withDefault ""
+    in
+    gravida == "01" && para == "0000"
 
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
