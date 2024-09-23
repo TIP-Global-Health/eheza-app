@@ -464,13 +464,8 @@ expectMotherActivity currentDate offlineSession motherId activity =
                                                         >> Maybe.withDefault False
                                                     )
                                                 |> LocalData.withDefault False
-
-                                        entitledByUbudehe =
-                                            Dict.get motherId offlineSession.mothers
-                                                |> Maybe.map (\_ -> True)
-                                                |> Maybe.withDefault False
                                     in
-                                    isBreastfeeding && entitledByUbudehe
+                                    isBreastfeeding
 
                                 else
                                     False
