@@ -7982,6 +7982,14 @@ translationSet trans =
                     , kirundi = Just "Mbega umugwayi/umuvyeyi arazwi ko afise imbanyi"
                     }
 
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = "Is partner known to be HIV positive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
@@ -8025,11 +8033,6 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHbA1cTest ->
-                    translationSet EmptyString
-
-                -- Known as positive is not applicable for this test, therefore,
-                -- no translation is needed.
-                TaskPartnerHIVTest ->
                     translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
@@ -15660,6 +15663,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                EducationHIVPartnerPresence ->
+                    { english = "Partner Presence"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 
@@ -15746,6 +15755,12 @@ translationSet trans =
 
                 EducationGrief ->
                     { english = "Have you provided grief counseling to the patient"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                EducationHIVPartnerPresence ->
+                    { english = "Have you provided counselling on importance of partner’s presence"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -16879,6 +16894,12 @@ translationSet trans =
 
                 TestNoteRunConfirmedByLabTech ->
                     translationSet <| TestExecutionNote TestNoteRunToday
+
+                TestNoteNotPresent ->
+                    { english = "Not Present"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         TestResult result ->
             case result of

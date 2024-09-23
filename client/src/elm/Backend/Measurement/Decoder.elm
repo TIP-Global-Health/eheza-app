@@ -461,6 +461,9 @@ decodePrenatalHealthEducationSign =
                     "grief" ->
                         succeed EducationGrief
 
+                    "hiv-partner-presence" ->
+                        succeed EducationHIVPartnerPresence
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -952,6 +955,9 @@ decodeTestExecutionNote =
 
                     "run-confirmed-by-lab-tech" ->
                         succeed TestNoteRunConfirmedByLabTech
+
+                    "not-present" ->
+                        succeed TestNoteNotPresent
 
                     _ ->
                         fail <|

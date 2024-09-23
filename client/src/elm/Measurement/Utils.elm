@@ -1993,6 +1993,9 @@ partnerHIVTestFormWithDefault form =
         form
         (\value ->
             let
+                knownAsPositiveValue =
+                    value.executionNote == TestNoteKnownAsPositive
+
                 testPerformedValue =
                     testPerformedByExecutionNote value.executionNote
 
@@ -2000,7 +2003,8 @@ partnerHIVTestFormWithDefault form =
                     Maybe.map (EverySet.member PrerequisiteImmediateResult)
                         value.testPrerequisites
             in
-            { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
+            { knownAsPositive = or form.knownAsPositive (Just knownAsPositiveValue)
+            , testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
             , testPerformedDirty = form.testPerformedDirty
             , immediateResult = or form.immediateResult immediateResultValue
             , executionNote = valueConsideringIsDirtyField form.executionNoteDirty form.executionNote value.executionNote
@@ -3547,6 +3551,20 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
                         ( [], 0, 0 )
 
                     else
+                        let
+                            rightOptions =
+                                case task of
+                                    TaskPartnerHIVTest ->
+                                        [ TestNoteNoEquipment
+                                        , TestNoteNotPresent
+                                        , TestNoteNotIndicated
+                                        ]
+
+                                    _ ->
+                                        [ TestNoteNoEquipment
+                                        , TestNoteNotIndicated
+                                        ]
+                        in
                         ( [ div [ class "why-not" ]
                                 [ viewQuestionLabel language Translate.WhyNot
                                 , viewCheckBoxSelectInput language
@@ -3554,9 +3572,7 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
                                     , TestNoteLackOfOtherSupplies
                                     , TestNoteBrokenEquipment
                                     ]
-                                    [ TestNoteNoEquipment
-                                    , TestNoteNotIndicated
-                                    ]
+                                    rightOptions
                                     form.executionNote
                                     msgs.setExecutionNoteMsg
                                     Translate.TestExecutionNote
@@ -4101,65 +4117,73 @@ viewPartnerHIVTestForm :
     -> ( Html msg, Int, Int )
 viewPartnerHIVTestForm language currentDate configInitial configPerformed form =
     let
-        ( initialSection, initialTasksCompleted, initialTasksTotal ) =
-            contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskPartnerHIVTest form
+        ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
+            contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskPartnerHIVTest form
 
         ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
             let
                 emptySection =
                     ( [], 0, 0 )
             in
-            if form.testPerformed == Just True then
+            if form.knownAsPositive == Just False then
                 let
-                    ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
-                        prerequisiteByImmediateResultInputsAndTasks language
-                            (configInitial.setPartnerHIVTestFormBoolInputMsg
-                                (\value form_ ->
-                                    { form_
-                                        | immediateResult = Just value
-                                        , testResult = Nothing
-                                        , testResultDirty = True
-                                    }
-                                )
-                            )
-                            form.immediateResult
-
-                    ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
-                        if isNothing form.executionDate then
-                            emptySection
-
-                        else
-                            Maybe.map
-                                (\immediateResult ->
-                                    if immediateResult == True then
-                                        standardTestResultInputsAndTasks language
-                                            configPerformed.setPartnerHIVTestResultMsg
-                                            form.testResult
-                                            TaskPartnerHIVTest
-
-                                    else
-                                        ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
-                                        , 0
-                                        , 0
-                                        )
+                    ( initialSection, initialTasksCompleted, initialTasksTotal ) =
+                        contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskPartnerHIVTest form
+                in
+                if form.testPerformed == Just True then
+                    let
+                        ( testPrerequisitesSection, testPrerequisitesTasksCompleted, testPrerequisitesTasksTotal ) =
+                            prerequisiteByImmediateResultInputsAndTasks language
+                                (configInitial.setPartnerHIVTestFormBoolInputMsg
+                                    (\value form_ ->
+                                        { form_
+                                            | immediateResult = Just value
+                                            , testResult = Nothing
+                                            , testResultDirty = True
+                                        }
+                                    )
                                 )
                                 form.immediateResult
-                                |> Maybe.withDefault emptySection
-                in
-                ( testPrerequisitesSection ++ testResultSection
-                , testPrerequisitesTasksCompleted + testResultTasksCompleted
-                , testPrerequisitesTasksTotal + testResultTasksTotal
-                )
+
+                        ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
+                            if isNothing form.executionDate then
+                                emptySection
+
+                            else
+                                Maybe.map
+                                    (\immediateResult ->
+                                        if immediateResult == True then
+                                            standardTestResultInputsAndTasks language
+                                                configPerformed.setPartnerHIVTestResultMsg
+                                                form.testResult
+                                                TaskPartnerHIVTest
+
+                                        else
+                                            ( [ viewCustomLabel language Translate.LaboratoryTaskResultsHelper "." "label" ]
+                                            , 0
+                                            , 0
+                                            )
+                                    )
+                                    form.immediateResult
+                                    |> Maybe.withDefault emptySection
+                    in
+                    ( initialSection ++ testPrerequisitesSection ++ testResultSection
+                    , initialTasksCompleted + testPrerequisitesTasksCompleted + testResultTasksCompleted
+                    , initialTasksTotal + testPrerequisitesTasksTotal + testResultTasksTotal
+                    )
+
+                else
+                    ( initialSection, initialTasksCompleted, initialTasksTotal )
 
             else
                 emptySection
     in
     ( div [ class "ui form laboratory urine-dipstick" ] <|
         viewCustomLabel language (Translate.LaboratoryTaskLabel TaskPartnerHIVTest) "" "label header"
-            :: initialSection
+            :: knownAsPositiveSection
             ++ derivedSection
-    , initialTasksCompleted + derivedTasksCompleted
-    , initialTasksTotal + derivedTasksTotal
+    , knownAsPositiveTasksCompleted + derivedTasksCompleted
+    , knownAsPositiveTasksTotal + derivedTasksTotal
     )
 
 
@@ -5756,6 +5780,9 @@ contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate confi
                 TaskHIVTest ->
                     config.setHIVTestFormBoolInputMsg updateFunc
 
+                TaskPartnerHIVTest ->
+                    config.setPartnerHIVTestFormBoolInputMsg updateFunc
+
                 TaskHepatitisBTest ->
                     config.setHepatitisBTestFormBoolInputMsg updateFunc
 
@@ -6224,6 +6251,20 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                         ( [], 0, 0 )
 
                     else
+                        let
+                            rightOptions =
+                                case task of
+                                    TaskPartnerHIVTest ->
+                                        [ TestNoteNoEquipment
+                                        , TestNoteNotPresent
+                                        , TestNoteNotIndicated
+                                        ]
+
+                                    _ ->
+                                        [ TestNoteNoEquipment
+                                        , TestNoteNotIndicated
+                                        ]
+                        in
                         ( [ div [ class "why-not" ]
                                 [ viewQuestionLabel language Translate.WhyNot
                                 , viewCheckBoxSelectInput language
@@ -6231,9 +6272,7 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
                                     , TestNoteLackOfOtherSupplies
                                     , TestNoteBrokenEquipment
                                     ]
-                                    [ TestNoteNoEquipment
-                                    , TestNoteNotIndicated
-                                    ]
+                                    rightOptions
                                     form.executionNote
                                     msgs.setExecutionNoteMsg
                                     Translate.TestExecutionNote

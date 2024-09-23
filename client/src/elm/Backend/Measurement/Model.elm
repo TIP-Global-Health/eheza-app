@@ -963,6 +963,7 @@ type PrenatalHealthEducationSign
     | EducationEarlyMastitisOrEngorgment
     | EducationMastitis
     | EducationGrief
+    | EducationHIVPartnerPresence
     | NoPrenatalHealthEducationSigns
 
 
@@ -1067,6 +1068,7 @@ type TestExecutionNote
     | TestNoteKnownAsPositive
     | TestNoteToBeDoneAtHospital
     | TestNoteRunConfirmedByLabTech
+    | TestNoteNotPresent
 
 
 type TestResult
