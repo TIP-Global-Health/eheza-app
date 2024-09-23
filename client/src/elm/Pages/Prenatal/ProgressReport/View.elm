@@ -514,8 +514,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         showComponent =
                             Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                     in
-                    [ viewRiskFactorsPane language currentDate firstNurseEncounterMeasurements
-                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
+                    [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
@@ -620,13 +620,51 @@ viewHeaderPane language currentDate assembled =
         ]
 
 
-viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewRiskFactorsPane language currentDate measurements =
+viewObstetricHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewObstetricHistoryPane language currentDate measurements =
     let
-        alerts =
+        obsetricHistory =
+            getMeasurementValueFunc measurements.obstetricHistory
+                |> Maybe.map
+                    (\value ->
+                        let
+                            abortions =
+                                if value.abortions > 0 then
+                                    Just <| translate language <| Translate.NumberOfAbortions value.abortions
+
+                                else
+                                    Nothing
+
+                            pretermStillbirth =
+                                if value.stillbirthsPreTerm > 0 then
+                                    Just <| translate language <| Translate.NumberOfPretermStillbirths value.stillbirthsPreTerm
+
+                                else
+                                    Nothing
+
+                            termStillbirth =
+                                if value.stillbirthsAtTerm > 0 then
+                                    Just <| translate language <| Translate.NumberOfTermStillbirths value.stillbirthsAtTerm
+
+                                else
+                                    Nothing
+
+                            pretermDeliviries =
+                                if value.preTermPregnancy > 0 then
+                                    Just <| translate language <| Translate.NumberOfPretermDeliviries value.preTermPregnancy
+
+                                else
+                                    Nothing
+                        in
+                        Maybe.Extra.values [ abortions, pretermStillbirth, termStillbirth, pretermDeliviries ]
+                    )
+                |> Maybe.withDefault []
+
+        content =
             List.filterMap
                 (generateRiskFactorAlertData language currentDate measurements)
                 allRiskFactors
+                |> List.append obsetricHistory
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
@@ -634,9 +672,9 @@ viewRiskFactorsPane language currentDate measurements =
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
-            , span [] [ text <| translate language Translate.RiskFactors ]
+            , span [] [ text <| translate language Translate.ObstetricHistory ]
             ]
-        , div [ class "pane-content" ] alerts
+        , div [ class "pane-content" ] content
         ]
 
 

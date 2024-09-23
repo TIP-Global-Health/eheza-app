@@ -1108,12 +1108,16 @@ type TranslationId
     | NotFollowingRecommendationQuestion
     | NotIndicated
     | NotTaken
-    | NumberOfAbortions
+    | NumberOfAbortionsLabel
+    | NumberOfAbortions Int
     | NumberOfChildrenUnder5
     | NumberOfCSections
     | NumberOfLiveChildren
+    | NumberOfPretermStillbirths Int
+    | NumberOfPretermDeliviries Int
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | NumberOfTermStillbirths Int
     | Nutrition
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
@@ -1132,6 +1136,7 @@ type TranslationId
     | Observations
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
+    | ObstetricHistory
     | OK
     | On
     | OneVisit
@@ -6825,10 +6830,7 @@ translationSet trans =
         HistoryTask task ->
             case task of
                 Obstetric ->
-                    { english = "Obstetric History"
-                    , kinyarwanda = Just "Amateka y'inda zibanza (ku nda yatwise)"
-                    , kirundi = Just "Akahise k'ivyara"
-                    }
+                    translationSet ObstetricHistory
 
                 Medical ->
                     { english = "Medical History"
@@ -12626,10 +12628,16 @@ translationSet trans =
             , kirundi = Just "Nticafashwe"
             }
 
-        NumberOfAbortions ->
+        NumberOfAbortionsLabel ->
             { english = "Number of Abortions"
             , kinyarwanda = Just "Umubare w'inda zavuyemo"
             , kirundi = Just "Ugukoroka kw'imbanyi"
+            }
+
+        NumberOfAbortions number ->
+            { english = "Number of abortions (<20 weeks): " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         NumberOfChildrenUnder5 ->
@@ -12650,6 +12658,18 @@ translationSet trans =
             , kirundi = Just "Igitigiri c'abana bariho"
             }
 
+        NumberOfPretermStillbirths number ->
+            { english = "Number of preterm stillbirths: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfPretermDeliviries number ->
+            { english = "Number of preterm deliveries: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NumberOfStillbirthsAtTerm ->
             { english = "Number of Stillbirths at Term"
             , kinyarwanda = Just "Umubare w'abapfiriye mu nda bashyitse"
@@ -12660,6 +12680,12 @@ translationSet trans =
             { english = "Number of Stillbirths pre Term"
             , kinyarwanda = Just "Umubare w'abapfiriye mu nda badashyitse"
             , kirundi = Just "Igitigiri c'abavutse itarike itaragera/igihe kitarashika, bamaze gupfa"
+            }
+
+        NumberOfTermStillbirths number ->
+            { english = "Number of term stillbirths: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Nutrition ->
@@ -13103,6 +13129,12 @@ translationSet trans =
                     , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
                     , kirundi = Just "Impavu y'ingoran ya Prééclampsie"
                     }
+
+        ObstetricHistory ->
+            { english = "Obstetric History"
+            , kinyarwanda = Just "Amateka y'inda zibanza (ku nda yatwise)"
+            , kirundi = Just "Akahise k'ivyara"
+            }
 
         OK ->
             { english = "OK"
@@ -18365,8 +18397,8 @@ translationSet trans =
 
         ReportComponentAntenatal component ->
             case component of
-                ComponentAntenatalRiskFactors ->
-                    translationSet RiskFactors
+                ComponentAntenatalObstetricHistory ->
+                    translationSet ObstetricHistory
 
                 ComponentAntenatalMedicalDiagnosis ->
                     { english = "Medical Diagnosis"
