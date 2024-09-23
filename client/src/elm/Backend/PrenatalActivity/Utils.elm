@@ -424,16 +424,16 @@ generateRiskFactorAlertData language currentDate measurements factor =
             trans (Translate.RiskFactorAlert alert)
     in
     case factor of
-        FactorNumberOfCSections _ ->
+        FactorNumberOfCSections ->
             measurements.obstetricHistoryStep2
                 |> Maybe.andThen
                     (\measurement ->
                         let
-                            value =
-                                Tuple.second measurement |> .value |> .cSections
+                            signs =
+                                Tuple.second measurement |> .value |> .previousDelivery
                         in
-                        if value > 0 then
-                            Just (transAlert (FactorNumberOfCSections value))
+                        if EverySet.member Backend.Measurement.Model.CSectionInPast signs then
+                            Just (transAlert factor)
 
                         else
                             Nothing

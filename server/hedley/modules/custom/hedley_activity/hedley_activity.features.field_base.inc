@@ -1756,6 +1756,7 @@ function hedley_activity_field_default_field_bases() {
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'diabetes' => 'Diabetes',
         'grief' => 'Grief',
+        'hiv-partner-presence' => 'HIV partner presence',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1795,6 +1796,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'c-section-in-past' => 'C Section In Past',
         'c-section-in-previous-delivery' => 'C Section In Previous Delivery',
         'stillborn-previous-delivery' => 'Stillborn Previous Delivery',
         'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',

@@ -230,6 +230,9 @@ encodePrenatalHealthEducationSign sign =
             EducationGrief ->
                 "grief"
 
+            EducationHIVPartnerPresence ->
+                "hiv-partner-presence"
+
             NoPrenatalHealthEducationSigns ->
                 "none"
 
@@ -652,6 +655,9 @@ encodeTestExecutionNote value =
 
             TestNoteRunConfirmedByLabTech ->
                 "run-confirmed-by-lab-tech"
+
+            TestNoteNotPresent ->
+                "not-present"
 
 
 encodeTestResult : TestResult -> Value
@@ -1632,6 +1638,9 @@ encodePreviousDeliverySign : PreviousDeliverySign -> Value
 encodePreviousDeliverySign sign =
     string <|
         case sign of
+            CSectionInPast ->
+                "c-section-in-past"
+
             CSectionInPreviousDelivery ->
                 "c-section-in-previous-delivery"
 

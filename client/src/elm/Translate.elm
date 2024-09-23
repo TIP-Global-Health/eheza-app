@@ -543,6 +543,7 @@ type TranslationId
     | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CSection
     | CSectionScar CSectionScar
     | CurrentMedication
     | Dashboard Dashboard
@@ -560,7 +561,7 @@ type TranslationId
     | CovidContactTracing
     | CovidTestingInstructions
     | CounselorSignature
-    | CSectionInPreviousDelivery
+    | CSectionInPast
     | CSectionReason
     | CSectionReasons CSectionReason
     | CreateRelationship
@@ -1012,6 +1013,7 @@ type TranslationId
     | MonthSinglePlural Int
     | MonthsOfStock
     | MostCommonAntiRetroviralMedications
+    | MostRecentPregnancyDeliveryMethod
     | MotherId
     | MotherName String
     | MotherNameLabel
@@ -1106,12 +1108,16 @@ type TranslationId
     | NotFollowingRecommendationQuestion
     | NotIndicated
     | NotTaken
-    | NumberOfAbortions
+    | NumberOfAbortionsLabel
+    | NumberOfAbortions Int
     | NumberOfChildrenUnder5
     | NumberOfCSections
     | NumberOfLiveChildren
+    | NumberOfPretermStillbirths Int
+    | NumberOfPretermDeliviries Int
     | NumberOfStillbirthsAtTerm
     | NumberOfStillbirthsPreTerm
+    | NumberOfTermStillbirths Int
     | Nutrition
     | NutritionActivityHelper NutritionActivity
     | NutritionActivityTitle NutritionActivity
@@ -1130,6 +1136,7 @@ type TranslationId
     | Observations
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
+    | ObstetricHistory
     | OK
     | On
     | OneVisit
@@ -1586,6 +1593,7 @@ type TranslationId
     | ReviewCaseWith144Respondent
     | Reviewed
     | ReviewPriorDiagnosis
+    | RHFactorNegative
     | RHFactorUnknown
     | Right
     | RiskFactorAlert RiskFactor
@@ -1845,6 +1853,7 @@ type TranslationId
     | VaccineDoseAdministeredTodayPrenatalQuestion String
     | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType Site VaccineType
+    | VaginalDeliveryLabel
     | VaginalExamination
     | VaginalExamSign VaginalExamSign
     | ValidationErrors
@@ -4417,6 +4426,12 @@ translationSet trans =
             , kirundi = Just "Yarumvise ibizunguzungu igihe aheruka kwibaruka"
             }
 
+        CSection ->
+            { english = "C-Section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CSectionScar scar ->
             case scar of
                 Vertical ->
@@ -4581,10 +4596,10 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        CSectionInPreviousDelivery ->
-            { english = "C-section in previous delivery"
-            , kinyarwanda = Just "Yarabazwe ku nda ishize"
-            , kirundi = Just "Ugukorwa mu kwibaruka guheruka"
+        CSectionInPast ->
+            { english = "Has she ever had a cesarean section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         CSectionReason ->
@@ -6816,10 +6831,7 @@ translationSet trans =
         HistoryTask task ->
             case task of
                 Obstetric ->
-                    { english = "Obstetric History"
-                    , kinyarwanda = Just "Amateka y'inda zibanza (ku nda yatwise)"
-                    , kirundi = Just "Akahise k'ivyara"
-                    }
+                    translationSet ObstetricHistory
 
                 Medical ->
                     { english = "Medical History"
@@ -7982,6 +7994,14 @@ translationSet trans =
                     , kirundi = Just "Mbega umugwayi/umuvyeyi arazwi ko afise imbanyi"
                     }
 
+                -- Known as positive is not applicable for this test, therefore,
+                -- no translation is needed.
+                TaskPartnerHIVTest ->
+                    { english = "Is partner known to be HIV positive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 TaskBloodGpRsTest ->
                     -- Known as positive is not applicable for this test, therefore,
                     -- no translation is needed.
@@ -8025,11 +8045,6 @@ translationSet trans =
                 -- Known as positive is not applicable for this test, therefore,
                 -- no translation is needed.
                 TaskHbA1cTest ->
-                    translationSet EmptyString
-
-                -- Known as positive is not applicable for this test, therefore,
-                -- no translation is needed.
-                TaskPartnerHIVTest ->
                     translationSet EmptyString
 
                 -- Known as positive is not applicable for this test, therefore,
@@ -10924,6 +10939,12 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        MostRecentPregnancyDeliveryMethod ->
+            { english = "How was her most recent pregnancy delivered"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MotherId ->
             { english = "Mother ID"
             , kinyarwanda = Nothing
@@ -12608,10 +12629,16 @@ translationSet trans =
             , kirundi = Just "Nticafashwe"
             }
 
-        NumberOfAbortions ->
+        NumberOfAbortionsLabel ->
             { english = "Number of Abortions"
             , kinyarwanda = Just "Umubare w'inda zavuyemo"
             , kirundi = Just "Ugukoroka kw'imbanyi"
+            }
+
+        NumberOfAbortions number ->
+            { english = "Number of abortions (<20 weeks): " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         NumberOfChildrenUnder5 ->
@@ -12632,6 +12659,18 @@ translationSet trans =
             , kirundi = Just "Igitigiri c'abana bariho"
             }
 
+        NumberOfPretermStillbirths number ->
+            { english = "Number of preterm stillbirths: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        NumberOfPretermDeliviries number ->
+            { english = "Number of preterm deliveries: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NumberOfStillbirthsAtTerm ->
             { english = "Number of Stillbirths at Term"
             , kinyarwanda = Just "Umubare w'abapfiriye mu nda bashyitse"
@@ -12642,6 +12681,12 @@ translationSet trans =
             { english = "Number of Stillbirths pre Term"
             , kinyarwanda = Just "Umubare w'abapfiriye mu nda badashyitse"
             , kirundi = Just "Igitigiri c'abavutse itarike itaragera/igihe kitarashika, bamaze gupfa"
+            }
+
+        NumberOfTermStillbirths number ->
+            { english = "Number of term stillbirths: " ++ String.fromInt number
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Nutrition ->
@@ -13015,10 +13060,7 @@ translationSet trans =
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
                 DiagnosisRhNegative ->
-                    { english = "RH Factor Negative"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet RHFactorNegative
 
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
@@ -13085,6 +13127,12 @@ translationSet trans =
                     , kinyarwanda = Just "Afite ibyago byinshi byo kugira Preklampusi"
                     , kirundi = Just "Impavu y'ingoran ya Prééclampsie"
                     }
+
+        ObstetricHistory ->
+            { english = "Obstetric History"
+            , kinyarwanda = Just "Amateka y'inda zibanza (ku nda yatwise)"
+            , kirundi = Just "Akahise k'ivyara"
+            }
 
         OK ->
             { english = "OK"
@@ -15660,6 +15708,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                EducationHIVPartnerPresence ->
+                    { english = "Partner Presence"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 _ ->
                     translationSet EmptyString
 
@@ -15746,6 +15800,12 @@ translationSet trans =
 
                 EducationGrief ->
                     { english = "Have you provided grief counseling to the patient"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                EducationHIVPartnerPresence ->
+                    { english = "Have you provided counselling on importance of partner’s presence"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -16880,6 +16940,12 @@ translationSet trans =
                 TestNoteRunConfirmedByLabTech ->
                     translationSet <| TestExecutionNote TestNoteRunToday
 
+                TestNoteNotPresent ->
+                    { english = "Not Present"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         TestResult result ->
             case result of
                 TestPositive ->
@@ -16974,9 +17040,9 @@ translationSet trans =
             }
 
         PreviousCSectionScar ->
-            { english = "Previous C-section scar"
-            , kinyarwanda = Just "Inkovu yaho babaze ubushize"
-            , kirundi = Just "Igikomere c'ugukorwa guheruka"
+            { english = "Previous c-section or other abdominal scar"
+            , kinyarwanda = Just "Inkovu yaho babaze ubushize cyangwa indi nkovu ku nda"
+            , kirundi = Just "Igikomere c'ugukorwa guheruka canke ikindi gikomere ku nda"
             }
 
         PreviousDelivery ->
@@ -18329,11 +18395,8 @@ translationSet trans =
 
         ReportComponentAntenatal component ->
             case component of
-                ComponentAntenatalRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                ComponentAntenatalObstetricHistory ->
+                    translationSet ObstetricHistory
 
                 ComponentAntenatalMedicalDiagnosis ->
                     { english = "Medical Diagnosis"
@@ -18374,10 +18437,7 @@ translationSet trans =
         ReportComponentNCD component ->
             case component of
                 ComponentNCDRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                    translationSet RiskFactors
 
                 ComponentNCDActiveDiagnosis ->
                     { english = "Active Diagnosis"
@@ -20322,6 +20382,12 @@ translationSet trans =
             , kirundi = Just "Kongera kuraba indwara yagize"
             }
 
+        RHFactorNegative ->
+            { english = "RH Factor Negative"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         RHFactorUnknown ->
             { english = "RH Factor Unknown"
             , kinyarwanda = Nothing
@@ -20336,18 +20402,11 @@ translationSet trans =
 
         RiskFactorAlert factor ->
             case factor of
-                FactorNumberOfCSections number ->
-                    if number == 1 then
-                        { english = "1 previous C-section"
-                        , kinyarwanda = Just "Yabazwe inshuro imwe ubushize"
-                        , kirundi = Just "Ugukorwa rimwe vyabaye muri kahise kavuba"
-                        }
-
-                    else
-                        { english = String.fromInt number ++ " previous C-sections"
-                        , kinyarwanda = Just <| String.fromInt number ++ " ubushize yarabazwe"
-                        , kirundi = Just <| String.fromInt number ++ " yakozwemo mu kahise "
-                        }
+                FactorNumberOfCSections ->
+                    { english = "C-section in the past"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 FactorCSectionInPreviousDelivery ->
                     { english = "C-section in previous delivery"
@@ -22732,6 +22791,12 @@ translationSet trans =
                             , kinyarwanda = Just "Agakwega"
                             , kirundi = Just "Rudadaza"
                             }
+
+        VaginalDeliveryLabel ->
+            { english = "Vaginal Delivery"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         VaginalExamination ->
             { english = "Vaginal Examination"

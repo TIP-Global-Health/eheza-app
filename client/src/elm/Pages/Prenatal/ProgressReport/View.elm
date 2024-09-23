@@ -19,6 +19,7 @@ import Backend.Measurement.Model
         , RecommendedTreatmentSign(..)
         , ReferToFacilitySign(..)
         , ReferralFacility(..)
+        , Rhesus(..)
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
@@ -411,8 +412,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
 
                 Nothing ->
                     let
-                        firstEncounterMeasurements =
-                            getFirstEncounterMeasurements isChw assembled
+                        firstNurseEncounterMeasurements =
+                            getFirstNurseEncounterMeasurements isChw assembled
 
                         labsPane =
                             Maybe.map
@@ -514,11 +515,11 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         showComponent =
                             Components.ReportToWhatsAppDialog.Utils.showComponent model.components
                     in
-                    [ viewRiskFactorsPane language currentDate firstEncounterMeasurements
-                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalRiskFactors)
-                    , viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
+                    , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
@@ -620,13 +621,51 @@ viewHeaderPane language currentDate assembled =
         ]
 
 
-viewRiskFactorsPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
-viewRiskFactorsPane language currentDate measurements =
+viewObstetricHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewObstetricHistoryPane language currentDate measurements =
     let
-        alerts =
+        obsetricHistory =
+            getMeasurementValueFunc measurements.obstetricHistory
+                |> Maybe.map
+                    (\value ->
+                        let
+                            abortions =
+                                if value.abortions > 0 then
+                                    Just <| translate language <| Translate.NumberOfAbortions value.abortions
+
+                                else
+                                    Nothing
+
+                            pretermStillbirth =
+                                if value.stillbirthsPreTerm > 0 then
+                                    Just <| translate language <| Translate.NumberOfPretermStillbirths value.stillbirthsPreTerm
+
+                                else
+                                    Nothing
+
+                            termStillbirth =
+                                if value.stillbirthsAtTerm > 0 then
+                                    Just <| translate language <| Translate.NumberOfTermStillbirths value.stillbirthsAtTerm
+
+                                else
+                                    Nothing
+
+                            pretermDeliviries =
+                                if value.preTermPregnancy > 0 then
+                                    Just <| translate language <| Translate.NumberOfPretermDeliviries value.preTermPregnancy
+
+                                else
+                                    Nothing
+                        in
+                        Maybe.Extra.values [ abortions, pretermStillbirth, termStillbirth, pretermDeliviries ]
+                    )
+                |> Maybe.withDefault []
+
+        content =
             List.filterMap
                 (generateRiskFactorAlertData language currentDate measurements)
                 allRiskFactors
+                |> List.append obsetricHistory
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
@@ -634,14 +673,14 @@ viewRiskFactorsPane language currentDate measurements =
     div [ class "risk-factors" ]
         [ div [ class <| "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
-            , span [] [ text <| translate language Translate.RiskFactors ]
+            , span [] [ text <| translate language Translate.ObstetricHistory ]
             ]
-        , div [ class "pane-content" ] alerts
+        , div [ class "pane-content" ] content
         ]
 
 
 viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
+viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -667,6 +706,56 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
 
                         diagnosesEntries =
                             List.concatMap (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
+
+                        -- RH Factor Uknown should be a default Obsteric Diagnosis on any patient who has
+                        -- not had an RH lab result (for any reason). If lab was taken and result was
+                        -- RH negative, it should be mentioned at every subssequent encounter report.
+                        -- Requirements for this diagnosis are different from all others, which require to
+                        -- specify the diagnosis and action that was taken only for current encounter.
+                        rhesusEntry =
+                            if
+                                -- When current encounter has RH Negative diagnosis, we don't add dedicated
+                                -- entry, since it will be handled using viewTreatmentForOutsideCareDiagnosis.
+                                List.any
+                                    (\diagnosis ->
+                                        List.member diagnosis
+                                            [ DiagnosisRhesusNegativeInitialPhase
+                                            , DiagnosisRhesusNegativeRecurrentPhase
+                                            ]
+                                    )
+                                    diagnosesIncludingChronic
+                            then
+                                []
+
+                            else
+                                let
+                                    nursePreviousMeasurements =
+                                        List.reverse assembled.nursePreviousEncountersData
+                                            |> List.map .measurements
+
+                                    allNurseMeasurements =
+                                        if isChw then
+                                            nursePreviousMeasurements
+
+                                        else
+                                            assembled.measurements :: nursePreviousMeasurements
+                                in
+                                List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus) allNurseMeasurements
+                                    |> List.head
+                                    |> Maybe.map
+                                        (\rhesus ->
+                                            case rhesus of
+                                                RhesusNegative ->
+                                                    translate language Translate.RHFactorNegative
+                                                        |> wrapWithLI
+
+                                                RhesusPositive ->
+                                                    []
+                                        )
+                                    |> Maybe.withDefault
+                                        (translate language Translate.RHFactorUnknown
+                                            |> wrapWithLI
+                                        )
 
                         outsideCareDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.outsideCare
@@ -722,6 +811,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
                                 |> List.concatMap (viewTreatmentForPastDiagnosis language data.startDate)
                     in
                     knownAsPositiveEntries
+                        ++ rhesusEntry
                         ++ diagnosesEntries
                         ++ outsideCareDiagnosesEntries
                         ++ pastDiagnosesEntries
@@ -734,7 +824,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstEncounterMeasurements a
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements)
+                    (generateMedicalDiagnosisAlertData language currentDate firstNurseEncounterMeasurements)
                     allMedicalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []
@@ -764,7 +854,7 @@ viewProgramReferralEntry language date diagnosis facility =
 
 
 viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -923,7 +1013,7 @@ viewObstetricalDiagnosisPane language currentDate isChw firstEncounterMeasuremen
             -- Alerts are displayed only for CHW.
             if isChw then
                 List.filterMap
-                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled)
+                    (generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled)
                     allObstetricalDiagnoses
                     |> List.map (\alert -> li [] [ text alert ])
                     |> ul []
