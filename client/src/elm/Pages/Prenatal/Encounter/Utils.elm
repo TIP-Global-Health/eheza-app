@@ -377,8 +377,8 @@ generateAssembledData id db =
         |> RemoteData.andMap (Success vaccinationProgress)
 
 
-getFirstEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
-getFirstEncounterMeasurements isChw assembled =
+getFirstNurseEncounterMeasurements : Bool -> AssembledData -> PrenatalMeasurements
+getFirstNurseEncounterMeasurements isChw assembled =
     case assembled.nursePreviousEncountersData of
         [] ->
             if isChw then
@@ -479,7 +479,7 @@ generateObstetricalDiagnosisAlertData :
     -> AssembledData
     -> ObstetricalDiagnosis
     -> Maybe String
-generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterMeasurements assembled diagnosis =
+generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncounterMeasurements assembled diagnosis =
     let
         transAlert diagnosis_ =
             translate language (Translate.ObstetricalDiagnosisAlert diagnosis_)
@@ -510,7 +510,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                 Nothing ->
                     let
                         negativeByObstetricHistory =
-                            getMeasurementValueFunc firstEncounterMeasurements.obstetricHistoryStep2
+                            getMeasurementValueFunc firstNurseEncounterMeasurements.obstetricHistoryStep2
                                 |> Maybe.map (.obstetricHistory >> EverySet.member Backend.Measurement.Model.RhNegative)
                                 |> Maybe.withDefault False
                     in
@@ -528,7 +528,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                             language
                             currentDate
                             isChw
-                            firstEncounterMeasurements
+                            firstNurseEncounterMeasurements
                             assembled
                             DiagnosisSevereUnderweight
             in
@@ -867,7 +867,7 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstEncounterM
                 Nothing
 
         DiagnosisPregnancyInducedHypertension ->
-            if isJust (generateMedicalDiagnosisAlertData language currentDate firstEncounterMeasurements DiagnosisHypertensionBeforePregnancy) then
+            if isJust (generateMedicalDiagnosisAlertData language currentDate firstNurseEncounterMeasurements DiagnosisHypertensionBeforePregnancy) then
                 Nothing
 
             else

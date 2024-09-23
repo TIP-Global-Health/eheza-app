@@ -4090,8 +4090,19 @@ obstetricHistoryStep2FormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
-                , cSectionsDirty = form.cSectionsDirty
+                let
+                    cSectionInPastFromValue =
+                        if EverySet.member CSectionInPast value.previousDelivery then
+                            True
+
+                        else
+                            -- This comes for intermediate period, where devices may
+                            -- have content to upload where number of c-section was recorded.
+                            -- In new version, this value is set to -1, so result will
+                            -- always be false here.
+                            value.cSections > 0
+                in
+                { cSectionInPast = or form.cSectionInPast (Just cSectionInPastFromValue)
                 , cSectionInPreviousDelivery =
                     maybeValueConsideringIsDirtyField form.cSectionInPreviousDeliveryDirty
                         form.cSectionInPreviousDelivery
@@ -4128,7 +4139,8 @@ toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistory
 toObstetricHistoryStep2Value form =
     let
         previousDeliverySet =
-            [ ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
+            [ Maybe.map (ifTrue CSectionInPast) form.cSectionInPast
+            , ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
             , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
             , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
             , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
@@ -4149,7 +4161,10 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
-    Maybe.map ObstetricHistoryStep2Value form.cSections
+    -- Number of C-sections field is oboslete. Since we still need to
+    -- keep this info as part of the value, to support exisitng measurements,
+    -- we default it to -1.
+    Maybe.map ObstetricHistoryStep2Value (Just -1)
         |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)

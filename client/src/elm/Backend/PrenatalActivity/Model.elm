@@ -37,7 +37,7 @@ type PrenatalRecurrentActivity
 
 
 type RiskFactor
-    = FactorNumberOfCSections Int
+    = FactorNumberOfCSections
     | FactorCSectionInPreviousDelivery
     | FactorCSectionReason
     | FactorPreviousDeliveryPeriod
@@ -125,7 +125,7 @@ allRecurringHighSeverityAlerts =
 
 allRiskFactors : List RiskFactor
 allRiskFactors =
-    [ FactorNumberOfCSections 0
+    [ FactorNumberOfCSections
     , FactorCSectionInPreviousDelivery
     , FactorCSectionReason
     , FactorPreviousDeliveryPeriod

@@ -15,7 +15,6 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
    */
   protected $fields = [
     'field_c_sections',
-
   ];
 
   /**

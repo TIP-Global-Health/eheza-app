@@ -543,6 +543,7 @@ type TranslationId
     | ContributingFactorsQuestion
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
+    | CSection
     | CSectionScar CSectionScar
     | CurrentMedication
     | Dashboard Dashboard
@@ -560,7 +561,7 @@ type TranslationId
     | CovidContactTracing
     | CovidTestingInstructions
     | CounselorSignature
-    | CSectionInPreviousDelivery
+    | CSectionInPast
     | CSectionReason
     | CSectionReasons CSectionReason
     | CreateRelationship
@@ -1012,6 +1013,7 @@ type TranslationId
     | MonthSinglePlural Int
     | MonthsOfStock
     | MostCommonAntiRetroviralMedications
+    | MostRecentPregnancyDeliveryMethod
     | MotherId
     | MotherName String
     | MotherNameLabel
@@ -1845,6 +1847,7 @@ type TranslationId
     | VaccineDoseAdministeredTodayPrenatalQuestion String
     | VaccineDoseAdministeredTodayWellChildQuestion String
     | VaccineType Site VaccineType
+    | VaginalDeliveryLabel
     | VaginalExamination
     | VaginalExamSign VaginalExamSign
     | ValidationErrors
@@ -4417,6 +4420,12 @@ translationSet trans =
             , kirundi = Just "Yarumvise ibizunguzungu igihe aheruka kwibaruka"
             }
 
+        CSection ->
+            { english = "C-Section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         CSectionScar scar ->
             case scar of
                 Vertical ->
@@ -4581,10 +4590,10 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        CSectionInPreviousDelivery ->
-            { english = "C-section in previous delivery"
-            , kinyarwanda = Just "Yarabazwe ku nda ishize"
-            , kirundi = Just "Ugukorwa mu kwibaruka guheruka"
+        CSectionInPast ->
+            { english = "Has she ever had a cesarean section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         CSectionReason ->
@@ -10923,6 +10932,12 @@ translationSet trans =
 
         MostCommonAntiRetroviralMedications ->
             { english = "Most Common Anti-Retroviral Medications"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MostRecentPregnancyDeliveryMethod ->
+            { english = "How was her most recent pregnancy delivered"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -18351,10 +18366,7 @@ translationSet trans =
         ReportComponentAntenatal component ->
             case component of
                 ComponentAntenatalRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                    translationSet RiskFactors
 
                 ComponentAntenatalMedicalDiagnosis ->
                     { english = "Medical Diagnosis"
@@ -18395,10 +18407,7 @@ translationSet trans =
         ReportComponentNCD component ->
             case component of
                 ComponentNCDRiskFactors ->
-                    { english = "Risk Factors"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Impamvu z'ingorane"
-                    }
+                    translationSet RiskFactors
 
                 ComponentNCDActiveDiagnosis ->
                     { english = "Active Diagnosis"
@@ -20357,18 +20366,11 @@ translationSet trans =
 
         RiskFactorAlert factor ->
             case factor of
-                FactorNumberOfCSections number ->
-                    if number == 1 then
-                        { english = "1 previous C-section"
-                        , kinyarwanda = Just "Yabazwe inshuro imwe ubushize"
-                        , kirundi = Just "Ugukorwa rimwe vyabaye muri kahise kavuba"
-                        }
-
-                    else
-                        { english = String.fromInt number ++ " previous C-sections"
-                        , kinyarwanda = Just <| String.fromInt number ++ " ubushize yarabazwe"
-                        , kirundi = Just <| String.fromInt number ++ " yakozwemo mu kahise "
-                        }
+                FactorNumberOfCSections ->
+                    { english = "C-section in the past"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 FactorCSectionInPreviousDelivery ->
                     { english = "C-section in previous delivery"
@@ -22753,6 +22755,12 @@ translationSet trans =
                             , kinyarwanda = Just "Agakwega"
                             , kirundi = Just "Rudadaza"
                             }
+
+        VaginalDeliveryLabel ->
+            { english = "Vaginal Delivery"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         VaginalExamination ->
             { english = "Vaginal Examination"

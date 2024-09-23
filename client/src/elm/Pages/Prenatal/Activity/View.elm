@@ -112,6 +112,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewConditionalAlert
+        , viewCustomBoolInput
         , viewCustomLabel
         , viewCustomSelectListInput
         , viewInstructionsLabel
@@ -2745,21 +2746,16 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             let
                 ( derivedHtml, derivedTasks ) =
                     Maybe.map
-                        (\cSections ->
-                            if cSections > 0 then
+                        (\cSectionInPast ->
+                            if cSectionInPast then
+                                let
+                                    cSectionInPreviousDeliveryUpdateFunc value form_ =
+                                        { form_
+                                            | cSectionInPreviousDelivery = Just value
+                                            , cSectionInPreviousDeliveryDirty = True
+                                        }
+                                in
                                 ( [ div [ class "ui grid" ]
-                                        [ div [ class "twelve wide column" ]
-                                            [ viewLabel language Translate.CSectionInPreviousDelivery ]
-                                        , div [ class "four wide column" ]
-                                            [ viewRedAlertForBool form.cSectionInPreviousDelivery False ]
-                                        ]
-                                  , viewBoolInput
-                                        language
-                                        form.cSectionInPreviousDelivery
-                                        (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
-                                        "c-section-previous-delivery"
-                                        Nothing
-                                  , div [ class "ui grid" ]
                                         [ div [ class "twelve wide column" ]
                                             [ viewLabel language Translate.CSectionReason ]
                                         , div [ class "four wide column" ]
@@ -2774,6 +2770,20 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                                         form.cSectionReason
                                         SetCSectionReason
                                         Translate.CSectionReasons
+                                  , div [ class "ui grid" ]
+                                        [ div [ class "twelve wide column" ]
+                                            [ viewLabel language Translate.MostRecentPregnancyDeliveryMethod ]
+                                        , div [ class "four wide column" ]
+                                            [ viewRedAlertForBool form.cSectionInPreviousDelivery False ]
+                                        ]
+                                  , viewCustomBoolInput
+                                        language
+                                        form.cSectionInPreviousDelivery
+                                        (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
+                                        "c-section-previous-delivery"
+                                        ( Translate.CSection, Translate.VaginalDeliveryLabel )
+                                        "eight"
+                                        False
                                   ]
                                 , [ form.cSectionInPreviousDelivery
                                   , maybeToBoolTask form.cSectionReason
@@ -2783,21 +2793,33 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                             else
                                 ( [], [] )
                         )
-                        form.cSections
+                        form.cSectionInPast
                         |> Maybe.withDefault ( [], [] )
 
-                cSectionInPreviousDeliveryUpdateFunc value form_ =
-                    { form_ | cSectionInPreviousDelivery = Just value, cSectionInPreviousDeliveryDirty = True }
+                cSectionInPastUpdateFunc value form_ =
+                    { form_
+                        | cSectionInPast = Just value
+                        , cSectionReason = Nothing
+                        , cSectionReasonDirty = True
+                        , cSectionInPreviousDelivery = Nothing
+                        , cSectionInPreviousDeliveryDirty = True
+                    }
             in
-            ( viewNumberInput
-                language
-                form.cSections
-                SetNumberOfCSections
-                "c-sections"
-                Translate.NumberOfCSections
-                (Just ( [ [ (<) 0 ] ], [] ))
-                :: derivedHtml
-            , maybeToBoolTask form.cSections :: derivedTasks
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.CSectionInPast ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.cSectionInPast False ]
+                    ]
+              , viewBoolInput
+                    language
+                    form.cSectionInPast
+                    (SetOBBoolInput cSectionInPastUpdateFunc)
+                    "c-section-past"
+                    Nothing
+              ]
+                ++ derivedHtml
+            , maybeToBoolTask form.cSectionInPast :: derivedTasks
             )
 
         successiveAbortionsUpdateFunc value form_ =
@@ -2833,23 +2855,24 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
         incompleteCervixPreviousPregnancyUpdateFunc value form_ =
             { form_ | incompleteCervixPreviousPregnancy = Just value }
     in
-    ( cSectionsHtml
-        ++ [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewCustomLabel language Translate.PreviousDelivery ":" "label previous-delivery" ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForSelect
-                        (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
-                        [ Neither ]
-                    ]
+    ( [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewCustomLabel language Translate.PreviousDelivery ":" "label previous-delivery" ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    [ Neither ]
                 ]
-           , viewCheckBoxSelectInput language
-                [ LessThan18Month, MoreThan5Years ]
-                [ Neither ]
-                form.previousDeliveryPeriod
-                SetPreviousDeliveryPeriod
-                Translate.PreviousDeliveryPeriods
-           , div [ class "ui grid" ]
+            ]
+      , viewCheckBoxSelectInput language
+            [ LessThan18Month, MoreThan5Years ]
+            [ Neither ]
+            form.previousDeliveryPeriod
+            SetPreviousDeliveryPeriod
+            Translate.PreviousDeliveryPeriods
+      ]
+        ++ cSectionsHtml
+        ++ [ div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
                     [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
                 , div [ class "four wide column" ]

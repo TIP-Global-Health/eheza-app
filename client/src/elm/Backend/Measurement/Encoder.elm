@@ -1638,6 +1638,9 @@ encodePreviousDeliverySign : PreviousDeliverySign -> Value
 encodePreviousDeliverySign sign =
     string <|
         case sign of
+            CSectionInPast ->
+                "c-section-in-past"
+
             CSectionInPreviousDelivery ->
                 "c-section-in-previous-delivery"
 

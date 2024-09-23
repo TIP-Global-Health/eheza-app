@@ -70,7 +70,6 @@ type Msg
     | SaveOBHistoryStep1 Bool PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
-    | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
     | BackToOBHistoryStep1
@@ -757,8 +756,7 @@ emptyObstetricFormFirstStep =
 
 
 type alias ObstetricFormSecondStep =
-    { cSections : Maybe Int
-    , cSectionsDirty : Bool
+    { cSectionInPast : Maybe Bool
     , cSectionInPreviousDelivery : Maybe Bool
     , cSectionInPreviousDeliveryDirty : Bool
     , cSectionReason : Maybe CSectionReason
@@ -780,8 +778,7 @@ type alias ObstetricFormSecondStep =
 
 emptyObstetricFormSecondStep : ObstetricFormSecondStep
 emptyObstetricFormSecondStep =
-    { cSections = Nothing
-    , cSectionsDirty = False
+    { cSectionInPast = Nothing
     , cSectionInPreviousDelivery = Nothing
     , cSectionInPreviousDeliveryDirty = False
     , cSectionReason = Nothing
