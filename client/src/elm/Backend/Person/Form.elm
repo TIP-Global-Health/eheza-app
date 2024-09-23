@@ -660,7 +660,11 @@ validateGender =
 
 validateUbudehe : Maybe Person -> Validation ValidationError (Maybe Ubudehe)
 validateUbudehe related =
-    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeUbudehe)
+    let
+        decoder =
+            fromDecoder DecoderError Nothing decodeUbudehe
+    in
+    nullable decoder
         |> withDefault (Maybe.andThen .ubudehe related)
 
 
