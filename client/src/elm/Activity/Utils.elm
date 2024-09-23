@@ -454,18 +454,14 @@ expectMotherActivity currentDate offlineSession motherId activity =
                         case participant.adultActivities of
                             MotherActivities ->
                                 if List.member offlineSession.session.clinicType [ Achi, Fbf ] then
-                                    let
-                                        isBreastfeeding =
-                                            getMotherMeasurementData2 motherId offlineSession
-                                                |> LocalData.map
-                                                    (.current
-                                                        >> .lactation
-                                                        >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
-                                                        >> Maybe.withDefault False
-                                                    )
-                                                |> LocalData.withDefault False
-                                    in
-                                    isBreastfeeding
+                                    getMotherMeasurementData2 motherId offlineSession
+                                        |> LocalData.map
+                                            (.current
+                                                >> .lactation
+                                                >> Maybe.map (Tuple.second >> .value >> EverySet.member Breastfeeding)
+                                                >> Maybe.withDefault False
+                                            )
+                                        |> LocalData.withDefault False
 
                                 else
                                     False
