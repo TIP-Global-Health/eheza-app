@@ -37,10 +37,14 @@ jobs:
       - run: ci-scripts/install_shell.sh
       - run: ci-scripts/test_shell.sh
   test_simpletest_linux:
+    parallelism: 2
     machine:
       image: ubuntu-2204:current
     steps:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
-      - run: ci-scripts/circleci_wait.sh ddev simpletest
+      - run:
+        name: Run SimpleTest in parallel
+        command: |
+          ci-scripts/circleci_wait.sh ddev simpletest $(circleci tests glob "server/hedley/modules/custom/**/tests/*.test" | circleci tests split --split-by=timings)

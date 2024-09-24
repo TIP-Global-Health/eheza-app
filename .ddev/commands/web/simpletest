@@ -1,12 +1,21 @@
 #!/bin/bash
 
 ## Description: Run simpletest test suite.
-## Usage: simpletest
-## Example: "ddev simpletest"
-#
+## Usage: simpletest [test_files...]
+## Example: "ddev simpletest server/hedley/modules/custom/hedley_activity/tests/HedleyActivityEndpoints.test"
+
 drush en simpletest -y
 cd ..
-php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 Hedley 2>&1 | tee /tmp/simpletest-result.txt
+
+if [ "$#" -ne 0 ]; then
+    TEST_FILES="$@"
+else
+    TEST_FILES=$(find server/hedley/modules/custom/**/tests -name "*.test")
+fi
+
+for TEST_FILE in $TEST_FILES; do
+    php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 "$TEST_FILE" 2>&1 | tee -a /tmp/simpletest-result.txt
+done
 
 grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)|([0-9]+0 fail)|([0-9]+0 exception)" /tmp/simpletest-result.txt && exit 1
 
