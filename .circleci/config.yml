@@ -44,7 +44,4 @@ jobs:
       - checkout
       - run: ci-scripts/install_ddev.sh
       - run: ci-scripts/install_drupal.sh
-      - run:
-        name: Run SimpleTest in parallel
-        command: |
-          ci-scripts/circleci_wait.sh ddev simpletest $(circleci tests glob "server/hedley/modules/custom/**/tests/*.test" | circleci tests split --split-by=timings)
+      - run: ci-scripts/circleci_wait.sh ddev simpletest $(circleci tests glob "server/hedley/modules/custom/**/tests/*.test" | circleci tests split --split-by=timings)
