@@ -14,7 +14,7 @@ else
 fi
 
 for TEST_FILE in $TEST_FILES; do
-    php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 "$TEST_FILE" 2>&1 | tee -a /tmp/simpletest-result.txt
+    php ./www/scripts/run-tests.sh --php "$(which php)" --concurrency 4 --verbose --color --url http://eheza-app.ddev.site:8081 --class "$TEST_FILE" 2>&1 | tee -a /tmp/simpletest-result.txt
 done
 
 grep -E -i "([1-9]+ fail)|(Fatal error)|([1-9]+ exception)|([0-9]+0 fail)|([0-9]+0 exception)" /tmp/simpletest-result.txt && exit 1
