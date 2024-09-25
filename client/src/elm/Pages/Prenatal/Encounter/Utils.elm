@@ -488,38 +488,6 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
             getLastEncounterMeasurements currentDate isChw assembled
     in
     case diagnosis of
-        DiagnosisRhNegative ->
-            let
-                rhesusByLabTest =
-                    List.reverse assembled.nursePreviousEncountersData
-                        |> List.filterMap (.measurements >> .bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus)
-                        |> List.head
-            in
-            case rhesusByLabTest of
-                -- Rhesus was recorded at lab test.
-                Just rhesus ->
-                    case rhesus of
-                        RhesusNegative ->
-                            Just (transAlert DiagnosisRhNegative)
-
-                        RhesusPositive ->
-                            Nothing
-
-                -- Rhesus was not recorded at lab test. Trying to check using legacy method.
-                -- If we have negative RH result recorded, we view it. If not, viewing 'Unknown'.
-                Nothing ->
-                    let
-                        negativeByObstetricHistory =
-                            getMeasurementValueFunc firstNurseEncounterMeasurements.obstetricHistoryStep2
-                                |> Maybe.map (.obstetricHistory >> EverySet.member Backend.Measurement.Model.RhNegative)
-                                |> Maybe.withDefault False
-                    in
-                    if negativeByObstetricHistory then
-                        Just (transAlert DiagnosisRhNegative)
-
-                    else
-                        Just <| translate language Translate.RHFactorUnknown
-
         DiagnosisModerateUnderweight ->
             let
                 severeUnderweight =
