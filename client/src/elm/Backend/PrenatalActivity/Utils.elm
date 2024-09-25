@@ -424,36 +424,6 @@ generateRiskFactorAlertData language currentDate measurements factor =
             trans (Translate.RiskFactorAlert alert)
     in
     case factor of
-        FactorNumberOfCSections ->
-            measurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .previousDelivery
-                        in
-                        if EverySet.member Backend.Measurement.Model.CSectionInPast signs then
-                            Just (transAlert factor)
-
-                        else
-                            Nothing
-                    )
-
-        FactorCSectionInPreviousDelivery ->
-            measurements.obstetricHistoryStep2
-                |> Maybe.andThen
-                    (\measurement ->
-                        let
-                            signs =
-                                Tuple.second measurement |> .value |> .previousDelivery
-                        in
-                        if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery signs then
-                            Just (transAlert factor)
-
-                        else
-                            Nothing
-                    )
-
         FactorCSectionReason ->
             getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.andThen
@@ -671,6 +641,9 @@ generateRiskFactorAlertData language currentDate measurements factor =
                         else
                             Nothing
                     )
+
+        _ ->
+            Nothing
 
 
 getEncounterTrimesterData : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester
