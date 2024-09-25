@@ -762,9 +762,6 @@ type alias ObstetricFormSecondStep =
     , cSectionReason : Maybe CSectionReason
     , cSectionReasonDirty : Bool
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
-    , successiveAbortions : Maybe Bool
-    , successivePrematureDeliveries : Maybe Bool
-    , stillbornPreviousDelivery : Maybe Bool
     , babyDiedOnDayOfBirthPreviousDelivery : Maybe Bool
     , partialPlacentaPreviousDelivery : Maybe Bool
     , severeHemorrhagingPreviousDelivery : Maybe Bool
@@ -784,9 +781,6 @@ emptyObstetricFormSecondStep =
     , cSectionReason = Nothing
     , cSectionReasonDirty = False
     , previousDeliveryPeriod = Nothing
-    , successiveAbortions = Nothing
-    , successivePrematureDeliveries = Nothing
-    , stillbornPreviousDelivery = Nothing
     , babyDiedOnDayOfBirthPreviousDelivery = Nothing
     , partialPlacentaPreviousDelivery = Nothing
     , severeHemorrhagingPreviousDelivery = Nothing
