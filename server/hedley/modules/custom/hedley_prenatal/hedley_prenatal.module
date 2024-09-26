@@ -6,3 +6,60 @@
  */
 
 include_once 'hedley_prenatal.features.inc';
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Migrates data from field_obstetric_history and field_obstetric_history
+ * into field_obstetric_history_step2.
+ * This logic will need to remain a couple of months, until al devices
+ * update the APP and upload their content. Can be removed around Jan 2025.
+ */
+function hedley_prenatal_node_presave($node) {
+  if ($node->type != 'obstetric_history_step2') {
+    return;
+  }
+
+  if (empty($node->field_obstetric_history[LANGUAGE_NONE])) {
+    // This is sign that we have already migrated data to
+    // field_obstetric_history_step2, so no further action is needed.
+    return;
+  }
+
+  $migrated_values = [];
+  $obstetric_history_migration = [
+    'preeclampsia-previous-pregnancy',
+    'gestational-diabetes-previous-pregnancy',
+    'incomplete-cervix-previous-pregnancy',
+  ];
+
+  foreach ($node->field_obstetric_history[LANGUAGE_NONE] as $item) {
+    if (in_array($item['value'], $obstetric_history_migration)) {
+      $migrated_values[] = $item;
+    }
+  }
+  $node->field_obstetric_history[LANGUAGE_NONE] = [];
+
+  $previous_delivery_migration = [
+    'baby-died-on-day-of-birth-previous-delivery',
+    'partial-placenta-previous-delivery',
+    'severe-hemorrhaging-previous-delivery',
+    'convulsions-previous-delivery',
+    'convulsions-and-unconscious-previous-delivery',
+  ];
+
+  foreach ($node->field_previous_delivery[LANGUAGE_NONE] as $index => $item) {
+    if (in_array($item['value'], $previous_delivery_migration)) {
+      $migrated_values[] = $item;
+      unset($node->field_previous_delivery[LANGUAGE_NONE][$index]);
+    }
+  }
+  if (empty($node->field_previous_delivery[LANGUAGE_NONE])) {
+    $node->field_previous_delivery[LANGUAGE_NONE][0]['value'] = 'none';
+  }
+
+  if (empty($migrated_values)) {
+    $migrated_values[] = ['value' => 'none'];
+  }
+  $node->field_obstetric_history_step2[LANGUAGE_NONE] = $migrated_values;
+}
