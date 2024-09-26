@@ -4114,9 +4114,6 @@ obstetricHistoryStep2FormWithDefault form saved =
                         (Maybe.map EverySet.toList value.cSectionReason |> Maybe.andThen List.head)
                 , cSectionReasonDirty = form.cSectionReasonDirty
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
-                , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
-                , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
-                , stillbornPreviousDelivery = or form.stillbornPreviousDelivery (EverySet.member StillbornPreviousDelivery value.previousDelivery |> Just)
                 , babyDiedOnDayOfBirthPreviousDelivery = or form.babyDiedOnDayOfBirthPreviousDelivery (EverySet.member BabyDiedOnDayOfBirthPreviousDelivery value.previousDelivery |> Just)
                 , partialPlacentaPreviousDelivery = or form.partialPlacentaPreviousDelivery (EverySet.member PartialPlacentaPreviousDelivery value.previousDelivery |> Just)
                 , severeHemorrhagingPreviousDelivery = or form.severeHemorrhagingPreviousDelivery (EverySet.member SevereHemorrhagingPreviousDelivery value.previousDelivery |> Just)
@@ -4141,7 +4138,6 @@ toObstetricHistoryStep2Value form =
         previousDeliverySet =
             [ Maybe.map (ifTrue CSectionInPast) form.cSectionInPast
             , ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
-            , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
             , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
             , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
             , Maybe.map (ifTrue SevereHemorrhagingPreviousDelivery) form.severeHemorrhagingPreviousDelivery
@@ -4152,9 +4148,7 @@ toObstetricHistoryStep2Value form =
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPreviousDeliverySign)
 
         obstetricHistorySet =
-            [ Maybe.map (ifTrue SuccessiveAbortions) form.successiveAbortions
-            , Maybe.map (ifTrue SuccessivePrematureDeliveries) form.successivePrematureDeliveries
-            , Maybe.map (ifTrue PreeclampsiaPreviousPregnancy) form.preeclampsiaPreviousPregnancy
+            [ Maybe.map (ifTrue PreeclampsiaPreviousPregnancy) form.preeclampsiaPreviousPregnancy
             , Maybe.map (ifTrue GestationalDiabetesPreviousPregnancy) form.gestationalDiabetesPreviousPregnancy
             , Maybe.map (ifTrue IncompleteCervixPreviousPregnancy) form.incompleteCervixPreviousPregnancy
             ]

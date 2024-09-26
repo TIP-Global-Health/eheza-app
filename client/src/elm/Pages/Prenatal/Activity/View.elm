@@ -2822,15 +2822,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             , maybeToBoolTask form.cSectionInPast :: derivedTasks
             )
 
-        successiveAbortionsUpdateFunc value form_ =
-            { form_ | successiveAbortions = Just value }
-
-        successivePrematureDeliveriesUpdateFunc value form_ =
-            { form_ | successivePrematureDeliveries = Just value }
-
-        stillbornPreviousDeliveryUpdateFunc value form_ =
-            { form_ | stillbornPreviousDelivery = Just value }
-
         babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc value form_ =
             { form_ | babyDiedOnDayOfBirthPreviousDelivery = Just value }
 
@@ -2873,42 +2864,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
       ]
         ++ cSectionsHtml
         ++ [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.successiveAbortions False ]
-                ]
-           , viewBoolInput
-                language
-                form.successiveAbortions
-                (SetOBBoolInput successiveAbortionsUpdateFunc)
-                "successive-abortions"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.SuccessivePrematureDeliveries ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.successivePrematureDeliveries False ]
-                ]
-           , viewBoolInput
-                language
-                form.successivePrematureDeliveries
-                (SetOBBoolInput successivePrematureDeliveriesUpdateFunc)
-                "successive-primature-deliveries"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.StillbornPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.stillbornPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.stillbornPreviousDelivery
-                (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
-                "stillborn-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
                 [ div [ class "twelve wide column" ]
                     [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
                 , div [ class "four wide column" ]
@@ -3007,9 +2962,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
            ]
     , cSectionsTasks
         ++ [ maybeToBoolTask form.previousDeliveryPeriod
-           , form.successiveAbortions
-           , form.successivePrematureDeliveries
-           , form.stillbornPreviousDelivery
            , form.babyDiedOnDayOfBirthPreviousDelivery
            , form.partialPlacentaPreviousDelivery
            , form.severeHemorrhagingPreviousDelivery
