@@ -53,6 +53,9 @@ function hedley_prenatal_node_presave($node) {
       $migrated_values[] = $item;
       unset($node->field_previous_delivery[LANGUAGE_NONE][$index]);
     }
+    elseif ($item['value'] == 'stillborn-previous-delivery') {
+      unset($node->field_previous_delivery[LANGUAGE_NONE][$index]);
+    }
   }
   if (empty($node->field_previous_delivery[LANGUAGE_NONE])) {
     $node->field_previous_delivery[LANGUAGE_NONE][0]['value'] = 'none';
