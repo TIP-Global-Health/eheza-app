@@ -1566,6 +1566,39 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_obstetric_history_step2'.
+  $field_bases['field_obstetric_history_step2'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_obstetric_history_step2',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
+        'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
+        'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
+        'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
+        'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
+        'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
+        'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_partner_hiv_testing'.
   $field_bases['field_partner_hiv_testing'] = array(
     'active' => 1,
