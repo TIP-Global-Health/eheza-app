@@ -20402,18 +20402,6 @@ translationSet trans =
 
         RiskFactorAlert factor ->
             case factor of
-                FactorNumberOfCSections ->
-                    { english = "C-section in the past"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                FactorCSectionInPreviousDelivery ->
-                    { english = "C-section in previous delivery"
-                    , kinyarwanda = Just "Yarabazwe ku nda ishize"
-                    , kirundi = Just "Ugukorwa mu kwibaruka guheruka"
-                    }
-
                 FactorCSectionReason ->
                     { english = "C-section in previous delivery due to"
                     , kinyarwanda = Just "Ubushize yabazwe abyara kubera"
