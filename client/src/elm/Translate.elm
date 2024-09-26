@@ -13179,6 +13179,10 @@ translationSet trans =
                 NoObstetricHistoryStep2Sign ->
                     translationSet NoneOfTheAbove
 
+
+                MigrateObstetricHistoryStep2Sign ->
+                    translationSet EmptyString
+
         ObstetricHistorySignsReviewQuestion ->
             { english = "Has the patient ever experienced these conditions during any previous pregnancy"
             , kinyarwanda = Nothing

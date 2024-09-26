@@ -842,6 +842,7 @@ type ObstetricHistoryStep2Sign
     | ObstetricHistoryConvulsionsPreviousDelivery
     | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
     | NoObstetricHistoryStep2Sign
+    | MigrateObstetricHistoryStep2Sign
 
 
 type alias ObstetricHistoryStep2 =

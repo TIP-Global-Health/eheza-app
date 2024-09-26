@@ -2408,7 +2408,9 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
-        |> required "obstetric_history_step2" (decodeEverySet decodeObstetricHistoryStep2Sign)
+        |> optional "obstetric_history_step2"
+            (decodeEverySet decodeObstetricHistoryStep2Sign)
+            (EverySet.singleton MigrateObstetricHistoryStep2Sign)
         |> decodePrenatalMeasurement
 
 

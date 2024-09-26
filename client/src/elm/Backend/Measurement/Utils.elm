@@ -4507,6 +4507,9 @@ obstetricHistoryStep2SignToString sign =
         NoObstetricHistoryStep2Sign ->
             "none"
 
+        MigrateObstetricHistoryStep2Sign ->
+            "migrate"
+
 
 obstetricHistoryStep2SignFromString : String -> Maybe ObstetricHistoryStep2Sign
 obstetricHistoryStep2SignFromString sign =
@@ -4537,6 +4540,9 @@ obstetricHistoryStep2SignFromString sign =
 
         "none" ->
             Just NoObstetricHistoryStep2Sign
+
+        "migrate" ->
+            Just MigrateObstetricHistoryStep2Sign
 
         _ ->
             Nothing
