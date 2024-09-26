@@ -2821,30 +2821,6 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 ++ derivedHtml
             , maybeToBoolTask form.cSectionInPast :: derivedTasks
             )
-
-        babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc value form_ =
-            { form_ | babyDiedOnDayOfBirthPreviousDelivery = Just value }
-
-        partialPlacentaPreviousDeliveryUpdateFunc value form_ =
-            { form_ | partialPlacentaPreviousDelivery = Just value }
-
-        severeHemorrhagingPreviousDeliveryUpdateFunc value form_ =
-            { form_ | severeHemorrhagingPreviousDelivery = Just value }
-
-        preeclampsiaPreviousPregnancyUpdateFunc value form_ =
-            { form_ | preeclampsiaPreviousPregnancy = Just value }
-
-        convulsionsPreviousDeliveryUpdateFunc value form_ =
-            { form_ | convulsionsPreviousDelivery = Just value }
-
-        convulsionsAndUnconsciousPreviousDeliveryUpdateFunc value form_ =
-            { form_ | convulsionsAndUnconsciousPreviousDelivery = Just value }
-
-        gestationalDiabetesPreviousPregnancyUpdateFunc value form_ =
-            { form_ | gestationalDiabetesPreviousPregnancy = Just value }
-
-        incompleteCervixPreviousPregnancyUpdateFunc value form_ =
-            { form_ | incompleteCervixPreviousPregnancy = Just value }
     in
     ( [ div [ class "ui grid" ]
             [ div [ class "twelve wide column" ]
@@ -2863,114 +2839,27 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             Translate.PreviousDeliveryPeriods
       ]
         ++ cSectionsHtml
-        ++ [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.babyDiedOnDayOfBirthPreviousDelivery False ]
+        ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
+           , viewCheckBoxMultipleSelectInput language
+                [ ObstetricHistoryPreeclampsiaPreviousPregnancy
+                , ObstetricHistoryGestationalDiabetesPreviousPregnancy
+                , ObstetricHistoryIncompleteCervixPreviousPregnancy
+                , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
                 ]
-           , viewBoolInput
-                language
-                form.babyDiedOnDayOfBirthPreviousDelivery
-                (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
-                "baby-died-on-day-off-birth-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.PartialPlacentaPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.partialPlacentaPreviousDelivery False ]
+                [ ObstetricHistoryPartialPlacentaPreviousDelivery
+                , ObstetricHistorySevereHemorrhagingPreviousDelivery
+                , ObstetricHistoryConvulsionsPreviousDelivery
+                , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
                 ]
-           , viewBoolInput
-                language
-                form.partialPlacentaPreviousDelivery
-                (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
-                "partial-placenta-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.SevereHemorrhagingPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.severeHemorrhagingPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.severeHemorrhagingPreviousDelivery
-                (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
-                "severe-hemorrhaging-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.PreeclampsiaPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.preeclampsiaPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.preeclampsiaPreviousPregnancy
-                (SetOBBoolInput preeclampsiaPreviousPregnancyUpdateFunc)
-                "preeclampsia-previous-pregnancy"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.ConvulsionsPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.convulsionsPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.convulsionsPreviousDelivery
-                (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
-                "convulsions-previous-pelivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.convulsionsAndUnconsciousPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.convulsionsAndUnconsciousPreviousDelivery
-                (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
-                "convulsions-and-unconscious-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.GestationalDiabetesPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.gestationalDiabetesPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.gestationalDiabetesPreviousPregnancy
-                (SetOBBoolInput gestationalDiabetesPreviousPregnancyUpdateFunc)
-                "gestatipnal-diabetes-previous-pregnancy"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.IncompleteCervixPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.incompleteCervixPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.incompleteCervixPreviousPregnancy
-                (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
-                "incomplete-cervix-previous-pregnancy"
-                Nothing
+                (Maybe.withDefault [] form.signs)
+                (Just NoObstetricHistoryStep2Sign)
+                SetObstetricFormSecondStepSign
+                Translate.ObstetricHistoryStep2Sign
            ]
-    , cSectionsTasks
-        ++ [ maybeToBoolTask form.previousDeliveryPeriod
-           , form.babyDiedOnDayOfBirthPreviousDelivery
-           , form.partialPlacentaPreviousDelivery
-           , form.severeHemorrhagingPreviousDelivery
-           , form.preeclampsiaPreviousPregnancy
-           , form.convulsionsPreviousDelivery
-           , form.convulsionsAndUnconsciousPreviousDelivery
-           , form.gestationalDiabetesPreviousPregnancy
-           , form.incompleteCervixPreviousPregnancy
-           ]
+    , [ maybeToBoolTask form.previousDeliveryPeriod
+      , maybeToBoolTask form.signs
+      ]
+        ++ cSectionsTasks
     )
 
 

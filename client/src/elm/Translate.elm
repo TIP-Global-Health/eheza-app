@@ -1103,6 +1103,7 @@ type TranslationId
     | NoReferralRecorded
     | Normal
     | NoChildrenRegisteredInTheSystem
+    | NoneOfTheAbove
     | NoneOfThese
     | NotAvailable
     | NotFollowingRecommendationQuestion
@@ -1137,6 +1138,8 @@ type TranslationId
     | ObstetricalDiagnosis
     | ObstetricalDiagnosisAlert ObstetricalDiagnosis
     | ObstetricHistory
+    | ObstetricHistoryStep2Sign ObstetricHistoryStep2Sign
+    | ObstetricHistorySignsReviewQuestion
     | OK
     | On
     | OneVisit
@@ -1207,6 +1210,7 @@ type TranslationId
     | PlaceholderEnterParticipantName
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
+    | PlacentaPrevia
     | PleaseCall
     | PleaseContact
     | PleaseSync
@@ -2083,10 +2087,7 @@ translationSet trans =
                     }
 
                 NoAcuteFindingsGeneralSigns ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         AcuteFindingsRespiratorySign sign ->
             case sign of
@@ -2115,10 +2116,7 @@ translationSet trans =
                     }
 
                 NoAcuteFindingsRespiratorySigns ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         AcuteIllness ->
             { english = "Acute Illness"
@@ -2186,10 +2184,7 @@ translationSet trans =
                     }
 
                 NoAcuteIllnessDangerSign ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         AcuteIllnessDiagnosis diagnosis ->
             case diagnosis of
@@ -3054,10 +3049,7 @@ translationSet trans =
                     }
 
                 NoAdverseEvent ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         AdverseEvents ->
             { english = "Adverse Events"
@@ -12599,6 +12591,12 @@ translationSet trans =
             , kirundi = Just "Nta bana biyandikishije muri ubu buryo bugezweho (muri sisiteme)"
             }
 
+        NoneOfTheAbove ->
+            { english = "None of the above"
+            , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
+            , kirundi = Just "Nta nimwe muri izo ziri hejuru"
+            }
+
         NoneOfThese ->
             { english = "None of these"
             , kinyarwanda = Just "Nta na kimwe"
@@ -13134,6 +13132,59 @@ translationSet trans =
             , kirundi = Just "Akahise k'ivyara"
             }
 
+        ObstetricHistoryStep2Sign sign ->
+            case sign of
+                ObstetricHistoryPreeclampsiaPreviousPregnancy ->
+                    translationSet Preeclampsia
+
+                ObstetricHistoryGestationalDiabetesPreviousPregnancy ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryIncompleteCervixPreviousPregnancy ->
+                    { english = "Incompetent cervix"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery ->
+                    { english = "Newborn death within 24 hours after delivery"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryPartialPlacentaPreviousDelivery ->
+                    translationSet PlacentaPrevia
+
+                ObstetricHistorySevereHemorrhagingPreviousDelivery ->
+                    { english = "Severe Hemorrhaging (>500 ml)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryConvulsionsPreviousDelivery ->
+                    { english = "Seizures (Convulsions)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
+                    { english = "Seizures (Convulsions) with loss of consciousness"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoObstetricHistoryStep2Sign ->
+                    translationSet NoneOfTheAbove
+
+        ObstetricHistorySignsReviewQuestion ->
+            { english = "Has the patient ever experienced these conditions during any previous pregnancy"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         OK ->
             { english = "OK"
             , kinyarwanda = Just "Nibyo, yego"
@@ -13665,6 +13716,12 @@ translationSet trans =
             { english = "Search contact name here"
             , kinyarwanda = Just "Shakisha izina ry'uwo bahuye"
             , kirundi = Just "Rondera izina ry'umuntu aha"
+            }
+
+        PlacentaPrevia ->
+            { english = "Placenta Previa"
+            , kinyarwanda = Just "Ingobyi iri hasi ku nkondo y'umura"
+            , kirundi = Just "Igitereko cugaye isohokera"
             }
 
         PleaseCall ->
@@ -14285,10 +14342,7 @@ translationSet trans =
                     }
 
                 DiagnosisPlacentaPrevia ->
-                    { english = "Placenta Previa"
-                    , kinyarwanda = Just "Ingobyi iri hasi ku nkondo y'umura"
-                    , kirundi = Just "Igitereko cugaye isohokera"
-                    }
+                    translationSet PlacentaPrevia
 
                 DiagnosisPlacentalAbruption ->
                     { english = "Placental Abruption"
@@ -21481,10 +21535,7 @@ translationSet trans =
                     }
 
                 NoSymptomsGeneral ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         SymptomsGISign sign ->
             case sign of
@@ -21516,10 +21567,7 @@ translationSet trans =
                     translationSet VomitingLabel
 
                 NoSymptomsGI ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         SymptomsGISignAbbrev sign ->
             case sign of
@@ -21571,10 +21619,7 @@ translationSet trans =
                     }
 
                 NoSymptomsRespiratory ->
-                    { english = "None of the above"
-                    , kinyarwanda = Just "Nta na kimwe mu byavuzwe haruguru"
-                    , kirundi = Just "Nta nimwe muri izo ziri hejuru"
-                    }
+                    translationSet NoneOfTheAbove
 
         SymptomsTask task ->
             case task of
