@@ -11184,7 +11184,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_obstetric_history',
-    'label' => 'Obstetric History (Deprecated)',
+    'label' => 'Obstetric History (DEPRECATED)',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -11351,7 +11351,7 @@ function hedley_activity_field_default_field_instances() {
     ),
     'entity_type' => 'node',
     'field_name' => 'field_previous_delivery',
-    'label' => 'Previous Delivery',
+    'label' => 'Previous Delivery (Partially DEPRECATED)',
     'required' => 0,
     'settings' => array(
       'user_register_form' => FALSE,
@@ -15930,7 +15930,7 @@ function hedley_activity_field_default_field_instances() {
   t('Nutrition Assesment');
   t('Nutrition Encounter');
   t('Nutrition Signs');
-  t('Obstetric History (Deprecated)');
+  t('Obstetric History (DEPRECATED)');
   t('Obstetric History Step2');
   t('Partner HIV Testing [Discarded]');
   t('Person');
@@ -15941,7 +15941,7 @@ function hedley_activity_field_default_field_instances() {
   t('PreTerm Pregnancy');
   t('Prenatal Encounter');
   t('Prenatal Health Education');
-  t('Previous Delivery');
+  t('Previous Delivery (Partially DEPRECATED)');
   t('Previous Delivery Period');
   t('Reason For Not Providing Education');
   t('Reason for Not Sending to HC');
