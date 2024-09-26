@@ -12618,7 +12618,7 @@ translationSet trans =
             }
 
         NotIndicated ->
-            { english = "Not indicated"
+            { english = "Not Indicated"
             , kinyarwanda = Just "Ikizamini nticyasabwe"
             , kirundi = Just "Ntivyerekanywe"
             }
