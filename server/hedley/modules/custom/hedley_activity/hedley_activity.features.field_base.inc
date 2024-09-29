@@ -1592,6 +1592,7 @@ function hedley_activity_field_default_field_bases() {
         'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
         'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
         'none' => 'None of these',
+        'migrate' => 'Migrate',
       ),
       'allowed_values_function' => '',
     ),

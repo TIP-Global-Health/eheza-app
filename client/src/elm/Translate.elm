@@ -13179,7 +13179,6 @@ translationSet trans =
                 NoObstetricHistoryStep2Sign ->
                     translationSet NoneOfTheAbove
 
-
                 MigrateObstetricHistoryStep2Sign ->
                     translationSet EmptyString
 
