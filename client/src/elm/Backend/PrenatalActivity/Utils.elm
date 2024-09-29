@@ -227,9 +227,9 @@ generateHighRiskAlertData language measurements factor =
                     (\measurement ->
                         let
                             signs =
-                                Tuple.second measurement |> .value |> .previousDelivery
+                                Tuple.second measurement |> .value |> .signs
                         in
-                        if EverySet.member Backend.Measurement.Model.ConvulsionsAndUnconsciousPreviousDelivery signs then
+                        if EverySet.member Backend.Measurement.Model.ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery signs then
                             Just (transAlert factor)
 
                         else
@@ -242,9 +242,9 @@ generateHighRiskAlertData language measurements factor =
                     (\measurement ->
                         let
                             signs =
-                                Tuple.second measurement |> .value |> .previousDelivery
+                                Tuple.second measurement |> .value |> .signs
                         in
-                        if EverySet.member Backend.Measurement.Model.ConvulsionsPreviousDelivery signs then
+                        if EverySet.member Backend.Measurement.Model.ObstetricHistoryConvulsionsPreviousDelivery signs then
                             Just (transAlert factor)
 
                         else
