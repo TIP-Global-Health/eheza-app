@@ -10454,23 +10454,28 @@ translationSet trans =
 
         MedicalHistorySign sign ->
             case sign of
-                Asthma ->
+                Backend.Measurement.Model.Asthma ->
                     translationSet Asthma
 
-                CardiacDisease ->
+                Backend.Measurement.Model.CardiacDisease ->
                     translationSet CardiacDisease
 
-                Diabetes ->
+                Backend.Measurement.Model.Diabetes ->
                     translationSet Diabetes
 
-                HypertensionBeforePregnancy ->
+                Backend.Measurement.Model.HypertensionBeforePregnancy ->
                     translationSet Hypertension
 
-                RenalDisease translationSet ->
-                    RenalDisease
+                Backend.Measurement.Model.RenalDisease ->
+                    translationSet RenalDisease
 
                 NoMedicalHistorySigns ->
                     translationSet NoneOfTheAbove
+
+                -- Other signs do not require translation as they are
+                -- depricated, and will be removed around Jan 2025.
+                _ ->
+                    translationSet EmptyString
 
         Medication ->
             { english = "Medication"
