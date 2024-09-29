@@ -13028,8 +13028,6 @@ translationSet trans =
 
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
-
-
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
                     , kinyarwanda = Just "Ibiro bike bidakabije ugendeye ku myaka"
