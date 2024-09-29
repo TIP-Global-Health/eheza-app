@@ -73,8 +73,7 @@ type RecurringHighSeverityAlert
 
 
 type ObstetricalDiagnosis
-    = DiagnosisRhNegative
-    | DiagnosisModerateUnderweight
+    = DiagnosisModerateUnderweight
     | DiagnosisSevereUnderweight
     | DiagnosisOverweight
     | DiagnosisObese
@@ -146,8 +145,7 @@ allRiskFactors =
 
 allObstetricalDiagnoses : List ObstetricalDiagnosis
 allObstetricalDiagnoses =
-    [ DiagnosisRhNegative
-    , DiagnosisModerateUnderweight
+    [ DiagnosisModerateUnderweight
     , DiagnosisSevereUnderweight
     , DiagnosisOverweight
     , DiagnosisObese

@@ -13059,8 +13059,7 @@ translationSet trans =
 
         ObstetricalDiagnosisAlert diagnosis ->
             case diagnosis of
-                DiagnosisRhNegative ->
-                    translationSet RHFactorNegative
+
 
                 DiagnosisModerateUnderweight ->
                     { english = "Moderate underweight"
@@ -14483,10 +14482,7 @@ translationSet trans =
                     translationSet <| PrenatalDiagnosis Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
 
                 DiagnosisRhesusNegativeInitialPhase ->
-                    { english = "Rhesus Negative"
-                    , kinyarwanda = Just "Rezisi negatifu"
-                    , kirundi = Just "Rhesus Négatif"
-                    }
+                    translationSet RHFactorNegative
 
                 DiagnosisRhesusNegativeRecurrentPhase ->
                     translationSet <| PrenatalDiagnosis DiagnosisRhesusNegativeInitialPhase
@@ -14974,10 +14970,7 @@ translationSet trans =
                     translationSet <| PrenatalDiagnosisForProgressReport Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
 
                 DiagnosisRhesusNegativeInitialPhase ->
-                    { english = "Rhesus Negative"
-                    , kinyarwanda = Just "Rezisi negatifu"
-                    , kirundi = Just "Rhesus Négatif"
-                    }
+                    translationSet RHFactorNegative
 
                 DiagnosisRhesusNegativeRecurrentPhase ->
                     translationSet <| PrenatalDiagnosisForProgressReport DiagnosisRhesusNegativeInitialPhase
