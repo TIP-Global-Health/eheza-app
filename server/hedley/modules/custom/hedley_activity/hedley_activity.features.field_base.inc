@@ -1039,34 +1039,6 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
-  // Exported field_base: 'field_infectious_disease_history'.
-  $field_bases['field_infectious_disease_history'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_infectious_disease_history',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'hiv' => 'HIV',
-        'tuberculosis-past' => 'Tuberculosis in the past',
-        'tuberculosis-present' => 'Tuberculosis in the present',
-        'none' => 'None of these',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
   // Exported field_base: 'field_lactation_signs'.
   $field_bases['field_lactation_signs'] = array(
     'active' => 1,
@@ -1302,35 +1274,6 @@ function hedley_activity_field_default_field_bases() {
         'folic-acid' => 'Folic Acid',
         'vitamin-a' => 'Vitamin A',
         'none' => 'None',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_mental_health_issues'.
-  $field_bases['field_mental_health_issues'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_mental_health_issues',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'general-depression' => 'GeneralDepression',
-        'perinatal-depression' => 'PerinatalDepression',
-        'schizophrenia' => 'Schizophrenia',
-        'trauma' => 'Trauma',
-        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
@@ -1703,34 +1646,6 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'initial' => 'Initial',
         'recurrent' => 'Recurrent',
-      ),
-      'allowed_values_function' => '',
-    ),
-    'translatable' => 0,
-    'type' => 'list_text',
-  );
-
-  // Exported field_base: 'field_physical_condition_history'.
-  $field_bases['field_physical_condition_history'] = array(
-    'active' => 1,
-    'cardinality' => -1,
-    'deleted' => 0,
-    'entity_id_type' => NULL,
-    'entity_types' => array(),
-    'field_name' => 'field_physical_condition_history',
-    'indexes' => array(
-      'value' => array(
-        0 => 'value',
-      ),
-    ),
-    'locked' => 0,
-    'module' => 'list',
-    'settings' => array(
-      'allowed_values' => array(
-        'uterine-myonma-current' => 'Uterine Myoma Current',
-        'uterine-myonma-surgical' => 'Uterine Myoma Surgical Resection',
-        'bowed-legs' => 'Bowed Legs',
-        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),

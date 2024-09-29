@@ -6049,45 +6049,7 @@ function hedley_activity_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 3,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-medical_history-field_infectious_disease_history'.
-  $field_instances['node-medical_history-field_infectious_disease_history'] = array(
-    'bundle' => 'medical_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 8,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_infectious_disease_history',
-    'label' => 'Infectious Disease History',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 9,
+      'weight' => 4,
     ),
   );
 
@@ -6124,44 +6086,7 @@ function hedley_activity_field_default_field_instances() {
       'module' => 'options',
       'settings' => array(),
       'type' => 'options_buttons',
-      'weight' => 7,
-    ),
-  );
-
-  // Exported field_instance: 'node-medical_history-field_mental_health_issues'.
-  $field_instances['node-medical_history-field_mental_health_issues'] = array(
-    'bundle' => 'medical_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 9,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_mental_health_issues',
-    'label' => 'Mental Health Issues',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 10,
+      'weight' => -2,
     ),
   );
 
@@ -6251,45 +6176,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 1,
-    ),
-  );
-
-  // Exported field_instance:
-  // 'node-medical_history-field_physical_condition_history'.
-  $field_instances['node-medical_history-field_physical_condition_history'] = array(
-    'bundle' => 'medical_history',
-    'default_value' => NULL,
-    'deleted' => 0,
-    'description' => '',
-    'display' => array(
-      'default' => array(
-        'label' => 'above',
-        'module' => 'list',
-        'settings' => array(),
-        'type' => 'list_default',
-        'weight' => 7,
-      ),
-      'teaser' => array(
-        'label' => 'above',
-        'settings' => array(),
-        'type' => 'hidden',
-        'weight' => 0,
-      ),
-    ),
-    'entity_type' => 'node',
-    'field_name' => 'field_physical_condition_history',
-    'label' => 'Physical Condition History',
-    'required' => 0,
-    'settings' => array(
-      'user_register_form' => FALSE,
-    ),
-    'widget' => array(
-      'active' => 1,
-      'module' => 'options',
-      'settings' => array(),
-      'type' => 'options_buttons',
-      'weight' => 8,
+      'weight' => -3,
     ),
   );
 
@@ -6379,7 +6266,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 6,
+      'weight' => 8,
     ),
   );
 
@@ -6419,7 +6306,7 @@ function hedley_activity_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 5,
+      'weight' => 6,
     ),
   );
 
@@ -16021,7 +15908,6 @@ function hedley_activity_field_default_field_instances() {
   t('Heart rate');
   t('Height');
   t('Hypertension Treatment');
-  t('Infectious Disease History');
   t('Lactation signs');
   t('Last Menstrual Period');
   t('Leave blank -- it will be entered automatically.');
@@ -16035,7 +15921,6 @@ function hedley_activity_field_default_field_instances() {
   t('Malaria Treatment');
   t('Medical History');
   t('Medication');
-  t('Mental Health Issues');
   t('Mother');
   t('NCDA Signs');
   t('Neck');
@@ -16051,7 +15936,6 @@ function hedley_activity_field_default_field_instances() {
   t('Person');
   t('Phase Recorded');
   t('Photo');
-  t('Physical Condition History');
   t('Postpartum child');
   t('Postpartum mother');
   t('PreTerm Pregnancy');
