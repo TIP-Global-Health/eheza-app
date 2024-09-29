@@ -1322,47 +1322,6 @@ encodeLmpDateNotConfidentReason =
     lmpDateNotConfidentReasonToString >> string
 
 
-encodeMedicalHistorySign : MedicalHistorySign -> Value
-encodeMedicalHistorySign sign =
-    string <|
-        case sign of
-            UterineMyoma ->
-                "uterine-myonma"
-
-            Diabetes ->
-                "diabetes"
-
-            CardiacDisease ->
-                "cardiac-disease"
-
-            RenalDisease ->
-                "renal-disease"
-
-            HypertensionBeforePregnancy ->
-                "hypertension-before-pregnancy"
-
-            TuberculosisPast ->
-                "tuberculosis-past"
-
-            TuberculosisPresent ->
-                "tuberculosis-present"
-
-            Asthma ->
-                "asthma"
-
-            BowedLegs ->
-                "bowed-legs"
-
-            HIV ->
-                "hiv"
-
-            MentalHealthHistory ->
-                "mental-health-history"
-
-            NoMedicalHistorySigns ->
-                "none"
-
-
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
 encodeMedicalHistory =
     encodePrenatalMeasurement encodeMedicalHistoryValue
@@ -1374,6 +1333,26 @@ encodeMedicalHistoryValue value =
     , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
+
+
+encodeMedicalHistorySign : MedicalHistorySign -> Value
+encodeMedicalHistorySign =
+    medicalHistorySignToString >> string
+
+
+encodeMedicalHistoryPhysicalCondition : MedicalHistoryPhysicalCondition -> Value
+encodeMedicalHistoryPhysicalCondition =
+    medicalHistoryPhysicalConditionToString >> string
+
+
+encodeMedicalHistoryInfectiousDisease : MedicalHistoryInfectiousDisease -> Value
+encodeMedicalHistoryInfectiousDisease =
+    medicalHistoryInfectiousDiseaseToString >> string
+
+
+encodeMedicalHistoryMentalHealthIssue : MedicalHistoryMentalHealthIssue -> Value
+encodeMedicalHistoryMentalHealthIssue =
+    medicalHistoryMentalHealthIssueToString >> string
 
 
 encodeMedicationSign : MedicationSign -> Value

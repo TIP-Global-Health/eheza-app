@@ -4546,3 +4546,197 @@ obstetricHistoryStep2SignFromString sign =
 
         _ ->
             Nothing
+
+
+medicalHistorySignToString : MedicalHistorySign -> String
+medicalHistorySignToString sign =
+    case sign of
+        UterineMyoma ->
+            "uterine-myonma"
+
+        Diabetes ->
+            "diabetes"
+
+        CardiacDisease ->
+            "cardiac-disease"
+
+        RenalDisease ->
+            "renal-disease"
+
+        HypertensionBeforePregnancy ->
+            "hypertension-before-pregnancy"
+
+        TuberculosisPast ->
+            "tuberculosis-past"
+
+        TuberculosisPresent ->
+            "tuberculosis-present"
+
+        Asthma ->
+            "asthma"
+
+        BowedLegs ->
+            "bowed-legs"
+
+        HIV ->
+            "hiv"
+
+        MentalHealthHistory ->
+            "mental-health-history"
+
+        NoMedicalHistorySigns ->
+            "none"
+
+
+medicalHistorySignFromString : String -> Maybe MedicalHistorySign
+medicalHistorySignFromString sign =
+    case sign of
+        "uterine-myonma" ->
+            Just UterineMyoma
+
+        "diabetes" ->
+            Just Diabetes
+
+        "cardiac-disease" ->
+            Just CardiacDisease
+
+        "renal-disease" ->
+            Just RenalDisease
+
+        "hypertension-before-pregnancy" ->
+            Just HypertensionBeforePregnancy
+
+        "tuberculosis-past" ->
+            Just TuberculosisPast
+
+        "tuberculosis-present" ->
+            Just TuberculosisPresent
+
+        "asthma" ->
+            Just Asthma
+
+        "bowed-legs" ->
+            Just BowedLegs
+
+        "hiv" ->
+            Just HIV
+
+        "mental-health-history" ->
+            Just MentalHealthHistory
+
+        "none" ->
+            Just NoMedicalHistorySigns
+
+        _ ->
+            Nothing
+
+
+medicalHistoryPhysicalConditionToString : MedicalHistoryPhysicalCondition -> String
+medicalHistoryPhysicalConditionToString sign =
+    case sign of
+        PhysicalConditionUterineMyomaCurrent ->
+            "uterine-myonma-current"
+
+        PhysicalConditionUterineMyomaSurgicalResection ->
+            "uterine-myonma-surgical"
+
+        PhysicalConditionUterineBowedLegs ->
+            "bowed-legs"
+
+        NoMedicalHistoryPhysicalCondition ->
+            "none"
+
+
+medicalHistoryPhysicalConditionFromString : String -> Maybe MedicalHistoryPhysicalCondition
+medicalHistoryPhysicalConditionFromString sign =
+    case sign of
+        "uterine-myonma-current" ->
+            Just PhysicalConditionUterineMyomaCurrent
+
+        "uterine-myonma-surgical" ->
+            Just PhysicalConditionUterineMyomaSurgicalResection
+
+        "bowed-legs" ->
+            Just PhysicalConditionUterineBowedLegs
+
+        "none" ->
+            Just NoMedicalHistoryPhysicalCondition
+
+        _ ->
+            Nothing
+
+
+medicalHistoryInfectiousDiseaseToString : MedicalHistoryInfectiousDisease -> String
+medicalHistoryInfectiousDiseaseToString sign =
+    case sign of
+        InfectiousDiseasesHIV ->
+            "hiv"
+
+        InfectiousDiseasesTuberculosisPast ->
+            "tuberculosis-past"
+
+        InfectiousDiseasesTuberculosisPresent ->
+            "tuberculosis-present"
+
+        NoMedicalHistoryInfectiousDiseases ->
+            "none"
+
+
+medicalHistoryInfectiousDiseaseFromString : String -> Maybe MedicalHistoryInfectiousDisease
+medicalHistoryInfectiousDiseaseFromString sign =
+    case sign of
+        "hiv" ->
+            Just InfectiousDiseasesHIV
+
+        "tuberculosis-past" ->
+            Just InfectiousDiseasesTuberculosisPast
+
+        "tuberculosis-present" ->
+            Just InfectiousDiseasesTuberculosisPresent
+
+        "none" ->
+            Just NoMedicalHistoryInfectiousDiseases
+
+        _ ->
+            Nothing
+
+
+medicalHistoryMentalHealthIssueToString : MedicalHistoryMentalHealthIssue -> String
+medicalHistoryMentalHealthIssueToString sign =
+    case sign of
+        MentalHealthIssueGeneralDepression ->
+            "general-depression"
+
+        MentalHealthIssuePerinatalDepression ->
+            "perinatal-depression"
+
+        MentalHealthIssueSchizophrenia ->
+            "schizophrenia"
+
+        MentalHealthIssueTrauma ->
+            "trauma"
+
+        NoMedicalHistoryMentalHealthIssue ->
+            "none"
+
+
+medicalHistoryMentalHealthIssueFromString : String -> Maybe MedicalHistoryMentalHealthIssue
+medicalHistoryMentalHealthIssueFromString sign =
+    case sign of
+        "general-depression" ->
+            Just MentalHealthIssueGeneralDepression
+
+        "perinatal-depression" ->
+            Just MentalHealthIssuePerinatalDepression
+
+        "schizophrenia" ->
+            Just MentalHealthIssueSchizophrenia
+
+        "trauma" ->
+            Just MentalHealthIssueTrauma
+
+        "none" ->
+            Just NoMedicalHistoryMentalHealthIssue
+
+        _ ->
+            Nothing

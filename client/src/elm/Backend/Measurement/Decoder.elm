@@ -1933,45 +1933,42 @@ decodeMedicalHistorySign =
     string
         |> andThen
             (\s ->
-                case s of
-                    "uterine-myonma" ->
-                        succeed UterineMyoma
+                medicalHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistorySign" |> fail)
+            )
 
-                    "diabetes" ->
-                        succeed Diabetes
 
-                    "cardiac-disease" ->
-                        succeed CardiacDisease
+decodeMedicalHistoryPhysicalCondition : Decoder MedicalHistoryPhysicalCondition
+decodeMedicalHistoryPhysicalCondition =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryPhysicalConditionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryPhysicalCondition" |> fail)
+            )
 
-                    "renal-disease" ->
-                        succeed RenalDisease
 
-                    "hypertension-before-pregnancy" ->
-                        succeed HypertensionBeforePregnancy
+decodeMedicalHistoryInfectiousDisease : Decoder MedicalHistoryInfectiousDisease
+decodeMedicalHistoryInfectiousDisease =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryInfectiousDiseaseFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryInfectiousDisease" |> fail)
+            )
 
-                    "tuberculosis-past" ->
-                        succeed TuberculosisPast
 
-                    "tuberculosis-present" ->
-                        succeed TuberculosisPresent
-
-                    "asthma" ->
-                        succeed Asthma
-
-                    "bowed-legs" ->
-                        succeed BowedLegs
-
-                    "hiv" ->
-                        succeed HIV
-
-                    "mental-health-history" ->
-                        succeed MentalHealthHistory
-
-                    "none" ->
-                        succeed NoMedicalHistorySigns
-
-                    _ ->
-                        fail <| s ++ " is not a recognized MedicalHistorySign"
+decodeMedicalHistoryMentalHealthIssue : Decoder MedicalHistoryMentalHealthIssue
+decodeMedicalHistoryMentalHealthIssue =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryMentalHealthIssueFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
             )
 
 
