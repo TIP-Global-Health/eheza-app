@@ -670,18 +670,41 @@ type alias LastMenstrualPeriod =
 
 
 type MedicalHistorySign
-    = UterineMyoma
-    | Diabetes
+    = Asthma
     | CardiacDisease
-    | RenalDisease
+    | Diabetes
     | HypertensionBeforePregnancy
+    | RenalDisease
+    | NoMedicalHistorySigns
+      -- @todo: Bellow signs are deprecated. Can be removed around January 2025.
+    | BowedLegs
+    | UterineMyoma
+    | HIV
     | TuberculosisPast
     | TuberculosisPresent
-    | Asthma
-    | BowedLegs
-    | HIV
     | MentalHealthHistory
-    | NoMedicalHistorySigns
+
+
+type MedicalHistoryPhysicalCondition
+    = PhysicalConditionUterineMyomaCurrent
+    | PhysicalConditionUterineMyomaSurgicalResection
+    | PhysicalConditionUterineBowedLegs
+    | NoMedicalHistoryPhysicalCondition
+
+
+type MedicalHistoryInfectiousDisease
+    = InfectiousDiseasesHIV
+    | InfectiousDiseasesTuberculosisPast
+    | InfectiousDiseasesTuberculosisPresent
+    | NoMedicalHistoryInfectiousDiseases
+
+
+type MedicalHistoryMentalHealthIssue
+    = MentalHealthIssueGeneralDepression
+    | MentalHealthIssuePerinatalDepression
+    | MentalHealthIssueSchizophrenia
+    | MentalHealthIssueTrauma
+    | NoMedicalHistoryMentalHealthIssue
 
 
 type alias MedicalHistory =
