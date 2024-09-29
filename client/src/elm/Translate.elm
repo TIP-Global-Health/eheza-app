@@ -964,6 +964,10 @@ type TranslationId
     | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
+    | MedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
+    | MedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
+    | MedicalHistorySign MedicalHistorySign
     | Medication
     | MedicationCausesSideEffectsQuestion
     | MedicationDistributionHelperAnemia
@@ -10353,10 +10357,7 @@ translationSet trans =
                     translationSet Diabetes
 
                 DiagnosisCardiacDisease ->
-                    { english = "Cardiac Disease"
-                    , kinyarwanda = Just "Indwara z'umutima"
-                    , kirundi = Just "Ingwara y'umutima"
-                    }
+                    translationSet CardiacDisease
 
                 DiagnosisRenalDisease ->
                     { english = "Renal Disease"
@@ -10374,16 +10375,10 @@ translationSet trans =
                     }
 
                 DiagnosisAsthma ->
-                    { english = "Asthma"
-                    , kinyarwanda = Just "Asthma (Agahema)"
-                    , kirundi = Just "Asima"
-                    }
+                    translationSet Asthma
 
                 DiagnosisBowedLegs ->
-                    { english = "Bowed Legs"
-                    , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
-                    , kirundi = Just "Amaguru y'ingonze"
-                    }
+                    translationSet BowedLegs
 
                 DiagnosisKnownHIV ->
                     translationSet HIV
@@ -10393,6 +10388,89 @@ translationSet trans =
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
                     , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
                     }
+
+        MedicalHistoryInfectiousDisease disease ->
+            case disease of
+                InfectiousDiseasesHIV ->
+                    translationSet HIV
+
+                InfectiousDiseasesTuberculosisPast ->
+                    translationSet TuberculosisPast
+
+                InfectiousDiseasesTuberculosisPresent ->
+                    translationSet TuberculosisPresent
+
+                NoMedicalHistoryInfectiousDiseases ->
+                    translationSet NoneOfTheAbove
+
+        MedicalHistoryMentalHealthIssue issue ->
+            case issue of
+                MentalHealthIssueGeneralDepression ->
+                    { english = "General Depression"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssuePerinatalDepression ->
+                    { english = "Perinatal Depression"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssueSchizophrenia ->
+                    { english = "Schizophrenia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssueTrauma ->
+                    { english = "Trauma"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoMedicalHistoryMentalHealthIssue ->
+                    translationSet NoneOfTheAbove
+
+        MedicalHistoryPhysicalCondition condition ->
+            case condition of
+                PhysicalConditionUterineMyomaCurrent ->
+                    { english = "Uterine Myoma Current"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PhysicalConditionUterineMyomaSurgicalResection ->
+                    { english = "Uterine Myoma Surgical Resection"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PhysicalConditionUterineBowedLegs ->
+                    translationSet BowedLegs
+
+                NoMedicalHistoryPhysicalCondition ->
+                    translationSet NoneOfTheAbove
+
+        MedicalHistorySign sign ->
+            case sign of
+                Asthma ->
+                    translationSet Asthma
+
+                CardiacDisease ->
+                    translationSet CardiacDisease
+
+                Diabetes ->
+                    translationSet Diabetes
+
+                HypertensionBeforePregnancy ->
+                    translationSet Hypertension
+
+                RenalDisease translationSet ->
+                    RenalDisease
+
+                NoMedicalHistorySigns ->
+                    translationSet NoneOfTheAbove
 
         Medication ->
             { english = "Medication"
