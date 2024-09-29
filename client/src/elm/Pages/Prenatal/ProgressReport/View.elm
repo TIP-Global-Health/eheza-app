@@ -36,14 +36,9 @@ import Backend.PrenatalActivity.Model
         , PrenatalRecurrentActivity(..)
         , allMedicalDiagnoses
         , allObstetricalDiagnoses
-        , allRiskFactors
         , allTrimesters
         )
-import Backend.PrenatalActivity.Utils
-    exposing
-        ( generateRiskFactorAlertData
-        , getEncounterTrimesterData
-        )
+import Backend.PrenatalActivity.Utils exposing (getEncounterTrimesterData)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
@@ -662,11 +657,7 @@ viewObstetricHistoryPane language currentDate measurements =
                 |> Maybe.withDefault []
 
         content =
-            List.filterMap
-                (generateRiskFactorAlertData language currentDate measurements)
-                allRiskFactors
-                |> List.append obsetricHistory
-                |> List.map (\alert -> li [] [ text alert ])
+            List.map (\alert -> li [] [ text alert ]) obsetricHistory
                 |> ul []
                 |> List.singleton
     in
