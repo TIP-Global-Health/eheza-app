@@ -2870,184 +2870,56 @@ medicalFormInputsAndTasks :
     -> MedicalHistoryForm
     -> ( List (Html Msg), List (Maybe Bool) )
 medicalFormInputsAndTasks language currentDate assembled form =
-    let
-        uterineMyomaUpdateFunc value form_ =
-            { form_ | uterineMyoma = Just value }
-
-        diabetesUpdateFunc value form_ =
-            { form_ | diabetes = Just value }
-
-        cardiacDiseaseUpdateFunc value form_ =
-            { form_ | cardiacDisease = Just value }
-
-        renalDiseaseUpdateFunc value form_ =
-            { form_ | renalDisease = Just value }
-
-        hypertensionBeforePregnancyUpdateFunc value form_ =
-            { form_ | hypertensionBeforePregnancy = Just value }
-
-        tuberculosisPastUpdateFunc value form_ =
-            { form_ | tuberculosisPast = Just value }
-
-        tuberculosisPresentUpdateFunc value form_ =
-            { form_ | tuberculosisPresent = Just value }
-
-        asthmaUpdateFunc value form_ =
-            { form_ | asthma = Just value }
-
-        bowedLegsUpdateFunc value form_ =
-            { form_ | bowedLegs = Just value }
-
-        hivUpdateFunc value form_ =
-            { form_ | hiv = Just value }
-
-        mentalHealthHistoryUpdateFunc value form_ =
-            { form_ | mentalHealthHistory = Just value }
-    in
-    ( [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.UterineMyoma ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.uterineMyoma False ]
+    ( [ viewQuestionLabel language Translate.MedicalHistorySignsReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ Asthma
+            , CardiacDisease
+            , Diabetes
             ]
-      , viewBoolInput
-            language
-            form.uterineMyoma
-            (SetMedicalBoolInput uterineMyomaUpdateFunc)
-            "uterine-myoma"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Diabetes ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.diabetes False ]
+            [ HypertensionBeforePregnancy
+            , RenalDisease
             ]
-      , viewBoolInput
-            language
-            form.diabetes
-            (SetMedicalBoolInput diabetesUpdateFunc)
-            "diabetes"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.CardiacDisease ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.cardiacDisease False ]
+            (Maybe.withDefault [] form.signs)
+            (Just NoMedicalHistorySigns)
+            SetMedicalHistorySigns
+            Translate.MedicalHistorySign
+      , viewQuestionLabel language Translate.MedicalHistoryPhysicalConditionsReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ PhysicalConditionUterineMyomaCurrent
+            , PhysicalConditionUterineMyomaSurgicalResection
             ]
-      , viewBoolInput
-            language
-            form.cardiacDisease
-            (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
-            "cardiac-disease"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RenalDisease ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.renalDisease False ]
+            [ PhysicalConditionBowedLegs ]
+            (Maybe.withDefault [] form.physicalConditions)
+            (Just NoMedicalHistoryPhysicalCondition)
+            SetMedicalHistoryPhysicalCondition
+            Translate.MedicalHistoryPhysicalCondition
+      , viewQuestionLabel language Translate.MedicalHistoryInfectiousDiseasesReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ InfectiousDiseasesTuberculosisPast
+            , InfectiousDiseasesTuberculosisPresent
             ]
-      , viewBoolInput
-            language
-            form.renalDisease
-            (SetMedicalBoolInput renalDiseaseUpdateFunc)
-            "renal-disease"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HypertensionBeforePregnancy ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hypertensionBeforePregnancy False ]
+            [ InfectiousDiseasesHIV ]
+            (Maybe.withDefault [] form.infectiousDiseases)
+            (Just NoMedicalHistoryInfectiousDisease)
+            SetMedicalHistoryInfectiousDisease
+            Translate.MedicalHistoryInfectiousDisease
+      , viewQuestionLabel language Translate.MedicalHistoryMentalHealthIssueReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ MentalHealthIssueGeneralDepression
+            , MentalHealthIssuePerinatalDepression
             ]
-      , viewBoolInput
-            language
-            form.hypertensionBeforePregnancy
-            (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
-            "hypertension-before-pregnancy"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.TuberculosisPast ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPast False ]
+            [ MentalHealthIssueSchizophrenia
+            , MentalHealthIssueTrauma
             ]
-      , viewBoolInput
-            language
-            form.tuberculosisPast
-            (SetMedicalBoolInput tuberculosisPastUpdateFunc)
-            "tuberculosis-past"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.TuberculosisPresent ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPresent False ]
-            ]
-      , viewBoolInput
-            language
-            form.tuberculosisPresent
-            (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
-            "tuberculosis-present"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Asthma ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.asthma False ]
-            ]
-      , viewBoolInput
-            language
-            form.asthma
-            (SetMedicalBoolInput asthmaUpdateFunc)
-            "asthma"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BowedLegs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.bowedLegs False ]
-            ]
-      , viewBoolInput
-            language
-            form.bowedLegs
-            (SetMedicalBoolInput bowedLegsUpdateFunc)
-            "bowed-legs"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HIV ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hiv False ]
-            ]
-      , viewBoolInput
-            language
-            form.hiv
-            (SetMedicalBoolInput hivUpdateFunc)
-            "hiv"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MentalHealthHistory ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.mentalHealthHistory False ]
-            ]
-      , viewBoolInput
-            language
-            form.mentalHealthHistory
-            (SetMedicalBoolInput mentalHealthHistoryUpdateFunc)
-            "mental-health-history"
-            Nothing
+            (Maybe.withDefault [] form.mentalHealthIssues)
+            (Just NoMedicalHistoryMentalHealthIssue)
+            SetMedicalHistoryMentalHealthIssue
+            Translate.MedicalHistoryMentalHealthIssue
       ]
-    , [ form.uterineMyoma
-      , form.diabetes
-      , form.cardiacDisease
-      , form.renalDisease
-      , form.hypertensionBeforePregnancy
-      , form.tuberculosisPast
-      , form.tuberculosisPresent
-      , form.asthma
-      , form.hiv
-      , form.mentalHealthHistory
+    , [ maybeToBoolTask form.signs
+      , maybeToBoolTask form.physicalConditions
+      , maybeToBoolTask form.infectiousDiseases
+      , maybeToBoolTask form.mentalHealthIssues
       ]
     )
 

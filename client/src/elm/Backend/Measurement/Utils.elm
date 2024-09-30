@@ -4640,7 +4640,7 @@ medicalHistoryPhysicalConditionToString sign =
         PhysicalConditionUterineMyomaSurgicalResection ->
             "uterine-myonma-surgical"
 
-        PhysicalConditionUterineBowedLegs ->
+        PhysicalConditionBowedLegs ->
             "bowed-legs"
 
         NoMedicalHistoryPhysicalCondition ->
@@ -4660,7 +4660,7 @@ medicalHistoryPhysicalConditionFromString sign =
             Just PhysicalConditionUterineMyomaSurgicalResection
 
         "bowed-legs" ->
-            Just PhysicalConditionUterineBowedLegs
+            Just PhysicalConditionBowedLegs
 
         "none" ->
             Just NoMedicalHistoryPhysicalCondition
@@ -4684,7 +4684,7 @@ medicalHistoryInfectiousDiseaseToString sign =
         InfectiousDiseasesTuberculosisPresent ->
             "tuberculosis-present"
 
-        NoMedicalHistoryInfectiousDiseases ->
+        NoMedicalHistoryInfectiousDisease ->
             "none"
 
 
@@ -4701,7 +4701,7 @@ medicalHistoryInfectiousDiseaseFromString sign =
             Just InfectiousDiseasesTuberculosisPresent
 
         "none" ->
-            Just NoMedicalHistoryInfectiousDiseases
+            Just NoMedicalHistoryInfectiousDisease
 
         _ ->
             Nothing

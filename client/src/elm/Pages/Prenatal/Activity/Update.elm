@@ -16,6 +16,10 @@ import Backend.Measurement.Model
         , ImageUrl(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
+        , MedicalHistorySign(..)
         , NeckCPESign(..)
         , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
@@ -86,6 +90,16 @@ update language currentDate id isLabTech db msg model =
                         >> obstetricHistoryStep2FormWithDefault model.historyData.obstetricFormSecondStep
                     )
                 |> Maybe.withDefault model.historyData.obstetricFormSecondStep
+
+        medicalHistoryForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicalHistory
+                        >> getMeasurementValueFunc
+                        >> medicalHistoryFormWithDefault model.historyData.medicalForm
+                    )
+                |> Maybe.withDefault model.historyData.medicalForm
 
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
@@ -529,13 +543,82 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
-        SetMedicalBoolInput formUpdateFunc value ->
+        SetMedicalHistorySigns value ->
             let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoMedicalHistorySigns
+                        value
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.historyData.medicalForm
-                    in
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryPhysicalCondition value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .physicalConditions
+                        (\physicalConditions -> { form | physicalConditions = physicalConditions })
+                        NoMedicalHistoryPhysicalCondition
+                        value
+                        form
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryInfectiousDisease value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .infectiousDiseases
+                        (\infectiousDiseases -> { form | infectiousDiseases = infectiousDiseases })
+                        NoMedicalHistoryInfectiousDisease
+                        value
+                        form
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryMentalHealthIssue value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .mentalHealthIssues
+                        (\mentalHealthIssues -> { form | mentalHealthIssues = mentalHealthIssues })
+                        NoMedicalHistoryMentalHealthIssue
+                        value
+                        form
+
+                updatedData =
                     model.historyData
                         |> (\data -> { data | medicalForm = updatedForm })
             in

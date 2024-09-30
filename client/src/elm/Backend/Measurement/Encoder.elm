@@ -1327,9 +1327,12 @@ encodeMedicalHistory =
     encodePrenatalMeasurement encodeMedicalHistoryValue
 
 
-encodeMedicalHistoryValue : EverySet MedicalHistorySign -> List ( String, Value )
+encodeMedicalHistoryValue : MedicalHistoryValue -> List ( String, Value )
 encodeMedicalHistoryValue value =
-    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value )
+    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value.signs )
+    , ( "physical_condition_history", encodeEverySet encodeMedicalHistoryPhysicalCondition value.physicalConditions )
+    , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
+    , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
     , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]

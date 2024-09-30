@@ -1928,6 +1928,26 @@ decodeLmpDateNotConfidentReason =
             )
 
 
+decodeMedicalHistory : Decoder MedicalHistory
+decodeMedicalHistory =
+    decodePrenatalMeasurement decodeMedicalHistoryValue
+
+
+decodeMedicalHistoryValue : Decoder MedicalHistoryValue
+decodeMedicalHistoryValue =
+    succeed MedicalHistoryValue
+        |> required "medical_history" (decodeEverySet decodeMedicalHistorySign)
+        |> optional "physical_condition_history"
+            (decodeEverySet decodeMedicalHistoryPhysicalCondition)
+            (EverySet.singleton MigrateMedicalHistoryPhysicalCondition)
+        |> optional "infectious_disease_history"
+            (decodeEverySet decodeMedicalHistoryInfectiousDisease)
+            (EverySet.singleton NoMedicalHistoryInfectiousDisease)
+        |> optional "mental_health_issues"
+            (decodeEverySet decodeMedicalHistoryMentalHealthIssue)
+            (EverySet.singleton NoMedicalHistoryMentalHealthIssue)
+
+
 decodeMedicalHistorySign : Decoder MedicalHistorySign
 decodeMedicalHistorySign =
     string
@@ -1970,12 +1990,6 @@ decodeMedicalHistoryMentalHealthIssue =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
             )
-
-
-decodeMedicalHistory : Decoder MedicalHistory
-decodeMedicalHistory =
-    field "medical_history" (decodeEverySet decodeMedicalHistorySign)
-        |> decodePrenatalMeasurement
 
 
 decodeMedicationSign : Decoder MedicationSign

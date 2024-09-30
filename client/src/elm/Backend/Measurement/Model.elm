@@ -676,7 +676,7 @@ type MedicalHistorySign
     | HypertensionBeforePregnancy
     | RenalDisease
     | NoMedicalHistorySigns
-      -- @todo: Bellow signs are deprecated. Can be removed around January 2025.
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | BowedLegs
     | UterineMyoma
     | HIV
@@ -688,7 +688,7 @@ type MedicalHistorySign
 type MedicalHistoryPhysicalCondition
     = PhysicalConditionUterineMyomaCurrent
     | PhysicalConditionUterineMyomaSurgicalResection
-    | PhysicalConditionUterineBowedLegs
+    | PhysicalConditionBowedLegs
     | NoMedicalHistoryPhysicalCondition
     | MigrateMedicalHistoryPhysicalCondition
 
@@ -697,7 +697,7 @@ type MedicalHistoryInfectiousDisease
     = InfectiousDiseasesHIV
     | InfectiousDiseasesTuberculosisPast
     | InfectiousDiseasesTuberculosisPresent
-    | NoMedicalHistoryInfectiousDiseases
+    | NoMedicalHistoryInfectiousDisease
 
 
 type MedicalHistoryMentalHealthIssue
@@ -709,7 +709,15 @@ type MedicalHistoryMentalHealthIssue
 
 
 type alias MedicalHistory =
-    PrenatalMeasurement (EverySet MedicalHistorySign)
+    PrenatalMeasurement MedicalHistoryValue
+
+
+type alias MedicalHistoryValue =
+    { signs : EverySet MedicalHistorySign
+    , physicalConditions : EverySet MedicalHistoryPhysicalCondition
+    , infectiousDiseases : EverySet MedicalHistoryInfectiousDisease
+    , mentalHealthIssues : EverySet MedicalHistoryMentalHealthIssue
+    }
 
 
 type MedicationSign
@@ -835,7 +843,7 @@ type PreviousDeliverySign
     = CSectionInPast
     | CSectionInPreviousDelivery
     | NoPreviousDeliverySign
-      -- @todo: Bellow signs are deprecated. Can be removed around January 2025.
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery

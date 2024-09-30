@@ -990,7 +990,10 @@ type TranslationId
     | MedicationFeelBetterAfterTakingQuestion
     | MedicationForMalariaToday
     | MedicationForMalariaPastMonth
-    | MedicalFormHelper
+    | MedicalHistoryInfectiousDiseasesReviewQuestion
+    | MedicalHistoryMentalHealthIssueReviewQuestion
+    | MedicalHistoryPhysicalConditionsReviewQuestion
+    | MedicalHistorySignsReviewQuestion
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
     | MedicationForMalariaWithinPastMonthQuestion
@@ -10400,7 +10403,7 @@ translationSet trans =
                 InfectiousDiseasesTuberculosisPresent ->
                     translationSet TuberculosisPresent
 
-                NoMedicalHistoryInfectiousDiseases ->
+                NoMedicalHistoryInfectiousDisease ->
                     translationSet NoneOfTheAbove
 
         MedicalHistoryMentalHealthIssue issue ->
@@ -10446,7 +10449,7 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                PhysicalConditionUterineBowedLegs ->
+                PhysicalConditionBowedLegs ->
                     translationSet BowedLegs
 
                 NoMedicalHistoryPhysicalCondition ->
@@ -10758,10 +10761,28 @@ translationSet trans =
             , kirundi = Just "Umugwayi yaronse imiti ya malariya mu kwezi guheze imbere yuko aza/imbere y'umubonano"
             }
 
-        MedicalFormHelper ->
-            { english = "Please record if the mother was diagnosed with the following medical issues"
-            , kinyarwanda = Just "Andika niba umubyeyi yaragaragaweho indwara zikurikira"
-            , kirundi = Just "Andika nimba nyina yarasuzumwe ingorane z'ubuvuzi zikurikira"
+        MedicalHistoryInfectiousDiseasesReviewQuestion ->
+            { english = "Does the patient have, or has she had, any of the following infectious diseases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistoryMentalHealthIssueReviewQuestion ->
+            { english = "Does the patient have, or has she had, any mental health issues"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistoryPhysicalConditionsReviewQuestion ->
+            { english = "Does the patient have any of the following physical conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistorySignsReviewQuestion ->
+            { english = "Does the patient have any of the following medical conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         MedicationForFeverPast6HoursQuestion ->

@@ -3314,64 +3314,33 @@ toLastMenstrualPeriodValue form =
         |> andMap (Just chwLmpConfirmation)
 
 
-fromMedicalHistoryValue : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm
-fromMedicalHistoryValue saved =
-    { uterineMyoma = Maybe.map (EverySet.member UterineMyoma) saved
-    , diabetes = Maybe.map (EverySet.member Diabetes) saved
-    , cardiacDisease = Maybe.map (EverySet.member CardiacDisease) saved
-    , renalDisease = Maybe.map (EverySet.member RenalDisease) saved
-    , hypertensionBeforePregnancy = Maybe.map (EverySet.member HypertensionBeforePregnancy) saved
-    , tuberculosisPast = Maybe.map (EverySet.member TuberculosisPast) saved
-    , tuberculosisPresent = Maybe.map (EverySet.member TuberculosisPresent) saved
-    , asthma = Maybe.map (EverySet.member Asthma) saved
-    , bowedLegs = Maybe.map (EverySet.member BowedLegs) saved
-    , hiv = Maybe.map (EverySet.member HIV) saved
-    , mentalHealthHistory = Maybe.map (EverySet.member MentalHealthHistory) saved
-    }
-
-
-medicalHistoryFormWithDefault : MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm
+medicalHistoryFormWithDefault : MedicalHistoryForm -> Maybe MedicalHistoryValue -> MedicalHistoryForm
 medicalHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { uterineMyoma = or form.uterineMyoma (EverySet.member UterineMyoma value |> Just)
-                , diabetes = or form.diabetes (EverySet.member Diabetes value |> Just)
-                , cardiacDisease = or form.cardiacDisease (EverySet.member CardiacDisease value |> Just)
-                , renalDisease = or form.renalDisease (EverySet.member RenalDisease value |> Just)
-                , hypertensionBeforePregnancy = or form.hypertensionBeforePregnancy (EverySet.member HypertensionBeforePregnancy value |> Just)
-                , tuberculosisPast = or form.tuberculosisPast (EverySet.member TuberculosisPast value |> Just)
-                , tuberculosisPresent = or form.tuberculosisPresent (EverySet.member TuberculosisPresent value |> Just)
-                , asthma = or form.asthma (EverySet.member Asthma value |> Just)
-                , bowedLegs = or form.bowedLegs (EverySet.member BowedLegs value |> Just)
-                , hiv = or form.hiv (EverySet.member HIV value |> Just)
-                , mentalHealthHistory = or form.mentalHealthHistory (EverySet.member MentalHealthHistory value |> Just)
+                { signs = or form.signs (Just <| EverySet.toList value.signs)
+                , physicalConditions = or form.physicalConditions (Just <| EverySet.toList value.physicalConditions)
+                , infectiousDiseases = or form.infectiousDiseases (Just <| EverySet.toList value.infectiousDiseases)
+                , mentalHealthIssues = or form.mentalHealthIssues (Just <| EverySet.toList value.mentalHealthIssues)
                 }
             )
 
 
-toMedicalHistoryValueWithDefault : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign)
+toMedicalHistoryValueWithDefault : Maybe MedicalHistoryValue -> MedicalHistoryForm -> Maybe MedicalHistoryValue
 toMedicalHistoryValueWithDefault saved form =
     medicalHistoryFormWithDefault form saved
         |> toMedicalHistoryValue
 
 
-toMedicalHistoryValue : MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign)
+toMedicalHistoryValue : MedicalHistoryForm -> Maybe MedicalHistoryValue
 toMedicalHistoryValue form =
-    [ Maybe.map (ifTrue UterineMyoma) form.uterineMyoma
-    , Maybe.map (ifTrue Diabetes) form.diabetes
-    , Maybe.map (ifTrue CardiacDisease) form.cardiacDisease
-    , Maybe.map (ifTrue HypertensionBeforePregnancy) form.hypertensionBeforePregnancy
-    , Maybe.map (ifTrue TuberculosisPast) form.tuberculosisPast
-    , Maybe.map (ifTrue TuberculosisPresent) form.tuberculosisPresent
-    , Maybe.map (ifTrue Asthma) form.asthma
-    , Maybe.map (ifTrue BowedLegs) form.bowedLegs
-    , Maybe.map (ifTrue HIV) form.hiv
-    , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
+    Maybe.map4 MedicalHistoryValue
+        (Maybe.map EverySet.fromList form.signs)
+        (Maybe.map EverySet.fromList form.physicalConditions)
+        (Maybe.map EverySet.fromList form.infectiousDiseases)
+        (Maybe.map EverySet.fromList form.mentalHealthIssues)
 
 
 medicationFormWithDefault : MedicationForm -> Maybe MedicationValue -> MedicationForm
