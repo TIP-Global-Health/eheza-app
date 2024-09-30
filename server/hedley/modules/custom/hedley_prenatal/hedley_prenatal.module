@@ -162,5 +162,5 @@ function hedley_prenatal_migrate_medical_history($node) {
   }
   $node->field_infectious_disease_history[LANGUAGE_NONE] = $migrated_values_infectious_disease;
 
-  $node->field_mental_health_issues[LANGUAGE_NONE] = ['value' => 'none'];;
+  $node->field_mental_health_issues[LANGUAGE_NONE][] = ['value' => 'none'];;
 }
