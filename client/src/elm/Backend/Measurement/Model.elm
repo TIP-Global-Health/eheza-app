@@ -811,7 +811,7 @@ type PreviousDeliverySign
     = CSectionInPast
     | CSectionInPreviousDelivery
     | NoPreviousDeliverySign
-      -- @todo: Bellow signs are deprecated. Can be removed around January 2025.
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery
