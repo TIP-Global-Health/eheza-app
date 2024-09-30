@@ -10452,6 +10452,9 @@ translationSet trans =
                 NoMedicalHistoryPhysicalCondition ->
                     translationSet NoneOfTheAbove
 
+                MigrateMedicalHistoryPhysicalCondition ->
+                    translationSet EmptyString
+
         MedicalHistorySign sign ->
             case sign of
                 Backend.Measurement.Model.Asthma ->

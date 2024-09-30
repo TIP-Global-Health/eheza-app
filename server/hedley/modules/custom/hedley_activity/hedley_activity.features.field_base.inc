@@ -1731,6 +1731,7 @@ function hedley_activity_field_default_field_bases() {
         'uterine-myonma-surgical' => 'Uterine Myoma Surgical Resection',
         'bowed-legs' => 'Bowed Legs',
         'none' => 'None of these',
+        'migrate' => 'Migrate',
       ),
       'allowed_values_function' => '',
     ),

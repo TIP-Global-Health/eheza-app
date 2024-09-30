@@ -4646,6 +4646,9 @@ medicalHistoryPhysicalConditionToString sign =
         NoMedicalHistoryPhysicalCondition ->
             "none"
 
+        MigrateMedicalHistoryPhysicalCondition ->
+            "migrate"
+
 
 medicalHistoryPhysicalConditionFromString : String -> Maybe MedicalHistoryPhysicalCondition
 medicalHistoryPhysicalConditionFromString sign =
@@ -4661,6 +4664,9 @@ medicalHistoryPhysicalConditionFromString sign =
 
         "none" ->
             Just NoMedicalHistoryPhysicalCondition
+
+        "migrate" ->
+            Just MigrateMedicalHistoryPhysicalCondition
 
         _ ->
             Nothing

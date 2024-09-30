@@ -690,6 +690,7 @@ type MedicalHistoryPhysicalCondition
     | PhysicalConditionUterineMyomaSurgicalResection
     | PhysicalConditionUterineBowedLegs
     | NoMedicalHistoryPhysicalCondition
+    | MigrateMedicalHistoryPhysicalCondition
 
 
 type MedicalHistoryInfectiousDisease
