@@ -429,9 +429,6 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                                 model.components
                                 |> Maybe.withDefault (viewLabsPane language currentDate SetLabResultsMode)
 
-                        vaccinationProgress =
-                            assembled.vaccinationProgress
-
                         actions =
                             case initiator of
                                 InitiatorEncounterPage id ->
