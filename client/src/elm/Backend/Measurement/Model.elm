@@ -784,7 +784,11 @@ type alias ObstetricHistoryStep2Value =
     , cSectionReason : Maybe (EverySet CSectionReason)
     , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
+
+    -- @todo: obstetricHistory is depricated, and can be removed
+    -- around January 2025.
     , obstetricHistory : EverySet ObstetricHistorySign
+    , signs : EverySet ObstetricHistoryStep2Sign
     }
 
 
@@ -806,15 +810,18 @@ type PreviousDeliveryPeriod
 type PreviousDeliverySign
     = CSectionInPast
     | CSectionInPreviousDelivery
+    | NoPreviousDeliverySign
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery
     | SevereHemorrhagingPreviousDelivery
     | ConvulsionsPreviousDelivery
     | ConvulsionsAndUnconsciousPreviousDelivery
-    | NoPreviousDeliverySign
 
 
+{-| @todo: ObstetricHistorySign is deprecated. Can be removed around January 2025.
+-}
 type ObstetricHistorySign
     = SuccessiveAbortions
     | SuccessivePrematureDeliveries
@@ -823,6 +830,19 @@ type ObstetricHistorySign
     | IncompleteCervixPreviousPregnancy
     | RhNegative
     | NoObstetricHistorySign
+
+
+type ObstetricHistoryStep2Sign
+    = ObstetricHistoryPreeclampsiaPreviousPregnancy
+    | ObstetricHistoryGestationalDiabetesPreviousPregnancy
+    | ObstetricHistoryIncompleteCervixPreviousPregnancy
+    | ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
+    | ObstetricHistoryPartialPlacentaPreviousDelivery
+    | ObstetricHistorySevereHemorrhagingPreviousDelivery
+    | ObstetricHistoryConvulsionsPreviousDelivery
+    | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+    | NoObstetricHistoryStep2Sign
+    | MigrateObstetricHistoryStep2Sign
 
 
 type alias ObstetricHistoryStep2 =

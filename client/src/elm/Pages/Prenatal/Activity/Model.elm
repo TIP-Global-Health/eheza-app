@@ -72,6 +72,7 @@ type Msg
     | SetCSectionReason CSectionReason
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
+    | SetObstetricFormSecondStepSign ObstetricHistoryStep2Sign
     | BackToOBHistoryStep1
     | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
@@ -762,14 +763,7 @@ type alias ObstetricFormSecondStep =
     , cSectionReason : Maybe CSectionReason
     , cSectionReasonDirty : Bool
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
-    , babyDiedOnDayOfBirthPreviousDelivery : Maybe Bool
-    , partialPlacentaPreviousDelivery : Maybe Bool
-    , severeHemorrhagingPreviousDelivery : Maybe Bool
-    , preeclampsiaPreviousPregnancy : Maybe Bool
-    , convulsionsPreviousDelivery : Maybe Bool
-    , convulsionsAndUnconsciousPreviousDelivery : Maybe Bool
-    , gestationalDiabetesPreviousPregnancy : Maybe Bool
-    , incompleteCervixPreviousPregnancy : Maybe Bool
+    , signs : Maybe (List ObstetricHistoryStep2Sign)
     }
 
 
@@ -781,14 +775,7 @@ emptyObstetricFormSecondStep =
     , cSectionReason = Nothing
     , cSectionReasonDirty = False
     , previousDeliveryPeriod = Nothing
-    , babyDiedOnDayOfBirthPreviousDelivery = Nothing
-    , partialPlacentaPreviousDelivery = Nothing
-    , severeHemorrhagingPreviousDelivery = Nothing
-    , preeclampsiaPreviousPregnancy = Nothing
-    , convulsionsPreviousDelivery = Nothing
-    , convulsionsAndUnconsciousPreviousDelivery = Nothing
-    , gestationalDiabetesPreviousPregnancy = Nothing
-    , incompleteCervixPreviousPregnancy = Nothing
+    , signs = Nothing
     }
 
 

@@ -2389,6 +2389,17 @@ decodeObstetricHistorySign =
             )
 
 
+decodeObstetricHistoryStep2Sign : Decoder ObstetricHistoryStep2Sign
+decodeObstetricHistoryStep2Sign =
+    string
+        |> andThen
+            (\sign ->
+                obstetricHistoryStep2SignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (sign ++ " is not a recognized ObstetricHistoryStep2Sign" |> fail)
+            )
+
+
 decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
@@ -2397,6 +2408,9 @@ decodeObstetricHistoryStep2 =
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
+        |> optional "obstetric_history_step2"
+            (decodeEverySet decodeObstetricHistoryStep2Sign)
+            (EverySet.singleton MigrateObstetricHistoryStep2Sign)
         |> decodePrenatalMeasurement
 
 

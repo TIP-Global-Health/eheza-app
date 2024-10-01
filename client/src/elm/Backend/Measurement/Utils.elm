@@ -4475,3 +4475,74 @@ hivHealthEducationSignFromString diagnosis =
 
         _ ->
             Nothing
+
+
+obstetricHistoryStep2SignToString : ObstetricHistoryStep2Sign -> String
+obstetricHistoryStep2SignToString sign =
+    case sign of
+        ObstetricHistoryPreeclampsiaPreviousPregnancy ->
+            "preeclampsia-previous-pregnancy"
+
+        ObstetricHistoryGestationalDiabetesPreviousPregnancy ->
+            "gestational-diabetes-previous-pregnancy"
+
+        ObstetricHistoryIncompleteCervixPreviousPregnancy ->
+            "incomplete-cervix-previous-pregnancy"
+
+        ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery ->
+            "baby-died-on-day-of-birth-previous-delivery"
+
+        ObstetricHistoryPartialPlacentaPreviousDelivery ->
+            "partial-placenta-previous-delivery"
+
+        ObstetricHistorySevereHemorrhagingPreviousDelivery ->
+            "severe-hemorrhaging-previous-delivery"
+
+        ObstetricHistoryConvulsionsPreviousDelivery ->
+            "convulsions-previous-delivery"
+
+        ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
+            "convulsions-and-unconscious-previous-delivery"
+
+        NoObstetricHistoryStep2Sign ->
+            "none"
+
+        MigrateObstetricHistoryStep2Sign ->
+            "migrate"
+
+
+obstetricHistoryStep2SignFromString : String -> Maybe ObstetricHistoryStep2Sign
+obstetricHistoryStep2SignFromString sign =
+    case sign of
+        "preeclampsia-previous-pregnancy" ->
+            Just ObstetricHistoryPreeclampsiaPreviousPregnancy
+
+        "gestational-diabetes-previous-pregnancy" ->
+            Just ObstetricHistoryGestationalDiabetesPreviousPregnancy
+
+        "incomplete-cervix-previous-pregnancy" ->
+            Just ObstetricHistoryIncompleteCervixPreviousPregnancy
+
+        "baby-died-on-day-of-birth-previous-delivery" ->
+            Just ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
+
+        "partial-placenta-previous-delivery" ->
+            Just ObstetricHistoryPartialPlacentaPreviousDelivery
+
+        "severe-hemorrhaging-previous-delivery" ->
+            Just ObstetricHistorySevereHemorrhagingPreviousDelivery
+
+        "convulsions-previous-delivery" ->
+            Just ObstetricHistoryConvulsionsPreviousDelivery
+
+        "convulsions-and-unconscious-previous-delivery" ->
+            Just ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+
+        "none" ->
+            Just NoObstetricHistoryStep2Sign
+
+        "migrate" ->
+            Just MigrateObstetricHistoryStep2Sign
+
+        _ ->
+            Nothing

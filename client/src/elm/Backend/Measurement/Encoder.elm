@@ -1692,6 +1692,11 @@ encodeObstetricHistorySign sign =
                 "none"
 
 
+encodeObstetricHistoryStep2Sign : ObstetricHistoryStep2Sign -> Value
+encodeObstetricHistoryStep2Sign =
+    obstetricHistoryStep2SignToString >> string
+
+
 encodeObstetricHistoryStep2 : ObstetricHistoryStep2 -> List ( String, Value )
 encodeObstetricHistoryStep2 =
     encodePrenatalMeasurement encodeObstetricHistoryStep2Value
@@ -1701,6 +1706,7 @@ encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, 
 encodeObstetricHistoryStep2Value value =
     [ ( "c_sections", int value.cSections )
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
+    , ( "obstetric_history_step2", encodeEverySet encodeObstetricHistoryStep2Sign value.signs )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     , ( "deleted", bool False )

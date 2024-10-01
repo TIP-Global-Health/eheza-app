@@ -17,6 +17,7 @@ import Backend.Measurement.Model
         , LegsCPESign(..)
         , LungsCPESign(..)
         , NeckCPESign(..)
+        , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
         , PhaseRecorded(..)
         , PostpartumChildDangerSign(..)
@@ -76,6 +77,16 @@ import Translate exposing (Language)
 update : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update language currentDate id isLabTech db msg model =
     let
+        obstetricFormSecondStep =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.obstetricHistoryStep2
+                        >> getMeasurementValueFunc
+                        >> obstetricHistoryStep2FormWithDefault model.historyData.obstetricFormSecondStep
+                    )
+                |> Maybe.withDefault model.historyData.obstetricFormSecondStep
+
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -445,6 +456,27 @@ update language currentDate id isLabTech db msg model =
 
                 updatedForm =
                     { form | previousDeliveryPeriod = updatedPeriod }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetObstetricFormSecondStepSign sign ->
+            let
+                form =
+                    obstetricFormSecondStep
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoObstetricHistoryStep2Sign
+                        sign
+                        form
 
                 updatedData =
                     model.historyData

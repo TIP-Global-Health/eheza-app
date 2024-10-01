@@ -36,25 +36,6 @@ type PrenatalRecurrentActivity
     | LabsResultsFollowUps
 
 
-type RiskFactor
-    = FactorNumberOfCSections
-    | FactorCSectionInPreviousDelivery
-    | FactorCSectionReason
-    | FactorPreviousDeliveryPeriod
-    | FactorSuccessiveAbortions
-    | FactorSuccessivePrematureDeliveries
-    | FactorStillbornPreviousDelivery
-    | FactorBabyDiedOnDayOfBirthPreviousDelivery
-    | FactorPartialPlacentaPreviousDelivery
-    | FactorSevereHemorrhagingPreviousDelivery
-    | FactorPreeclampsiaPreviousPregnancy
-    | FactorConvulsionsPreviousDelivery
-    | FactorConvulsionsAndUnconsciousPreviousDelivery
-    | FactorIncompleteCervixPreviousPregnancy
-    | FactorVerticalCSectionScar
-    | FactorGestationalDiabetesPreviousPregnancy
-
-
 type HighRiskFactor
     = HighRiskConvulsionsAndUnconsciousPreviousDelivery
     | HighRiskConvulsionsPreviousDelivery
@@ -120,27 +101,6 @@ allHighSeverityAlerts =
 allRecurringHighSeverityAlerts : List RecurringHighSeverityAlert
 allRecurringHighSeverityAlerts =
     [ BloodPressure ]
-
-
-allRiskFactors : List RiskFactor
-allRiskFactors =
-    [ FactorNumberOfCSections
-    , FactorCSectionInPreviousDelivery
-    , FactorCSectionReason
-    , FactorPreviousDeliveryPeriod
-    , FactorSuccessiveAbortions
-    , FactorSuccessivePrematureDeliveries
-    , FactorStillbornPreviousDelivery
-    , FactorBabyDiedOnDayOfBirthPreviousDelivery
-    , FactorPartialPlacentaPreviousDelivery
-    , FactorSevereHemorrhagingPreviousDelivery
-    , FactorPreeclampsiaPreviousPregnancy
-    , FactorConvulsionsPreviousDelivery
-    , FactorConvulsionsAndUnconsciousPreviousDelivery
-    , FactorIncompleteCervixPreviousPregnancy
-    , FactorVerticalCSectionScar
-    , FactorGestationalDiabetesPreviousPregnancy
-    ]
 
 
 allObstetricalDiagnoses : List ObstetricalDiagnosis
