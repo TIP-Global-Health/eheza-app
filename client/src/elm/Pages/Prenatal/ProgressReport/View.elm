@@ -1020,9 +1020,6 @@ viewVaccinationOverview language currentDate assembled =
             generateFutureVaccinationsDataByProgress currentDate assembled
                 |> Dict.fromList
 
-        _ =
-            Debug.log "futureVaccinationsData" futureVaccinationsData
-
         entries =
             Dict.toList assembled.vaccinationProgress
                 |> List.map viewVaccinationEntry
