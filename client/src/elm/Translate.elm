@@ -79,6 +79,7 @@ import Measurement.Model
         , LaboratoryTask(..)
         , NCDAStep(..)
         , NextStepsTask(..)
+        , VaccinationStatus(..)
         )
 import Pages.AcuteIllness.Activity.Types
     exposing
@@ -144,7 +145,6 @@ import Pages.WellChild.Activity.Types
         ( HomeVisitTask(..)
         , NextStepsTask(..)
         , NutritionAssessmentTask(..)
-        , VaccinationStatus(..)
         )
 import Pages.WellChild.Encounter.Model exposing (ECDPopupType(..), WarningPopupType(..))
 import Pages.WellChild.ProgressReport.Model
@@ -18523,6 +18523,9 @@ translationSet trans =
                     , kinyarwanda = Nothing
                     , kirundi = Just "Isuzuma ry'ivyara"
                     }
+
+                ComponentAntenatalImmunizationHistory ->
+                    translationSet ImmunizationHistory
 
                 ComponentAntenatalCHWActivity ->
                     { english = "CHW Activity"

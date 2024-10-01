@@ -82,6 +82,7 @@ type ReportComponentAntenatal
     = ComponentAntenatalObstetricHistory
     | ComponentAntenatalMedicalDiagnosis
     | ComponentAntenatalObstetricalDiagnosis
+    | ComponentAntenatalImmunizationHistory
     | ComponentAntenatalCHWActivity
     | ComponentAntenatalPatientProgress
     | ComponentAntenatalLabsResults

@@ -5123,7 +5123,7 @@ expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Boo
 expectImmunisationTask currentDate assembled task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate assembled
+            generateFutureVaccinationsDataByHistory currentDate assembled
                 |> Dict.fromList
 
         isTaskExpected vaccineType =
@@ -5139,11 +5139,25 @@ expectImmunisationTask currentDate assembled task =
         |> isTaskExpected
 
 
+generateFutureVaccinationsDataByHistory : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsDataByHistory currentDate assembled =
+    generateFutureVaccinationsData currentDate assembled.globalLmpDate assembled.vaccinationHistory
+
+
+generateFutureVaccinationsDataByProgress : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsDataByProgress currentDate assembled =
+    generateFutureVaccinationsData currentDate assembled.globalLmpDate assembled.vaccinationProgress
+
+
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate assembled =
+generateFutureVaccinationsData :
+    NominalDate
+    -> Maybe NominalDate
+    -> VaccinationProgressDict
+    -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate globalLmpDate vaccinationDict =
     Maybe.map
         (\lmpDate ->
             let
@@ -5154,7 +5168,7 @@ generateFutureVaccinationsData currentDate assembled =
                 (\vaccineType ->
                     let
                         nextVaccinationData =
-                            case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
+                            case latestVaccinationDataForVaccine vaccinationDict vaccineType of
                                 Just ( lastDoseAdministered, lastDoseDate ) ->
                                     nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered
 
@@ -5169,7 +5183,7 @@ generateFutureVaccinationsData currentDate assembled =
                 )
                 allVaccineTypes
         )
-        assembled.globalLmpDate
+        globalLmpDate
         |> Maybe.withDefault []
 
 

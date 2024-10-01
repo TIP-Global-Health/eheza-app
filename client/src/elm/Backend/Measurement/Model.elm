@@ -1161,7 +1161,7 @@ type PrenatalHIVSign
     | PartnerSurpressedViralLoad
       -- This option is an indicator.
       -- When Lab tech fills the result, they do not
-      -- answer follow up quesrtion. We use this optin to indicate
+      -- answer follow up question. We use this optin to indicate
       -- that nurse will have to complete the results follow up.
     | PrenatalHIVSignPendingInput
     | NoPrenatalHIVSign
