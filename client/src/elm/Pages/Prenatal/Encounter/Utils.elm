@@ -917,8 +917,9 @@ generateObstetricalDiagnosisAlertData language currentDate isChw firstNurseEncou
 generateMedicalDiagnosisAlertData : Language -> NominalDate -> PrenatalMeasurements -> MedicalDiagnosis -> Maybe String
 generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
     let
-        generateAlertForDiagnosis triggeringSigns =
+        generateAlertForDiagnosis getFieldFunc triggeringSigns =
             getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map getFieldFunc
                 |> Maybe.andThen
                     (\value ->
                         if
@@ -933,37 +934,45 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
     in
     case diagnosis of
         DiagnosisUterineMyoma ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.UterineMyoma ]
+            generateAlertForDiagnosis .physicalConditions
+                [ Backend.Measurement.Model.PhysicalConditionUterineMyomaCurrent
+                , Backend.Measurement.Model.PhysicalConditionUterineMyomaSurgicalResection
+                ]
 
         Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.Diabetes ]
+            generateAlertForDiagnosis .signs [ Backend.Measurement.Model.Diabetes ]
 
         DiagnosisCardiacDisease ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.CardiacDisease ]
+            generateAlertForDiagnosis .signs [ Backend.Measurement.Model.CardiacDisease ]
 
         DiagnosisRenalDisease ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.RenalDisease ]
+            generateAlertForDiagnosis .signs [ Backend.Measurement.Model.RenalDisease ]
 
         DiagnosisHypertensionBeforePregnancy ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
+            generateAlertForDiagnosis .signs [ Backend.Measurement.Model.HypertensionBeforePregnancy ]
 
         Backend.PrenatalActivity.Model.DiagnosisTuberculosis ->
-            generateAlertForDiagnosis
-                [ Backend.Measurement.Model.TuberculosisPast
-                , Backend.Measurement.Model.TuberculosisPresent
+            generateAlertForDiagnosis .infectiousDiseases
+                [ Backend.Measurement.Model.InfectiousDiseasesTuberculosisPast
+                , Backend.Measurement.Model.InfectiousDiseasesTuberculosisPresent
                 ]
 
         DiagnosisAsthma ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.Asthma ]
+            generateAlertForDiagnosis .signs [ Backend.Measurement.Model.Asthma ]
 
         DiagnosisBowedLegs ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.BowedLegs ]
+            generateAlertForDiagnosis .physicalConditions [ Backend.Measurement.Model.PhysicalConditionBowedLegs ]
 
         DiagnosisKnownHIV ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.HIV ]
+            generateAlertForDiagnosis .infectiousDiseases [ Backend.Measurement.Model.InfectiousDiseasesHIV ]
 
         DiagnosisMentalHealthHistory ->
-            generateAlertForDiagnosis [ Backend.Measurement.Model.MentalHealthHistory ]
+            generateAlertForDiagnosis .mentalHealthIssues
+                [ Backend.Measurement.Model.MentalHealthIssueGeneralDepression
+                , Backend.Measurement.Model.MentalHealthIssuePerinatalDepression
+                , Backend.Measurement.Model.MentalHealthIssueSchizophrenia
+                , Backend.Measurement.Model.MentalHealthIssueTrauma
+                ]
 
 
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float

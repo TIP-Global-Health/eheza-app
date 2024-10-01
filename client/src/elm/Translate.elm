@@ -964,6 +964,10 @@ type TranslationId
     | MedicationTreatingHypertensionQuestion
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
+    | MedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
+    | MedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
+    | MedicalHistorySign MedicalHistorySign
     | Medication
     | MedicationCausesSideEffectsQuestion
     | MedicationDistributionHelperAnemia
@@ -986,7 +990,10 @@ type TranslationId
     | MedicationFeelBetterAfterTakingQuestion
     | MedicationForMalariaToday
     | MedicationForMalariaPastMonth
-    | MedicalFormHelper
+    | MedicalHistoryInfectiousDiseasesReviewQuestion
+    | MedicalHistoryMentalHealthIssueReviewQuestion
+    | MedicalHistoryPhysicalConditionsReviewQuestion
+    | MedicalHistorySignsReviewQuestion
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
     | MedicationForMalariaWithinPastMonthQuestion
@@ -10353,10 +10360,7 @@ translationSet trans =
                     translationSet Diabetes
 
                 DiagnosisCardiacDisease ->
-                    { english = "Cardiac Disease"
-                    , kinyarwanda = Just "Indwara z'umutima"
-                    , kirundi = Just "Ingwara y'umutima"
-                    }
+                    translationSet CardiacDisease
 
                 DiagnosisRenalDisease ->
                     { english = "Renal Disease"
@@ -10374,16 +10378,10 @@ translationSet trans =
                     }
 
                 DiagnosisAsthma ->
-                    { english = "Asthma"
-                    , kinyarwanda = Just "Asthma (Agahema)"
-                    , kirundi = Just "Asima"
-                    }
+                    translationSet Asthma
 
                 DiagnosisBowedLegs ->
-                    { english = "Bowed Legs"
-                    , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
-                    , kirundi = Just "Amaguru y'ingonze"
-                    }
+                    translationSet BowedLegs
 
                 DiagnosisKnownHIV ->
                     translationSet HIV
@@ -10393,6 +10391,97 @@ translationSet trans =
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
                     , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
                     }
+
+        MedicalHistoryInfectiousDisease disease ->
+            case disease of
+                InfectiousDiseasesHIV ->
+                    translationSet HIV
+
+                InfectiousDiseasesTuberculosisPast ->
+                    translationSet TuberculosisPast
+
+                InfectiousDiseasesTuberculosisPresent ->
+                    translationSet TuberculosisPresent
+
+                NoMedicalHistoryInfectiousDisease ->
+                    translationSet NoneOfTheAbove
+
+        MedicalHistoryMentalHealthIssue issue ->
+            case issue of
+                MentalHealthIssueGeneralDepression ->
+                    { english = "General Depression"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssuePerinatalDepression ->
+                    { english = "Perinatal Depression"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssueSchizophrenia ->
+                    { english = "Schizophrenia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MentalHealthIssueTrauma ->
+                    { english = "Trauma"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                NoMedicalHistoryMentalHealthIssue ->
+                    translationSet NoneOfTheAbove
+
+        MedicalHistoryPhysicalCondition condition ->
+            case condition of
+                PhysicalConditionUterineMyomaCurrent ->
+                    { english = "Uterine Myoma Current"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PhysicalConditionUterineMyomaSurgicalResection ->
+                    { english = "Uterine Myoma Surgical Resection"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PhysicalConditionBowedLegs ->
+                    translationSet BowedLegs
+
+                NoMedicalHistoryPhysicalCondition ->
+                    translationSet NoneOfTheAbove
+
+                MigrateMedicalHistoryPhysicalCondition ->
+                    translationSet EmptyString
+
+        MedicalHistorySign sign ->
+            case sign of
+                Backend.Measurement.Model.Asthma ->
+                    translationSet Asthma
+
+                Backend.Measurement.Model.CardiacDisease ->
+                    translationSet CardiacDisease
+
+                Backend.Measurement.Model.Diabetes ->
+                    translationSet Diabetes
+
+                Backend.Measurement.Model.HypertensionBeforePregnancy ->
+                    translationSet Hypertension
+
+                Backend.Measurement.Model.RenalDisease ->
+                    translationSet RenalDisease
+
+                NoMedicalHistorySigns ->
+                    translationSet NoneOfTheAbove
+
+                -- Other signs do not require translation as they are
+                -- depricated, and will be removed around Jan 2025.
+                _ ->
+                    translationSet EmptyString
 
         Medication ->
             { english = "Medication"
@@ -10672,10 +10761,28 @@ translationSet trans =
             , kirundi = Just "Umugwayi yaronse imiti ya malariya mu kwezi guheze imbere yuko aza/imbere y'umubonano"
             }
 
-        MedicalFormHelper ->
-            { english = "Please record if the mother was diagnosed with the following medical issues"
-            , kinyarwanda = Just "Andika niba umubyeyi yaragaragaweho indwara zikurikira"
-            , kirundi = Just "Andika nimba nyina yarasuzumwe ingorane z'ubuvuzi zikurikira"
+        MedicalHistoryInfectiousDiseasesReviewQuestion ->
+            { english = "Does the patient have, or has she had, any of the following infectious diseases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistoryMentalHealthIssueReviewQuestion ->
+            { english = "Does the patient have, or has she had, any mental health issues"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistoryPhysicalConditionsReviewQuestion ->
+            { english = "Does the patient have any of the following physical conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicalHistorySignsReviewQuestion ->
+            { english = "Does the patient have any of the following medical conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         MedicationForFeverPast6HoursQuestion ->

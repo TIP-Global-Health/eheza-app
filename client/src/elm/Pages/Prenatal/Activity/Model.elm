@@ -76,7 +76,10 @@ type Msg
     | BackToOBHistoryStep1
     | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
-    | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
+    | SetMedicalHistorySigns MedicalHistorySign
+    | SetMedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
+    | SetMedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
+    | SetMedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
     | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
@@ -780,33 +783,19 @@ emptyObstetricFormSecondStep =
 
 
 type alias MedicalHistoryForm =
-    { uterineMyoma : Maybe Bool
-    , diabetes : Maybe Bool
-    , cardiacDisease : Maybe Bool
-    , renalDisease : Maybe Bool
-    , hypertensionBeforePregnancy : Maybe Bool
-    , tuberculosisPast : Maybe Bool
-    , tuberculosisPresent : Maybe Bool
-    , asthma : Maybe Bool
-    , bowedLegs : Maybe Bool
-    , hiv : Maybe Bool
-    , mentalHealthHistory : Maybe Bool
+    { signs : Maybe (List MedicalHistorySign)
+    , physicalConditions : Maybe (List MedicalHistoryPhysicalCondition)
+    , infectiousDiseases : Maybe (List MedicalHistoryInfectiousDisease)
+    , mentalHealthIssues : Maybe (List MedicalHistoryMentalHealthIssue)
     }
 
 
 emptyMedicalHistoryForm : MedicalHistoryForm
 emptyMedicalHistoryForm =
-    { uterineMyoma = Nothing
-    , diabetes = Nothing
-    , cardiacDisease = Nothing
-    , renalDisease = Nothing
-    , hypertensionBeforePregnancy = Nothing
-    , tuberculosisPast = Nothing
-    , tuberculosisPresent = Nothing
-    , asthma = Nothing
-    , bowedLegs = Nothing
-    , hiv = Nothing
-    , mentalHealthHistory = Nothing
+    { signs = Nothing
+    , physicalConditions = Nothing
+    , infectiousDiseases = Nothing
+    , mentalHealthIssues = Nothing
     }
 
 

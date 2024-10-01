@@ -670,22 +670,54 @@ type alias LastMenstrualPeriod =
 
 
 type MedicalHistorySign
-    = UterineMyoma
-    | Diabetes
+    = Asthma
     | CardiacDisease
-    | RenalDisease
+    | Diabetes
     | HypertensionBeforePregnancy
+    | RenalDisease
+    | NoMedicalHistorySigns
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
+    | BowedLegs
+    | UterineMyoma
+    | HIV
     | TuberculosisPast
     | TuberculosisPresent
-    | Asthma
-    | BowedLegs
-    | HIV
     | MentalHealthHistory
-    | NoMedicalHistorySigns
+
+
+type MedicalHistoryPhysicalCondition
+    = PhysicalConditionUterineMyomaCurrent
+    | PhysicalConditionUterineMyomaSurgicalResection
+    | PhysicalConditionBowedLegs
+    | NoMedicalHistoryPhysicalCondition
+    | MigrateMedicalHistoryPhysicalCondition
+
+
+type MedicalHistoryInfectiousDisease
+    = InfectiousDiseasesHIV
+    | InfectiousDiseasesTuberculosisPast
+    | InfectiousDiseasesTuberculosisPresent
+    | NoMedicalHistoryInfectiousDisease
+
+
+type MedicalHistoryMentalHealthIssue
+    = MentalHealthIssueGeneralDepression
+    | MentalHealthIssuePerinatalDepression
+    | MentalHealthIssueSchizophrenia
+    | MentalHealthIssueTrauma
+    | NoMedicalHistoryMentalHealthIssue
 
 
 type alias MedicalHistory =
-    PrenatalMeasurement (EverySet MedicalHistorySign)
+    PrenatalMeasurement MedicalHistoryValue
+
+
+type alias MedicalHistoryValue =
+    { signs : EverySet MedicalHistorySign
+    , physicalConditions : EverySet MedicalHistoryPhysicalCondition
+    , infectiousDiseases : EverySet MedicalHistoryInfectiousDisease
+    , mentalHealthIssues : EverySet MedicalHistoryMentalHealthIssue
+    }
 
 
 type MedicationSign
