@@ -34,6 +34,7 @@ import Measurement.Model
         , PhotoForm
         , VaccinationFormViewMode(..)
         , VaccinationProgressDict
+        , VaccinationStatus(..)
         , VitalsForm
         , VitalsFormMode(..)
         )

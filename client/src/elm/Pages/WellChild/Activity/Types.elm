@@ -1,12 +1,6 @@
 module Pages.WellChild.Activity.Types exposing (..)
 
 
-type VaccinationStatus
-    = StatusBehind
-    | StatusCompleted
-    | StatusUpToDate
-
-
 type DangerSignsTask
     = TaskSymptomsReview
     | TaskVitals
