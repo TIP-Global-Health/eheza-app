@@ -1322,58 +1322,40 @@ encodeLmpDateNotConfidentReason =
     lmpDateNotConfidentReasonToString >> string
 
 
-encodeMedicalHistorySign : MedicalHistorySign -> Value
-encodeMedicalHistorySign sign =
-    string <|
-        case sign of
-            UterineMyoma ->
-                "uterine-myonma"
-
-            Diabetes ->
-                "diabetes"
-
-            CardiacDisease ->
-                "cardiac-disease"
-
-            RenalDisease ->
-                "renal-disease"
-
-            HypertensionBeforePregnancy ->
-                "hypertension-before-pregnancy"
-
-            TuberculosisPast ->
-                "tuberculosis-past"
-
-            TuberculosisPresent ->
-                "tuberculosis-present"
-
-            Asthma ->
-                "asthma"
-
-            BowedLegs ->
-                "bowed-legs"
-
-            HIV ->
-                "hiv"
-
-            MentalHealthHistory ->
-                "mental-health-history"
-
-            NoMedicalHistorySigns ->
-                "none"
-
-
 encodeMedicalHistory : MedicalHistory -> List ( String, Value )
 encodeMedicalHistory =
     encodePrenatalMeasurement encodeMedicalHistoryValue
 
 
-encodeMedicalHistoryValue : EverySet MedicalHistorySign -> List ( String, Value )
+encodeMedicalHistoryValue : MedicalHistoryValue -> List ( String, Value )
 encodeMedicalHistoryValue value =
-    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value )
+    [ ( "medical_history", encodeEverySet encodeMedicalHistorySign value.signs )
+    , ( "physical_condition_history", encodeEverySet encodeMedicalHistoryPhysicalCondition value.physicalConditions )
+    , ( "infectious_disease_history", encodeEverySet encodeMedicalHistoryInfectiousDisease value.infectiousDiseases )
+    , ( "mental_health_issues", encodeEverySet encodeMedicalHistoryMentalHealthIssue value.mentalHealthIssues )
     , ( "deleted", bool False )
     , ( "type", string "medical_history" )
     ]
+
+
+encodeMedicalHistorySign : MedicalHistorySign -> Value
+encodeMedicalHistorySign =
+    medicalHistorySignToString >> string
+
+
+encodeMedicalHistoryPhysicalCondition : MedicalHistoryPhysicalCondition -> Value
+encodeMedicalHistoryPhysicalCondition =
+    medicalHistoryPhysicalConditionToString >> string
+
+
+encodeMedicalHistoryInfectiousDisease : MedicalHistoryInfectiousDisease -> Value
+encodeMedicalHistoryInfectiousDisease =
+    medicalHistoryInfectiousDiseaseToString >> string
+
+
+encodeMedicalHistoryMentalHealthIssue : MedicalHistoryMentalHealthIssue -> Value
+encodeMedicalHistoryMentalHealthIssue =
+    medicalHistoryMentalHealthIssueToString >> string
 
 
 encodeMedicationSign : MedicationSign -> Value
@@ -1692,6 +1674,11 @@ encodeObstetricHistorySign sign =
                 "none"
 
 
+encodeObstetricHistoryStep2Sign : ObstetricHistoryStep2Sign -> Value
+encodeObstetricHistoryStep2Sign =
+    obstetricHistoryStep2SignToString >> string
+
+
 encodeObstetricHistoryStep2 : ObstetricHistoryStep2 -> List ( String, Value )
 encodeObstetricHistoryStep2 =
     encodePrenatalMeasurement encodeObstetricHistoryStep2Value
@@ -1701,6 +1688,7 @@ encodeObstetricHistoryStep2Value : ObstetricHistoryStep2Value -> List ( String, 
 encodeObstetricHistoryStep2Value value =
     [ ( "c_sections", int value.cSections )
     , ( "obstetric_history", encodeEverySet encodeObstetricHistorySign value.obstetricHistory )
+    , ( "obstetric_history_step2", encodeEverySet encodeObstetricHistoryStep2Sign value.signs )
     , ( "previous_delivery", encodeEverySet encodePreviousDeliverySign value.previousDelivery )
     , ( "previous_delivery_period", encodeEverySet encodePreviousDeliveryPeriod value.previousDeliveryPeriod )
     , ( "deleted", bool False )

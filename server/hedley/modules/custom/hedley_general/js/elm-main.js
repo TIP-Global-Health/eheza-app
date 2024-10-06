@@ -16210,19 +16210,19 @@ var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateT
 					A2(
 					$elm$core$List$cons,
 					A2($author$project$Translate$translate, language, $author$project$Translate$WastingModerate),
-					backendTableData.stuntingModerate),
+					backendTableData.wastingModerate),
 					A2(
 					$elm$core$List$cons,
 					A2($author$project$Translate$translate, language, $author$project$Translate$WastingSevere),
-					backendTableData.stuntingSevere),
+					backendTableData.wastingSevere),
 					A2(
 					$elm$core$List$cons,
 					A2($author$project$Translate$translate, language, $author$project$Translate$UnderweightModerate),
-					backendTableData.stuntingModerate),
+					backendTableData.underweightModerate),
 					A2(
 					$elm$core$List$cons,
 					A2($author$project$Translate$translate, language, $author$project$Translate$UnderweightSevere),
-					backendTableData.stuntingSevere)
+					backendTableData.underweightSevere)
 				])
 		};
 	});
