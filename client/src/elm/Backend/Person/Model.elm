@@ -136,7 +136,7 @@ type Initiator
     = ParticipantDirectoryOrigin
     | IndividualEncounterOrigin IndividualEncounterType
     | GroupEncounterOrigin SessionId
-    | PrenatalNextStepsActivityOrigin PrenatalEncounterId
+    | PrenatalNextStepsNewbornEnrolmentOrigin NominalDate PrenatalEncounterId
     | AcuteIllnessContactsTracingActivityOrigin AcuteIllnessEncounterId
 
 

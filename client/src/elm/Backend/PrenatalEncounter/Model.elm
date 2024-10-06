@@ -175,7 +175,7 @@ type Msg
     | HandleSavedDangerSigns (WebData ())
     | SaveLastMenstrualPeriod PersonId (Maybe LastMenstrualPeriodId) LastMenstrualPeriodValue
     | HandleSavedLastMenstrualPeriod (WebData ())
-    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) (EverySet MedicalHistorySign)
+    | SaveMedicalHistory PersonId (Maybe MedicalHistoryId) MedicalHistoryValue
     | HandleSavedMedicalHistory (WebData ())
     | SaveMedication PersonId (Maybe MedicationId) MedicationValue
     | HandleSavedMedication (WebData ())

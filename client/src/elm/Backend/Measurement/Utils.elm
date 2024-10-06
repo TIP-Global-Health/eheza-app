@@ -4475,3 +4475,274 @@ hivHealthEducationSignFromString diagnosis =
 
         _ ->
             Nothing
+
+
+obstetricHistoryStep2SignToString : ObstetricHistoryStep2Sign -> String
+obstetricHistoryStep2SignToString sign =
+    case sign of
+        ObstetricHistoryPreeclampsiaPreviousPregnancy ->
+            "preeclampsia-previous-pregnancy"
+
+        ObstetricHistoryGestationalDiabetesPreviousPregnancy ->
+            "gestational-diabetes-previous-pregnancy"
+
+        ObstetricHistoryIncompleteCervixPreviousPregnancy ->
+            "incomplete-cervix-previous-pregnancy"
+
+        ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery ->
+            "baby-died-on-day-of-birth-previous-delivery"
+
+        ObstetricHistoryPartialPlacentaPreviousDelivery ->
+            "partial-placenta-previous-delivery"
+
+        ObstetricHistorySevereHemorrhagingPreviousDelivery ->
+            "severe-hemorrhaging-previous-delivery"
+
+        ObstetricHistoryConvulsionsPreviousDelivery ->
+            "convulsions-previous-delivery"
+
+        ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
+            "convulsions-and-unconscious-previous-delivery"
+
+        NoObstetricHistoryStep2Sign ->
+            "none"
+
+        MigrateObstetricHistoryStep2Sign ->
+            "migrate"
+
+
+obstetricHistoryStep2SignFromString : String -> Maybe ObstetricHistoryStep2Sign
+obstetricHistoryStep2SignFromString sign =
+    case sign of
+        "preeclampsia-previous-pregnancy" ->
+            Just ObstetricHistoryPreeclampsiaPreviousPregnancy
+
+        "gestational-diabetes-previous-pregnancy" ->
+            Just ObstetricHistoryGestationalDiabetesPreviousPregnancy
+
+        "incomplete-cervix-previous-pregnancy" ->
+            Just ObstetricHistoryIncompleteCervixPreviousPregnancy
+
+        "baby-died-on-day-of-birth-previous-delivery" ->
+            Just ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
+
+        "partial-placenta-previous-delivery" ->
+            Just ObstetricHistoryPartialPlacentaPreviousDelivery
+
+        "severe-hemorrhaging-previous-delivery" ->
+            Just ObstetricHistorySevereHemorrhagingPreviousDelivery
+
+        "convulsions-previous-delivery" ->
+            Just ObstetricHistoryConvulsionsPreviousDelivery
+
+        "convulsions-and-unconscious-previous-delivery" ->
+            Just ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+
+        "none" ->
+            Just NoObstetricHistoryStep2Sign
+
+        "migrate" ->
+            Just MigrateObstetricHistoryStep2Sign
+
+        _ ->
+            Nothing
+
+
+medicalHistorySignToString : MedicalHistorySign -> String
+medicalHistorySignToString sign =
+    case sign of
+        UterineMyoma ->
+            "uterine-myonma"
+
+        Diabetes ->
+            "diabetes"
+
+        CardiacDisease ->
+            "cardiac-disease"
+
+        RenalDisease ->
+            "renal-disease"
+
+        HypertensionBeforePregnancy ->
+            "hypertension-before-pregnancy"
+
+        TuberculosisPast ->
+            "tuberculosis-past"
+
+        TuberculosisPresent ->
+            "tuberculosis-present"
+
+        Asthma ->
+            "asthma"
+
+        BowedLegs ->
+            "bowed-legs"
+
+        HIV ->
+            "hiv"
+
+        MentalHealthHistory ->
+            "mental-health-history"
+
+        NoMedicalHistorySigns ->
+            "none"
+
+
+medicalHistorySignFromString : String -> Maybe MedicalHistorySign
+medicalHistorySignFromString sign =
+    case sign of
+        "uterine-myonma" ->
+            Just UterineMyoma
+
+        "diabetes" ->
+            Just Diabetes
+
+        "cardiac-disease" ->
+            Just CardiacDisease
+
+        "renal-disease" ->
+            Just RenalDisease
+
+        "hypertension-before-pregnancy" ->
+            Just HypertensionBeforePregnancy
+
+        "tuberculosis-past" ->
+            Just TuberculosisPast
+
+        "tuberculosis-present" ->
+            Just TuberculosisPresent
+
+        "asthma" ->
+            Just Asthma
+
+        "bowed-legs" ->
+            Just BowedLegs
+
+        "hiv" ->
+            Just HIV
+
+        "mental-health-history" ->
+            Just MentalHealthHistory
+
+        "none" ->
+            Just NoMedicalHistorySigns
+
+        _ ->
+            Nothing
+
+
+medicalHistoryPhysicalConditionToString : MedicalHistoryPhysicalCondition -> String
+medicalHistoryPhysicalConditionToString sign =
+    case sign of
+        PhysicalConditionUterineMyomaCurrent ->
+            "uterine-myonma-current"
+
+        PhysicalConditionUterineMyomaSurgicalResection ->
+            "uterine-myonma-surgical"
+
+        PhysicalConditionBowedLegs ->
+            "bowed-legs"
+
+        NoMedicalHistoryPhysicalCondition ->
+            "none"
+
+        MigrateMedicalHistoryPhysicalCondition ->
+            "migrate"
+
+
+medicalHistoryPhysicalConditionFromString : String -> Maybe MedicalHistoryPhysicalCondition
+medicalHistoryPhysicalConditionFromString sign =
+    case sign of
+        "uterine-myonma-current" ->
+            Just PhysicalConditionUterineMyomaCurrent
+
+        "uterine-myonma-surgical" ->
+            Just PhysicalConditionUterineMyomaSurgicalResection
+
+        "bowed-legs" ->
+            Just PhysicalConditionBowedLegs
+
+        "none" ->
+            Just NoMedicalHistoryPhysicalCondition
+
+        "migrate" ->
+            Just MigrateMedicalHistoryPhysicalCondition
+
+        _ ->
+            Nothing
+
+
+medicalHistoryInfectiousDiseaseToString : MedicalHistoryInfectiousDisease -> String
+medicalHistoryInfectiousDiseaseToString sign =
+    case sign of
+        InfectiousDiseasesHIV ->
+            "hiv"
+
+        InfectiousDiseasesTuberculosisPast ->
+            "tuberculosis-past"
+
+        InfectiousDiseasesTuberculosisPresent ->
+            "tuberculosis-present"
+
+        NoMedicalHistoryInfectiousDisease ->
+            "none"
+
+
+medicalHistoryInfectiousDiseaseFromString : String -> Maybe MedicalHistoryInfectiousDisease
+medicalHistoryInfectiousDiseaseFromString sign =
+    case sign of
+        "hiv" ->
+            Just InfectiousDiseasesHIV
+
+        "tuberculosis-past" ->
+            Just InfectiousDiseasesTuberculosisPast
+
+        "tuberculosis-present" ->
+            Just InfectiousDiseasesTuberculosisPresent
+
+        "none" ->
+            Just NoMedicalHistoryInfectiousDisease
+
+        _ ->
+            Nothing
+
+
+medicalHistoryMentalHealthIssueToString : MedicalHistoryMentalHealthIssue -> String
+medicalHistoryMentalHealthIssueToString sign =
+    case sign of
+        MentalHealthIssueGeneralDepression ->
+            "general-depression"
+
+        MentalHealthIssuePerinatalDepression ->
+            "perinatal-depression"
+
+        MentalHealthIssueSchizophrenia ->
+            "schizophrenia"
+
+        MentalHealthIssueTrauma ->
+            "trauma"
+
+        NoMedicalHistoryMentalHealthIssue ->
+            "none"
+
+
+medicalHistoryMentalHealthIssueFromString : String -> Maybe MedicalHistoryMentalHealthIssue
+medicalHistoryMentalHealthIssueFromString sign =
+    case sign of
+        "general-depression" ->
+            Just MentalHealthIssueGeneralDepression
+
+        "perinatal-depression" ->
+            Just MentalHealthIssuePerinatalDepression
+
+        "schizophrenia" ->
+            Just MentalHealthIssueSchizophrenia
+
+        "trauma" ->
+            Just MentalHealthIssueTrauma
+
+        "none" ->
+            Just NoMedicalHistoryMentalHealthIssue
+
+        _ ->
+            Nothing

@@ -20,7 +20,6 @@ import Pages.Utils
         , maybeToBoolTask
         , taskCompleted
         , viewBoolInput
-        , viewCheckBoxMultipleSelectCustomInput
         , viewCheckBoxSelectCustomInput
         , viewCheckBoxSelectInput
         , viewCustomLabel

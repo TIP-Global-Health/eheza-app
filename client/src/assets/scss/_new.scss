@@ -455,7 +455,7 @@ div.page-pincode {
     background: $color-light-background;
     border: 2px solid $color-white;
     margin-bottom: 0;
-    margin-top: auto;
+    margin-top: 25px;
     width: 100%;
   }
 
@@ -644,24 +644,34 @@ button.ui.primary.button.individual-assessment {
   }
 }
 
-button.ui.primary.button.group-assessment .icon {
-  background-image: url(#{$img-path}icon-group-encounter.svg);
-}
-
+button.ui.primary.button.group-assessment,
 button.ui.primary.button.individual-assessment {
 
-  .icon {
-    background-image: url(#{$img-path}icon-individual-encounter.svg);
-    background-size: 40px 40px;
-    margin-left: 55px;
-    margin-top: 8px;
-    height: 40px;
-    width: 40px;
+  img {
+    float: left;
+    margin-left: 20px;
+  }
+
+  .text {
+    width: 57%;
   }
 
   .icon-back {
     margin-left: 57px;
   }
+}
+
+button.ui.primary.button.group-assessment img {
+  height: 40px;
+  width: 50px;
+  margin-top: 8px;
+}
+
+button.ui.primary.button.individual-assessment img {
+  height: 40px;
+  width: 40px;
+  margin-right: 10px;
+  margin-top: 10px;
 }
 
 div.page-person-create {
@@ -1911,15 +1921,18 @@ div.page-activity.stock-management {
         }
       }
 
-      .label.successive-abortions {
-        margin-top: 30px
-      }
-
       &.medical,
       &.social {
 
         .alert img {
           margin-top: -10px;
+        }
+      }
+
+      &.medical {
+
+        .checkbox-select-input {
+          margin-bottom: 50px;
         }
       }
     }
@@ -3071,6 +3084,13 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .vaccination-history {
+
+    .pane-content {
+      padding-left: 0;
+    }
+  }
+
   .chw-activities {
 
     .heading,
@@ -4041,7 +4061,8 @@ div.page-activity.well-child,
 div.page-report.acute-illness,
 div.page-report.well-child,
 div.page-report.child-scoreboard,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-report.clinical {
 
   .heading {
     border-bottom: 1px solid $color-text;

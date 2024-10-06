@@ -192,12 +192,12 @@ viewMotherDetails language currentDate isChw assembled alertsDialogData =
                 |> Maybe.map
                     (\( isDialogOpen, setAlertsDialogStateMsg ) ->
                         let
-                            firstEncounterMeasurements =
-                                getFirstEncounterMeasurements isChw assembled
+                            firstNurseEncounterMeasurements =
+                                getFirstNurseEncounterMeasurements isChw assembled
 
                             highRiskAlertsData =
                                 allHighRiskFactors
-                                    |> List.filterMap (generateHighRiskAlertData language firstEncounterMeasurements)
+                                    |> List.filterMap (generateHighRiskAlertData language firstNurseEncounterMeasurements)
 
                             highSeverityAlertsData =
                                 allHighSeverityAlerts

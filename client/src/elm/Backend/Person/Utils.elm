@@ -7,7 +7,8 @@ import Backend.IndividualEncounterParticipant.Utils exposing (individualEncounte
 import Backend.Measurement.Model exposing (Gender(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (..)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears)
+import Date
+import Gizra.NominalDate exposing (NominalDate, diffMonths, diffYears, formatYYYYMMDD)
 import Maybe.Extra exposing (isJust)
 import RemoteData
 import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
@@ -142,8 +143,8 @@ initiatorToUrlFragment initiator =
         GroupEncounterOrigin sessionId ->
             "session-" ++ fromEntityUuid sessionId
 
-        PrenatalNextStepsActivityOrigin encounterId ->
-            "prenatal-next-steps-" ++ fromEntityUuid encounterId
+        PrenatalNextStepsNewbornEnrolmentOrigin birthDate encounterId ->
+            "prenatal-next-steps-" ++ formatYYYYMMDD birthDate ++ "-" ++ fromEntityUuid encounterId
 
         AcuteIllnessContactsTracingActivityOrigin _ ->
             -- Not in use, as at Acute Ilness patient is created
@@ -195,10 +196,33 @@ initiatorFromUrlFragment s =
                     |> Just
 
             else if String.startsWith "prenatal-next-steps-" s then
-                String.dropLeft 20 s
-                    |> toEntityUuid
-                    |> PrenatalNextStepsActivityOrigin
-                    |> Just
+                let
+                    -- Format is YYYY-MM-DD-[UUID].
+                    birthDateWithUuid =
+                        String.dropLeft 20 s
+
+                    birthDate =
+                        String.left 10 birthDateWithUuid
+
+                    uuid =
+                        String.dropLeft 11 birthDateWithUuid
+                in
+                case String.split "-" birthDate of
+                    [ yyyy, mm, dd ] ->
+                        Maybe.map3
+                            (\year month day ->
+                                Just <|
+                                    PrenatalNextStepsNewbornEnrolmentOrigin
+                                        (Date.fromCalendarDate year (Date.numberToMonth month) day)
+                                        (toEntityUuid uuid)
+                            )
+                            (String.toInt yyyy)
+                            (String.toInt mm)
+                            (String.toInt dd)
+                            |> Maybe.withDefault Nothing
+
+                    _ ->
+                        Nothing
 
             else
                 Nothing

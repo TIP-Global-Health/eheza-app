@@ -12,22 +12,15 @@ import Pages.Prenatal.Outcome.Model exposing (..)
 update : NominalDate -> IndividualEncounterParticipantId -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update currentDate id msg model =
     case msg of
-        SavePregnancyOutcome destinationPage ->
-            Maybe.map3
-                (\dateConcluded outcome deliveryLocation ->
-                    ( model
-                    , Cmd.none
-                    , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome deliveryLocation
-                            |> Backend.Model.MsgIndividualEncounterParticipant id
-                            |> App.Model.MsgIndexedDb
-                      , App.Model.SetActivePage destinationPage
-                      ]
-                    )
-                )
-                model.pregnancyConcludedDate
-                model.pregnancyOutcome
-                model.deliveryLocation
-                |> Maybe.withDefault ( model, Cmd.none, [] )
+        SavePregnancyOutcome dateConcluded outcome location destinationPage ->
+            ( model
+            , Cmd.none
+            , [ Backend.IndividualEncounterParticipant.Model.ClosePrenatalSession dateConcluded outcome location
+                    |> Backend.Model.MsgIndividualEncounterParticipant id
+                    |> App.Model.MsgIndexedDb
+              , App.Model.SetActivePage destinationPage
+              ]
+            )
 
         SetActivePage page ->
             ( model
