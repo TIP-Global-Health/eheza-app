@@ -6,3 +6,161 @@
  */
 
 include_once 'hedley_prenatal.features.inc';
+
+/**
+ * Implements hook_node_presave().
+ *
+ * Migrates data of 'obstetric_history_step2' and 'medical_history'
+ * into new fields that were added to content types.
+ * This logic will need to remain a couple of months, until al devices
+ * update the APP and upload their content. Can be removed around Jan 2025.
+ *
+ * @todo: Remove this when we're certain that migration has ended (Jan 2025).
+ */
+function hedley_prenatal_node_presave($node) {
+  switch ($node->type) {
+    case 'obstetric_history_step2':
+      hedley_prenatal_migrate_obstetric_history_step2($node);
+      break;
+
+    case 'medical_history':
+      hedley_prenatal_migrate_medical_history($node);
+      break;
+  }
+}
+
+/**
+ * Migrates data of 'obstetric_history_step2' content type.
+ *
+ * This function processes the `$node` object, checking if migration is needed
+ * for obstetric and previous delivery history fields. If migration has already
+ * been done (indicated by the 'migrate' value), the function will exit.
+ * It then updates the `field_obstetric_history` and `field_previous_delivery`
+ * fields, migrating certain values to `field_obstetric_history_step2`.
+ *
+ * @param object $node
+ *   The node object containing the obstetric and previous delivery history
+ *   fields to be migrated.
+ */
+function hedley_prenatal_migrate_obstetric_history_step2($node) {
+  if (
+    !empty($node->field_obstetric_history_step2[LANGUAGE_NONE]) &&
+    ($node->field_obstetric_history_step2[LANGUAGE_NONE][0]['value'] != 'migrate')
+  ) {
+    // This is sign that we do not need to perform migration,
+    // since data is getting in new format already.
+    return;
+  }
+
+  $migrated_values = [];
+  $obstetric_history_migration = [
+    'preeclampsia-previous-pregnancy',
+    'gestational-diabetes-previous-pregnancy',
+    'incomplete-cervix-previous-pregnancy',
+  ];
+
+  foreach ($node->field_obstetric_history[LANGUAGE_NONE] as $item) {
+    if (in_array($item['value'], $obstetric_history_migration)) {
+      $migrated_values[] = $item;
+    }
+  }
+  $node->field_obstetric_history[LANGUAGE_NONE] = [];
+
+  $previous_delivery_migration = [
+    'baby-died-on-day-of-birth-previous-delivery',
+    'partial-placenta-previous-delivery',
+    'severe-hemorrhaging-previous-delivery',
+    'convulsions-previous-delivery',
+    'convulsions-and-unconscious-previous-delivery',
+  ];
+
+  foreach ($node->field_previous_delivery[LANGUAGE_NONE] as $index => $item) {
+    if (in_array($item['value'], $previous_delivery_migration)) {
+      $migrated_values[] = $item;
+      unset($node->field_previous_delivery[LANGUAGE_NONE][$index]);
+    }
+    elseif ($item['value'] == 'stillborn-previous-delivery') {
+      unset($node->field_previous_delivery[LANGUAGE_NONE][$index]);
+    }
+  }
+  if (empty($node->field_previous_delivery[LANGUAGE_NONE])) {
+    $node->field_previous_delivery[LANGUAGE_NONE][0]['value'] = 'none';
+  }
+
+  if (empty($migrated_values)) {
+    $migrated_values[] = ['value' => 'none'];
+  }
+  $node->field_obstetric_history_step2[LANGUAGE_NONE] = $migrated_values;
+}
+
+/**
+ * Migrates data of 'medical_history' content type.
+ *
+ * This function processes the `$node` object to migrate specific medical
+ * history fields into separate categories: physical condition, infectious
+ * disease, and mental health issues. If migration has already been performed
+ * (indicated by the 'migrate' flag in the `field_physical_condition_history`),
+ * the function will exit. Otherwise, it classifies and migrates the data.
+ *
+ * @param object $node
+ *   The node object containing the medical history fields to be migrated.
+ */
+function hedley_prenatal_migrate_medical_history($node) {
+  if (
+    !empty($node->field_physical_condition_history[LANGUAGE_NONE]) &&
+    ($node->field_physical_condition_history[LANGUAGE_NONE][0]['value'] != 'migrate')
+  ) {
+    // This is sign that we do not need to perform migration,
+    // since data is getting in new format already.
+    // Migration flag is raised only in one newly added field, which
+    // is enough to signal that migration is required.
+    return;
+  }
+
+  $migrated_values_physical_condition = [];
+  $physical_condition_migration = [
+    'uterine-myonma',
+    'bowed-legs',
+  ];
+
+  $migrated_values_infectious_disease = [];
+  $infectious_disease_migration = [
+    'hiv',
+    'tuberculosis-past',
+    'tuberculosis-present',
+  ];
+
+  foreach ($node->field_medical_history[LANGUAGE_NONE] as $index => $item) {
+    if (in_array($item['value'], $physical_condition_migration)) {
+      if ($item['value'] == 'uterine-myonma') {
+        $migrated_values_physical_condition[] = ['value' => 'uterine-myonma-current'];
+      }
+      else {
+        $migrated_values_physical_condition[] = $item;
+      }
+      unset($node->field_medical_history[LANGUAGE_NONE][$index]);
+    }
+    elseif (in_array($item['value'], $infectious_disease_migration)) {
+      $migrated_values_infectious_disease[] = $item;
+      unset($node->field_medical_history[LANGUAGE_NONE][$index]);
+    }
+    elseif ($item['value'] == 'mental-health-history') {
+      unset($node->field_medical_history[LANGUAGE_NONE][$index]);
+    }
+  }
+  if (empty($node->field_medical_history[LANGUAGE_NONE])) {
+    $node->field_medical_history[LANGUAGE_NONE][0]['value'] = 'none';
+  }
+
+  if (empty($migrated_values_physical_condition)) {
+    $migrated_values_physical_condition[] = ['value' => 'none'];
+  }
+  $node->field_physical_condition_history[LANGUAGE_NONE] = $migrated_values_physical_condition;
+
+  if (empty($migrated_values_infectious_disease)) {
+    $migrated_values_infectious_disease[] = ['value' => 'none'];
+  }
+  $node->field_infectious_disease_history[LANGUAGE_NONE] = $migrated_values_infectious_disease;
+
+  $node->field_mental_health_issues[LANGUAGE_NONE][] = ['value' => 'none'];;
+}

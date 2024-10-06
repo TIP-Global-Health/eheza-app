@@ -597,6 +597,7 @@ healthEducationFormWithDefault form saved =
                 , earlyMastitisOrEngorgment = EverySet.member EducationEarlyMastitisOrEngorgment value.signs |> Just
                 , mastitis = EverySet.member EducationMastitis value.signs |> Just
                 , grief = EverySet.member EducationGrief value.signs |> Just
+                , hivPartnerPresence = EverySet.member EducationHIVPartnerPresence value.signs |> Just
                 }
             )
 

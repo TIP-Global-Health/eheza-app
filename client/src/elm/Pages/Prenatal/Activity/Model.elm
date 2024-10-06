@@ -67,16 +67,19 @@ type Msg
       -- HistoryMsgs, OB, Step 1
     | SetCurrentlyPregnant Bool
     | SetOBIntInput (Maybe Int -> ObstetricFormFirstStep -> ObstetricFormFirstStep) String
-    | SaveOBHistoryStep1 PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory ))
+    | SaveOBHistoryStep1 Bool PersonId (Maybe ( ObstetricHistoryId, ObstetricHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, OB, Step 2
     | SetCSectionReason CSectionReason
-    | SetNumberOfCSections String
     | SetOBBoolInput (Bool -> ObstetricFormSecondStep -> ObstetricFormSecondStep) Bool
     | SetPreviousDeliveryPeriod PreviousDeliveryPeriod
+    | SetObstetricFormSecondStepSign ObstetricHistoryStep2Sign
     | BackToOBHistoryStep1
     | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
-    | SetMedicalBoolInput (Bool -> MedicalHistoryForm -> MedicalHistoryForm) Bool
+    | SetMedicalHistorySigns MedicalHistorySign
+    | SetMedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
+    | SetMedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
+    | SetMedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
     | SaveMedicalHistory PersonId (Maybe ( MedicalHistoryId, MedicalHistory )) (Maybe HistoryTask)
       -- HistoryMsgs, Social
     | SetSocialBoolInput (Bool -> SocialHistoryForm -> SocialHistoryForm) Bool
@@ -757,78 +760,42 @@ emptyObstetricFormFirstStep =
 
 
 type alias ObstetricFormSecondStep =
-    { cSections : Maybe Int
-    , cSectionsDirty : Bool
+    { cSectionInPast : Maybe Bool
     , cSectionInPreviousDelivery : Maybe Bool
     , cSectionInPreviousDeliveryDirty : Bool
     , cSectionReason : Maybe CSectionReason
     , cSectionReasonDirty : Bool
     , previousDeliveryPeriod : Maybe PreviousDeliveryPeriod
-    , successiveAbortions : Maybe Bool
-    , successivePrematureDeliveries : Maybe Bool
-    , stillbornPreviousDelivery : Maybe Bool
-    , babyDiedOnDayOfBirthPreviousDelivery : Maybe Bool
-    , partialPlacentaPreviousDelivery : Maybe Bool
-    , severeHemorrhagingPreviousDelivery : Maybe Bool
-    , preeclampsiaPreviousPregnancy : Maybe Bool
-    , convulsionsPreviousDelivery : Maybe Bool
-    , convulsionsAndUnconsciousPreviousDelivery : Maybe Bool
-    , gestationalDiabetesPreviousPregnancy : Maybe Bool
-    , incompleteCervixPreviousPregnancy : Maybe Bool
+    , signs : Maybe (List ObstetricHistoryStep2Sign)
     }
 
 
 emptyObstetricFormSecondStep : ObstetricFormSecondStep
 emptyObstetricFormSecondStep =
-    { cSections = Nothing
-    , cSectionsDirty = False
+    { cSectionInPast = Nothing
     , cSectionInPreviousDelivery = Nothing
     , cSectionInPreviousDeliveryDirty = False
     , cSectionReason = Nothing
     , cSectionReasonDirty = False
     , previousDeliveryPeriod = Nothing
-    , successiveAbortions = Nothing
-    , successivePrematureDeliveries = Nothing
-    , stillbornPreviousDelivery = Nothing
-    , babyDiedOnDayOfBirthPreviousDelivery = Nothing
-    , partialPlacentaPreviousDelivery = Nothing
-    , severeHemorrhagingPreviousDelivery = Nothing
-    , preeclampsiaPreviousPregnancy = Nothing
-    , convulsionsPreviousDelivery = Nothing
-    , convulsionsAndUnconsciousPreviousDelivery = Nothing
-    , gestationalDiabetesPreviousPregnancy = Nothing
-    , incompleteCervixPreviousPregnancy = Nothing
+    , signs = Nothing
     }
 
 
 type alias MedicalHistoryForm =
-    { uterineMyoma : Maybe Bool
-    , diabetes : Maybe Bool
-    , cardiacDisease : Maybe Bool
-    , renalDisease : Maybe Bool
-    , hypertensionBeforePregnancy : Maybe Bool
-    , tuberculosisPast : Maybe Bool
-    , tuberculosisPresent : Maybe Bool
-    , asthma : Maybe Bool
-    , bowedLegs : Maybe Bool
-    , hiv : Maybe Bool
-    , mentalHealthHistory : Maybe Bool
+    { signs : Maybe (List MedicalHistorySign)
+    , physicalConditions : Maybe (List MedicalHistoryPhysicalCondition)
+    , infectiousDiseases : Maybe (List MedicalHistoryInfectiousDisease)
+    , mentalHealthIssues : Maybe (List MedicalHistoryMentalHealthIssue)
     }
 
 
 emptyMedicalHistoryForm : MedicalHistoryForm
 emptyMedicalHistoryForm =
-    { uterineMyoma = Nothing
-    , diabetes = Nothing
-    , cardiacDisease = Nothing
-    , renalDisease = Nothing
-    , hypertensionBeforePregnancy = Nothing
-    , tuberculosisPast = Nothing
-    , tuberculosisPresent = Nothing
-    , asthma = Nothing
-    , bowedLegs = Nothing
-    , hiv = Nothing
-    , mentalHealthHistory = Nothing
+    { signs = Nothing
+    , physicalConditions = Nothing
+    , infectiousDiseases = Nothing
+    , mentalHealthIssues = Nothing
     }
 
 

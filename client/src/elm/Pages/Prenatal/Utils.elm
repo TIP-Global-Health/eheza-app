@@ -3870,6 +3870,13 @@ provideHIVEducation phase measurements =
         |> Maybe.withDefault False
 
 
+provideHIVPartnerPresenceEducation : PrenatalMeasurements -> Bool
+provideHIVPartnerPresenceEducation measurements =
+    getMeasurementValueFunc measurements.partnerHIVTest
+        |> Maybe.map (.executionNote >> (==) TestNoteNotPresent)
+        |> Maybe.withDefault False
+
+
 healthEducationFormInputsAndTasksForNurse :
     Language
     -> PrenatalEncounterPhase
@@ -3957,6 +3964,23 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
             case phase of
                 PrenatalEncounterPhaseInitial ->
                     let
+                        hivPartnerPresenceEducation =
+                            if provideHIVPartnerPresenceEducation assembled.measurements then
+                                ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationHIVPartnerPresence) "" "label header"
+                                  , viewQuestionLabel language (Translate.PrenatalHealthEducationQuestion False EducationHIVPartnerPresence)
+                                  , viewBoolInput
+                                        language
+                                        form.hivPartnerPresence
+                                        (setBoolInputMsg (\value form_ -> { form_ | hivPartnerPresence = Just value }))
+                                        "hiv-partner-presence"
+                                        Nothing
+                                  ]
+                                , Just form.hivPartnerPresence
+                                )
+
+                            else
+                                ( [], Nothing )
+
                         nauseaVomiting =
                             if provideNauseaAndVomitingEducation assembled then
                                 ( [ viewCustomLabel language (Translate.PrenatalHealthEducationLabel EducationNauseaVomiting) "" "label header"
@@ -4241,7 +4265,8 @@ healthEducationFormInputsAndTasksForNurse language phase setBoolInputMsg assembl
                             else
                                 ( [], Nothing )
                     in
-                    [ detectableViralLoad DiagnosisHIVDetectableViralLoadInitialPhase
+                    [ hivPartnerPresenceEducation
+                    , detectableViralLoad DiagnosisHIVDetectableViralLoadInitialPhase
                     , diabetes diabetesDiagnosesInitialPhase
                     , nauseaVomiting
                     , legCramps

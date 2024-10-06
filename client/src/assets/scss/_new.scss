@@ -1921,15 +1921,18 @@ div.page-activity.stock-management {
         }
       }
 
-      .label.successive-abortions {
-        margin-top: 30px
-      }
-
       &.medical,
       &.social {
 
         .alert img {
           margin-top: -10px;
+        }
+      }
+
+      &.medical {
+
+        .checkbox-select-input {
+          margin-bottom: 50px;
         }
       }
     }
@@ -3081,6 +3084,13 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
+  .vaccination-history {
+
+    .pane-content {
+      padding-left: 0;
+    }
+  }
+
   .chw-activities {
 
     .heading,
@@ -4051,7 +4061,8 @@ div.page-activity.well-child,
 div.page-report.acute-illness,
 div.page-report.well-child,
 div.page-report.child-scoreboard,
-div.page-activity.patient-record {
+div.page-activity.patient-record,
+div.page-report.clinical {
 
   .heading {
     border-bottom: 1px solid $color-text;

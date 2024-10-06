@@ -1062,7 +1062,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             Backend.Person.Form.ubudehe
                             "ten"
                             "select-input"
-                            True
+                            False
                             personForm
                         ]
 

@@ -42,7 +42,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -83,7 +83,9 @@ expectActivity currentDate site assembled activity =
                     True
 
                 History ->
-                    True
+                    resolveHistoryTasks assembled
+                        |> List.isEmpty
+                        |> not
 
                 Examination ->
                     True
@@ -281,17 +283,8 @@ activityCompleted currentDate site assembled activity =
             isJust assembled.measurements.lastMenstrualPeriod
 
         History ->
-            if nurseEncounterNotPerformed assembled then
-                -- First antenatal encounter - all tasks should be completed
-                isJust assembled.measurements.obstetricHistory
-                    && isJust assembled.measurements.obstetricHistoryStep2
-                    && isJust assembled.measurements.medicalHistory
-                    && isJust assembled.measurements.socialHistory
-
-            else
-                -- Subsequent antenatal encounter - only Social history task
-                -- needs to be completed.
-                isJust assembled.measurements.socialHistory
+            resolveHistoryTasks assembled
+                |> List.all (historyTaskCompleted assembled)
 
         Examination ->
             resolveExaminationTasks assembled
@@ -429,6 +422,7 @@ expectNextStepsTask currentDate assembled task =
                     -- Emergency referral is not required.
                     (not <| emergencyReferalRequired assembled)
                         && (provideHIVEducation PrenatalEncounterPhaseInitial assembled.measurements
+                                || provideHIVPartnerPresenceEducation assembled.measurements
                                 || provideNauseaAndVomitingEducation assembled
                                 || List.any (symptomRecorded assembled.measurements)
                                     [ LegCramps, LowBackPain, Constipation, VaricoseVeins ]
@@ -786,10 +780,51 @@ expectHistoryTask assembled task =
             firstEnconter
 
         Social ->
-            True
+            -- Requirements are not to present this task anymore.
+            -- See https://github.com/TIP-Global-Health/eheza-app/issues/1323.
+            False
 
         OutsideCare ->
             not firstEnconter
+
+
+historyTaskCompleted : AssembledData -> HistoryTask -> Bool
+historyTaskCompleted assembled task =
+    case task of
+        Obstetric ->
+            let
+                obstetricHistoryValue =
+                    getMeasurementValueFunc assembled.measurements.obstetricHistory
+            in
+            if skipObstetricHistorySecondStep obstetricHistoryValue then
+                isJust assembled.measurements.obstetricHistory
+
+            else
+                isJust assembled.measurements.obstetricHistory
+                    && isJust assembled.measurements.obstetricHistoryStep2
+
+        Medical ->
+            isJust assembled.measurements.medicalHistory
+
+        Social ->
+            isJust assembled.measurements.socialHistory
+
+        OutsideCare ->
+            isJust assembled.measurements.outsideCare
+
+
+skipObstetricHistorySecondStep : Maybe ObstetricHistoryValue -> Bool
+skipObstetricHistorySecondStep obstetricHistoryValue =
+    let
+        gravida =
+            Maybe.map generateGravida obstetricHistoryValue
+                |> Maybe.withDefault ""
+
+        para =
+            Maybe.map generatePara obstetricHistoryValue
+                |> Maybe.withDefault ""
+    in
+    gravida == "01" && para == "0000"
 
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
@@ -987,23 +1022,6 @@ latestMedicationTreatmentForSyphilis assembled =
     in
     getLatestTreatmentByTreatmentOptions treatmentOptions assembled
         |> Maybe.map Translate.TreatmentDetailsSyphilis
-
-
-historyTaskCompleted : AssembledData -> HistoryTask -> Bool
-historyTaskCompleted assembled task =
-    case task of
-        Obstetric ->
-            isJust assembled.measurements.obstetricHistory
-                && isJust assembled.measurements.obstetricHistoryStep2
-
-        Medical ->
-            isJust assembled.measurements.medicalHistory
-
-        Social ->
-            isJust assembled.measurements.socialHistory
-
-        OutsideCare ->
-            isJust assembled.measurements.outsideCare
 
 
 referToMentalHealthSpecialist : AssembledData -> Bool
@@ -3333,64 +3351,33 @@ toLastMenstrualPeriodValue form =
         |> andMap (Just chwLmpConfirmation)
 
 
-fromMedicalHistoryValue : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm
-fromMedicalHistoryValue saved =
-    { uterineMyoma = Maybe.map (EverySet.member UterineMyoma) saved
-    , diabetes = Maybe.map (EverySet.member Diabetes) saved
-    , cardiacDisease = Maybe.map (EverySet.member CardiacDisease) saved
-    , renalDisease = Maybe.map (EverySet.member RenalDisease) saved
-    , hypertensionBeforePregnancy = Maybe.map (EverySet.member HypertensionBeforePregnancy) saved
-    , tuberculosisPast = Maybe.map (EverySet.member TuberculosisPast) saved
-    , tuberculosisPresent = Maybe.map (EverySet.member TuberculosisPresent) saved
-    , asthma = Maybe.map (EverySet.member Asthma) saved
-    , bowedLegs = Maybe.map (EverySet.member BowedLegs) saved
-    , hiv = Maybe.map (EverySet.member HIV) saved
-    , mentalHealthHistory = Maybe.map (EverySet.member MentalHealthHistory) saved
-    }
-
-
-medicalHistoryFormWithDefault : MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm
+medicalHistoryFormWithDefault : MedicalHistoryForm -> Maybe MedicalHistoryValue -> MedicalHistoryForm
 medicalHistoryFormWithDefault form saved =
     saved
         |> unwrap
             form
             (\value ->
-                { uterineMyoma = or form.uterineMyoma (EverySet.member UterineMyoma value |> Just)
-                , diabetes = or form.diabetes (EverySet.member Diabetes value |> Just)
-                , cardiacDisease = or form.cardiacDisease (EverySet.member CardiacDisease value |> Just)
-                , renalDisease = or form.renalDisease (EverySet.member RenalDisease value |> Just)
-                , hypertensionBeforePregnancy = or form.hypertensionBeforePregnancy (EverySet.member HypertensionBeforePregnancy value |> Just)
-                , tuberculosisPast = or form.tuberculosisPast (EverySet.member TuberculosisPast value |> Just)
-                , tuberculosisPresent = or form.tuberculosisPresent (EverySet.member TuberculosisPresent value |> Just)
-                , asthma = or form.asthma (EverySet.member Asthma value |> Just)
-                , bowedLegs = or form.bowedLegs (EverySet.member BowedLegs value |> Just)
-                , hiv = or form.hiv (EverySet.member HIV value |> Just)
-                , mentalHealthHistory = or form.mentalHealthHistory (EverySet.member MentalHealthHistory value |> Just)
+                { signs = or form.signs (Just <| EverySet.toList value.signs)
+                , physicalConditions = or form.physicalConditions (Just <| EverySet.toList value.physicalConditions)
+                , infectiousDiseases = or form.infectiousDiseases (Just <| EverySet.toList value.infectiousDiseases)
+                , mentalHealthIssues = or form.mentalHealthIssues (Just <| EverySet.toList value.mentalHealthIssues)
                 }
             )
 
 
-toMedicalHistoryValueWithDefault : Maybe (EverySet MedicalHistorySign) -> MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign)
+toMedicalHistoryValueWithDefault : Maybe MedicalHistoryValue -> MedicalHistoryForm -> Maybe MedicalHistoryValue
 toMedicalHistoryValueWithDefault saved form =
     medicalHistoryFormWithDefault form saved
         |> toMedicalHistoryValue
 
 
-toMedicalHistoryValue : MedicalHistoryForm -> Maybe (EverySet MedicalHistorySign)
+toMedicalHistoryValue : MedicalHistoryForm -> Maybe MedicalHistoryValue
 toMedicalHistoryValue form =
-    [ Maybe.map (ifTrue UterineMyoma) form.uterineMyoma
-    , Maybe.map (ifTrue Diabetes) form.diabetes
-    , Maybe.map (ifTrue CardiacDisease) form.cardiacDisease
-    , Maybe.map (ifTrue HypertensionBeforePregnancy) form.hypertensionBeforePregnancy
-    , Maybe.map (ifTrue TuberculosisPast) form.tuberculosisPast
-    , Maybe.map (ifTrue TuberculosisPresent) form.tuberculosisPresent
-    , Maybe.map (ifTrue Asthma) form.asthma
-    , Maybe.map (ifTrue BowedLegs) form.bowedLegs
-    , Maybe.map (ifTrue HIV) form.hiv
-    , Maybe.map (ifTrue MentalHealthHistory) form.mentalHealthHistory
-    ]
-        |> Maybe.Extra.combine
-        |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoMedicalHistorySigns)
+    Maybe.map4 MedicalHistoryValue
+        (Maybe.map EverySet.fromList form.signs)
+        (Maybe.map EverySet.fromList form.physicalConditions)
+        (Maybe.map EverySet.fromList form.infectiousDiseases)
+        (Maybe.map EverySet.fromList form.mentalHealthIssues)
 
 
 medicationFormWithDefault : MedicationForm -> Maybe MedicationValue -> MedicationForm
@@ -4097,8 +4084,19 @@ obstetricHistoryStep2FormWithDefault form saved =
         |> unwrap
             form
             (\value ->
-                { cSections = valueConsideringIsDirtyField form.cSectionsDirty form.cSections value.cSections
-                , cSectionsDirty = form.cSectionsDirty
+                let
+                    cSectionInPastFromValue =
+                        if EverySet.member CSectionInPast value.previousDelivery then
+                            True
+
+                        else
+                            -- This comes for intermediate period, where devices may
+                            -- have content to upload where number of c-section was recorded.
+                            -- In new version, this value is set to -1, so result will
+                            -- always be false here.
+                            value.cSections > 0
+                in
+                { cSectionInPast = or form.cSectionInPast (Just cSectionInPastFromValue)
                 , cSectionInPreviousDelivery =
                     maybeValueConsideringIsDirtyField form.cSectionInPreviousDeliveryDirty
                         form.cSectionInPreviousDelivery
@@ -4110,17 +4108,7 @@ obstetricHistoryStep2FormWithDefault form saved =
                         (Maybe.map EverySet.toList value.cSectionReason |> Maybe.andThen List.head)
                 , cSectionReasonDirty = form.cSectionReasonDirty
                 , previousDeliveryPeriod = or form.previousDeliveryPeriod (value.previousDeliveryPeriod |> EverySet.toList |> List.head)
-                , successiveAbortions = or form.successiveAbortions (EverySet.member SuccessiveAbortions value.obstetricHistory |> Just)
-                , successivePrematureDeliveries = or form.successivePrematureDeliveries (EverySet.member SuccessivePrematureDeliveries value.obstetricHistory |> Just)
-                , stillbornPreviousDelivery = or form.stillbornPreviousDelivery (EverySet.member StillbornPreviousDelivery value.previousDelivery |> Just)
-                , babyDiedOnDayOfBirthPreviousDelivery = or form.babyDiedOnDayOfBirthPreviousDelivery (EverySet.member BabyDiedOnDayOfBirthPreviousDelivery value.previousDelivery |> Just)
-                , partialPlacentaPreviousDelivery = or form.partialPlacentaPreviousDelivery (EverySet.member PartialPlacentaPreviousDelivery value.previousDelivery |> Just)
-                , severeHemorrhagingPreviousDelivery = or form.severeHemorrhagingPreviousDelivery (EverySet.member SevereHemorrhagingPreviousDelivery value.previousDelivery |> Just)
-                , preeclampsiaPreviousPregnancy = or form.preeclampsiaPreviousPregnancy (EverySet.member PreeclampsiaPreviousPregnancy value.obstetricHistory |> Just)
-                , convulsionsPreviousDelivery = or form.convulsionsPreviousDelivery (EverySet.member ConvulsionsPreviousDelivery value.previousDelivery |> Just)
-                , convulsionsAndUnconsciousPreviousDelivery = or form.convulsionsAndUnconsciousPreviousDelivery (EverySet.member ConvulsionsAndUnconsciousPreviousDelivery value.previousDelivery |> Just)
-                , gestationalDiabetesPreviousPregnancy = or form.gestationalDiabetesPreviousPregnancy (EverySet.member GestationalDiabetesPreviousPregnancy value.obstetricHistory |> Just)
-                , incompleteCervixPreviousPregnancy = or form.incompleteCervixPreviousPregnancy (EverySet.member IncompleteCervixPreviousPregnancy value.obstetricHistory |> Just)
+                , signs = or form.signs (Just <| EverySet.toList value.signs)
                 }
             )
 
@@ -4135,32 +4123,21 @@ toObstetricHistoryStep2Value : ObstetricFormSecondStep -> Maybe ObstetricHistory
 toObstetricHistoryStep2Value form =
     let
         previousDeliverySet =
-            [ ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
-            , Maybe.map (ifTrue StillbornPreviousDelivery) form.stillbornPreviousDelivery
-            , Maybe.map (ifTrue BabyDiedOnDayOfBirthPreviousDelivery) form.babyDiedOnDayOfBirthPreviousDelivery
-            , Maybe.map (ifTrue PartialPlacentaPreviousDelivery) form.partialPlacentaPreviousDelivery
-            , Maybe.map (ifTrue SevereHemorrhagingPreviousDelivery) form.severeHemorrhagingPreviousDelivery
-            , Maybe.map (ifTrue ConvulsionsPreviousDelivery) form.convulsionsPreviousDelivery
-            , Maybe.map (ifTrue ConvulsionsAndUnconsciousPreviousDelivery) form.convulsionsAndUnconsciousPreviousDelivery
+            [ Maybe.map (ifTrue CSectionInPast) form.cSectionInPast
+            , ifNullableTrue CSectionInPreviousDelivery form.cSectionInPreviousDelivery
             ]
                 |> Maybe.Extra.combine
                 |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPreviousDeliverySign)
-
-        obstetricHistorySet =
-            [ Maybe.map (ifTrue SuccessiveAbortions) form.successiveAbortions
-            , Maybe.map (ifTrue SuccessivePrematureDeliveries) form.successivePrematureDeliveries
-            , Maybe.map (ifTrue PreeclampsiaPreviousPregnancy) form.preeclampsiaPreviousPregnancy
-            , Maybe.map (ifTrue GestationalDiabetesPreviousPregnancy) form.gestationalDiabetesPreviousPregnancy
-            , Maybe.map (ifTrue IncompleteCervixPreviousPregnancy) form.incompleteCervixPreviousPregnancy
-            ]
-                |> Maybe.Extra.combine
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoObstetricHistorySign)
     in
-    Maybe.map ObstetricHistoryStep2Value form.cSections
+    -- Number of C-sections field is oboslete. Since we still need to
+    -- keep this info as part of the value, to support exisitng measurements,
+    -- we default it to -1.
+    Maybe.map ObstetricHistoryStep2Value (Just -1)
         |> andMap (Just <| Maybe.map EverySet.singleton form.cSectionReason)
         |> andMap previousDeliverySet
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
-        |> andMap obstetricHistorySet
+        |> andMap (Just <| EverySet.singleton NoObstetricHistorySign)
+        |> andMap (Maybe.map EverySet.fromList form.signs)
 
 
 fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
@@ -4667,7 +4644,8 @@ expectLaboratoryTask currentDate assembled task =
                             assembled
 
                 TaskPartnerHIVTest ->
-                    isInitialTest TaskPartnerHIVTest
+                    (not <| isKnownAsPositive .partnerHIVTest)
+                        && isInitialTest TaskPartnerHIVTest
 
                 TaskCompletePreviousTests ->
                     -- If we got this far, history task was completed.
@@ -5177,7 +5155,7 @@ expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Boo
 expectImmunisationTask currentDate assembled task =
     let
         futureVaccinations =
-            generateFutureVaccinationsData currentDate assembled
+            generateFutureVaccinationsDataByHistory currentDate assembled
                 |> Dict.fromList
 
         isTaskExpected vaccineType =
@@ -5193,11 +5171,25 @@ expectImmunisationTask currentDate assembled task =
         |> isTaskExpected
 
 
+generateFutureVaccinationsDataByHistory : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsDataByHistory currentDate assembled =
+    generateFutureVaccinationsData currentDate assembled.globalLmpDate assembled.vaccinationHistory
+
+
+generateFutureVaccinationsDataByProgress : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsDataByProgress currentDate assembled =
+    generateFutureVaccinationsData currentDate assembled.globalLmpDate assembled.vaccinationProgress
+
+
 {-| For each type of vaccine, we generate next dose and administration date.
 If there's no need for future vaccination, Nothing is returned.
 -}
-generateFutureVaccinationsData : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
-generateFutureVaccinationsData currentDate assembled =
+generateFutureVaccinationsData :
+    NominalDate
+    -> Maybe NominalDate
+    -> VaccinationProgressDict
+    -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
+generateFutureVaccinationsData currentDate globalLmpDate vaccinationDict =
     Maybe.map
         (\lmpDate ->
             let
@@ -5208,7 +5200,7 @@ generateFutureVaccinationsData currentDate assembled =
                 (\vaccineType ->
                     let
                         nextVaccinationData =
-                            case latestVaccinationDataForVaccine assembled.vaccinationHistory vaccineType of
+                            case latestVaccinationDataForVaccine vaccinationDict vaccineType of
                                 Just ( lastDoseAdministered, lastDoseDate ) ->
                                     nextVaccinationDataForVaccine currentDate egaInWeeks vaccineType lastDoseDate lastDoseAdministered
 
@@ -5223,7 +5215,7 @@ generateFutureVaccinationsData currentDate assembled =
                 )
                 allVaccineTypes
         )
-        assembled.globalLmpDate
+        globalLmpDate
         |> Maybe.withDefault []
 
 
@@ -5532,6 +5524,7 @@ healthEducationFormWithDefault form saved =
                 , hivDetectableViralLoad = or form.hivDetectableViralLoad (EverySet.member EducationHIVDetectableViralLoad value.signs |> Just)
                 , diabetes = or form.diabetes (EverySet.member EducationDiabetes value.signs |> Just)
                 , grief = or form.grief (EverySet.member EducationGrief value.signs |> Just)
+                , hivPartnerPresence = or form.hivPartnerPresence (EverySet.member EducationHIVPartnerPresence value.signs |> Just)
                 }
             )
 
@@ -5564,6 +5557,7 @@ toHealthEducationValue saved form =
     , ifNullableTrue EducationHIVDetectableViralLoad form.hivDetectableViralLoad
     , ifNullableTrue EducationDiabetes form.diabetes
     , ifNullableTrue EducationGrief form.grief
+    , ifNullableTrue EducationHIVPartnerPresence form.hivPartnerPresence
     ]
         |> Maybe.Extra.combine
         |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoPrenatalHealthEducationSigns)
