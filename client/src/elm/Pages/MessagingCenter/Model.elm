@@ -10,7 +10,7 @@ import Backend.ResilienceSurvey.Model
     exposing
         ( ResilienceSurveyQuestion
         , ResilienceSurveyQuestionOption
-        , ResilienceSurveyType(..)
+        , ResilienceSurveyType
         )
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)

@@ -243,6 +243,18 @@ viewActionsForNurse language currentDate selectedHealthCenter id db maybeSession
 
         subsequentEncounterButton =
             let
+                subsequentEnconterButtonAction =
+                    Maybe.map navigateToEncounterAction maybeActiveEncounterId
+                        |> Maybe.withDefault
+                            (Maybe.map
+                                -- If prenatal session exists, create new encounter for it.
+                                (\sessionId ->
+                                    createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter DestinationEncounterPage
+                                )
+                                maybeSessionId
+                                |> Maybe.withDefault []
+                            )
+
                 buttonDisabled =
                     firstEncounterButtonEnabled
                         || postpartumEncounterInProcess
@@ -273,18 +285,6 @@ viewActionsForNurse language currentDate selectedHealthCenter id db maybeSession
                         )
                         maybeSessionId
                         |> Maybe.withDefault (createNewSessionMsg currentDate selectedHealthCenter id NurseEncounter)
-                    )
-
-        subsequentEnconterButtonAction =
-            Maybe.map navigateToEncounterAction maybeActiveEncounterId
-                |> Maybe.withDefault
-                    (Maybe.map
-                        -- If prenatal session exists, create new encounter for it.
-                        (\sessionId ->
-                            createNewEncounterMsg currentDate selectedHealthCenter sessionId NurseEncounter DestinationEncounterPage
-                        )
-                        maybeSessionId
-                        |> Maybe.withDefault []
                     )
 
         postpartumEncounterButtonEnabled =

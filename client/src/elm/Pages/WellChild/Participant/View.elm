@@ -62,7 +62,6 @@ viewHeader language isChw initiator =
             , onClick <| App.Model.SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

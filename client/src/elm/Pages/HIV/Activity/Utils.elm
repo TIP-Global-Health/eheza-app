@@ -1,17 +1,13 @@
 module Pages.HIV.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
-import Backend.HIVActivity.Utils exposing (allActivities)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
-import Date
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
@@ -19,23 +15,19 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
         )
+import Measurement.View exposing (followUpFormInputsAndTasks, sendToFacilityInputsAndTasks)
 import Pages.HIV.Activity.Model exposing (..)
 import Pages.HIV.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
-        , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
-        , viewCheckBoxMultipleSelectInput
         , viewCheckBoxMultipleSelectSectionsInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
         , viewLabel
-        , viewNumberInput
         , viewQuestionLabel
         )
 import Translate exposing (TranslationId, translate)
@@ -154,10 +146,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetAdverseEvent
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 nextStepsTasks : List NextStepsTask
@@ -235,57 +224,71 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.followUp
 
 
-nextStepsTasksCompletedFromTotal : HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
-    case task of
-        TaskHealthEducation ->
-            let
-                form =
+nextStepsTasksCompletedFromTotal : NominalDate -> HIVMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
+    let
+        ( _, tasks ) =
+            case task of
+                TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-            in
-            ( taskCompleted form.positiveResult
-                + taskCompleted form.saferSexPractices
-                + taskCompleted form.encouragedPartnerTesting
-                + taskCompleted form.familyPlanningOptions
-            , 4
-            )
+                        |> healthEducationFormInputsAndTasks English currentDate
 
-        TaskFollowUp ->
-            let
-                form =
+                TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            SetFollowUpOption
 
-        TaskReferral ->
-            let
-                form =
+                TaskReferral ->
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
+    in
+    resolveTasksCompletedFromTotal tasks
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
 
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-            in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+healthEducationFormInputsAndTasks : Language -> NominalDate -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationPositiveResult
+      , viewBoolInput
+            language
+            form.positiveResult
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | positiveResult = Just value }))
+            "positive-result"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationSaferSexPractices
+      , viewBoolInput
+            language
+            form.saferSexPractices
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | saferSexPractices = Just value }))
+            "safer-sex-practices"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationEncouragedPartnerTesting
+      , viewBoolInput
+            language
+            form.encouragedPartnerTesting
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | encouragedPartnerTesting = Just value }))
+            "encouraged-partner-testing"
+            Nothing
+      , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationFamilyPlanningOptions
+      , viewBoolInput
+            language
+            form.familyPlanningOptions
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | familyPlanningOptions = Just value }))
+            "family-planning-options"
+            Nothing
+      ]
+    , [ form.positiveResult, form.saferSexPractices, form.encouragedPartnerTesting, form.familyPlanningOptions ]
+    )
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -535,11 +538,11 @@ prescribedMedicationsInputsAndTasks :
     -> ( List (Html Msg), ( Int, Int ) )
 prescribedMedicationsInputsAndTasks language currentDate assembled form =
     let
-        ( recordMedicationsInputs, recordMedicationsTasks ) =
-            recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
+        ( recordMedicationsForm, recordMedicationsTasks ) =
+            recordMedicationsFormAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
     if assembled.initialEncounter then
-        ( recordMedicationsInputs, recordMedicationsTasks )
+        ( recordMedicationsForm, recordMedicationsTasks )
 
     else
         generateAllEncountersData assembled
@@ -553,7 +556,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                                 ( [], ( 0, 0 ) )
 
                             else
-                                ( recordMedicationsInputs, recordMedicationsTasks )
+                                ( recordMedicationsForm, recordMedicationsTasks )
 
                         prescribedMedicationForView =
                             EverySet.toList prescribedMedication
@@ -579,19 +582,15 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                       )
                     )
                 )
-            |> Maybe.withDefault ( recordMedicationsInputs, recordMedicationsTasks )
+            |> Maybe.withDefault ( recordMedicationsForm, recordMedicationsTasks )
 
 
-recordMedicationsInputsAndTasks :
+recordMedicationsFormAndTasks :
     Language
     -> TranslationId
     -> PrescribedMedicationForm
     -> ( List (Html Msg), ( Int, Int ) )
-recordMedicationsInputsAndTasks language questionTransId form =
-    let
-        mandatoryGroup =
-            mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
-    in
+recordMedicationsFormAndTasks language questionTransId form =
     ( [ div [ class "ui form prescribed-medication" ]
             [ viewQuestionLabel language questionTransId
             , viewCheckBoxMultipleSelectSectionsInput language
@@ -606,6 +605,10 @@ recordMedicationsInputsAndTasks language questionTransId form =
       ]
     , ( Maybe.map
             (\medications ->
+                let
+                    mandatoryGroup =
+                        mostCommonAntiRetroviralMedications ++ lessCommonAntiRetroviralMedications
+                in
                 if List.any (\medication -> List.member medication medications) mandatoryGroup then
                     1
 

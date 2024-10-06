@@ -3,7 +3,7 @@ module Pages.Activities.Update exposing (update)
 import Activity.Model exposing (Activity(..), ChildActivity(..))
 import App.Ports exposing (bindDropZone)
 import Backend.Session.Model exposing (EditableSession)
-import EverySet exposing (EverySet)
+import EverySet
 import Pages.Activities.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Session.Model

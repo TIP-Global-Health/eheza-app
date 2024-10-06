@@ -8,21 +8,16 @@ import Backend.Measurement.Model
         , FollowUpOption(..)
         , FollowUpValue
         , LaboratoryTest(..)
-        , LabsResultsValue
-        , NCDLabsResults
-        , PrenatalLabsResults
         )
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Utils exposing (hivManagementEnabled, tuberculosisManagementEnabled)
-import Backend.Village.Model exposing (Village)
-import Backend.Village.Utils exposing (isVillageResident)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Pages.GlobalCaseManagement.Model exposing (..)
 import Pages.Utils
 import RemoteData exposing (WebData)
-import Restful.Endpoint exposing (fromEntityUuid, toEntityUuid)
+import Restful.Endpoint exposing (fromEntityUuid)
 import SyncManager.Model exposing (SiteFeature)
 
 

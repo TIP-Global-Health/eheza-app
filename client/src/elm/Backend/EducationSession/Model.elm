@@ -1,7 +1,6 @@
 module Backend.EducationSession.Model exposing (..)
 
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)

@@ -1,11 +1,9 @@
 module Pages.Tuberculosis.Encounter.Update exposing (update)
 
 import App.Model
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model
 import Backend.TuberculosisEncounter.Model
-import Gizra.Update exposing (sequenceExtra)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 import Pages.Tuberculosis.Encounter.Model exposing (..)
 
 

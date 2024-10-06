@@ -7,7 +7,7 @@ import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.WellChildEncounter.Model exposing (EncounterWarning(..), WellChildEncounterType(..))
+import Backend.WellChildEncounter.Model exposing (EncounterWarning(..))
 import Date
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
@@ -90,6 +90,12 @@ update currentDate site isChw id db msg model =
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| WellChildEncounterPage id ]
     in
     case msg of
+        NoOp ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SetActivePage page ->
             ( model
             , Cmd.none
@@ -228,7 +234,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveSymptomsReview personId saved nextTask_ ->
+        SaveSymptomsReview personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -237,7 +243,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateDangerSignsMsgs nextTask_
+                    generateDangerSignsMsgs nextTask
 
                 appMsgs =
                     model.dangerSignsData.symptomsReviewForm
@@ -292,7 +298,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveVitals personId saved nextTask_ ->
+        SaveVitals personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -301,7 +307,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateDangerSignsMsgs nextTask_
+                    generateDangerSignsMsgs nextTask
 
                 appMsgs =
                     model.dangerSignsData.vitalsForm
@@ -348,7 +354,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveHeight personId saved nextTask_ ->
+        SaveHeight personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -357,7 +363,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask
 
                 appMsgs =
                     model.nutritionAssessmentData.heightForm
@@ -421,11 +427,11 @@ update currentDate site isChw id db msg model =
             , [ focusOnCalendarMsg ]
             )
 
-        CloseHeadCircumferencePopup personId saved nextTask_ ->
+        CloseHeadCircumferencePopup personId saved nextTask ->
             let
                 extraMsgs =
                     [ SetWarningPopupState Nothing
-                    , SaveHeadCircumference personId saved nextTask_
+                    , SaveHeadCircumference personId saved nextTask
                     ]
             in
             ( model
@@ -494,7 +500,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveHeadCircumference personId saved nextTask_ ->
+        SaveHeadCircumference personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -503,7 +509,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask
 
                 appMsgs =
                     model.nutritionAssessmentData.headCircumferenceForm
@@ -539,7 +545,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveMuac personId saved nextTask_ ->
+        SaveMuac personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -548,7 +554,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask
 
                 appMsgs =
                     model.nutritionAssessmentData.muacForm
@@ -596,7 +602,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveNutrition personId saved assessment nextTask_ ->
+        SaveNutrition personId saved assessment nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -605,7 +611,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask
 
                 appMsgs =
                     model.nutritionAssessmentData.nutritionForm
@@ -642,7 +648,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveWeight personId saved nextTask_ ->
+        SaveWeight personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -651,7 +657,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNutritionAssessmentMsgs nextTask_
+                    generateNutritionAssessmentMsgs nextTask
 
                 appMsgs =
                     model.nutritionAssessmentData.weightForm
@@ -885,7 +891,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveBCGImmunisation personId saved nextTask_ ->
+        SaveBCGImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -894,7 +900,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.bcgForm
@@ -913,7 +919,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveDTPImmunisation personId saved nextTask_ ->
+        SaveDTPImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -922,7 +928,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.dtpForm
@@ -941,7 +947,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveDTPStandaloneImmunisation personId saved nextTask_ ->
+        SaveDTPStandaloneImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -950,7 +956,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.dtpForm
@@ -969,7 +975,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveHPVImmunisation personId saved nextTask_ ->
+        SaveHPVImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -978,7 +984,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.hpvForm
@@ -997,7 +1003,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveIPVImmunisation personId saved nextTask_ ->
+        SaveIPVImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1006,7 +1012,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.ipvForm
@@ -1025,7 +1031,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveMRImmunisation personId saved nextTask_ ->
+        SaveMRImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1034,7 +1040,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.mrForm
@@ -1053,7 +1059,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveOPVImmunisation personId saved nextTask_ ->
+        SaveOPVImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1062,7 +1068,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.opvForm
@@ -1081,7 +1087,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SavePCV13Immunisation personId saved nextTask_ ->
+        SavePCV13Immunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1090,7 +1096,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.pcv13Form
@@ -1109,7 +1115,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveRotarixImmunisation personId saved nextTask_ ->
+        SaveRotarixImmunisation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1118,7 +1124,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateImmunisationMsgs nextTask_
+                    generateImmunisationMsgs nextTask
 
                 appMsgs =
                     model.immunisationData.rotarixForm
@@ -1214,7 +1220,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveAlbendazole personId saved nextTask_ ->
+        SaveAlbendazole personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1223,7 +1229,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateMedicationMsgs nextTask_
+                    generateMedicationMsgs nextTask
 
                 appMsgs =
                     model.medicationData.albendazoleForm
@@ -1272,7 +1278,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveMebendezole personId saved nextTask_ ->
+        SaveMebendezole personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1281,7 +1287,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateMedicationMsgs nextTask_
+                    generateMedicationMsgs nextTask
 
                 appMsgs =
                     model.medicationData.mebendezoleForm
@@ -1330,7 +1336,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveVitaminA personId saved nextTask_ ->
+        SaveVitaminA personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1339,7 +1345,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateMedicationMsgs nextTask_
+                    generateMedicationMsgs nextTask
 
                 appMsgs =
                     model.medicationData.vitaminAForm
@@ -1454,7 +1460,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveSendToHC personId saved nextTask_ ->
+        SaveSendToHC personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1463,7 +1469,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask_
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.sendToHCForm
@@ -1516,7 +1522,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveHealthEducation personId saved nextTask_ ->
+        SaveHealthEducation personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1525,7 +1531,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask_
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.healthEducationForm
@@ -1573,7 +1579,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveContributingFactors personId saved nextTask_ ->
+        SaveContributingFactors personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1582,7 +1588,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask_
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.contributingFactorsForm
@@ -1618,7 +1624,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        SaveFollowUp personId saved assesment nextTask_ ->
+        SaveFollowUp personId saved assesment nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1627,7 +1633,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask_
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.followUpForm
@@ -1647,7 +1653,7 @@ update currentDate site isChw id db msg model =
             )
                 |> sequenceExtra (update currentDate site isChw id db) extraMsgs
 
-        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit asapImmunisationDate nextTask_ ->
+        SaveNextVisit personId saved nextDateForImmunisationVisit nextDateForPediatricVisit asapImmunisationDate nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -1656,7 +1662,7 @@ update currentDate site isChw id db msg model =
                     getMeasurementValueFunc saved
 
                 extraMsgs =
-                    generateNextStepsMsgs nextTask_
+                    generateNextStepsMsgs nextTask
 
                 appMsgs =
                     model.nextStepsData.nextVisitForm

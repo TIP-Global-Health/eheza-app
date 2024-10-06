@@ -1,9 +1,8 @@
 module Pages.Utils exposing (..)
 
 import App.Types exposing (Language)
-import Backend.Entities exposing (fromEntityId, toEntityId)
+import Backend.Entities exposing (toEntityId)
 import Date
-import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)

@@ -89,7 +89,8 @@ import Pages.Report.Model exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewEndEncounterDialog
+        ( viewCustomAction
+        , viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
         , viewPhotoThumbFromImageUrl
         )
@@ -492,13 +493,10 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                                         )
 
                                 InitiatorNewEncounter encounterId ->
-                                    div [ class "actions" ]
-                                        [ button
-                                            [ class "ui fluid primary button"
-                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
-                                            ]
-                                            [ text <| translate language Translate.Reviewed ]
-                                        ]
+                                    viewCustomAction language
+                                        (SetActivePage <| UserPage <| PrenatalEncounterPage encounterId)
+                                        False
+                                        Translate.Reviewed
 
                                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
                                     emptyNode

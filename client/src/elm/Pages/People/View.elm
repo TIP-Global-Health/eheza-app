@@ -117,7 +117,6 @@ viewHeader initiator relation title =
             , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
