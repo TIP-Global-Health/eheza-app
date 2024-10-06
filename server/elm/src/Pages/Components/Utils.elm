@@ -1,6 +1,6 @@
-module Pages.ReportsMenu.Utils exposing (..)
+module Pages.Components.Utils exposing (..)
 
-import Pages.ReportsMenu.Types exposing (..)
+import Pages.Components.Types exposing (PopulationSelectionOption(..))
 
 
 populationSelectionOptionToString : PopulationSelectionOption -> String

@@ -377,8 +377,7 @@ viewMainPageContent language currentDate id isChw assembled model =
 
 partitionActivities : NominalDate -> Bool -> AssembledData -> ( List AcuteIllnessActivity, List AcuteIllnessActivity )
 partitionActivities currentDate isChw assembled =
-    getAllActivities assembled.initialEncounter
-        |> List.filter (expectActivity currentDate isChw assembled)
+    List.filter (expectActivity currentDate isChw assembled) getAllActivities
         |> List.partition (activityCompleted currentDate isChw assembled)
 
 
