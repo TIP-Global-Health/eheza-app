@@ -1168,7 +1168,7 @@ function hedley_activity_strongarm() {
       'display' => array(),
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
     ),
@@ -1415,7 +1415,7 @@ function hedley_activity_strongarm() {
       'display' => array(),
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
     ),

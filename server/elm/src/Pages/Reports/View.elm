@@ -1165,10 +1165,10 @@ backendGeneratedNutritionReportTableDateToMetricsResultsTableData language backe
     , rows =
         [ translate language Translate.StuntingModerate :: backendTableData.stuntingModerate
         , translate language Translate.StuntingSevere :: backendTableData.stuntingSevere
-        , translate language Translate.WastingModerate :: backendTableData.stuntingModerate
-        , translate language Translate.WastingSevere :: backendTableData.stuntingSevere
-        , translate language Translate.UnderweightModerate :: backendTableData.stuntingModerate
-        , translate language Translate.UnderweightSevere :: backendTableData.stuntingSevere
+        , translate language Translate.WastingModerate :: backendTableData.wastingModerate
+        , translate language Translate.WastingSevere :: backendTableData.wastingSevere
+        , translate language Translate.UnderweightModerate :: backendTableData.underweightModerate
+        , translate language Translate.UnderweightSevere :: backendTableData.underweightSevere
         ]
     }
 

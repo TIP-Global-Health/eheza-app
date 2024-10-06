@@ -1944,6 +1944,12 @@ type alias VaccinationProgressDict =
     Dict WellChildVaccineType (Dict VaccineDose NominalDate)
 
 
+type VaccinationStatus
+    = StatusBehind
+    | StatusCompleted
+    | StatusUpToDate
+
+
 type ImmunisationTask
     = TaskBCG
     | TaskDTP

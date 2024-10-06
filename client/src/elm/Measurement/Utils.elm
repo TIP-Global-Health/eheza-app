@@ -6785,12 +6785,18 @@ malariaResultFormWithDefault form saved =
                         resolveRunConfirmedByLabTechFromValue value
 
                     bloodSmearTakenByValue =
-                        value.bloodSmearResult == BloodSmearPendingInput
+                        List.member value.bloodSmearResult
+                            [ BloodSmearNegative
+                            , BloodSmearPlus
+                            , BloodSmearPlusPlus
+                            , BloodSmearPlusPlusPlus
+                            , BloodSmearPendingInput
+                            ]
 
                     -- If we have an indication that Blood Smear test was
                     -- ordered on initail phase, empty it's value.
                     bloodSmearResultByValue =
-                        if bloodSmearTakenByValue then
+                        if value.bloodSmearResult == BloodSmearPendingInput then
                             Nothing
 
                         else
@@ -6813,7 +6819,7 @@ malariaResultFormWithDefault form saved =
                 , bloodSmearResult =
                     maybeValueConsideringIsDirtyField form.bloodSmearResultDirty
                         form.bloodSmearResult
-                        (Just value.bloodSmearResult)
+                        bloodSmearResultByValue
                 , bloodSmearResultDirty = form.bloodSmearResultDirty
                 }
             )

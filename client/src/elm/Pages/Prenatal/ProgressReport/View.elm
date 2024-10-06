@@ -36,14 +36,9 @@ import Backend.PrenatalActivity.Model
         , PrenatalRecurrentActivity(..)
         , allMedicalDiagnoses
         , allObstetricalDiagnoses
-        , allRiskFactors
         , allTrimesters
         )
-import Backend.PrenatalActivity.Utils
-    exposing
-        ( generateRiskFactorAlertData
-        , getEncounterTrimesterData
-        )
+import Backend.PrenatalActivity.Utils exposing (getEncounterTrimesterData)
 import Backend.PrenatalEncounter.Model exposing (PrenatalProgressReportInitiator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import Backend.PrenatalEncounter.Utils exposing (lmpToEDDDate)
@@ -60,6 +55,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra exposing (greedyGroupsOf)
 import Maybe.Extra exposing (isJust, isNothing, unwrap)
+import Measurement.Model exposing (VaccinationStatus(..))
 import Measurement.Utils
     exposing
         ( outsideCareMedicationOptionsAnemia
@@ -69,10 +65,10 @@ import Measurement.Utils
         , outsideCareMedicationOptionsSyphilis
         )
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Prenatal.Activity.Utils exposing (respiratoryRateElevated)
+import Pages.Prenatal.Activity.Utils exposing (generateFutureVaccinationsDataByProgress, respiratoryRateElevated)
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData)
+import Pages.Prenatal.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
@@ -521,6 +517,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
+                    , viewVaccinationHistoryPane language currentDate assembled
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
                     , viewPatientProgressPane language currentDate isChw assembled
@@ -662,11 +660,7 @@ viewObstetricHistoryPane language currentDate measurements =
                 |> Maybe.withDefault []
 
         content =
-            List.filterMap
-                (generateRiskFactorAlertData language currentDate measurements)
-                allRiskFactors
-                |> List.append obsetricHistory
-                |> List.map (\alert -> li [] [ text alert ])
+            List.map (\alert -> li [] [ text alert ]) obsetricHistory
                 |> ul []
                 |> List.singleton
     in
@@ -706,56 +700,6 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
 
                         diagnosesEntries =
                             List.concatMap (viewTreatmentForDiagnosis language data.startDate data.measurements data.diagnoses) diagnosesIncludingChronic
-
-                        -- RH Factor Uknown should be a default Obsteric Diagnosis on any patient who has
-                        -- not had an RH lab result (for any reason). If lab was taken and result was
-                        -- RH negative, it should be mentioned at every subssequent encounter report.
-                        -- Requirements for this diagnosis are different from all others, which require to
-                        -- specify the diagnosis and action that was taken only for current encounter.
-                        rhesusEntry =
-                            if
-                                -- When current encounter has RH Negative diagnosis, we don't add dedicated
-                                -- entry, since it will be handled using viewTreatmentForOutsideCareDiagnosis.
-                                List.any
-                                    (\diagnosis ->
-                                        List.member diagnosis
-                                            [ DiagnosisRhesusNegativeInitialPhase
-                                            , DiagnosisRhesusNegativeRecurrentPhase
-                                            ]
-                                    )
-                                    diagnosesIncludingChronic
-                            then
-                                []
-
-                            else
-                                let
-                                    nursePreviousMeasurements =
-                                        List.reverse assembled.nursePreviousEncountersData
-                                            |> List.map .measurements
-
-                                    allNurseMeasurements =
-                                        if isChw then
-                                            nursePreviousMeasurements
-
-                                        else
-                                            assembled.measurements :: nursePreviousMeasurements
-                                in
-                                List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus) allNurseMeasurements
-                                    |> List.head
-                                    |> Maybe.map
-                                        (\rhesus ->
-                                            case rhesus of
-                                                RhesusNegative ->
-                                                    translate language Translate.RHFactorNegative
-                                                        |> wrapWithLI
-
-                                                RhesusPositive ->
-                                                    []
-                                        )
-                                    |> Maybe.withDefault
-                                        (translate language Translate.RHFactorUnknown
-                                            |> wrapWithLI
-                                        )
 
                         outsideCareDiagnosesEntries =
                             getMeasurementValueFunc data.measurements.outsideCare
@@ -811,7 +755,6 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                                 |> List.concatMap (viewTreatmentForPastDiagnosis language data.startDate)
                     in
                     knownAsPositiveEntries
-                        ++ rhesusEntry
                         ++ diagnosesEntries
                         ++ outsideCareDiagnosesEntries
                         ++ pastDiagnosesEntries
@@ -904,6 +847,24 @@ viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasu
                 )
                 Dict.empty
                 allNurseEncountersData
+
+        -- RH Factor Uknown should be a default Obsteric Diagnosis on any patient who has
+        -- not had an RH lab result (for any reason).
+        rhesusEntry =
+            let
+                rhesusRecorded =
+                    List.reverse allNurseEncountersData
+                        |> List.map .measurements
+                        |> List.filterMap (.bloodGpRsTest >> getMeasurementValueFunc >> Maybe.andThen .rhesus)
+                        |> List.isEmpty
+                        |> not
+            in
+            if not rhesusRecorded then
+                translate language Translate.RHFactorUnknown
+                    |> wrapWithLI
+
+            else
+                []
 
         dignoses =
             List.concatMap
@@ -1006,7 +967,8 @@ viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasu
 
         common =
             ul [] <|
-                dignoses
+                rhesusEntry
+                    ++ dignoses
                     ++ lmpDateNonConfidentEntry
 
         alerts =
@@ -1028,6 +990,76 @@ viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasu
             common
                 :: alerts
         ]
+
+
+viewVaccinationHistoryPane : Language -> NominalDate -> AssembledData -> Html any
+viewVaccinationHistoryPane language currentDate assembled =
+    div [ class "vaccination-history" ] <|
+        [ viewItemHeading language Translate.ImmunizationHistory "blue"
+        , div [ class "pane-content" ] <|
+            viewVaccinationOverview language currentDate assembled
+        ]
+
+
+viewVaccinationOverview :
+    Language
+    -> NominalDate
+    -> AssembledData
+    -> List (Html any)
+viewVaccinationOverview language currentDate assembled =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsDataByProgress currentDate assembled
+                |> Dict.fromList
+
+        entries =
+            Dict.toList assembled.vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYYYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    entriesHeading :: entries
 
 
 viewChwActivityPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg

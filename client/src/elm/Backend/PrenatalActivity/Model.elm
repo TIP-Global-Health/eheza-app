@@ -36,25 +36,6 @@ type PrenatalRecurrentActivity
     | LabsResultsFollowUps
 
 
-type RiskFactor
-    = FactorNumberOfCSections
-    | FactorCSectionInPreviousDelivery
-    | FactorCSectionReason
-    | FactorPreviousDeliveryPeriod
-    | FactorSuccessiveAbortions
-    | FactorSuccessivePrematureDeliveries
-    | FactorStillbornPreviousDelivery
-    | FactorBabyDiedOnDayOfBirthPreviousDelivery
-    | FactorPartialPlacentaPreviousDelivery
-    | FactorSevereHemorrhagingPreviousDelivery
-    | FactorPreeclampsiaPreviousPregnancy
-    | FactorConvulsionsPreviousDelivery
-    | FactorConvulsionsAndUnconsciousPreviousDelivery
-    | FactorIncompleteCervixPreviousPregnancy
-    | FactorVerticalCSectionScar
-    | FactorGestationalDiabetesPreviousPregnancy
-
-
 type HighRiskFactor
     = HighRiskConvulsionsAndUnconsciousPreviousDelivery
     | HighRiskConvulsionsPreviousDelivery
@@ -73,8 +54,7 @@ type RecurringHighSeverityAlert
 
 
 type ObstetricalDiagnosis
-    = DiagnosisRhNegative
-    | DiagnosisModerateUnderweight
+    = DiagnosisModerateUnderweight
     | DiagnosisSevereUnderweight
     | DiagnosisOverweight
     | DiagnosisObese
@@ -123,31 +103,9 @@ allRecurringHighSeverityAlerts =
     [ BloodPressure ]
 
 
-allRiskFactors : List RiskFactor
-allRiskFactors =
-    [ FactorNumberOfCSections
-    , FactorCSectionInPreviousDelivery
-    , FactorCSectionReason
-    , FactorPreviousDeliveryPeriod
-    , FactorSuccessiveAbortions
-    , FactorSuccessivePrematureDeliveries
-    , FactorStillbornPreviousDelivery
-    , FactorBabyDiedOnDayOfBirthPreviousDelivery
-    , FactorPartialPlacentaPreviousDelivery
-    , FactorSevereHemorrhagingPreviousDelivery
-    , FactorPreeclampsiaPreviousPregnancy
-    , FactorConvulsionsPreviousDelivery
-    , FactorConvulsionsAndUnconsciousPreviousDelivery
-    , FactorIncompleteCervixPreviousPregnancy
-    , FactorVerticalCSectionScar
-    , FactorGestationalDiabetesPreviousPregnancy
-    ]
-
-
 allObstetricalDiagnoses : List ObstetricalDiagnosis
 allObstetricalDiagnoses =
-    [ DiagnosisRhNegative
-    , DiagnosisModerateUnderweight
+    [ DiagnosisModerateUnderweight
     , DiagnosisSevereUnderweight
     , DiagnosisOverweight
     , DiagnosisObese
