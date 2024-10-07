@@ -5854,6 +5854,14 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     }
     $encounter_data['lmp_date'] = $lmp_date;
 
+    // Resolving all diagnoses that were made at previous encounters.
+    $diagnoses_so_far = [];
+    foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+      $encounter_diagnoses = array_merge($previous_nurse_encounter_data['diagnoses'], $previous_nurse_encounter_data['past_diagnoses']);
+      $diagnoses_so_far = array_merge($diagnoses_so_far, $encounter_diagnoses);
+    }
+    $encounter_data['diagnoses_so_far'] = array_unique($diagnoses_so_far);
+
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
@@ -5863,6 +5871,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_photo_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_treatment_review_activity($encounter_data, $expected);
+    hedley_reports_prenatal_add_labs_activities($encounter_data, $expected);
+    // Postpartum activities.
     hedley_reports_prenatal_add_pregnancy_outcome_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_postpartum_unique_nurse_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_postpartum_unique_chw_activities($encounter_data, $expected);
@@ -6232,6 +6242,217 @@ function hedley_reports_prenatal_add_treatment_review_activity(array $encounter_
   // There will always be at least the Prenatal Medication task to complete.
   $expected[] = 'treatment_review';
 }
+
+function hedley_reports_prenatal_add_labs_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  $start_date_obj = $encounter_data['start_date_obj'];
+  // Reversing, to have most recent dates first.
+  $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
+
+  if ($encounter_type == 'chw-1' && empty($previous_nurse_encounters_data)) {
+    $launch_date = '2021-06-07';
+    $launch_date_obj = new DateTime($launch_date);
+    if ($start_date_obj >= $launch_date_obj) {
+      $expected[] = 'pregnancy_testing';
+    }
+  }
+  elseif ($encounter_type == 'nurse') {
+    $launch_date = '2021-12-22';
+    $launch_date_obj = new DateTime($launch_date);
+    if ($start_date_obj < $launch_date_obj) {
+      return;
+    }
+
+    $expected = array_merge(
+      $expected,
+      [
+        'prenatal_malaria_test',
+        'prenatal_urine_dipstick_test',
+        'prenatal_hemoglobin_test'
+      ]
+    );
+
+    $tests_dates_by_lab_type = [
+      'prenatal_blood_gprs_test' => [],
+      'prenatal_hepatitis_b_test' => [],
+      'prenatal_random_blood_sugar_test' => [],
+      'prenatal_syphilis_test' => [],
+      'prenatal_hiv_test' => [],
+      'prenatal_partner_hiv_test' => [],
+    ];
+
+    $tests_with_results_field = [
+      'prenatal_blood_gprs_test' => 'field_blood_group',
+      'prenatal_random_blood_sugar_test' => 'field_sugar_count',
+      'prenatal_syphilis_test' => 'field_test_result',
+      'prenatal_hiv_pcr_test' => 'field_hiv_viral_load',
+    ];
+
+    $tests_with_known_as_positive_option = [
+      'prenatal_hepatitis_b_test' => FALSE,
+      'prenatal_hiv_test' => FALSE,
+      'prenatal_partner_hiv_test' => FALSE,
+    ];
+
+    // Generating previous laboratory tests dates dict.
+    foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+      $measurements_by_type = $previous_encounter_data['measurements_by_type'];
+
+      // Handling tests that don't have 'known as positive' option.
+      foreach ($tests_with_results_field as $test_name => $results_field) {
+        $test = $measurements_by_type[$test_name];
+        if (hedley_reports_lab_test_performed_by_execution_note($test)) {
+          $date_measured = explode(' ', $test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+          $date_measured_obj = new DateTime($date_measured);
+          $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+          $results_exists = !empty($test->{$results_field}) && !empty($test->{$results_field}[LANGUAGE_NONE][0]['value']);
+          if ($results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+            $tests_dates_by_lab_type[$test_name][] = explode(' ', $test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+          }
+        }
+      }
+
+      // Handling tests that got 'known as positive' option.
+      foreach ($tests_with_known_as_positive_option as $test_name => $known_as_positive) {
+        if ($known_as_positive) {
+          continue;
+        }
+
+        $test = $measurements_by_type[$test_name];
+        if (!empty($test) && !empty($test->field_test_execution_note)) {
+          $tests_with_known_as_positive_option[$test_name] = $test->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive';
+          if (!$tests_with_known_as_positive_option[$test_name] && hedley_reports_lab_test_performed_by_execution_note($test)) {
+            $date_measured = explode(' ', $test->field_date_measured[LANGUAGE_NONE][0]['value'])[0];
+            $date_measured_obj = new DateTime($date_measured);
+            $diff_days = $encounter_data['start_date_obj']->diff($date_measured_obj, TRUE)->days;
+            $valid_results_exists =
+              !empty($test->field_test_result) &&
+              !empty($test->field_test_result[LANGUAGE_NONE][0]['value']) &&
+              $test->field_test_result[LANGUAGE_NONE][0]['value'] != 'indeterminate';
+            if ($valid_results_exists || $diff_days <= HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD) {
+              $tests_dates_by_lab_type[$test_name][] = explode(' ', $test->field_execution_date[LANGUAGE_NONE][0]['value'])[0];
+            }
+          }
+        }
+      }
+    }
+
+    foreach ($tests_dates_by_lab_type as $test_name => $dates_by_lab_type) {
+      $last_date = reset($dates_by_lab_type);
+      switch ($test_name) {
+        case 'prenatal_hiv_test':
+          if (!$tests_with_known_as_positive_option['prenatal_hiv_test'] && empty($last_date)) {
+            $launch_date = '2022-09-25';
+            $launch_date_obj = new DateTime($launch_date);
+            if ($start_date_obj >= $launch_date_obj) {
+              $expected[] = 'prenatal_hiv_test';
+            }
+          }
+          break;
+
+        case 'prenatal_hiv_pcr_test':
+          $launch_date = '2022-09-25';
+          $launch_date_obj = new DateTime($launch_date);
+          if ($start_date_obj >= $launch_date_obj) {
+            if (
+              $tests_with_known_as_positive_option['prenatal_hiv_test'] ||
+              !empty(
+                array_intersect(
+                  $encounter_data['diagnoses_so_far'],
+                  ['hiv', 'hiv-recurrent']
+                )
+              )
+            ) {
+              $expected[] = 'prenatal_hiv_pcr_test';
+            }
+          }
+          break;
+
+        case 'prenatal_partner_hiv_test':
+          if (!$tests_with_known_as_positive_option['prenatal_partner_hiv_test'] && empty($last_date)) {
+            $launch_date = '2023-03-12';
+            $launch_date_obj = new DateTime($launch_date);
+            if ($start_date_obj >= $launch_date_obj) {
+              $expected[] = 'prenatal_partner_hiv_test';
+            }
+          }
+          break;
+
+        case 'prenatal_hepatitis_b_test':
+          if (
+            !$tests_with_known_as_positive_option['prenatal_hepatitis_b_test'] &&
+            empty($last_date) &&
+            empty(
+              array_intersect(
+                $encounter_data['past_diagnoses'],
+                ['hepatitis-b-initial', 'hepatitis-b']
+              )
+            )
+          ) {
+            $expected[] = 'prenatal_hepatitis_b_test';
+          }
+          break;
+
+        case 'prenatal_blood_gprs_test':
+          if (empty($last_date)) {
+            $expected[] = 'prenatal_blood_gprs_test';
+          }
+          break;
+
+        case 'prenatal_random_blood_sugar_test':
+          if (
+            empty(
+              array_intersect(
+                $encounter_data['past_diagnoses'],
+                [
+                  'diabetes-initial',
+                  'diabetes',
+                  'gestational-diabetes-initial',
+                  'gestational-diabetes',
+                ]
+              )
+            )
+          ) {
+            $expected[] = 'prenatal_random_blood_sugar_test';
+          }
+          break;
+
+        case 'prenatal_syphilis_test':
+          if (
+            empty(
+              array_intersect(
+                $encounter_data['past_diagnoses'],
+                [
+                  'syphilis-initial',
+                  'syphilis',
+                  'syphilis-complications-initial',
+                  'syphilis-complications',
+                  'neurosyphilis-initial',
+                  'neurosyphilis',
+                ]
+              )
+            )
+          ) {
+            if (empty($last_date)) {
+              $expected[] = 'prenatal_syphilis_test';
+            }
+            else {
+              $start_date_obj = $encounter_data['start_date_obj'];
+              $lmp_date_obj = new DateTime($encounter_data['lmp_date']);
+              $last_test_date_obj = new DateTime($last_date);
+              $last_test_ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $last_test_date_obj);
+              $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
+              if ($last_test_ega_in_weeks < 38 && $ega_in_weeks >= 38) {
+                $expected[] = 'prenatal_syphilis_test';
+              }
+            }
+          }
+          break;
+      }
+    }
+  }
+}
+
 function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if (!in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
@@ -6321,7 +6542,6 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
 function hedley_reports_prenatal_add_postpartum_unique_chw_activities(array $encounter_data, array &$expected) {
 
 }
-
 
 function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
   $interval = $encounter_date_obj->diff($lmp_date_obj, TRUE);
