@@ -5872,10 +5872,13 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_photo_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_treatment_review_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_labs_activities($encounter_data, $expected);
+    // Unique CHW activity.
+    hedley_reports_prenatal_add_birth_plan_activity($encounter_data, $expected);
+
+
     // Postpartum activities.
     hedley_reports_prenatal_add_pregnancy_outcome_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_postpartum_unique_nurse_activities($encounter_data, $expected);
-    hedley_reports_prenatal_add_postpartum_unique_chw_activities($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -6453,6 +6456,39 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
   }
 }
 
+/**
+ * Birth plan is presented at second CHW encounter, in case no danger signs are recorded.
+ *
+ * @param $encounter_data
+ * @param $expected
+ * @return void
+ */
+function hedley_reports_prenatal_add_birth_plan_activity(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'chw-2') {
+    return;
+  }
+
+  $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
+  if (empty($danger_signs_measurement)) {
+    return;
+  }
+
+  $danger_signs = $danger_signs_measurement->field_danger_signs[LANGUAGE_NONE];
+  if (empty($danger_signs)) {
+    return;
+  }
+
+  foreach ($danger_signs as $sign) {
+    if ($sign['value'] != 'none') {
+      return;
+    }
+  }
+
+  // If we got so far, no danger signs were recorded.
+  $expected[] = 'birth_plan';
+}
+
 function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if (!in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
@@ -6537,10 +6573,6 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
       }
     }
   }
-}
-
-function hedley_reports_prenatal_add_postpartum_unique_chw_activities(array $encounter_data, array &$expected) {
-
 }
 
 function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
