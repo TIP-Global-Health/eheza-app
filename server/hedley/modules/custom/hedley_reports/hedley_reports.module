@@ -5874,6 +5874,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_labs_activities($encounter_data, $expected);
     // Unique CHW activity.
     hedley_reports_prenatal_add_birth_plan_activity($encounter_data, $expected);
+    // Unique CHW activity. For Nurse, it's part of Next Steps.
+    hedley_reports_prenatal_add_health_education_activity_for_chw($encounter_data, $expected);
 
 
     // Postpartum activities.
@@ -6469,24 +6471,40 @@ function hedley_reports_prenatal_add_birth_plan_activity(array $encounter_data, 
     return;
   }
 
+  if (hedley_reports_prenatal_no_danger_signs_recorded($encounter_data)) {
+    $expected[] = 'birth_plan';
+  }
+}
+
+function hedley_reports_prenatal_add_health_education_activity_for_chw(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if (!in_array($encounter_type, ['chw-1', 'chw-2', 'chw-3'])) {
+    return;
+  }
+
+  if (hedley_reports_prenatal_no_danger_signs_recorded($encounter_data)) {
+    $expected[] = 'prenatal_health_education';
+  }
+}
+
+function hedley_reports_prenatal_no_danger_signs_recorded(array $encounter_data) {
   $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
   if (empty($danger_signs_measurement)) {
-    return;
+    return FALSE;
   }
 
   $danger_signs = $danger_signs_measurement->field_danger_signs[LANGUAGE_NONE];
   if (empty($danger_signs)) {
-    return;
+    return FALSE;
   }
 
   foreach ($danger_signs as $sign) {
     if ($sign['value'] != 'none') {
-      return;
+      return FALSE;
     }
   }
 
-  // If we got so far, no danger signs were recorded.
-  $expected[] = 'birth_plan';
+  return TRUE;
 }
 
 function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter_data, array &$expected) {
