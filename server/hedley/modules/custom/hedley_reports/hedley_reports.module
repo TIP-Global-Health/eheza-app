@@ -5876,11 +5876,12 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_birth_plan_activity($encounter_data, $expected);
     // Unique CHW activity. For Nurse, it's part of Next Steps.
     hedley_reports_prenatal_add_health_education_activity_for_chw($encounter_data, $expected);
-
-
     // Postpartum activities.
     hedley_reports_prenatal_add_pregnancy_outcome_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_postpartum_unique_nurse_activities($encounter_data, $expected);
+    // This comes last, since it has mandatory activities to be completed,
+    // which we will be checking for withing $expected.
+    hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -6487,6 +6488,26 @@ function hedley_reports_prenatal_add_health_education_activity_for_chw(array $en
   }
 }
 
+function hedley_reports_prenatal_danger_signs_recorded(array $encounter_data) {
+  $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
+  if (empty($danger_signs_measurement)) {
+    return FALSE;
+  }
+
+  $danger_signs = $danger_signs_measurement->field_danger_signs[LANGUAGE_NONE];
+  if (empty($danger_signs)) {
+    return FALSE;
+  }
+
+  foreach ($danger_signs as $sign) {
+    if ($sign['value'] != 'none') {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
 function hedley_reports_prenatal_no_danger_signs_recorded(array $encounter_data) {
   $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
   if (empty($danger_signs_measurement)) {
@@ -6591,6 +6612,264 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
       }
     }
   }
+}
+
+function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data, array &$expected) {
+  if (!hedley_reports_prenatal_manadatory_activities_for_next_steps_completed($encounter_data, $expected)) {
+    return;
+  }
+
+  $encounter_type = $encounter_data['encounter_type'];
+  if (in_array($encounter_type, ['nurse', 'nurse-postpartum'])) {
+    hedley_reports_prenatal_add_next_steps_activities_for_nurse($encounter_data, $expected);
+  }
+  else {
+    hedley_reports_prenatal_add_next_steps_activities_for_chw($encounter_data, $expected);
+  }
+
+
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+
+  switch ($encounter_type) {
+    case 'nurse':
+
+      break;
+
+    case 'nurse-postpartum':
+
+      break;
+
+    case 'chw-1':
+
+      break;
+
+    case 'chw-2':
+
+      break;
+
+    case 'chw-3':
+
+      break;
+
+    case 'chw-postpartum':
+
+      break;
+  }
+
+
+}
+
+function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+
+  switch ($encounter_type) {
+    case 'nurse':
+
+      break;
+
+    case 'nurse-postpartum':
+
+      break;
+
+    case 'chw-1':
+
+      break;
+
+    case 'chw-2':
+
+      break;
+
+    case 'chw-3':
+
+      break;
+
+    case 'chw-postpartum':
+
+      break;
+  }
+
+
+}
+
+function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encounter_data, array &$expected) {
+  $launch_date = '2021-06-07';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] < $launch_date_obj) {
+    return;
+  }
+
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'chw-postpartum' && hedley_reports_prenatal_no_danger_signs_recorded($encounter_data)) {
+    $expected[] = 'appointment_confirmation';
+  }
+
+  $danger_signs_recorded = hedley_reports_prenatal_danger_signs_recorded($encounter_data);
+  if ($danger_signs_recorded) {
+    $expected[] = 'prenatal_send_to_hc';
+  }
+
+  if ($encounter_type != 'chw-postpartum' || $danger_signs_recorded) {
+    $expected[] = 'prenatal_follow_up';
+  }
+
+  if ($encounter_type == 'chw-postpartum') {
+    $expected[] = 'prenatal_health_education';
+  }
+}
+
+function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(array $encounter_data, array $expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  switch ($encounter_type) {
+    case 'nurse':
+      $emergency_diagnoses = [
+        'moderate-preeclampsia-initial-ega-37+',
+        'moderate-preeclampsia-recurrent-ega-37+',
+        'severe-preeclampsia-initial-ega-37+',
+        'severe-preeclampsia-recurrent-ega-37+',
+        'eclampsia',
+        'miscarriage',
+        'molar-pregnancy',
+        'placenta-previa',
+        'placental-abruption',
+        'uterine-rupture',
+        'obstructed-labor',
+        'post-abortion-sepsis',
+        'ectopic-pregnancy',
+        'prom',
+        'pprom',
+        'maternal-complications',
+        'imminent-delivery',
+        'labor',
+        'hyperemesis-gravidum',
+        'severe-vomiting',
+        'severe-anemia-complications-initial',
+        'severe-anemia-complications',
+      ];
+
+      if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+        return TRUE;
+      }
+
+      $mandatory_activities = [
+        'danger_signs',
+        'prenatal_family_planning',
+        'prenatal_symptom_review',
+        'prenatal_tetanus_immunisation',
+        'prenatal_mental_health',
+        // History:
+        'social_history',
+        'medical_history',
+        'obstetric_history',
+        'obstetric_history_step2',
+        'prenatal_outside_care',
+        // Examination:
+        'vitals',
+        'prenatal_nutrition',
+        'core_physical_exam',
+        'breast_exam',
+        'obstetrical_exam',
+        'prenatal_gu_exam',
+        // Laboratory:
+        'prenatal_malaria_test',
+        'prenatal_urine_dipstick_test',
+        'prenatal_hemoglobin_test',
+        'prenatal_hiv_test',
+        'prenatal_hiv_pcr_test',
+        'prenatal_partner_hiv_test',
+        'prenatal_hepatitis_b_test',
+        'prenatal_blood_gprs_test',
+        'prenatal_random_blood_sugar_test',
+        'prenatal_syphilis_test',
+      ];
+      $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+      if (empty($previous_nurse_encounters_data)) {
+        $mandatory_activities[] = 'last_menstrual_period';
+        $mandatory_activities[] = 'medication';
+      }
+      else {
+        $mandatory_activities[] = 'treatment_review';
+      }
+      break;
+
+    case 'nurse-postpartum':
+      $mandatory_activities = [
+        'pregnancy_outcome',
+        'prenatal_symptom_review',
+        'prenatal_mental_health',
+        'prenatal_breastfeeding',
+        'prenatal_family_planning',
+        'postpartum_treatment_review',
+        'prenatal_speciality_care',
+        // Examination:
+        'vitals',
+        'prenatal_nutrition',
+        'core_physical_exam',
+        'breast_exam',
+        'obstetrical_exam',
+        'prenatal_gu_exam',
+      ];
+      break;
+
+    case 'chw-1':
+      $mandatory_activities = [
+        'last_menstrual_period',
+        'pregnancy_testing',
+        'danger_signs',
+        'prenatal_health_education',
+      ];
+      break;
+
+    case 'chw-2':
+      $mandatory_activities = [
+        'danger_signs',
+        'birth_plan',
+        'prenatal_health_education',
+      ];
+      break;
+
+    case 'chw-3':
+      $mandatory_activities = [
+        'danger_signs',
+        'prenatal_health_education',
+      ];
+      break;
+
+    case 'chw-postpartum':
+      $mandatory_activities = [
+        'pregnancy_outcome',
+        'danger_signs',
+      ];
+      break;
+  }
+
+  $measurements_by_type = $encounter_data['measurements_by_type'];
+  $completed = array_keys($measurements_by_type);
+  foreach ($mandatory_activities as $activity) {
+    switch ($activity) {
+      case 'treatment_review':
+      case 'postpartum_treatment_review':
+        if (in_array($activity, $expected) && !in_array('medication', $completed)) {
+          return FALSE;
+        }
+        break;
+
+      case 'pregnancy_outcome':
+        $participant_id = $encounter_data['encounter']->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+        $participant = node_load($participant_id);
+        $outcome = $participant->field_outcome[LANGUAGE_NONE][0]['value'];
+        if (empty($outcome)) {
+          return FALSE;
+        }
+        break;
+
+      default:
+        if (in_array($activity, $expected) && !in_array($activity, $completed)) {
+          return FALSE;
+        }
+    }
+  }
+
+  return TRUE;
 }
 
 function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
