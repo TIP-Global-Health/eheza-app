@@ -6626,37 +6626,6 @@ function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data
   else {
     hedley_reports_prenatal_add_next_steps_activities_for_chw($encounter_data, $expected);
   }
-
-
-  $measurements_by_type = $encounter_data['measurements_by_type'];
-
-  switch ($encounter_type) {
-    case 'nurse':
-
-      break;
-
-    case 'nurse-postpartum':
-
-      break;
-
-    case 'chw-1':
-
-      break;
-
-    case 'chw-2':
-
-      break;
-
-    case 'chw-3':
-
-      break;
-
-    case 'chw-postpartum':
-
-      break;
-  }
-
-
 }
 
 function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
