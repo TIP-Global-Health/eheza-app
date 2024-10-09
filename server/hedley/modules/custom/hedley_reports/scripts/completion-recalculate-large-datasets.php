@@ -85,6 +85,8 @@ function generate_completion_results_data($health_center) {
     'ncd_encounter',
     // Nutrition Individual data.
     'nutrition_encounter',
+    // Prenatal Data.
+    'prenatal_encounter',
     // Tuberculosis Data.
     'tuberculosis_encounter',
     // Well Child data.
@@ -111,6 +113,7 @@ function generate_completion_results_data($health_center) {
     'ncd' => [],
     'nutrition_individual' => [],
     'nutrition_group' => [],
+    'prenatal' => [],
     'tuberculosis' => [],
     'well_child' => [],
   ];
@@ -174,6 +177,10 @@ function generate_completion_results_data($health_center) {
 
         case 'nutrition_encounter':
           $data['nutrition_individual'][] = json_decode($json_data);
+          break;
+
+        case 'prenatal_encounter':
+          $data['prenatal'][] = json_decode($json_data);
           break;
 
         case 'tuberculosis_encounter':
