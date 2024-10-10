@@ -119,7 +119,6 @@ function hedley_prenatal_migrate_medical_history($node) {
 
   $migrated_values_physical_condition = [];
   $physical_condition_migration = [
-    'uterine-myonma',
     'bowed-legs',
   ];
 
@@ -132,19 +131,11 @@ function hedley_prenatal_migrate_medical_history($node) {
 
   foreach ($node->field_medical_history[LANGUAGE_NONE] as $index => $item) {
     if (in_array($item['value'], $physical_condition_migration)) {
-      if ($item['value'] == 'uterine-myonma') {
-        $migrated_values_physical_condition[] = ['value' => 'uterine-myonma-current'];
-      }
-      else {
-        $migrated_values_physical_condition[] = $item;
-      }
+      $migrated_values_physical_condition[] = $item;
       unset($node->field_medical_history[LANGUAGE_NONE][$index]);
     }
     elseif (in_array($item['value'], $infectious_disease_migration)) {
       $migrated_values_infectious_disease[] = $item;
-      unset($node->field_medical_history[LANGUAGE_NONE][$index]);
-    }
-    elseif ($item['value'] == 'mental-health-history') {
       unset($node->field_medical_history[LANGUAGE_NONE][$index]);
     }
   }

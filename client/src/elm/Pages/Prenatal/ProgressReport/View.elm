@@ -659,8 +659,43 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
+        obsetricHistoryStep2 =
+            getMeasurementValueFunc measurements.obstetricHistoryStep2
+                |> Maybe.map
+                    (\value ->
+                        if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
+                            Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
+                                |> Maybe.map
+                                    (\cSectionReason ->
+                                        let
+                                            previousDeliveryMethod =
+                                                if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
+                                                    translate language Translate.CSection
+
+                                                else
+                                                    translate language Translate.VaginalDeliveryLabel
+                                        in
+                                        [ translate language Translate.CSectionFor
+                                            ++ " "
+                                            ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
+                                            ++ " "
+                                            ++ translate language Translate.WithMostRecentDeliveryBy
+                                            ++ " "
+                                            ++ String.toLower previousDeliveryMethod
+                                            ++ "."
+                                        ]
+                                    )
+                                |> Maybe.withDefault []
+
+                        else
+                            []
+                    )
+                |> Maybe.withDefault []
+
         content =
-            List.map (\alert -> li [] [ text alert ]) obsetricHistory
+            obsetricHistory
+                ++ obsetricHistoryStep2
+                |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
     in

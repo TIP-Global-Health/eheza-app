@@ -542,6 +542,7 @@ type TranslationId
     | ConvulsionsAndUnconsciousPreviousDelivery
     | ConvulsionsPreviousDelivery
     | CSection
+    | CSectionFor
     | CSectionScar CSectionScar
     | CurrentMedication
     | Dashboard Dashboard
@@ -1895,6 +1896,7 @@ type TranslationId
     | WhatWasTheirResponse
     | WhoCaresForTheChildDuringTheDay
     | WhoInFamilyHasCondition
+    | WithMostRecentDeliveryBy
     | WhyNot
     | WrittenProtocolsFollowed
     | Year
@@ -4410,6 +4412,12 @@ translationSet trans =
 
         CSection ->
             { english = "C-Section"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        CSectionFor ->
+            { english = "C-Section for"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -23647,6 +23655,12 @@ translationSet trans =
             { english = "Who in the family has this condition"
             , kinyarwanda = Just "Ni inde mu muryango ufite iki kibazo"
             , kirundi = Just "Ninde mu muryango iwanyu ameze uku/afise ingorane nk'iyi/afise ikibazo nk'iki"
+            }
+
+        WithMostRecentDeliveryBy ->
+            { english = "with most recent delivery by"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         WhyNot ->
