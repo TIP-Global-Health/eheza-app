@@ -1732,6 +1732,7 @@ type alias PartnerHIVTestValue =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
 

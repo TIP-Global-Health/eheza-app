@@ -1039,7 +1039,7 @@ update language currentDate id isLabTech db msg model =
 
                 appMsgs =
                     model.labResultsData.partnerHIVTestForm
-                        |> toPartnerHIVResultValueWithDefault measurement
+                        |> toPartnerHIVResultValueWithDefault isLabTech measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SavePartnerHIVTest personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
