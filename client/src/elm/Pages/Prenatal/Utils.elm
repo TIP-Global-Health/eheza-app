@@ -11,7 +11,7 @@ import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
 import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEverySet)
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
@@ -1729,14 +1729,20 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
         resolveDiscordantPartnershipSet diagnosis =
             if diagnosed diagnosis assembled then
                 let
-                    partnerTakingARVs =
+                    partnerTakingARVsByHIVTest =
                         getMeasurementValueFunc assembled.measurements.hivTest
                             |> Maybe.andThen .hivSigns
                             |> Maybe.map (EverySet.member PartnerTakingARV)
                             |> Maybe.withDefault False
 
+                    partnerTakingARVsByPartnerHIVTest =
+                        getMeasurementValueFunc assembled.measurements.partnerHIVTest
+                            |> Maybe.andThen .hivSigns
+                            |> Maybe.map (EverySet.member PartnerTakingARV)
+                            |> Maybe.withDefault False
+
                     helper =
-                        if partnerTakingARVs then
+                        if partnerTakingARVsByPartnerHIVTest || partnerTakingARVsByHIVTest then
                             Translate.MedicationDistributionHelperDiscordantPartnership
 
                         else
@@ -4332,7 +4338,7 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                 Nothing
             ]
 
-        partnerSurpressedViralLoad =
+        partnerSurpressedViralLoadByHIVTest =
             getMeasurementValueFunc assembled.measurements.hivTest
                 |> Maybe.andThen .hivSigns
                 |> Maybe.map
@@ -4341,6 +4347,18 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                         EverySet.member PartnerHIVPositive hivSigns
                             -- Partner is taking ARVs.
                             && EverySet.member PartnerTakingARV hivSigns
+                            -- Partner reached surpressed viral load.
+                            && EverySet.member PartnerSurpressedViralLoad hivSigns
+                    )
+                |> Maybe.withDefault False
+
+        partnerSurpressedViralLoadByPartnerHIVTest =
+            getMeasurementValueFunc assembled.measurements.partnerHIVTest
+                |> Maybe.andThen .hivSigns
+                |> Maybe.map
+                    (\hivSigns ->
+                        -- Partner is taking ARVs.
+                        EverySet.member PartnerTakingARV hivSigns
                             -- Partner reached surpressed viral load.
                             && EverySet.member PartnerSurpressedViralLoad hivSigns
                     )
@@ -4375,7 +4393,7 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
         , [ form.positiveHIV, form.saferSexHIV, form.partnerTesting, form.familyPlanning ]
         )
 
-    else if partnerSurpressedViralLoad then
+    else if partnerSurpressedViralLoadByPartnerHIVTest || partnerSurpressedViralLoadByHIVTest then
         ( header :: saferSexHIVInput
         , [ form.saferSexHIV ]
         )
@@ -4492,28 +4510,36 @@ symptomRecordedPreviously assembled symptom =
         |> not
 
 
-getPartnerHIVTestCompletionData : AssembledData -> ( TestResult, Bool )
-getPartnerHIVTestCompletionData assembled =
+resolvePartnerHIVTestResult : AssembledData -> TestResult
+resolvePartnerHIVTestResult assembled =
     getMeasurementValueFunc assembled.measurements.partnerHIVTest
         |> Maybe.map
             (\value ->
-                ( if
+                if
                     (value.executionNote == TestNoteKnownAsPositive)
                         || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
                                 && (value.testResult == Just TestPositive)
                            )
-                  then
+                then
                     TestPositive
 
-                  else if
+                else if
                     List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
                         && (value.testResult == Just TestNegative)
-                  then
+                then
                     TestNegative
 
-                  else
+                else if
+                    -- This is special case where it was stated that patient is not known as
+                    -- HIV positive, and test resukt is not set, which means that it was sent to lab.
+                    -- To indicate that follow up questions are not required, we set the result to
+                    -- Negative, though it's not really determined yet.
+                    List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                        && isNothing value.testResult
+                then
+                    TestNegative
+
+                else
                     TestIndeterminate
-                , isJust value.hivSigns
-                )
             )
-        |> Maybe.withDefault ( TestIndeterminate, False )
+        |> Maybe.withDefault TestIndeterminate

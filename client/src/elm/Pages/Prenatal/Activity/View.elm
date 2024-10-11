@@ -1451,8 +1451,8 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     , case task of
                         TaskHIVTest ->
                             let
-                                ( partnerHIVTestResult, partnerARVViralLoadRecorded ) =
-                                    getPartnerHIVTestCompletionData assembled
+                                partnerHIVTestResult =
+                                    resolvePartnerHIVTestResult assembled
                             in
                             measurements.hivTest
                                 |> getMeasurementValueFunc
@@ -1461,7 +1461,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
-                                    ( partnerHIVTestResult, partnerARVViralLoadRecorded )
+                                    partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
