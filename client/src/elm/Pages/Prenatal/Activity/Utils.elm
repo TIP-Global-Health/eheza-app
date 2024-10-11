@@ -1784,33 +1784,45 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                         |> Maybe.withDefault False
 
                 byPartnerHIVTest =
-                    getMeasurementValueFunc measurements.partnerHIVTest
-                        |> Maybe.map
-                            (\value ->
-                                if
-                                    (value.executionNote == TestNoteKnownAsPositive)
-                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
-                                                && (value.testResult == Just TestPositive)
-                                           )
-                                then
-                                    Maybe.map
-                                        (\hivSigns ->
-                                            (-- Partner is not taking ARVs.
-                                             (not <| EverySet.member PartnerTakingARV hivSigns)
-                                                || -- Partner is taking ARVs, but did not
-                                                   -- reach surpressed viral load.
-                                                   (EverySet.member PartnerTakingARV hivSigns
-                                                        && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                    let
+                        patientHIVNegative =
+                            getMeasurementValueFunc measurements.hivTest
+                                |> Maybe.map
+                                    (\value ->
+                                        List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                            && (value.testResult == Just TestNegative)
+                                    )
+                                |> Maybe.withDefault False
+                    in
+                    patientHIVNegative
+                        && (getMeasurementValueFunc measurements.partnerHIVTest
+                                |> Maybe.map
+                                    (\value ->
+                                        if
+                                            (value.executionNote == TestNoteKnownAsPositive)
+                                                || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                        && (value.testResult == Just TestPositive)
                                                    )
-                                            )
-                                        )
-                                        value.hivSigns
-                                        |> Maybe.withDefault False
+                                        then
+                                            Maybe.map
+                                                (\hivSigns ->
+                                                    (-- Partner is not taking ARVs.
+                                                     (not <| EverySet.member PartnerTakingARV hivSigns)
+                                                        || -- Partner is taking ARVs, but did not
+                                                           -- reach surpressed viral load.
+                                                           (EverySet.member PartnerTakingARV hivSigns
+                                                                && (not <| EverySet.member PartnerSurpressedViralLoad hivSigns)
+                                                           )
+                                                    )
+                                                )
+                                                value.hivSigns
+                                                |> Maybe.withDefault False
 
-                                else
-                                    False
-                            )
-                        |> Maybe.withDefault False
+                                        else
+                                            False
+                                    )
+                                |> Maybe.withDefault False
+                           )
             in
             byPartnerHIVTest || byHIVTest
 

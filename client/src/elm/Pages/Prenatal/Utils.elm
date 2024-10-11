@@ -4353,16 +4353,28 @@ healthEducationFormInputsAndTasksForHIV language setBoolInputMsg assembled form 
                 |> Maybe.withDefault False
 
         partnerSurpressedViralLoadByPartnerHIVTest =
-            getMeasurementValueFunc assembled.measurements.partnerHIVTest
-                |> Maybe.andThen .hivSigns
-                |> Maybe.map
-                    (\hivSigns ->
-                        -- Partner is taking ARVs.
-                        EverySet.member PartnerTakingARV hivSigns
-                            -- Partner reached surpressed viral load.
-                            && EverySet.member PartnerSurpressedViralLoad hivSigns
-                    )
-                |> Maybe.withDefault False
+            let
+                patientHIVNegative =
+                    getMeasurementValueFunc assembled.measurements.hivTest
+                        |> Maybe.map
+                            (\value ->
+                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                    && (value.testResult == Just TestNegative)
+                            )
+                        |> Maybe.withDefault False
+            in
+            patientHIVNegative
+                && (getMeasurementValueFunc assembled.measurements.partnerHIVTest
+                        |> Maybe.andThen .hivSigns
+                        |> Maybe.map
+                            (\hivSigns ->
+                                -- Partner is taking ARVs.
+                                EverySet.member PartnerTakingARV hivSigns
+                                    -- Partner reached surpressed viral load.
+                                    && EverySet.member PartnerSurpressedViralLoad hivSigns
+                            )
+                        |> Maybe.withDefault False
+                   )
 
         header =
             viewCustomLabel language Translate.HIV "" "label header"
