@@ -4490,3 +4490,18 @@ symptomRecordedPreviously assembled symptom =
             )
         |> List.isEmpty
         |> not
+
+
+getPartnerHIVTestCompletionData : AssembledData -> ( Bool, Bool )
+getPartnerHIVTestCompletionData assembled =
+    getMeasurementValueFunc assembled.measurements.partnerHIVTest
+        |> Maybe.map
+            (\value ->
+                ( (value.executionNote == TestNoteKnownAsPositive)
+                    || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                            && (value.testResult == Just TestPositive)
+                       )
+                , isJust value.hivSigns
+                )
+            )
+        |> Maybe.withDefault ( False, False )
