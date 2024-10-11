@@ -608,6 +608,7 @@ type TranslationId
     | DifferenceBetweenDueAndDeliveryDates
     | DifficultyBreathingLabel
     | Disabled
+    | DiscordantCoupleStatus Bool Bool
     | DistributionNotice DistributionNotice
     | District
     | DOB
@@ -4985,6 +4986,25 @@ translationSet trans =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        DiscordantCoupleStatus takingARVs surpressedViralLoad ->
+            if takingARVs && surpressedViralLoad then
+                { english = "Discordant Couple: Partner taking ARVs, supressed viral load"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else if takingARVs && not surpressedViralLoad then
+                { english = "Discordant Couple: Partner taking ARVs, does NOT have suppressed viral load"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
+
+            else
+                { english = "Discordant Couple: Partner NOT taking ARVs"
+                , kinyarwanda = Nothing
+                , kirundi = Nothing
+                }
 
         DistributionNotice notice ->
             case notice of
