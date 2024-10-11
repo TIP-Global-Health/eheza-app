@@ -207,7 +207,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
 
                         TaskHIVTest ->
                             let
-                                ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded ) =
+                                ( partnerHIVTestResult, partnerARVViralLoadRecorded ) =
                                     getPartnerHIVTestCompletionData assembled
                             in
                             getMeasurementValueFunc measurements.hivTest
@@ -218,7 +218,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                                     contentAndTasksLaboratorResultsConfig
                                     SetHIVTestResult
                                     SetHIVTestFormBoolInput
-                                    ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded )
+                                    ( partnerHIVTestResult, partnerARVViralLoadRecorded )
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
@@ -747,7 +747,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                     , case task of
                         TaskHIVTest ->
                             let
-                                ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded ) =
+                                ( partnerHIVTestResult, partnerARVViralLoadRecorded ) =
                                     getPartnerHIVTestCompletionData assembled
                             in
                             getMeasurementValueFunc measurements.hivTest
@@ -755,7 +755,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                                 |> hivResultFollowUpsFormAndTasks language
                                     currentDate
                                     SetHIVTestFormBoolInput
-                                    ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded )
+                                    ( partnerHIVTestResult, partnerARVViralLoadRecorded )
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
@@ -939,7 +939,7 @@ viewLab language currentDate lab assembled data =
 
                 TestHIV ->
                     let
-                        ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded ) =
+                        ( partnerHIVTestResult, partnerARVViralLoadRecorded ) =
                             getPartnerHIVTestCompletionData assembled
                     in
                     getMeasurementValueFunc measurements.hivTest
@@ -950,7 +950,7 @@ viewLab language currentDate lab assembled data =
                             contentAndTasksLaboratorResultsConfig
                             SetHIVTestResult
                             SetHIVTestFormBoolInput
-                            ( partnerHIVPositiveByLabTest, partnerARVViralLoadRecorded )
+                            ( partnerHIVTestResult, partnerARVViralLoadRecorded )
 
                 TestSyphilis ->
                     getMeasurementValueFunc measurements.syphilisTest
