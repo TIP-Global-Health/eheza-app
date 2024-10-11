@@ -3855,7 +3855,7 @@ hivResultFollowUpInputsAndTasks language setHIVTestFormBoolInputMsg testResult p
                                 emptySection
 
                         ( partnerHIVStatusSection, partnerHIVStatusTasksCompleted, partnerHIVStatusTasksTotal ) =
-                            if partnerHIVTestResult == TestPositive || partnerHIVPositiveByForm == Just True then
+                            if partnerHIVPositiveByForm == Just True then
                                 let
                                     partnerTakingARVUpdateFunc =
                                         \value form_ ->
