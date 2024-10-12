@@ -7996,7 +7996,7 @@ translationSet trans =
                 -- no translation is needed.
                 TaskPartnerHIVTest ->
                     { english = "Is partner known to be HIV positive"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Uwo mubana yaba asanzwe azwi ko afite ubwandu bwa virusi itera SIDA"
                     , kirundi = Nothing
                     }
 
@@ -15852,7 +15852,7 @@ translationSet trans =
 
                 EducationHIVPartnerPresence ->
                     { english = "Partner Presence"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Guherekezwa n'umutware"
                     , kirundi = Nothing
                     }
 
@@ -15948,7 +15948,7 @@ translationSet trans =
 
                 EducationHIVPartnerPresence ->
                     { english = "Have you provided counselling on importance of partner’s presence"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Waba watanze inama ku kamaro ko guherekezwa n'umutware"
                     , kirundi = Nothing
                     }
 
@@ -17084,7 +17084,7 @@ translationSet trans =
 
                 TestNoteNotPresent ->
                     { english = "Not Present"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ntago yabonetse"
                     , kirundi = Nothing
                     }
 
@@ -20529,13 +20529,13 @@ translationSet trans =
 
         RHFactorNegative ->
             { english = "RH Factor Negative"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Rezisi Negatifu"
             , kirundi = Nothing
             }
 
         RHFactorUnknown ->
             { english = "RH Factor Unknown"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Rezisi ntago Izwi"
             , kirundi = Nothing
             }
 
