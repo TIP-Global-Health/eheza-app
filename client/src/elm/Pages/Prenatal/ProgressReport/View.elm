@@ -661,7 +661,7 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
-        obsetricHistoryStep2 =
+        obstetricHistoryStep2 =
             getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.map
                     (\value ->
@@ -696,7 +696,7 @@ viewObstetricHistoryPane language currentDate measurements =
 
         content =
             obsetricHistory
-                ++ obsetricHistoryStep2
+                ++ obstetricHistoryStep2
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
