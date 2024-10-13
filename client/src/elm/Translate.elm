@@ -820,6 +820,7 @@ type TranslationId
     | IndividualEncounterSelectVisit IndividualEncounterType Bool
     | IndividualEncounterSubsequentVisit IndividualEncounterType
     | IndividualEncounterType IndividualEncounterType Bool
+    | InfectiousDiseases
     | InfrastructureEnvironment
     | InfrastructureEnvironmentWash
     | InitialResultsDisplay InitialResultsDisplay
@@ -965,8 +966,10 @@ type TranslationId
     | MedicationTreatingDiabetesQuestion
     | MedicationTreatingHypertension MedicationTreatingHypertension
     | MedicationTreatingHypertensionQuestion
+    | MedicalConditions
     | MedicalDiagnosis
     | MedicalDiagnosisAlert MedicalDiagnosis
+    | MedicalHistory
     | MedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
     | MedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
     | MedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
@@ -1004,6 +1007,7 @@ type TranslationId
     | MedicationTaken
     | MedicationTakenAsPrescribedQuestion
     | MentalHealthHistory
+    | MentalHealthIssues
     | MemoryQuota { totalJSHeapSize : Int, usedJSHeapSize : Int, jsHeapSizeLimit : Int }
     | MessagingTab MessagingTab
     | MMHGUnit
@@ -1208,6 +1212,7 @@ type TranslationId
     | PersonHasBeenSaved
     | PertinentSymptoms
     | PhotosTransferStatus
+    | PhysicalConditions
     | PhysicalExam
     | PhysicalExamTask PhysicalExamTask
     | PlaceholderEnterHeight
@@ -6845,10 +6850,7 @@ translationSet trans =
                     translationSet ObstetricHistory
 
                 Medical ->
-                    { english = "Medical History"
-                    , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
-                    , kirundi = Just "Akahise ko m'ubuvuzi"
-                    }
+                    translationSet MedicalHistory
 
                 Social ->
                     { english = "Partner Information"
@@ -7872,6 +7874,12 @@ translationSet trans =
             { english = "Infrastructure, Environment"
             , kinyarwanda = Just "Ibikorwa remezo n’ibidukikije"
             , kirundi = Just "Inyubako, Ibidukikije"
+            }
+
+        InfectiousDiseases ->
+            { english = "Infectious Diseases"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         InfrastructureEnvironmentWash ->
@@ -10377,6 +10385,12 @@ translationSet trans =
             , kirundi = Just "Mbega umugwayi yarafashe canke ariko arafata imiti ikurikira ivura Umuvuduko udasanzwe w'amaraso"
             }
 
+        MedicalConditions ->
+            { english = "Medical Conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MedicalDiagnosis ->
             { english = "Medical Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe na Muganga"
@@ -10426,6 +10440,12 @@ translationSet trans =
                     , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
                     , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
                     }
+
+        MedicalHistory ->
+            { english = "Medical History"
+            , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
+            , kirundi = Just "Akahise ko m'ubuvuzi"
+            }
 
         MedicalHistoryInfectiousDisease disease ->
             case disease of
@@ -10863,6 +10883,12 @@ translationSet trans =
             { english = "History of Mental Health Problems"
             , kinyarwanda = Just "Niba yaragize uburwayi bwo mumutwe"
             , kirundi = Just "Akahise k'ingorane y'ingwara yo mu mutwe"
+            }
+
+        MentalHealthIssues ->
+            { english = "Mental Health Issues"
+            , kinyarwanda = Just "Ubutumwa wishimiye"
+            , kirundi = Nothing
             }
 
         MessagingTab tab ->
@@ -11483,10 +11509,7 @@ translationSet trans =
                     }
 
                 Backend.NCDActivity.Model.MedicalHistory ->
-                    { english = "Medical History"
-                    , kinyarwanda = Just "Amateka y'uburwayi busanzwe"
-                    , kirundi = Just "Akahise ko m'ubuvuzi"
-                    }
+                    translationSet MedicalHistory
 
                 Backend.NCDActivity.Model.Laboratory ->
                     { english = "Laboratory"
@@ -13764,6 +13787,12 @@ translationSet trans =
             { english = "Photos Transfer Status"
             , kinyarwanda = Just "Uko kohereza amafoto bihagaze"
             , kirundi = Just "Indangakamere ry'irungikwa ry'amafoto"
+            }
+
+        PhysicalConditions ->
+            { english = "Physical Conditions"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PhysicalExam ->
@@ -18549,6 +18578,9 @@ translationSet trans =
             case component of
                 ComponentAntenatalObstetricHistory ->
                     translationSet ObstetricHistory
+
+                ComponentAntenatalMedicalHistory ->
+                    translationSet MedicalHistory
 
                 ComponentAntenatalMedicalDiagnosis ->
                     { english = "Medical Diagnosis"

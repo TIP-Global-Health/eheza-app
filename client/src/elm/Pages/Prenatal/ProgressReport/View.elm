@@ -9,6 +9,9 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
         , MedicalHistorySign(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
@@ -517,6 +520,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                     in
                     [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
+                    , viewMedicalHistoryPane language currentDate firstNurseEncounterMeasurements
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
@@ -728,6 +733,71 @@ viewObstetricHistoryPane language currentDate measurements =
         [ div [ class <| "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.ObstetricHistory ]
+            ]
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewMedicalHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewMedicalHistoryPane language currentDate measurements =
+    let
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        let
+                            viewEntry resolveSignsFunc noSignsValue lableTransId signTransId =
+                                let
+                                    signs =
+                                        resolveSignsFunc value
+                                            |> EverySet.toList
+
+                                    noSignsSelected =
+                                        List.isEmpty signs
+                                            || (List.length signs == 1)
+                                            && (List.head signs
+                                                    |> Maybe.map ((==) noSignsValue)
+                                                    |> Maybe.withDefault False
+                                               )
+                                in
+                                if noSignsSelected then
+                                    []
+
+                                else
+                                    let
+                                        conditions =
+                                            List.map (signTransId >> translate language) signs
+                                                |> String.join ", "
+                                    in
+                                    [ translate language lableTransId ++ ": " ++ conditions ]
+                        in
+                        [ viewEntry .signs NoMedicalHistorySigns Translate.MedicalConditions Translate.MedicalHistorySign
+                        , viewEntry .physicalConditions
+                            NoMedicalHistoryPhysicalCondition
+                            Translate.PhysicalConditions
+                            Translate.MedicalHistoryPhysicalCondition
+                        , viewEntry .infectiousDiseases
+                            NoMedicalHistoryInfectiousDisease
+                            Translate.InfectiousDiseases
+                            Translate.MedicalHistoryInfectiousDisease
+                        , viewEntry .mentalHealthIssues
+                            NoMedicalHistoryMentalHealthIssue
+                            Translate.MentalHealthIssues
+                            Translate.MedicalHistoryMentalHealthIssue
+                        ]
+                            |> List.concat
+                    )
+                |> Maybe.withDefault []
+
+        content =
+            List.map (\alert -> li [] [ text alert ]) medicalHistory
+                |> ul []
+                |> List.singleton
+    in
+    div [ class "risk-factors" ]
+        [ div [ class <| "pane-heading red" ]
+            [ img [ src "assets/images/exclamation-white-outline.png" ] []
+            , span [] [ text <| translate language Translate.MedicalHistory ]
             ]
         , div [ class "pane-content" ] content
         ]
