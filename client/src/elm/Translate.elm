@@ -7877,7 +7877,7 @@ translationSet trans =
             }
 
         InfectiousDiseases ->
-            { english = "Infectious Diseases"
+            { english = "Infectious diseases"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -10386,7 +10386,7 @@ translationSet trans =
             }
 
         MedicalConditions ->
-            { english = "Medical Conditions"
+            { english = "Medical conditions"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -10886,8 +10886,8 @@ translationSet trans =
             }
 
         MentalHealthIssues ->
-            { english = "Mental Health Issues"
-            , kinyarwanda = Just "Ubutumwa wishimiye"
+            { english = "Mental health issues"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -13790,7 +13790,7 @@ translationSet trans =
             }
 
         PhysicalConditions ->
-            { english = "Physical Conditions"
+            { english = "Physical conditions"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
