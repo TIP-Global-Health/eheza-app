@@ -13159,7 +13159,7 @@ translationSet trans =
             }
 
         ObstetricalDiagnosis ->
-            { english = "Obstetrical Diagnosis"
+            { english = "Obstetric Diagnosis"
             , kinyarwanda = Just "Uburwayi bwemejwe n'inzobere mu gusuzuma abagore batwite"
             , kirundi = Just "Isuzuma ry'ivyara"
             }
@@ -18550,10 +18550,7 @@ translationSet trans =
                     }
 
                 ComponentAntenatalObstetricalDiagnosis ->
-                    { english = "Obstetrical Diagnosis"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Isuzuma ry'ivyara"
-                    }
+                    translationSet ObstetricalDiagnosis
 
                 ComponentAntenatalImmunizationHistory ->
                     translationSet ImmunizationHistory
