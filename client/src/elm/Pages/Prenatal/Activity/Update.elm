@@ -16,7 +16,12 @@ import Backend.Measurement.Model
         , ImageUrl(..)
         , LegsCPESign(..)
         , LungsCPESign(..)
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
+        , MedicalHistorySign(..)
         , NeckCPESign(..)
+        , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
         , PhaseRecorded(..)
         , PostpartumChildDangerSign(..)
@@ -76,6 +81,26 @@ import Translate exposing (Language)
 update : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update language currentDate id isLabTech db msg model =
     let
+        obstetricFormSecondStep =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.obstetricHistoryStep2
+                        >> getMeasurementValueFunc
+                        >> obstetricHistoryStep2FormWithDefault model.historyData.obstetricFormSecondStep
+                    )
+                |> Maybe.withDefault model.historyData.obstetricFormSecondStep
+
+        medicalHistoryForm =
+            Dict.get id db.prenatalMeasurements
+                |> Maybe.andThen RemoteData.toMaybe
+                |> Maybe.map
+                    (.medicalHistory
+                        >> getMeasurementValueFunc
+                        >> medicalHistoryFormWithDefault model.historyData.medicalForm
+                    )
+                |> Maybe.withDefault model.historyData.medicalForm
+
         corePhysicalExamForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -263,24 +288,6 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SetLmpRange value ->
-            let
-                range =
-                    lmpRangeFromString value
-
-                updatedForm =
-                    model.pregnancyDatingData.form
-                        |> (\form -> { form | lmpRange = range })
-
-                updatedData =
-                    model.pregnancyDatingData
-                        |> (\data -> { data | form = updatedForm })
-            in
-            ( { model | pregnancyDatingData = updatedData }
-            , Cmd.none
-            , []
-            )
-
         SetLmpDateNotConfidentReason value ->
             let
                 updatedForm =
@@ -374,7 +381,7 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
-        SaveOBHistoryStep1 personId saved ->
+        SaveOBHistoryStep1 skipSecondStep personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -382,8 +389,20 @@ update language currentDate id isLabTech db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( appMsgs, updatedData ) =
-                    ( model.historyData.obstetricFormFirstStep
+                ( extraMsgs, updatedData ) =
+                    if skipSecondStep then
+                        ( generateHistoryMsgs nextTask
+                        , model.historyData
+                        )
+
+                    else
+                        ( []
+                        , model.historyData
+                            |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
+                        )
+
+                appMsgs =
+                    model.historyData.obstetricFormFirstStep
                         |> toObstetricHistoryValueWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveObstetricHistory personId measurementId
@@ -392,14 +411,12 @@ update language currentDate id isLabTech db msg model =
                                 >> List.singleton
                             )
                         |> Maybe.withDefault []
-                    , model.historyData
-                        |> (\data -> { data | obstetricHistoryStep = ObstetricHistorySecondStep })
-                    )
             in
             ( { model | historyData = updatedData }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
         SetCSectionReason reason ->
             let
@@ -415,34 +432,6 @@ update language currentDate id isLabTech db msg model =
 
                 updatedForm =
                     { form | cSectionReason = updatedReason, cSectionReasonDirty = True }
-
-                updatedData =
-                    model.historyData
-                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
-            in
-            ( { model | historyData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetNumberOfCSections value ->
-            let
-                updatedForm =
-                    let
-                        form =
-                            model.historyData.obstetricFormSecondStep
-
-                        updatedValue =
-                            String.toInt value
-                    in
-                    { form
-                        | cSections = updatedValue
-                        , cSectionsDirty = True
-                        , cSectionInPreviousDelivery = Nothing
-                        , cSectionInPreviousDeliveryDirty = True
-                        , cSectionReason = Nothing
-                        , cSectionReasonDirty = True
-                    }
 
                 updatedData =
                     model.historyData
@@ -481,6 +470,27 @@ update language currentDate id isLabTech db msg model =
 
                 updatedForm =
                     { form | previousDeliveryPeriod = updatedPeriod }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | obstetricFormSecondStep = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetObstetricFormSecondStepSign sign ->
+            let
+                form =
+                    obstetricFormSecondStep
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoObstetricHistoryStep2Sign
+                        sign
+                        form
 
                 updatedData =
                     model.historyData
@@ -533,13 +543,82 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
-        SetMedicalBoolInput formUpdateFunc value ->
+        SetMedicalHistorySigns value ->
             let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .signs
+                        (\signs -> { form | signs = signs })
+                        NoMedicalHistorySigns
+                        value
+                        form
+
                 updatedData =
-                    let
-                        updatedForm =
-                            formUpdateFunc value model.historyData.medicalForm
-                    in
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryPhysicalCondition value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .physicalConditions
+                        (\physicalConditions -> { form | physicalConditions = physicalConditions })
+                        NoMedicalHistoryPhysicalCondition
+                        value
+                        form
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryInfectiousDisease value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .infectiousDiseases
+                        (\infectiousDiseases -> { form | infectiousDiseases = infectiousDiseases })
+                        NoMedicalHistoryInfectiousDisease
+                        value
+                        form
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMedicalHistoryMentalHealthIssue value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    setMultiSelectInputValue .mentalHealthIssues
+                        (\mentalHealthIssues -> { form | mentalHealthIssues = mentalHealthIssues })
+                        NoMedicalHistoryMentalHealthIssue
+                        value
+                        form
+
+                updatedData =
                     model.historyData
                         |> (\data -> { data | medicalForm = updatedForm })
             in
@@ -2765,7 +2844,13 @@ update language currentDate id isLabTech db msg model =
                     model.laboratoryData.partnerHIVTestForm
 
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    { form
+                        | testResult = testResultFromString value
+                        , partnerTakingARV = Nothing
+                        , partnerTakingARVDirty = True
+                        , partnerSurpressedViralLoad = Nothing
+                        , partnerSurpressedViralLoadDirty = True
+                    }
 
                 updatedData =
                     model.laboratoryData

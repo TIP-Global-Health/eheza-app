@@ -1524,6 +1524,7 @@ function hedley_prenatal_field_default_field_bases() {
         'known-as-positive' => 'Known as Positive',
         'to-be-done-at-hospital' => 'To be done at hospital',
         'run-confirmed-by-lab-tech' => 'Run confirmed by lab tech',
+        'not-present' => 'Not present',
       ),
       'allowed_values_function' => '',
     ),
@@ -1628,6 +1629,7 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'hiv' => 'HIV',
         'syphilis' => 'Syphilis',
+        'partner-hiv' => 'Partner HIV',
       ),
       'allowed_values_function' => '',
     ),

@@ -112,6 +112,7 @@ import Pages.Utils
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
         , viewConditionalAlert
+        , viewCustomBoolInput
         , viewCustomLabel
         , viewCustomSelectListInput
         , viewInstructionsLabel
@@ -416,64 +417,27 @@ viewPregnancyDatingContent language currentDate assembled data =
                         ( [], 0, 0 )
             in
             ( let
-                lmpRangeInput =
-                    viewSelectListInput language
-                        form.lmpRange
-                        [ Pages.Prenatal.Activity.Types.OneMonth
-                        , Pages.Prenatal.Activity.Types.ThreeMonths
-                        , SixMonthsOrMore
-                        ]
-                        lmpRangeToString
-                        SetLmpRange
-                        Translate.LmpRange
-                        "select"
-
                 lmpDateInput =
                     let
-                        lmpDateAction =
-                            Maybe.map
-                                (\range ->
-                                    let
-                                        ( dateFrom, dateDefault ) =
-                                            case range of
-                                                Pages.Prenatal.Activity.Types.OneMonth ->
-                                                    ( Date.add Months -1 currentDate
-                                                    , Date.add Months -1 currentDate
-                                                    )
-
-                                                Pages.Prenatal.Activity.Types.ThreeMonths ->
-                                                    ( Date.add Months -3 currentDate
-                                                    , Date.add Months -3 currentDate
-                                                    )
-
-                                                SixMonthsOrMore ->
-                                                    ( Date.add Months -12 currentDate
-                                                    , Date.add Months -6 currentDate
-                                                    )
-
-                                        dateSelectorConfig =
-                                            { select = SetLmpDate
-                                            , close = SetLmpDateSelectorState Nothing
-                                            , dateFrom = dateFrom
-                                            , dateTo = currentDate
-                                            , dateDefault = Just dateDefault
-                                            }
-                                    in
-                                    [ onClick <| SetLmpDateSelectorState (Just dateSelectorConfig) ]
-                                )
-                                form.lmpRange
-                                |> Maybe.withDefault []
+                        dateSelectorConfig =
+                            { select = SetLmpDate
+                            , close = SetLmpDateSelectorState Nothing
+                            , dateFrom = Date.add Months -12 currentDate
+                            , dateTo = currentDate
+                            , dateDefault = Maybe.Extra.or form.lmpDate (Just currentDate)
+                            }
 
                         lmpdDateForView =
                             Maybe.map formatDDMMYYYY form.lmpDate
                                 |> Maybe.withDefault ""
                     in
-                    div (class "form-input date" :: lmpDateAction)
+                    div
+                        [ class "form-input date"
+                        , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
+                        ]
                         [ text lmpdDateForView ]
               in
-              [ viewQuestionLabel language Translate.LmpRangeHeader
-              , lmpRangeInput
-              , viewLabel language Translate.LmpDateHeader
+              [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
@@ -663,10 +627,12 @@ viewHistoryContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+        obstetricFormFirstStep =
             getMeasurementValueFunc assembled.measurements.obstetricHistory
                 |> obstetricHistoryFormWithDefault data.obstetricFormFirstStep
-                |> obstetricFormFirstStepInputsAndTasks language currentDate assembled
+
+        ( obstetricFormFirstStepInputs, obstetricFormFirstStepTasks ) =
+            obstetricFormFirstStepInputsAndTasks language currentDate assembled obstetricFormFirstStep
 
         ( obstetricFormSecondStepInputs, obstetricFormSecondStepTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricHistoryStep2
@@ -787,13 +753,27 @@ viewHistoryContent language currentDate assembled data =
                                     Obstetric ->
                                         case data.obstetricHistoryStep of
                                             ObstetricHistoryFirstStep ->
+                                                let
+                                                    skipSecondStep =
+                                                        toObstetricHistoryValue obstetricFormFirstStep
+                                                            |> skipObstetricHistorySecondStep
+
+                                                    label =
+                                                        if skipSecondStep then
+                                                            Translate.Save
+
+                                                        else
+                                                            Translate.SaveAndNext
+                                                in
                                                 [ customSaveButton language
                                                     saveButtonActive
                                                     (SaveOBHistoryStep1
+                                                        skipSecondStep
                                                         assembled.participant.person
                                                         assembled.measurements.obstetricHistory
+                                                        nextTask
                                                     )
-                                                    Translate.SaveAndNext
+                                                    label
                                                 ]
 
                                             ObstetricHistorySecondStep ->
@@ -1470,6 +1450,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     ( task
                     , case task of
                         TaskHIVTest ->
+                            let
+                                partnerHIVTestResult =
+                                    resolvePartnerHIVTestResult assembled
+                            in
                             measurements.hivTest
                                 |> getMeasurementValueFunc
                                 |> hivTestUniversalFormWithDefault data.hivTestForm
@@ -1477,6 +1461,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
+                                    partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest
@@ -2722,7 +2707,7 @@ obstetricFormFirstStepInputsAndTasks language currentDate assembled form =
             form.abortions
             (SetOBIntInput abortionsUpdateFunc)
             "abortions"
-            Translate.NumberOfAbortions
+            Translate.NumberOfAbortionsLabel
             Nothing
       , viewNumberInput language
             form.liveChildren
@@ -2766,21 +2751,16 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             let
                 ( derivedHtml, derivedTasks ) =
                     Maybe.map
-                        (\cSections ->
-                            if cSections > 0 then
+                        (\cSectionInPast ->
+                            if cSectionInPast then
+                                let
+                                    cSectionInPreviousDeliveryUpdateFunc value form_ =
+                                        { form_
+                                            | cSectionInPreviousDelivery = Just value
+                                            , cSectionInPreviousDeliveryDirty = True
+                                        }
+                                in
                                 ( [ div [ class "ui grid" ]
-                                        [ div [ class "twelve wide column" ]
-                                            [ viewLabel language Translate.CSectionInPreviousDelivery ]
-                                        , div [ class "four wide column" ]
-                                            [ viewRedAlertForBool form.cSectionInPreviousDelivery False ]
-                                        ]
-                                  , viewBoolInput
-                                        language
-                                        form.cSectionInPreviousDelivery
-                                        (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
-                                        "c-section-previous-delivery"
-                                        Nothing
-                                  , div [ class "ui grid" ]
                                         [ div [ class "twelve wide column" ]
                                             [ viewLabel language Translate.CSectionReason ]
                                         , div [ class "four wide column" ]
@@ -2795,6 +2775,20 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                                         form.cSectionReason
                                         SetCSectionReason
                                         Translate.CSectionReasons
+                                  , div [ class "ui grid" ]
+                                        [ div [ class "twelve wide column" ]
+                                            [ viewLabel language Translate.MostRecentPregnancyDeliveryMethod ]
+                                        , div [ class "four wide column" ]
+                                            [ viewRedAlertForBool form.cSectionInPreviousDelivery False ]
+                                        ]
+                                  , viewCustomBoolInput
+                                        language
+                                        form.cSectionInPreviousDelivery
+                                        (SetOBBoolInput cSectionInPreviousDeliveryUpdateFunc)
+                                        "c-section-previous-delivery"
+                                        ( Translate.CSection, Translate.VaginalDeliveryLabel )
+                                        "eight"
+                                        False
                                   ]
                                 , [ form.cSectionInPreviousDelivery
                                   , maybeToBoolTask form.cSectionReason
@@ -2804,235 +2798,73 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                             else
                                 ( [], [] )
                         )
-                        form.cSections
+                        form.cSectionInPast
                         |> Maybe.withDefault ( [], [] )
 
-                cSectionInPreviousDeliveryUpdateFunc value form_ =
-                    { form_ | cSectionInPreviousDelivery = Just value, cSectionInPreviousDeliveryDirty = True }
+                cSectionInPastUpdateFunc value form_ =
+                    { form_
+                        | cSectionInPast = Just value
+                        , cSectionReason = Nothing
+                        , cSectionReasonDirty = True
+                        , cSectionInPreviousDelivery = Nothing
+                        , cSectionInPreviousDeliveryDirty = True
+                    }
             in
-            ( viewNumberInput
-                language
-                form.cSections
-                SetNumberOfCSections
-                "c-sections"
-                Translate.NumberOfCSections
-                (Just ( [ [ (<) 0 ] ], [] ))
-                :: derivedHtml
-            , maybeToBoolTask form.cSections :: derivedTasks
-            )
-
-        successiveAbortionsUpdateFunc value form_ =
-            { form_ | successiveAbortions = Just value }
-
-        successivePrematureDeliveriesUpdateFunc value form_ =
-            { form_ | successivePrematureDeliveries = Just value }
-
-        stillbornPreviousDeliveryUpdateFunc value form_ =
-            { form_ | stillbornPreviousDelivery = Just value }
-
-        babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc value form_ =
-            { form_ | babyDiedOnDayOfBirthPreviousDelivery = Just value }
-
-        partialPlacentaPreviousDeliveryUpdateFunc value form_ =
-            { form_ | partialPlacentaPreviousDelivery = Just value }
-
-        severeHemorrhagingPreviousDeliveryUpdateFunc value form_ =
-            { form_ | severeHemorrhagingPreviousDelivery = Just value }
-
-        preeclampsiaPreviousPregnancyUpdateFunc value form_ =
-            { form_ | preeclampsiaPreviousPregnancy = Just value }
-
-        convulsionsPreviousDeliveryUpdateFunc value form_ =
-            { form_ | convulsionsPreviousDelivery = Just value }
-
-        convulsionsAndUnconsciousPreviousDeliveryUpdateFunc value form_ =
-            { form_ | convulsionsAndUnconsciousPreviousDelivery = Just value }
-
-        gestationalDiabetesPreviousPregnancyUpdateFunc value form_ =
-            { form_ | gestationalDiabetesPreviousPregnancy = Just value }
-
-        incompleteCervixPreviousPregnancyUpdateFunc value form_ =
-            { form_ | incompleteCervixPreviousPregnancy = Just value }
-
-        rhNegativeUpdateFunc value form_ =
-            { form_ | rhNegative = Just value }
-    in
-    ( cSectionsHtml
-        ++ [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewCustomLabel language Translate.PreviousDelivery ":" "label previous-delivery" ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForSelect
-                        (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
-                        [ Neither ]
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewQuestionLabel language Translate.CSectionInPast ]
+                    , div [ class "four wide column" ]
+                        [ viewRedAlertForBool form.cSectionInPast False ]
                     ]
+              , viewBoolInput
+                    language
+                    form.cSectionInPast
+                    (SetOBBoolInput cSectionInPastUpdateFunc)
+                    "c-section-past"
+                    Nothing
+              ]
+                ++ derivedHtml
+            , maybeToBoolTask form.cSectionInPast :: derivedTasks
+            )
+    in
+    ( [ div [ class "ui grid" ]
+            [ div [ class "twelve wide column" ]
+                [ viewCustomLabel language Translate.PreviousDelivery ":" "label previous-delivery" ]
+            , div [ class "four wide column" ]
+                [ viewRedAlertForSelect
+                    (form.previousDeliveryPeriod |> Maybe.map List.singleton |> Maybe.withDefault [])
+                    [ Neither ]
                 ]
-           , viewCheckBoxSelectInput language
-                [ LessThan18Month, MoreThan5Years ]
-                [ Neither ]
-                form.previousDeliveryPeriod
-                SetPreviousDeliveryPeriod
-                Translate.PreviousDeliveryPeriods
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewCustomLabel language Translate.SuccessiveAbortions "?" "label successive-abortions" ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.successiveAbortions False ]
+            ]
+      , viewCheckBoxSelectInput language
+            [ LessThan18Month, MoreThan5Years ]
+            [ Neither ]
+            form.previousDeliveryPeriod
+            SetPreviousDeliveryPeriod
+            Translate.PreviousDeliveryPeriods
+      ]
+        ++ cSectionsHtml
+        ++ [ viewQuestionLabel language Translate.ObstetricHistorySignsReviewQuestion
+           , viewCheckBoxMultipleSelectInput language
+                [ ObstetricHistoryPreeclampsiaPreviousPregnancy
+                , ObstetricHistoryGestationalDiabetesPreviousPregnancy
+                , ObstetricHistoryIncompleteCervixPreviousPregnancy
+                , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
                 ]
-           , viewBoolInput
-                language
-                form.successiveAbortions
-                (SetOBBoolInput successiveAbortionsUpdateFunc)
-                "successive-abortions"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.SuccessivePrematureDeliveries ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.successivePrematureDeliveries False ]
+                [ ObstetricHistoryPartialPlacentaPreviousDelivery
+                , ObstetricHistorySevereHemorrhagingPreviousDelivery
+                , ObstetricHistoryConvulsionsPreviousDelivery
+                , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
                 ]
-           , viewBoolInput
-                language
-                form.successivePrematureDeliveries
-                (SetOBBoolInput successivePrematureDeliveriesUpdateFunc)
-                "successive-primature-deliveries"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.StillbornPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.stillbornPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.stillbornPreviousDelivery
-                (SetOBBoolInput stillbornPreviousDeliveryUpdateFunc)
-                "stillborn-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.BabyDiedOnDayOfBirthPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.babyDiedOnDayOfBirthPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.babyDiedOnDayOfBirthPreviousDelivery
-                (SetOBBoolInput babyDiedOnDayOfBirthPreviousDeliveryUpdateFunc)
-                "baby-died-on-day-off-birth-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.PartialPlacentaPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.partialPlacentaPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.partialPlacentaPreviousDelivery
-                (SetOBBoolInput partialPlacentaPreviousDeliveryUpdateFunc)
-                "partial-placenta-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.SevereHemorrhagingPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.severeHemorrhagingPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.severeHemorrhagingPreviousDelivery
-                (SetOBBoolInput severeHemorrhagingPreviousDeliveryUpdateFunc)
-                "severe-hemorrhaging-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.PreeclampsiaPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.preeclampsiaPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.preeclampsiaPreviousPregnancy
-                (SetOBBoolInput preeclampsiaPreviousPregnancyUpdateFunc)
-                "preeclampsia-previous-pregnancy"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.ConvulsionsPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.convulsionsPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.convulsionsPreviousDelivery
-                (SetOBBoolInput convulsionsPreviousDeliveryUpdateFunc)
-                "convulsions-previous-pelivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.ConvulsionsAndUnconsciousPreviousDelivery ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.convulsionsAndUnconsciousPreviousDelivery False ]
-                ]
-           , viewBoolInput
-                language
-                form.convulsionsAndUnconsciousPreviousDelivery
-                (SetOBBoolInput convulsionsAndUnconsciousPreviousDeliveryUpdateFunc)
-                "convulsions-and-unconscious-previous-delivery"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.GestationalDiabetesPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.gestationalDiabetesPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.gestationalDiabetesPreviousPregnancy
-                (SetOBBoolInput gestationalDiabetesPreviousPregnancyUpdateFunc)
-                "gestatipnal-diabetes-previous-pregnancy"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.IncompleteCervixPreviousPregnancy ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.incompleteCervixPreviousPregnancy False ]
-                ]
-           , viewBoolInput
-                language
-                form.incompleteCervixPreviousPregnancy
-                (SetOBBoolInput incompleteCervixPreviousPregnancyUpdateFunc)
-                "incomplete-cervix-previous-pregnancy"
-                Nothing
-           , div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.RhNegative ]
-                , div [ class "four wide column" ]
-                    [ viewRedAlertForBool form.rhNegative False ]
-                ]
-           , viewBoolInput
-                language
-                form.rhNegative
-                (SetOBBoolInput rhNegativeUpdateFunc)
-                "rh-negative"
-                Nothing
+                (Maybe.withDefault [] form.signs)
+                (Just NoObstetricHistoryStep2Sign)
+                SetObstetricFormSecondStepSign
+                Translate.ObstetricHistoryStep2Sign
            ]
-    , cSectionsTasks
-        ++ [ maybeToBoolTask form.previousDeliveryPeriod
-           , form.successiveAbortions
-           , form.successivePrematureDeliveries
-           , form.stillbornPreviousDelivery
-           , form.babyDiedOnDayOfBirthPreviousDelivery
-           , form.partialPlacentaPreviousDelivery
-           , form.severeHemorrhagingPreviousDelivery
-           , form.preeclampsiaPreviousPregnancy
-           , form.convulsionsPreviousDelivery
-           , form.convulsionsAndUnconsciousPreviousDelivery
-           , form.gestationalDiabetesPreviousPregnancy
-           , form.incompleteCervixPreviousPregnancy
-           , form.rhNegative
-           ]
+    , [ maybeToBoolTask form.previousDeliveryPeriod
+      , maybeToBoolTask form.signs
+      ]
+        ++ cSectionsTasks
     )
 
 
@@ -3043,184 +2875,56 @@ medicalFormInputsAndTasks :
     -> MedicalHistoryForm
     -> ( List (Html Msg), List (Maybe Bool) )
 medicalFormInputsAndTasks language currentDate assembled form =
-    let
-        uterineMyomaUpdateFunc value form_ =
-            { form_ | uterineMyoma = Just value }
-
-        diabetesUpdateFunc value form_ =
-            { form_ | diabetes = Just value }
-
-        cardiacDiseaseUpdateFunc value form_ =
-            { form_ | cardiacDisease = Just value }
-
-        renalDiseaseUpdateFunc value form_ =
-            { form_ | renalDisease = Just value }
-
-        hypertensionBeforePregnancyUpdateFunc value form_ =
-            { form_ | hypertensionBeforePregnancy = Just value }
-
-        tuberculosisPastUpdateFunc value form_ =
-            { form_ | tuberculosisPast = Just value }
-
-        tuberculosisPresentUpdateFunc value form_ =
-            { form_ | tuberculosisPresent = Just value }
-
-        asthmaUpdateFunc value form_ =
-            { form_ | asthma = Just value }
-
-        bowedLegsUpdateFunc value form_ =
-            { form_ | bowedLegs = Just value }
-
-        hivUpdateFunc value form_ =
-            { form_ | hiv = Just value }
-
-        mentalHealthHistoryUpdateFunc value form_ =
-            { form_ | mentalHealthHistory = Just value }
-    in
-    ( [ viewCustomLabel language Translate.MedicalFormHelper ":" "label helper"
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.UterineMyoma ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.uterineMyoma False ]
+    ( [ viewQuestionLabel language Translate.MedicalHistorySignsReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ Asthma
+            , CardiacDisease
+            , Diabetes
             ]
-      , viewBoolInput
-            language
-            form.uterineMyoma
-            (SetMedicalBoolInput uterineMyomaUpdateFunc)
-            "uterine-myoma"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Diabetes ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.diabetes False ]
+            [ HypertensionBeforePregnancy
+            , RenalDisease
             ]
-      , viewBoolInput
-            language
-            form.diabetes
-            (SetMedicalBoolInput diabetesUpdateFunc)
-            "diabetes"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.CardiacDisease ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.cardiacDisease False ]
+            (Maybe.withDefault [] form.signs)
+            (Just NoMedicalHistorySigns)
+            SetMedicalHistorySigns
+            Translate.MedicalHistorySign
+      , viewQuestionLabel language Translate.MedicalHistoryPhysicalConditionsReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ PhysicalConditionUterineMyomaCurrent
+            , PhysicalConditionUterineMyomaSurgicalResection
             ]
-      , viewBoolInput
-            language
-            form.cardiacDisease
-            (SetMedicalBoolInput cardiacDiseaseUpdateFunc)
-            "cardiac-disease"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.RenalDisease ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.renalDisease False ]
+            [ PhysicalConditionBowedLegs ]
+            (Maybe.withDefault [] form.physicalConditions)
+            (Just NoMedicalHistoryPhysicalCondition)
+            SetMedicalHistoryPhysicalCondition
+            Translate.MedicalHistoryPhysicalCondition
+      , viewQuestionLabel language Translate.MedicalHistoryInfectiousDiseasesReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ InfectiousDiseasesTuberculosisPast
+            , InfectiousDiseasesTuberculosisPresent
             ]
-      , viewBoolInput
-            language
-            form.renalDisease
-            (SetMedicalBoolInput renalDiseaseUpdateFunc)
-            "renal-disease"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HypertensionBeforePregnancy ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hypertensionBeforePregnancy False ]
+            [ InfectiousDiseasesHIV ]
+            (Maybe.withDefault [] form.infectiousDiseases)
+            (Just NoMedicalHistoryInfectiousDisease)
+            SetMedicalHistoryInfectiousDisease
+            Translate.MedicalHistoryInfectiousDisease
+      , viewQuestionLabel language Translate.MedicalHistoryMentalHealthIssueReviewQuestion
+      , viewCheckBoxMultipleSelectInput language
+            [ MentalHealthIssueGeneralDepression
+            , MentalHealthIssuePerinatalDepression
             ]
-      , viewBoolInput
-            language
-            form.hypertensionBeforePregnancy
-            (SetMedicalBoolInput hypertensionBeforePregnancyUpdateFunc)
-            "hypertension-before-pregnancy"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.TuberculosisPast ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPast False ]
+            [ MentalHealthIssueSchizophrenia
+            , MentalHealthIssueTrauma
             ]
-      , viewBoolInput
-            language
-            form.tuberculosisPast
-            (SetMedicalBoolInput tuberculosisPastUpdateFunc)
-            "tuberculosis-past"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.TuberculosisPresent ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.tuberculosisPresent False ]
-            ]
-      , viewBoolInput
-            language
-            form.tuberculosisPresent
-            (SetMedicalBoolInput tuberculosisPresentUpdateFunc)
-            "tuberculosis-present"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.Asthma ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.asthma False ]
-            ]
-      , viewBoolInput
-            language
-            form.asthma
-            (SetMedicalBoolInput asthmaUpdateFunc)
-            "asthma"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.BowedLegs ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.bowedLegs False ]
-            ]
-      , viewBoolInput
-            language
-            form.bowedLegs
-            (SetMedicalBoolInput bowedLegsUpdateFunc)
-            "bowed-legs"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.HIV ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.hiv False ]
-            ]
-      , viewBoolInput
-            language
-            form.hiv
-            (SetMedicalBoolInput hivUpdateFunc)
-            "hiv"
-            Nothing
-      , div [ class "ui grid" ]
-            [ div [ class "twelve wide column" ]
-                [ viewLabel language Translate.MentalHealthHistory ]
-            , div [ class "four wide column" ]
-                [ viewRedAlertForBool form.mentalHealthHistory False ]
-            ]
-      , viewBoolInput
-            language
-            form.mentalHealthHistory
-            (SetMedicalBoolInput mentalHealthHistoryUpdateFunc)
-            "mental-health-history"
-            Nothing
+            (Maybe.withDefault [] form.mentalHealthIssues)
+            (Just NoMedicalHistoryMentalHealthIssue)
+            SetMedicalHistoryMentalHealthIssue
+            Translate.MedicalHistoryMentalHealthIssue
       ]
-    , [ form.uterineMyoma
-      , form.diabetes
-      , form.cardiacDisease
-      , form.renalDisease
-      , form.hypertensionBeforePregnancy
-      , form.tuberculosisPast
-      , form.tuberculosisPresent
-      , form.asthma
-      , form.hiv
-      , form.mentalHealthHistory
+    , [ maybeToBoolTask form.signs
+      , maybeToBoolTask form.physicalConditions
+      , maybeToBoolTask form.infectiousDiseases
+      , maybeToBoolTask form.mentalHealthIssues
       ]
     )
 
@@ -3782,16 +3486,24 @@ viewAppointmentConfirmationForm language currentDate assembled form =
 
 viewNewbornEnrolmentForm : Language -> NominalDate -> AssembledData -> Html Msg
 viewNewbornEnrolmentForm language currentDate assembled =
+    let
+        attributes =
+            Maybe.map
+                (\birthDate ->
+                    [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
+                    , onClick <|
+                        SetActivePage <|
+                            UserPage <|
+                                CreatePersonPage (Just assembled.participant.person) <|
+                                    Backend.Person.Model.PrenatalNextStepsNewbornEnrolmentOrigin birthDate assembled.id
+                    ]
+                )
+                assembled.participant.dateConcluded
+                |> Maybe.withDefault []
+    in
     div [ class "form newborn-enrolment" ]
         [ text <| translate language <| Translate.EnrolNewbornHelper <| isJust assembled.participant.newborn
-        , button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", isJust assembled.participant.newborn ) ]
-            , onClick <|
-                SetActivePage <|
-                    UserPage <|
-                        CreatePersonPage (Just assembled.participant.person) <|
-                            Backend.Person.Model.PrenatalNextStepsActivityOrigin assembled.id
-            ]
+        , button attributes
             [ text <| translate language Translate.EnrolNewborn ]
         ]
 

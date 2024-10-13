@@ -4172,7 +4172,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                 case initiator of
                                     -- We do not use the form in this scenario,
                                     -- therefore, no need to reset it.
-                                    PrenatalNextStepsActivityOrigin _ ->
+                                    PrenatalNextStepsNewbornEnrolmentOrigin _ _ ->
                                         []
 
                                     -- When at session context, we navigate to session Attendance page.
@@ -4295,7 +4295,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                                         , []
                                         )
 
-                                    PrenatalNextStepsActivityOrigin encounterId ->
+                                    PrenatalNextStepsNewbornEnrolmentOrigin _ encounterId ->
                                         let
                                             nextPage =
                                                 PrenatalActivityPage encounterId Backend.PrenatalActivity.Model.NextSteps
@@ -7071,7 +7071,7 @@ generatePrenatalLabsResultsAddedMsgs currentDate isLabTech after test testPrereq
                                         updatedTestsWithFollowUp =
                                             -- Mark tests which results were entered by Lab Tech, and got
                                             -- follow up questions that will have to be completed by nurse.
-                                            if isLabTech && List.member test [ TestHIV, TestSyphilis ] then
+                                            if isLabTech && List.member test [ TestHIV, TestSyphilis, TestPartnerHIV ] then
                                                 Maybe.map (EverySet.insert test >> Just) value.testsWithFollowUp
                                                     |> Maybe.withDefault (Just <| EverySet.singleton test)
 

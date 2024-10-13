@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Generates aggregated NCDA data for residents from all villages.
+ * Generates aggregated NCDA data for all children.
  *
  * Execution: drush scr
  *   profiles/hedley/modules/custom/hedley_ncda/scripts/generate-data-for-all.php.

@@ -1039,6 +1039,34 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_infectious_disease_history'.
+  $field_bases['field_infectious_disease_history'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_infectious_disease_history',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'hiv' => 'HIV',
+        'tuberculosis-past' => 'Tuberculosis in the past',
+        'tuberculosis-present' => 'Tuberculosis in the present',
+        'none' => 'None of these',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_lactation_signs'.
   $field_bases['field_lactation_signs'] = array(
     'active' => 1,
@@ -1274,6 +1302,35 @@ function hedley_activity_field_default_field_bases() {
         'folic-acid' => 'Folic Acid',
         'vitamin-a' => 'Vitamin A',
         'none' => 'None',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_mental_health_issues'.
+  $field_bases['field_mental_health_issues'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_mental_health_issues',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'general-depression' => 'GeneralDepression',
+        'perinatal-depression' => 'PerinatalDepression',
+        'schizophrenia' => 'Schizophrenia',
+        'trauma' => 'Trauma',
+        'none' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),
@@ -1566,6 +1623,40 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_obstetric_history_step2'.
+  $field_bases['field_obstetric_history_step2'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_obstetric_history_step2',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
+        'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
+        'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
+        'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
+        'convulsions-and-unconscious-previous-delivery' => 'Convulsions And Unconscious Previous Delivery',
+        'gestational-diabetes-previous-pregnancy' => 'Gestational Diabetes Previous Pregnancy',
+        'incomplete-cervix-previous-pregnancy' => 'Incomplete Cervix Previous Pregnancy',
+        'none' => 'None of these',
+        'migrate' => 'Migrate',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_partner_hiv_testing'.
   $field_bases['field_partner_hiv_testing'] = array(
     'active' => 1,
@@ -1612,6 +1703,35 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'initial' => 'Initial',
         'recurrent' => 'Recurrent',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_physical_condition_history'.
+  $field_bases['field_physical_condition_history'] = array(
+    'active' => 1,
+    'cardinality' => -1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_physical_condition_history',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'uterine-myonma-current' => 'Uterine Myoma Current',
+        'uterine-myonma-surgical' => 'Uterine Myoma Surgical Resection',
+        'bowed-legs' => 'Bowed Legs',
+        'none' => 'None of these',
+        'migrate' => 'Migrate',
       ),
       'allowed_values_function' => '',
     ),
@@ -1755,6 +1875,8 @@ function hedley_activity_field_default_field_bases() {
         'mastitis' => 'Mastitis',
         'hiv-detectable-viral-load' => 'HIV - Detectable Viral Load',
         'diabetes' => 'Diabetes',
+        'grief' => 'Grief',
+        'hiv-partner-presence' => 'HIV partner presence',
         'none' => 'None',
       ),
       'allowed_values_function' => '',
@@ -1781,7 +1903,7 @@ function hedley_activity_field_default_field_bases() {
   // Exported field_base: 'field_previous_delivery'.
   $field_bases['field_previous_delivery'] = array(
     'active' => 1,
-    'cardinality' => 7,
+    'cardinality' => -1,
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_previous_delivery',
@@ -1794,6 +1916,7 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
+        'c-section-in-past' => 'C Section In Past',
         'c-section-in-previous-delivery' => 'C Section In Previous Delivery',
         'stillborn-previous-delivery' => 'Stillborn Previous Delivery',
         'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',

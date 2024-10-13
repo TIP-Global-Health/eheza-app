@@ -17,12 +17,6 @@ type HistoryTask
     | OutsideCare
 
 
-type LmpRange
-    = OneMonth
-    | ThreeMonths
-    | SixMonthsOrMore
-
-
 type NextStepsTask
     = NextStepsAppointmentConfirmation
     | NextStepsFollowUp

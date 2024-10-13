@@ -458,6 +458,12 @@ decodePrenatalHealthEducationSign =
                     "mastitis" ->
                         succeed EducationMastitis
 
+                    "grief" ->
+                        succeed EducationGrief
+
+                    "hiv-partner-presence" ->
+                        succeed EducationHIVPartnerPresence
+
                     "none" ->
                         succeed NoPrenatalHealthEducationSigns
 
@@ -641,6 +647,7 @@ decodePartnerHIVTestValue =
             )
             (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
+        |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
 
 decodeViralLoadStatus : Decoder ViralLoadStatus
@@ -949,6 +956,9 @@ decodeTestExecutionNote =
 
                     "run-confirmed-by-lab-tech" ->
                         succeed TestNoteRunConfirmedByLabTech
+
+                    "not-present" ->
+                        succeed TestNoteNotPresent
 
                     _ ->
                         fail <|
@@ -1919,57 +1929,68 @@ decodeLmpDateNotConfidentReason =
             )
 
 
+decodeMedicalHistory : Decoder MedicalHistory
+decodeMedicalHistory =
+    decodePrenatalMeasurement decodeMedicalHistoryValue
+
+
+decodeMedicalHistoryValue : Decoder MedicalHistoryValue
+decodeMedicalHistoryValue =
+    succeed MedicalHistoryValue
+        |> required "medical_history" (decodeEverySet decodeMedicalHistorySign)
+        |> optional "physical_condition_history"
+            (decodeEverySet decodeMedicalHistoryPhysicalCondition)
+            (EverySet.singleton MigrateMedicalHistoryPhysicalCondition)
+        |> optional "infectious_disease_history"
+            (decodeEverySet decodeMedicalHistoryInfectiousDisease)
+            (EverySet.singleton NoMedicalHistoryInfectiousDisease)
+        |> optional "mental_health_issues"
+            (decodeEverySet decodeMedicalHistoryMentalHealthIssue)
+            (EverySet.singleton NoMedicalHistoryMentalHealthIssue)
+
+
 decodeMedicalHistorySign : Decoder MedicalHistorySign
 decodeMedicalHistorySign =
     string
         |> andThen
             (\s ->
-                case s of
-                    "uterine-myonma" ->
-                        succeed UterineMyoma
-
-                    "diabetes" ->
-                        succeed Diabetes
-
-                    "cardiac-disease" ->
-                        succeed CardiacDisease
-
-                    "renal-disease" ->
-                        succeed RenalDisease
-
-                    "hypertension-before-pregnancy" ->
-                        succeed HypertensionBeforePregnancy
-
-                    "tuberculosis-past" ->
-                        succeed TuberculosisPast
-
-                    "tuberculosis-present" ->
-                        succeed TuberculosisPresent
-
-                    "asthma" ->
-                        succeed Asthma
-
-                    "bowed-legs" ->
-                        succeed BowedLegs
-
-                    "hiv" ->
-                        succeed HIV
-
-                    "mental-health-history" ->
-                        succeed MentalHealthHistory
-
-                    "none" ->
-                        succeed NoMedicalHistorySigns
-
-                    _ ->
-                        fail <| s ++ " is not a recognized MedicalHistorySign"
+                medicalHistorySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistorySign" |> fail)
             )
 
 
-decodeMedicalHistory : Decoder MedicalHistory
-decodeMedicalHistory =
-    field "medical_history" (decodeEverySet decodeMedicalHistorySign)
-        |> decodePrenatalMeasurement
+decodeMedicalHistoryPhysicalCondition : Decoder MedicalHistoryPhysicalCondition
+decodeMedicalHistoryPhysicalCondition =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryPhysicalConditionFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryPhysicalCondition" |> fail)
+            )
+
+
+decodeMedicalHistoryInfectiousDisease : Decoder MedicalHistoryInfectiousDisease
+decodeMedicalHistoryInfectiousDisease =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryInfectiousDiseaseFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryInfectiousDisease" |> fail)
+            )
+
+
+decodeMedicalHistoryMentalHealthIssue : Decoder MedicalHistoryMentalHealthIssue
+decodeMedicalHistoryMentalHealthIssue =
+    string
+        |> andThen
+            (\s ->
+                medicalHistoryMentalHealthIssueFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
+            )
 
 
 decodeMedicationSign : Decoder MedicationSign
@@ -2316,6 +2337,9 @@ decodePreviousDeliverySign =
         |> andThen
             (\s ->
                 case s of
+                    "c-section-in-past" ->
+                        succeed CSectionInPast
+
                     "c-section-in-previous-delivery" ->
                         succeed CSectionInPreviousDelivery
 
@@ -2377,14 +2401,28 @@ decodeObstetricHistorySign =
             )
 
 
+decodeObstetricHistoryStep2Sign : Decoder ObstetricHistoryStep2Sign
+decodeObstetricHistoryStep2Sign =
+    string
+        |> andThen
+            (\sign ->
+                obstetricHistoryStep2SignFromString sign
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (sign ++ " is not a recognized ObstetricHistoryStep2Sign" |> fail)
+            )
+
+
 decodeObstetricHistoryStep2 : Decoder ObstetricHistoryStep2
 decodeObstetricHistoryStep2 =
     succeed ObstetricHistoryStep2Value
-        |> required "c_sections" decodeInt
+        |> optional "c_sections" decodeInt -1
         |> optional "c_section_reason" (nullable (decodeEverySet decodeCSectionReason)) Nothing
         |> required "previous_delivery" (decodeEverySet decodePreviousDeliverySign)
         |> required "previous_delivery_period" (decodeEverySet decodePreviousDeliveryPeriod)
         |> required "obstetric_history" (decodeEverySet decodeObstetricHistorySign)
+        |> optional "obstetric_history_step2"
+            (decodeEverySet decodeObstetricHistoryStep2Sign)
+            (EverySet.singleton MigrateObstetricHistoryStep2Sign)
         |> decodePrenatalMeasurement
 
 

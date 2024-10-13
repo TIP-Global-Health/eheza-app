@@ -670,22 +670,58 @@ type alias LastMenstrualPeriod =
 
 
 type MedicalHistorySign
-    = UterineMyoma
-    | Diabetes
+    = Asthma
     | CardiacDisease
-    | RenalDisease
+    | Diabetes
     | HypertensionBeforePregnancy
-    | TuberculosisPast
-    | TuberculosisPresent
-    | Asthma
+    | RenalDisease
+    | NoMedicalHistorySigns
+      -- Sign is kept as legacy value, to preserve data recorded during encounters,
+      -- before it was split into 2 signs at MedicalHistoryPhysicalCondition.
+    | UterineMyoma
+      -- Sign is kept as legacy value, to preserve data recorded during encounters,
+      -- before it was replaced by MedicalHistoryMentalHealthIssue signs.
+    | MentalHealthHistory
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | BowedLegs
     | HIV
-    | MentalHealthHistory
-    | NoMedicalHistorySigns
+    | TuberculosisPast
+    | TuberculosisPresent
+
+
+type MedicalHistoryPhysicalCondition
+    = PhysicalConditionUterineMyomaCurrent
+    | PhysicalConditionUterineMyomaSurgicalResection
+    | PhysicalConditionBowedLegs
+    | NoMedicalHistoryPhysicalCondition
+    | MigrateMedicalHistoryPhysicalCondition
+
+
+type MedicalHistoryInfectiousDisease
+    = InfectiousDiseasesHIV
+    | InfectiousDiseasesTuberculosisPast
+    | InfectiousDiseasesTuberculosisPresent
+    | NoMedicalHistoryInfectiousDisease
+
+
+type MedicalHistoryMentalHealthIssue
+    = MentalHealthIssueGeneralDepression
+    | MentalHealthIssuePerinatalDepression
+    | MentalHealthIssueSchizophrenia
+    | MentalHealthIssueTrauma
+    | NoMedicalHistoryMentalHealthIssue
 
 
 type alias MedicalHistory =
-    PrenatalMeasurement (EverySet MedicalHistorySign)
+    PrenatalMeasurement MedicalHistoryValue
+
+
+type alias MedicalHistoryValue =
+    { signs : EverySet MedicalHistorySign
+    , physicalConditions : EverySet MedicalHistoryPhysicalCondition
+    , infectiousDiseases : EverySet MedicalHistoryInfectiousDisease
+    , mentalHealthIssues : EverySet MedicalHistoryMentalHealthIssue
+    }
 
 
 type MedicationSign
@@ -784,7 +820,11 @@ type alias ObstetricHistoryStep2Value =
     , cSectionReason : Maybe (EverySet CSectionReason)
     , previousDelivery : EverySet PreviousDeliverySign
     , previousDeliveryPeriod : EverySet PreviousDeliveryPeriod
+
+    -- @todo: obstetricHistory is depricated, and can be removed
+    -- around January 2025.
     , obstetricHistory : EverySet ObstetricHistorySign
+    , signs : EverySet ObstetricHistoryStep2Sign
     }
 
 
@@ -804,16 +844,20 @@ type PreviousDeliveryPeriod
 
 
 type PreviousDeliverySign
-    = CSectionInPreviousDelivery
+    = CSectionInPast
+    | CSectionInPreviousDelivery
+    | NoPreviousDeliverySign
+      -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | StillbornPreviousDelivery
     | BabyDiedOnDayOfBirthPreviousDelivery
     | PartialPlacentaPreviousDelivery
     | SevereHemorrhagingPreviousDelivery
     | ConvulsionsPreviousDelivery
     | ConvulsionsAndUnconsciousPreviousDelivery
-    | NoPreviousDeliverySign
 
 
+{-| @todo: ObstetricHistorySign is deprecated. Can be removed around January 2025.
+-}
 type ObstetricHistorySign
     = SuccessiveAbortions
     | SuccessivePrematureDeliveries
@@ -822,6 +866,19 @@ type ObstetricHistorySign
     | IncompleteCervixPreviousPregnancy
     | RhNegative
     | NoObstetricHistorySign
+
+
+type ObstetricHistoryStep2Sign
+    = ObstetricHistoryPreeclampsiaPreviousPregnancy
+    | ObstetricHistoryGestationalDiabetesPreviousPregnancy
+    | ObstetricHistoryIncompleteCervixPreviousPregnancy
+    | ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
+    | ObstetricHistoryPartialPlacentaPreviousDelivery
+    | ObstetricHistorySevereHemorrhagingPreviousDelivery
+    | ObstetricHistoryConvulsionsPreviousDelivery
+    | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+    | NoObstetricHistoryStep2Sign
+    | MigrateObstetricHistoryStep2Sign
 
 
 type alias ObstetricHistoryStep2 =
@@ -962,6 +1019,8 @@ type PrenatalHealthEducationSign
     | EducationDiabetes
     | EducationEarlyMastitisOrEngorgment
     | EducationMastitis
+    | EducationGrief
+    | EducationHIVPartnerPresence
     | NoPrenatalHealthEducationSigns
 
 
@@ -1066,6 +1125,7 @@ type TestExecutionNote
     | TestNoteKnownAsPositive
     | TestNoteToBeDoneAtHospital
     | TestNoteRunConfirmedByLabTech
+    | TestNoteNotPresent
 
 
 type TestResult
@@ -1105,7 +1165,7 @@ type PrenatalHIVSign
     | PartnerSurpressedViralLoad
       -- This option is an indicator.
       -- When Lab tech fills the result, they do not
-      -- answer follow up quesrtion. We use this optin to indicate
+      -- answer follow up question. We use this optin to indicate
       -- that nurse will have to complete the results follow up.
     | PrenatalHIVSignPendingInput
     | NoPrenatalHIVSign
@@ -1672,6 +1732,7 @@ type alias PartnerHIVTestValue =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
 

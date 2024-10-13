@@ -15,7 +15,6 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
    */
   protected $fields = [
     'field_c_sections',
-
   ];
 
   /**
@@ -25,6 +24,7 @@ class HedleyRestfulObstetricHistoriesStep2 extends HedleyRestfulPrenatalActivity
     'field_c_section_reason',
     'field_previous_delivery_period',
     'field_obstetric_history',
+    'field_obstetric_history_step2',
     'field_previous_delivery',
   ];
 

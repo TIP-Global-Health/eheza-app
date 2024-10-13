@@ -71,8 +71,18 @@ expectedAgeByForm currentDate form operation =
         |> (\birthDate_ -> resolveExpectedAge currentDate birthDate_ operation)
 
 
-applyDefaultValuesForPerson : NominalDate -> Site -> ReverseGeoInfo -> Maybe Village -> Bool -> Maybe Person -> ParticipantDirectoryOperation -> PersonForm -> PersonForm
-applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation form =
+applyDefaultValuesForPerson :
+    NominalDate
+    -> Site
+    -> ReverseGeoInfo
+    -> Maybe Village
+    -> Bool
+    -> Maybe Person
+    -> ParticipantDirectoryOperation
+    -> Initiator
+    -> PersonForm
+    -> PersonForm
+applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw maybeRelatedPerson operation initiator form =
     let
         defaultProvince =
             if isChw then
@@ -249,6 +259,18 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
     in
     case operation of
         CreatePerson _ ->
+            let
+                applyDefaultBirthDate form_ =
+                    case initiator of
+                        PrenatalNextStepsNewbornEnrolmentOrigin newbornBirthDate _ ->
+                            applyDefaultTextInput birthDate
+                                (Just newbornBirthDate)
+                                formatYYYYMMDD
+                                form_
+
+                        _ ->
+                            form_
+            in
             form
                 |> applyDefaultSelectInput ubudehe defaultUbudehe (ubudeheToInt >> String.fromInt)
                 |> applyDefaultLocation province defaultProvinceId
@@ -257,6 +279,7 @@ applyDefaultValuesForPerson currentDate site reverseGeoInfo maybeVillage isChw m
                 |> applyDefaultLocation cell defaultCellId
                 |> applyDefaultLocation village defaultVillageId
                 |> applyDefaultSelectInput healthCenter defaultHealthCenter fromEntityUuid
+                |> applyDefaultBirthDate
 
         EditPerson _ ->
             let
@@ -376,12 +399,20 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                                             Nothing ->
                                                 ExpectAdultOrChild
                                    )
+
+                nationalIdNumberValidator =
+                    case site of
+                        SiteBurundi ->
+                            nullable string
+
+                        _ ->
+                            validateNationalIdNumber
             in
             succeed Person
                 |> andMap (succeed (generateFullName firstNameValue secondNameValue))
                 |> andMap (succeed <| String.trim firstNameValue)
                 |> andMap (succeed <| String.trim secondNameValue)
-                |> andMap (field nationalIdNumber validateNationalIdNumber)
+                |> andMap (field nationalIdNumber nationalIdNumberValidator)
                 |> andMap (field hmisNumber validateHmisNumber)
                 |> andMap (field photo <| nullable string)
                 |> andMap (succeed birthDate_)
@@ -629,7 +660,11 @@ validateGender =
 
 validateUbudehe : Maybe Person -> Validation ValidationError (Maybe Ubudehe)
 validateUbudehe related =
-    fromDecoder DecoderError (Just RequiredField) (Json.Decode.nullable decodeUbudehe)
+    let
+        decoder =
+            fromDecoder DecoderError Nothing decodeUbudehe
+    in
+    nullable decoder
         |> withDefault (Maybe.andThen .ubudehe related)
 
 

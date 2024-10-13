@@ -1465,8 +1465,10 @@ emptyMalariaResultForm =
 
 
 type alias PartnerHIVTestForm =
-    { -- If true, test will be performed today.
-      testPerformed : Maybe Bool
+    { knownAsPositive : Maybe Bool
+
+    -- If true, test will be performed today.
+    , testPerformed : Maybe Bool
     , testPerformedDirty : Bool
     , immediateResult : Maybe Bool
     , executionNote : Maybe TestExecutionNote
@@ -1477,12 +1479,17 @@ type alias PartnerHIVTestForm =
     -- Test specific fields.
     , testResult : Maybe TestResult
     , testResultDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
     }
 
 
 emptyPartnerHIVTestForm : PartnerHIVTestForm
 emptyPartnerHIVTestForm =
-    { testPerformed = Nothing
+    { knownAsPositive = Nothing
+    , testPerformed = Nothing
     , testPerformedDirty = False
     , immediateResult = Nothing
     , executionNote = Nothing
@@ -1491,6 +1498,10 @@ emptyPartnerHIVTestForm =
     , executionDateDirty = False
     , testResult = Nothing
     , testResultDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
     }
 
 
@@ -1502,6 +1513,10 @@ type alias PartnerHIVResultForm =
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , testResultDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
     }
 
 
@@ -1514,6 +1529,10 @@ emptyPartnerHIVResultForm =
     , testPrerequisites = Nothing
     , testResult = Nothing
     , testResultDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
     }
 
 
@@ -1939,6 +1958,12 @@ minimalNumberOfANCVisits =
 
 type alias VaccinationProgressDict =
     Dict WellChildVaccineType (Dict VaccineDose NominalDate)
+
+
+type VaccinationStatus
+    = StatusBehind
+    | StatusCompleted
+    | StatusUpToDate
 
 
 type ImmunisationTask
