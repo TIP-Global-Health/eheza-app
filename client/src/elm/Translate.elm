@@ -4989,20 +4989,20 @@ translationSet trans =
 
         DiscordantCoupleStatus takingARVs surpressedViralLoad ->
             if takingARVs && surpressedViralLoad then
-                { english = "Discordant Couple: Partner taking ARVs, supressed viral load"
-                , kinyarwanda = Nothing
+                { english = "Discordant Couple: Partner taking ARVs, suppressed viral load"
+                , kinyarwanda = Just "Uwo babana afite ubwandu: Uwo babana afata imiti igabanya ubukana bwa virusi itera SIDA, ntago akigaragaza ingano ya virusi mu maraso"
                 , kirundi = Nothing
                 }
 
             else if takingARVs && not surpressedViralLoad then
                 { english = "Discordant Couple: Partner taking ARVs, does NOT have suppressed viral load"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Uwo babana afite ubwandu: Uwo babana afata imiti igabanya ubukana bwa virusi itera SIDA, aracyagaragaza ingano ya virusi mu maraso"
                 , kirundi = Nothing
                 }
 
             else
                 { english = "Discordant Couple: Partner NOT taking ARVs"
-                , kinyarwanda = Nothing
+                , kinyarwanda = Just "Uwo babana afite ubwandu: Uwo babana ntago afata imiti igabanya ubukana bwa virusi itera SIDA"
                 , kirundi = Nothing
                 }
 
