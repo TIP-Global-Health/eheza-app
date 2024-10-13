@@ -1,8 +1,8 @@
 module Pages.ReportsMenu.Model exposing (..)
 
-import Backend.ReportsMenu.Model exposing (HealthCenterId)
+import Backend.Components.Model exposing (HealthCenterId)
 import Pages.Components.Model exposing (DemographicsSelection, emptyDemographicsSelection)
-import Pages.ReportsMenu.Types exposing (..)
+import Pages.Components.Types exposing (PopulationSelectionOption)
 
 
 type alias Model =
