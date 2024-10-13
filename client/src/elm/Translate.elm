@@ -526,6 +526,7 @@ type TranslationId
     | Commune
     | CompleteFacilityReferralForm ReferralFacility
     | CompletionDate
+    | ConditionsDuringPrevoiusPregnancy
     | Contacted114
     | ContactedHC
     | ContactedHCQuestion
@@ -4294,6 +4295,12 @@ translationSet trans =
 
         CompletionDate ->
             { english = "Completion Date"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ConditionsDuringPrevoiusPregnancy ->
+            { english = "Conditions during prevoius pregnancy"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

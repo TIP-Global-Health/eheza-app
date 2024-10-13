@@ -9,8 +9,10 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , MedicalHistorySign(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
+        , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
@@ -665,32 +667,53 @@ viewObstetricHistoryPane language currentDate measurements =
             getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.map
                     (\value ->
-                        if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
-                            Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
-                                |> Maybe.map
-                                    (\cSectionReason ->
+                        let
+                            cSectionInfo =
+                                if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
+                                    Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
+                                        |> Maybe.map
+                                            (\cSectionReason ->
+                                                let
+                                                    previousDeliveryMethod =
+                                                        if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
+                                                            translate language Translate.CSection
+
+                                                        else
+                                                            translate language Translate.VaginalDeliveryLabel
+                                                in
+                                                [ translate language Translate.CSectionFor
+                                                    ++ " "
+                                                    ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
+                                                    ++ " "
+                                                    ++ translate language Translate.WithMostRecentDeliveryBy
+                                                    ++ " "
+                                                    ++ String.toLower previousDeliveryMethod
+                                                    ++ "."
+                                                ]
+                                            )
+                                        |> Maybe.withDefault []
+
+                                else
+                                    []
+
+                            conditionsDuringPrevoiusPregnancy =
+                                case EverySet.toList value.signs of
+                                    [] ->
+                                        []
+
+                                    [ NoObstetricHistoryStep2Sign ] ->
+                                        []
+
+                                    _ ->
                                         let
-                                            previousDeliveryMethod =
-                                                if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
-                                                    translate language Translate.CSection
-
-                                                else
-                                                    translate language Translate.VaginalDeliveryLabel
+                                            conditions =
+                                                EverySet.toList value.signs
+                                                    |> List.map (Translate.ObstetricHistoryStep2Sign >> translate language)
+                                                    |> String.join ", "
                                         in
-                                        [ translate language Translate.CSectionFor
-                                            ++ " "
-                                            ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
-                                            ++ " "
-                                            ++ translate language Translate.WithMostRecentDeliveryBy
-                                            ++ " "
-                                            ++ String.toLower previousDeliveryMethod
-                                            ++ "."
-                                        ]
-                                    )
-                                |> Maybe.withDefault []
-
-                        else
-                            []
+                                        [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
+                        in
+                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
                     )
                 |> Maybe.withDefault []
 
