@@ -313,6 +313,7 @@ viewComponentsSelection language currentDate phoneNumber componentsList reportTy
                     in
                     viewCheckBoxMultipleSelectInput language
                         [ ComponentAntenatalObstetricHistory
+                        , ComponentAntenatalMedicalHistory
                         , ComponentAntenatalMedicalDiagnosis
                         , ComponentAntenatalObstetricalDiagnosis
                         , ComponentAntenatalImmunizationHistory

@@ -9,8 +9,13 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
+        , MedicalHistorySign(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
+        , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
         , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
@@ -515,6 +520,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                     in
                     [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
+                    , viewMedicalHistoryPane language currentDate firstNurseEncounterMeasurements
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
@@ -661,42 +668,63 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
-        obsetricHistoryStep2 =
+        obstetricHistoryStep2 =
             getMeasurementValueFunc measurements.obstetricHistoryStep2
                 |> Maybe.map
                     (\value ->
-                        if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
-                            Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
-                                |> Maybe.map
-                                    (\cSectionReason ->
+                        let
+                            cSectionInfo =
+                                if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
+                                    Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
+                                        |> Maybe.map
+                                            (\cSectionReason ->
+                                                let
+                                                    previousDeliveryMethod =
+                                                        if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
+                                                            translate language Translate.CSection
+
+                                                        else
+                                                            translate language Translate.VaginalDeliveryLabel
+                                                in
+                                                [ translate language Translate.CSectionFor
+                                                    ++ " "
+                                                    ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
+                                                    ++ " "
+                                                    ++ translate language Translate.WithMostRecentDeliveryBy
+                                                    ++ " "
+                                                    ++ String.toLower previousDeliveryMethod
+                                                    ++ "."
+                                                ]
+                                            )
+                                        |> Maybe.withDefault []
+
+                                else
+                                    []
+
+                            conditionsDuringPrevoiusPregnancy =
+                                case EverySet.toList value.signs of
+                                    [] ->
+                                        []
+
+                                    [ NoObstetricHistoryStep2Sign ] ->
+                                        []
+
+                                    _ ->
                                         let
-                                            previousDeliveryMethod =
-                                                if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
-                                                    translate language Translate.CSection
-
-                                                else
-                                                    translate language Translate.VaginalDeliveryLabel
+                                            conditions =
+                                                EverySet.toList value.signs
+                                                    |> List.map (Translate.ObstetricHistoryStep2Sign >> translate language)
+                                                    |> String.join ", "
                                         in
-                                        [ translate language Translate.CSectionFor
-                                            ++ " "
-                                            ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
-                                            ++ " "
-                                            ++ translate language Translate.WithMostRecentDeliveryBy
-                                            ++ " "
-                                            ++ String.toLower previousDeliveryMethod
-                                            ++ "."
-                                        ]
-                                    )
-                                |> Maybe.withDefault []
-
-                        else
-                            []
+                                        [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
+                        in
+                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
                     )
                 |> Maybe.withDefault []
 
         content =
             obsetricHistory
-                ++ obsetricHistoryStep2
+                ++ obstetricHistoryStep2
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
@@ -705,6 +733,71 @@ viewObstetricHistoryPane language currentDate measurements =
         [ div [ class <| "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.ObstetricHistory ]
+            ]
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewMedicalHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewMedicalHistoryPane language currentDate measurements =
+    let
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        let
+                            viewEntry resolveSignsFunc noSignsValue lableTransId signTransId =
+                                let
+                                    signs =
+                                        resolveSignsFunc value
+                                            |> EverySet.toList
+
+                                    noSignsSelected =
+                                        List.isEmpty signs
+                                            || (List.length signs == 1)
+                                            && (List.head signs
+                                                    |> Maybe.map ((==) noSignsValue)
+                                                    |> Maybe.withDefault False
+                                               )
+                                in
+                                if noSignsSelected then
+                                    []
+
+                                else
+                                    let
+                                        conditions =
+                                            List.map (signTransId >> translate language) signs
+                                                |> String.join ", "
+                                    in
+                                    [ translate language lableTransId ++ ": " ++ conditions ]
+                        in
+                        [ viewEntry .signs NoMedicalHistorySigns Translate.MedicalConditions Translate.MedicalHistorySign
+                        , viewEntry .physicalConditions
+                            NoMedicalHistoryPhysicalCondition
+                            Translate.PhysicalConditions
+                            Translate.MedicalHistoryPhysicalCondition
+                        , viewEntry .infectiousDiseases
+                            NoMedicalHistoryInfectiousDisease
+                            Translate.InfectiousDiseases
+                            Translate.MedicalHistoryInfectiousDisease
+                        , viewEntry .mentalHealthIssues
+                            NoMedicalHistoryMentalHealthIssue
+                            Translate.MentalHealthIssues
+                            Translate.MedicalHistoryMentalHealthIssue
+                        ]
+                            |> List.concat
+                    )
+                |> Maybe.withDefault []
+
+        content =
+            List.map (\alert -> li [] [ text alert ]) medicalHistory
+                |> ul []
+                |> List.singleton
+    in
+    div [ class "risk-factors" ]
+        [ div [ class <| "pane-heading red" ]
+            [ img [ src "assets/images/exclamation-white-outline.png" ] []
+            , span [] [ text <| translate language Translate.MedicalHistory ]
             ]
         , div [ class "pane-content" ] content
         ]

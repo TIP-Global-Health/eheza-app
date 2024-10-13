@@ -80,6 +80,7 @@ type ReportComponentWellChild
 
 type ReportComponentAntenatal
     = ComponentAntenatalObstetricHistory
+    | ComponentAntenatalMedicalHistory
     | ComponentAntenatalMedicalDiagnosis
     | ComponentAntenatalObstetricalDiagnosis
     | ComponentAntenatalImmunizationHistory
