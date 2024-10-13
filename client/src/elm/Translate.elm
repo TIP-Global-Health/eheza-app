@@ -4589,7 +4589,7 @@ translationSet trans =
 
         CSectionInPast ->
             { english = "Has she ever had a cesarean section"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yaba yarigeze kubagwa abyara"
             , kirundi = Nothing
             }
 
@@ -10438,25 +10438,25 @@ translationSet trans =
             case issue of
                 MentalHealthIssueGeneralDepression ->
                     { english = "General Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just " Indwara yo guhangayika muri rusange"
                     , kirundi = Nothing
                     }
 
                 MentalHealthIssuePerinatalDepression ->
                     { english = "Perinatal Depression"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Indwara yo guhangayika mu gihe atwite"
                     , kirundi = Nothing
                     }
 
                 MentalHealthIssueSchizophrenia ->
                     { english = "Schizophrenia"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ibisazi"
                     , kirundi = Nothing
                     }
 
                 MentalHealthIssueTrauma ->
                     { english = "Trauma"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ihungabana"
                     , kirundi = Nothing
                     }
 
@@ -10467,13 +10467,13 @@ translationSet trans =
             case condition of
                 PhysicalConditionUterineMyomaCurrent ->
                     { english = "Uterine Myoma Current"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikibyimba kikiri muri Nyababyeyi"
                     , kirundi = Nothing
                     }
 
                 PhysicalConditionUterineMyomaSurgicalResection ->
                     { english = "Uterine Myoma Surgical Resection"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ikibyimna cyakuwe muri nyababyeyi ibazwe"
                     , kirundi = Nothing
                     }
 
@@ -10791,25 +10791,25 @@ translationSet trans =
 
         MedicalHistoryInfectiousDiseasesReviewQuestion ->
             { english = "Does the patient have, or has she had, any of the following infectious diseases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba afite cyangwa se yaba yaragize zimwe muri izi ndwara zandura"
             , kirundi = Nothing
             }
 
         MedicalHistoryMentalHealthIssueReviewQuestion ->
             { english = "Does the patient have, or has she had, any mental health issues"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba afite cyangwa yaragize ibibazo by’ubuzima bwo mu mutwe"
             , kirundi = Nothing
             }
 
         MedicalHistoryPhysicalConditionsReviewQuestion ->
             { english = "Does the patient have any of the following physical conditions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba afite kimwe muri ibi bibazo (ndwara) by’umubiri"
             , kirundi = Nothing
             }
 
         MedicalHistorySignsReviewQuestion ->
             { english = "Does the patient have any of the following medical conditions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Umurwayi yaba afite kimwe muri ibi bibazo by’ubuzima"
             , kirundi = Nothing
             }
 
@@ -11039,7 +11039,7 @@ translationSet trans =
 
         MostRecentPregnancyDeliveryMethod ->
             { english = "How was her most recent pregnancy delivered"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yabyaye ate ku nda iheruka"
             , kirundi = Nothing
             }
 
@@ -12741,7 +12741,7 @@ translationSet trans =
 
         NumberOfAbortions number ->
             { english = "Number of abortions (<20 weeks): " ++ String.fromInt number
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubare w’inda zavuyemo (munsi y'ibyumweru 20): " ++ String.fromInt number
             , kirundi = Nothing
             }
 
@@ -12765,13 +12765,13 @@ translationSet trans =
 
         NumberOfPretermStillbirths number ->
             { english = "Number of preterm stillbirths: " ++ String.fromInt number
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubare w’abana bapfiriye mu nda badashyitse: " ++ String.fromInt number
             , kirundi = Nothing
             }
 
         NumberOfPretermDeliviries number ->
             { english = "Number of preterm deliveries: " ++ String.fromInt number
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubare w’inda zavutse zitagejeje igihe: " ++ String.fromInt number
             , kirundi = Nothing
             }
 
@@ -12789,7 +12789,7 @@ translationSet trans =
 
         NumberOfTermStillbirths number ->
             { english = "Number of term stillbirths: " ++ String.fromInt number
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just <| "Umubare w’abana bapfiriye mu nda bashyitse: " ++ String.fromInt number
             , kirundi = Nothing
             }
 
@@ -13248,13 +13248,13 @@ translationSet trans =
 
                 ObstetricHistoryIncompleteCervixPreviousPregnancy ->
                     { english = "Incompetent cervix"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Inkondo y’umura idashobora gufunga neza"
                     , kirundi = Nothing
                     }
 
                 ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery ->
                     { english = "Newborn death within 24 hours after delivery"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Urupfu rw’uruhinja mu masaha 24 nyuma yo kuvuka"
                     , kirundi = Nothing
                     }
 
@@ -13263,19 +13263,19 @@ translationSet trans =
 
                 ObstetricHistorySevereHemorrhagingPreviousDelivery ->
                     { english = "Severe Hemorrhaging (>500 ml)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kuva cyane (>500 ml)"
                     , kirundi = Nothing
                     }
 
                 ObstetricHistoryConvulsionsPreviousDelivery ->
                     { english = "Seizures (Convulsions)"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugagara"
                     , kirundi = Nothing
                     }
 
                 ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
                     { english = "Seizures (Convulsions) with loss of consciousness"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kugagara birimo no gutakaza ubwenge"
                     , kirundi = Nothing
                     }
 
@@ -13287,7 +13287,7 @@ translationSet trans =
 
         ObstetricHistorySignsReviewQuestion ->
             { english = "Has the patient ever experienced these conditions during any previous pregnancy"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ese umurwayi yaba yarigeze kugira ibi bibazo mu gihe cy’inda zabanje"
             , kirundi = Nothing
             }
 
