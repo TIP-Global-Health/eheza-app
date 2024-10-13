@@ -10495,10 +10495,13 @@ translationSet trans =
                     translationSet CardiacDisease
 
                 Backend.Measurement.Model.Diabetes ->
-                    translationSet Diabetes
+                    { english = "Diabetes Mellitus"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 Backend.Measurement.Model.HypertensionBeforePregnancy ->
-                    translationSet Hypertension
+                    translationSet HypertensionBeforePregnancy
 
                 Backend.Measurement.Model.RenalDisease ->
                     translationSet RenalDisease
