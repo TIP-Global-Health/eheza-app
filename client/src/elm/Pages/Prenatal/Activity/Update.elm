@@ -2844,7 +2844,13 @@ update language currentDate id isLabTech db msg model =
                     model.laboratoryData.partnerHIVTestForm
 
                 updatedForm =
-                    { form | testResult = testResultFromString value }
+                    { form
+                        | testResult = testResultFromString value
+                        , partnerTakingARV = Nothing
+                        , partnerTakingARVDirty = True
+                        , partnerSurpressedViralLoad = Nothing
+                        , partnerSurpressedViralLoadDirty = True
+                    }
 
                 updatedData =
                     model.laboratoryData

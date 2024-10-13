@@ -1479,6 +1479,10 @@ type alias PartnerHIVTestForm =
     -- Test specific fields.
     , testResult : Maybe TestResult
     , testResultDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
     }
 
 
@@ -1494,6 +1498,10 @@ emptyPartnerHIVTestForm =
     , executionDateDirty = False
     , testResult = Nothing
     , testResultDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
     }
 
 
@@ -1505,6 +1513,10 @@ type alias PartnerHIVResultForm =
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
     , testResultDirty : Bool
+    , partnerTakingARV : Maybe Bool
+    , partnerTakingARVDirty : Bool
+    , partnerSurpressedViralLoad : Maybe Bool
+    , partnerSurpressedViralLoadDirty : Bool
     }
 
 
@@ -1517,6 +1529,10 @@ emptyPartnerHIVResultForm =
     , testPrerequisites = Nothing
     , testResult = Nothing
     , testResultDirty = False
+    , partnerTakingARV = Nothing
+    , partnerTakingARVDirty = False
+    , partnerSurpressedViralLoad = Nothing
+    , partnerSurpressedViralLoadDirty = False
     }
 
 

@@ -12,6 +12,7 @@ import Backend.Measurement.Model
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
         , OutsideCareMedication(..)
+        , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
@@ -23,6 +24,7 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
+        , TestResult(..)
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -796,7 +798,70 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                         ++ programReferralEntries
                 )
                 allNurseEncountersData
+                |> List.append discordantCoupleStatus
                 |> ul []
+
+        discordantCoupleStatus =
+            List.filterMap
+                (\encounterData ->
+                    let
+                        byHIVTest =
+                            getMeasurementValueFunc encounterData.measurements.hivTest
+                                |> Maybe.andThen .hivSigns
+                                |> Maybe.andThen
+                                    (\hivSigns ->
+                                        let
+                                            partnerPositive =
+                                                EverySet.member PartnerHIVPositive hivSigns
+
+                                            takingARV =
+                                                EverySet.member PartnerTakingARV hivSigns
+
+                                            surpressedViralLoad =
+                                                EverySet.member PartnerSurpressedViralLoad hivSigns
+                                        in
+                                        if partnerPositive then
+                                            Just <| Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+
+                                        else
+                                            Nothing
+                                    )
+
+                        byPartnerHIVTest =
+                            let
+                                patientHIVNegative =
+                                    getMeasurementValueFunc encounterData.measurements.hivTest
+                                        |> Maybe.map
+                                            (\value ->
+                                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                    && (value.testResult == Just TestNegative)
+                                            )
+                                        |> Maybe.withDefault False
+                            in
+                            if patientHIVNegative then
+                                getMeasurementValueFunc encounterData.measurements.partnerHIVTest
+                                    |> Maybe.andThen .hivSigns
+                                    |> Maybe.map
+                                        (\hivSigns ->
+                                            let
+                                                takingARV =
+                                                    EverySet.member PartnerTakingARV hivSigns
+
+                                                surpressedViralLoad =
+                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
+                                            in
+                                            Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+                                        )
+
+                            else
+                                Nothing
+                    in
+                    Maybe.Extra.or byPartnerHIVTest byHIVTest
+                )
+                allNurseEncountersData
+                |> List.head
+                |> Maybe.map (translate language >> wrapWithLI)
+                |> Maybe.withDefault []
 
         alerts =
             -- Alerts are displayed only for CHW.
