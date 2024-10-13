@@ -45,6 +45,7 @@ if ($count == 0) {
 
 drush_print("$count nodes of type $type located.");
 
+$processed = 0;
 while (TRUE) {
   // Free up memory.
   drupal_static_reset();
@@ -70,6 +71,14 @@ while (TRUE) {
   }
 
   $nid = end($ids);
+  $processed += count($nodes);
+
+  // Explicitly unset large variables after use for memory optimization.
+  unset($nodes);
+
+  if ($processed % 5000 == 0) {
+    drush_print("Processed $processed out of $count.");
+  }
 
   if (round(memory_get_usage() / 1048576) >= $memory_limit) {
     drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
