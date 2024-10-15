@@ -246,7 +246,8 @@
                             // tables that may be altered due to a change. In this case
                             // We want to allow adding pending upload photos.
                             // See for example dbSync.nodeChanges.hook().
-                            return db.transaction('rw', table, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
+                            var tableName = table.name;
+                            return db.transaction('rw', tableName, dbSync.nodeChanges, dbSync.shardChanges,  dbSync.authorityPhotoUploadChanges, function() {
                                 return table.get(uuid).catch(databaseError).then(function (node) {
                                     if (node) {
                                         var body = JSON.stringify({
@@ -274,7 +275,7 @@
                                         var changeTable = dbSync.nodeChanges;
                                         var addShard = Promise.resolve();
 
-                                        if (table === dbSync.shards) {
+                                        if (tableName === 'shards') {
                                             changeTable = dbSync.shardChanges;
 
                                             addShard = table.get(uuid).catch(databaseError).then(function (item) {
@@ -343,7 +344,7 @@
                         return addShard.then(function (json) {
                             return table.put(json).catch(databaseError).then(function () {
                                 return sendRevisedNode(table, uuid).then(function () {
-                                  var tableName = table.name;
+                                    var tableName = table.name;
                                     // For hooks to be able to work, we need to declare the
                                     // tables that may be altered due to a change. In this case
                                     // We want to allow adding pending upload photos.
