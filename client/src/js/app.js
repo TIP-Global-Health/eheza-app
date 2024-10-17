@@ -1036,7 +1036,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
     case 'IndexDbQueryGetShardsEntityByUuid':
       (async () => {
-
         let result = await dbSync
             .shards
             .where('uuid')
@@ -1044,8 +1043,32 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
             .limit(1)
             .toArray();
 
-        if (result[0]) {
-          return sendIndexedDbFetchResult(queryType, JSON.stringify(result[0]));
+        let entities = [result[0]];
+
+        if (entities[0].type == 'nutrition_encounter') {
+          let uuid = entities[0].individual_participant;
+          result = await dbSync
+              .shardChanges
+              .where('uuid')
+              .equals(uuid)
+              .limit(1)
+              .toArray();
+
+          if (!result[0]) {
+            // If entity not present in shard chages table.
+            result = await dbSync
+                .shards
+                .where('uuid')
+                .equals(uuid)
+                .limit(1)
+                .toArray();
+
+            entities.push(result[0]);
+          }
+        }
+
+        if (entities) {
+          return sendIndexedDbFetchResult(queryType, JSON.stringify(entities));
         }
       })();
         break;
