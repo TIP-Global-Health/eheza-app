@@ -1034,6 +1034,11 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
       })();
         break;
 
+    // Purpose of this query is to resolve sync incident in case
+    // referrenced entity is not recorded. For example, when
+    // nutrition height is being recored, but it's encounter is
+    // not found and shardChanges table.
+    // To solve this, we try to pull the encounter from shards table.
     case 'IndexDbQueryGetShardsEntityByUuid':
       (async () => {
         let result = await dbSync
@@ -1045,7 +1050,9 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entities = [result[0]];
 
-        if (entities[0].type == 'nutrition_encounter') {
+        // If resolved entity is an encounter, we need to check if the
+        // participant it refers to is also missing from  shardChanges table.
+        if (entities[0].type.endsWith('_encounter')) {
           let uuid = entities[0].individual_participant;
           result = await dbSync
               .shardChanges
@@ -1055,7 +1062,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               .toArray();
 
           if (!result[0]) {
-            // If entity not present in shard chages table.
+            // Entity not present in shardChanges chages table, so
+            // we try to resolve it from shard table. 
             result = await dbSync
                 .shards
                 .where('uuid')
