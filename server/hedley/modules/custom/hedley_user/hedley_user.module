@@ -285,11 +285,11 @@ function hedley_user_create_acute_illness_encounter_by_sync_incident(array &$edi
   }
 
   if (!empty($data->sequence_number)) {
-    $entity['field_field_sequence_number'][LANGUAGE_NONE][0]['value'] = $data->sequence_number;
+    $entity['field_sequence_number'][LANGUAGE_NONE][0]['value'] = $data->sequence_number;
   }
 
   if (!empty($data->acute_illness_diagnosis)) {
-    $entity['field_field_acute_illness_diagnosis'][LANGUAGE_NONE][0]['value'] = $data->acute_illness_diagnosis;
+    $entity['field_acute_illness_diagnosis'][LANGUAGE_NONE][0]['value'] = $data->acute_illness_diagnosis;
   }
 
   try {
@@ -460,11 +460,10 @@ function hedley_user_create_ncd_encounter_by_sync_incident(array &$edit, $data) 
     $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
   }
 
-  if (!empty($data->field_ncd_diagnoses)) {
+  if (!empty($data->ncd_diagnoses)) {
     $entity['field_ncd_diagnoses'][LANGUAGE_NONE] = [];
-    $diagnoses = explode(",", $data->field_ncd_diagnoses);
-    foreach ($diagnoses as $diagnosis) {
-      $entity['field_ncd_diagnoses'][LANGUAGE_NONE][] = ['value' => $diagnosis];
+    foreach ($data->ncd_diagnoses as $value) {
+      $entity['field_ncd_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
 
@@ -554,27 +553,24 @@ function hedley_user_create_prenatal_encounter_by_sync_incident(array &$edit, $d
     $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
   }
 
-  if (!empty($data->field_prenatal_diagnoses)) {
+  if (!empty($data->prenatal_diagnoses)) {
     $entity['field_prenatal_diagnoses'][LANGUAGE_NONE] = [];
-    $diagnoses = explode(",", $data->field_prenatal_diagnoses);
-    foreach ($diagnoses as $diagnosis) {
-      $entity['field_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $diagnosis];
+    foreach ($data->prenatal_diagnoses as $value) {
+      $entity['field_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
 
-  if (!empty($data->field_past_prenatal_diagnoses)) {
+  if (!empty($data->past_prenatal_diagnoses)) {
     $entity['field_past_prenatal_diagnoses'][LANGUAGE_NONE] = [];
-    $diagnoses = explode(",", $data->field_past_prenatal_diagnoses);
-    foreach ($diagnoses as $diagnosis) {
-      $entity['field_past_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $diagnosis];
+    foreach ($data->past_prenatal_diagnoses as $value) {
+      $entity['field_past_prenatal_diagnoses'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
 
-  if (!empty($data->field_field_prenatal_indicators)) {
-    $entity['field_field_prenatal_indicators'][LANGUAGE_NONE] = [];
-    $indicators = explode(",", $data->field_field_prenatal_indicators);
-    foreach ($indicators as $indicator) {
-      $entity['field_field_prenatal_indicators'][LANGUAGE_NONE][] = ['value' => $indicator];
+  if (!empty($data->prenatal_indicators)) {
+    $entity['field_prenatal_indicators'][LANGUAGE_NONE] = [];
+    foreach ($data->prenatal_indicators as $value) {
+      $entity['field_prenatal_indicators'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
 
@@ -663,18 +659,16 @@ function hedley_user_create_well_child_encounter_by_sync_incident(array &$edit, 
     $entity['field_scheduled_date'][LANGUAGE_NONE][0]['value2'] = $data->scheduled_date->value2;
   }
 
-  if (!empty($data->field_encounter_notes)) {
+  if (!empty($data->encounter_notes)) {
     $entity['field_encounter_notes'][LANGUAGE_NONE] = [];
-    $values = explode(",", $data->field_encounter_notes);
-    foreach ($values as $value) {
+    foreach ($data->encounter_notes as $value) {
       $entity['field_encounter_notes'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
 
-  if (!empty($data->field_encounter_warnings)) {
+  if (!empty($data->encounter_warnings)) {
     $entity['field_encounter_warnings'][LANGUAGE_NONE] = [];
-    $values = explode(",", $data->field_encounter_warnings);
-    foreach ($values as $value) {
+    foreach ($data->encounter_warnings as $value) {
       $entity['field_encounter_warnings'][LANGUAGE_NONE][] = ['value' => $value];
     }
   }
@@ -689,5 +683,3 @@ function hedley_user_create_well_child_encounter_by_sync_incident(array &$edit, 
 
   $edit['field_incident_details'][LANGUAGE_NONE] = [];
 }
-
-
