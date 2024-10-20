@@ -676,13 +676,17 @@ type MedicalHistorySign
     | HypertensionBeforePregnancy
     | RenalDisease
     | NoMedicalHistorySigns
+      -- Sign is kept as legacy value, to preserve data recorded during encounters,
+      -- before it was split into 2 signs at MedicalHistoryPhysicalCondition.
+    | UterineMyoma
+      -- Sign is kept as legacy value, to preserve data recorded during encounters,
+      -- before it was replaced by MedicalHistoryMentalHealthIssue signs.
+    | MentalHealthHistory
       -- @todo: Below signs are deprecated. Can be removed around January 2025.
     | BowedLegs
-    | UterineMyoma
     | HIV
     | TuberculosisPast
     | TuberculosisPresent
-    | MentalHealthHistory
 
 
 type MedicalHistoryPhysicalCondition
@@ -1728,6 +1732,7 @@ type alias PartnerHIVTestValue =
     , executionDate : Maybe NominalDate
     , testPrerequisites : Maybe (EverySet TestPrerequisite)
     , testResult : Maybe TestResult
+    , hivSigns : Maybe (EverySet PrenatalHIVSign)
     }
 
 

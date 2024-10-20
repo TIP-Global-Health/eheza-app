@@ -212,6 +212,7 @@ features[field_instance][] = node-prenatal_outside_care-field_shards
 features[field_instance][] = node-prenatal_outside_care-field_uuid
 features[field_instance][] = node-prenatal_partner_hiv_test-field_date_measured
 features[field_instance][] = node-prenatal_partner_hiv_test-field_execution_date
+features[field_instance][] = node-prenatal_partner_hiv_test-field_hiv_signs
 features[field_instance][] = node-prenatal_partner_hiv_test-field_nurse
 features[field_instance][] = node-prenatal_partner_hiv_test-field_person
 features[field_instance][] = node-prenatal_partner_hiv_test-field_prenatal_encounter
