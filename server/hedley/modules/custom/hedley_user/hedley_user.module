@@ -158,7 +158,7 @@ function hedley_user_node_form_access_callback($op, $node) {
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_person_by_sync_incident(&$edit, $data) {
+function hedley_user_create_person_by_sync_incident(array &$edit, $data) {
   $health_center_id = hedley_restful_resolve_nid_for_uuid($data->health_center);
   if (!$health_center_id) {
     return;
@@ -222,7 +222,7 @@ function hedley_user_create_person_by_sync_incident(&$edit, $data) {
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_individual_participant_by_sync_incident(&$edit, $data) {
+function hedley_user_create_individual_participant_by_sync_incident(array &$edit, $data) {
   $person_id = hedley_restful_resolve_nid_for_uuid($data->person);
   if (!$person_id) {
     return;
@@ -265,7 +265,7 @@ function hedley_user_create_individual_participant_by_sync_incident(&$edit, $dat
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_acute_illness_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_acute_illness_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -316,7 +316,7 @@ function hedley_user_create_acute_illness_encounter_by_sync_incident(&$edit, $da
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_child_scoreboard_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_child_scoreboard_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -358,7 +358,7 @@ function hedley_user_create_child_scoreboard_encounter_by_sync_incident(&$edit, 
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_hiv_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_hiv_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -400,7 +400,7 @@ function hedley_user_create_hiv_encounter_by_sync_incident(&$edit, $data) {
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_home_visit_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_home_visit_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -442,7 +442,7 @@ function hedley_user_create_home_visit_encounter_by_sync_incident(&$edit, $data)
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_ncd_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_ncd_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -492,7 +492,7 @@ function hedley_user_create_ncd_encounter_by_sync_incident(&$edit, $data) {
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_nutrition_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_nutrition_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -535,7 +535,7 @@ function hedley_user_create_nutrition_encounter_by_sync_incident(&$edit, $data) 
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_prenatal_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_prenatal_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -602,7 +602,7 @@ function hedley_user_create_prenatal_encounter_by_sync_incident(&$edit, $data) {
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_tuberculosis_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_tuberculosis_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -644,7 +644,7 @@ function hedley_user_create_tuberculosis_encounter_by_sync_incident(&$edit, $dat
  *   The data object from the sync incident, containing the necessary
  *   information to create the encounter.
  */
-function hedley_user_create_well_child_encounter_by_sync_incident(&$edit, $data) {
+function hedley_user_create_well_child_encounter_by_sync_incident(array &$edit, $data) {
   $individual_participant_id = hedley_restful_resolve_nid_for_uuid($data->individual_participant);
   if (!$individual_participant_id) {
     return;
@@ -689,4 +689,5 @@ function hedley_user_create_well_child_encounter_by_sync_incident(&$edit, $data)
 
   $edit['field_incident_details'][LANGUAGE_NONE] = [];
 }
+
 
