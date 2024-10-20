@@ -102,12 +102,9 @@ generateAssembledData currentDate features id isChw db =
                                 data.encounter.diagnosis
                                 data.measurements
 
-                        allEncountersData =
-                            data.previousEncountersData ++ [ currentEncounterData ]
-
                         nurseEncounterIndex =
                             List.indexedMap (\index encounterData -> ( index, encounterData.encounterType ))
-                                allEncountersData
+                                data.previousEncountersData
                                 |> List.filter (Tuple.second >> (==) AcuteIllnessEncounterNurse)
                                 |> List.reverse
                                 |> List.head
@@ -116,15 +113,15 @@ generateAssembledData currentDate features id isChw db =
                     Maybe.map
                         (\nurseIndex ->
                             if nurseIndex == 0 then
-                                ( allEncountersData, [] )
+                                ( data.previousEncountersData, [] )
 
                             else
-                                ( List.take nurseIndex allEncountersData
-                                , List.drop nurseIndex allEncountersData
+                                ( List.take nurseIndex data.previousEncountersData
+                                , List.drop nurseIndex data.previousEncountersData
                                 )
                         )
                         nurseEncounterIndex
-                        |> Maybe.withDefault ( allEncountersData, [] )
+                        |> Maybe.withDefault ( data.previousEncountersData, [] )
             in
             { data
                 | initialEncounter = initialEncounter

@@ -8,6 +8,8 @@ import App.Fetch exposing (fetch)
 import App.Model exposing (..)
 import App.Types exposing (Page(..))
 import App.Utils exposing (updateSubModel)
+import Backend.Completion.Model
+import Backend.CompletionMenu.Model
 import Backend.Model
 import Backend.Reports.Model
 import Backend.ReportsMenu.Model
@@ -15,6 +17,8 @@ import Backend.Scoreboard.Model
 import Backend.ScoreboardMenu.Model
 import Backend.Update
 import Gizra.NominalDate exposing (fromLocalDateTime)
+import Pages.Completion.Update
+import Pages.CompletionMenu.Update
 import Pages.Reports.Update
 import Pages.ReportsMenu.Update
 import Pages.Scoreboard.Update
@@ -70,6 +74,24 @@ init flags =
                         model
                         |> Tuple.first
 
+                CompletionMenu ->
+                    update
+                        (Backend.CompletionMenu.Model.SetData flags.appData
+                            |> Backend.Model.MsgCompletionMenu
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
+                Completion ->
+                    update
+                        (Backend.Completion.Model.SetData flags.appData
+                            |> Backend.Model.MsgCompletion
+                            |> MsgBackend
+                        )
+                        model
+                        |> Tuple.first
+
                 NotFound ->
                     model
 
@@ -99,6 +121,12 @@ resolveActivePage page =
 
         "reports-results" ->
             Reports
+
+        "completion-menu" ->
+            CompletionMenu
+
+        "completion-results" ->
+            Completion
 
         _ ->
             NotFound
@@ -160,6 +188,30 @@ update msg model =
                 )
                 (\subModel model_ -> { model_ | reportsPage = subModel })
                 (\subCmds -> MsgReportsPage subCmds)
+                model
+
+        MsgCompletionMenuPage subMsg ->
+            updateSubModel
+                subMsg
+                model.completionMenuPage
+                (\subMsg_ subModel -> Pages.CompletionMenu.Update.update subMsg_ subModel)
+                (\subModel model_ -> { model_ | completionMenuPage = subModel })
+                (\subCmds -> MsgCompletionMenuPage subCmds)
+                model
+
+        MsgCompletionPage subMsg ->
+            updateSubModel
+                subMsg
+                model.completionPage
+                (\subMsg_ subModel ->
+                    Pages.Completion.Update.update
+                        (fromLocalDateTime model.currentTime)
+                        model.backend
+                        subMsg_
+                        subModel
+                )
+                (\subModel model_ -> { model_ | completionPage = subModel })
+                (\subCmds -> MsgCompletionPage subCmds)
                 model
 
         SetCurrentTime date ->

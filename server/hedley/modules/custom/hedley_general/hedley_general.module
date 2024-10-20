@@ -5,6 +5,10 @@
  * Code for the Hedley General feature.
  */
 
+// Maximal number of days that may pass between the date on which test
+// execution was recorded, and the date when the results should be set.
+define('HEDLEY_GENERAL_LAB_EXPIRATION_PERIOD', 35);
+
 /**
  * Creating a new AQ task of a specific queue if not exist.
  *
@@ -501,7 +505,7 @@ function hedley_general_build_elm_app($page, array $data) {
   drupal_add_css($path_hedley_general . '/css/elm.css', 'file');
   drupal_add_css($path_hedley_general . '/css/date-selector.css', 'file');
 
-  if (in_array($page, ['ncda-results', 'reports-results'])) {
+  if (in_array($page, ['ncda-results', 'reports-results', 'completion-results'])) {
     // Add CSS for results pages.
     $path_system = drupal_get_path('module', 'system');
     drupal_add_css($path_system . '/system.base.css', 'file');

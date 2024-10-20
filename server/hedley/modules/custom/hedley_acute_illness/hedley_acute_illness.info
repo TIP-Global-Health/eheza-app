@@ -116,6 +116,7 @@ features[field_instance][] = node-acute_illness_danger_signs-field_nurse
 features[field_instance][] = node-acute_illness_danger_signs-field_person
 features[field_instance][] = node-acute_illness_danger_signs-field_shards
 features[field_instance][] = node-acute_illness_danger_signs-field_uuid
+features[field_instance][] = node-acute_illness_encounter-field_reports_data
 features[field_instance][] = node-acute_illness_encounter-field_sequence_number
 features[field_instance][] = node-acute_illness_follow_up-field_acute_illness_diagnosis
 features[field_instance][] = node-acute_illness_follow_up-field_acute_illness_encounter
