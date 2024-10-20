@@ -305,6 +305,13 @@ dbSync.version(27).upgrade(function (tx) {
   return tx.deferredPhotos.clear();
 });
 
+dbSync.version(28).upgrade(function (tx) {
+  return tx.nodeChanges.clear();
+});
+
+dbSync.version(29).upgrade(function (tx) {
+  return tx.nodeChanges.clear();
+});
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -363,7 +370,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 28;
+const dbVersion = 29;
 
 /**
  * Return saved info for General sync.
@@ -1063,7 +1070,7 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
           if (!result[0]) {
             // Entity not present in shardChanges chages table, so
-            // we try to resolve it from shard table. 
+            // we try to resolve it from shard table.
             result = await dbSync
                 .shards
                 .where('uuid')
