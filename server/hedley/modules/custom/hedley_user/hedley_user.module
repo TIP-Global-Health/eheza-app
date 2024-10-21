@@ -54,7 +54,7 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     return;
   }
 
-  $decoded = json_decode($edit['field_incident_details'][LANGUAGE_NONE][0]['value'], TRUE);
+  $decoded = json_decode($edit['field_incident_details'][LANGUAGE_NONE][0]['value']);
   $entities_data = array_reverse($decoded);
   foreach ($entities_data as $data) {
     $nid = hedley_restful_resolve_nid_for_uuid($data->uuid);
