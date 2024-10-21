@@ -934,10 +934,14 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
     in
     case diagnosis of
         DiagnosisUterineMyoma ->
-            generateAlertForDiagnosis .physicalConditions
-                [ Backend.Measurement.Model.PhysicalConditionUterineMyomaCurrent
-                , Backend.Measurement.Model.PhysicalConditionUterineMyomaSurgicalResection
-                ]
+            Maybe.Extra.or
+                (generateAlertForDiagnosis .physicalConditions
+                    [ Backend.Measurement.Model.PhysicalConditionUterineMyomaCurrent
+                    , Backend.Measurement.Model.PhysicalConditionUterineMyomaSurgicalResection
+                    ]
+                )
+                -- Support for legacy value.
+                (generateAlertForDiagnosis .signs [ Backend.Measurement.Model.UterineMyoma ])
 
         Backend.PrenatalActivity.Model.DiagnosisDiabetes ->
             generateAlertForDiagnosis .signs [ Backend.Measurement.Model.Diabetes ]
@@ -967,12 +971,16 @@ generateMedicalDiagnosisAlertData language currentDate measurements diagnosis =
             generateAlertForDiagnosis .infectiousDiseases [ Backend.Measurement.Model.InfectiousDiseasesHIV ]
 
         DiagnosisMentalHealthHistory ->
-            generateAlertForDiagnosis .mentalHealthIssues
-                [ Backend.Measurement.Model.MentalHealthIssueGeneralDepression
-                , Backend.Measurement.Model.MentalHealthIssuePerinatalDepression
-                , Backend.Measurement.Model.MentalHealthIssueSchizophrenia
-                , Backend.Measurement.Model.MentalHealthIssueTrauma
-                ]
+            Maybe.Extra.or
+                (generateAlertForDiagnosis .mentalHealthIssues
+                    [ Backend.Measurement.Model.MentalHealthIssueGeneralDepression
+                    , Backend.Measurement.Model.MentalHealthIssuePerinatalDepression
+                    , Backend.Measurement.Model.MentalHealthIssueSchizophrenia
+                    , Backend.Measurement.Model.MentalHealthIssueTrauma
+                    ]
+                )
+                -- Support for legacy value.
+                (generateAlertForDiagnosis .signs [ Backend.Measurement.Model.MentalHealthHistory ])
 
 
 calculateBmi : Maybe Float -> Maybe Float -> Maybe Float

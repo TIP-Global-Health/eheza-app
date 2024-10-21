@@ -9,9 +9,15 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , MedicalHistoryInfectiousDisease(..)
+        , MedicalHistoryMentalHealthIssue(..)
+        , MedicalHistoryPhysicalCondition(..)
+        , MedicalHistorySign(..)
         , MedicationDistributionSign(..)
         , NonReferralSign(..)
+        , ObstetricHistoryStep2Sign(..)
         , OutsideCareMedication(..)
+        , PrenatalHIVSign(..)
         , PrenatalHealthEducationSign(..)
         , PrenatalMeasurements
         , PrenatalSymptomQuestion(..)
@@ -23,6 +29,7 @@ import Backend.Measurement.Model
         , SendToHCSign(..)
         , SpecialityCareSign(..)
         , TestExecutionNote(..)
+        , TestResult(..)
         )
 import Backend.Measurement.Utils exposing (getCurrentReasonForNonReferral, getHeightValue, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -513,6 +520,8 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                     in
                     [ viewObstetricHistoryPane language currentDate firstNurseEncounterMeasurements
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricHistory)
+                    , viewMedicalHistoryPane language currentDate firstNurseEncounterMeasurements
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
@@ -659,8 +668,64 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
+        obstetricHistoryStep2 =
+            getMeasurementValueFunc measurements.obstetricHistoryStep2
+                |> Maybe.map
+                    (\value ->
+                        let
+                            cSectionInfo =
+                                if EverySet.member Backend.Measurement.Model.CSectionInPast value.previousDelivery then
+                                    Maybe.andThen (EverySet.toList >> List.head) value.cSectionReason
+                                        |> Maybe.map
+                                            (\cSectionReason ->
+                                                let
+                                                    previousDeliveryMethod =
+                                                        if EverySet.member Backend.Measurement.Model.CSectionInPreviousDelivery value.previousDelivery then
+                                                            translate language Translate.CSection
+
+                                                        else
+                                                            translate language Translate.VaginalDeliveryLabel
+                                                in
+                                                [ translate language Translate.CSectionFor
+                                                    ++ " "
+                                                    ++ String.toLower (translate language <| Translate.CSectionReasons cSectionReason)
+                                                    ++ " "
+                                                    ++ translate language Translate.WithMostRecentDeliveryBy
+                                                    ++ " "
+                                                    ++ String.toLower previousDeliveryMethod
+                                                    ++ "."
+                                                ]
+                                            )
+                                        |> Maybe.withDefault []
+
+                                else
+                                    []
+
+                            conditionsDuringPrevoiusPregnancy =
+                                case EverySet.toList value.signs of
+                                    [] ->
+                                        []
+
+                                    [ NoObstetricHistoryStep2Sign ] ->
+                                        []
+
+                                    _ ->
+                                        let
+                                            conditions =
+                                                EverySet.toList value.signs
+                                                    |> List.map (Translate.ObstetricHistoryStep2Sign >> translate language)
+                                                    |> String.join ", "
+                                        in
+                                        [ translate language Translate.ConditionsDuringPrevoiusPregnancy ++ ": " ++ conditions ]
+                        in
+                        cSectionInfo ++ conditionsDuringPrevoiusPregnancy
+                    )
+                |> Maybe.withDefault []
+
         content =
-            List.map (\alert -> li [] [ text alert ]) obsetricHistory
+            obsetricHistory
+                ++ obstetricHistoryStep2
+                |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
     in
@@ -668,6 +733,71 @@ viewObstetricHistoryPane language currentDate measurements =
         [ div [ class <| "pane-heading red" ]
             [ img [ src "assets/images/exclamation-white-outline.png" ] []
             , span [] [ text <| translate language Translate.ObstetricHistory ]
+            ]
+        , div [ class "pane-content" ] content
+        ]
+
+
+viewMedicalHistoryPane : Language -> NominalDate -> PrenatalMeasurements -> Html Msg
+viewMedicalHistoryPane language currentDate measurements =
+    let
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        let
+                            viewEntry resolveSignsFunc noSignsValue lableTransId signTransId =
+                                let
+                                    signs =
+                                        resolveSignsFunc value
+                                            |> EverySet.toList
+
+                                    noSignsSelected =
+                                        List.isEmpty signs
+                                            || (List.length signs == 1)
+                                            && (List.head signs
+                                                    |> Maybe.map ((==) noSignsValue)
+                                                    |> Maybe.withDefault False
+                                               )
+                                in
+                                if noSignsSelected then
+                                    []
+
+                                else
+                                    let
+                                        conditions =
+                                            List.map (signTransId >> translate language) signs
+                                                |> String.join ", "
+                                    in
+                                    [ translate language lableTransId ++ ": " ++ conditions ]
+                        in
+                        [ viewEntry .signs NoMedicalHistorySigns Translate.MedicalConditions Translate.MedicalHistorySign
+                        , viewEntry .physicalConditions
+                            NoMedicalHistoryPhysicalCondition
+                            Translate.PhysicalConditions
+                            Translate.MedicalHistoryPhysicalCondition
+                        , viewEntry .infectiousDiseases
+                            NoMedicalHistoryInfectiousDisease
+                            Translate.InfectiousDiseases
+                            Translate.MedicalHistoryInfectiousDisease
+                        , viewEntry .mentalHealthIssues
+                            NoMedicalHistoryMentalHealthIssue
+                            Translate.MentalHealthIssues
+                            Translate.MedicalHistoryMentalHealthIssue
+                        ]
+                            |> List.concat
+                    )
+                |> Maybe.withDefault []
+
+        content =
+            List.map (\alert -> li [] [ text alert ]) medicalHistory
+                |> ul []
+                |> List.singleton
+    in
+    div [ class "risk-factors" ]
+        [ div [ class <| "pane-heading red" ]
+            [ img [ src "assets/images/exclamation-white-outline.png" ] []
+            , span [] [ text <| translate language Translate.MedicalHistory ]
             ]
         , div [ class "pane-content" ] content
         ]
@@ -761,7 +891,70 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                         ++ programReferralEntries
                 )
                 allNurseEncountersData
+                |> List.append discordantCoupleStatus
                 |> ul []
+
+        discordantCoupleStatus =
+            List.filterMap
+                (\encounterData ->
+                    let
+                        byHIVTest =
+                            getMeasurementValueFunc encounterData.measurements.hivTest
+                                |> Maybe.andThen .hivSigns
+                                |> Maybe.andThen
+                                    (\hivSigns ->
+                                        let
+                                            partnerPositive =
+                                                EverySet.member PartnerHIVPositive hivSigns
+
+                                            takingARV =
+                                                EverySet.member PartnerTakingARV hivSigns
+
+                                            surpressedViralLoad =
+                                                EverySet.member PartnerSurpressedViralLoad hivSigns
+                                        in
+                                        if partnerPositive then
+                                            Just <| Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+
+                                        else
+                                            Nothing
+                                    )
+
+                        byPartnerHIVTest =
+                            let
+                                patientHIVNegative =
+                                    getMeasurementValueFunc encounterData.measurements.hivTest
+                                        |> Maybe.map
+                                            (\value ->
+                                                List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                    && (value.testResult == Just TestNegative)
+                                            )
+                                        |> Maybe.withDefault False
+                            in
+                            if patientHIVNegative then
+                                getMeasurementValueFunc encounterData.measurements.partnerHIVTest
+                                    |> Maybe.andThen .hivSigns
+                                    |> Maybe.map
+                                        (\hivSigns ->
+                                            let
+                                                takingARV =
+                                                    EverySet.member PartnerTakingARV hivSigns
+
+                                                surpressedViralLoad =
+                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
+                                            in
+                                            Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+                                        )
+
+                            else
+                                Nothing
+                    in
+                    Maybe.Extra.or byPartnerHIVTest byHIVTest
+                )
+                allNurseEncountersData
+                |> List.head
+                |> Maybe.map (translate language >> wrapWithLI)
+                |> Maybe.withDefault []
 
         alerts =
             -- Alerts are displayed only for CHW.

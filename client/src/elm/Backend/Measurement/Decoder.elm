@@ -647,6 +647,7 @@ decodePartnerHIVTestValue =
             )
             (Just prerequisitesDefaultRDT)
         |> optional "test_result" (nullable decodeTestResult) Nothing
+        |> optional "hiv_signs" (nullable (decodeEverySet decodePrenatalHIVSign)) Nothing
 
 
 decodeViralLoadStatus : Decoder ViralLoadStatus

@@ -418,11 +418,25 @@ encodePrenatalPartnerHIVTest =
 
 encodePartnerHIVTestValue : PartnerHIVTestValue -> List ( String, Value )
 encodePartnerHIVTestValue value =
+    let
+        hivSigns =
+            Maybe.map
+                (\signs ->
+                    if EverySet.isEmpty signs then
+                        EverySet.singleton NoPrenatalHIVSign
+
+                    else
+                        signs
+                )
+                value.hivSigns
+                |> Maybe.withDefault (EverySet.singleton NoPrenatalHIVSign)
+    in
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
         ++ encodeNullable "test_result" value.testResult encodeTestResult
-        ++ [ ( "deleted", bool False )
+        ++ [ ( "hiv_signs", encodeEverySet encodePrenatalHIVSign hivSigns )
+           , ( "deleted", bool False )
            , ( "type", string "prenatal_partner_hiv_test" )
            ]
 
