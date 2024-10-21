@@ -54,8 +54,16 @@ function hedley_user_user_presave(&$edit, $account, $category) {
     return;
   }
 
-  $entities_data = array_reverse(json_decode($edit['field_incident_details'][LANGUAGE_NONE][0]['value']));
+  $decoded = json_decode($edit['field_incident_details'][LANGUAGE_NONE][0]['value'], TRUE);
+  $entities_data = array_reverse($decoded);
   foreach ($entities_data as $data) {
+    $nid = hedley_restful_resolve_nid_for_uuid($data->uuid);
+    if ($nid !== FALSE) {
+      // Node with provided UUID is found, which indicates that
+      // content exists already on back-end, and can be skipped.
+      continue;
+    }
+
     $bundle = $data->type;
     $function = "hedley_user_create_{$bundle}_by_sync_incident";
     if (function_exists($function)) {

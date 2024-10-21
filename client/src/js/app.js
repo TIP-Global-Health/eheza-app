@@ -1057,20 +1057,24 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
         let entities = [result[0]];
 
-        // If resolved entity is an encounter, we need to check if the
-        // participant it refers to is also missing from  shardChanges table.
+        // If resolved entity is an encounter, we fetch the
+        // participant it refers to.
         if (entities[0].type.endsWith('_encounter')) {
+          // Encounter was resolved. Now resolving participant.
           let uuid = entities[0].individual_participant;
           result = await dbSync
-              .shardChanges
+              .shards
               .where('uuid')
               .equals(uuid)
               .limit(1)
               .toArray();
 
-          if (!result[0]) {
-            // Entity not present in shardChanges chages table, so
-            // we try to resolve it from shard table.
+          let participant = result[0];
+          if (participant) {
+            entities.push(participant);
+
+            // Participant was resolved. Now resolving person.
+            uuid = participant.person;
             result = await dbSync
                 .shards
                 .where('uuid')
@@ -1078,7 +1082,25 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
                 .limit(1)
                 .toArray();
 
-            entities.push(result[0]);
+            let person = result[0];
+            if (person) {
+              entities.push(person);
+            }
+          }
+        }
+        else if (entities[0].type == 'individual_participant') {
+          // Participant was resolved. Now resolving person.
+          let uuid = entities[0].person;
+          result = await dbSync
+              .shards
+              .where('uuid')
+              .equals(uuid)
+              .limit(1)
+              .toArray();
+
+          let person = result[0];
+          if (person) {
+            entities.push(person);
           }
         }
 
