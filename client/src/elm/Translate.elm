@@ -6392,7 +6392,7 @@ translationSet trans =
 
         GestationalDiabetes ->
             { english = "Gestational Diabetes"
-            , kinyarwanda = Just "Diyabete iterwa no utwite"
+            , kinyarwanda = Just "Diyabete iterwa no gutwita"
             , kirundi = Just "Diyabete y'imbanyi"
             }
 
@@ -7878,7 +7878,7 @@ translationSet trans =
 
         InfectiousDiseases ->
             { english = "Infectious diseases"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Indwara zandura"
             , kirundi = Nothing
             }
 
@@ -13275,7 +13275,7 @@ translationSet trans =
 
                 ObstetricHistoryGestationalDiabetesPreviousPregnancy ->
                     { english = "Gestational Diabetes"
-                    , kinyarwanda = Just "Diyabete iterwa no utwite"
+                    , kinyarwanda = Just "Diyabete iterwa no gutwita"
                     , kirundi = Nothing
                     }
 
