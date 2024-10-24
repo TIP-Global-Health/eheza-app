@@ -4305,8 +4305,8 @@ translationSet trans =
             }
 
         ConditionsDuringPrevoiusPregnancy ->
-            { english = "Conditions during prevoius pregnancy"
-            , kinyarwanda = Nothing
+            { english = "Conditions during previous pregnancy"
+            , kinyarwanda = Just "Uko umubyeyi yari ameze igihe yari atwite inda iheruka"
             , kirundi = Nothing
             }
 
@@ -4425,13 +4425,13 @@ translationSet trans =
 
         CSection ->
             { english = "C-Section"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yarabazwe"
             , kirundi = Nothing
             }
 
         CSectionFor ->
             { english = "C-Section for"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Kubagwa kubera ko"
             , kirundi = Nothing
             }
 
@@ -4642,7 +4642,7 @@ translationSet trans =
 
                 PreviousCSection ->
                     { english = "Previous c-section"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Kubagwa guheruka"
                     , kirundi = Just "Ugokwa guheruka"
                     }
 
@@ -10387,7 +10387,7 @@ translationSet trans =
 
         MedicalConditions ->
             { english = "Medical conditions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibibazo by’ubuzima"
             , kirundi = Nothing
             }
 
@@ -10887,7 +10887,7 @@ translationSet trans =
 
         MentalHealthIssues ->
             { english = "Mental health issues"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibibazo by’ubuzima bwo mu mutwe"
             , kirundi = Nothing
             }
 
@@ -13275,7 +13275,7 @@ translationSet trans =
 
                 ObstetricHistoryGestationalDiabetesPreviousPregnancy ->
                     { english = "Gestational Diabetes"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Diyabete iterwa no utwite"
                     , kirundi = Nothing
                     }
 
@@ -13791,7 +13791,7 @@ translationSet trans =
 
         PhysicalConditions ->
             { english = "Physical conditions"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Ibibazo by’umubiri"
             , kirundi = Nothing
             }
 
@@ -15885,7 +15885,7 @@ translationSet trans =
 
                 EducationGrief ->
                     { english = "Grief"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Intimba"
                     , kirundi = Nothing
                     }
 
@@ -15981,7 +15981,7 @@ translationSet trans =
 
                 EducationGrief ->
                     { english = "Have you provided grief counseling to the patient"
-                    , kinyarwanda = Nothing
+                    , kinyarwanda = Just "Ese wigeze uha umurwayi ubujyanama bwo gukira intimba/ishavu"
                     , kirundi = Nothing
                     }
 
@@ -22847,7 +22847,7 @@ translationSet trans =
 
         VaginalDeliveryLabel ->
             { english = "Vaginal Delivery"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "Yabyaye neza"
             , kirundi = Nothing
             }
 
@@ -23718,7 +23718,7 @@ translationSet trans =
 
         WithMostRecentDeliveryBy ->
             { english = "with most recent delivery by"
-            , kinyarwanda = Nothing
+            , kinyarwanda = Just "hamwe no kubyara guheruka"
             , kirundi = Nothing
             }
 
