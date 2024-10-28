@@ -4145,7 +4145,7 @@ translationSet trans =
         ClickTheCheckMarkEducationSesison ->
             { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Klika ku kavivuzo niba umurwayi yaje."
             }
 
         ClinicType clinicType ->
@@ -5403,49 +5403,49 @@ translationSet trans =
                 TopicSTD ->
                     { english = "STDs & Prevention of HIV"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara zandurirwa mu mibonano mpuzabitsina no gukingira SIDA"
                     }
 
                 TopicMentalHealth ->
                     { english = "Mental Health Diseases & Epilepsy"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara wo mu mutwe n'Intandara"
                     }
 
                 TopicMalaria ->
                     { english = "Malarial diseases and the use of mosquito nets"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara za Malariya n'ugukoresha umusegeera"
                     }
 
                 TopicChildhoodIllnesses ->
                     { english = "Childhood illnesses (Prevention, danger signs & emergency case management)"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara zikarira abana (Uko zikingirwa, Ibimenyetso mburizi vyazo, n'uko uvyifatamwo mu kumutabara(riza) vyihuta cane)"
                     }
 
                 TopicMalnutrition ->
                     { english = "Malnutrition (The prevention and fight against diseases caused by malnutrition)"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugufungura nabi canke kurwanya indwara ziterwa n'ugufungura nabi"
                     }
 
                 TopicANCPostpartum ->
                     { english = "Antenatal Care, Postnatal Care & Danger Signs in Pregnancy"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Uko witwara neza wibungenze imbere yo kwibaruka n'inyuma yo kwibaruka, n'ibimenyetso mburizi ku wibungenze"
                     }
 
                 TopicFamilyPlanning ->
                     { english = "Family Planning & Sexual and reproductive health"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugutandukanya imvyaro no kwumvikana ibirabana n'imibonano mpuzabitsina, n'amagara meza mu vy'ibihimba vy'irondoka"
                     }
 
                 TopicGender ->
                     { english = "Gender equality, Gender-Based Violence (GBV) & Behavior change"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Uburinganire ku birabana n'igitsina, Amabi afatiye ku gitsina"
                     }
 
                 TopicNCD ->
@@ -5457,7 +5457,7 @@ translationSet trans =
         EducationSessionNoCandidatesInVillage ->
             { english = "This village got no candidates for Group Education"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Iki kigwati nta muntu bafise azoba mu biga ivyigwa m'umugwi"
             }
 
         EducationSessionInitialResultsDisplay display ->
@@ -5465,13 +5465,13 @@ translationSet trans =
                 Pages.EducationSession.Model.InitialResultsHidden ->
                     { english = "Display all participants"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Shira ahabona abitabiriye"
                     }
 
                 Pages.EducationSession.Model.InitialResultsShown ->
                     { english = "Hide all participants"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Nyegeza abitabiriye bose"
                     }
 
         Ega ->
@@ -5549,7 +5549,7 @@ translationSet trans =
         EncounterTypes ->
             { english = "Encounter Types"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ubwoko bw'umubonano"
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -5572,7 +5572,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "Do you want to start a HIV Management encounter for"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Urashaka gutangura umubonano kuvyerekeye ingwara y'umugera wa SIDA kuri"
                     }
 
                 HomeVisitEncounter ->
@@ -6671,13 +6671,13 @@ translationSet trans =
         HealthTopics ->
             { english = "Health Topics"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imitwe y'ivyigwa vy'amagara meza"
             }
 
         HealthTopicsQuestion ->
             { english = "Which Health Education topics will be covered today"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni uwuhe mutwe w'icigwa c'amagara meza tuza kuraba uno musi"
             }
 
         Heart ->
@@ -6952,19 +6952,19 @@ translationSet trans =
         HIVPositiveDateCorrectQuestion date ->
             { english = "The patient tested positive for HIV on " ++ formatDDMMYYYY date ++ ". Is this date correct"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just <| "Uwu murwayi baramutoye umugera wa SIDA kw'igenekerewo rya " ++ formatDDMMYYYY date ++ ". Iryo genekerezo ni ryo"
             }
 
         HIVPositiveDiagnosedQuestion ->
             { english = "Was this person diagnosed with HIV"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Uwu murwayi baramutoye umugera wa SIDA"
             }
 
         HIVPositiveTestDateQuestion ->
             { english = "When was the positive test date"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni itariki zingahe bamutoye umugera wa SIDA"
             }
 
         HIVPrescribedMedication medication ->
@@ -7168,7 +7168,7 @@ translationSet trans =
                 HIVSymptomSwollenLymphNodes ->
                     { english = "Swollen lymph nodes"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Udusumbi tw'amatembabuzi turavyimvye"
                     }
 
                 HIVSymptomSoreThroat ->
@@ -7177,13 +7177,13 @@ translationSet trans =
                 HIVSymptomRash ->
                     { english = "Rash"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukwama uruherehere"
                     }
 
                 HIVSymptomMuscleJointPain ->
                     { english = "Muscle and joint pain"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ububabare mu nyama no mu ngingo"
                     }
 
                 HIVSymptomHeadache ->
@@ -7204,19 +7204,19 @@ translationSet trans =
                 HIVSymptomCoughingUpBlood ->
                     { english = "Coughing up blood"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugukorora amaraso"
                     }
 
                 HIVSymptomHairLoss ->
                     { english = "Hair loss"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukumyoka umushatsi"
                     }
 
                 HIVSymptomMouthUlcers ->
                     { english = "Mouth ulcers"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ibikomere vyo mu kanwa"
                     }
 
                 HIVSymptomDifficultyBreathing ->
@@ -7231,7 +7231,7 @@ translationSet trans =
         HIVSymptomReviewQuestion ->
             { english = "Which, if any, of these symptoms does the patient have"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni ikihe kimenyetso gikomeye mu bimenyetso umurwayi afise"
             }
 
         HIVTreatmentSign sign ->
@@ -7577,7 +7577,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "First HIV Encounter"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano wambere werekeye ingwara y’umugera wa SIDA"
                     }
 
                 HomeVisitEncounter ->
@@ -9629,7 +9629,7 @@ translationSet trans =
         LessCommonAntiRetroviralMedications ->
             { english = "Less Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti Ikoreshwa gake igabanya imigera ya SIDA   "
             }
 
         LevelOfEducationLabel ->
@@ -11070,7 +11070,7 @@ translationSet trans =
         MostCommonAntiRetroviralMedications ->
             { english = "Most Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti ikoreshwa cane igabanya imigera ya SIDA"
             }
 
         MostRecentPregnancyDeliveryMethod ->
@@ -12318,7 +12318,7 @@ translationSet trans =
             if isChw then
                 { english = "Next immunization visit at the health center"
                 , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
-                , kirundi = Nothing
+                , kirundi = Just "Ukugendera icandaga rikurikira kw'ivuriro"
                 }
 
             else
@@ -12331,7 +12331,7 @@ translationSet trans =
             if isChw then
                 { english = "Next pediatric visit at the health center"
                 , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
-                , kirundi = Nothing
+                , kirundi = Just "Ukuvura abana gukurikira kw'ivuriro"
                 }
 
             else
@@ -16153,7 +16153,7 @@ translationSet trans =
         PrescribedMedication ->
             { english = "Prescribed Medication"
             , kinyarwanda = Just "Imiti yatanzwe"
-            , kirundi = Just "Imiti yasabwe"
+            , kirundi = Just "Imiti yandikiwe"
             }
 
         PrenatalRecurrentNextStepsTask task ->
@@ -17314,7 +17314,7 @@ translationSet trans =
         ProphylaxisMedications ->
             { english = "Prophylaxis Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti ikinga"
             }
 
         ProvideHealthEducationAndInstructToIsolate ->
@@ -21109,7 +21109,7 @@ translationSet trans =
         SoreThroatLabel ->
             { english = "Sore Throat"
             , kinyarwanda = Just "Kubabara mu muhogo"
-            , kirundi = Nothing
+            , kirundi = Just "Kubabara mu muhogo"
             }
 
         SpecialityCareHeaderPrefix ->
@@ -23970,7 +23970,7 @@ translateActivePage page =
                         HIVEncounter ->
                             { english = "HIV Participants"
                             , kinyarwanda = Nothing
-                            , kirundi = Nothing
+                            , kirundi = Just "Abarwayi ba SIDA baje"
                             }
 
                         HomeVisitEncounter ->
@@ -24326,7 +24326,7 @@ translateActivePage page =
                 HIVActivityPage _ _ ->
                     { english = "HIV Activity"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     }
 
 
