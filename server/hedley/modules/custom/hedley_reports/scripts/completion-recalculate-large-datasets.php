@@ -18,10 +18,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-drush_print("Running calculation for Global scope.");
-$duration = create_or_update_results_data_node('global');
-drush_print("Calculation completed within $duration seconds.");
-
 // Resolving all health centers.
 $health_center_ids = hedley_health_center_get_all_health_centers_ids();
 foreach ($health_center_ids as $health_center_id) {
@@ -29,6 +25,10 @@ foreach ($health_center_ids as $health_center_id) {
   $duration = create_or_update_results_data_node('health-center', $health_center_id);
   drush_print("Calculation completed within $duration seconds.");
 }
+
+drush_print("Running calculation for Global scope.");
+$duration = create_or_update_results_data_node('global');
+drush_print("Calculation completed within $duration seconds.");
 
 drush_print('');
 drush_print('All calculations completed!');
@@ -195,7 +195,7 @@ function generate_completion_results_data($health_center) {
     // Explicitly unset large variables after use for memory optimization.
     unset($nodes);
 
-    if ($processed % 5000 == 0) {
+    if ($processed % 2000 == 0) {
       drush_print("Processed $processed out of $total.");
     }
   }
