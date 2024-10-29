@@ -6690,31 +6690,7 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
   $encounter_type = $encounter_data['encounter_type'];
   switch ($encounter_type) {
     case 'nurse':
-      $emergency_diagnoses = [
-        'moderate-preeclampsia-initial-ega-37+',
-        'moderate-preeclampsia-recurrent-ega-37+',
-        'severe-preeclampsia-initial-ega-37+',
-        'severe-preeclampsia-recurrent-ega-37+',
-        'eclampsia',
-        'miscarriage',
-        'molar-pregnancy',
-        'placenta-previa',
-        'placental-abruption',
-        'uterine-rupture',
-        'obstructed-labor',
-        'post-abortion-sepsis',
-        'ectopic-pregnancy',
-        'prom',
-        'pprom',
-        'maternal-complications',
-        'imminent-delivery',
-        'labor',
-        'hyperemesis-gravidum',
-        'severe-vomiting',
-        'severe-anemia-complications-initial',
-        'severe-anemia-complications',
-      ];
-
+      $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
       if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
         return TRUE;
       }
@@ -6846,6 +6822,99 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
   // Get the total number of days from the interval
   $total_days = $interval->days;
   return floor($total_days / 7);
+}
+
+function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase($phase) {
+  return array_merge(
+    hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
+    [
+      'moderate-preeclampsia-initial',
+      'severe-preeclampsia-initial',
+      'hyperemesis-gravidum-by-symptoms',
+      'severe-vomiting-by-symptoms',
+      'heartburn-persistent',
+      'dvt',
+      'pelvic-pain-intense',
+      'pelvic-pain-continued',
+      'pyelonephritis',
+      'urinary-tract-infection-continued',
+      'candidiasis-continued',
+      'gonorrhea-continued',
+      'trichomonas-or-bv-continued',
+      'postpartum-urinary-incontinence',
+      'postpartum-infection',
+      'postpartum-excessive-bleeding',
+      'hepatitis-b-initial',
+      'neurosyphilis-initial',
+      'malaria-severe-anemia',
+      'severe-anemia-initial',
+      'moderate-preeclampsia-initial',
+      'severe-preeclampsia-initial',
+      'diabetes-initial',
+      'gestational-diabetes-initial',
+      'rhesus-negative-initial',
+      'malaria-continued',
+      'malaria-anemia-continued',
+    ]
+  );
+}
+
+function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase($phase) {
+  return array_merge(
+    hedley_reports_prenatal_emergency_diagnoses_recurrent_phase(),
+    [
+      'hepatitis-b',
+      'neurosyphilis',
+      'malaria-severe-anemia-recurrent',
+      'severe-anemia',
+      'moderate-preeclampsia-recurrent',
+      'severe-preeclampsia-recurrent',
+      'diabetes',
+      'gestational-diabetes',
+      'rhesus-negative',
+      'malaria-continued-recurrent',
+      'malaria-anemia-continued-recurrent',
+    ]
+  );
+}
+
+function hedley_reports_prenatal_emergency_diagnoses() {
+  return array_merge(
+    hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
+    hedley_reports_prenatal_emergency_diagnoses_recurrent_phase()
+  );
+}
+
+function hedley_reports_prenatal_emergency_diagnoses_initial_phase() {
+  return [
+    'moderate-preeclampsia-initial-ega-37+',
+    'severe-preeclampsia-initial-ega-37+',
+    'eclampsia',
+    'miscarriage',
+    'molar-pregnancy',
+    'placenta-previa',
+    'placental-abruption',
+    'uterine-rupture',
+    'obstructed-labor',
+    'post-abortion-sepsis',
+    'ectopic-pregnancy',
+    'prom',
+    'pprom',
+    'maternal-complications',
+    'imminent-delivery',
+    'labor',
+    'hyperemesis-gravidum',
+    'severe-vomiting',
+    'severe-anemia-complications-initial',
+  ];
+}
+
+function hedley_reports_prenatal_emergency_diagnoses_recurrent_phase() {
+  return [
+    'moderate-preeclampsia-recurrent-ega-37+',
+    'severe-preeclampsia-recurrent-ega-37+',
+    'severe-anemia-complications',
+  ];
 }
 
 // @todo : is this needed?
