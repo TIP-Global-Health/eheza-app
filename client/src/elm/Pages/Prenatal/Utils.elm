@@ -2953,15 +2953,6 @@ diagnosedModeratePreeclampsiaPrevoiusly assembled =
     diagnosedPreviouslyAnyOf moderatePreeclampsiaDiagnoses assembled
 
 
-moderatePreeclampsiaDiagnoses : List PrenatalDiagnosis
-moderatePreeclampsiaDiagnoses =
-    [ DiagnosisModeratePreeclampsiaInitialPhase
-    , DiagnosisModeratePreeclampsiaRecurrentPhase
-    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
-    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
-    ]
-
-
 resolveARVReferralDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolveARVReferralDiagnosis nursePreviousEncountersData =
     List.filterMap
@@ -3020,13 +3011,8 @@ resolvePreviousHypertensionlikeDiagnosis nursePreviousEncountersData =
 hypertensionlikeDiagnoses : List PrenatalDiagnosis
 hypertensionlikeDiagnoses =
     hypertensionDiagnoses
-        ++ moderatePreeclampsiaDiagnoses
-        ++ [ DiagnosisSeverePreeclampsiaInitialPhase
-           , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
-           , DiagnosisSeverePreeclampsiaRecurrentPhase
-           , DiagnosisSeverePreeclampsiaRecurrentPhaseEGA37Plus
-           , DiagnosisEclampsia
-           ]
+        ++ preeclampsiaDiagnoses
+        ++ [ DiagnosisEclampsia ]
 
 
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
@@ -3173,6 +3159,20 @@ outsideCareDiagnosesWithPossibleMedication =
 
 preeclampsiaDiagnoses : List PrenatalDiagnosis
 preeclampsiaDiagnoses =
+    moderatePreeclampsiaDiagnoses ++ severePreeclampsiaDiagnoses
+
+
+moderatePreeclampsiaDiagnoses : List PrenatalDiagnosis
+moderatePreeclampsiaDiagnoses =
+    [ DiagnosisModeratePreeclampsiaInitialPhase
+    , DiagnosisModeratePreeclampsiaRecurrentPhase
+    , DiagnosisModeratePreeclampsiaInitialPhaseEGA37Plus
+    , DiagnosisModeratePreeclampsiaRecurrentPhaseEGA37Plus
+    ]
+
+
+severePreeclampsiaDiagnoses : List PrenatalDiagnosis
+severePreeclampsiaDiagnoses =
     [ DiagnosisSeverePreeclampsiaInitialPhase
     , DiagnosisSeverePreeclampsiaInitialPhaseEGA37Plus
     , DiagnosisSeverePreeclampsiaRecurrentPhase

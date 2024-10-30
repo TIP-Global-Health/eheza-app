@@ -6410,12 +6410,7 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
             empty(
               array_intersect(
                 $encounter_data['past_diagnoses'],
-                [
-                  'diabetes-initial',
-                  'diabetes',
-                  'gestational-diabetes-initial',
-                  'gestational-diabetes',
-                ]
+                hedley_reports_prenatal_diabetes_diagnoses()
               )
             )
           ) {
@@ -6428,14 +6423,7 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
             empty(
               array_intersect(
                 $encounter_data['past_diagnoses'],
-                [
-                  'syphilis-initial',
-                  'syphilis',
-                  'syphilis-complications-initial',
-                  'syphilis-complications',
-                  'neurosyphilis-initial',
-                  'neurosyphilis',
-                ]
+                hedley_reports_prenatal_syphilislike_diagnoses()
               )
             )
           ) {
@@ -6572,31 +6560,14 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
       }
     }
 
-    $triggering_diagnoses = [
-      // HIV diagnoses.
-      'hiv',
-      'hiv-recurrent',
-      'partner-hiv',
-      'partner-hiv-recurrent',
-      // Hypertension-like diagnoses.
-      'chronic-hypertension-immediate',
-      'chronic-hypertension-recheck',
-      'gestational-hypertension-immediate',
-      'gestational-hypertension-recheck',
-      'moderate-preeclampsia-initial',
-      'moderate-preeclampsia-initial-ega-37+',
-      'moderate-preeclampsia-recurrent',
-      'moderate-preeclampsia-recurrent-ega-37+',
-      'severe-preeclampsia-initial',
-      'severe-preeclampsia-initial-ega-37+',
-      'severe-preeclampsia-recurrent',
-      'severe-preeclampsia-recurrent-ega-37+',
-      // Diabetes diagnoses.
-      'diabetes-initial',
-      'diabetes',
-      'gestational-diabetes-initial',
-      'gestational-diabetes',
-    ];
+    $triggering_diagnoses = array_merge(
+      hedley_reports_prenatal_hiv_diagnoses(),
+      hedley_reports_prenatal_diabetes_diagnoses()
+    );
+    $triggering_diagnoses = array_merge(
+      $triggering_diagnoses,
+      hedley_reports_prenatal_preeclempsia_diagnoses()
+    );
 
     if (!empty(array_intersect($triggering_diagnoses, $diagnoses))) {
       $expected[] = 'prenatal_speciality_care';
@@ -6629,7 +6600,7 @@ function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data
 }
 
 function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
-  // Checking Referral activity.
+  // Referral activity logic.
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
@@ -6638,6 +6609,7 @@ function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $enco
 
   // Checking referral to hospital
   $referral_expected = hedley_reports_prenatal_hospital_referral_expected($encounter_data);
+
   // Checking referral to mental health specialist.
   if (!$referral_expected) {
     $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
@@ -6685,12 +6657,7 @@ function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $enco
           }
         }
         // If not known as HIV positive, check by diagnosis.
-        $triggering_diagnoses = [
-          'hiv',
-          'hiv-recurrent',
-          'partner-hiv',
-          'partner-hiv-recurrent',
-        ];
+        $triggering_diagnoses = hedley_reports_prenatal_hiv_diagnoses();
         if (!empty(array_intersect($previous_encounter_data['diagnoses'], $triggering_diagnoses))) {
           $section_expected = TRUE;
           break;
@@ -6698,8 +6665,9 @@ function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $enco
       }
 
       // If section was shown, check if patient was referred to program.
+      // Note the that check is at current encounter.
       if ($section_expected) {
-        $speciality_care_measurement = $previous_encounter_data['measurements_by_type']['prenatal_speciality_care'];
+        $speciality_care_measurement = $encounter_data['measurements_by_type']['prenatal_speciality_care'];
         if (!empty($speciality_care_measurement) && !empty($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE])) {
           foreach ($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE] as $sign) {
             if ($sign['value'] == 'arv') {
@@ -6712,13 +6680,55 @@ function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $enco
     }
   }
 
+  // Checking referral to NCD program.
+  if (!$referral_expected) {
+    $section_expected = FALSE;
+    $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+    foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+      // If not known as HIV positive, check by diagnosis.
+      $triggering_diagnoses = array_merge(
+        hedley_reports_prenatal_hypertensionlike_diagnoses(),
+        hedley_reports_prenatal_diabetes_diagnoses()
+      );
+      if (!empty(array_intersect($previous_encounter_data['diagnoses'], $triggering_diagnoses))) {
+        $section_expected = TRUE;
+        break;
+      }
+    }
+
+    // If section was shown, check if patient was referred to program.
+    // Note the that check is at current encounter.
+    if ($section_expected) {
+      $speciality_care_measurement = $encounter_data['measurements_by_type']['prenatal_speciality_care'];
+      if (!empty($speciality_care_measurement) && !empty($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE])) {
+        foreach ($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE] as $sign) {
+          if ($sign['value'] == 'ncd') {
+            $referral_expected = TRUE;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Checking referral to Ultrasound.
+  if (!$referral_expected) {
+    $lmp_measurement = $encounter_data['measurements_by_type']['last_menstrual_period'];
+    if (!empty($lmp_measurement)) {
+      if ($lmp_measurement->field_confident[LANGUAGE_NONE][0]['value'] === FALSE) {
+        if (!empty($lmp_measurement->field_not_confident_reason[LANGUAGE_NONE][0]['value'])) {
+          $referral_expected = TRUE;
+        }
+      }
+    }
+  }
 
   if ($referral_expected) {
     $expected[] = 'prenatal_send_to_hc';
   }
 
 
-    // Checking Medication Distribution activity.
+  // Medication Distribution activity logic.
   $launch_date = '2022-09-25';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
@@ -6790,17 +6800,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
           ) &&
           !hedley_reports_prenatal_diagnosed_previously_with_any_of(
             $encounter_data,
-            [
-              'moderate-preeclampsia-initial',
-              'moderate-preeclampsia-recurrent',
-              'severe-preeclampsia-initial',
-              'severe-preeclampsia-recurrent',
-              'moderate-preeclampsia-initial-ega-37+',
-              'moderate-preeclampsia-recurrent-ega-37+',
-              'severe-preeclampsia-initial-ega-37+',
-              'severe-preeclampsia-recurrent-ega-37+',
-              'eclampsia',
-            ]
+            hedley_reports_prenatal_hypertensionlike_diagnoses()
           );
 
         if ($currently_diagnosed_with_moderate_preeclampsia) {
@@ -6845,20 +6845,14 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
 
     // Checking if referral to hospital is required by past diagnoses.
     if (!$referred_to_hospital) {
-      $triggering_diagnoses = [
-        'syphilis-initial',
-        'syphilis',
-        'syphilis-complications-initial',
-        'syphilis-complications',
-        'neurosyphilis-initial',
-        'neurosyphilis',
-        'diabetes-initial',
-        'diabetes',
-        'gestational-diabetes-initial',
-        'gestational-diabetes',
-        'hepatitis-b',
-        'rhesus-negative',
-      ];
+      $triggering_diagnoses = array_merge(
+        hedley_reports_prenatal_syphilislike_diagnoses(),
+        hedley_reports_prenatal_diabetes_diagnoses()
+      );
+      $triggering_diagnoses = array_merge(
+        $triggering_diagnoses,
+        ['hepatitis-b', 'rhesus-negative']
+      );
     }
 
     $referred_to_hospital = !empty(array_intersect($encounter_data['past_diagnoses'], $triggering_diagnoses));
@@ -6881,16 +6875,11 @@ function hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_up
     return;
   }
 
-  $triggering_diagnoses = [
-    'chronic-hypertension-immediate',
-    'gestational-hypertension-immediate',
-    'chronic-hypertension-recheck',
-    'gestational-hypertension-recheck',
-    'moderate-preeclampsia-initial',
-    'moderate-preeclampsia-recurrent',
-    'moderate-preeclampsia-initial-ega-37+',
-    'moderate-preeclampsia-recurrent-ega-37+',
-  ];
+  $triggering_diagnoses = array_merge(
+    hedley_reports_prenatal_hypertension_diagnoses(),
+    hedley_reports_prenatal_moderate_preeclempsia_diagnoses()
+  );
+
   if (!hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
     return;
   }
@@ -7151,8 +7140,6 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_i
       'neurosyphilis-initial',
       'malaria-severe-anemia',
       'severe-anemia-initial',
-      'moderate-preeclampsia-initial',
-      'severe-preeclampsia-initial',
       'diabetes-initial',
       'gestational-diabetes-initial',
       'rhesus-negative-initial',
@@ -7217,6 +7204,79 @@ function hedley_reports_prenatal_emergency_diagnoses_recurrent_phase() {
     'moderate-preeclampsia-recurrent-ega-37+',
     'severe-preeclampsia-recurrent-ega-37+',
     'severe-anemia-complications',
+  ];
+}
+
+function hedley_reports_prenatal_hypertensionlike_diagnoses() {
+  $hypertensionlike_daignoses = array_merge(
+    hedley_reports_prenatal_hypertension_diagnoses(),
+    hedley_reports_prenatal_preeclempsia_diagnoses()
+  );
+  $hypertensionlike_daignoses[] = 'eclampsia';
+
+  return $hypertensionlike_daignoses;
+}
+
+function hedley_reports_prenatal_hypertension_diagnoses() {
+  return [
+    'chronic-hypertension-immediate',
+    'chronic-hypertension-recheck',
+    'gestational-hypertension-immediate',
+    'gestational-hypertension-recheck',
+  ];
+}
+
+function hedley_reports_prenatal_preeclempsia_diagnoses() {
+  return array_merge(
+    hedley_reports_prenatal_moderate_preeclempsia_diagnoses(),
+    hedley_reports_prenatal_severe_preeclempsia_diagnoses()
+  );
+}
+
+function hedley_reports_prenatal_moderate_preeclempsia_diagnoses() {
+  return [
+    'moderate-preeclampsia-initial',
+    'moderate-preeclampsia-initial-ega-37+',
+    'moderate-preeclampsia-recurrent',
+    'moderate-preeclampsia-recurrent-ega-37+',
+  ];
+}
+
+function hedley_reports_prenatal_severe_preeclempsia_diagnoses() {
+  return [
+    'severe-preeclampsia-initial',
+    'severe-preeclampsia-initial-ega-37+',
+    'severe-preeclampsia-recurrent',
+    'severe-preeclampsia-recurrent-ega-37+',
+  ];
+}
+
+function hedley_reports_prenatal_diabetes_diagnoses() {
+  return [
+    'diabetes-initial',
+    'diabetes',
+    'gestational-diabetes-initial',
+    'gestational-diabetes',
+  ];
+}
+
+function hedley_reports_prenatal_hiv_diagnoses() {
+  return [
+    'hiv',
+    'hiv-recurrent',
+    'partner-hiv',
+    'partner-hiv-recurrent',
+  ];
+}
+
+function hedley_reports_prenatal_syphilislike_diagnoses() {
+  return [
+    'syphilis-initial',
+    'syphilis',
+    'syphilis-complications-initial',
+    'syphilis-complications',
+    'neurosyphilis-initial',
+    'neurosyphilis',
   ];
 }
 
