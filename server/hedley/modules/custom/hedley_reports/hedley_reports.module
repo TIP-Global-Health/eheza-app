@@ -6629,35 +6629,338 @@ function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data
 }
 
 function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
-  $encounter_type = $encounter_data['encounter_type'];
+  // Checking Referral activity.
+  $launch_date = '2021-06-07';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] < $launch_date_obj) {
+    return;
+  }
 
-  switch ($encounter_type) {
-    case 'nurse':
+  // Checking referral to hospital
+  $referral_expected = hedley_reports_prenatal_hospital_referral_expected($encounter_data);
+  // Checking referral to mental health specialist.
+  if (!$referral_expected) {
+    $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
+    if (!empty($mental_health_measurement)) {
+      $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
+      if ($specialist_at_hc === TRUE) {
+        $triggering_diagnoses = [
+          'depression-possible',
+          'depression-highly-possible',
+          'depression-probable',
+          'suicide-risk',
+        ];
+        $referral_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+      }
+    }
+  }
 
-      break;
+  // Checking referral to ARV program.
+  if (!$referral_expected) {
+    // First option is that HIV is diagnosed and there's an HIV
+    // program at health center.
+    if (in_array('hiv', $encounter_data['diagnoses'])) {
+      $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
+      if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
+        foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
+          if ($sign == 'hiv-program-hc') {
+            $referral_expected = TRUE;
+            break;
+          }
+        }
+      }
+    }
 
-    case 'nurse-postpartum':
+    // Second option - EnrolledToARVProgram section appears at
+    // speciality care activity, and patient was referred to that program.
+    if (!$referral_expected) {
+      $section_expected = FALSE;
+      $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+      foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+        $hiv_test_measurement = $previous_encounter_data['measurements_by_type']['prenatal_hiv_test'];
+        if (!empty($hiv_test_measurement)) {
+          if ($hiv_test_measurement->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'known-as-positive') {
+            $section_expected = TRUE;
+            break;
+          }
+        }
+        // If not known as HIV positive, check by diagnosis.
+        $triggering_diagnoses = [
+          'hiv',
+          'hiv-recurrent',
+          'partner-hiv',
+          'partner-hiv-recurrent',
+        ];
+        if (!empty(array_intersect($previous_encounter_data['diagnoses'], $triggering_diagnoses))) {
+          $section_expected = TRUE;
+          break;
+        }
+      }
 
-      break;
-
-    case 'chw-1':
-
-      break;
-
-    case 'chw-2':
-
-      break;
-
-    case 'chw-3':
-
-      break;
-
-    case 'chw-postpartum':
-
-      break;
+      // If section was shown, check if patient was referred to program.
+      if ($section_expected) {
+        $speciality_care_measurement = $previous_encounter_data['measurements_by_type']['prenatal_speciality_care'];
+        if (!empty($speciality_care_measurement) && !empty($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE])) {
+          foreach ($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE] as $sign) {
+            if ($sign['value'] == 'arv') {
+              $referral_expected = TRUE;
+              break;
+            }
+          }
+        }
+      }
+    }
   }
 
 
+  if ($referral_expected) {
+    $expected[] = 'prenatal_send_to_hc';
+  }
+
+
+    // Checking Medication Distribution activity.
+  $launch_date = '2022-09-25';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] < $launch_date_obj) {
+    return;
+  }
+
+
+
+}
+
+function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
+  $encounter_type = $encounter_data['encounter_type'];
+  $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase();
+  $referred_to_hospital_by_immediate_diagnosis = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+  // At postpartum encounter, only option for hospital referral is by
+  // immediate diagnosis. At nurse encounter, there are more options,
+  // when there's no referral by immediate diagnosis.
+  $referred_to_hospital = $referred_to_hospital_by_immediate_diagnosis;
+  if ($encounter_type == 'nurse' && !$referred_to_hospital) {
+    $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
+    // Checking if referral to hospital is required by Mental Health.
+    if (!empty($mental_health_measurement)) {
+      $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
+      if ($specialist_at_hc === FALSE) {
+        $triggering_diagnoses = [
+          'depression-possible',
+          'depression-highly-possible',
+          'depression-probable',
+          'suicide-risk',
+        ];
+        $referred_to_hospital = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+      }
+    }
+
+    // Checking if referral to hospital is required by Malaria Treatment -
+    // Malaria diagnosed and suggested treatment was hospital referral.
+    if (!$referred_to_hospital) {
+      $triggering_diagnoses = [
+        'malaria',
+        'malaria-recurrent',
+        'malaria-anemia',
+        'malaria-anemia-recurrent',
+        'malaria-severe-anemia',
+        'malaria-severe-anemia-recurrent',
+      ];
+      if (!empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses))) {
+        $medication_distribution_measurement = $encounter_data['measurements_by_type']['prenatal_medication_distribution'];
+        if (!empty($medication_distribution_measurement)) {
+          $recommended_treatments = $medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE];
+          foreach ($recommended_treatments as $recommended_treatment) {
+            if ($recommended_treatment['value'] == 'refer-to-hospital') {
+              $referred_to_hospital = TRUE;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Checking if referral to hospital is required by Hypertension or
+    // Moderated Preeclampisa treatments.
+    if (!$referred_to_hospital) {
+      $referred_to_hospital = hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_update($encounter_data);
+      if (!$referred_to_hospital) {
+        $currently_diagnosed_with_moderate_preeclampsia =
+          hedley_reports_prenatal_diagnosed_previously_with_any_of(
+            $encounter_data,
+            ['moderate-preeclampsia-initial', 'moderate-preeclampsia-recurrent']
+          ) &&
+          !hedley_reports_prenatal_diagnosed_previously_with_any_of(
+            $encounter_data,
+            [
+              'moderate-preeclampsia-initial',
+              'moderate-preeclampsia-recurrent',
+              'severe-preeclampsia-initial',
+              'severe-preeclampsia-recurrent',
+              'moderate-preeclampsia-initial-ega-37+',
+              'moderate-preeclampsia-recurrent-ega-37+',
+              'severe-preeclampsia-initial-ega-37+',
+              'severe-preeclampsia-recurrent-ega-37+',
+              'eclampsia',
+            ]
+          );
+
+        if ($currently_diagnosed_with_moderate_preeclampsia) {
+          $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+          if (!empty($vitals_measurement)) {
+            $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
+            $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
+
+            if (!empty($sys) && !empty($dia)) {
+              $referred_to_hospital = $sys >= 180 || $dia >= 110;
+            }
+          }
+        }
+      }
+    }
+
+    // Checking if referral to hospital is required by adverse event.
+    if (!$referred_to_hospital) {
+      $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+      if (!empty($medication_measurement)) {
+        $treatments = [
+          $medication_measurement->field_hiv_treatment[LANGUAGE_NONE],
+          $medication_measurement->field_hypertension_treatment[LANGUAGE_NONE],
+          $medication_measurement->field_malaria_treatment[LANGUAGE_NONE],
+          $medication_measurement->field_anemia_treatment[LANGUAGE_NONE],
+          $medication_measurement->field_syphilis_treatment[LANGUAGE_NONE],
+        ];
+
+        foreach ($treatments as $treatment_signs) {
+          foreach ($treatment_signs as $sign) {
+            if ($sign['value'] == 'adverse-events-hospitalization') {
+              $referred_to_hospital = TRUE;
+              break;
+            }
+          }
+          if ($referred_to_hospital) {
+            break;
+          }
+        }
+      }
+    }
+
+    // Checking if referral to hospital is required by past diagnoses.
+    if (!$referred_to_hospital) {
+      $triggering_diagnoses = [
+        'syphilis-initial',
+        'syphilis',
+        'syphilis-complications-initial',
+        'syphilis-complications',
+        'neurosyphilis-initial',
+        'neurosyphilis',
+        'diabetes-initial',
+        'diabetes',
+        'gestational-diabetes-initial',
+        'gestational-diabetes',
+        'hepatitis-b',
+        'rhesus-negative',
+      ];
+    }
+
+    $referred_to_hospital = !empty(array_intersect($encounter_data['past_diagnoses'], $triggering_diagnoses));
+  }
+
+  return $referred_to_hospital;
+}
+
+function hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_update(array $encounter_data) {
+  $treatment_options = [
+    'methyldopa-2',
+    'methyldopa-3',
+    'methyldopa-4',
+    'add-carvedilol',
+    'add-amlodipine',
+    'no-treatment-hypertension',
+  ];
+  $current_treatment = hedley_reports_prenatal_get_latest_treatment_from_options($encounter_data, $treatment_options);
+  if (!$current_treatment) {
+    return;
+  }
+
+  $triggering_diagnoses = [
+    'chronic-hypertension-immediate',
+    'gestational-hypertension-immediate',
+    'chronic-hypertension-recheck',
+    'gestational-hypertension-recheck',
+    'moderate-preeclampsia-initial',
+    'moderate-preeclampsia-recurrent',
+    'moderate-preeclampsia-initial-ega-37+',
+    'moderate-preeclampsia-recurrent-ega-37+',
+  ];
+  if (!hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
+    return;
+  }
+
+  $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+  if (empty($vitals_measurement)) {
+    return;
+  }
+
+  $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
+  $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
+  if (empty($sys) || empty($dia)) {
+    return;
+  }
+
+  if ($sys < 140) {
+    // Maintain treatment as is.
+    $by_sys = 0;
+  }
+  elseif ($sys < 160) {
+    // Up 1 step.
+    $by_sys = 1;
+  }
+  elseif ($sys < 180) {
+    // Up 2 steps.
+    $by_sys = 2;
+  }
+  else {
+    // Hospitalization.
+    $by_sys = 9;
+  }
+
+  if ($dia < 90) {
+    // Maintain treatment as is.
+    $by_dia = 0;
+  }
+  elseif ($dia < 100) {
+    // Up 1 step.
+    $by_dia = 1;
+  }
+  elseif ($dia < 110) {
+    // Up 2 steps.
+    $by_dia = 2;
+  }
+  else {
+    // Hospitalization.
+    $by_dia = 9;
+  }
+
+  $treatment_update_recommendation = max($by_sys, $by_dia);
+
+  return (
+    (($current_treatment == 'no-treatment-hypertension') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-2') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-3') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-4') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'add-carvedilol') && ($treatment_update_recommendation >= 2)) ||
+    (($current_treatment == 'add-amlodipine') && ($treatment_update_recommendation >= 1))
+  );
+}
+
+function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, $diagnoses) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $encounter_data) {
+    if (!empty(array_intersect($encounter_data['diagnoses'], $diagnoses))) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
 }
 
 function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encounter_data, array &$expected) {
@@ -6824,7 +7127,7 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
   return floor($total_days / 7);
 }
 
-function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase($phase) {
+function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
     [
@@ -6917,7 +7220,6 @@ function hedley_reports_prenatal_emergency_diagnoses_recurrent_phase() {
   ];
 }
 
-// @todo : is this needed?
 function hedley_reports_prenatal_get_latest_treatment_from_options(array $encounter_data, array $treatment_options) {
   $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
   foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
