@@ -6600,7 +6600,12 @@ function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data
 }
 
 function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
-  // Referral activity logic.
+  hedley_reports_prenatal_add_send_to_hc_activity_for_nurse($encounter_data, $expected);
+  hedley_reports_prenatal_add_health_education_activity_for_nurse($encounter_data, $expected);
+  hedley_reports_prenatal_add_medication_distribution_activity_for_nurse($encounter_data, $expected);
+}
+
+function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encounter_data, array &$expected) {
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
@@ -6726,17 +6731,77 @@ function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $enco
   if ($referral_expected) {
     $expected[] = 'prenatal_send_to_hc';
   }
+}
 
-
-  // Medication Distribution activity logic.
-  $launch_date = '2022-09-25';
+function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $encounter_data, array &$expected) {
+  $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
     return;
   }
 
+  $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
+  if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+    // Emergency diagnosis present - no health education.
+    return;
+  }
 
+  $encounter_type = $encounter_data['encounter_type'];
+  $expected = FALSE;
 
+  if ($encounter_type == 'nurse') {
+    // HIV education.
+    $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
+    if (!empty($hiv_test_measurement)) {
+      $expected = !empty($hiv_test_measurement->field_test_result[LANGUAGE_NONE][0]['value']);
+    }
+    // Partner presence education.
+    if (!$expected) {
+      $partner_hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_partner_hiv_test'];
+      if (!empty($partner_hiv_test_measurement)) {
+        $expected = $partner_hiv_test_measurement->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'not-present';
+      }
+    }
+    // By encounter diagnoses.
+    if (!$expected) {
+      $triggering_diagnoses = array_merge(
+        hedley_reports_prenatal_diabetes_diagnoses(),
+        [
+          'heartburn',
+          'candidiasis',
+          'gonorrhea',
+          'trichomonas-or-bv',
+          'hiv-detectable-viral-load-initial',
+          'hiv-detectable-viral-load',
+        ]
+      );
+      $expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+    }
+  }
+  // Postpartum encounter.
+  else {
+    $triggering_diagnoses = [
+      'heartburn',
+      'candidiasis',
+      'gonorrhea',
+      'trichomonas-or-bv',
+      'postpartum-early-mastitis-engorgment',
+      'postpartum-mastitis',
+    ];
+    $expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+  }
+
+  if (!$expected) {
+    
+  }
+}
+
+function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(array $encounter_data, array &$expected) {
+  $launch_date = '2022-09-25';
+  $launch_date_obj = new DateTime($launch_date);
+  if ($encounter_data['start_date_obj'] < $launch_date_obj) {
+    return;
+  }
 }
 
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
