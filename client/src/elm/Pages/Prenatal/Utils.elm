@@ -1772,9 +1772,9 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 Nothing
     in
     case phase of
-        -- Not for Postpartum encounter.
         PrenatalEncounterPhaseInitial ->
             let
+                -- Not for Postpartum encounter.
                 mebendazoleSet =
                     let
                         prescribeMebendazole =

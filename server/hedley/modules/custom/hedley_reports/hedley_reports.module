@@ -6613,30 +6613,30 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
   }
 
   // Checking referral to hospital
-  $referral_expected = hedley_reports_prenatal_hospital_referral_expected($encounter_data);
+  $activity_expected = hedley_reports_prenatal_hospital_referral_expected($encounter_data);
 
   // Checking referral to mental health specialist.
-  if (!$referral_expected) {
+  if (!$activity_expected) {
     $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
     if (!empty($mental_health_measurement)) {
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === TRUE) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
-        $referral_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+        $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
       }
     }
   }
 
   // Checking referral to ARV program.
-  if (!$referral_expected) {
+  if (!$activity_expected) {
     // First option is that HIV is diagnosed and there's an HIV
     // program at health center.
     if (in_array('hiv', $encounter_data['diagnoses'])) {
       $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
       if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
         foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
-          if ($sign == 'hiv-program-hc') {
-            $referral_expected = TRUE;
+          if ($sign['value'] == 'hiv-program-hc') {
+            $activity_expected = TRUE;
             break;
           }
         }
@@ -6645,7 +6645,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
 
     // Second option - EnrolledToARVProgram section appears at
     // speciality care activity, and patient was referred to that program.
-    if (!$referral_expected) {
+    if (!$activity_expected) {
       $section_expected = FALSE;
       $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
       foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
@@ -6671,7 +6671,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
         if (!empty($speciality_care_measurement) && !empty($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE])) {
           foreach ($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE] as $sign) {
             if ($sign['value'] == 'arv') {
-              $referral_expected = TRUE;
+              $activity_expected = TRUE;
               break;
             }
           }
@@ -6681,7 +6681,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
   }
 
   // Checking referral to NCD program.
-  if (!$referral_expected) {
+  if (!$activity_expected) {
     $section_expected = FALSE;
     $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
     foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
@@ -6703,7 +6703,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
       if (!empty($speciality_care_measurement) && !empty($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE])) {
         foreach ($speciality_care_measurement->field_speciality_care_signs[LANGUAGE_NONE] as $sign) {
           if ($sign['value'] == 'ncd') {
-            $referral_expected = TRUE;
+            $activity_expected = TRUE;
             break;
           }
         }
@@ -6712,18 +6712,18 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
   }
 
   // Checking referral to Ultrasound.
-  if (!$referral_expected) {
+  if (!$activity_expected) {
     $lmp_measurement = $encounter_data['measurements_by_type']['last_menstrual_period'];
     if (!empty($lmp_measurement)) {
       if ($lmp_measurement->field_confident[LANGUAGE_NONE][0]['value'] === FALSE) {
         if (!empty($lmp_measurement->field_not_confident_reason[LANGUAGE_NONE][0]['value'])) {
-          $referral_expected = TRUE;
+          $activity_expected = TRUE;
         }
       }
     }
   }
 
-  if ($referral_expected) {
+  if ($activity_expected) {
     $expected[] = 'prenatal_send_to_hc';
   }
 }
@@ -6927,6 +6927,206 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
     return;
   }
+
+  $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
+  if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+    // Emergency diagnosis present - no medication distribution.
+    return;
+  }
+
+  // Checking by medication set.
+  $activity_expected = hedley_reports_prenatal_medication_distribution_expected_per_medication_set($encounter_data);
+
+  // Checking by diagnosis.
+  if (!$activity_expected) {
+
+  }
+
+  if ($activity_expected) {
+    $expected[] = 'prenatal_medication_distribution';
+  }
+}
+
+function hedley_reports_prenatal_medication_distribution_expected_per_medication_set(array $encounter_data) {
+  // HIV medication set.
+  // First option - HIV diagnosed and no HIV program at HC.
+  $hiv_diagnosed = !empty(array_intersect($encounter_data['diagnoses'], ['hiv', 'hiv-recurrent']));
+  if ($hiv_diagnosed) {
+    $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
+    if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
+      $hiv_program_at_hc = FALSE;
+      foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
+        if ($sign['value'] == 'hiv-program-hc') {
+          $hiv_program_at_hc = TRUE;
+          break;
+        }
+      }
+      if (!$hiv_program_at_hc) {
+        return TRUE;
+      }
+    }
+  }
+  // Second option - patient reported not getting any medicine from PMTCT.
+  $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+  if (!empty($medication_measurement)) {
+    $treatments = $medication_measurement->field_hiv_treatment[LANGUAGE_NONE];
+    if (!empty($treatments)) {
+      foreach ($treatments as $sign) {
+        if (in_array(
+          $sign['value'],
+          [
+            'no-medicine-not-seen',
+            'no-medicine-out-of-stock',
+            'no-medicine-patient-refused',
+            'no-medicine-other',
+          ]
+        )
+      ) {
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  // Discordant Partnership medication set.
+  $discordant_partnership_diagnosed = !empty(array_intersect(
+    $encounter_data['diagnoses'],
+    ['partner-hiv', 'partner-hiv-recurrent']
+  ));
+  if ($discordant_partnership_diagnosed) {
+    return TRUE;
+  }
+
+  // Moderate Anemia medication set.
+  $moderate_anemia_diagnosed = !empty(array_intersect(
+    $encounter_data['diagnoses'],
+    ['anemia', 'anemia-initial']
+  ));
+  if ($moderate_anemia_diagnosed) {
+    $treatments = $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
+    if (!empty($treatments)) {
+      foreach ($treatments as $treatment_signs) {
+        $referred = FALSE;
+        foreach ($treatment_signs as $sign) {
+          if ($sign['value'] == 'adverse-events-hospitalization') {
+            $referred = TRUE;
+          }
+        }
+        if (!$referred) {
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  // Mebendazole medication set.
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type == 'nurse') {
+    $lmp_date = $encounter_data['lmp_date'];
+    if (!empty($lmp_date)) {
+      $start_date_obj = $encounter_data['start_date_obj'];
+      $lmp_date_obj = new DateTime($lmp_date);
+      $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $start_date_obj);
+      if ($ega_in_weeks >= 24) {
+        $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+        $prescribed = FALSE;
+        foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+          // First option.
+          $medication_measurement = $previous_encounter_data['measurements_by_type']['medication'];
+          if (!empty($medication_measurement)) {
+            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
+            if (!empty($medications)) {
+              foreach ($medications as $sign) {
+                if ($sign['value'] == 'deworming-pill') {
+                  $prescribed = TRUE;
+                  break;
+                }
+              }
+            }
+          }
+
+          if (!$prescribed) {
+            // Second option - only check if not prescribed by first option.
+            $medication_distribution_measurement = $encounter_data['measurements_by_type']['prenatal_medication_distribution'];
+            if (!empty($medication_distribution_measurement)) {
+              $prescribed_medications = $medication_distribution_measurement->field_prescribed_medication[LANGUAGE_NONE];
+              if (!empty($prescribed_medications)) {
+                foreach ($prescribed_medications as $prescribed_medication) {
+                  if ($prescribed_medication['value'] == 'mebendezole') {
+                    $prescribed = TRUE;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+
+          // If prescribed by first or second option, no point of checking
+          // additional encounters.
+          if ($prescribed) {
+            break;
+          }
+        }
+
+        // Now we check that Mebendazole was prescribed at current encounter.
+        if (!$prescribed) {
+          $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+          if (!empty($medication_measurement)) {
+            $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
+            if (!empty($medications)) {
+              foreach ($medications as $sign) {
+                if ($sign['value'] == 'mebendezole') {
+                  $prescribed = TRUE;
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        // Finally, since  Mebendazole was not prescribed at current,
+        // we know it's required.
+        if (!$prescribed) {
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  // Gonorhea medication set.
+  $gonorhea_diagnosed = in_array('gonorrhea', $encounter_data['diagnoses']);
+  if ($gonorhea_diagnosed) {
+    return TRUE;
+  }
+
+  // Trichomonas or Bacterial Vaginosis medication set.
+  $trichomonas_diagnosed = in_array('trichomonas-or-bv', $encounter_data['diagnoses']);
+  if ($trichomonas_diagnosed) {
+    return TRUE;
+  }
+
+  // Vitamin A medication set.
+  if ($encounter_type == 'nurse-postpartum') {
+    $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+    if (!empty($medication_measurement)) {
+      $medications = $medication_measurement->field_medication[LANGUAGE_NONE];
+      if (!empty($medications)) {
+        $prescribed = FALSE;
+        foreach ($medications as $sign) {
+          if ($sign['value'] == 'vitamin-a') {
+            $prescribed = TRUE;
+            break;
+          }
+        }
+
+        if (!$prescribed) {
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
@@ -7537,7 +7737,7 @@ function hedley_reports_prenatal_referred_to_hiv_program_previously(array $encou
     }
 
     foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
-      if ($sign == 'hiv-program-hc') {
+      if ($sign['value'] == 'hiv-program-hc') {
         return TRUE;
       }
     }
