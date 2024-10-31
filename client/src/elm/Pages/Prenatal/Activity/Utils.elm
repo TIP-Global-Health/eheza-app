@@ -444,7 +444,6 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisPostpartumMastitis
                                     ]
                                     assembled
-                                || provideMentalHealthEducation assembled
                            )
 
                 ChwPostpartumEncounter ->

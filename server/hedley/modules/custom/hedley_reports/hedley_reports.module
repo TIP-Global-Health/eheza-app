@@ -6621,12 +6621,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
     if (!empty($mental_health_measurement)) {
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === TRUE) {
-        $triggering_diagnoses = [
-          'depression-possible',
-          'depression-highly-possible',
-          'depression-probable',
-          'suicide-risk',
-        ];
+        $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
         $referral_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
       }
     }
@@ -6747,23 +6742,25 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   }
 
   $encounter_type = $encounter_data['encounter_type'];
-  $expected = FALSE;
+  $activity_expected = FALSE;
 
   if ($encounter_type == 'nurse') {
     // HIV education.
     $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
     if (!empty($hiv_test_measurement)) {
-      $expected = !empty($hiv_test_measurement->field_test_result[LANGUAGE_NONE][0]['value']);
+      $activity_expected = !empty($hiv_test_measurement->field_test_result[LANGUAGE_NONE][0]['value']);
     }
+
     // Partner presence education.
-    if (!$expected) {
+    if (!$activity_expected) {
       $partner_hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_partner_hiv_test'];
       if (!empty($partner_hiv_test_measurement)) {
-        $expected = $partner_hiv_test_measurement->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'not-present';
+        $activity_expected = $partner_hiv_test_measurement->field_test_execution_note[LANGUAGE_NONE][0]['value'] == 'not-present';
       }
     }
-    // By encounter diagnoses.
-    if (!$expected) {
+
+    // Education per encounter diagnoses.
+    if (!$activity_expected) {
       $triggering_diagnoses = array_merge(
         hedley_reports_prenatal_diabetes_diagnoses(),
         [
@@ -6775,11 +6772,21 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
           'hiv-detectable-viral-load',
         ]
       );
-      $expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+      $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+    }
+
+    // Mental health education.
+    // Mental health survey is filled and none of mental health
+    // diagnoses requiring tratment was recorded.
+    $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
+    if (!empty($mental_health_measurement)) {
+      $mental_health_diagnoses_requiring_treatment = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
+      $activity_expected = empty(array_intersect($encounter_data['diagnoses'], $mental_health_diagnoses_requiring_treatment));
     }
   }
   // Postpartum encounter.
   else {
+    // Education per encounter diagnoses.
     $triggering_diagnoses = [
       'heartburn',
       'candidiasis',
@@ -6788,11 +6795,129 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
       'postpartum-early-mastitis-engorgment',
       'postpartum-mastitis',
     ];
-    $expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+    $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
   }
 
-  if (!$expected) {
-    
+  // Nausea and Vomiting education.
+  $symptom_review_measurement = $encounter_data['measurements_by_type']['prenatal_symptom_review'];
+  if (!$activity_expected) {
+    // First, checking by current encounter.
+    // We need to make sure that nausea-and-vomiting symptom is recorded, and
+    // neither of follow-up questions (dizziness, low-urine-output and dark-urine)
+    // are answered positively.
+    // Then, we make sure that Nausea and Vomiting symptom was not recorded during
+    // previous encounters.
+    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+      $symptom_recorded = FALSE;
+      foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+        if ($symptom['value'] === 'nausea-and-vomiting') {
+          $symptom_recorded = TRUE;
+          break;
+        }
+      }
+
+      if ($symptom_recorded) {
+        $symptom_questions = $symptom_review_measurement->field_prenatal_symptom_questions[LANGUAGE_NONE];
+        if (!empty($symptom_questions)) {
+          $question_recorded = FALSE;
+          foreach ($symptom_questions as $question) {
+            if (in_array($question['value'], ['dizziness', 'low-urine-output', 'dark-urine'])) {
+              $question_recorded = TRUE;
+              break;
+            }
+          }
+
+          if (!$question_recorded) {
+            $activity_expected = !hedley_reports_prenatal_symptom_recorded_previously($encounter_data, 'nausea-and-vomiting');
+          }
+        }
+      }
+    }
+  }
+
+  // Education for Leg Cramps, Lower Back Pain, Constipation and
+  // Varicose Veins symptoms.
+  if (!$activity_expected) {
+    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+      foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+        if (in_array($symptom['value'], ['leg-cramps', 'low-back-pain', 'constipation', 'varicose-veins'])) {
+          $activity_expected = TRUE;
+          break;
+        }
+      }
+    }
+  }
+
+  // Leg pain / redness education.
+  if (!$activity_expected) {
+    // We need to make sure that leg-pain-redness symptom is recorded, and
+    // neither of follow-up questions (leg-painful, leg-swollen and leg-warm)
+    // are answered positively.
+    // Then, we make sure that Nausea and Vomiting symptom was not recorded during
+    // previous encounters.
+    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+      $symptom_recorded = FALSE;
+      foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+        if ($symptom['value'] === 'leg-pain-redness') {
+          $symptom_recorded = TRUE;
+          break;
+        }
+      }
+
+      if ($symptom_recorded) {
+        $symptom_questions = $symptom_review_measurement->field_prenatal_symptom_questions[LANGUAGE_NONE];
+        if (!empty($symptom_questions)) {
+          $question_recorded = FALSE;
+          foreach ($symptom_questions as $question) {
+            if (in_array($question['value'], ['leg-painful', 'leg-swollen', 'leg-warm'])) {
+              $question_recorded = TRUE;
+              break;
+            }
+          }
+
+          $activity_expected = !$question_recorded;
+        }
+      }
+    }
+  }
+
+  // Pelvic pain education.
+  if (!$activity_expected) {
+    // First, checking by current encounter.
+    // We need to make sure that pelvic-pain symptom is recorded, and
+    // follow-up question (pelvic-pain-hospitalization) is answered negatively.
+    // Then, we make sure that pelvic-pain symptom was not recorded during
+    // previous encounters.
+    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+      $symptom_recorded = FALSE;
+      foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+        if ($symptom['value'] === 'pelvic-pain') {
+          $symptom_recorded = TRUE;
+          break;
+        }
+      }
+
+      if ($symptom_recorded) {
+        $symptom_questions = $symptom_review_measurement->field_prenatal_symptom_questions[LANGUAGE_NONE];
+        if (!empty($symptom_questions)) {
+          $question_recorded = FALSE;
+          foreach ($symptom_questions as $question) {
+            if ($question['value'] === 'pelvic-pain-hospitalization') {
+              $question_recorded = TRUE;
+              break;
+            }
+          }
+
+          if (!$question_recorded) {
+            $activity_expected = !hedley_reports_prenatal_symptom_recorded_previously($encounter_data, 'pelvic-pain');
+          }
+        }
+      }
+    }
+  }
+
+  if ($activity_expected) {
+    $expected[] = 'prenatal_health_education';
   }
 }
 
@@ -6818,12 +6943,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
     if (!empty($mental_health_measurement)) {
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === FALSE) {
-        $triggering_diagnoses = [
-          'depression-possible',
-          'depression-highly-possible',
-          'depression-probable',
-          'suicide-risk',
-        ];
+        $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
         $referred_to_hospital = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
       }
     }
@@ -6856,7 +6976,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
     // Checking if referral to hospital is required by Hypertension or
     // Moderated Preeclampisa treatments.
     if (!$referred_to_hospital) {
-      $referred_to_hospital = hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_update($encounter_data);
+      $referred_to_hospital = hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_update($encounter_data);
       if (!$referred_to_hospital) {
         $currently_diagnosed_with_moderate_preeclampsia =
           hedley_reports_prenatal_diagnosed_previously_with_any_of(
@@ -6926,7 +7046,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
   return $referred_to_hospital;
 }
 
-function hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_update(array $encounter_data) {
+function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_update(array $encounter_data) {
   $treatment_options = [
     'methyldopa-2',
     'methyldopa-3',
@@ -7006,11 +7126,28 @@ function hedley_reports_prenatal_hospitalizaton_due_to_hypertension_treatment_up
   );
 }
 
-function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, $diagnoses) {
+function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, array $diagnoses) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
-  foreach ($previous_nurse_encounters_data as $encounter_data) {
-    if (!empty(array_intersect($encounter_data['diagnoses'], $diagnoses))) {
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    if (!empty(array_intersect($previous_encounter_data['diagnoses'], $diagnoses))) {
       return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_data, $symptom_value) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $symptom_review_measurement = $previous_encounter_data['measurements_by_type']['prenatal_symptom_review'];
+    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+      if ($symptom['value'] === $symptom_value) {
+        return TRUE;
+      }
     }
   }
 
@@ -7331,6 +7468,15 @@ function hedley_reports_prenatal_hiv_diagnoses() {
     'hiv-recurrent',
     'partner-hiv',
     'partner-hiv-recurrent',
+  ];
+}
+
+function hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment() {
+  return [
+    'depression-possible',
+    'depression-highly-possible',
+    'depression-probable',
+    'suicide-risk',
   ];
 }
 
