@@ -804,6 +804,13 @@ viewGrowthMessage language order =
               ]
             )
 
+        ResilienceMessage5 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth5Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth5Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth5Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -875,8 +882,18 @@ viewStressManagementMessage language nurse order =
               ]
             )
 
-        _ ->
-            ( [], [] )
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement8Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet4 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement8Paragraph2 ]
+              ]
+            )
 
 
 viewMindfulnessMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
@@ -940,6 +957,13 @@ viewMindfulnessMessage language order =
               ]
             )
 
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness7Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -994,8 +1018,19 @@ viewConnectingMessage language order =
               ]
             )
 
-        _ ->
-            ( [], [] )
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting7Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting8Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting8Paragraph2 ]
+              ]
+            )
 
 
 viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )

@@ -220,6 +220,9 @@ resolveDisplayDay category order =
                 ResilienceMessage4 ->
                     Just 61
 
+                ResilienceMessage5 ->
+                    Just 70
+
                 _ ->
                     Nothing
 
@@ -246,8 +249,8 @@ resolveDisplayDay category order =
                 ResilienceMessage7 ->
                     Just 65
 
-                _ ->
-                    Nothing
+                ResilienceMessage8 ->
+                    Just 79
 
         ResilienceCategoryMindfulness ->
             case order of
@@ -268,6 +271,9 @@ resolveDisplayDay category order =
 
                 ResilienceMessage6 ->
                     Just 47
+
+                ResilienceMessage7 ->
+                    Just 77
 
                 _ ->
                     Nothing
@@ -292,8 +298,11 @@ resolveDisplayDay category order =
                 ResilienceMessage6 ->
                     Just 68
 
-                _ ->
-                    Nothing
+                ResilienceMessage7 ->
+                    Just 72
+
+                ResilienceMessage8 ->
+                    Just 75
 
         ResilienceCategorySelfCare ->
             case order of
