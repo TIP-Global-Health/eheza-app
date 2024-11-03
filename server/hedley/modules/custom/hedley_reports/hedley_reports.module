@@ -6631,7 +6631,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
   if (!$activity_expected) {
     // First option is that HIV is diagnosed and there's an HIV
     // program at health center.
-    if (in_array('hiv', $encounter_data['diagnoses'])) {
+    if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, ['hiv', 'hiv-recurrent'])) {
       $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
       if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
         foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
@@ -7249,7 +7249,7 @@ function hedley_reports_prenatal_medication_distribution_expected_for_continues_
 
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
-  $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase();
+  $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral();
   $referred_to_hospital_by_immediate_diagnosis = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
   // At postpartum encounter, only option for hospital referral is by
   // immediate diagnosis. At nurse encounter, there are more options,
@@ -7687,6 +7687,13 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
   return floor($total_days / 7);
 }
 
+function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral() {
+  array_merge(
+    hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase(),
+    hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase()
+  );
+}
+
 function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
@@ -7720,7 +7727,7 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_i
   );
 }
 
-function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase($phase) {
+function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_recurrent_phase(),
     [
