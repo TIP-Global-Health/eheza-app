@@ -6949,11 +6949,11 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
 
     $encounter_type = $encounter_data['encounter_type'];
     if ($encounter_type == 'nurse') {
-      $triggering_diagnoses =  array_merge(
+      $triggering_diagnoses = array_merge(
         $triggering_diagnoses,
         hedley_reports_prenatal_syphilis_diagnoses()
       );
-      $triggering_diagnoses =  array_merge(
+      $triggering_diagnoses = array_merge(
         $triggering_diagnoses,
         hedley_reports_prenatal_hypertension_diagnoses()
       );
@@ -6985,6 +6985,11 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
         $activity_expected = !$referred;
       }
     }
+  }
+
+  // Checking for continuous Hypertension treatment medication.
+  if (!$activity_expected) {
+    $activity_expected = hedley_reports_prenatal_medication_distribution_expected_for_continues_hypertension_treatment($encounter_data);
   }
 
   if ($activity_expected) {
@@ -7174,6 +7179,74 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   return FALSE;
 }
 
+function hedley_reports_prenatal_medication_distribution_expected_for_continues_hypertension_treatment(array $encounter_data) {
+  // If any of preeclampsia diagnosed - no medication as patient
+  // is referred to hospital.
+  if (
+    hedley_reports_prenatal_diagnosed_previously_with_any_of(
+      $encounter_data,
+      hedley_reports_prenatal_preeclempsia_diagnoses()
+    )
+  ) {
+    return FALSE;
+  }
+
+  // First use-case - hypertension treatment update requires medication and
+  // patient was not referred to hospital due to adverse event related to
+  // hypertension.
+  if (hedley_reports_prenatal_medication_due_to_hypertension_treatment_update($encounter_data)) {
+    $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+    $treatments = $medication_measurement->field_hypertension_treatment[LANGUAGE_NONE];
+    if (!empty($treatments)) {
+      $referred = FALSE;
+      foreach ($treatments as $treatment) {
+        if ($treatment['value'] == 'adverse-events-hospitalization') {
+          $referred = TRUE;
+          break;
+        }
+      }
+
+     if (!$referred) {
+       return TRUE;
+     };
+    }
+  }
+
+  // Second use-case - currently diagnosed was moderate preeclampsia
+  // (diagnosed previously with moderate, but no not with severe
+  // preeclampsia or eclampsia),and blood pressure requires hospitalization.
+  $currently_diagnosed_with_moderate_preeclampsia =
+    hedley_reports_prenatal_diagnosed_previously_with_any_of(
+      $encounter_data,
+      ['moderate-preeclampsia-initial', 'moderate-preeclampsia-recurrent']
+    ) &&
+    !hedley_reports_prenatal_diagnosed_previously_with_any_of(
+      $encounter_data,
+      [
+        'severe-preeclampsia-initial',
+        'severe-preeclampsia-recurrent',
+        'eclampsia'
+      ]
+    );
+
+  if ($currently_diagnosed_with_moderate_preeclampsia) {
+    $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+    if (!empty($vitals_measurement)) {
+      $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
+      $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
+
+      if (!empty($sys) && !empty($dia)) {
+        if ($sys >= 180 || $dia >= 110) {
+          return TRUE;
+        }
+      }
+    }
+  }
+
+  // None of the use-cases produced positive result.
+  return FALSE;
+}
+
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
   $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase();
@@ -7189,7 +7262,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === FALSE) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
-        $referred_to_hospital = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses));
+        $referred_to_hospital = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
       }
     }
 
@@ -7223,7 +7296,11 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
           ) &&
           !hedley_reports_prenatal_diagnosed_previously_with_any_of(
             $encounter_data,
-            hedley_reports_prenatal_hypertensionlike_diagnoses()
+            [
+              'severe-preeclampsia-initial',
+              'severe-preeclampsia-recurrent',
+              'eclampsia'
+            ]
           );
 
         if ($currently_diagnosed_with_moderate_preeclampsia) {
@@ -7295,7 +7372,7 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
   ];
   $current_treatment = hedley_reports_prenatal_get_latest_treatment_from_options($encounter_data, $treatment_options);
   if (!$current_treatment) {
-    return;
+    return FALSE;
   }
 
   $triggering_diagnoses = array_merge(
@@ -7304,20 +7381,79 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
   );
 
   if (!hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
-    return;
+    return FALSE;
   }
 
   $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
   if (empty($vitals_measurement)) {
-    return;
+    return FALSE;
   }
 
   $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
   $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
   if (empty($sys) || empty($dia)) {
-    return;
+    return FALSE;
   }
 
+  $treatment_update_recommendation = hedley_reports_prenatal_resolve_hypertension_treatment_update_recommendation($sys, $dia);
+
+  return (
+    (($current_treatment == 'no-treatment-hypertension') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-2') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-3') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'methyldopa-4') && ($treatment_update_recommendation == 9)) ||
+    (($current_treatment == 'add-carvedilol') && ($treatment_update_recommendation >= 2)) ||
+    (($current_treatment == 'add-amlodipine') && ($treatment_update_recommendation >= 1))
+  );
+}
+
+function hedley_reports_prenatal_medication_due_to_hypertension_treatment_update(array $encounter_data) {
+  $treatment_options = [
+    'methyldopa-2',
+    'methyldopa-3',
+    'methyldopa-4',
+    'add-carvedilol',
+    'add-amlodipine',
+    'no-treatment-hypertension',
+  ];
+  $current_treatment = hedley_reports_prenatal_get_latest_treatment_from_options($encounter_data, $treatment_options);
+  if (!$current_treatment) {
+    return FALSE;
+  }
+
+  $triggering_diagnoses = array_merge(
+    hedley_reports_prenatal_hypertension_diagnoses(),
+    hedley_reports_prenatal_moderate_preeclempsia_diagnoses()
+  );
+
+  if (!hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
+    return FALSE;
+  }
+
+  $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+  if (empty($vitals_measurement)) {
+    return FALSE;
+  }
+
+  $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
+  $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
+  if (empty($sys) || empty($dia)) {
+    return FALSE;
+  }
+
+  $treatment_update_recommendation = hedley_reports_prenatal_resolve_hypertension_treatment_update_recommendation($sys, $dia);
+
+  return (
+    (($current_treatment == 'no-treatment-hypertension') && ($treatment_update_recommendation != 9)) ||
+    (($current_treatment == 'methyldopa-2') && ($treatment_update_recommendation != 9)) ||
+    (($current_treatment == 'methyldopa-3') && ($treatment_update_recommendation != 9)) ||
+    (($current_treatment == 'methyldopa-4') && ($treatment_update_recommendation != 9)) ||
+    (($current_treatment == 'add-carvedilol') && ($treatment_update_recommendation <= 1)) ||
+    (($current_treatment == 'add-amlodipine') && ($treatment_update_recommendation == 0))
+  );
+}
+
+function hedley_reports_prenatal_resolve_hypertension_treatment_update_recommendation($sys, $dia) {
   if ($sys < 140) {
     // Maintain treatment as is.
     $by_sys = 0;
@@ -7352,16 +7488,7 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
     $by_dia = 9;
   }
 
-  $treatment_update_recommendation = max($by_sys, $by_dia);
-
-  return (
-    (($current_treatment == 'no-treatment-hypertension') && ($treatment_update_recommendation == 9)) ||
-    (($current_treatment == 'methyldopa-2') && ($treatment_update_recommendation == 9)) ||
-    (($current_treatment == 'methyldopa-3') && ($treatment_update_recommendation == 9)) ||
-    (($current_treatment == 'methyldopa-4') && ($treatment_update_recommendation == 9)) ||
-    (($current_treatment == 'add-carvedilol') && ($treatment_update_recommendation >= 2)) ||
-    (($current_treatment == 'add-amlodipine') && ($treatment_update_recommendation >= 1))
-  );
+  return max($by_sys, $by_dia);
 }
 
 function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, array $diagnoses) {
