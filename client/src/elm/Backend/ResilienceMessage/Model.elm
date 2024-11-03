@@ -34,6 +34,10 @@ type ResilienceMessageOrder
     | ResilienceMessage6
     | ResilienceMessage7
     | ResilienceMessage8
+    | ResilienceMessage9
+    | ResilienceMessage10
+    | ResilienceMessage11
+    | ResilienceMessage12
 
 
 type alias Model =
