@@ -6622,7 +6622,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === TRUE) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
-        $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+        $activity_expected = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
       }
     }
   }
@@ -6658,7 +6658,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
         }
         // If not known as HIV positive, check by diagnosis.
         $triggering_diagnoses = hedley_reports_prenatal_hiv_diagnoses();
-        if (!empty(array_intersect($previous_encounter_data['diagnoses'], $triggering_diagnoses))) {
+        if (hedley_reports_prenatal_diagnosed_any_of($previous_encounter_data, $triggering_diagnoses)) {
           $section_expected = TRUE;
           break;
         }
@@ -6690,7 +6690,7 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
         hedley_reports_prenatal_hypertensionlike_diagnoses(),
         hedley_reports_prenatal_diabetes_diagnoses()
       );
-      if (!empty(array_intersect($previous_encounter_data['diagnoses'], $triggering_diagnoses))) {
+      if (hedley_reports_prenatal_diagnosed_any_of($previous_encounter_data, $triggering_diagnoses)) {
         $section_expected = TRUE;
         break;
       }
@@ -6736,7 +6736,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   }
 
   $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
-  if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+  if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $emergency_diagnoses)) {
     // Emergency diagnosis present - no health education.
     return;
   }
@@ -6772,7 +6772,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
           'hiv-detectable-viral-load',
         ]
       );
-      $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+      $activity_expected = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
     }
 
     // Mental health education.
@@ -6781,7 +6781,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
     $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
     if (!empty($mental_health_measurement)) {
       $mental_health_diagnoses_requiring_treatment = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
-      $activity_expected = empty(array_intersect($encounter_data['diagnoses'], $mental_health_diagnoses_requiring_treatment));
+      $activity_expected = !hedley_reports_prenatal_diagnosed_any_of($encounter_data, $mental_health_diagnoses_requiring_treatment);
     }
   }
   // Postpartum encounter.
@@ -6795,7 +6795,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
       'postpartum-early-mastitis-engorgment',
       'postpartum-mastitis',
     ];
-    $activity_expected = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+    $activity_expected = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
   }
 
   // Nausea and Vomiting education.
@@ -6929,7 +6929,7 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
   }
 
   $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
-  if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+  if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $emergency_diagnoses)) {
     // Emergency diagnosis present - no medication distribution.
     return;
   }
@@ -6937,9 +6937,54 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
   // Checking by medication set.
   $activity_expected = hedley_reports_prenatal_medication_distribution_expected_per_medication_set($encounter_data);
 
-  // Checking by diagnosis.
+  // Checking by diagnoses.
   if (!$activity_expected) {
+    $triggering_diagnoses = [
+      'heartburn',
+      'urinary-tract-infection',
+      'candidiasis',
+      'gonorrhea',
+      'trichomonas-or-bv',
+    ];
 
+    $encounter_type = $encounter_data['encounter_type'];
+    if ($encounter_type == 'nurse') {
+      $triggering_diagnoses =  array_merge(
+        $triggering_diagnoses,
+        hedley_reports_prenatal_syphilis_diagnoses()
+      );
+      $triggering_diagnoses =  array_merge(
+        $triggering_diagnoses,
+        hedley_reports_prenatal_hypertension_diagnoses()
+      );
+    }
+    else {
+      $triggering_diagnoses = array_merge(
+        $triggering_diagnoses,
+        ['postpartum-early-mastitis-engorgment', 'postpartum-mastitis']
+      );
+    }
+    $activity_expected = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
+  }
+
+  // Checking for Malaria medication.
+  if (!$activity_expected) {
+    $triggering_diagnoses = hedley_reports_prenatal_malaria_diagnoses();
+    if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses)) {
+      $medication_measurement = $encounter_data['measurements_by_type']['medication'];
+      $treatments = $medication_measurement->field_malaria_treatment[LANGUAGE_NONE];
+      if (!empty($treatments)) {
+        $referred = FALSE;
+        foreach ($treatments as $treatment) {
+          if ($treatment['value'] == 'adverse-events-hospitalization') {
+            $referred = TRUE;
+            break;
+          }
+        }
+
+        $activity_expected = !$referred;
+      }
+    }
   }
 
   if ($activity_expected) {
@@ -6950,7 +6995,7 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
 function hedley_reports_prenatal_medication_distribution_expected_per_medication_set(array $encounter_data) {
   // HIV medication set.
   // First option - HIV diagnosed and no HIV program at HC.
-  $hiv_diagnosed = !empty(array_intersect($encounter_data['diagnoses'], ['hiv', 'hiv-recurrent']));
+  $hiv_diagnosed = hedley_reports_prenatal_diagnosed_any_of($encounter_data, ['hiv', 'hiv-recurrent']);
   if ($hiv_diagnosed) {
     $hiv_test_measurement = $encounter_data['measurements_by_type']['prenatal_hiv_test'];
     if (!empty($hiv_test_measurement) && !empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE])) {
@@ -6989,32 +7034,32 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   }
 
   // Discordant Partnership medication set.
-  $discordant_partnership_diagnosed = !empty(array_intersect(
-    $encounter_data['diagnoses'],
+  $discordant_partnership_diagnosed = hedley_reports_prenatal_diagnosed_any_of(
+    $encounter_data,
     ['partner-hiv', 'partner-hiv-recurrent']
-  ));
+  );
   if ($discordant_partnership_diagnosed) {
     return TRUE;
   }
 
   // Moderate Anemia medication set.
-  $moderate_anemia_diagnosed = !empty(array_intersect(
-    $encounter_data['diagnoses'],
+  $moderate_anemia_diagnosed = hedley_reports_prenatal_diagnosed_any_of(
+    $encounter_data,
     ['anemia', 'anemia-initial']
-  ));
+  );
   if ($moderate_anemia_diagnosed) {
     $treatments = $medication_measurement->field_anemia_treatment[LANGUAGE_NONE];
     if (!empty($treatments)) {
-      foreach ($treatments as $treatment_signs) {
-        $referred = FALSE;
-        foreach ($treatment_signs as $sign) {
-          if ($sign['value'] == 'adverse-events-hospitalization') {
-            $referred = TRUE;
-          }
+      $referred = FALSE;
+      foreach ($treatments as $treatment) {
+        if ($treatment['value'] == 'adverse-events-hospitalization') {
+          $referred = TRUE;
+          break;
         }
-        if (!$referred) {
-          return TRUE;
-        }
+      }
+
+      if (!$referred) {
+        return TRUE;
       }
     }
   }
@@ -7132,7 +7177,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
   $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase();
-  $referred_to_hospital_by_immediate_diagnosis = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+  $referred_to_hospital_by_immediate_diagnosis = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
   // At postpartum encounter, only option for hospital referral is by
   // immediate diagnosis. At nurse encounter, there are more options,
   // when there's no referral by immediate diagnosis.
@@ -7144,22 +7189,15 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
       if ($specialist_at_hc === FALSE) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
-        $referred_to_hospital = !empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses));
+        $referred_to_hospital = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses));
       }
     }
 
     // Checking if referral to hospital is required by Malaria Treatment -
     // Malaria diagnosed and suggested treatment was hospital referral.
     if (!$referred_to_hospital) {
-      $triggering_diagnoses = [
-        'malaria',
-        'malaria-recurrent',
-        'malaria-anemia',
-        'malaria-anemia-recurrent',
-        'malaria-severe-anemia',
-        'malaria-severe-anemia-recurrent',
-      ];
-      if (!empty(array_intersect($encounter_data['diagnoses'], $triggering_diagnoses))) {
+      $triggering_diagnoses = hedley_reports_prenatal_malaria_diagnoses();
+      if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses)) {
         $medication_distribution_measurement = $encounter_data['measurements_by_type']['prenatal_medication_distribution'];
         if (!empty($medication_distribution_measurement)) {
           $recommended_treatments = $medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE];
@@ -7329,12 +7367,16 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
 function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, array $diagnoses) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
-    if (!empty(array_intersect($previous_encounter_data['diagnoses'], $diagnoses))) {
+    if (hedley_reports_prenatal_diagnosed_any_of($previous_encounter_data, $diagnoses)) {
       return TRUE;
     }
   }
 
   return FALSE;
+}
+
+function hedley_reports_prenatal_diagnosed_any_of(array $encounter_data, array $diagnoses) {
+  return !empty(array_intersect($encounter_data['diagnoses'], $diagnoses));
 }
 
 function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_data, $symptom_value) {
@@ -7385,7 +7427,7 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
   switch ($encounter_type) {
     case 'nurse':
       $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
-      if (!empty(array_intersect($encounter_data['diagnoses'], $emergency_diagnoses))) {
+      if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $emergency_diagnoses)) {
         return TRUE;
       }
 
@@ -7671,6 +7713,17 @@ function hedley_reports_prenatal_hiv_diagnoses() {
   ];
 }
 
+function hedley_reports_prenatal_malaria_diagnoses() {
+  return [
+    'malaria',
+    'malaria-recurrent',
+    'malaria-anemia',
+    'malaria-anemia-recurrent',
+    'malaria-severe-anemia',
+    'malaria-severe-anemia-recurrent',
+  ];
+}
+
 function hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment() {
   return [
     'depression-possible',
@@ -7681,13 +7734,18 @@ function hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment() {
 }
 
 function hedley_reports_prenatal_syphilislike_diagnoses() {
+  return array_merge(
+    hedley_reports_prenatal_syphilis_diagnoses(),
+    ['neurosyphilis-initial', 'neurosyphilis']
+  );
+}
+
+function hedley_reports_prenatal_syphilis_diagnoses() {
   return [
     'syphilis-initial',
     'syphilis',
     'syphilis-complications-initial',
     'syphilis-complications',
-    'neurosyphilis-initial',
-    'neurosyphilis',
   ];
 }
 
