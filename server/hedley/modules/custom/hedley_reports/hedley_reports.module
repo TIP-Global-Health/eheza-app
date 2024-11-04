@@ -5733,6 +5733,17 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'postpartum_treatment_review' => '*',
      // Blood pressure re-check on recurrent phase of encounter.
     'vitals_recheck' => '!',
+    // Labs results.
+    'prenatal_blood_gprs_test_result' => 'm+',
+    'prenatal_hemoglobin_test_result' => 's+',
+    'prenatal_hepatitis_b_test_result' => 't+',
+    'prenatal_hiv_pcr_test_result' => 'u+',
+    'prenatal_hiv_test_result' => 'v+',
+    'prenatal_malaria_test_result' => 'w+',
+    'prenatal_partner_hiv_test_result' => '1+',
+    'prenatal_random_blood_sugar_test_result' => '3+',
+    'prenatal_syphilis_test_result' => '7+',
+    'prenatal_urine_dipstick_test_result' => '9+',
   ];
 
   // Load all encounters of current participant.
@@ -5887,6 +5898,98 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
     // Vitals recheck (recurrent phase).
     hedley_reports_prenatal_add_vitals_reckeck_activity($encounter_data, $expected);
+
+    // Adding labs test results activities. Since those are logically derived,
+    // and not actual content, we apply proprietary logic per records recorded
+    // at labs results content.
+    $labs_results = $measurements_by_type['prenatal_labs_results'];
+    if (!empty($labs_results)) {
+      if (!empty($labs_results->field_performed_tests)) {
+        $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
+        foreach ($performed_tests as $performed_test) {
+          switch ($performed_test['value']) {
+            case 'hiv':
+              $expected[] = 'prenatal_hiv_test_result';
+              break;
+
+            case 'partner-hiv':
+              $expected[] = 'prenatal_partner_hiv_test_result';
+              break;
+
+            case 'malaria':
+              $expected[] = 'prenatal_malaria_test_resul';
+              break;
+
+            case 'syphilis':
+              $expected[] = 'prenatal_syphilis_test_result';
+              break;
+
+            case 'hepatitis-b':
+              $expected[] = 'prenatal_hepatitis_b_test_result';
+              break;
+
+            case 'blood-group':
+              $expected[] = 'prenatal_blood_gprs_test_result';
+              break;
+
+            case 'hemoglobin':
+              $expected[] = 'prenatal_hemoglobin_test_result';
+              break;
+
+            case 'hiv-pcr':
+              $expected[] = 'prenatal_hiv_pcr_test_result';
+              break;
+
+            case 'urine-dipstick':
+              $expected[] = 'prenatal_urine_dipstick_test_result';
+              break;
+          }
+        }
+      }
+
+      if (!empty($labs_results->field_completed_tests)) {
+        $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
+        foreach ($completed_tests as $completed_test) {
+          switch ($completed_test['value']) {
+            case 'hiv':
+              $measurements_by_type['prenatal_hiv_test_result'] = 'dummy';
+              break;
+
+            case 'partner-hiv':
+              $measurements_by_type['prenatal_partner_hiv_test_result'] = 'dummy';
+              break;
+
+            case 'malaria':
+              $measurements_by_type['prenatal_malaria_test_resul'] = 'dummy';
+              break;
+
+            case 'syphilis':
+              $$measurements_by_type['prenatal_syphilis_test_result'] = 'dummy';
+              break;
+
+            case 'hepatitis-b':
+              $measurements_by_type['prenatal_hepatitis_b_test_result'] = 'dummy';
+              break;
+
+            case 'blood-group':
+              $measurements_by_type['prenatal_blood_gprs_test_result'] = 'dummy';
+              break;
+
+            case 'hemoglobin':
+              $measurements_by_type['prenatal_hemoglobin_test_result'] = 'dummy';
+              break;
+
+            case 'hiv-pcr':
+              $measurements_by_type['prenatal_hiv_pcr_test_result'] = 'dummy';
+              break;
+
+            case 'urine-dipstick':
+              $measurements_by_type['prenatal_urine_dipstick_test_result'] = 'dummy';
+              break;
+          }
+        }
+      }
+    }
 
     $completion_data = [
       'start_date' => $start_date,
