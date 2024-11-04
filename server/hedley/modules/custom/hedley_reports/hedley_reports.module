@@ -5731,6 +5731,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'pregnancy_outcome' => '&',
      // Similar to Treatment Review, but for postpartum encounter.
     'postpartum_treatment_review' => '*',
+     // Blood pressure re-check on recurrent phase of encounter.
+    'vitals_recheck' => '!',
   ];
 
   // Load all encounters of current participant.
@@ -5864,6 +5866,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
+    // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
     hedley_reports_prenatal_add_history_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
@@ -5882,6 +5885,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     // This comes last, since it has mandatory activities to be completed,
     // which we will be checking for withing $expected.
     hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
+    // Vitals recheck (recurrent phase).
+    hedley_reports_prenatal_add_vitals_reckeck_activity($encounter_data, $expected);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -6523,6 +6528,38 @@ function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter
   }
 
   $expected[] = 'pregnancy_outcome';
+}
+
+function hedley_reports_prenatal_add_vitals_reckeck_activity(array $encounter_data, array &$expected) {
+  $triggering_diagnoses = hedley_reports_prenatal_hypertension_diagnoses();
+  if (hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
+    return;
+  };
+
+  $triggering_diagnoses = [
+    'eclampsia',
+    'moderate-preeclampsia-initial',
+    'moderate-preeclampsia-initial-ega-37+',
+    'severe-preeclampsia-initial',
+    'severe-preeclampsia-initial-ega-37+',
+    'chronic-hypertension-immediate',
+    'gestational-hypertension-immediate',
+  ];
+  if (hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses)) {
+    return;
+  }
+
+  $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+  $sys = $vitals_measurement->field_sys[LANGUAGE_NONE][0]['value'];
+  $dia = $vitals_measurement->field_dia[LANGUAGE_NONE][0]['value'];
+
+  if (empty($sys) || empty($dia)) {
+    return;
+  }
+
+  if (($sys <= 140 && $sys < 160) || ($dia >= 90 && $dia < 110)) {
+    $expected[] = 'vitals_recheck';
+  }
 }
 
 function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $encounter_data, array &$expected) {
