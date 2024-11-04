@@ -497,7 +497,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
             in
             case model.activeTab of
                 TabUnread ->
-                    List.map viewMessage unread
+                    List.sortBy (\( _, message ) -> message.displayDay) unread
+                        |> List.map viewMessage
 
                 TabFavorites ->
                     Dict.toList nurse.resilienceMessages
