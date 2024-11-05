@@ -32,6 +32,7 @@ decodeCompletionData =
                     nutritionChildActivityFromMapping
                 )
             )
+        |> requiredAt [ "results", "prenatal" ] (list (decodeEncounterData prenatalActivityFromMapping))
         |> requiredAt [ "results", "tuberculosis" ] (list (decodeEncounterData tuberculosisActivityFromMapping))
         |> requiredAt [ "results", "well_child" ] (list decodeWellChildEncounterData)
 

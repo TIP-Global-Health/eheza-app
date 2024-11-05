@@ -10,6 +10,7 @@ import Backend.Completion.Model
         , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
+        , PrenatalActivity(..)
         , TakenBy(..)
         , TuberculosisActivity(..)
         , WellChildActivity(..)
@@ -45,6 +46,9 @@ reportTypeToString reportType =
         ReportNutritionIndividual ->
             "nutrition-individual"
 
+        ReportPrenatal ->
+            "prenatal"
+
         ReportTuberculosis ->
             "tuberculosis"
 
@@ -78,6 +82,9 @@ reportTypeFromString reportType =
 
         "nutrition-individual" ->
             Just ReportNutritionIndividual
+
+        "prenatal" ->
+            Just ReportPrenatal
 
         "tuberculosis" ->
             Just ReportTuberculosis
@@ -289,4 +296,62 @@ allTuberculosisActivities =
     , TuberculosisReferral
     , TuberculosisSymptomReview
     , TuberculosisTreatmentReview
+    ]
+
+
+allPrenatalActivities : List PrenatalActivity
+allPrenatalActivities =
+    [ PrenatalAppointmentConfirmation
+    , PrenatalBirthPlan
+    , PrenatalBloodGprsTest
+    , PrenatalBloodGprsTestResult
+    , PrenatalBreastExam
+    , PrenatalBreastfeeding
+    , PrenatalCorePhysicalExam
+    , PrenatalDangerSigns
+    , PrenatalFamilyPlanning
+    , PrenatalFollowUp
+    , PrenatalGuExam
+    , PrenatalHealthEducation
+    , PrenatalHemoglobinTest
+    , PrenatalHemoglobinTestResult
+    , PrenatalHepatitisBTest
+    , PrenatalHepatitisBTestResult
+    , PrenatalHIVPCRTest
+    , PrenatalHIVPCRTestResult
+    , PrenatalHIVTest
+    , PrenatalHIVTestResult
+    , PrenatalLastMenstrualPeriod
+    , PrenatalMalariaTest
+    , PrenatalMalariaTestResult
+    , PrenatalMedicalHistory
+    , PrenatalMedication
+    , PrenatalMedicationDistribution
+    , PrenatalMentalHealth
+    , PrenatalNutrition
+    , PrenatalObstetricalExam
+    , PrenatalObstetricHistory
+    , PrenatalObstetricHistoryStep2
+    , PrenatalOutsideCare
+    , PrenatalPartnerHIVTest
+    , PrenatalPartnerHIVTestResult
+    , PrenatalPhoto
+    , PrenatalPostpartumTreatmentReview
+    , PrenatalPregnancyOutcome
+    , PrenatalPregnancyTesting
+    , PrenatalRandomBloodSugarTest
+    , PrenatalRandomBloodSugarTestResult
+    , PrenatalResource
+    , PrenatalSendToHC
+    , PrenatalSocialHistory
+    , PrenatalSpecialityCare
+    , PrenatalSymptomReview
+    , PrenatalSyphilisTest
+    , PrenatalSyphilisTestResult
+    , PrenatalTetanusImmunisation
+    , PrenatalTreatmentReview
+    , PrenatalUrineDipstickTest
+    , PrenatalUrineDipstickTestResult
+    , PrenatalVitals
+    , PrenatalVitalsRecheck
     ]

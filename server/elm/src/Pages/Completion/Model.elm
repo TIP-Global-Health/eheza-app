@@ -35,6 +35,7 @@ type ReportType
     | ReportNewbornExam
     | ReportNutritionGroup
     | ReportNutritionIndividual
+    | ReportPrenatal
     | ReportTuberculosis
     | ReportWellChild
 
