@@ -5844,14 +5844,14 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
       if (empty($lmp_measurement) || empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
         continue;
       }
-      $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+      $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value'])[0];
       break;
     }
     // No value found at previous nurse encounters - check current encounter.
     if (empty($lmp_date)) {
       $lmp_measurement = $measurements_by_type['last_menstrual_period'];
       if (!empty($lmp_measurement) && !empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
-        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value'])[0];
       }
     }
     // No value found at current encounter - check previous CHW encounters.
@@ -5861,7 +5861,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
         if (empty($lmp_measurement) || empty($lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE])) {
           continue;
         }
-        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value']);
+        $lmp_date = explode(' ', $lmp_measurement->field_last_menstrual_period[LANGUAGE_NONE][0]['value'])[0];
         break;
       }
     }
@@ -6025,6 +6025,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
     $completion_data = [
       'start_date' => $start_date,
+      'taken_by' => in_array($encounter_type, ['nurse', 'nurse-postpartum']) ? 'nurse' : 'chw',
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
@@ -7502,6 +7503,10 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
         ];
 
         foreach ($treatments as $treatment_signs) {
+          if (empty($treatment_signs)) {
+            continue;
+          }
+
           foreach ($treatment_signs as $sign) {
             if ($sign['value'] == 'adverse-events-hospitalization') {
               $referred_to_hospital = TRUE;
@@ -7860,7 +7865,7 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
 }
 
 function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral() {
-  array_merge(
+  return array_merge(
     hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase(),
     hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase()
   );
