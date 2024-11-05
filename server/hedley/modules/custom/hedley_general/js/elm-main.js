@@ -5833,6 +5833,7 @@ var $author$project$Pages$Completion$Model$ReportNCD = {$: 'ReportNCD'};
 var $author$project$Pages$Completion$Model$ReportNewbornExam = {$: 'ReportNewbornExam'};
 var $author$project$Pages$Completion$Model$ReportNutritionGroup = {$: 'ReportNutritionGroup'};
 var $author$project$Pages$Completion$Model$ReportNutritionIndividual = {$: 'ReportNutritionIndividual'};
+var $author$project$Pages$Completion$Model$ReportPrenatal = {$: 'ReportPrenatal'};
 var $author$project$Pages$Completion$Model$ReportTuberculosis = {$: 'ReportTuberculosis'};
 var $author$project$Pages$Completion$Model$ReportWellChild = {$: 'ReportWellChild'};
 var $author$project$Pages$Completion$Utils$reportTypeFromString = function (reportType) {
@@ -5853,6 +5854,8 @@ var $author$project$Pages$Completion$Utils$reportTypeFromString = function (repo
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionGroup);
 		case 'nutrition-individual':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportNutritionIndividual);
+		case 'prenatal':
+			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportPrenatal);
 		case 'tuberculosis':
 			return $elm$core$Maybe$Just($author$project$Pages$Completion$Model$ReportTuberculosis);
 		case 'well-child':
@@ -6873,9 +6876,11 @@ var $author$project$Backend$Completion$Model$CompletionData = function (site) {
 							return function (ncdData) {
 								return function (nutritionIndividualData) {
 									return function (nutritionGroupData) {
-										return function (tuberculosisData) {
-											return function (wellChildData) {
-												return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+										return function (prenatalData) {
+											return function (tuberculosisData) {
+												return function (wellChildData) {
+													return {acuteIllnessData: acuteIllnessData, childScoreboardData: childScoreboardData, entityName: entityName, entityType: entityType, hivData: hivData, homeVisitData: homeVisitData, ncdData: ncdData, nutritionGroupData: nutritionGroupData, nutritionIndividualData: nutritionIndividualData, prenatalData: prenatalData, site: site, tuberculosisData: tuberculosisData, wellChildData: wellChildData};
+												};
 											};
 										};
 									};
@@ -8317,6 +8322,171 @@ var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping 
 			return $elm$core$Maybe$Nothing;
 	}
 };
+var $author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation = {$: 'PrenatalAppointmentConfirmation'};
+var $author$project$Backend$Completion$Model$PrenatalBirthPlan = {$: 'PrenatalBirthPlan'};
+var $author$project$Backend$Completion$Model$PrenatalBloodGprsTest = {$: 'PrenatalBloodGprsTest'};
+var $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult = {$: 'PrenatalBloodGprsTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalBreastExam = {$: 'PrenatalBreastExam'};
+var $author$project$Backend$Completion$Model$PrenatalBreastfeeding = {$: 'PrenatalBreastfeeding'};
+var $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam = {$: 'PrenatalCorePhysicalExam'};
+var $author$project$Backend$Completion$Model$PrenatalDangerSigns = {$: 'PrenatalDangerSigns'};
+var $author$project$Backend$Completion$Model$PrenatalFamilyPlanning = {$: 'PrenatalFamilyPlanning'};
+var $author$project$Backend$Completion$Model$PrenatalFollowUp = {$: 'PrenatalFollowUp'};
+var $author$project$Backend$Completion$Model$PrenatalGuExam = {$: 'PrenatalGuExam'};
+var $author$project$Backend$Completion$Model$PrenatalHIVPCRTest = {$: 'PrenatalHIVPCRTest'};
+var $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult = {$: 'PrenatalHIVPCRTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalHIVTest = {$: 'PrenatalHIVTest'};
+var $author$project$Backend$Completion$Model$PrenatalHIVTestResult = {$: 'PrenatalHIVTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalHealthEducation = {$: 'PrenatalHealthEducation'};
+var $author$project$Backend$Completion$Model$PrenatalHemoglobinTest = {$: 'PrenatalHemoglobinTest'};
+var $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult = {$: 'PrenatalHemoglobinTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalHepatitisBTest = {$: 'PrenatalHepatitisBTest'};
+var $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult = {$: 'PrenatalHepatitisBTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod = {$: 'PrenatalLastMenstrualPeriod'};
+var $author$project$Backend$Completion$Model$PrenatalMalariaTest = {$: 'PrenatalMalariaTest'};
+var $author$project$Backend$Completion$Model$PrenatalMalariaTestResult = {$: 'PrenatalMalariaTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalMedicalHistory = {$: 'PrenatalMedicalHistory'};
+var $author$project$Backend$Completion$Model$PrenatalMedication = {$: 'PrenatalMedication'};
+var $author$project$Backend$Completion$Model$PrenatalMedicationDistribution = {$: 'PrenatalMedicationDistribution'};
+var $author$project$Backend$Completion$Model$PrenatalMentalHealth = {$: 'PrenatalMentalHealth'};
+var $author$project$Backend$Completion$Model$PrenatalNutrition = {$: 'PrenatalNutrition'};
+var $author$project$Backend$Completion$Model$PrenatalObstetricHistory = {$: 'PrenatalObstetricHistory'};
+var $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2 = {$: 'PrenatalObstetricHistoryStep2'};
+var $author$project$Backend$Completion$Model$PrenatalObstetricalExam = {$: 'PrenatalObstetricalExam'};
+var $author$project$Backend$Completion$Model$PrenatalOutsideCare = {$: 'PrenatalOutsideCare'};
+var $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest = {$: 'PrenatalPartnerHIVTest'};
+var $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult = {$: 'PrenatalPartnerHIVTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalPhoto = {$: 'PrenatalPhoto'};
+var $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview = {$: 'PrenatalPostpartumTreatmentReview'};
+var $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome = {$: 'PrenatalPregnancyOutcome'};
+var $author$project$Backend$Completion$Model$PrenatalPregnancyTesting = {$: 'PrenatalPregnancyTesting'};
+var $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest = {$: 'PrenatalRandomBloodSugarTest'};
+var $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult = {$: 'PrenatalRandomBloodSugarTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalResource = {$: 'PrenatalResource'};
+var $author$project$Backend$Completion$Model$PrenatalSendToHC = {$: 'PrenatalSendToHC'};
+var $author$project$Backend$Completion$Model$PrenatalSocialHistory = {$: 'PrenatalSocialHistory'};
+var $author$project$Backend$Completion$Model$PrenatalSpecialityCare = {$: 'PrenatalSpecialityCare'};
+var $author$project$Backend$Completion$Model$PrenatalSymptomReview = {$: 'PrenatalSymptomReview'};
+var $author$project$Backend$Completion$Model$PrenatalSyphilisTest = {$: 'PrenatalSyphilisTest'};
+var $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult = {$: 'PrenatalSyphilisTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation = {$: 'PrenatalTetanusImmunisation'};
+var $author$project$Backend$Completion$Model$PrenatalTreatmentReview = {$: 'PrenatalTreatmentReview'};
+var $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest = {$: 'PrenatalUrineDipstickTest'};
+var $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult = {$: 'PrenatalUrineDipstickTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalVitals = {$: 'PrenatalVitals'};
+var $author$project$Backend$Completion$Model$PrenatalVitalsRecheck = {$: 'PrenatalVitalsRecheck'};
+var $author$project$Backend$Completion$Utils$prenatalActivityFromMapping = function (mapped) {
+	switch (mapped) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalBirthPlan);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalBreastExam);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalCorePhysicalExam);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalDangerSigns);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMedicalHistory);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMedication);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalObstetricHistory);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalObstetricalExam);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPregnancyTesting);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalBloodGprsTest);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalBreastfeeding);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFamilyPlanning);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFollowUp);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalGuExam);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHealthEducation);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHemoglobinTest);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHepatitisBTest);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHIVPCRTest);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHIVTest);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMalariaTest);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMedicationDistribution);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMentalHealth);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalNutrition);
+		case '0':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalOutsideCare);
+		case '1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPartnerHIVTest);
+		case '2':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPhoto);
+		case '3':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest);
+		case '4':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSendToHC);
+		case '5':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSpecialityCare);
+		case '6':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSymptomReview);
+		case '7':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSyphilisTest);
+		case '8':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalTetanusImmunisation);
+		case '9':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalUrineDipstickTest);
+		case '@':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalResource);
+		case '#':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSocialHistory);
+		case '$':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalVitals);
+		case '^':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalTreatmentReview);
+		case '&':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPregnancyOutcome);
+		case '*':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview);
+		case '$+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalVitalsRecheck);
+		case 'm+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult);
+		case 's+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult);
+		case 't+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult);
+		case 'u+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult);
+		case 'v+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalHIVTestResult);
+		case 'w+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMalariaTestResult);
+		case '1+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult);
+		case '3+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult);
+		case '7+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSyphilisTestResult);
+		case '9+':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $elm$json$Json$Decode$at = F2(
 	function (fields, decoder) {
 		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
@@ -8372,58 +8542,64 @@ var $author$project$Backend$Completion$Decoder$decodeCompletionData = A3(
 		A3(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 			_List_fromArray(
-				['results', 'nutrition_group']),
+				['results', 'prenatal']),
 			$elm$json$Json$Decode$list(
-				A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+				$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$prenatalActivityFromMapping)),
 			A3(
 				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 				_List_fromArray(
-					['results', 'nutrition_individual']),
+					['results', 'nutrition_group']),
 				$elm$json$Json$Decode$list(
-					$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
+					A2($author$project$Backend$Completion$Decoder$decodeNutritionGroupEncounterData, $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping, $author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 				A3(
 					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 					_List_fromArray(
-						['results', 'ncd']),
+						['results', 'nutrition_individual']),
 					$elm$json$Json$Decode$list(
-						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
+						$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$nutritionChildActivityFromMapping)),
 					A3(
 						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 						_List_fromArray(
-							['results', 'home_visit']),
+							['results', 'ncd']),
 						$elm$json$Json$Decode$list(
-							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
+							$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$ncdActivityFromMapping)),
 						A3(
 							$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 							_List_fromArray(
-								['results', 'hiv']),
+								['results', 'home_visit']),
 							$elm$json$Json$Decode$list(
-								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
+								$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$homeVisitActivityFromMapping)),
 							A3(
 								$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 								_List_fromArray(
-									['results', 'child_scoreboard']),
+									['results', 'hiv']),
 								$elm$json$Json$Decode$list(
-									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
+									$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$hivActivityFromMapping)),
 								A3(
 									$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
 									_List_fromArray(
-										['results', 'acute_illness']),
+										['results', 'child_scoreboard']),
 									$elm$json$Json$Decode$list(
-										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
+										$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$childScoreboardActivityFromMapping)),
 									A3(
-										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-										'entity_type',
-										$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
+										$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$requiredAt,
+										_List_fromArray(
+											['results', 'acute_illness']),
+										$elm$json$Json$Decode$list(
+											$author$project$Backend$Completion$Decoder$decodeEncounterData($author$project$Backend$Completion$Utils$acuteIllnessActivityFromMapping)),
 										A3(
 											$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-											'entity_name',
-											$elm$json$Json$Decode$string,
+											'entity_type',
+											$author$project$Backend$Completion$Decoder$decodeSelectedEntity,
 											A3(
 												$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-												'site',
-												$author$project$Backend$Decoder$decodeSite,
-												$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData)))))))))))));
+												'entity_name',
+												$elm$json$Json$Decode$string,
+												A3(
+													$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+													'site',
+													$author$project$Backend$Decoder$decodeSite,
+													$elm$json$Json$Decode$succeed($author$project$Backend$Completion$Model$CompletionData))))))))))))));
 var $author$project$Backend$Completion$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -10180,6 +10356,7 @@ var $author$project$Translate$HttpError = function (a) {
 };
 var $elm$json$Json$Decode$decodeString = _Json_runOnString;
 var $author$project$Translate$AcuteIllness = {$: 'AcuteIllness'};
+var $author$project$Translate$Antenatal = {$: 'Antenatal'};
 var $author$project$Translate$Caring = {$: 'Caring'};
 var $author$project$Translate$Cell = {$: 'Cell'};
 var $author$project$Translate$ChildScorecard = {$: 'ChildScorecard'};
@@ -10218,8 +10395,11 @@ var $author$project$Translate$MedicationDistribution = {$: 'MedicationDistributi
 var $author$project$Translate$NCD = {$: 'NCD'};
 var $author$project$Translate$NCDA = {$: 'NCDA'};
 var $author$project$Translate$NewbornExam = {$: 'NewbornExam'};
+var $author$project$Translate$Nutrition = {$: 'Nutrition'};
 var $author$project$Translate$NutritionGroup = {$: 'NutritionGroup'};
 var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
+var $author$project$Translate$OutsideCare = {$: 'OutsideCare'};
+var $author$project$Translate$Photo = {$: 'Photo'};
 var $author$project$Translate$PregnancyTest = {$: 'PregnancyTest'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
@@ -10228,6 +10408,7 @@ var $author$project$Translate$RandomBloodSugarTest = {$: 'RandomBloodSugarTest'}
 var $author$project$Translate$RandomBloodSugarTestResult = {$: 'RandomBloodSugarTestResult'};
 var $author$project$Translate$Referral = {$: 'Referral'};
 var $author$project$Translate$Sector = {$: 'Sector'};
+var $author$project$Translate$SocialHistory = {$: 'SocialHistory'};
 var $author$project$Translate$StandardPediatricVisit = {$: 'StandardPediatricVisit'};
 var $author$project$Translate$SymptomsReview = {$: 'SymptomsReview'};
 var $author$project$Translate$TreatmentReview = {$: 'TreatmentReview'};
@@ -10433,7 +10614,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'AcuteIllnessMUAC':
 						return {english: 'MUAC', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'AcuteIllnessNutrition':
-						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Nutrition;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'AcuteIllnessVitals':
 						var $temp$transId = $author$project$Translate$Vitals;
 						transId = $temp$transId;
@@ -10569,6 +10752,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Acute Malnutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'AggregatedChildScoreboard':
 				return {english: 'Aggregated Child Scoreboard', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Antenatal':
+				return {english: 'Antenatal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'All':
 				return {english: 'All', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'ANCNewborn':
@@ -10624,6 +10809,10 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'ReportNutritionIndividual':
 						var $temp$transId = $author$project$Translate$NutritionIndividual;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'ReportPrenatal':
+						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
 					case 'ReportTuberculosis':
@@ -10894,7 +11083,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'NCDMedicationHistory':
 						return {english: 'Medication History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NCDOutsideCare':
-						return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$OutsideCare;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NCDPregnancyTest':
 						var $temp$transId = $author$project$Translate$PregnancyTest;
 						transId = $temp$transId;
@@ -10908,7 +11099,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'NCDSocialHistory':
-						return {english: 'Social History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$SocialHistory;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NCDSymptomReview':
 						var $temp$transId = $author$project$Translate$SymptomsReview;
 						transId = $temp$transId;
@@ -11128,15 +11321,21 @@ var $author$project$Translate$translationSet = function (transId) {
 				});
 			case 'NumberOfVisitsLabel':
 				return {english: '# Visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Nutrition':
+				return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'NutritionChildActivity':
 				var activity = transId.a;
 				switch (activity.$) {
 					case 'NutritionHeight':
 						return {english: 'Height', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NutritionNutrition':
-						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Nutrition;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionPhoto':
-						return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Photo;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'NutritionWeight':
 						return {english: 'Weight', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'NutritionMUAC':
@@ -11216,6 +11415,10 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'NutritionTotal':
 				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'OutsideCare':
+				return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Photo':
+				return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
 				return {english: 'This action may take several minutes to complete.', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PMTCT':
@@ -11238,6 +11441,154 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyTest':
 				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PrenatalActivity':
+				var activity = transId.a;
+				switch (activity.$) {
+					case 'PrenatalAppointmentConfirmation':
+						return {english: 'Appointment Confirmation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalBirthPlan':
+						return {english: 'Birth Plan', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalBloodGprsTest':
+						return {english: 'Blood Group and Rhesus Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalBloodGprsTestResult':
+						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalBreastExam':
+						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalBreastfeeding':
+						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalCorePhysicalExam':
+						return {english: 'Core Physical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalDangerSigns':
+						var $temp$transId = $author$project$Translate$DangerSigns;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalFamilyPlanning':
+						var $temp$transId = $author$project$Translate$FamilyPlanning;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalFollowUp':
+						var $temp$transId = $author$project$Translate$FollowUp;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalGuExam':
+						return {english: 'GU Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHealthEducation':
+						var $temp$transId = $author$project$Translate$HealthEducation;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalHemoglobinTest':
+						return {english: 'Hemoglobin Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHemoglobinTestResult':
+						return {english: 'Hemoglobin Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHepatitisBTest':
+						return {english: 'Hepatitis B Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHepatitisBTestResult':
+						return {english: 'Hepatitis B Result Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHIVPCRTest':
+						return {english: 'HIV PCR Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHIVPCRTestResult':
+						return {english: 'HIV PCR Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalHIVTest':
+						var $temp$transId = $author$project$Translate$HIVTest;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalHIVTestResult':
+						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalLastMenstrualPeriod':
+						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMalariaTest':
+						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMalariaTestResult':
+						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMedicalHistory':
+						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMedication':
+						var $temp$transId = $author$project$Translate$Medication;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalMedicationDistribution':
+						var $temp$transId = $author$project$Translate$MedicationDistribution;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalMentalHealth':
+						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalNutrition':
+						var $temp$transId = $author$project$Translate$Nutrition;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalObstetricalExam':
+						return {english: 'Obstetrical Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalObstetricHistory':
+						return {english: 'Obstetric History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalObstetricHistoryStep2':
+						return {english: 'Obstetric History Second Step', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalOutsideCare':
+						var $temp$transId = $author$project$Translate$OutsideCare;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalPartnerHIVTest':
+						return {english: 'Partner HIV Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalPartnerHIVTestResult':
+						return {english: 'Partner HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalPhoto':
+						var $temp$transId = $author$project$Translate$Photo;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalPostpartumTreatmentReview':
+						return {english: 'Postpartum Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalPregnancyOutcome':
+						return {english: 'Pregnancy Outcome', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalPregnancyTesting':
+						return {english: 'Pregnancy Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalRandomBloodSugarTest':
+						var $temp$transId = $author$project$Translate$RandomBloodSugarTest;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalRandomBloodSugarTestResult':
+						var $temp$transId = $author$project$Translate$RandomBloodSugarTestResult;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalResource':
+						return {english: 'Resource', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalSendToHC':
+						var $temp$transId = $author$project$Translate$Referral;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalSocialHistory':
+						var $temp$transId = $author$project$Translate$SocialHistory;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalSpecialityCare':
+						return {english: 'Speciality Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalSymptomReview':
+						var $temp$transId = $author$project$Translate$SymptomsReview;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalSyphilisTest':
+						return {english: 'Syphilis Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalSyphilisTestResult':
+						return {english: 'Syphilis Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalTetanusImmunisation':
+						return {english: 'Tetanus Immunisation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalTreatmentReview':
+						var $temp$transId = $author$project$Translate$TreatmentReview;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalUrineDipstickTest':
+						var $temp$transId = $author$project$Translate$UrineDipstickTest;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalUrineDipstickTestResult':
+						var $temp$transId = $author$project$Translate$UrineDipstickTestResult;
+						transId = $temp$transId;
+						continue translationSet;
+					case 'PrenatalVitals':
+						var $temp$transId = $author$project$Translate$Vitals;
+						transId = $temp$transId;
+						continue translationSet;
+					default:
+						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
@@ -11272,9 +11623,13 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'ReportDemographics':
 						return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'ReportNutrition':
-						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Nutrition;
+						transId = $temp$transId;
+						continue translationSet;
 					default:
-						return {english: 'Antenatal', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Antenatal;
+						transId = $temp$transId;
+						continue translationSet;
 				}
 			case 'ReportTypeLabel':
 				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -11354,6 +11709,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Please select desired scope', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'SelectViewMode':
 				return {english: 'Please select desired view mode', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'SocialHistory':
+				return {english: 'Social History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Sorwathe':
 				return {english: 'Sorwathe', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'StandardPediatricVisit':
@@ -11516,7 +11873,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'WellChildNextVisit':
 						return {english: 'Next Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildNutrition':
-						return {english: 'Nutrition', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Nutrition;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildOPVImmunisation':
 						var $temp$transId = $author$project$Translate$ImmunisationOPV;
 						transId = $temp$transId;
@@ -11526,7 +11885,9 @@ var $author$project$Translate$translationSet = function (transId) {
 						transId = $temp$transId;
 						continue translationSet;
 					case 'WellChildPhoto':
-						return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$Photo;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'WellChildPregnancySummary':
 						return {english: 'Pregnancy Summary', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'WellChildRotarixImmunisation':
@@ -12459,6 +12820,8 @@ var $author$project$Pages$Completion$Utils$reportTypeToString = function (report
 			return 'nutrition-group';
 		case 'ReportNutritionIndividual':
 			return 'nutrition-individual';
+		case 'ReportPrenatal':
+			return 'prenatal';
 		case 'ReportTuberculosis':
 			return 'tuberculosis';
 		default:
@@ -14477,6 +14840,76 @@ var $author$project$Pages$Completion$View$viewNutritionIndividualReport = F5(
 						mTakenBy,
 						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
 	});
+var $author$project$Translate$PrenatalActivity = function (a) {
+	return {$: 'PrenatalActivity', a: a};
+};
+var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
+	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
+var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
+	function (language, records) {
+		return {
+			captions: $author$project$Pages$Completion$View$generateCaptionsList(language),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$Antenatal),
+			rows: A2(
+				$elm$core$List$map,
+				function (activity) {
+					var expected = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.expectedActivities;
+							}),
+						activity,
+						records);
+					var completed = A3(
+						$author$project$Pages$Completion$View$countOccurrences,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.completion;
+							},
+							function ($) {
+								return $.completedActivities;
+							}),
+						activity,
+						records);
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$PrenatalActivity(activity)),
+							$elm$core$String$fromInt(expected),
+							$elm$core$String$fromInt(completed),
+							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+						]);
+				},
+				$author$project$Pages$Completion$Utils$allPrenatalActivities)
+		};
+	});
+var $author$project$Pages$Completion$View$viewPrenatalReport = F5(
+	function (language, startDate, limitDate, mTakenBy, reportData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal')
+				]),
+			$author$project$Pages$Components$View$viewMetricsResultsTable(
+				A2(
+					$author$project$Pages$Completion$View$generatePrenatalReportData,
+					language,
+					A4(
+						$author$project$Pages$Completion$View$applyFilters,
+						startDate,
+						limitDate,
+						mTakenBy,
+						$author$project$Pages$Completion$View$eliminateEmptyEncounters(reportData)))));
+	});
 var $author$project$Pages$Completion$Utils$resolveSPVActivities = function (site) {
 	return _Utils_ap(
 		_List_fromArray(
@@ -14859,6 +15292,8 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 								return A5($author$project$Pages$Completion$View$viewNutritionGroupReport, language, startDate, limitDate, model.takenBy, data.nutritionGroupData);
 							case 'ReportNutritionIndividual':
 								return A5($author$project$Pages$Completion$View$viewNutritionIndividualReport, language, startDate, limitDate, model.takenBy, data.nutritionIndividualData);
+							case 'ReportPrenatal':
+								return A5($author$project$Pages$Completion$View$viewPrenatalReport, language, startDate, limitDate, model.takenBy, data.prenatalData);
 							case 'ReportTuberculosis':
 								return A5($author$project$Pages$Completion$View$viewTuberculosisReport, language, startDate, limitDate, model.takenBy, data.tuberculosisData);
 							default:

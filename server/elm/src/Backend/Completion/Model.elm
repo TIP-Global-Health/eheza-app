@@ -18,6 +18,7 @@ type alias CompletionData =
     , ncdData : List (EncounterData NCDActivity)
     , nutritionIndividualData : List (EncounterData NutritionChildActivity)
     , nutritionGroupData : List (NutritionGroupEncounterData NutritionMotherActivity NutritionChildActivity)
+    , prenatalData : List (EncounterData PrenatalActivity)
     , tuberculosisData : List (EncounterData TuberculosisActivity)
     , wellChildData : List WellChildEncounterData
     }
@@ -210,6 +211,62 @@ type TuberculosisActivity
     | TuberculosisReferral
     | TuberculosisSymptomReview
     | TuberculosisTreatmentReview
+
+
+type PrenatalActivity
+    = PrenatalAppointmentConfirmation
+    | PrenatalBirthPlan
+    | PrenatalBloodGprsTest
+    | PrenatalBloodGprsTestResult
+    | PrenatalBreastExam
+    | PrenatalBreastfeeding
+    | PrenatalCorePhysicalExam
+    | PrenatalDangerSigns
+    | PrenatalFamilyPlanning
+    | PrenatalFollowUp
+    | PrenatalGuExam
+    | PrenatalHealthEducation
+    | PrenatalHemoglobinTest
+    | PrenatalHemoglobinTestResult
+    | PrenatalHepatitisBTest
+    | PrenatalHepatitisBTestResult
+    | PrenatalHIVPCRTest
+    | PrenatalHIVPCRTestResult
+    | PrenatalHIVTest
+    | PrenatalHIVTestResult
+    | PrenatalLastMenstrualPeriod
+    | PrenatalMalariaTest
+    | PrenatalMalariaTestResult
+    | PrenatalMedicalHistory
+    | PrenatalMedication
+    | PrenatalMedicationDistribution
+    | PrenatalMentalHealth
+    | PrenatalNutrition
+    | PrenatalObstetricalExam
+    | PrenatalObstetricHistory
+    | PrenatalObstetricHistoryStep2
+    | PrenatalOutsideCare
+    | PrenatalPartnerHIVTest
+    | PrenatalPartnerHIVTestResult
+    | PrenatalPhoto
+    | PrenatalPostpartumTreatmentReview
+    | PrenatalPregnancyOutcome
+    | PrenatalPregnancyTesting
+    | PrenatalRandomBloodSugarTest
+    | PrenatalRandomBloodSugarTestResult
+    | PrenatalResource
+    | PrenatalSendToHC
+    | PrenatalSocialHistory
+    | PrenatalSpecialityCare
+    | PrenatalSymptomReview
+    | PrenatalSyphilisTest
+    | PrenatalSyphilisTestResult
+    | PrenatalTetanusImmunisation
+    | PrenatalTreatmentReview
+    | PrenatalUrineDipstickTest
+    | PrenatalUrineDipstickTestResult
+    | PrenatalVitals
+    | PrenatalVitalsRecheck
 
 
 type TakenBy
