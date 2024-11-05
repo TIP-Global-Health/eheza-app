@@ -5732,7 +5732,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
      // Similar to Treatment Review, but for postpartum encounter.
     'postpartum_treatment_review' => '*',
      // Blood pressure re-check on recurrent phase of encounter.
-    'vitals_recheck' => '!',
+    'vitals_recheck' => '$+',
     // Labs results.
     'prenatal_blood_gprs_test_result' => 'm+',
     'prenatal_hemoglobin_test_result' => 's+',
@@ -5893,12 +5893,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     // Postpartum activities.
     hedley_reports_prenatal_add_pregnancy_outcome_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_postpartum_unique_nurse_activities($encounter_data, $expected);
-    // This comes last, since it has mandatory activities to be completed,
-    // which we will be checking for withing $expected.
-    hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
     // Vitals recheck (recurrent phase).
     hedley_reports_prenatal_add_vitals_reckeck_activity($encounter_data, $expected);
-
     // Adding labs test results activities. Since those are logically derived,
     // and not actual content, we apply proprietary logic per records recorded
     // at labs results content.
@@ -5988,6 +5984,42 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
               break;
           }
         }
+      }
+    }
+
+    // This comes last, since it has mandatory activities to be completed,
+    // which we will be checking for withing $expected.
+    hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
+
+    // Logic to determine if virtual activities are completed.
+    // Treatment Review data is saved into Medication CT.
+    if (!empty($expected['treatment_review'])) {
+      if (!empty($measurements_by_type['medication'])) {
+        $measurements_by_type['treatment_review'] = 'dummy';
+      }
+    }
+    // Postpartum treatment data is similar to Treatment Review,
+    // but at postpartum encounter.
+    if (!empty($expected['postpartum_treatment_review'])) {
+      if (!empty($measurements_by_type['medication'])) {
+        $measurements_by_type['postpartum_treatment_review'] = 'dummy';
+      }
+    }
+    // Pregnancy Outcome data is stored on participant node.
+    if (!empty($expected['pregnancy_outcome'])) {
+      $outcome = $participant->field_outcome[LANGUAGE_NONE][0]['value'];
+      if (!empty($outcome)) {
+        $measurements_by_type['pregnancy_outcome'] = 'dummy';
+      }
+    }
+    // Blood pressure re-check is done if dia_repeated and
+    // sys_repeated fields are set on vitals measurement.
+    if (!empty($expected['vitals_recheck'])) {
+      $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
+      $sys_repeated = $vitals_measurement->field_sys_repeated[LANGUAGE_NONE][0]['value'];
+      $dia_repeated = $vitals_measurement->field_dia_repeated[LANGUAGE_NONE][0]['value'];
+      if (!empty($sys_repeated) && !empty($dia_repeated)) {
+        $measurements_by_type['vitals_recheck'] = 'dummy';
       }
     }
 
