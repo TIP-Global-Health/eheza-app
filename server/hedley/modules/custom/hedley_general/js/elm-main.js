@@ -15331,7 +15331,7 @@ var $author$project$Pages$Completion$View$viewCompletionData = F5(
 									language,
 									model.reportType,
 									_List_fromArray(
-										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNCD, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportTuberculosis, $author$project$Pages$Completion$Model$ReportWellChild]),
+										[$author$project$Pages$Completion$Model$ReportAcuteIllness, $author$project$Pages$Completion$Model$ReportPrenatal, $author$project$Pages$Completion$Model$ReportChildScoreboard, $author$project$Pages$Completion$Model$ReportHIV, $author$project$Pages$Completion$Model$ReportHomeVisit, $author$project$Pages$Completion$Model$ReportNCD, $author$project$Pages$Completion$Model$ReportNewbornExam, $author$project$Pages$Completion$Model$ReportNutritionGroup, $author$project$Pages$Completion$Model$ReportNutritionIndividual, $author$project$Pages$Completion$Model$ReportWellChild, $author$project$Pages$Completion$Model$ReportTuberculosis]),
 									$author$project$Pages$Completion$Utils$reportTypeToString,
 									$author$project$Pages$Completion$Model$SetReportType,
 									$author$project$Translate$CompletionReportType,

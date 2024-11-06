@@ -8080,41 +8080,6 @@ function hedley_reports_prenatal_get_latest_treatment_from_options(array $encoun
   return FALSE;
 }
 
-// @todo : is this needed?
-function hedley_reports_prenatal_referred_to_hiv_program_previously(array $encounter_data) {
-  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
-  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
-    $encounter = $previous_nurse_encounter_data['encounter'];
-    if (empty($encounter->field_prenatal_diagnoses) || empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
-      continue;
-    }
-
-    $diagnoses = [];
-    foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
-      if ($diagnosis != 'none') {
-        $diagnoses[] = $diagnosis;
-      }
-    }
-
-    if (empty(array_intersect($diagnoses, ['hiv', 'hiv-recurrent']))) {
-      continue;
-    }
-
-    $hiv_test_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_hiv_test'];
-    if (empty($hiv_test_measurement) || (empty($hiv_test_measurement->field_hiv_signs)) || (empty($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE]))) {
-      continue;
-    }
-
-    foreach ($hiv_test_measurement->field_hiv_signs[LANGUAGE_NONE] as $sign) {
-      if ($sign['value'] == 'hiv-program-hc') {
-        return TRUE;
-      }
-    }
-  }
-
-  return FALSE;
-}
-
 /**
  * Checks if a lab test was performed based on the test execution note.
  *
