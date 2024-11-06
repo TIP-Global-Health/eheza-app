@@ -5960,7 +5960,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
               break;
 
             case 'syphilis':
-              $$measurements_by_type['prenatal_syphilis_test_result'] = 'dummy';
+              $measurements_by_type['prenatal_syphilis_test_result'] = 'dummy';
               break;
 
             case 'hepatitis-b':
@@ -8280,12 +8280,12 @@ function hedley_reports_generate_completion_result(array $expected, array $measu
     }
   }
 
-  foreach ($expected as $index => $measurement_type) {
-    $expected[$index] = $mapping[$measurement_type];
+  foreach ($expected as $key => $measurement_type) {
+    $expected[$key] = $mapping[$measurement_type];
   }
 
-  foreach ($completed as $index => $measurement_type) {
-    $completed[$index] = $mapping[$measurement_type];
+  foreach ($completed as $key => $measurement_type) {
+    $completed[$key] = $mapping[$measurement_type];
   }
 
   return implode(',', $expected) . '|' . implode(',', $completed);
