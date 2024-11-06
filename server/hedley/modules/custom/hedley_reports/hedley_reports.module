@@ -6144,7 +6144,7 @@ function hedley_reports_prenatal_generate_expected_initial_activities($encounter
  */
 function hedley_reports_prenatal_add_history_activities(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
-  if ($encounter_type == 'nurse') {
+  if ($encounter_type != 'nurse') {
     return;
   }
 
