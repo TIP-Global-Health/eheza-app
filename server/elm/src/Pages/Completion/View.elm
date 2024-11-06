@@ -248,6 +248,7 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportPrenatal
                 , ReportChildScoreboard
                 , ReportHIV
                 , ReportHomeVisit
@@ -255,8 +256,8 @@ viewCompletionData language currentDate themePath data model =
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
-                , ReportTuberculosis
                 , ReportWellChild
+                , ReportTuberculosis
                 ]
                 reportTypeToString
                 SetReportType
