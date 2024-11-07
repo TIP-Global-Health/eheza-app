@@ -7737,6 +7737,8 @@ function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encoun
 
 function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(array $encounter_data, array $expected) {
   $encounter_type = $encounter_data['encounter_type'];
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+
   switch ($encounter_type) {
     case 'nurse':
       $emergency_diagnoses = hedley_reports_prenatal_emergency_diagnoses();
@@ -7762,7 +7764,6 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         'core_physical_exam',
         'breast_exam',
         'obstetrical_exam',
-        'prenatal_gu_exam',
         // Laboratory:
         'prenatal_malaria_test',
         'prenatal_urine_dipstick_test',
@@ -7775,7 +7776,6 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         'prenatal_random_blood_sugar_test',
         'prenatal_syphilis_test',
       ];
-      $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
       if (empty($previous_nurse_encounters_data)) {
         $mandatory_activities[] = 'last_menstrual_period';
         $mandatory_activities[] = 'medication';
@@ -7793,39 +7793,39 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         'prenatal_breastfeeding',
         'prenatal_family_planning',
         'postpartum_treatment_review',
-        'prenatal_speciality_care',
         // Examination:
         'vitals',
         'prenatal_nutrition',
         'core_physical_exam',
         'breast_exam',
-        'obstetrical_exam',
         'prenatal_gu_exam',
       ];
       break;
 
     case 'chw-1':
-      $mandatory_activities = [
-        'last_menstrual_period',
-        'pregnancy_testing',
-        'danger_signs',
-        'prenatal_health_education',
-      ];
+      $mandatory_activities = ['danger_signs'];
+      if (empty($previous_nurse_encounters_data)) {
+        $mandatory_activities[] = 'last_menstrual_period';
+        $mandatory_activities[] = 'pregnancy_testing';
+      }
+      if (hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
+        $mandatory_activities[] = 'prenatal_health_education';
+      }
       break;
 
     case 'chw-2':
-      $mandatory_activities = [
-        'danger_signs',
-        'birth_plan',
-        'prenatal_health_education',
-      ];
+      $mandatory_activities = ['danger_signs'];
+      if (!hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
+        $mandatory_activities[] = 'birth_plan';
+        $mandatory_activities[] = 'prenatal_health_education';
+      }
       break;
 
     case 'chw-3':
-      $mandatory_activities = [
-        'danger_signs',
-        'prenatal_health_education',
-      ];
+      $mandatory_activities = ['danger_signs'];
+      if (!hedley_reports_prenatal_danger_signs_recorded($encounter_data)) {
+        $mandatory_activities[] = 'prenatal_health_education';
+      }
       break;
 
     case 'chw-postpartum':
