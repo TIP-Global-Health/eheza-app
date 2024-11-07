@@ -6434,6 +6434,7 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
       'prenatal_syphilis_test' => [],
       'prenatal_hiv_test' => [],
       'prenatal_partner_hiv_test' => [],
+      'prenatal_hiv_pcr_test' => [],
     ];
 
     $tests_with_results_field = [
@@ -6701,7 +6702,7 @@ function hedley_reports_prenatal_add_vitals_reckeck_activity(array $encounter_da
     return;
   }
 
-  if (($sys <= 140 && $sys < 160) || ($dia >= 90 && $dia < 110)) {
+  if (($sys >= 140 && $sys < 160) || ($dia >= 90 && $dia < 110)) {
     $expected[] = 'vitals_recheck';
   }
 }
@@ -6736,7 +6737,7 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
 
     $diagnoses = [];
     foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
-      if ($diagnosis != 'none') {
+      if ($diagnosis['value'] != 'none') {
         $diagnoses[] = $diagnosis;
       }
     }
@@ -8078,7 +8079,7 @@ function hedley_reports_prenatal_get_latest_treatment_from_options(array $encoun
       }
 
       foreach ($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE] as $treatment) {
-        if (in_array($treatment, $treatment_options)) {
+        if (in_array($treatment['value'], $treatment_options)) {
           return $treatment;
         }
       }

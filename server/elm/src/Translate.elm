@@ -1621,13 +1621,13 @@ translationSet transId =
                     }
 
                 PrenatalHepatitisBTest ->
-                    { english = "Hepatitis B Result"
+                    { english = "Hepatitis B Test"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
 
                 PrenatalHepatitisBTestResult ->
-                    { english = "Hepatitis B Result Result"
+                    { english = "Hepatitis B Test Result"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

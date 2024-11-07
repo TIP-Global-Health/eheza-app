@@ -11481,9 +11481,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'PrenatalHemoglobinTestResult':
 						return {english: 'Hemoglobin Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalHepatitisBTest':
-						return {english: 'Hepatitis B Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hepatitis B Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalHepatitisBTestResult':
-						return {english: 'Hepatitis B Result Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						return {english: 'Hepatitis B Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalHIVPCRTest':
 						return {english: 'HIV PCR Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalHIVPCRTestResult':
