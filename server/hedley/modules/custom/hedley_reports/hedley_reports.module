@@ -5679,6 +5679,14 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
   }
 }
 
+/**
+ * Generates completion data for acute prenatal encounters during pregnancy.
+ *
+ * @param object $participant
+ *   The participant node object representing pregnancy.
+ * @param bool $exclude_set
+ *   Indicate whether to exclude encounters with report data already set.
+ */
 function hedley_reports_generate_completion_data_for_prenatal($participant, $exclude_set) {
   // To reduce memory usage, mapping measurement types as single characters.
   $mapping = [
@@ -5823,7 +5831,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
     // Resolve and partition previous encounters data.
     $previous_encounters_data = array_slice($encounters_data, 0, $index);
-    $previous_nurse_encounters_data =  $previous_chw_encounters_data = [];
+    $previous_nurse_encounters_data = $previous_chw_encounters_data = [];
     foreach ($previous_encounters_data as $previous_encounter_data) {
       $encounter_type = $previous_encounter_data['encounter_type'];
       if (in_array($encounter_type, ['nurse', 'nurse-postpartum'])) {
@@ -6094,7 +6102,7 @@ function hedley_reports_prenatal_generate_vaccination_history_data(array $encoun
  * @return array
  *   An array of expected activity names.
  */
-function hedley_reports_prenatal_generate_expected_initial_activities($encounter_data) {
+function hedley_reports_prenatal_generate_expected_initial_activities(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
 
@@ -6361,9 +6369,9 @@ function hedley_reports_prenatal_add_photo_activity(array $encounter_data, array
       $photo_ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $date_measured_obj);
 
       // Periods, where we want to have 1 photo:
-      //  1. 12 weeks, or less.
-      //  2. Between week 13 and week 27.
-      //  3. Week 28, or more.
+      // 1. 12 weeks, or less.
+      // 2. Between week 13 and week 27.
+      // 3. Week 28, or more.
       // If we found a photo that matches encounter period,
       // activity is not expected.
       if (
@@ -6383,6 +6391,14 @@ function hedley_reports_prenatal_add_photo_activity(array $encounter_data, array
   }
 }
 
+/**
+ * Adds Treatment Review activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_treatment_review_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if ($encounter_type != 'nurse') {
@@ -6398,6 +6414,14 @@ function hedley_reports_prenatal_add_treatment_review_activity(array $encounter_
   $expected[] = 'treatment_review';
 }
 
+/**
+ * Adds Labs activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_labs_activities(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   $start_date_obj = $encounter_data['start_date_obj'];
@@ -6423,7 +6447,7 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
       [
         'prenatal_malaria_test',
         'prenatal_urine_dipstick_test',
-        'prenatal_hemoglobin_test'
+        'prenatal_hemoglobin_test',
       ]
     );
 
@@ -6597,6 +6621,14 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
   }
 }
 
+/**
+ * Adds Birth Plan activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_birth_plan_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if ($encounter_type != 'chw-2') {
@@ -6608,6 +6640,16 @@ function hedley_reports_prenatal_add_birth_plan_activity(array $encounter_data, 
   }
 }
 
+/**
+ * Adds Health Education activity to the expected list, if conditions match.
+ *
+ * This one is unique for CHW.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_health_education_activity_for_chw(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if (!in_array($encounter_type, ['chw-1', 'chw-2', 'chw-3'])) {
@@ -6619,6 +6661,21 @@ function hedley_reports_prenatal_add_health_education_activity_for_chw(array $en
   }
 }
 
+/**
+ * Checks if any danger signs have been recorded during the encounter.
+ *
+ * This function checks if any danger signs, other than "none", have
+ * been recorded in the danger signs measurement field for the given
+ * encounter data. If at least one danger sign is recorded, the function
+ * returns TRUE.
+ *
+ * @param array $encounter_data
+ *   The encounter data array, including the danger signs
+ *   measurement information.
+ *
+ * @return bool
+ *   TRUE if any danger sign other than "none" is recorded, FALSE otherwise.
+ */
 function hedley_reports_prenatal_danger_signs_recorded(array $encounter_data) {
   $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
   if (empty($danger_signs_measurement)) {
@@ -6639,6 +6696,21 @@ function hedley_reports_prenatal_danger_signs_recorded(array $encounter_data) {
   return FALSE;
 }
 
+/**
+ * Checks if no danger signs have been recorded during the encounter.
+ *
+ * This function checks if all the recorded danger signs are "none" in the
+ * danger signs measurement field for the given encounter data. If there are
+ * no danger signs recorded or if all signs are "none", it returns TRUE.
+ * Otherwise, it returns FALSE.
+ *
+ * @param array $encounter_data
+ *   The encounter data array, including the danger signs
+ *   measurement information.
+ *
+ * @return bool
+ *   TRUE if no danger signs (all "none") are recorded, FALSE otherwise.
+ */
 function hedley_reports_prenatal_no_danger_signs_recorded(array $encounter_data) {
   $danger_signs_measurement = $encounter_data['measurements_by_type']['danger_signs'];
   if (empty($danger_signs_measurement)) {
@@ -6659,6 +6731,14 @@ function hedley_reports_prenatal_no_danger_signs_recorded(array $encounter_data)
   return TRUE;
 }
 
+/**
+ * Adds Pregnancy Outcome activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if (!in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
@@ -6668,6 +6748,14 @@ function hedley_reports_prenatal_add_pregnancy_outcome_activity(array $encounter
   $expected[] = 'pregnancy_outcome';
 }
 
+/**
+ * Adds Vitals Recheck activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_vitals_reckeck_activity(array $encounter_data, array &$expected) {
   $triggering_diagnoses = hedley_reports_prenatal_hypertension_diagnoses();
   if (hedley_reports_prenatal_diagnosed_previously_with_any_of($encounter_data, $triggering_diagnoses)) {
@@ -6700,6 +6788,14 @@ function hedley_reports_prenatal_add_vitals_reckeck_activity(array $encounter_da
   }
 }
 
+/**
+ * Adds nurse unique postpartum activities, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if ($encounter_type != 'nurse-postpartum') {
@@ -6760,6 +6856,14 @@ function hedley_reports_prenatal_add_postpartum_unique_nurse_activities(array $e
   }
 }
 
+/**
+ * Adds Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data, array &$expected) {
   if (!hedley_reports_prenatal_manadatory_activities_for_next_steps_completed($encounter_data, $expected)) {
     return;
@@ -6774,20 +6878,36 @@ function hedley_reports_prenatal_add_next_steps_activities(array $encounter_data
   }
 }
 
+/**
+ * Adds nurse Next Steps activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_next_steps_activities_for_nurse(array $encounter_data, array &$expected) {
-  hedley_reports_prenatal_add_send_to_hc_activity_for_nurse($encounter_data, $expected);
+  hedley_reports_prenatal_add_referral_activity_for_nurse($encounter_data, $expected);
   hedley_reports_prenatal_add_health_education_activity_for_nurse($encounter_data, $expected);
   hedley_reports_prenatal_add_medication_distribution_activity_for_nurse($encounter_data, $expected);
 }
 
-function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encounter_data, array &$expected) {
+/**
+ * Adds nurse Referral activity to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_referral_activity_for_nurse(array $encounter_data, array &$expected) {
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
   if ($encounter_data['start_date_obj'] < $launch_date_obj) {
     return;
   }
 
-  // Checking referral to hospital
+  // Checking referral to hospital.
   $activity_expected = hedley_reports_prenatal_hospital_referral_expected($encounter_data);
 
   // Checking referral to mental health specialist.
@@ -6903,6 +7023,14 @@ function hedley_reports_prenatal_add_send_to_hc_activity_for_nurse(array $encoun
   }
 }
 
+/**
+ * Adds nurse Health Education activity, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $encounter_data, array &$expected) {
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
@@ -6978,10 +7106,10 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   if (!$activity_expected) {
     // First, checking by current encounter.
     // We need to make sure that nausea-and-vomiting symptom is recorded, and
-    // neither of follow-up questions (dizziness, low-urine-output and dark-urine)
-    // are answered positively.
-    // Then, we make sure that Nausea and Vomiting symptom was not recorded during
-    // previous encounters.
+    // neither of follow-up questions (dizziness, low-urine-output
+    // and dark-urine) are answered positively.
+    // Then, we make sure that Nausea and Vomiting symptom was not recorded
+    // during previous encounters.
     if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       $symptom_recorded = FALSE;
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
@@ -6996,7 +7124,10 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
         if (!empty($symptom_questions)) {
           $question_recorded = FALSE;
           foreach ($symptom_questions as $question) {
-            if (in_array($question['value'], ['dizziness', 'low-urine-output', 'dark-urine'])) {
+            if (in_array(
+              $question['value'],
+              ['dizziness', 'low-urine-output', 'dark-urine']
+            )) {
               $question_recorded = TRUE;
               break;
             }
@@ -7015,7 +7146,10 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   if (!$activity_expected) {
     if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
-        if (in_array($symptom['value'], ['leg-cramps', 'low-back-pain', 'constipation', 'varicose-veins'])) {
+        if (in_array(
+          $symptom['value'],
+          ['leg-cramps', 'low-back-pain', 'constipation', 'varicose-veins']
+        )) {
           $activity_expected = TRUE;
           break;
         }
@@ -7028,8 +7162,8 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
     // We need to make sure that leg-pain-redness symptom is recorded, and
     // neither of follow-up questions (leg-painful, leg-swollen and leg-warm)
     // are answered positively.
-    // Then, we make sure that Nausea and Vomiting symptom was not recorded during
-    // previous encounters.
+    // Then, we make sure that Nausea and Vomiting symptom was not recorded
+    // during previous encounters.
     if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       $symptom_recorded = FALSE;
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
@@ -7044,7 +7178,10 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
         if (!empty($symptom_questions)) {
           $question_recorded = FALSE;
           foreach ($symptom_questions as $question) {
-            if (in_array($question['value'], ['leg-painful', 'leg-swollen', 'leg-warm'])) {
+            if (in_array(
+              $question['value'],
+              ['leg-painful', 'leg-swollen', 'leg-warm']
+            )) {
               $question_recorded = TRUE;
               break;
             }
@@ -7096,6 +7233,14 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   }
 }
 
+/**
+ * Adds nurse Medication distribution activity, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
 function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(array $encounter_data, array &$expected) {
   $launch_date = '2022-09-25';
   $launch_date_obj = new DateTime($launch_date);
@@ -7172,6 +7317,24 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
   }
 }
 
+/**
+ * Determines if medication distribution is expected.
+ *
+ * Based on diagnosis and treatment information.
+ *
+ * This function checks various medication sets based on the patient's
+ * diagnosis and treatment history. It evaluates HIV, discordant
+ * partnership, anemia, mebendazole, gonorrhea, trichomonas, bacterial
+ * vaginosis, and vitamin A medication sets to determine if the medication
+ * distribution is required.
+ *
+ * @param array $encounter_data
+ *   The encounter data array, containing diagnoses, treatments,
+ *   and other relevant information for the encounter.
+ *
+ * @return bool
+ *   TRUE if medication distribution is expected, FALSE otherwise.
+ */
 function hedley_reports_prenatal_medication_distribution_expected_per_medication_set(array $encounter_data) {
   // HIV medication set.
   // First option - HIV diagnosed and no HIV program at HC.
@@ -7205,8 +7368,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
             'no-medicine-patient-refused',
             'no-medicine-other',
           ]
-        )
-      ) {
+        )) {
           return TRUE;
         }
       }
@@ -7354,6 +7516,25 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
   return FALSE;
 }
 
+/**
+ * Determines if medication distribution is expected.
+ *
+ * For patients with ongoing hypertension treatment.
+ *
+ * This function checks for cases where medication distribution is
+ * required based on:
+ * - Hypertension treatment updates.
+ * - Referred hospitalizations due to adverse events.
+ * - Blood pressure readings for patients diagnosed with moderate preeclampsia.
+ *
+ * @param array $encounter_data
+ *   The encounter data array, including diagnoses, blood pressure measurements,
+ *   and other relevant information.
+ *
+ * @return bool
+ *   TRUE if medication distribution is expected for continued hypertension
+ *   treatment, FALSE otherwise.
+ */
 function hedley_reports_prenatal_medication_distribution_expected_for_continues_hypertension_treatment(array $encounter_data) {
   // If any of preeclampsia diagnosed - no medication as patient
   // is referred to hospital.
@@ -7381,9 +7562,9 @@ function hedley_reports_prenatal_medication_distribution_expected_for_continues_
         }
       }
 
-     if (!$referred) {
-       return TRUE;
-     };
+      if (!$referred) {
+        return TRUE;
+      };
     }
   }
 
@@ -7400,7 +7581,7 @@ function hedley_reports_prenatal_medication_distribution_expected_for_continues_
       [
         'severe-preeclampsia-initial',
         'severe-preeclampsia-recurrent',
-        'eclampsia'
+        'eclampsia',
       ]
     );
 
@@ -7486,7 +7667,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
             [
               'severe-preeclampsia-initial',
               'severe-preeclampsia-recurrent',
-              'eclampsia'
+              'eclampsia',
             ]
           );
 
@@ -7613,11 +7794,13 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
 /**
  * Determines if medication required as hypertension treatment updates.
  *
- * This function checks the latest hypertension treatment, past diagnoses, and current
- * vital signs (blood pressure) to assess whether the treatment needs to be updated.
+ * This function checks the latest hypertension treatment, past diagnoses,
+ * and current vital signs (blood pressure) to assess whether the treatment
+ * needs to be updated.
  *
  * @param array $encounter_data
- *   The encounter data array, containing treatment options, diagnoses, and vital signs.
+ *   The encounter data array, containing treatment options, diagnoses,
+ *   and vital signs.
  *
  * @return bool
  *   TRUE if the hypertension treatment requires an update with medication.
@@ -7669,8 +7852,9 @@ function hedley_reports_prenatal_medication_due_to_hypertension_treatment_update
 }
 
 /**
- * Resolves how to update hypertension treatment based on systolic and
- * diastolic blood pressure levels.
+ * Resolves how to update hypertension treatment.
+ *
+ * Based on systolic and diastolic blood pressure levels.
  *
  * This function assesses systolic and diastolic values and determines the
  * appropriate treatment recommendation level.
@@ -7726,8 +7910,7 @@ function hedley_reports_prenatal_resolve_hypertension_treatment_update_recommend
 }
 
 /**
- * Checks if any of the specified diagnoses were recorded in previous
- * encounters.
+ * Checks if any of specified diagnoses were recorded in previous encounters.
  *
  * This function iterates through previous nurse encounters to determine if
  * any specified diagnosis was documented.
@@ -7753,8 +7936,7 @@ function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encount
 }
 
 /**
- * Checks if any of the specified diagnoses were recorded in current
- * encounter.
+ * Checks if any of the specified diagnoses were recorded in current encounter.
  *
  * This function compares the provided diagnoses array with the diagnoses
  * recorded in the current encounter.
@@ -7803,17 +7985,12 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
 }
 
 /**
- * Adds next steps activities for a Community Health Worker (CHW) encounter.
- *
- * This function determines additional activities for the CHW's next steps
- * based on the type of encounter, whether danger signs were recorded, and
- * the encounter's start date relative to the launch date.
+ * Adds CHW Next Steps activities to the expected list, if conditions match.
  *
  * @param array $encounter_data
- *   The encounter data, including the encounter type and start date object.
+ *   An associative array containing data about the encounter.
  * @param array &$expected
- *   A reference to an array of expected activities, which will be modified
- *   with additional activities as required.
+ *   An array of expected activity names, passed by reference.
  */
 function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encounter_data, array &$expected) {
   $launch_date = '2021-06-07';
@@ -8002,9 +8179,9 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
  * @return int
  *   The estimated gestational age in weeks.
  */
-function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
+function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj) {
   $interval = $encounter_date_obj->diff($lmp_date_obj, TRUE);
-  // Get the total number of days from the interval
+  // Get the total number of days from the interval.
   $total_days = $interval->days;
   return floor($total_days / 7);
 }
@@ -8058,7 +8235,9 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral()
 }
 
 /**
- * Returns a list of diagnoses causing immediate hospital referral in the initial phase.
+ * Returns a list of diagnoses causing immediate hospital referral.
+ *
+ * In the initial phase.
  *
  * @return array
  *   The list of initial-phase diagnoses causing immediate hospital referral.
@@ -8097,7 +8276,9 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_i
 }
 
 /**
- * Returns a list of diagnoses causing immediate hospital referral in the recurrent phase.
+ * Returns a list of diagnoses causing immediate hospital referral.
+ *
+ * In the recurrent phase.
  *
  * @return array
  *   The list of recurrent-phase diagnoses causing immediate hospital referral.
@@ -8300,7 +8481,7 @@ function hedley_reports_prenatal_malaria_diagnoses() {
 }
 
 /**
- * Returns an array of mental health diagnoses requiring treatment during prenatal care.
+ * Returns an array of mental health diagnoses requiring treatment.
  *
  * @return array
  *   The list of mental health-related prenatal diagnoses.
