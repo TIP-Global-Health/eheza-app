@@ -7873,6 +7873,32 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
   return floor($total_days / 7);
 }
 
+function hedley_reports_prenatal_get_latest_treatment_from_options(array $encounter_data, array $treatment_options) {
+  $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
+  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
+    $medication_distribution_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
+    if (!empty($medication_distribution_measurement)) {
+      if (empty($medication_distribution_measurement->field_recommended_treatment) || empty($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE])) {
+        continue;
+      }
+
+      foreach ($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE] as $treatment) {
+        if (in_array($treatment['value'], $treatment_options)) {
+          return $treatment;
+        }
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Returns a list of prenatal diagnoses requiring immediate hospital referral.
+ *
+ * @return array
+ *   The list of diagnoses causing immediate hospital referral.
+ */
 function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral() {
   return array_merge(
     hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase(),
@@ -7880,6 +7906,12 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral()
   );
 }
 
+/**
+ * Returns a list of diagnoses causing immediate hospital referral in the initial phase.
+ *
+ * @return array
+ *   The list of initial-phase diagnoses causing immediate hospital referral.
+ */
 function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_initial_phase() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
@@ -7913,6 +7945,12 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_i
   );
 }
 
+/**
+ * Returns a list of diagnoses causing immediate hospital referral in the recurrent phase.
+ *
+ * @return array
+ *   The list of recurrent-phase diagnoses causing immediate hospital referral.
+ */
 function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_recurrent_phase() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_recurrent_phase(),
@@ -7932,6 +7970,12 @@ function hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral_r
   );
 }
 
+/**
+ * Returns an array of all emergency prenatal diagnoses.
+ *
+ * @return array
+ *   The list of all prenatal emergency diagnoses.
+ */
 function hedley_reports_prenatal_emergency_diagnoses() {
   return array_merge(
     hedley_reports_prenatal_emergency_diagnoses_initial_phase(),
@@ -7939,6 +7983,12 @@ function hedley_reports_prenatal_emergency_diagnoses() {
   );
 }
 
+/**
+ * Returns an array of all emergency prenatal diagnoses in the initial phase.
+ *
+ * @return array
+ *   The list of initial-phase prenatal emergency diagnoses.
+ */
 function hedley_reports_prenatal_emergency_diagnoses_initial_phase() {
   return [
     'moderate-preeclampsia-initial-ega-37+',
@@ -7963,6 +8013,12 @@ function hedley_reports_prenatal_emergency_diagnoses_initial_phase() {
   ];
 }
 
+/**
+ * Returns an array of all emergency prenatal diagnoses in the recurrent phase.
+ *
+ * @return array
+ *   The list of recurrent-phase prenatal emergency diagnoses.
+ */
 function hedley_reports_prenatal_emergency_diagnoses_recurrent_phase() {
   return [
     'moderate-preeclampsia-recurrent-ega-37+',
@@ -7971,6 +8027,12 @@ function hedley_reports_prenatal_emergency_diagnoses_recurrent_phase() {
   ];
 }
 
+/**
+ * Returns an array of hypertension-like diagnoses related to prenatal care.
+ *
+ * @return array
+ *   The list of hypertension-like prenatal diagnoses.
+ */
 function hedley_reports_prenatal_hypertensionlike_diagnoses() {
   $hypertensionlike_daignoses = array_merge(
     hedley_reports_prenatal_hypertension_diagnoses(),
@@ -7981,6 +8043,12 @@ function hedley_reports_prenatal_hypertensionlike_diagnoses() {
   return $hypertensionlike_daignoses;
 }
 
+/**
+ * Returns an array of hypertension-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of hypertension-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_hypertension_diagnoses() {
   return [
     'chronic-hypertension-immediate',
@@ -7990,6 +8058,12 @@ function hedley_reports_prenatal_hypertension_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of preeclampsia-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of preeclampsia-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_preeclempsia_diagnoses() {
   return array_merge(
     hedley_reports_prenatal_moderate_preeclempsia_diagnoses(),
@@ -7997,6 +8071,12 @@ function hedley_reports_prenatal_preeclempsia_diagnoses() {
   );
 }
 
+/**
+ * Returns an array of moderate preeclampsia-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of moderate preeclampsia prenatal diagnoses.
+ */
 function hedley_reports_prenatal_moderate_preeclempsia_diagnoses() {
   return [
     'moderate-preeclampsia-initial',
@@ -8006,6 +8086,12 @@ function hedley_reports_prenatal_moderate_preeclempsia_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of severe preeclampsia-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of severe preeclampsia prenatal diagnoses.
+ */
 function hedley_reports_prenatal_severe_preeclempsia_diagnoses() {
   return [
     'severe-preeclampsia-initial',
@@ -8015,6 +8101,12 @@ function hedley_reports_prenatal_severe_preeclempsia_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of diabetes-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of diabetes-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_diabetes_diagnoses() {
   return [
     'diabetes-initial',
@@ -8024,6 +8116,12 @@ function hedley_reports_prenatal_diabetes_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of HIV-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of HIV-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_hiv_diagnoses() {
   return [
     'hiv',
@@ -8033,6 +8131,12 @@ function hedley_reports_prenatal_hiv_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of malaria-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of malaria-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_malaria_diagnoses() {
   return [
     'malaria',
@@ -8044,6 +8148,12 @@ function hedley_reports_prenatal_malaria_diagnoses() {
   ];
 }
 
+/**
+ * Returns an array of mental health diagnoses requiring treatment during prenatal care.
+ *
+ * @return array
+ *   The list of mental health-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment() {
   return [
     'depression-possible',
@@ -8053,6 +8163,12 @@ function hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment() {
   ];
 }
 
+/**
+ * Returns an array of syphilis-like diagnoses related to prenatal care.
+ *
+ * @return array
+ *   The list of syphilis-like prenatal diagnoses.
+ */
 function hedley_reports_prenatal_syphilislike_diagnoses() {
   return array_merge(
     hedley_reports_prenatal_syphilis_diagnoses(),
@@ -8060,6 +8176,12 @@ function hedley_reports_prenatal_syphilislike_diagnoses() {
   );
 }
 
+/**
+ * Returns an array of syphilis-related prenatal diagnoses.
+ *
+ * @return array
+ *   The list of syphilis-related prenatal diagnoses.
+ */
 function hedley_reports_prenatal_syphilis_diagnoses() {
   return [
     'syphilis-initial',
@@ -8067,26 +8189,6 @@ function hedley_reports_prenatal_syphilis_diagnoses() {
     'syphilis-complications-initial',
     'syphilis-complications',
   ];
-}
-
-function hedley_reports_prenatal_get_latest_treatment_from_options(array $encounter_data, array $treatment_options) {
-  $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
-  foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
-    $medication_distribution_measurement = $previous_nurse_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
-    if (!empty($medication_distribution_measurement)) {
-      if (empty($medication_distribution_measurement->field_recommended_treatment) || empty($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE])) {
-        continue;
-      }
-
-      foreach ($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE] as $treatment) {
-        if (in_array($treatment['value'], $treatment_options)) {
-          return $treatment;
-        }
-      }
-    }
-  }
-
-  return FALSE;
 }
 
 /**
