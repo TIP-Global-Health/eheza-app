@@ -5913,7 +5913,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
               break;
 
             case 'malaria':
-              $expected[] = 'prenatal_malaria_test_resul';
+              $expected[] = 'prenatal_malaria_test_result';
               break;
 
             case 'syphilis':
@@ -5930,6 +5930,10 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
             case 'hemoglobin':
               $expected[] = 'prenatal_hemoglobin_test_result';
+              break;
+
+            case 'random-blood-sugar':
+              $expected[] = 'prenatal_random_blood_sugar_test_result';
               break;
 
             case 'hiv-pcr':
@@ -5956,7 +5960,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
               break;
 
             case 'malaria':
-              $measurements_by_type['prenatal_malaria_test_resul'] = 'dummy';
+              $measurements_by_type['prenatal_malaria_test_result'] = 'dummy';
               break;
 
             case 'syphilis':
@@ -5973,6 +5977,10 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
             case 'hemoglobin':
               $measurements_by_type['prenatal_hemoglobin_test_result'] = 'dummy';
+              break;
+
+            case 'random-blood-sugar':
+              $measurements_by_type['prenatal_random_blood_sugar_test_result'] = 'dummy';
               break;
 
             case 'hiv-pcr':
@@ -5993,20 +6001,20 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
 
     // Logic to determine if virtual activities are completed.
     // Treatment Review data is saved into Medication CT.
-    if (!empty($expected['treatment_review'])) {
+    if (in_array('treatment_review', $expected)) {
       if (!empty($measurements_by_type['medication'])) {
         $measurements_by_type['treatment_review'] = 'dummy';
       }
     }
     // Postpartum treatment data is similar to Treatment Review,
     // but at postpartum encounter.
-    if (!empty($expected['postpartum_treatment_review'])) {
+    if (in_array('postpartum_treatment_review', $expected)) {
       if (!empty($measurements_by_type['medication'])) {
         $measurements_by_type['postpartum_treatment_review'] = 'dummy';
       }
     }
     // Pregnancy Outcome data is stored on participant node.
-    if (!empty($expected['pregnancy_outcome'])) {
+    if (in_array('pregnancy_outcome', $expected)) {
       $outcome = $participant->field_outcome[LANGUAGE_NONE][0]['value'];
       if (!empty($outcome)) {
         $measurements_by_type['pregnancy_outcome'] = 'dummy';
@@ -6014,7 +6022,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     }
     // Blood pressure re-check is done if dia_repeated and
     // sys_repeated fields are set on vitals measurement.
-    if (!empty($expected['vitals_recheck'])) {
+    if (in_array('vitals_recheck', $expected)) {
       $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
       $sys_repeated = $vitals_measurement->field_sys_repeated[LANGUAGE_NONE][0]['value'];
       $dia_repeated = $vitals_measurement->field_dia_repeated[LANGUAGE_NONE][0]['value'];
