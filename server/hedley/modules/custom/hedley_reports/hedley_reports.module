@@ -6597,13 +6597,6 @@ function hedley_reports_prenatal_add_labs_activities(array $encounter_data, arra
   }
 }
 
-/**
- * Birth plan is presented at second CHW encounter, in case no danger signs are recorded.
- *
- * @param $encounter_data
- * @param $expected
- * @return void
- */
 function hedley_reports_prenatal_add_birth_plan_activity(array $encounter_data, array &$expected) {
   $encounter_type = $encounter_data['encounter_type'];
   if ($encounter_type != 'chw-2') {
@@ -7429,6 +7422,18 @@ function hedley_reports_prenatal_medication_distribution_expected_for_continues_
   return FALSE;
 }
 
+/**
+ * Determines if a hospital referral is expected based on encounter data.
+ *
+ * The function evaluates various encounter measurements and diagnoses to
+ * identify conditions warranting a hospital referral.
+ *
+ * @param array $encounter_data
+ *   The encounter data array containing type, measurements, and diagnoses.
+ *
+ * @return bool
+ *   TRUE if hospital referral is expected, FALSE otherwise.
+ */
 function hedley_reports_prenatal_hospital_referral_expected(array $encounter_data) {
   $encounter_type = $encounter_data['encounter_type'];
   $triggering_diagnoses = hedley_reports_prenatal_diagnoses_causing_immediate_hospital_referral();
@@ -7547,6 +7552,18 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
   return $referred_to_hospital;
 }
 
+/**
+ * Determines if hospitalization required as hypertension treatment updates.
+ *
+ * Evaluates the latest treatment option for hypertension and the current
+ * blood pressure to determine if a hospital referral is necessary.
+ *
+ * @param array $encounter_data
+ *   The encounter data including vital signs and treatment history.
+ *
+ * @return bool
+ *   TRUE if hospitalization is needed; FALSE otherwise.
+ */
 function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_update(array $encounter_data) {
   $treatment_options = [
     'methyldopa-2',
@@ -7593,6 +7610,18 @@ function hedley_reports_prenatal_hospitalization_due_to_hypertension_treatment_u
   );
 }
 
+/**
+ * Determines if medication required as hypertension treatment updates.
+ *
+ * This function checks the latest hypertension treatment, past diagnoses, and current
+ * vital signs (blood pressure) to assess whether the treatment needs to be updated.
+ *
+ * @param array $encounter_data
+ *   The encounter data array, containing treatment options, diagnoses, and vital signs.
+ *
+ * @return bool
+ *   TRUE if the hypertension treatment requires an update with medication.
+ */
 function hedley_reports_prenatal_medication_due_to_hypertension_treatment_update(array $encounter_data) {
   $treatment_options = [
     'methyldopa-2',
@@ -7639,6 +7668,25 @@ function hedley_reports_prenatal_medication_due_to_hypertension_treatment_update
   );
 }
 
+/**
+ * Resolves how to update hypertension treatment based on systolic and
+ * diastolic blood pressure levels.
+ *
+ * This function assesses systolic and diastolic values and determines the
+ * appropriate treatment recommendation level.
+ *
+ * @param int $sys
+ *   The systolic blood pressure reading.
+ * @param int $dia
+ *   The diastolic blood pressure reading.
+ *
+ * @return int
+ *   Treatment recommendation level:
+ *   - 0: Maintain treatment.
+ *   - 1: Increase by 1 step.
+ *   - 2: Increase by 2 steps.
+ *   - 9: Hospitalization required.
+ */
 function hedley_reports_prenatal_resolve_hypertension_treatment_update_recommendation($sys, $dia) {
   if ($sys < 140) {
     // Maintain treatment as is.
@@ -7677,6 +7725,22 @@ function hedley_reports_prenatal_resolve_hypertension_treatment_update_recommend
   return max($by_sys, $by_dia);
 }
 
+/**
+ * Checks if any of the specified diagnoses were recorded in previous
+ * encounters.
+ *
+ * This function iterates through previous nurse encounters to determine if
+ * any specified diagnosis was documented.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param array $diagnoses
+ *   An array of diagnoses to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if any of the diagnoses were recorded in previous encounters;
+ *   FALSE otherwise.
+ */
 function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encounter_data, array $diagnoses) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
@@ -7688,10 +7752,39 @@ function hedley_reports_prenatal_diagnosed_previously_with_any_of(array $encount
   return FALSE;
 }
 
+/**
+ * Checks if any of the specified diagnoses were recorded in current
+ * encounter.
+ *
+ * This function compares the provided diagnoses array with the diagnoses
+ * recorded in the current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including recorded diagnoses.
+ * @param array $diagnoses
+ *   An array of diagnoses to search for in the current encounter data.
+ *
+ * @return bool
+ *   TRUE if any of the specified diagnoses match; FALSE otherwise.
+ */
 function hedley_reports_prenatal_diagnosed_any_of(array $encounter_data, array $diagnoses) {
   return !empty(array_intersect($encounter_data['diagnoses'], $diagnoses));
 }
 
+/**
+ * Checks if a specific prenatal symptom was recorded in previous encounters.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified symptom was recorded in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $symptom_value
+ *   The symptom value to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if the symptom was recorded previously; FALSE otherwise.
+ */
 function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_data, $symptom_value) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
@@ -7709,6 +7802,19 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
   return FALSE;
 }
 
+/**
+ * Adds next steps activities for a Community Health Worker (CHW) encounter.
+ *
+ * This function determines additional activities for the CHW's next steps
+ * based on the type of encounter, whether danger signs were recorded, and
+ * the encounter's start date relative to the launch date.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including the encounter type and start date object.
+ * @param array &$expected
+ *   A reference to an array of expected activities, which will be modified
+ *   with additional activities as required.
+ */
 function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encounter_data, array &$expected) {
   $launch_date = '2021-06-07';
   $launch_date_obj = new DateTime($launch_date);
@@ -7735,6 +7841,22 @@ function hedley_reports_prenatal_add_next_steps_activities_for_chw(array $encoun
   }
 }
 
+/**
+ * Determines if all mandatory activities for the next steps are completed.
+ *
+ * This function checks the current encounter type and expected mandatory
+ * activities, validating whether all required activities are completed based
+ * on the type of encounter and previous encounters.
+ *
+ * @param array $encounter_data
+ *   An array containing details of the encounter, including encounter type,
+ *   previous nurse encounters, and measurements by type.
+ * @param array $expected
+ *   An array of expected mandatory activities.
+ *
+ * @return bool
+ *   TRUE if all mandatory activities are completed; FALSE otherwise.
+ */
 function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(array $encounter_data, array $expected) {
   $encounter_type = $encounter_data['encounter_type'];
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
@@ -7866,6 +7988,20 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
   return TRUE;
 }
 
+/**
+ * Calculates the estimated gestational age (EGA) in weeks.
+ *
+ * This function calculates the EGA by finding the difference in weeks
+ * between the last menstrual period (LMP) and the encounter date.
+ *
+ * @param DateTime $lmp_date_obj
+ *   The last menstrual period date.
+ * @param DateTime $encounter_date_obj
+ *   The encounter date.
+ *
+ * @return int
+ *   The estimated gestational age in weeks.
+ */
 function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, DateTime $encounter_date_obj ) {
   $interval = $encounter_date_obj->diff($lmp_date_obj, TRUE);
   // Get the total number of days from the interval
@@ -7873,6 +8009,21 @@ function hedley_reports_prenatal_calculate_ega_weeks(DateTime $lmp_date_obj, Dat
   return floor($total_days / 7);
 }
 
+/**
+ * Retrieves the latest applicable treatment from a list of options.
+ *
+ * This function searches through previous nurse encounters to find the latest
+ * recommended treatment that matches one of the specified treatment options.
+ *
+ * @param array $encounter_data
+ *   An array of encounter data, including previous nurse encounters.
+ * @param array $treatment_options
+ *   An array of treatment options to search for.
+ *
+ * @return array|bool
+ *   The latest treatment that matches one of the treatment options,
+ *   or FALSE if no matching treatment is found.
+ */
 function hedley_reports_prenatal_get_latest_treatment_from_options(array $encounter_data, array $treatment_options) {
   $previous_nurse_encounters_data = array_reverse($encounter_data['previous_nurse_encounters_data']);
   foreach ($previous_nurse_encounters_data as $previous_nurse_encounter_data) {
