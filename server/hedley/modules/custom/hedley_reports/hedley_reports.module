@@ -6682,7 +6682,19 @@ function hedley_reports_prenatal_danger_signs_recorded(array $encounter_data) {
     return FALSE;
   }
 
-  $danger_signs = $danger_signs_measurement->field_danger_signs[LANGUAGE_NONE];
+  $encounter_type = $encounter_data['encounter_type'];
+  if (in_array($encounter_type, ['nurse-postpartum', 'chw-postpartum'])) {
+    $child_signs = $danger_signs_measurement->field_postpartum_child[LANGUAGE_NONE];
+    $danger_signs = !empty($child_signs) ? $child_signs : [];
+    $mother_signs = $danger_signs_measurement->field_postpartum_mother[LANGUAGE_NONE];
+    if (!empty($mother_signs)) {
+      $danger_signs = array_merge($danger_signs, $mother_signs);
+    }
+  }
+  else {
+    $danger_signs = $danger_signs_measurement->field_danger_signs[LANGUAGE_NONE];
+  }
+
   if (empty($danger_signs)) {
     return FALSE;
   }
@@ -6915,7 +6927,7 @@ function hedley_reports_prenatal_add_referral_activity_for_nurse(array $encounte
     $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
     if (!empty($mental_health_measurement)) {
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
-      if ($specialist_at_hc === TRUE) {
+      if ($specialist_at_hc) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
         $activity_expected = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
       }
@@ -7010,7 +7022,8 @@ function hedley_reports_prenatal_add_referral_activity_for_nurse(array $encounte
   if (!$activity_expected) {
     $lmp_measurement = $encounter_data['measurements_by_type']['last_menstrual_period'];
     if (!empty($lmp_measurement)) {
-      if ($lmp_measurement->field_confident[LANGUAGE_NONE][0]['value'] === FALSE) {
+      $confident = $lmp_measurement->field_confident[LANGUAGE_NONE][0]['value'];
+      if (!$confident) {
         if (!empty($lmp_measurement->field_not_confident_reason[LANGUAGE_NONE][0]['value'])) {
           $activity_expected = TRUE;
         }
@@ -7628,7 +7641,7 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
     // Checking if referral to hospital is required by Mental Health.
     if (!empty($mental_health_measurement)) {
       $specialist_at_hc = $mental_health_measurement->field_specialist_at_hc[LANGUAGE_NONE][0]['value'];
-      if ($specialist_at_hc === FALSE) {
+      if (!$specialist_at_hc) {
         $triggering_diagnoses = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
         $referred_to_hospital = hedley_reports_prenatal_diagnosed_any_of($encounter_data, $triggering_diagnoses);
       }
@@ -7725,9 +7738,9 @@ function hedley_reports_prenatal_hospital_referral_expected(array $encounter_dat
         $triggering_diagnoses,
         ['hepatitis-b', 'rhesus-negative']
       );
-    }
 
-    $referred_to_hospital = !empty(array_intersect($encounter_data['past_diagnoses'], $triggering_diagnoses));
+      $referred_to_hospital = !empty(array_intersect($encounter_data['past_diagnoses'], $triggering_diagnoses));
+    }
   }
 
   return $referred_to_hospital;
@@ -8056,7 +8069,6 @@ function hedley_reports_prenatal_manadatory_activities_for_next_steps_completed(
         'medical_history',
         'obstetric_history',
         'obstetric_history_step2',
-        'prenatal_outside_care',
         // Examination:
         'vitals',
         'prenatal_nutrition',
