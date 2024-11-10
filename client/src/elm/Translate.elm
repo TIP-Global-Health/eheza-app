@@ -1435,6 +1435,21 @@ type TranslationId
     | ResilienceMessageGrowth4Title
     | ResilienceMessageGrowth4Paragraph1
     | ResilienceMessageGrowth4Paragraph2
+    | ResilienceMessageGrowth5Title
+    | ResilienceMessageGrowth5Paragraph1
+    | ResilienceMessageGrowth5Paragraph2
+    | ResilienceMessageGrowth6Title
+    | ResilienceMessageGrowth6Paragraph1
+    | ResilienceMessageGrowth6Paragraph2
+    | ResilienceMessageGrowth7Title
+    | ResilienceMessageGrowth7Paragraph1
+    | ResilienceMessageGrowth7Paragraph2
+    | ResilienceMessageGrowth8Title
+    | ResilienceMessageGrowth8Paragraph1
+    | ResilienceMessageGrowth8Paragraph2
+    | ResilienceMessageGrowth9Title
+    | ResilienceMessageGrowth9Paragraph1
+    | ResilienceMessageGrowth9Paragraph2
     | ResilienceGuideSection1Title
     | ResilienceGuideSection1TitleNote1
     | ResilienceGuideSection1TitleNote2
@@ -1488,6 +1503,19 @@ type TranslationId
     | ResilienceMessageStressManagement7Bullet1
     | ResilienceMessageStressManagement7Bullet2
     | ResilienceMessageStressManagement7Bullet3
+    | ResilienceMessageStressManagement8Title
+    | ResilienceMessageStressManagement8Paragraph1
+    | ResilienceMessageStressManagement8Paragraph2
+    | ResilienceMessageStressManagement8Bullet1
+    | ResilienceMessageStressManagement8Bullet2
+    | ResilienceMessageStressManagement8Bullet3
+    | ResilienceMessageStressManagement8Bullet4
+    | ResilienceMessageStressManagement9Title
+    | ResilienceMessageStressManagement9Paragraph1
+    | ResilienceMessageStressManagement9Paragraph2
+    | ResilienceMessageStressManagement10Title
+    | ResilienceMessageStressManagement10Paragraph1
+    | ResilienceMessageStressManagement10Paragraph2
     | ResilienceMessageMindfulness1Title
     | ResilienceMessageMindfulness1Paragraph1
     | ResilienceMessageMindfulness1Paragraph2
@@ -1518,6 +1546,15 @@ type TranslationId
     | ResilienceMessageMindfulness6Bullet1
     | ResilienceMessageMindfulness6Bullet2
     | ResilienceMessageMindfulness6Bullet3
+    | ResilienceMessageMindfulness7Title
+    | ResilienceMessageMindfulness7Paragraph1
+    | ResilienceMessageMindfulness7Paragraph2
+    | ResilienceMessageMindfulness8Title
+    | ResilienceMessageMindfulness8Paragraph1
+    | ResilienceMessageMindfulness8Paragraph2
+    | ResilienceMessageMindfulness9Title
+    | ResilienceMessageMindfulness9Paragraph1
+    | ResilienceMessageMindfulness9Paragraph2
     | ResilienceMessageConnecting1Title
     | ResilienceMessageConnecting1Paragraph1
     | ResilienceMessageConnecting1Paragraph2
@@ -1541,6 +1578,25 @@ type TranslationId
     | ResilienceMessageConnecting6Paragraph1
     | ResilienceMessageConnecting6Paragraph2
     | ResilienceMessageConnecting6Paragraph3
+    | ResilienceMessageConnecting7Title
+    | ResilienceMessageConnecting7Paragraph1
+    | ResilienceMessageConnecting7Paragraph2
+    | ResilienceMessageConnecting8Title
+    | ResilienceMessageConnecting8Paragraph1
+    | ResilienceMessageConnecting8Paragraph2
+    | ResilienceMessageConnecting9Title
+    | ResilienceMessageConnecting9Paragraph1
+    | ResilienceMessageConnecting9Paragraph2
+    | ResilienceMessageConnecting10Title
+    | ResilienceMessageConnecting10Paragraph1
+    | ResilienceMessageConnecting10Paragraph2
+    | ResilienceMessageConnecting11Title
+    | ResilienceMessageConnecting11Paragraph1
+    | ResilienceMessageConnecting11Paragraph2
+    | ResilienceMessageConnecting11Paragraph3
+    | ResilienceMessageConnecting12Title
+    | ResilienceMessageConnecting12Paragraph1
+    | ResilienceMessageConnecting12Paragraph2
     | ResilienceMessageSelfCare1Title
     | ResilienceMessageSelfCare1Paragraph1
     | ResilienceMessageSelfCare1Paragraph2
@@ -1557,6 +1613,15 @@ type TranslationId
     | ResilienceMessageSelfCare3Paragraph1
     | ResilienceMessageSelfCare3Paragraph2
     | ResilienceMessageSelfCare3Paragraph3
+    | ResilienceMessageSelfCare4Title
+    | ResilienceMessageSelfCare4Paragraph1
+    | ResilienceMessageSelfCare4Paragraph2
+    | ResilienceMessageSelfCare5Title
+    | ResilienceMessageSelfCare5Paragraph1
+    | ResilienceMessageSelfCare5Paragraph2
+    | ResilienceMessageSelfCare5Bullet1
+    | ResilienceMessageSelfCare5Bullet2
+    | ResilienceMessageSelfCare5Bullet3
     | ResilienceMessageEndOfFirstMonthTitle
     | ResilienceMessageEndOfFirstMonthParagraph1
     | ResilienceMessageEndOfFirstMonthParagraph2
@@ -1574,6 +1639,21 @@ type TranslationId
     | ResilienceMessageEndOfSecondMonthBullet3
     | ResilienceMessageEndOfSecondMonthBullet4
     | ResilienceMessageEndOfSecondMonthBullet5
+    | ResilienceMessageEndOfThirdMonthTitle
+    | ResilienceMessageEndOfThirdMonthParagraph1
+    | ResilienceMessageEndOfThirdMonthParagraph2
+    | ResilienceMessageEndOfThirdMonthBullet1
+    | ResilienceMessageEndOfThirdMonthBullet2
+    | ResilienceMessageEndOfThirdMonthBullet3
+    | ResilienceMessageEndOfThirdMonthBullet4
+    | ResilienceMessageEndOfFourthMonthTitle
+    | ResilienceMessageEndOfFourthMonthParagraph1
+    | ResilienceMessageEndOfFourthMonthParagraph2
+    | ResilienceMessageEndOfFourthMonthBullet1
+    | ResilienceMessageEndOfFourthMonthBullet2
+    | ResilienceMessageEndOfFourthMonthBullet3
+    | ResilienceMessageEndOfFourthMonthBullet4
+    | ResilienceMessageEndOfFourthMonthBullet5
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
     | ResilienceKickOffGenderQuestion
@@ -19068,6 +19148,96 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageGrowth5Title ->
+            { english = "Make it happen-Goal planning!"
+            , kinyarwanda = Just "Uwa mbere mushya, intego nshya"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth5Paragraph1 ->
+            { english = "Setting yourself small achievable goals every week will help you stay focused and motivated. As you work on achieving your weekly goals, make sure to congratulate yourself for doing so. You have made progress in your path to achieving your purpose. You know you can do it!"
+            , kinyarwanda = Just "Kugira intego nto zaburi cyumweru bigufasha gukomeza kwibanda kubyo ukora no kugira ishyaka. Uko ukora ugerageza kugera ku ntego zawe za buri cyumweru, ninako wakagombye kubyishimira. Wateye intambwe mu nzira mu kuba wagera ku ntego yawe. Urabizi ko ushobora kuyigeraho!"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth5Paragraph2 ->
+            { english = "Remember: Every day may not be good, but there will be something good in every day."
+            , kinyarwanda = Just "Imihigo irakomeye kandi irakomeje/irashoboka. Kandi Buhoro buhoro nirwo rugendo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Title ->
+            { english = "Make a list of things you value and want to achieve"
+            , kinyarwanda = Just "Kora urutonde rw'ibyo uha agaciro kandi ushaka kugeraho"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Paragraph1 ->
+            { english = "Think about what you value most in life. Is it being a good parent? Is it helping your community? Is it your career? Plan activities that help you do what is most important to you. If you want to be a good parent, make sure you spend an hour playing with your child every day."
+            , kinyarwanda = Just "Tekereza kubyo uha agaciro cyane mu buzima. Ese ni ukuba umubyeyi mwiza? Ese ni ugufasha abaturage? Ese ni umwuga wawe? Tegura ibikorwa bigufasha gukora ibifite akamaro. Niba ushaka kuba umubyeyi mwiza, mara nibura isaha ukina n'umwana wawe buri munsi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Paragraph2 ->
+            { english = "Remember: Live a life of purpose."
+            , kinyarwanda = Just "Baho ubuzima bufite intego."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Title ->
+            { english = "Here is a time of positivity"
+            , kinyarwanda = Just "Iki ni igihe cyo gutekereza ibiguteza imbere"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Paragraph1 ->
+            { english = "When something unexpected happens, you may have thoughts like ‘I’m bad’ or ‘It’s all my fault.’ Thinking negative thoughts about yourself can affect your mood, your work, and your relationships. You can practice thinking more positive thoughts. Instead of ‘It’s my fault’, try thinking ‘I made a mistake, but I have learned a lesson.’ You are in charge of your thoughts."
+            , kinyarwanda = Just "Iyo ikintu gitunguranye kibaye, ushobora kugira ibitekerezo uti: \"Ndi mubi\", ni \"amakosa yanjye\". Kugira ibitekerezo bitari byiza kuri wowe bishobora kugira ingaruka ku myumvire yawe, ku kazi kawe, n'umubano wawe n'abandi. Ushobora kwitoza kugira ibitekerezo byiza. Aho kugira ngo uvuge \"Ni amakosa yanjye\", gerageza utekereze uti \"Nakoze ikosa, ariko nakuyemo isomo\". Ni wowe uyobora ibitekerezo byawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Paragraph2 ->
+            { english = "Remember: Praise loudly, blame softly."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Title ->
+            { english = "Time to write down things you do better and learned from others."
+            , kinyarwanda = Just "Kwiga bihoraho, gira uwo wikigiraho wagufasha kwaguka mu bitekerezo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Paragraph1 ->
+            { english = "When you learn, you grow as a person and as a health worker. You can learn from the people around you. Think of a health worker you admire. This could be a co-worker or your supervisor. Make a list of the things they do well that you would like to be better at. Choose one thing from the list to try. Later you can try other things."
+            , kinyarwanda = Just "Iyo wize, ubumenyi bwawe buriyongera nk'umukozi utanga serevisi z'ubuvuzi. Ushobora kwigira ku bantu bakuba hafi. Tekereza ku mukozi utanga serevisi z'ubuvuzi w'icyitegererezo kuri wowe. Uyu ashobora kuba umukozi mukorana cyangwa umuyobozi wawe. Kora urutonde rw'ibintu bakora neza wifuza nawe gukora. Hitamo kimwe muri urwo rutonde uri bugerageze. Ushobora kuba wagerageza ibindi nyuma."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Paragraph2 ->
+            { english = "Remember: Make improvements not excuses."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Title ->
+            { english = "Nobody can give you wiser advice than yourself."
+            , kinyarwanda = Just "Nta muntu ushobora kukugira inama nziza nkawe ubwawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Paragraph1 ->
+            { english = "Sometimes we judge ourselves more harshly than we do others. “‘I did that wrong, I was late, I forgot something’.” Think about what advice you would give to a friend. Then be your own best friend and use that advice yourself."
+            , kinyarwanda = Just "Rimwe na rimwe twicira urubanza cyane kurusha uko turucira abandi uti \"nabikoze nabi, nari natinze, nari nabyibagiwe.\" Tekereze ku nama waha incuti yawe, noneho ba incuti yawe ubwawe wigire iyo nama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Paragraph2 ->
+            { english = "Remember: Make your co-workers your work family."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceGuideSection1Title ->
             { english = "Program Overview"
             , kinyarwanda = Just "Ibikubiye muri porogaramu"
@@ -19386,6 +19556,84 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageStressManagement8Title ->
+            { english = "Be more blessed and less stressed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Paragraph1 ->
+            { english = "There are things you can do during your working day that can help you manage the challenges of work. Here are a few tips. Choose any that work for you:"
+            , kinyarwanda = Just "Hari ibintu ushobora gukora mu gihe uri mukazi bikaba byagufasha gukemura imbogamizi z'akazi uhura nazo. Izi ni zimwe mu nama zagufasha. Hitamo iyariyo yose yagufasha: "
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Paragraph2 ->
+            { english = "Remember: Be more blessed and less stressed."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet1 ->
+            { english = "Take regular breaks."
+            , kinyarwanda = Just "Gufata akaruhuko"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet2 ->
+            { english = "Take a sip of water at regular intervals."
+            , kinyarwanda = Just "Gufata ikirahuri cy'amazi mu gihe bibaye ngombwa."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet3 ->
+            { english = "Stand up, do a stretch, and take 5 deep breaths."
+            , kinyarwanda = Just "Guhaguruka, kugorora ingingo, no gukora umwitozo wo guhumeka ukabikora inshuro eshanu."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet4 ->
+            { english = "Start to have a friendly chat with a co-worker."
+            , kinyarwanda = Just "Girana ibiganiro by'ubucuti n'uwo mukorana."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Title ->
+            { english = "Happiness is the art of relaxation"
+            , kinyarwanda = Just "Kwishima ni umwuga wo kuruhuka"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Paragraph1 ->
+            { english = "At the end of your day think about the things you are grateful for. The good weather, the help someone gave you, the clean water you drank, the chance you had to rest with your family. Add them up. You may find there are more things to be grateful for than you realized."
+            , kinyarwanda = Just "Igihe umunsi wawe uri kurangira, tekereza kubintu wishimiye cyangwa byagushimishije. Ese ni ikirere cyiza, n'ubufasha wahawe n'umuntu, n'amazi asukuye wanyoye, n'amahirwe wagize yo kuruhukana n'umuryango wawe se? Bitekerezeho. Ushobora gusanga hari ibintu byinshi byo kwishimira kuruta uko wabitekerezaga."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Paragraph2 ->
+            { english = "Remember: When it rains, look for rainbows. When it’s dark, look for stars."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Title ->
+            { english = "Short break time!!!"
+            , kinyarwanda = Just "Igihe cyo gufata akaruhuko gatoya"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Paragraph1 ->
+            { english = "Have you found a way to add little breaks into your everyday life? Experts say that even a 30-60 second break every 20 minutes of work can help to give you more energy. It could be a stretch, a minute of deep breathing, taking a sip of water, or a mindful handwashing exercise. Whatever you prefer, try to build short breaks into your working day."
+            , kinyarwanda = Just "Ese wabashije kubona uburyo bwo gufata ibiruhuko bigufi mu buzima bwawe bwa buri munsi? Inzobere zivugako ko kuruhuka amasegonda 30-60 buri minota 20 y'akazi bishobora kukongerera imbaraga. Bishobora kuba ari ukunanura ingingo, umunota wo gukora umwitozo wo guhumeka, kunywa ikirahuri cy'amazi, cyangwa umwitozo wo gukaraba intoki. Icyo aricyo cyose, gerageza gushaka ibiruhuko bigufi mu gihe cy'akazi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Paragraph2 ->
+            { english = "Remember: Rest and be thankful."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageMindfulness1Title ->
             { english = "It's time for a short break"
             , kinyarwanda = Just "Akanya k'ikiruhuko karageze"
@@ -19566,6 +19814,60 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageMindfulness7Title ->
+            { english = "A Gentle reminder: Take a deep breath"
+            , kinyarwanda = Just "Guhumeka ni ingirakamaro ku buzima bwawe. Humeka"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness7Paragraph1 ->
+            { english = "Angry? Upset? Rushing to get things done? Calm yourself with a few deep, slow breaths. Breath in through your nose and then out through your mouth. Make it a long slow out breath. It’s good to feel calmer."
+            , kinyarwanda = Just "Ese urarakaye? Urababaye? Ese uri kwihutisha ibintu ngo birangire? Tuza, ukore umwitozo wo guhumeka. Injiza umwuka ukoresheje amazuru, hanyuma uwusohore ukoresheje umunwa. Bikore igihe kirekire. Biragufasha kumva utuje."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness7Paragraph2 ->
+            { english = "Remember: Be kind, even on your bad days."
+            , kinyarwanda = Just "Iminsi irasa ariko ntihwana, kandi buri munsi ugira ibyiza byawo"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Title ->
+            { english = "It takes consistent practice to get there"
+            , kinyarwanda = Just "Kugera ku ntego bisaba guhozaho"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Paragraph1 ->
+            { english = "How are you doing with practicing mindfulness? Try to take it a step further by taking some time every day (maybe at home, before you go to sleep) to just be aware of every part of your body, your breathing, and your thoughts."
+            , kinyarwanda = Just "Ese urumva umerewe ute nyuma yo gukora imyitozo ya mindfulness? Gerageza gutera indi ntambwe ufata umwanya buri munsi. Menya ibice bigize umubiri wawe, umenye uko guhumeka kwawe kumeze, cyangwa se uko ibitekerezo byawe bimeze uri mu rugo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Paragraph2 ->
+            { english = "Remember: Start each day thinking about the things you are grateful for."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Title ->
+            { english = "This might be a good time to practice mindfulness"
+            , kinyarwanda = Just "Iki ni igihe cyiza cyo gukora umwitozo wa Mindfulness"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Paragraph1 ->
+            { english = "Research has shown that being more aware of sensations and feelings can enhance our well-being. Take a moment away from your work and focus on your body. Listen to your breathing. Feel the sensation of the air on your lips. Notice the movement in your chest. That is being mindful. You can do it any time: wash your hands mindfully, even walk mindfully."
+            , kinyarwanda = Just "Ubushakashatsi bwagaragaje ko kumenya neza ibyiyumvo n'amarangamutima bishobora kuzamura imibereho myiza yacu. Shakisha akanya gato mu kazi kawe ukore umwitozo wa mindfulness wibanda ku mubiri wawe. Umva uburyo uhumeka, uko wiyumva iyo umuyaga uguhushye ku munwa, reba uko bigenda mu gituza cyawe iyo uhumeka. Ushobora kubikora igihe icyo aricyo cyose; karaba intoki ubitekerezaho, hanyuma genda unabitekerezaho."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Paragraph2 ->
+            { english = "Remember: Experience the here and now and feel refreshed."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageConnecting1Title ->
             { english = "Surround yourself with positive people."
             , kinyarwanda = Just "Girana ibihe byiza n'inshuti n'umuryango wawe."
@@ -19704,6 +20006,120 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageConnecting7Title ->
+            { english = "It can be useful to reach out to the counselor"
+            , kinyarwanda = Just "Ni ibyingirakamaro kugana umujyanama wabigize umwuga"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting7Paragraph1 ->
+            { english = "Feeling sad and low? Talk to a counselor. They can help you find the tools to feel better. They will also make sure whatever you say is between you and them. If you can’t get to a counselor, talk to someone you can trust like an older relative, a friend, or a religious leader. Make an appointment so you can feel better quicker."
+            , kinyarwanda = Just "Ese urumva ubabaye kandi ucitse intege? Gana umujyanama wabigize umwuga. Yagufasha kumva umerewe neza. Ikindi azi neza ko ibyo uvuga byose bisigara hagati yanyu. Niba utabashije kubona umujyanama w'umunyamwuga, gana umuntu wizeye nk'umuntu mukuru wo mu muryango wawe, inshuti, cyangwa umubwirizabutumwa. Tegura gahunda yo kwegera umwe muri abo uzagufasha kumva umerewe neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting7Paragraph2 ->
+            { english = "Remember: The best time to be happy is now!"
+            , kinyarwanda = Just "Utaganiriye na se ntamenya icyo sekuru yasize avuze."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Title ->
+            { english = "Sharing is caring!"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Paragraph1 ->
+            { english = "What are the things you worry about most? Share your list of worries with a co-worker. You may find you have worries in common. You can share your solutions as well."
+            , kinyarwanda = Just "Haba hari bintu bigutera impungenge/biguhangayikishije cyane? Sangiza uwo mukorana wizeye izo mpungenge. Ushobora gusanga muzisangiye. Mushobora no gusangira uko zacyemuka."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Paragraph2 ->
+            { english = "Remember: A problem shared is a problem halved."
+            , kinyarwanda = Just "Ahari abagabo ntihapfa abandi. Kandi Ujya gukira indwara arayirata"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Title ->
+            { english = "Spend quality time with your friends/family"
+            , kinyarwanda = Just "Nakwibutsaga ko gusabana n'inshuti n'umuryango bishobora kugufasha kumva unezerewe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Paragraph1 ->
+            { english = "Ever been so busy you have no time for yourself? We all do this sometimes, but it makes it harder to deal with the pressures of life. Connecting with friends and family can help you feel happier. Plan to connect with an old friend, someone who is special to you. Find time each week to connect."
+            , kinyarwanda = Just "Ese ujya ugira akazi kenshi gatuma wiburira umwanya? Twese bitubaho bigatuma guhangana n'ibibazo by'ubuzima bitugora. Gusabana n'inshuti n'umuryango bishobora kugufasha kumva unezerewe. Geregeza utegure kujya uhura n'inshuti mudaherukana cyangwa se umuntu w'agaciro kuri wowe. Shakisha umwanya uhagije kugira ngo muganire."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Paragraph2 ->
+            { english = "Remember: The only way to have a friend is to be one."
+            , kinyarwanda = Just "Ifuni ibagara ubucuti ni akarenge."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Title ->
+            { english = "Just a reminder, you can talk to your friend/family"
+            , kinyarwanda = Just "Ushobora kuganira n'inshuti yawe"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Paragraph1 ->
+            { english = "Healthy relationships can help you recover from challenging situations. Open communication with people around you can help strengthen your relationships. If you are stressed about your workload or feel your work is going unappreciated, talk to your supervisor. Together you can look for solutions to help you work and feel better."
+            , kinyarwanda = Just "Umubano mwiza ushobora kugufasha kuva mu bihe bigoranye. Kugirana ikiganiro kirambuye n'abantu mubana/mukorana bishobora kugufasha gukomeza umubano nabo. Niba uhangayikishijwe n'ingano y’akazi ufite cyangwa se ukumva akazi kawe kadashimwa, vugana n'umuyobozi wawe. Hamwe na we mushobora gushakisha ibisubizo bigufasha gukora akazi no kumva umerewe neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Paragraph2 ->
+            { english = "Remember: Good words are worth much and cost little."
+            , kinyarwanda = Just "Ijambo ryiza ni mugenzi w’Imana."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Title ->
+            { english = "The most important things in life is the connections you make with others"
+            , kinyarwanda = Just "Ikintu cy'ingenzi mu buzima n'uko ubana n'abandi"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph1 ->
+            { english = "You can learn a lot from the people you work with. Share your joys and pains with your co-workers. It will help you understand each other. You can also offer each other help and advice."
+            , kinyarwanda = Just "Ushobora kwigira byinshi ku bantu mukorana. Sangiza abo mukorana ibi kunezeza n'ibikubabaza. Bizabafasha kumvikana hagati yanyu, gufashanya no kungurana inama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph2 ->
+            { english = "Next time you spend some time with a co-worker, try to share one thing about yourself that they don’t already know. Invite them to do the same."
+            , kinyarwanda = Just "Ubutaha numarana igihe n'umukozi mukorana, gerageza kumusangiza ikintu kimwe atazi kuri wowe. Musabe nawe kuba yagusangiza ibye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph3 ->
+            { english = "Remember: Count your blessings, but also make your blessings count."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Title ->
+            { english = "Staying in touch can be challenging, you can start now buidling a huge connection."
+            , kinyarwanda = Just "Tangira ubu wubaka ubucuti bunini kuko gusigasira ubucuti bigora."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Paragraph1 ->
+            { english = "Spending time with co-workers can help you build a good relationship with them. Find time in your busy schedule to take part in activities with your co-workers. You could eat together, travel together to and from work, do breathing exercises together, or do something that is not work related, so you can all relax together."
+            , kinyarwanda = Just "Kumarana umwanya n'abakozi mukorana byagufasha kugirana umubano mwiza nabo. Shakisha umwanya hagati mu kazi ugire ibikorwa mukorera hamwe. Mushobora gusangira ifunguro, gutemberana, kugendana muva cyangwa mujya ku kazi, gukora imyitozo yo guhumeka, gukora ikindi kintu kitajyanye n'akazi mukora, cyangwa kuruhukira hamwe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Paragraph2 ->
+            { english = "Remember: Make your co-workers your work family."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageSelfCare1Title ->
             { english = "Take care of yourself"
             , kinyarwanda = Just "Bimwe mu byagufasha kwiyitaho"
@@ -19797,6 +20213,60 @@ translationSet trans =
         ResilienceMessageSelfCare3Paragraph3 ->
             { english = "Remember: Eat healthy, live healthy."
             , kinyarwanda = Just "Gahunda iyo zibaye nyinshi uhera kuyo kurya."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Title ->
+            { english = "Healthy requires healthy food"
+            , kinyarwanda = Just "Ubuzima bwiza busaba indyo nziza"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Paragraph1 ->
+            { english = "When you are very busy, you may not have time to eat. If you don’t eat for a long time, you can get a headache or feel tired and irritable. If you reach for a sugary drink or sweet food, it can make you feel worse. Try to take some healthy snacks with you when you’re working. Pack some nuts or a piece of fruit. Wash your hands before eating."
+            , kinyarwanda = Just "Iyo ufite akazi kenshi, ushobora kutabona umwanya wo kurya. Iyo utabashije kurya mu gihe nyacyo, ushobora kurwara umutwe, ukumva urushye cyangwa urakaye. Uramutse ufashe ikintu kiryohereye muri ako kanya gishobora gutuma ukomeza kumererwa nabi. Mu gihe uri gukora, gerageza gufata amafunguro mato. Gendana ubunyobwa cyangwa imbuto. Wibuke gukaraba intoki mbere yuko urya."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Paragraph2 ->
+            { english = "Remember: You are what you eat, so eat well."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Title ->
+            { english = "Sleep is the best meditation"
+            , kinyarwanda = Just "Gusinzira ni bwo buryo byiza bwo kuruhuka cyangwa Meditation"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Paragraph1 ->
+            { english = "If you struggle to sleep well, you're not alone. Studies have shown that workers who do long hours and shift work find it difficult to sleep properly. But it is not impossible. Simple lifestyle changes can help:"
+            , kinyarwanda = Just "Niba bijya bikugora kubona ibitotsi, ntabwo uri wenyine. Ubushakashatsi bwagaragaje ko abakozi bakora amasaha y'ikirenga n'abakora basimburanwa (shifts) bagorwa no gusinzira neza. Ariko birashoboka. Impinduka mu buzima zagufasha:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Paragraph2 ->
+            { english = "Remember: Tired minds don’t work well."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet1 ->
+            { english = "Have a warm shower or listen to quiet music before you go to bed."
+            , kinyarwanda = Just "Gukaraba amazi ashyushye cyangwa kumva indirimbo/umuziki utuje mbere yo kujya kuryama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet2 ->
+            { english = "Make sure the room is dark."
+            , kinyarwanda = Just "Menya neza ko icyumba cyijimye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet3 ->
+            { english = "Avoid heavy meals right before you sleep."
+            , kinyarwanda = Just "Irinde amafunguro aremereye mbere yo kujya kuryama."
             , kirundi = Nothing
             }
 
@@ -19899,6 +20369,96 @@ translationSet trans =
         ResilienceMessageEndOfSecondMonthBullet5 ->
             { english = "Get help when you need it"
             , kinyarwanda = Just "Gushaka ubufasha mu gihe ubukeneye"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthTitle ->
+            { english = "Congratulations, you have completed month 3 of this journey."
+            , kinyarwanda = Just "Iherezo ry'ukwezi kwa Gatatu"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthParagraph1 ->
+            { english = "This month you learned that setting small goals and achieving them is rewarding. You may have:"
+            , kinyarwanda = Just "Uku kwezi wize ko kugira intego nto no kuzigeraho bitera ishema. Ushobora:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthParagraph2 ->
+            { english = "Write in your notebook about how you feel. Plan to use these new skills in the next month as well."
+            , kinyarwanda = Just "Andika mu ikayi yawe uko wiyumva. Teganya gukoresha ubu bumenyi mu kwezi gutaha."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet1 ->
+            { english = "Connected with your friends and family more."
+            , kinyarwanda = Just "Kuba waratangiye gusabana n'inshuti n'umuryango wawe inshuro nyinshi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet2 ->
+            { english = "Started to eat healthier."
+            , kinyarwanda = Just "Kuba waratangiye kurya indyo yuzuye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet3 ->
+            { english = "Practiced mindfulness."
+            , kinyarwanda = Just "Kwimenyereza umwitozo wa mindfulness."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet4 ->
+            { english = "Learned why and when to seek professional help."
+            , kinyarwanda = Just "Waramenye impamvu n'igihe ukeneye gushaka ubufasha ku nyamwuga."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthTitle ->
+            { english = "Congratulations on completing month 4 of your resilience journey."
+            , kinyarwanda = Just "Iherezo ry'ukwezi kwa Kane"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthParagraph1 ->
+            { english = " We hope you have learned to:"
+            , kinyarwanda = Just "Twizera ko wabashije kumenya:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthParagraph2 ->
+            { english = " Write down in your notebook what the most important things have been for you."
+            , kinyarwanda = Just "Andika mu ikayi yawe ibintu by'ingenzi byakugendekeye neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet1 ->
+            { english = "Make mindfulness and self-care a regular part of your life."
+            , kinyarwanda = Just "Mindfulenss ndetse no kwiyitaho ni bimwe mu bigize ubuzima bwawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet2 ->
+            { english = "Practice gratitude and be kinder to yourself."
+            , kinyarwanda = Just "Itoze gushimira kandi wigirire ineza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet3 ->
+            { english = "PBe honest and open with others."
+            , kinyarwanda = Just "Ba inyangamugayo kandi uganire n'abandi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet4 ->
+            { english = "Think positively."
+            , kinyarwanda = Just "Gira intekerezo nziza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet5 ->
+            { english = "Connect with your friends and family regularly."
+            , kinyarwanda = Just "Sabana n'inshuti n'umuryango ku buryo buhoraho."
             , kirundi = Nothing
             }
 
