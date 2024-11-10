@@ -94,10 +94,10 @@ resilienceMessageOrderToString value =
             "10"
 
         ResilienceMessage11 ->
-            "8"
+            "11"
 
         ResilienceMessage12 ->
-            "9"
+            "12"
 
 
 resilienceMessageOrderFromString : String -> Maybe ResilienceMessageOrder
