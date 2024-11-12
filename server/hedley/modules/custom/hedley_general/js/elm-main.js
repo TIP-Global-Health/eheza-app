@@ -11606,7 +11606,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'RandomBloodSugarTest':
 				return {english: 'Random Blood Sugar Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'RandomBloodSugarTestResult':
-				return {english: 'Random Blood Sugar Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Random Blood Sugar Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Referral':
 				return {english: 'Referral', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Registered':
@@ -11796,7 +11796,7 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'UrineDipstickTest':
 				return {english: 'Urine Dipstick Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'UrineDipstickTestResult':
-				return {english: 'Urine Dipstick Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {english: 'Urine Dipstick Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WastingModerate':
 				return {english: 'Wasting Moderate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'WastingSevere':

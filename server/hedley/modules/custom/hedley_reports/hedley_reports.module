@@ -5825,7 +5825,15 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $measurements_by_type = $encounter_data['measurements_by_type'];
 
     // Resolve encounter start date.
-    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    // We check if end date exists and use it, to avoid possibility
+    // where activities recorded close to end of encounter will
+    // be disregarded, since they were not yet delivered on encounter
+    // start date.
+    $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value2'])[0];
+    if (empty($start_date)) {
+      // If end date is not set, default to start date.
+      $start_date = explode(' ', $encounter->field_scheduled_date[LANGUAGE_NONE][0]['value'])[0];
+    }
     $start_date_obj = new DateTime($start_date);
     $encounter_data['start_date_obj'] = $start_date_obj;
 
@@ -7317,6 +7325,11 @@ function hedley_reports_prenatal_add_medication_distribution_activity_for_nurse(
 
         $activity_expected = !$referred;
       }
+      // No treatment recorded, so, we assume that no hospitalization
+      // took place as treatment for diagnosis.
+      else {
+        $activity_expected = TRUE;
+      }
     }
   }
 
@@ -7417,6 +7430,11 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
         return TRUE;
       }
     }
+    // No treatment recorded, so, we assume that no hospitalization
+    // took place as treatment for diagnosis.
+    else {
+      return TRUE;
+    }
   }
 
   // Mebendazole medication set.
@@ -7447,7 +7465,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
 
           if (!$prescribed) {
             // Second option - only check if not prescribed by first option.
-            $medication_distribution_measurement = $encounter_data['measurements_by_type']['prenatal_medication_distribution'];
+            $medication_distribution_measurement = $previous_encounter_data['measurements_by_type']['prenatal_medication_distribution'];
             if (!empty($medication_distribution_measurement)) {
               $prescribed_medications = $medication_distribution_measurement->field_prescribed_medication[LANGUAGE_NONE];
               if (!empty($prescribed_medications)) {
@@ -7484,7 +7502,7 @@ function hedley_reports_prenatal_medication_distribution_expected_per_medication
           }
         }
 
-        // Finally, since  Mebendazole was not prescribed at current,
+        // Finally, since Mebendazole was not prescribed at current,
         // we know it's required.
         if (!$prescribed) {
           return TRUE;
@@ -7578,6 +7596,11 @@ function hedley_reports_prenatal_medication_distribution_expected_for_continues_
       if (!$referred) {
         return TRUE;
       };
+    }
+    // No treatment recorded, so, we assume that no hospitalization
+    // took place as treatment for diagnosis.
+    else {
+      return TRUE;
     }
   }
 
@@ -8224,7 +8247,7 @@ function hedley_reports_prenatal_get_latest_treatment_from_options(array $encoun
 
       foreach ($medication_distribution_measurement->field_recommended_treatment[LANGUAGE_NONE] as $treatment) {
         if (in_array($treatment['value'], $treatment_options)) {
-          return $treatment;
+          return $treatment['value'];
         }
       }
     }

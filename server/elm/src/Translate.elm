@@ -1840,7 +1840,7 @@ translationSet transId =
             }
 
         RandomBloodSugarTestResult ->
-            { english = "Random Blood Sugar Result"
+            { english = "Random Blood Sugar Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -2150,7 +2150,7 @@ translationSet transId =
             }
 
         UrineDipstickTestResult ->
-            { english = "Urine Dipstick Result"
+            { english = "Urine Dipstick Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
