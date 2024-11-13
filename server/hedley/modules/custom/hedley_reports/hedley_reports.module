@@ -7131,7 +7131,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
     // and dark-urine) are answered positively.
     // Then, we make sure that Nausea and Vomiting symptom was not recorded
     // during previous encounters.
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    if (!empty($symptom_review_measurement) && !empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       $symptom_recorded = FALSE;
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
         if ($symptom['value'] === 'nausea-and-vomiting') {
@@ -7165,7 +7165,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
   // Education for Leg Cramps, Lower Back Pain, Constipation and
   // Varicose Veins symptoms.
   if (!$activity_expected) {
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    if (!empty($symptom_review_measurement) && !empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
         if (in_array(
           $symptom['value'],
@@ -7185,7 +7185,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
     // are answered positively.
     // Then, we make sure that Nausea and Vomiting symptom was not recorded
     // during previous encounters.
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    if (!empty($symptom_review_measurement) && !empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       $symptom_recorded = FALSE;
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
         if ($symptom['value'] === 'leg-pain-redness') {
@@ -7221,7 +7221,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
     // follow-up question (pelvic-pain-hospitalization) is answered negatively.
     // Then, we make sure that pelvic-pain symptom was not recorded during
     // previous encounters.
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    if (!empty($symptom_review_measurement) && !empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       $symptom_recorded = FALSE;
       foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
         if ($symptom['value'] === 'pelvic-pain') {
