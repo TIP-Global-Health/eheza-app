@@ -86,7 +86,6 @@ function hedley_reports_menu() {
     'title' => 'Completion report',
     'description' => 'View Completion report',
     'page callback' => 'hedley_reports_completion_report_callback_menu',
-    // @todo : what access do we need here?
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
@@ -94,7 +93,6 @@ function hedley_reports_menu() {
     'title' => 'Entire Population',
     'description' => 'View Completion report for Entire Population',
     'page callback' => 'hedley_reports_completion_report_callback_global',
-    // @todo : what access do we need here?
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
@@ -103,7 +101,6 @@ function hedley_reports_menu() {
     'description' => 'View Completion report for health center',
     'page callback' => 'hedley_reports_completion_report_callback_health_center',
     'page arguments' => [4],
-    // @todo : what access do we need here?
     'access callback' => 'hedley_reports_statistical_queries_report_access',
   );
 
@@ -111,7 +108,7 @@ function hedley_reports_menu() {
 }
 
 /**
- * Grants access to Statistical Queries viewers, superuser and administrators.
+ * Grants access to Statistical Queries and Completion Report.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
