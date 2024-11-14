@@ -3429,7 +3429,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
     // If conditions match, add ECD activity.
-    hedley_reports_well_child_add_ecd_activities($encounter_data, $birth_date_obj, $gender, $expected);
+    hedley_reports_well_child_add_ecd_activities($encounter_data, $birth_date_obj, $expected);
     // If conditions match, add immunisation activities.
     hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add medication activities.
@@ -3921,12 +3921,10 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
  *   An associative array containing data about the encounter.
  * @param DateTime $birth_date_obj
  *   The DateTime object representing the child's birth date.
- * @param string $gender
- *   The gender of the child, used to determine gender-specific immunisations.
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
-function hedley_reports_well_child_add_ecd_activities(array $encounter_data, DateTime $birth_date_obj, $gender, array &$expected) {
+function hedley_reports_well_child_add_ecd_activities(array $encounter_data, DateTime $birth_date_obj, array &$expected) {
   if (empty($birth_date_obj)) {
     return;
   }
