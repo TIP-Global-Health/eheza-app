@@ -159,9 +159,7 @@ resolveSPVActivities site =
     , WellChildCaring
     , WellChildContributingFactors
     , WellChildDTPImmunisation
-
-    -- Not implemented at current phase.
-    -- , WellChildECD
+    , WellChildECD
     , WellChildFeeding
     , WellChildFollowUp
     , WellChildFoodSecurity
