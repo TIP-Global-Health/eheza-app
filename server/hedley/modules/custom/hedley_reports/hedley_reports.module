@@ -3429,7 +3429,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
     // If conditions match, add ECD activity.
-    hedley_reports_well_child_add_ecd_activities($encounter_data, $birth_date_obj, $expected);
+    hedley_reports_well_child_add_ecd_activity($encounter_data, $birth_date_obj, $expected);
     // If conditions match, add immunisation activities.
     hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add medication activities.
@@ -3924,7 +3924,7 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
  * @param array &$expected
  *   An array of expected activity names, passed by reference.
  */
-function hedley_reports_well_child_add_ecd_activities(array $encounter_data, DateTime $birth_date_obj, array &$expected) {
+function hedley_reports_well_child_add_ecd_activity(array $encounter_data, DateTime $birth_date_obj, array &$expected) {
   if (empty($birth_date_obj)) {
     return;
   }
@@ -3942,6 +3942,16 @@ function hedley_reports_well_child_add_ecd_activities(array $encounter_data, Dat
   }
 }
 
+/**
+ * Generates a list of ECD signs completed during previous encounters.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter and
+ *   previous encounters.
+ *
+ * @return array
+ *   An array of unique ECD signs that were completed.
+ */
 function hedley_reports_well_child_generate_completed_ecd_signs(array $encounter_data) {
   $previous_encounters_data = $encounter_data['previous_encounters_data'];
   $completed_signs = [];
@@ -3961,6 +3971,18 @@ function hedley_reports_well_child_generate_completed_ecd_signs(array $encounter
   return array_unique($completed_signs);
 }
 
+/**
+ * Generates a list of ECD signs expected at current encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter and
+ *   previous encounters.
+ * @param DateTime $birth_date_obj
+ *   The birth date of the child as a DateTime object.
+ *
+ * @return array
+ *   An array of expected ECD signs at current encounter.
+ */
 function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_data, DateTime $birth_date_obj) {
   $start_date_obj = $encounter_data['start_date_obj'];
   $interval = $start_date_obj->diff($birth_date_obj, TRUE);
@@ -4024,6 +4046,20 @@ function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_
   return $expected_signs;
 }
 
+/**
+ * Generates array with groups of ECD signs.
+ *
+ * Based on the child's age at time of encounter and that of
+ * encounter with last ECD assessment.
+ *
+ * @param int $age_in_months
+ *   The age of the child in months.
+ * @param int|null $age_in_months_at_last_assessment
+ *   The age of the child in months at the last ECD assessment, if available.
+ *
+ * @return array
+ *   An array of grouped ECD signs for the specified age.
+ */
 function hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $age_in_months_at_last_assessment) {
   if (empty($age_in_months_at_last_assessment) || $age_in_months_at_last_assessment < 6) {
     $signs_from_5_weeks = hedley_reports_well_child_ecd_signs_from_5_weeks();
@@ -4078,6 +4114,12 @@ function hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $a
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 5 weeks.
+ *
+ * @return array
+ *   An array of ECD signs expected at 5 weeks.
+ */
 function hedley_reports_well_child_ecd_signs_from_5_weeks() {
   return [
     'follow-mothers-eyes',
@@ -4085,6 +4127,12 @@ function hedley_reports_well_child_ecd_signs_from_5_weeks() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 13 weeks.
+ *
+ * @return array
+ *   An array of ECD signs expected at 13 weeks.
+ */
 function hedley_reports_well_child_ecd_signs_from_13_weeks() {
   return [
     'raise-hands-up',
@@ -4093,6 +4141,12 @@ function hedley_reports_well_child_ecd_signs_from_13_weeks() {
   ];
 }
 
+/**
+ * Returns minor ECD signs for children aged 6 to 12 months.
+ *
+ * @return array
+ *   An array of minor ECD signs for 6 to 12 months.
+ */
 function hedley_reports_well_child_ecd_signs_6_to_12_months_minor() {
   return [
     'bring-hands-to-mouth',
@@ -4103,6 +4157,12 @@ function hedley_reports_well_child_ecd_signs_6_to_12_months_minor() {
   ];
 }
 
+/**
+ * Returns major ECD signs for children aged 6 to 12 months.
+ *
+ * @return array
+ *   An array of major ECD signs for 6 to 12 months.
+ */
 function hedley_reports_well_child_ecd_signs_6_to_12_months_major() {
   return [
     'respond-to-sound-with-sound',
@@ -4114,6 +4174,12 @@ function hedley_reports_well_child_ecd_signs_6_to_12_months_major() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 15 months.
+ *
+ * @return array
+ *   An array of ECD signs expected at 15 months.
+ */
 function hedley_reports_well_child_ecd_signs_from_15_months() {
   return [
     'use-simple-gestures',
@@ -4124,6 +4190,12 @@ function hedley_reports_well_child_ecd_signs_from_15_months() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 18 months.
+ *
+ * @return array
+ *   An array of ECD signs expected at 18 months.
+ */
 function hedley_reports_well_child_ecd_signs_from_18_months() {
   return [
     'looks-when-pointed-at',
@@ -4134,6 +4206,12 @@ function hedley_reports_well_child_ecd_signs_from_18_months() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 2 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 2 years.
+ */
 function hedley_reports_well_child_ecd_signs_from_2_years() {
   return [
     'use-short-phrases',
@@ -4144,6 +4222,12 @@ function hedley_reports_well_child_ecd_signs_from_2_years() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 3 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 3 years.
+ */
 function hedley_reports_well_child_ecd_signs_from_3_years() {
   return [
     'dress-themselves',
@@ -4154,6 +4238,12 @@ function hedley_reports_well_child_ecd_signs_from_3_years() {
   ];
 }
 
+/**
+ * Returns the ECD signs for children aged 4 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 4 years.
+ */
 function hedley_reports_well_child_ecd_signs_from_4_years() {
   return [
     'follow-three-step-instructions',
