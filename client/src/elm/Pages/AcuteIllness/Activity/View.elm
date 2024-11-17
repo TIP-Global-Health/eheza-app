@@ -3071,7 +3071,7 @@ viewContactsTracingFormSearchParticipants language currentDate site db existingC
                 Nothing
 
             else
-                Dict.get searchValue db.personSearches
+                Dict.get searchValue db.personSearchesByName
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (Dict.filter

@@ -137,7 +137,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 Nothing
 
             else
-                Dict.get searchValue db.personSearches
+                Dict.get searchValue db.personSearchesByName
                     |> Maybe.withDefault NotAsked
                     |> RemoteData.map
                         (Dict.filter

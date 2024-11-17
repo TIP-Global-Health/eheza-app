@@ -1218,6 +1218,7 @@ type TranslationId
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
+    | PlaceholderEnterParticipantNationalId
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
     | PlacentaPrevia
@@ -1698,6 +1699,7 @@ type TranslationId
     | SavedMoneyQuestion
     | SaveError
     | ScheduleFollowUp
+    | SearchBy
     | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
     | SearchHelper
@@ -13925,6 +13927,12 @@ translationSet trans =
             , kirundi = Just "Andika izina ry'uwitavye hano"
             }
 
+        PlaceholderEnterParticipantNationalId ->
+            { english = "Enter participant national ID here"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PlaceholderEnterWeight ->
             { english = "Enter weight here…"
             , kinyarwanda = Just "Andika ibiro hano…"
@@ -21199,6 +21207,12 @@ translationSet trans =
             { english = "Schedule Follow Up"
             , kinyarwanda = Nothing
             , kirundi = Just "Tegura ibikurikira"
+            }
+
+        SearchBy ->
+            { english = "Search By"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         SearchEhezaForExistingParticipants ->

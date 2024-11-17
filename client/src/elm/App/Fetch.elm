@@ -173,7 +173,7 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
-                            Pages.People.Fetch.fetch relation initiator loggedIn.personsPage
+                            Pages.People.Fetch.fetch relation loggedIn.personsPage
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
