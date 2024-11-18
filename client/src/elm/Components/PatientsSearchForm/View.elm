@@ -25,6 +25,6 @@ view language model =
             (model.mode == ModeSearchByName |> Just)
             SetMode
             "search-by"
-            (Just ( Translate.Name, Translate.NationalIdNumber ))
+            (Just ( Translate.Name, Translate.NationalId ))
         , viewTextInput language model.input SetInput (Just placeholder) (Just "search-input")
         ]

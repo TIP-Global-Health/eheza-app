@@ -1033,6 +1033,7 @@ type TranslationId
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
     | Name
+    | NationalId
     | NationalIdNumber
     | NCDAANCVisitsCounseling
     | NCDABirthweightQuestion
@@ -11209,6 +11210,12 @@ translationSet trans =
             , kirundi = Just "Izina"
             }
 
+        NationalId ->
+            { english = "National ID"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NationalIdNumber ->
             { english = "National ID Number"
             , kinyarwanda = Just "Numero y'irangamuntu"
@@ -21210,7 +21217,7 @@ translationSet trans =
             }
 
         SearchBy ->
-            { english = "Search By"
+            { english = "Search by"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
