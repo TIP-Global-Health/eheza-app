@@ -24,6 +24,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model
 import Backend.Village.Utils exposing (getVillageHealthCenterId, getVillageIdByGeoFields)
+import Components.PatientsSearchForm.Update
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet
 import Form
@@ -1835,7 +1836,7 @@ update currentDate site selectedHealthCenter id db msg model =
             , fetchPersonMsg
             )
 
-        MsgContactsTracingDebouncer subMsg ->
+        MsgPatientsSearchForm subMsg ->
             let
                 form =
                     model.nextStepsData.contactsTracingForm
@@ -1843,11 +1844,8 @@ update currentDate site selectedHealthCenter id db msg model =
             case form.state of
                 ContactsTracingFormSearchParticipants searchData ->
                     let
-                        ( subModel, subCmd, extraMsg ) =
-                            Debouncer.update subMsg searchData.debouncer
-
-                        updatedSearchData =
-                            { searchData | debouncer = subModel }
+                        ( updatedSearchData, cmd ) =
+                            Components.PatientsSearchForm.Update.update subMsg searchData
 
                         updatedForm =
                             { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
@@ -1857,71 +1855,7 @@ update currentDate site selectedHealthCenter id db msg model =
                                 |> (\data -> { data | contactsTracingForm = updatedForm })
                     in
                     ( { model | nextStepsData = updatedData }
-                    , Cmd.map MsgContactsTracingDebouncer subCmd
-                    , []
-                    )
-                        |> sequenceExtra (update currentDate site selectedHealthCenter id db) (Maybe.Extra.toList extraMsg)
-
-                _ ->
-                    noChange
-
-        SetContactsTracingInput input ->
-            let
-                form =
-                    model.nextStepsData.contactsTracingForm
-            in
-            case form.state of
-                ContactsTracingFormSearchParticipants searchData ->
-                    let
-                        updatedSearchData =
-                            { searchData | input = input }
-
-                        updatedForm =
-                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
-
-                        updatedData =
-                            model.nextStepsData
-                                |> (\data -> { data | contactsTracingForm = updatedForm })
-                    in
-                    ( { model | nextStepsData = updatedData }
-                    , Cmd.none
-                    , []
-                    )
-                        |> sequenceExtra (update currentDate site selectedHealthCenter id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
-
-                _ ->
-                    noChange
-
-        SetContactsTracingSearch search ->
-            let
-                form =
-                    model.nextStepsData.contactsTracingForm
-            in
-            case form.state of
-                ContactsTracingFormSearchParticipants searchData ->
-                    let
-                        trimmed =
-                            String.trim search
-
-                        maybeSearch =
-                            if String.isEmpty trimmed then
-                                Nothing
-
-                            else
-                                Just trimmed
-
-                        updatedSearchData =
-                            { searchData | search = maybeSearch }
-
-                        updatedForm =
-                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
-
-                        updatedData =
-                            model.nextStepsData
-                                |> (\data -> { data | contactsTracingForm = updatedForm })
-                    in
-                    ( { model | nextStepsData = updatedData }
-                    , Cmd.none
+                    , Cmd.map MsgPatientsSearchForm cmd
                     , []
                     )
 
