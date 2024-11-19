@@ -121,7 +121,7 @@ type alias ModelIndexedDb =
     -- searching for.
     , personSearchesByName : Dict String (WebData (Dict PersonId Person))
 
-    -- Tracks searchs for participants by name. The key is the phrase we are
+    -- Tracks searches for participants by name. The key is the phrase we are
     -- searching for.
     , personSearchesByNationalId : Dict String (WebData (Dict PersonId Person))
     , peopleInVillage : Dict VillageId (WebData (Dict PersonId Person))
