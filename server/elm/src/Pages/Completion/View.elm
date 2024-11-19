@@ -14,6 +14,7 @@ import Backend.Completion.Model
         , NutritionChildActivity(..)
         , NutritionGroupEncounterData
         , NutritionMotherActivity(..)
+        , PrenatalActivity(..)
         , SelectedEntity(..)
         , TakenBy(..)
         , TuberculosisActivity(..)
@@ -227,6 +228,9 @@ viewCompletionData language currentDate themePath data model =
                             ReportNutritionIndividual ->
                                 viewNutritionIndividualReport language startDate limitDate model.takenBy data.nutritionIndividualData
 
+                            ReportPrenatal ->
+                                viewPrenatalReport language startDate limitDate model.takenBy data.prenatalData
+
                             ReportTuberculosis ->
                                 viewTuberculosisReport language startDate limitDate model.takenBy data.tuberculosisData
 
@@ -244,6 +248,7 @@ viewCompletionData language currentDate themePath data model =
             [ viewSelectListInput language
                 model.reportType
                 [ ReportAcuteIllness
+                , ReportPrenatal
                 , ReportChildScoreboard
                 , ReportHIV
                 , ReportHomeVisit
@@ -251,8 +256,8 @@ viewCompletionData language currentDate themePath data model =
                 , ReportNewbornExam
                 , ReportNutritionGroup
                 , ReportNutritionIndividual
-                , ReportTuberculosis
                 , ReportWellChild
+                , ReportTuberculosis
                 ]
                 reportTypeToString
                 SetReportType
@@ -373,6 +378,15 @@ viewTuberculosisReport language startDate limitDate mTakenBy reportData =
         |> generateTuberculosisReportData language
         |> viewMetricsResultsTable
         |> div [ class "report tuberculosis" ]
+
+
+viewPrenatalReport : Language -> NominalDate -> NominalDate -> Maybe TakenBy -> List (EncounterData PrenatalActivity) -> Html Msg
+viewPrenatalReport language startDate limitDate mTakenBy reportData =
+    eliminateEmptyEncounters reportData
+        |> applyFilters startDate limitDate mTakenBy
+        |> generatePrenatalReportData language
+        |> viewMetricsResultsTable
+        |> div [ class "report prenatal" ]
 
 
 eliminateEmptyEncounters :
@@ -689,6 +703,33 @@ generateTuberculosisReportData language records =
                 ]
             )
             allTuberculosisActivities
+    }
+
+
+generatePrenatalReportData :
+    Language
+    -> List (EncounterData PrenatalActivity)
+    -> MetricsResultsTableData
+generatePrenatalReportData language records =
+    { heading = translate language Translate.Antenatal
+    , captions = generateCaptionsList language
+    , rows =
+        List.map
+            (\activity ->
+                let
+                    expected =
+                        countOccurrences (.completion >> .expectedActivities) activity records
+
+                    completed =
+                        countOccurrences (.completion >> .completedActivities) activity records
+                in
+                [ translate language <| Translate.PrenatalActivity activity
+                , String.fromInt expected
+                , String.fromInt completed
+                , calcualtePercentage completed expected
+                ]
+            )
+            allPrenatalActivities
     }
 
 

@@ -435,6 +435,172 @@ tuberculosisActivityFromMapping mapped =
             Nothing
 
 
+prenatalActivityFromMapping : String -> Maybe PrenatalActivity
+prenatalActivityFromMapping mapped =
+    case mapped of
+        "a" ->
+            Just PrenatalAppointmentConfirmation
+
+        "b" ->
+            Just PrenatalBirthPlan
+
+        "c" ->
+            Just PrenatalBreastExam
+
+        "d" ->
+            Just PrenatalCorePhysicalExam
+
+        "e" ->
+            Just PrenatalDangerSigns
+
+        "f" ->
+            Just PrenatalLastMenstrualPeriod
+
+        "g" ->
+            Just PrenatalMedicalHistory
+
+        "h" ->
+            Just PrenatalMedication
+
+        "i" ->
+            Just PrenatalObstetricHistory
+
+        "j" ->
+            Just PrenatalObstetricHistoryStep2
+
+        "k" ->
+            Just PrenatalObstetricalExam
+
+        "l" ->
+            Just PrenatalPregnancyTesting
+
+        "m" ->
+            Just PrenatalBloodGprsTest
+
+        "n" ->
+            Just PrenatalBreastfeeding
+
+        "o" ->
+            Just PrenatalFamilyPlanning
+
+        "p" ->
+            Just PrenatalFollowUp
+
+        "q" ->
+            Just PrenatalGuExam
+
+        "r" ->
+            Just PrenatalHealthEducation
+
+        "s" ->
+            Just PrenatalHemoglobinTest
+
+        "t" ->
+            Just PrenatalHepatitisBTest
+
+        "u" ->
+            Just PrenatalHIVPCRTest
+
+        "v" ->
+            Just PrenatalHIVTest
+
+        "w" ->
+            Just PrenatalMalariaTest
+
+        "x" ->
+            Just PrenatalMedicationDistribution
+
+        "y" ->
+            Just PrenatalMentalHealth
+
+        "z" ->
+            Just PrenatalNutrition
+
+        "0" ->
+            Just PrenatalOutsideCare
+
+        "1" ->
+            Just PrenatalPartnerHIVTest
+
+        "2" ->
+            Just PrenatalPhoto
+
+        "3" ->
+            Just PrenatalRandomBloodSugarTest
+
+        "4" ->
+            Just PrenatalSendToHC
+
+        "5" ->
+            Just PrenatalSpecialityCare
+
+        "6" ->
+            Just PrenatalSymptomReview
+
+        "7" ->
+            Just PrenatalSyphilisTest
+
+        "8" ->
+            Just PrenatalTetanusImmunisation
+
+        "9" ->
+            Just PrenatalUrineDipstickTest
+
+        "@" ->
+            Just PrenatalResource
+
+        "#" ->
+            Just PrenatalSocialHistory
+
+        "$" ->
+            Just PrenatalVitals
+
+        "^" ->
+            Just PrenatalTreatmentReview
+
+        "&" ->
+            Just PrenatalPregnancyOutcome
+
+        "*" ->
+            Just PrenatalPostpartumTreatmentReview
+
+        "$+" ->
+            Just PrenatalVitalsRecheck
+
+        "m+" ->
+            Just PrenatalBloodGprsTestResult
+
+        "s+" ->
+            Just PrenatalHemoglobinTestResult
+
+        "t+" ->
+            Just PrenatalHepatitisBTestResult
+
+        "u+" ->
+            Just PrenatalHIVPCRTestResult
+
+        "v+" ->
+            Just PrenatalHIVTestResult
+
+        "w+" ->
+            Just PrenatalMalariaTestResult
+
+        "1+" ->
+            Just PrenatalPartnerHIVTestResult
+
+        "3+" ->
+            Just PrenatalRandomBloodSugarTestResult
+
+        "7+" ->
+            Just PrenatalSyphilisTestResult
+
+        "9+" ->
+            Just PrenatalUrineDipstickTestResult
+
+        _ ->
+            Nothing
+
+
 takenByToString : TakenBy -> String
 takenByToString value =
     case value of

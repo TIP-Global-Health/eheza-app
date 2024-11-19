@@ -14,6 +14,7 @@ import Backend.Completion.Model
         , NCDActivity(..)
         , NutritionChildActivity(..)
         , NutritionMotherActivity(..)
+        , PrenatalActivity(..)
         , TakenBy(..)
         , TuberculosisActivity(..)
         , WellChildActivity(..)
@@ -73,6 +74,7 @@ type TranslationId
     | AcuteIllnessTotal
     | AcuteMalnutrition
     | AggregatedChildScoreboard
+    | Antenatal
     | All
     | ANCNewborn
     | ANCTotal
@@ -160,6 +162,7 @@ type TranslationId
     | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
+    | Nutrition
     | NutritionChildActivity NutritionChildActivity
     | NutritionMotherActivity NutritionMotherActivity
     | NutritionBehavior
@@ -167,6 +170,8 @@ type TranslationId
     | NutritionGroup
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
+    | OutsideCare
+    | Photo
     | PleaseWaitMessage
     | PMTCT
     | PopulationSelectionOption PopulationSelectionOption
@@ -174,6 +179,7 @@ type TranslationId
     | PregnanciesAll
     | PregnanciesCompleted
     | PregnancyTest
+    | PrenatalActivity PrenatalActivity
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -196,6 +202,7 @@ type TranslationId
     | SelectStartDate
     | SelectScope
     | SelectViewMode
+    | SocialHistory
     | Sorwathe
     | StandardPediatricVisit
     | Stunting
@@ -279,10 +286,7 @@ translationSet transId =
                     }
 
                 AcuteIllnessNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Nutrition
 
                 AcuteIllnessVitals ->
                     translationSet Vitals
@@ -481,6 +485,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Antenatal ->
+            { english = "Antenatal"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         All ->
             { english = "All"
             , kinyarwanda = Nothing
@@ -560,6 +570,9 @@ translationSet transId =
 
                 Pages.Completion.Model.ReportNutritionIndividual ->
                     translationSet NutritionIndividual
+
+                Pages.Completion.Model.ReportPrenatal ->
+                    translationSet Antenatal
 
                 Pages.Completion.Model.ReportTuberculosis ->
                     translationSet Tuberculosis
@@ -1035,10 +1048,7 @@ translationSet transId =
                     }
 
                 NCDOutsideCare ->
-                    { english = "Outside Care"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet OutsideCare
 
                 NCDPregnancyTest ->
                     translationSet PregnancyTest
@@ -1050,10 +1060,7 @@ translationSet transId =
                     translationSet Referral
 
                 NCDSocialHistory ->
-                    { english = "Social History"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet SocialHistory
 
                 NCDSymptomReview ->
                     translationSet SymptomsReview
@@ -1345,6 +1352,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        Nutrition ->
+            { english = "Nutrition"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NutritionChildActivity activity ->
             case activity of
                 NutritionHeight ->
@@ -1354,16 +1367,10 @@ translationSet transId =
                     }
 
                 NutritionNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Nutrition
 
                 NutritionPhoto ->
-                    { english = "Photo"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Photo
 
                 NutritionWeight ->
                     { english = "Weight"
@@ -1471,6 +1478,18 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        OutsideCare ->
+            { english = "Outside Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Photo ->
+            { english = "Photo"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PleaseWaitMessage ->
             { english = "This action may take several minutes to complete."
             , kinyarwanda = Nothing
@@ -1527,6 +1546,269 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PrenatalActivity activity ->
+            case activity of
+                PrenatalAppointmentConfirmation ->
+                    { english = "Appointment Confirmation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalBirthPlan ->
+                    { english = "Birth Plan"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalBloodGprsTest ->
+                    { english = "Blood Group and Rhesus Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalBloodGprsTestResult ->
+                    { english = "Blood Group and Rhesus Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalBreastExam ->
+                    { english = "Breast Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalBreastfeeding ->
+                    { english = "Breastfeeding"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalCorePhysicalExam ->
+                    { english = "Core Physical Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalDangerSigns ->
+                    translationSet DangerSigns
+
+                PrenatalFamilyPlanning ->
+                    translationSet FamilyPlanning
+
+                PrenatalFollowUp ->
+                    translationSet FollowUp
+
+                PrenatalGuExam ->
+                    { english = "GU Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHealthEducation ->
+                    translationSet HealthEducation
+
+                PrenatalHemoglobinTest ->
+                    { english = "Hemoglobin Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHemoglobinTestResult ->
+                    { english = "Hemoglobin Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHepatitisBTest ->
+                    { english = "Hepatitis B Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHepatitisBTestResult ->
+                    { english = "Hepatitis B Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHIVPCRTest ->
+                    { english = "HIV PCR Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHIVPCRTestResult ->
+                    { english = "HIV PCR Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalHIVTest ->
+                    translationSet HIVTest
+
+                PrenatalHIVTestResult ->
+                    { english = "HIV Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalLastMenstrualPeriod ->
+                    { english = "Last Menstrual Period"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMalariaTest ->
+                    { english = "Malaria Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMalariaTestResult ->
+                    { english = "Malaria Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMedicalHistory ->
+                    { english = "Medical History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMedication ->
+                    translationSet Medication
+
+                PrenatalMedicationDistribution ->
+                    translationSet MedicationDistribution
+
+                PrenatalMentalHealth ->
+                    { english = "Mental Health"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalNutrition ->
+                    translationSet Nutrition
+
+                PrenatalObstetricalExam ->
+                    { english = "Obstetrical Exam"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalObstetricHistory ->
+                    { english = "Obstetric History"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalObstetricHistoryStep2 ->
+                    { english = "Obstetric History Second Step"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalOutsideCare ->
+                    translationSet OutsideCare
+
+                PrenatalPartnerHIVTest ->
+                    { english = "Partner HIV Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalPartnerHIVTestResult ->
+                    { english = "Partner HIV Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalPhoto ->
+                    translationSet Photo
+
+                PrenatalPostpartumTreatmentReview ->
+                    { english = "Postpartum Treatment Review"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalPregnancyOutcome ->
+                    { english = "Pregnancy Outcome"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalPregnancyTesting ->
+                    { english = "Pregnancy Testing"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalRandomBloodSugarTest ->
+                    translationSet RandomBloodSugarTest
+
+                PrenatalRandomBloodSugarTestResult ->
+                    translationSet RandomBloodSugarTestResult
+
+                PrenatalResource ->
+                    { english = "Resource"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalSendToHC ->
+                    translationSet Referral
+
+                PrenatalSocialHistory ->
+                    translationSet SocialHistory
+
+                PrenatalSpecialityCare ->
+                    { english = "Speciality Care"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalSymptomReview ->
+                    translationSet SymptomsReview
+
+                PrenatalSyphilisTest ->
+                    { english = "Syphilis Test"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalSyphilisTestResult ->
+                    { english = "Syphilis Test Result"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalTetanusImmunisation ->
+                    { english = "Tetanus Immunisation"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalTreatmentReview ->
+                    translationSet TreatmentReview
+
+                PrenatalUrineDipstickTest ->
+                    translationSet UrineDipstickTest
+
+                PrenatalUrineDipstickTestResult ->
+                    translationSet UrineDipstickTestResult
+
+                PrenatalVitals ->
+                    translationSet Vitals
+
+                PrenatalVitalsRecheck ->
+                    { english = "Vitals Recheck"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         PrevalenceByMonthOneVisitOrMore ->
             { english = "Prevalence by month - one visit or more"
             , kinyarwanda = Nothing
@@ -1558,7 +1840,7 @@ translationSet transId =
             }
 
         RandomBloodSugarTestResult ->
-            { english = "Random Blood Sugar Result"
+            { english = "Random Blood Sugar Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1593,16 +1875,10 @@ translationSet transId =
                     }
 
                 ReportNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Nutrition
 
                 ReportPrenatal ->
-                    { english = "Antenatal"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Antenatal
 
         ReportTypeLabel ->
             { english = "Report Type"
@@ -1694,6 +1970,12 @@ translationSet transId =
 
         SelectViewMode ->
             { english = "Please select desired view mode"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        SocialHistory ->
+            { english = "Social History"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1868,7 +2150,7 @@ translationSet transId =
             }
 
         UrineDipstickTestResult ->
-            { english = "Urine Dipstick Result"
+            { english = "Urine Dipstick Test Result"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1975,10 +2257,7 @@ translationSet transId =
                     }
 
                 WellChildNutrition ->
-                    { english = "Nutrition"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Nutrition
 
                 WellChildOPVImmunisation ->
                     translationSet ImmunisationOPV
@@ -1987,10 +2266,7 @@ translationSet transId =
                     translationSet ImmunisationPCV13
 
                 WellChildPhoto ->
-                    { english = "Photo"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet Photo
 
                 WellChildPregnancySummary ->
                     { english = "Pregnancy Summary"
