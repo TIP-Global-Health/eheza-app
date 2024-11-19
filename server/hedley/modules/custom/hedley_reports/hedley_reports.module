@@ -4938,62 +4938,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
     // Adding labs test results activities. Since those are logically derived,
     // and not actual content, we apply proprietary logic per records recorded
     // at labs results content.
-    $labs_results = $measurements_by_type['ncd_labs_results'];
-    if (!empty($labs_results)) {
-      if (!empty($labs_results->field_performed_tests)) {
-        $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
-        foreach ($performed_tests as $performed_test) {
-          switch ($performed_test['value']) {
-            case 'creatinine':
-              $expected[] = 'ncd_creatinine_test_result';
-              break;
-
-            case 'lipid-panel':
-              $expected[] = 'ncd_lipid_panel_test_result';
-              break;
-
-            case 'liver-function':
-              $expected[] = 'ncd_liver_function_test_result';
-              break;
-
-            case 'random-blood-sugar':
-              $expected[] = 'ncd_random_blood_sugar_test_result';
-              break;
-
-            case 'urine-dipstick':
-              $expected[] = 'ncd_urine_dipstick_test_result';
-              break;
-          }
-        }
-      }
-
-      if (!empty($labs_results->field_completed_tests)) {
-        $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
-        foreach ($completed_tests as $completed_test) {
-          switch ($completed_test['value']) {
-            case 'creatinine':
-              $measurements_by_type['ncd_creatinine_test_result'] = 'dummy';
-              break;
-
-            case 'lipid-panel':
-              $measurements_by_type['ncd_lipid_panel_test_result'] = 'dummy';
-              break;
-
-            case 'liver-function':
-              $measurements_by_type['ncd_liver_function_test_result'] = 'dummy';
-              break;
-
-            case 'random-blood-sugar':
-              $measurements_by_type['ncd_random_blood_sugar_test_result'] = 'dummy';
-              break;
-
-            case 'urine-dipstick':
-              $measurements_by_type['ncd_urine_dipstick_test_result'] = 'dummy';
-              break;
-          }
-        }
-      }
-    }
+    hedley_reports_ncd_add_labs_results_activities($expected, $measurements_by_type);
 
     $completion_data = [
       'start_date' => $start_date,
@@ -5373,6 +5318,75 @@ function hedley_reports_ncd_add_next_steps_activities(array $encounter_data, arr
 
   if ($refer_for_hypertension || $refer_for_diabetes || $refer_for_renal_omplications) {
     $expected[] = 'ncd_referral';
+  }
+}
+
+/**
+ * Adds NCD lab results activities to the expected and measurements arrays.
+ *
+ * @param array $expected
+ *   An array of expected activities to update.
+ * @param array $measurements_by_type
+ *   An array of measurements grouped by type, including lab results.
+ */
+function hedley_reports_ncd_add_labs_results_activities(array &$expected, array &$measurements_by_type) {
+  $labs_results = $measurements_by_type['ncd_labs_results'];
+  if (empty($labs_results) || empty($labs_results->field_performed_tests)) {
+    return;
+  }
+
+  $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
+  foreach ($performed_tests as $performed_test) {
+    switch ($performed_test['value']) {
+      case 'creatinine':
+        $expected[] = 'ncd_creatinine_test_result';
+        break;
+
+      case 'lipid-panel':
+        $expected[] = 'ncd_lipid_panel_test_result';
+        break;
+
+      case 'liver-function':
+        $expected[] = 'ncd_liver_function_test_result';
+        break;
+
+      case 'random-blood-sugar':
+        $expected[] = 'ncd_random_blood_sugar_test_result';
+        break;
+
+      case 'urine-dipstick':
+        $expected[] = 'ncd_urine_dipstick_test_result';
+        break;
+    }
+  }
+
+  if (empty($labs_results->field_completed_tests)) {
+    return;
+  }
+
+  $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
+  foreach ($completed_tests as $completed_test) {
+    switch ($completed_test['value']) {
+      case 'creatinine':
+        $measurements_by_type['ncd_creatinine_test_result'] = 'dummy';
+        break;
+
+      case 'lipid-panel':
+        $measurements_by_type['ncd_lipid_panel_test_result'] = 'dummy';
+        break;
+
+      case 'liver-function':
+        $measurements_by_type['ncd_liver_function_test_result'] = 'dummy';
+        break;
+
+      case 'random-blood-sugar':
+        $measurements_by_type['ncd_random_blood_sugar_test_result'] = 'dummy';
+        break;
+
+      case 'urine-dipstick':
+        $measurements_by_type['ncd_urine_dipstick_test_result'] = 'dummy';
+        break;
+    }
   }
 }
 
@@ -5768,6 +5782,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
   // Encounters are sorted ASC.
   $encounters = node_load_multiple(array_keys($result['node']));
   $encounters_data = [];
+  // Assembling needed data for each encounter.
   foreach ($encounters as $encounter) {
     // Skip encounter if exclusion flag is raised and it's report data is set.
     if ($exclude_set && !empty($encounter->field_reports_data[LANGUAGE_NONE][0]['value'])) {
@@ -5909,144 +5924,18 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     // Vitals recheck (recurrent phase).
     hedley_reports_prenatal_add_vitals_reckeck_activity($encounter_data, $expected);
     // Adding labs test results activities. Since those are logically derived,
-    // and not actual content, we apply proprietary logic per records recorded
+    // and not actual content, we apply proprietary logic per data recorded
     // at labs results content.
-    $labs_results = $measurements_by_type['prenatal_labs_results'];
-    if (!empty($labs_results)) {
-      if (!empty($labs_results->field_performed_tests)) {
-        $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
-        foreach ($performed_tests as $performed_test) {
-          switch ($performed_test['value']) {
-            case 'hiv':
-              $expected[] = 'prenatal_hiv_test_result';
-              break;
-
-            case 'partner-hiv':
-              $expected[] = 'prenatal_partner_hiv_test_result';
-              break;
-
-            case 'malaria':
-              $expected[] = 'prenatal_malaria_test_result';
-              break;
-
-            case 'syphilis':
-              $expected[] = 'prenatal_syphilis_test_result';
-              break;
-
-            case 'hepatitis-b':
-              $expected[] = 'prenatal_hepatitis_b_test_result';
-              break;
-
-            case 'blood-group':
-              $expected[] = 'prenatal_blood_gprs_test_result';
-              break;
-
-            case 'hemoglobin':
-              $expected[] = 'prenatal_hemoglobin_test_result';
-              break;
-
-            case 'random-blood-sugar':
-              $expected[] = 'prenatal_random_blood_sugar_test_result';
-              break;
-
-            case 'hiv-pcr':
-              $expected[] = 'prenatal_hiv_pcr_test_result';
-              break;
-
-            case 'urine-dipstick':
-              $expected[] = 'prenatal_urine_dipstick_test_result';
-              break;
-          }
-        }
-      }
-
-      if (!empty($labs_results->field_completed_tests)) {
-        $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
-        foreach ($completed_tests as $completed_test) {
-          switch ($completed_test['value']) {
-            case 'hiv':
-              $measurements_by_type['prenatal_hiv_test_result'] = 'dummy';
-              break;
-
-            case 'partner-hiv':
-              $measurements_by_type['prenatal_partner_hiv_test_result'] = 'dummy';
-              break;
-
-            case 'malaria':
-              $measurements_by_type['prenatal_malaria_test_result'] = 'dummy';
-              break;
-
-            case 'syphilis':
-              $measurements_by_type['prenatal_syphilis_test_result'] = 'dummy';
-              break;
-
-            case 'hepatitis-b':
-              $measurements_by_type['prenatal_hepatitis_b_test_result'] = 'dummy';
-              break;
-
-            case 'blood-group':
-              $measurements_by_type['prenatal_blood_gprs_test_result'] = 'dummy';
-              break;
-
-            case 'hemoglobin':
-              $measurements_by_type['prenatal_hemoglobin_test_result'] = 'dummy';
-              break;
-
-            case 'random-blood-sugar':
-              $measurements_by_type['prenatal_random_blood_sugar_test_result'] = 'dummy';
-              break;
-
-            case 'hiv-pcr':
-              $measurements_by_type['prenatal_hiv_pcr_test_result'] = 'dummy';
-              break;
-
-            case 'urine-dipstick':
-              $measurements_by_type['prenatal_urine_dipstick_test_result'] = 'dummy';
-              break;
-          }
-        }
-      }
-    }
-
+    hedley_reports_prenatal_add_labs_results_activities($expected, $measurements_by_type);
     // This comes last, since it has mandatory activities to be completed,
     // which we will be checking for withing $expected.
     hedley_reports_prenatal_add_next_steps_activities($encounter_data, $expected);
-
     // Logic to determine if virtual activities are completed.
-    // Treatment Review data is saved into Medication CT.
-    if (in_array('treatment_review', $expected)) {
-      if (!empty($measurements_by_type['medication'])) {
-        $measurements_by_type['treatment_review'] = 'dummy';
-      }
-    }
-    // Postpartum treatment data is similar to Treatment Review,
-    // but at postpartum encounter.
-    if (in_array('postpartum_treatment_review', $expected)) {
-      if (!empty($measurements_by_type['medication'])) {
-        $measurements_by_type['postpartum_treatment_review'] = 'dummy';
-      }
-    }
-    // Pregnancy Outcome data is stored on participant node.
-    if (in_array('pregnancy_outcome', $expected)) {
-      $outcome = $participant->field_outcome[LANGUAGE_NONE][0]['value'];
-      if (!empty($outcome)) {
-        $measurements_by_type['pregnancy_outcome'] = 'dummy';
-      }
-    }
-    // Blood pressure re-check is done if dia_repeated and
-    // sys_repeated fields are set on vitals measurement.
-    if (in_array('vitals_recheck', $expected)) {
-      $vitals_measurement = $encounter_data['measurements_by_type']['vitals'];
-      $sys_repeated = $vitals_measurement->field_sys_repeated[LANGUAGE_NONE][0]['value'];
-      $dia_repeated = $vitals_measurement->field_dia_repeated[LANGUAGE_NONE][0]['value'];
-      if (!empty($sys_repeated) && !empty($dia_repeated)) {
-        $measurements_by_type['vitals_recheck'] = 'dummy';
-      }
-    }
+    hedley_reports_prenatal_update_virtual_activities_completed($participant, $expected, $measurements_by_type);
 
     $completion_data = [
       'start_date' => $start_date,
-      'taken_by' => in_array($encounter_type, ['nurse', 'nurse-postpartum']) ? 'nurse' : 'chw',
+      'taken_by' => in_array($encounter_data['encounter_type'], ['nurse', 'nurse-postpartum']) ? 'nurse' : 'chw',
       'completion' => hedley_reports_generate_completion_result($expected, $measurements_by_type, $mapping),
     ];
 
@@ -6806,6 +6695,163 @@ function hedley_reports_prenatal_add_vitals_reckeck_activity(array $encounter_da
 }
 
 /**
+ * Adds Prenatal lab results activities to the expected and measurements arrays.
+ *
+ * @param array $expected
+ *   An array of expected activities to update.
+ * @param array $measurements_by_type
+ *   An array of measurements grouped by type, including lab results.
+ */
+function hedley_reports_prenatal_add_labs_results_activities(array &$expected, array &$measurements_by_type) {
+  $labs_results = $measurements_by_type['prenatal_labs_results'];
+  if (empty($labs_results) || empty($labs_results->field_performed_tests)) {
+    return;
+  }
+
+  $performed_tests = $labs_results->field_performed_tests[LANGUAGE_NONE];
+  foreach ($performed_tests as $performed_test) {
+    switch ($performed_test['value']) {
+      case 'hiv':
+        $expected[] = 'prenatal_hiv_test_result';
+        break;
+
+      case 'partner-hiv':
+        $expected[] = 'prenatal_partner_hiv_test_result';
+        break;
+
+      case 'malaria':
+        $expected[] = 'prenatal_malaria_test_result';
+        break;
+
+      case 'syphilis':
+        $expected[] = 'prenatal_syphilis_test_result';
+        break;
+
+      case 'hepatitis-b':
+        $expected[] = 'prenatal_hepatitis_b_test_result';
+        break;
+
+      case 'blood-group':
+        $expected[] = 'prenatal_blood_gprs_test_result';
+        break;
+
+      case 'hemoglobin':
+        $expected[] = 'prenatal_hemoglobin_test_result';
+        break;
+
+      case 'random-blood-sugar':
+        $expected[] = 'prenatal_random_blood_sugar_test_result';
+        break;
+
+      case 'hiv-pcr':
+        $expected[] = 'prenatal_hiv_pcr_test_result';
+        break;
+
+      case 'urine-dipstick':
+        $expected[] = 'prenatal_urine_dipstick_test_result';
+        break;
+    }
+  }
+
+  if (empty($labs_results->field_completed_tests)) {
+    return;
+  }
+
+  $completed_tests = $labs_results->field_completed_tests[LANGUAGE_NONE];
+  foreach ($completed_tests as $completed_test) {
+    switch ($completed_test['value']) {
+      case 'hiv':
+        $measurements_by_type['prenatal_hiv_test_result'] = 'dummy';
+        break;
+
+      case 'partner-hiv':
+        $measurements_by_type['prenatal_partner_hiv_test_result'] = 'dummy';
+        break;
+
+      case 'malaria':
+        $measurements_by_type['prenatal_malaria_test_result'] = 'dummy';
+        break;
+
+      case 'syphilis':
+        $measurements_by_type['prenatal_syphilis_test_result'] = 'dummy';
+        break;
+
+      case 'hepatitis-b':
+        $measurements_by_type['prenatal_hepatitis_b_test_result'] = 'dummy';
+        break;
+
+      case 'blood-group':
+        $measurements_by_type['prenatal_blood_gprs_test_result'] = 'dummy';
+        break;
+
+      case 'hemoglobin':
+        $measurements_by_type['prenatal_hemoglobin_test_result'] = 'dummy';
+        break;
+
+      case 'random-blood-sugar':
+        $measurements_by_type['prenatal_random_blood_sugar_test_result'] = 'dummy';
+        break;
+
+      case 'hiv-pcr':
+        $measurements_by_type['prenatal_hiv_pcr_test_result'] = 'dummy';
+        break;
+
+      case 'urine-dipstick':
+        $measurements_by_type['prenatal_urine_dipstick_test_result'] = 'dummy';
+        break;
+    }
+  }
+}
+
+/**
+ * Updates data for virtual activities completion.
+ *
+ * This function checks the participant data and measurements to mark
+ * virtual activities as completed if certain conditions are met.
+ * If virtual activity is completed, adding 'dummy' indication for
+ * activity, to match hedley_reports_generate_completion_result() logic.
+ *
+ * @param object $participant
+ *   The participant entity containing relevant fields.
+ * @param array $expected
+ *   An array of expected activities.
+ * @param array $measurements_by_type
+ *   An array of measurements grouped by type. Updated by reference.
+ */
+function hedley_reports_prenatal_update_virtual_activities_completed($participant, array $expected, array &$measurements_by_type) {
+  // Treatment Review data is saved into Medication CT.
+  if (in_array('treatment_review', $expected)) {
+    if (!empty($measurements_by_type['medication'])) {
+      $measurements_by_type['treatment_review'] = 'dummy';
+    }
+  }
+  // Postpartum treatment data is similar to Treatment Review,
+  // but at postpartum encounter.
+  if (in_array('postpartum_treatment_review', $expected)) {
+    if (!empty($measurements_by_type['medication'])) {
+      $measurements_by_type['postpartum_treatment_review'] = 'dummy';
+    }
+  }
+  // Pregnancy Outcome data is stored on participant node.
+  if (in_array('pregnancy_outcome', $expected)) {
+    $outcome = $participant->field_outcome[LANGUAGE_NONE][0]['value'];
+    if (!empty($outcome)) {
+      $measurements_by_type['pregnancy_outcome'] = 'dummy';
+    }
+  }
+  // Blood pressure re-check is done if dia_repeated and
+  // sys_repeated fields are set on vitals measurement.
+  if (in_array('vitals_recheck', $expected)) {
+    $vitals_measurement = $measurements_by_type['vitals'];
+    $sys_repeated = $vitals_measurement->field_sys_repeated[LANGUAGE_NONE][0]['value'];
+    $dia_repeated = $vitals_measurement->field_dia_repeated[LANGUAGE_NONE][0]['value'];
+    if (!empty($sys_repeated) && !empty($dia_repeated)) {
+      $measurements_by_type['vitals_recheck'] = 'dummy';
+    }
+  }
+}
+
+/**
  * Adds nurse unique postpartum activities, if conditions match.
  *
  * @param array $encounter_data
@@ -7098,7 +7144,7 @@ function hedley_reports_prenatal_add_health_education_activity_for_nurse(array $
 
     // Mental health education.
     // Mental health survey is filled and none of mental health
-    // diagnoses requiring tratment was recorded.
+    // diagnoses requiring treatment was recorded.
     $mental_health_measurement = $encounter_data['measurements_by_type']['prenatal_mental_health'];
     if (!empty($mental_health_measurement)) {
       $mental_health_diagnoses_requiring_treatment = hedley_reports_prenatal_mental_health_diagnoses_requiring_treatment();
