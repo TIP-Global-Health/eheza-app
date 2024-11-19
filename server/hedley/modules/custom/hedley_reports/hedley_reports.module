@@ -3428,6 +3428,8 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
     $expected = hedley_reports_well_child_generate_expected_initial_activities($encounter_data);
+    // If conditions match, add ECD activity.
+    hedley_reports_well_child_add_ecd_activity($encounter_data, $birth_date_obj, $expected);
     // If conditions match, add immunisation activities.
     hedley_reports_well_child_add_immunisation_activities($encounter_data, $birth_date_obj, $gender, $expected);
     // If conditions match, add medication activities.
@@ -3913,6 +3915,346 @@ function hedley_reports_well_child_add_immunisation_activities(array $encounter_
 }
 
 /**
+ * Adds ECD activity as expected, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param DateTime $birth_date_obj
+ *   The DateTime object representing the child's birth date.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_well_child_add_ecd_activity(array $encounter_data, DateTime $birth_date_obj, array &$expected) {
+  if (empty($birth_date_obj)) {
+    return;
+  }
+
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'pediatric-care') {
+    return;
+  }
+
+  $completed_signs = hedley_reports_well_child_generate_completed_ecd_signs($encounter_data);
+  $expected_signs = hedley_reports_well_child_generate_expected_ecd_signs($encounter_data, $birth_date_obj);
+
+  if (!empty(array_diff($expected_signs, $completed_signs))) {
+    $expected[] = 'well_child_ecd';
+  }
+}
+
+/**
+ * Generates a list of ECD signs completed during previous encounters.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter and
+ *   previous encounters.
+ *
+ * @return array
+ *   An array of unique ECD signs that were completed.
+ */
+function hedley_reports_well_child_generate_completed_ecd_signs(array $encounter_data) {
+  $previous_encounters_data = $encounter_data['previous_encounters_data'];
+  $completed_signs = [];
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $ecd_measurement = $previous_encounter_data['measurements_by_type']['well_child_ecd'];
+    if (empty($ecd_measurement) || empty($ecd_measurement->field_ecd_signs[LANGUAGE_NONE])) {
+      continue;
+    }
+
+    foreach ($ecd_measurement->field_ecd_signs[LANGUAGE_NONE] as $sign) {
+      if ($sign['value'] != 'none') {
+        $completed_signs[] = $sign['value'];
+      }
+    }
+  }
+
+  return array_unique($completed_signs);
+}
+
+/**
+ * Generates a list of ECD signs expected at current encounter.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter and
+ *   previous encounters.
+ * @param DateTime $birth_date_obj
+ *   The birth date of the child as a DateTime object.
+ *
+ * @return array
+ *   An array of expected ECD signs at current encounter.
+ */
+function hedley_reports_well_child_generate_expected_ecd_signs(array $encounter_data, DateTime $birth_date_obj) {
+  $start_date_obj = $encounter_data['start_date_obj'];
+  $interval = $start_date_obj->diff($birth_date_obj, TRUE);
+
+  $age_in_weeks = $interval->days / 7;
+  if ($age_in_weeks < 5) {
+    return [];
+  }
+
+  $age_in_months = ($interval->y * 12) + $interval->m;
+
+  $last_ecd_assessment_date = NULL;
+  $previous_encounters_data = array_reverse($encounter_data['previous_encounters_data']);
+  foreach ($previous_encounters_data as $previous_encounter_data) {
+    $ecd_measurement = $previous_encounter_data['measurements_by_type']['well_child_ecd'];
+    if (!empty($ecd_measurement) && !empty($ecd_measurement->field_date_measured[LANGUAGE_NONE][0]['value'])) {
+      $last_ecd_assessment_date = $ecd_measurement->field_date_measured[LANGUAGE_NONE][0]['value'];
+      break;
+    }
+  }
+
+  $age_in_months_at_last_assessment = NULL;
+  if (!empty($last_ecd_assessment_date)) {
+    $last_ecd_assessment_date_obj = new DateTime($last_ecd_assessment_date);
+    $interval = $last_ecd_assessment_date_obj->diff($birth_date_obj, TRUE);
+    $age_in_months_at_last_assessment = ($interval->y * 12) + $interval->m;
+  }
+
+  $grouped_ecd_signs = hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $age_in_months_at_last_assessment);
+  if ($age_in_weeks < 13) {
+    $groups_to_take = 1;
+  }
+  elseif ($age_in_months < 6) {
+    $groups_to_take = 2;
+  }
+  elseif ($age_in_months < 15) {
+    $groups_to_take = 3;
+  }
+  elseif ($age_in_months < 18) {
+    $groups_to_take = 4;
+  }
+  elseif ($age_in_months < 24) {
+    $groups_to_take = 5;
+  }
+  elseif ($age_in_months < 36) {
+    $groups_to_take = 6;
+  }
+  elseif ($age_in_months < 48) {
+    $groups_to_take = 7;
+  }
+  else {
+    $groups_to_take = 8;
+  }
+
+  $expected_groups = array_slice($grouped_ecd_signs, 0, $groups_to_take);
+  $expected_signs = [];
+  foreach ($expected_groups as $group) {
+    $expected_signs = array_merge($expected_signs, $group);
+  }
+
+  return $expected_signs;
+}
+
+/**
+ * Generates array with groups of ECD signs.
+ *
+ * Based on the child's age at time of encounter and that of
+ * encounter with last ECD assessment.
+ *
+ * @param int $age_in_months
+ *   The age of the child in months.
+ * @param int|null $age_in_months_at_last_assessment
+ *   The age of the child in months at the last ECD assessment, if available.
+ *
+ * @return array
+ *   An array of grouped ECD signs for the specified age.
+ */
+function hedley_reports_well_child_generate_grouped_ecd_signs($age_in_months, $age_in_months_at_last_assessment) {
+  if (empty($age_in_months_at_last_assessment) || $age_in_months_at_last_assessment < 6) {
+    $signs_from_5_weeks = hedley_reports_well_child_ecd_signs_from_5_weeks();
+    $signs_from_13_weeks = hedley_reports_well_child_ecd_signs_from_13_weeks();
+  }
+  else {
+    $signs_from_5_weeks = $signs_from_13_weeks = [];
+  }
+
+  if (empty($age_in_months_at_last_assessment)) {
+    $signs_6_to_12_months = array_merge(
+      hedley_reports_well_child_ecd_signs_6_to_12_months_minor(),
+      hedley_reports_well_child_ecd_signs_6_to_12_months_major()
+    );
+  }
+  elseif ($age_in_months_at_last_assessment > 12) {
+    $signs_6_to_12_months = [];
+  }
+  elseif ($age_in_months_at_last_assessment >= 9) {
+    $signs_6_to_12_months = hedley_reports_well_child_ecd_signs_6_to_12_months_major();
+  }
+  elseif ($age_in_months_at_last_assessment >= 6) {
+    if ($age_in_months > 12) {
+      $signs_6_to_12_months = [];
+    }
+    elseif ($age_in_months >= 9) {
+      $signs_6_to_12_months = hedley_reports_well_child_ecd_signs_6_to_12_months_major();
+    }
+    else {
+      $signs_6_to_12_months = array_merge(
+        hedley_reports_well_child_ecd_signs_6_to_12_months_minor(),
+        hedley_reports_well_child_ecd_signs_6_to_12_months_major()
+      );
+    }
+  }
+  else {
+    $signs_6_to_12_months = array_merge(
+      hedley_reports_well_child_ecd_signs_6_to_12_months_minor(),
+      hedley_reports_well_child_ecd_signs_6_to_12_months_major()
+    );
+  }
+
+  return [
+    $signs_from_5_weeks,
+    $signs_from_13_weeks,
+    $signs_6_to_12_months,
+    hedley_reports_well_child_ecd_signs_from_15_months(),
+    hedley_reports_well_child_ecd_signs_from_18_months(),
+    hedley_reports_well_child_ecd_signs_from_2_years(),
+    hedley_reports_well_child_ecd_signs_from_3_years(),
+    hedley_reports_well_child_ecd_signs_from_4_years(),
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 5 weeks.
+ *
+ * @return array
+ *   An array of ECD signs expected at 5 weeks.
+ */
+function hedley_reports_well_child_ecd_signs_from_5_weeks() {
+  return [
+    'follow-mothers-eyes',
+    'move-arms-and-legs',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 13 weeks.
+ *
+ * @return array
+ *   An array of ECD signs expected at 13 weeks.
+ */
+function hedley_reports_well_child_ecd_signs_from_13_weeks() {
+  return [
+    'raise-hands-up',
+    'smile',
+    'roll-sideways',
+  ];
+}
+
+/**
+ * Returns minor ECD signs for children aged 6 to 12 months.
+ *
+ * @return array
+ *   An array of minor ECD signs for 6 to 12 months.
+ */
+function hedley_reports_well_child_ecd_signs_6_to_12_months_minor() {
+  return [
+    'bring-hands-to-mouth',
+    'hold-head-without-support',
+    'hold-and-shake-toys',
+    'react-to-sudden-sounds',
+    'use-consonant-sounds',
+  ];
+}
+
+/**
+ * Returns major ECD signs for children aged 6 to 12 months.
+ *
+ * @return array
+ *   An array of major ECD signs for 6 to 12 months.
+ */
+function hedley_reports_well_child_ecd_signs_6_to_12_months_major() {
+  return [
+    'respond-to-sound-with-sound',
+    'turn-head-when-called',
+    'sit-without-support',
+    'smile-back',
+    'roll-tummy-to-back',
+    'reach-for-toys',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 15 months.
+ *
+ * @return array
+ *   An array of ECD signs expected at 15 months.
+ */
+function hedley_reports_well_child_ecd_signs_from_15_months() {
+  return [
+    'use-simple-gestures',
+    'stand-on-their-own',
+    'copy-during-play',
+    'say-mama-dada',
+    'can-hold-small-objects',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 18 months.
+ *
+ * @return array
+ *   An array of ECD signs expected at 18 months.
+ */
+function hedley_reports_well_child_ecd_signs_from_18_months() {
+  return [
+    'looks-when-pointed-at',
+    'use-single-words',
+    'walk-without-help',
+    'play-pretend',
+    'point-to-things-of-interest',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 2 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 2 years.
+ */
+function hedley_reports_well_child_ecd_signs_from_2_years() {
+  return [
+    'use-short-phrases',
+    'interested-in-other-children',
+    'follow-simple-instructions',
+    'kick-ball',
+    'point-at-named-objects',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 3 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 3 years.
+ */
+function hedley_reports_well_child_ecd_signs_from_3_years() {
+  return [
+    'dress-themselves',
+    'wash-hands-go-to-toiled',
+    'knows-colors-and-numbers',
+    'use-medium-phrases',
+    'play-make-believe',
+  ];
+}
+
+/**
+ * Returns the ECD signs for children aged 4 years.
+ *
+ * @return array
+ *   An array of ECD signs expected at 4 years.
+ */
+function hedley_reports_well_child_ecd_signs_from_4_years() {
+  return [
+    'follow-three-step-instructions',
+    'stand-on-one-foot-five-seconds',
+    'use-long-phrases',
+    'share-with-other-children',
+    'count-to-ten',
+  ];
+}
+
+/**
  * Generates a list of expected well-child immunisation activities.
  *
  * This function determines the expected immunisation activities for a
@@ -4154,6 +4496,11 @@ function hedley_reports_get_interval_for_vaccine($immunisation_type, $site) {
  *   An array of expected activity names, passed by reference.
  */
 function hedley_reports_well_child_add_medication_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type != 'pediatric-care') {
+    return;
+  }
+
   $age_in_months = $encounter_data['age_in_months'];
   $start_date_obj = $encounter_data['start_date_obj'];
   // Reversing array, to have the encounters sorted DESC.
@@ -4471,7 +4818,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
       $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
       $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-      list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, $encounter_data);
+      [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_child_scoreboard_generate_vaccination_progress_data($person_id, $encounter_data);
 
       $expected_immunisation_activities = hedley_reports_child_scoreboard_get_expected_immunisation_activities($encounter_data, $birth_date_obj, $gender, 'history');
       $expected = array_merge($expected, $expected_immunisation_activities);
