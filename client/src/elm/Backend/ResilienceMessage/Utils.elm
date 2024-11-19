@@ -87,6 +87,18 @@ resilienceMessageOrderToString value =
         ResilienceMessage8 ->
             "8"
 
+        ResilienceMessage9 ->
+            "9"
+
+        ResilienceMessage10 ->
+            "10"
+
+        ResilienceMessage11 ->
+            "11"
+
+        ResilienceMessage12 ->
+            "12"
+
 
 resilienceMessageOrderFromString : String -> Maybe ResilienceMessageOrder
 resilienceMessageOrderFromString value =
@@ -114,6 +126,18 @@ resilienceMessageOrderFromString value =
 
         "8" ->
             Just ResilienceMessage8
+
+        "9" ->
+            Just ResilienceMessage9
+
+        "10" ->
+            Just ResilienceMessage10
+
+        "11" ->
+            Just ResilienceMessage11
+
+        "12" ->
+            Just ResilienceMessage12
 
         _ ->
             Nothing
@@ -168,12 +192,12 @@ numberOfMessagesByCategory : Dict ResilienceCategory Int
 numberOfMessagesByCategory =
     Dict.fromList
         [ ( ResilienceCategoryIntroduction, 8 )
-        , ( ResilienceCategoryGrowth, 4 )
-        , ( ResilienceCategoryStressManagement, 4 )
-        , ( ResilienceCategoryMindfulness, 7 )
-        , ( ResilienceCategoryConnecting, 6 )
-        , ( ResilienceCategorySelfCare, 3 )
-        , ( ResilienceCategoryEndOfPeriod, 2 )
+        , ( ResilienceCategoryGrowth, 9 )
+        , ( ResilienceCategoryStressManagement, 10 )
+        , ( ResilienceCategoryMindfulness, 9 )
+        , ( ResilienceCategoryConnecting, 12 )
+        , ( ResilienceCategorySelfCare, 5 )
+        , ( ResilienceCategoryEndOfPeriod, 4 )
         ]
 
 
@@ -206,6 +230,9 @@ resolveDisplayDay category order =
                 ResilienceMessage8 ->
                     Just 2
 
+                _ ->
+                    Nothing
+
         ResilienceCategoryGrowth ->
             case order of
                 ResilienceMessage1 ->
@@ -219,6 +246,21 @@ resolveDisplayDay category order =
 
                 ResilienceMessage4 ->
                     Just 61
+
+                ResilienceMessage5 ->
+                    Just 70
+
+                ResilienceMessage6 ->
+                    Just 96
+
+                ResilienceMessage7 ->
+                    Just 100
+
+                ResilienceMessage8 ->
+                    Just 105
+
+                ResilienceMessage9 ->
+                    Just 107
 
                 _ ->
                     Nothing
@@ -246,6 +288,15 @@ resolveDisplayDay category order =
                 ResilienceMessage7 ->
                     Just 65
 
+                ResilienceMessage8 ->
+                    Just 79
+
+                ResilienceMessage9 ->
+                    Just 91
+
+                ResilienceMessage10 ->
+                    Just 93
+
                 _ ->
                     Nothing
 
@@ -268,6 +319,15 @@ resolveDisplayDay category order =
 
                 ResilienceMessage6 ->
                     Just 47
+
+                ResilienceMessage7 ->
+                    Just 77
+
+                ResilienceMessage8 ->
+                    Just 84
+
+                ResilienceMessage9 ->
+                    Just 112
 
                 _ ->
                     Nothing
@@ -292,8 +352,23 @@ resolveDisplayDay category order =
                 ResilienceMessage6 ->
                     Just 68
 
-                _ ->
-                    Nothing
+                ResilienceMessage7 ->
+                    Just 72
+
+                ResilienceMessage8 ->
+                    Just 75
+
+                ResilienceMessage9 ->
+                    Just 82
+
+                ResilienceMessage10 ->
+                    Just 89
+
+                ResilienceMessage11 ->
+                    Just 98
+
+                ResilienceMessage12 ->
+                    Just 110
 
         ResilienceCategorySelfCare ->
             case order of
@@ -306,6 +381,12 @@ resolveDisplayDay category order =
                 ResilienceMessage3 ->
                     Just 58
 
+                ResilienceMessage4 ->
+                    Just 103
+
+                ResilienceMessage5 ->
+                    Just 114
+
                 _ ->
                     Nothing
 
@@ -316,6 +397,12 @@ resolveDisplayDay category order =
 
                 ResilienceMessage2 ->
                     Just 56
+
+                ResilienceMessage3 ->
+                    Just 84
+
+                ResilienceMessage4 ->
+                    Just 117
 
                 _ ->
                     Nothing

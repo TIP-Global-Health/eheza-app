@@ -933,17 +933,31 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                             in
                             if patientHIVNegative then
                                 getMeasurementValueFunc encounterData.measurements.partnerHIVTest
-                                    |> Maybe.andThen .hivSigns
-                                    |> Maybe.map
-                                        (\hivSigns ->
+                                    |> Maybe.andThen
+                                        (\value ->
                                             let
-                                                takingARV =
-                                                    EverySet.member PartnerTakingARV hivSigns
-
-                                                surpressedViralLoad =
-                                                    EverySet.member PartnerSurpressedViralLoad hivSigns
+                                                partnerHIVPositive =
+                                                    (value.executionNote == TestNoteKnownAsPositive)
+                                                        || (List.member value.executionNote [ TestNoteRunToday, TestNoteRunPreviously ]
+                                                                && (value.testResult == Just TestPositive)
+                                                           )
                                             in
-                                            Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+                                            if partnerHIVPositive then
+                                                Maybe.map
+                                                    (\hivSigns ->
+                                                        let
+                                                            takingARV =
+                                                                EverySet.member PartnerTakingARV hivSigns
+
+                                                            surpressedViralLoad =
+                                                                EverySet.member PartnerSurpressedViralLoad hivSigns
+                                                        in
+                                                        Translate.DiscordantCoupleStatus takingARV surpressedViralLoad
+                                                    )
+                                                    value.hivSigns
+
+                                            else
+                                                Nothing
                                         )
 
                             else
