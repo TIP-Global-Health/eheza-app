@@ -481,6 +481,7 @@ function minutesToMillis(minutes) {
 // Report our quota status.
 function reportQuota() {
   navigator.storage.estimate().then(function(quota) {
+    console.log(quota);
     elmApp.ports.storageQuota.send(quota);
   });
 
@@ -515,6 +516,23 @@ elmApp.ports.setLanguage.subscribe(function(language) {
 
 elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
+});
+
+elmApp.ports.getCoordinates.subscribe(function() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const result = {latitude: latitude, longitude: longitude};
+            elmApp.ports.coordinates.send(result);
+        },
+        (error) => {
+            console.error("Error fetching location:", error);
+        }
+    );
+  } else {
+      console.error("Geolocation is not available.");
+  }
 });
 
 
