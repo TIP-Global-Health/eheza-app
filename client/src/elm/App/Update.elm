@@ -274,6 +274,7 @@ update msg model =
                     Backend.Update.updateIndexedDb model.language
                         currentDate
                         model.currentTime
+                        model.coordinates
                         model.zscores
                         site
                         features
