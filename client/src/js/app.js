@@ -481,7 +481,6 @@ function minutesToMillis(minutes) {
 // Report our quota status.
 function reportQuota() {
   navigator.storage.estimate().then(function(quota) {
-    console.log(quota);
     elmApp.ports.storageQuota.send(quota);
   });
 
