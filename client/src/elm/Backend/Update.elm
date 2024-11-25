@@ -4206,8 +4206,8 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     Maybe.map
                         (\coords ->
                             { person
-                                | registrationLatitude = Just coords.latitude
-                                , registrationLongitude = Just coords.longitude
+                                | registrationLatitude = String.fromFloat coords.latitude |> Just
+                                , registrationLongitude = String.fromFloat coords.longitude |> Just
                             }
                         )
                         coordinates

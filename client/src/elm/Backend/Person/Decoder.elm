@@ -43,8 +43,8 @@ decodePerson =
         |> optional "sector" (nullable decodeGeoField) Nothing
         |> optional "cell" (nullable decodeGeoField) Nothing
         |> optional "village" (nullable decodeGeoField) Nothing
-        |> optional "latitude" (nullable float) Nothing
-        |> optional "longitude" (nullable float) Nothing
+        |> optional "latitude" (nullable string) Nothing
+        |> optional "longitude" (nullable string) Nothing
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "deleted" bool

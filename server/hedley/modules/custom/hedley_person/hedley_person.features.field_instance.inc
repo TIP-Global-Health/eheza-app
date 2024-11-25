@@ -808,8 +808,8 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-person-field_latitude'.
-  $field_instances['node-person-field_latitude'] = array(
+  // Exported field_instance: 'node-person-field_laitude'.
+  $field_instances['node-person-field_laitude'] = array(
     'bundle' => 'person',
     'default_value' => NULL,
     'deleted' => 0,
@@ -817,15 +817,10 @@ function hedley_person_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 2,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_decimal',
-        'weight' => 29,
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 30,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -835,21 +830,20 @@ function hedley_person_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_latitude',
-    'label' => 'Registraiton latitude',
+    'field_name' => 'field_laitude',
+    'label' => 'Registraiton laitude',
     'required' => 0,
     'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
+      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
       'weight' => 23,
     ),
   );
@@ -863,15 +857,10 @@ function hedley_person_field_default_field_instances() {
     'display' => array(
       'default' => array(
         'label' => 'above',
-        'module' => 'number',
-        'settings' => array(
-          'decimal_separator' => '.',
-          'prefix_suffix' => TRUE,
-          'scale' => 2,
-          'thousand_separator' => '',
-        ),
-        'type' => 'number_decimal',
-        'weight' => 30,
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 29,
       ),
       'teaser' => array(
         'label' => 'above',
@@ -885,17 +874,16 @@ function hedley_person_field_default_field_instances() {
     'label' => 'Registraiton longitude',
     'required' => 0,
     'settings' => array(
-      'max' => '',
-      'min' => '',
-      'prefix' => '',
-      'suffix' => '',
+      'text_processing' => 0,
       'user_register_form' => FALSE,
     ),
     'widget' => array(
-      'active' => 0,
-      'module' => 'number',
-      'settings' => array(),
-      'type' => 'number',
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
       'weight' => 24,
     ),
   );
@@ -1792,7 +1780,7 @@ function hedley_person_field_default_field_instances() {
   t('Phone number');
   t('Photo');
   t('Province');
-  t('Registraiton latitude');
+  t('Registraiton laitude');
   t('Registraiton longitude');
   t('Related by');
   t('Related to');
