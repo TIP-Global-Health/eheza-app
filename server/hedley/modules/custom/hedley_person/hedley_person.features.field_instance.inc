@@ -808,8 +808,8 @@ function hedley_person_field_default_field_instances() {
     ),
   );
 
-  // Exported field_instance: 'node-person-field_laitude'.
-  $field_instances['node-person-field_laitude'] = array(
+  // Exported field_instance: 'node-person-field_latitude'.
+  $field_instances['node-person-field_latitude'] = array(
     'bundle' => 'person',
     'default_value' => NULL,
     'deleted' => 0,
@@ -830,7 +830,7 @@ function hedley_person_field_default_field_instances() {
       ),
     ),
     'entity_type' => 'node',
-    'field_name' => 'field_laitude',
+    'field_name' => 'field_latitude',
     'label' => 'Registraiton laitude',
     'required' => 0,
     'settings' => array(

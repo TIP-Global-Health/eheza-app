@@ -272,14 +272,14 @@ function hedley_person_field_default_field_bases() {
     'type' => 'text',
   );
 
-  // Exported field_base: 'field_laitude'.
-  $field_bases['field_laitude'] = array(
+  // Exported field_base: 'field_latitude'.
+  $field_bases['field_latitude'] = array(
     'active' => 1,
     'cardinality' => 1,
     'deleted' => 0,
     'entity_id_type' => NULL,
     'entity_types' => array(),
-    'field_name' => 'field_laitude',
+    'field_name' => 'field_latitude',
     'indexes' => array(
       'format' => array(
         0 => 'format',
