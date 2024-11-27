@@ -40,6 +40,8 @@ encodePerson person =
     , ( "sector", maybe string person.sector )
     , ( "cell", maybe string person.cell )
     , ( "village", maybe string person.village )
+    , ( "latitude", maybe string person.registrationLatitude )
+    , ( "longitude", maybe string person.registrationLongitude )
     , ( "phone_number", maybe string person.telephoneNumber )
     , ( "health_center", maybe encodeEntityUuid person.healthCenterId )
     , ( "deleted", bool person.deleted )

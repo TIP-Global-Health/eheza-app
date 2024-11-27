@@ -274,6 +274,7 @@ update msg model =
                     Backend.Update.updateIndexedDb model.language
                         currentDate
                         model.currentTime
+                        model.coordinates
                         model.zscores
                         site
                         features
@@ -1097,6 +1098,14 @@ update msg model =
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
 
+                extraCmd =
+                    case page of
+                        UserPage (CreatePersonPage _ _) ->
+                            App.Ports.getCoordinates ()
+
+                        _ ->
+                            Cmd.none
+
                 extraMsgs =
                     case page of
                         -- When navigating to Device page (which is used for Sync management), trigger Sync.
@@ -1128,7 +1137,7 @@ update msg model =
                             []
             in
             ( { model | activePage = page }
-            , cmd
+            , Cmd.batch [ cmd, extraCmd ]
             )
                 |> sequence update extraMsgs
 
@@ -1144,6 +1153,11 @@ update msg model =
 
         SetMemoryQuota quota ->
             ( { model | memoryQuota = Just quota }
+            , Cmd.none
+            )
+
+        SetGPSCoordinates coordinates ->
+            ( { model | coordinates = Just coordinates }
             , Cmd.none
             )
 
@@ -1532,6 +1546,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+         , coordinates SetGPSCoordinates
          , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted

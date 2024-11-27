@@ -517,6 +517,23 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
 });
 
+elmApp.ports.getCoordinates.subscribe(function() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const result = {latitude: latitude, longitude: longitude};
+            elmApp.ports.coordinates.send(result);
+        },
+        (error) => {
+            console.error("Error fetching location:", error);
+        }
+    );
+  } else {
+      console.error("Geolocation is not available.");
+  }
+});
+
 
 function scrollToElement(elementId) {
   var element = document.getElementById(elementId);
