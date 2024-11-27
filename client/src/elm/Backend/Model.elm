@@ -119,7 +119,11 @@ type alias ModelIndexedDb =
 
     -- Tracks searchs for participants by name. The key is the phrase we are
     -- searching for.
-    , personSearches : Dict String (WebData (Dict PersonId Person))
+    , personSearchesByName : Dict String (WebData (Dict PersonId Person))
+
+    -- Tracks searches for participants by name. The key is the phrase we are
+    -- searching for.
+    , personSearchesByNationalId : Dict String (WebData (Dict PersonId Person))
     , peopleInVillage : Dict VillageId (WebData (Dict PersonId Person))
 
     -- A simple cache of several things.
@@ -247,7 +251,8 @@ emptyModelIndexedDb =
     , participantsByPerson = Dict.empty
     , people = Dict.empty
     , traceContacts = Dict.empty
-    , personSearches = Dict.empty
+    , personSearchesByName = Dict.empty
+    , personSearchesByNationalId = Dict.empty
     , peopleInVillage = Dict.empty
     , prenatalEncounterRequests = Dict.empty
     , nutritionEncounterRequests = Dict.empty
@@ -373,6 +378,7 @@ type MsgIndexedDb
     | FetchParticipantsForPerson PersonId
     | FetchPeople (List PersonId)
     | FetchPeopleByName String
+    | FetchPeopleByNationalId String
     | FetchPeopleInVillage VillageId
     | FetchPerson PersonId
     | FetchPrenatalEncounter PrenatalEncounterId
@@ -446,6 +452,7 @@ type MsgIndexedDb
     | HandleFetchedParticipantsForPerson PersonId (WebData (Dict PmtctParticipantId PmtctParticipant))
     | HandleFetchedPeople (WebData (Dict PersonId Person))
     | HandleFetchedPeopleByName String (WebData (Dict PersonId Person))
+    | HandleFetchedPeopleByNationalId String (WebData (Dict PersonId Person))
     | HandleFetchedPeopleInVillage VillageId (WebData (Dict PersonId Person))
     | HandleFetchedPerson PersonId (WebData Person)
     | HandleFetchedPrenatalEncounter PrenatalEncounterId (WebData PrenatalEncounter)

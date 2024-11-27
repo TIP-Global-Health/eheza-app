@@ -1033,6 +1033,7 @@ type TranslationId
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
     | Name
+    | NationalId
     | NationalIdNumber
     | NCDAANCVisitsCounseling
     | NCDABirthweightQuestion
@@ -1218,6 +1219,7 @@ type TranslationId
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
+    | PlaceholderEnterParticipantNationalId
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
     | PlacentaPrevia
@@ -1698,6 +1700,7 @@ type TranslationId
     | SavedMoneyQuestion
     | SaveError
     | ScheduleFollowUp
+    | SearchBy
     | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
     | SearchHelper
@@ -11207,6 +11210,12 @@ translationSet trans =
             , kirundi = Just "Izina"
             }
 
+        NationalId ->
+            { english = "National ID"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NationalIdNumber ->
             { english = "National ID Number"
             , kinyarwanda = Just "Numero y'irangamuntu"
@@ -13923,6 +13932,12 @@ translationSet trans =
             { english = "Enter participant name here"
             , kinyarwanda = Just "Andika izina ry'umurwayi hano"
             , kirundi = Just "Andika izina ry'uwitavye hano"
+            }
+
+        PlaceholderEnterParticipantNationalId ->
+            { english = "Enter participant national ID here"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PlaceholderEnterWeight ->
@@ -21199,6 +21214,12 @@ translationSet trans =
             { english = "Schedule Follow Up"
             , kinyarwanda = Nothing
             , kirundi = Just "Tegura ibikurikira"
+            }
+
+        SearchBy ->
+            { english = "Search by"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         SearchEhezaForExistingParticipants ->

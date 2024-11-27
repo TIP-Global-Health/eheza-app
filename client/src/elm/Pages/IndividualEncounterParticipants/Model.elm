@@ -1,6 +1,6 @@
-module Pages.IndividualEncounterParticipants.Model exposing (Model, Msg(..), emptyModel)
+module Pages.IndividualEncounterParticipants.Model exposing (..)
 
-import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
+import Components.PatientsSearchForm.Model
 import Pages.Page exposing (Page)
 
 
@@ -11,22 +11,9 @@ searches briefly while the user is typing).
 
 -}
 type alias Model =
-    { debouncer : Debouncer Msg Msg
-    , search : Maybe String
-    , input : String
-    }
-
-
-emptyModel : Model
-emptyModel =
-    { debouncer = debounce 500 |> toDebouncer
-    , search = Nothing
-    , input = ""
-    }
+    Components.PatientsSearchForm.Model.Model
 
 
 type Msg
-    = MsgDebouncer (Debouncer.Msg Msg)
-    | SetInput String
-    | SetSearch String
-    | SetActivePage Page
+    = SetActivePage Page
+    | MsgPatientsSearchForm Components.PatientsSearchForm.Model.Msg

@@ -852,6 +852,46 @@ h3.ui.header {
       width: 100%;
     }
 
+    .ui.form.search .form-input.yes-no {
+      padding-bottom: 15px;
+      margin-left: 25px;
+      margin-top: 15px;
+
+      label {
+        font-size: 25px;
+        margin-left: 10px;
+      }
+
+      label:before {
+        content: " ";
+        display: inline-block;
+        position: relative;
+        top: 5px;
+        margin-right: 10px;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
+        border: 2px solid $color-gray-border;
+        background-color: transparent;
+      }
+
+      input[type=radio] {
+        display: none;
+      }
+
+      input[type=radio]:checked + label:after {
+        content: " ";
+        border-radius: 7px;
+        width: 14px;
+        height: 14px;
+        position: absolute;
+        top: 25px;
+        left: 30px;
+        display: block;
+        background: $color-text;
+      }
+    }
+
     .results-summary {
       margin-top: 15px;
       margin-bottom: 15px;

@@ -102,6 +102,7 @@ personEndpoint =
 
 type PersonParams
     = ParamsNameContains String
+    | ParamsNationalIdContains String
     | ParamsGeoFields String
 
 
@@ -110,6 +111,9 @@ encodePersonParams params =
     case params of
         ParamsNameContains value ->
             [ ( "name_contains", value ) ]
+
+        ParamsNationalIdContains value ->
+            [ ( "national_id_contains", value ) ]
 
         ParamsGeoFields value ->
             [ ( "geo_fields", value ) ]
