@@ -112,6 +112,7 @@ features[field_instance][] = node-attendance-field_attended
 features[field_instance][] = node-attendance-field_date_measured
 features[field_instance][] = node-attendance-field_nurse
 features[field_instance][] = node-attendance-field_person
+features[field_instance][] = node-attendance-field_reports_data
 features[field_instance][] = node-attendance-field_session
 features[field_instance][] = node-attendance-field_shards
 features[field_instance][] = node-attendance-field_uuid

@@ -20,10 +20,6 @@ if (!drupal_is_cli()) {
   return;
 }
 
-drush_print("Running calculation for Global scope.");
-$duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
-drush_print("Calculation completed within $duration seconds.");
-
 // Resolving unique provinces as they appear at DB.
 $query = db_select('field_data_field_province', 'fp')
   ->fields('fp', array('field_province_value'))
@@ -64,6 +60,10 @@ foreach ($health_center_ids as $health_center_id) {
   $duration = create_or_update_results_data_node('health-center', NULL, NULL, $health_center_id);
   drush_print("Calculation completed within $duration seconds.");
 }
+
+drush_print("Running calculation for Global scope.");
+$duration = create_or_update_results_data_node('global', NULL, NULL, NULL);
+drush_print("Calculation completed within $duration seconds.");
 
 drush_print('');
 drush_print('All calculations completed!');
