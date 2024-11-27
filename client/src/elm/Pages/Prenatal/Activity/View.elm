@@ -1411,6 +1411,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     ( task
                     , case task of
                         TaskHIVTest ->
+                            let
+                                partnerHIVTestResult =
+                                    resolvePartnerHIVTestResult assembled
+                            in
                             measurements.hivTest
                                 |> getMeasurementValueFunc
                                 |> hivTestUniversalFormWithDefault data.hivTestForm
@@ -1418,6 +1422,7 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                                     currentDate
                                     contentAndTasksLaboratoryTestInitialConfig
                                     contentAndTasksForPerformedLaboratoryTestConfig
+                                    partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             measurements.syphilisTest

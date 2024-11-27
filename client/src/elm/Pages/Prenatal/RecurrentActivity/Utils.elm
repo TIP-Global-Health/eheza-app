@@ -212,9 +212,11 @@ expectLaboratoryResultTask currentDate isLabTech assembled task =
 
         TaskPartnerHIVTest ->
             wasTestPerformed .partnerHIVTest
+                && (isLabTech || followUpWasNotScheduled TestPartnerHIV)
 
         TaskSyphilisTest ->
-            wasTestPerformed .syphilisTest && (isLabTech || followUpWasNotScheduled TestSyphilis)
+            wasTestPerformed .syphilisTest
+                && (isLabTech || followUpWasNotScheduled TestSyphilis)
 
         TaskHepatitisBTest ->
             wasTestPerformed .hepatitisBTest
@@ -249,6 +251,7 @@ laboratoryResultFollowUpsTasks : List LaboratoryTask
 laboratoryResultFollowUpsTasks =
     [ TaskHIVTest
     , TaskSyphilisTest
+    , TaskPartnerHIVTest
     ]
 
 
@@ -277,6 +280,9 @@ laboratoryResultFollowUpsTaskCompleted currentDate assembled task =
         TaskSyphilisTest ->
             (not <| taskExpected TaskSyphilisTest) || testFollowUpCompleted .syphilisTest .symptoms IllnessSymptomPendingInput
 
+        TaskPartnerHIVTest ->
+            (not <| taskExpected TaskPartnerHIVTest) || testFollowUpCompleted .partnerHIVTest .hivSigns PrenatalHIVSignPendingInput
+
         -- Others are not in use for Prenatal.
         _ ->
             False
@@ -294,12 +300,32 @@ expectLaboratoryResultFollowUpsTask currentDate assembled task =
     case task of
         TaskHIVTest ->
             wasFollowUpScheduled TestHIV
+                && (-- At TaskPartnerHIVTest task we ask same follow up questions,
+                    -- as we do for TestHIV when test result is negative.
+                    -- So we either do not expect TaskPartnerHIVTest follow up, or,
+                    -- only when test HIV result is positive.
+                    not <|
+                        expectLaboratoryResultFollowUpsTask currentDate assembled TaskPartnerHIVTest
+                            || (getMeasurementValueFunc assembled.measurements.hivTest
+                                    |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                                    |> Maybe.withDefault False
+                               )
+                   )
 
         TaskSyphilisTest ->
             wasFollowUpScheduled TestSyphilis
                 && -- Lab tech entered result showing positive Syphilis,
                    -- which requires Syphilis symptoms question.
                    (getMeasurementValueFunc assembled.measurements.syphilisTest
+                        |> Maybe.map (.testResult >> (==) (Just TestPositive))
+                        |> Maybe.withDefault False
+                   )
+
+        TaskPartnerHIVTest ->
+            wasFollowUpScheduled TestPartnerHIV
+                && -- Lab tech entered result showing positive Syphilis,
+                   -- which requires Syphilis symptoms question.
+                   (getMeasurementValueFunc assembled.measurements.partnerHIVTest
                         |> Maybe.map (.testResult >> (==) (Just TestPositive))
                         |> Maybe.withDefault False
                    )

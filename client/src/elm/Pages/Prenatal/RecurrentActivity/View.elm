@@ -31,6 +31,7 @@ import Measurement.Utils
         , laboratoryTaskIconClass
         , malariaResultFormAndTasks
         , malariaResultFormWithDefault
+        , partnerHIVResultFollowUpsFormAndTasks
         , partnerHIVResultFormAndTasks
         , partnerHIVResultFormWithDefault
         , randomBloodSugarResultFormAndTasks
@@ -202,8 +203,13 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                                     isLabTech
                                     contentAndTasksLaboratorResultsConfig
                                     SetPartnerHIVTestResult
+                                    SetPartnerHIVTestFormBoolInput
 
                         TaskHIVTest ->
+                            let
+                                partnerHIVTestResult =
+                                    resolvePartnerHIVTestResult assembled
+                            in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
                                 |> hivResultFormAndTasks language
@@ -212,6 +218,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                                     contentAndTasksLaboratorResultsConfig
                                     SetHIVTestResult
                                     SetHIVTestFormBoolInput
+                                    partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
@@ -715,14 +722,26 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                     ( task
                     , case task of
                         TaskHIVTest ->
+                            let
+                                partnerHIVTestResult =
+                                    resolvePartnerHIVTestResult assembled
+                            in
                             getMeasurementValueFunc measurements.hivTest
                                 |> hivResultFormWithDefault model.labResultsData.hivTestForm
-                                |> hivResultFollowUpsFormAndTasks language currentDate SetHIVTestFormBoolInput
+                                |> hivResultFollowUpsFormAndTasks language
+                                    currentDate
+                                    SetHIVTestFormBoolInput
+                                    partnerHIVTestResult
 
                         TaskSyphilisTest ->
                             getMeasurementValueFunc measurements.syphilisTest
                                 |> syphilisResultFormWithDefault model.labResultsData.syphilisTestForm
                                 |> syphilisResultFollowUpsFormAndTasks language currentDate SetIllnessSymptom
+
+                        TaskPartnerHIVTest ->
+                            getMeasurementValueFunc measurements.partnerHIVTest
+                                |> partnerHIVResultFormWithDefault model.labResultsData.partnerHIVTestForm
+                                |> partnerHIVResultFollowUpsFormAndTasks language currentDate SetPartnerHIVTestFormBoolInput
 
                         -- Others do not have results follow ups section,
                         -- or, do not participate at Prenatal.
@@ -886,8 +905,13 @@ viewLab language currentDate lab assembled data =
                             isLabTech
                             contentAndTasksLaboratorResultsConfig
                             SetPartnerHIVTestResult
+                            SetPartnerHIVTestFormBoolInput
 
                 TestHIV ->
+                    let
+                        partnerHIVTestResult =
+                            resolvePartnerHIVTestResult assembled
+                    in
                     getMeasurementValueFunc measurements.hivTest
                         |> hivResultFormWithDefault data.hivTestForm
                         |> hivResultFormAndTasks language
@@ -896,6 +920,7 @@ viewLab language currentDate lab assembled data =
                             contentAndTasksLaboratorResultsConfig
                             SetHIVTestResult
                             SetHIVTestFormBoolInput
+                            partnerHIVTestResult
 
                 TestSyphilis ->
                     getMeasurementValueFunc measurements.syphilisTest

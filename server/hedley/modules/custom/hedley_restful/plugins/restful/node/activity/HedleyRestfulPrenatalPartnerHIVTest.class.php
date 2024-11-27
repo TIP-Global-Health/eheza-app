@@ -23,6 +23,7 @@ class HedleyRestfulPrenatalPartnerHIVTest extends HedleyRestfulPrenatalActivityB
    * {@inheritdoc}
    */
   protected $multiFields = [
+    'field_hiv_signs',
     'field_test_prerequisites',
   ];
 

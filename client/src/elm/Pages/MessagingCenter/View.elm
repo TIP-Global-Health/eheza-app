@@ -477,7 +477,8 @@ viewMessagingCenter language currentTime currentDate programStartDate nurseId nu
             in
             case model.activeTab of
                 TabUnread ->
-                    List.map viewMessage unread
+                    List.sortBy (\( _, message ) -> message.displayDay) unread
+                        |> List.map viewMessage
 
                 TabFavorites ->
                     Dict.toList nurse.resilienceMessages
@@ -748,6 +749,9 @@ viewIntroductionMessage language nurse order =
               ]
             )
 
+        _ ->
+            ( [], [] )
+
 
 viewGrowthMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewGrowthMessage language order =
@@ -778,6 +782,41 @@ viewGrowthMessage language order =
             ( [ text <| translate language Translate.ResilienceMessageGrowth4Title ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageGrowth4Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage5 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth5Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth5Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth5Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage6 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth6Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth6Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth6Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth7Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth8Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage9 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth9Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth9Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth9Paragraph2 ]
               ]
             )
 
@@ -852,6 +891,33 @@ viewStressManagementMessage language nurse order =
               ]
             )
 
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement8Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement8Bullet4 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage9 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement9Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement9Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement9Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage10 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement10Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement10Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement10Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -917,6 +983,27 @@ viewMindfulnessMessage language order =
               ]
             )
 
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness7Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness8Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage9 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness9Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness9Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness9Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -971,8 +1058,48 @@ viewConnectingMessage language order =
               ]
             )
 
-        _ ->
-            ( [], [] )
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting7Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting7Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting7Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage8 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting8Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting8Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage9 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting9Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting9Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting9Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage10 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting10Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting10Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting10Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage11 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting11Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting11Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting11Paragraph2 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting11Paragraph3 ]
+              ]
+            )
+
+        ResilienceMessage12 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting12Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting12Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting12Paragraph2 ]
+              ]
+            )
 
 
 viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
@@ -1005,6 +1132,25 @@ viewSelfCareMessage language order =
             , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph2 ]
               , p [] [ text <| translate language Translate.ResilienceMessageSelfCare3Paragraph3 ]
+              ]
+            )
+
+        ResilienceMessage4 ->
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare4Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare4Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare4Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage5 ->
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare5Title ] ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare5Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare5Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare5Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare5Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare5Paragraph2 ]
               ]
             )
 
@@ -1041,6 +1187,33 @@ viewEndOfPeriodMessage language order =
                     , li [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthBullet5 ]
                     ]
               , p [] [ text <| translate language Translate.ResilienceMessageEndOfSecondMonthParagraph3 ]
+              ]
+            )
+
+        ResilienceMessage3 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthParagraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthBullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthBullet4 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfThirdMonthParagraph2 ]
+              ]
+            )
+
+        ResilienceMessage4 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthParagraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthBullet3 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthBullet4 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthBullet4 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFourthMonthParagraph2 ]
               ]
             )
 

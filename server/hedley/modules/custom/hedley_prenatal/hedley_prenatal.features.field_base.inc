@@ -1629,6 +1629,7 @@ function hedley_prenatal_field_default_field_bases() {
       'allowed_values' => array(
         'hiv' => 'HIV',
         'syphilis' => 'Syphilis',
+        'partner-hiv' => 'Partner HIV',
       ),
       'allowed_values_function' => '',
     ),
