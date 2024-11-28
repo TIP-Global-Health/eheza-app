@@ -15,7 +15,7 @@ import List
 import LocalData
 import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog, viewSkipNCDADialog)
+import Pages.Utils exposing (viewConfirmationDialog, viewSkipNCDADialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -107,7 +107,7 @@ view language isChw ( sessionId, session ) model =
                 (\state ->
                     case state of
                         DialogEndSession ->
-                            viewEndEncounterDialog language
+                            viewConfirmationDialog language
                                 Trans.AreYouSure
                                 Trans.OnceYouEndYourGroupEncounter
                                 CloseSession

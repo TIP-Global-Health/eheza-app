@@ -18,7 +18,7 @@ import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( viewEndEncounterButton
-        , viewEndEncounterDialog
+        , viewConfirmationDialog
         , viewPersonDetailsExtended
         , viewReportLink
         )
@@ -49,7 +49,7 @@ viewHeaderAndContent language currentDate db model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)

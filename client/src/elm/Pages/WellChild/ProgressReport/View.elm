@@ -73,7 +73,7 @@ import Pages.Utils
     exposing
         ( viewEncounterActionButton
         , viewEndEncounterButton
-        , viewEndEncounterDialog
+        , viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         , viewStartEncounterButton
@@ -634,7 +634,7 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
                 endEncounterDialog =
                     if data.showEndEncounterDialog then
                         Just <|
-                            viewEndEncounterDialog language
+                            viewConfirmationDialog language
                                 Translate.EndEncounterQuestion
                                 Translate.OnceYouEndTheEncounter
                                 data.closeEncounterMsg

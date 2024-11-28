@@ -18,7 +18,7 @@ import Pages.NCD.Encounter.Model exposing (..)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewEndEncounterButton, viewConfirmationDialog, viewPersonDetailsExtended, viewReportLink)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -45,7 +45,7 @@ viewHeaderAndContent language currentDate db model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)
