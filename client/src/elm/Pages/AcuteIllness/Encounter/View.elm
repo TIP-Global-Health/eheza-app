@@ -24,7 +24,7 @@ import Pages.AcuteIllness.Activity.Utils
 import Pages.AcuteIllness.Encounter.Model exposing (..)
 import Pages.AcuteIllness.Encounter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewConfirmationDialog, viewPersonDetails, viewReportLink)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink)
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)

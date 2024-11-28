@@ -71,9 +71,9 @@ import Pages.Report.Utils
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( viewEncounterActionButton
+        ( viewConfirmationDialog
+        , viewEncounterActionButton
         , viewEndEncounterButton
-        , viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         , viewStartEncounterButton

@@ -44,8 +44,8 @@ import Pages.Utils
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
-        , viewCustomBoolInput
         , viewConfirmationDialog
+        , viewCustomBoolInput
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction

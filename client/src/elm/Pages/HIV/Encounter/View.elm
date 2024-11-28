@@ -17,8 +17,8 @@ import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewConfirmationDialog
+        ( viewConfirmationDialog
+        , viewEndEncounterButton
         , viewPersonDetailsExtended
         , viewReportLink
         )

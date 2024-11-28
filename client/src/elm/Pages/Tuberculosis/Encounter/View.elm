@@ -17,8 +17,8 @@ import Pages.Tuberculosis.Encounter.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewConfirmationDialog
+        ( viewConfirmationDialog
+        , viewEndEncounterButton
         , viewPersonDetailsExtended
         , viewReportLink
         )
