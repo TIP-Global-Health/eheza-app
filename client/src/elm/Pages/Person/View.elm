@@ -26,6 +26,7 @@ import Backend.Person.Utils
         ( defaultIconForPerson
         , educationLevelToInt
         , expectedAgeByPerson
+        , generateFullName
         , graduatingAgeInMonth
         , hivStatusToString
         , isAdult
@@ -56,6 +57,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
+import Pages.Utils exposing (viewConfirmationDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
@@ -1359,6 +1361,25 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             |> ul []
                         ]
                    ]
+
+        duplicateSuspectDialog =
+            Maybe.andThen
+                (\( duplicateSuspect, confirmationMsg ) ->
+                    Maybe.map
+                        (\nationalIdNumber ->
+                            let
+                                name =
+                                    generateFullName duplicateSuspect.firstName duplicateSuspect.secondName
+                            in
+                            viewConfirmationDialog language
+                                Translate.Warning
+                                (Translate.DuplicateSuspectMessage name nationalIdNumber)
+                                confirmationMsg
+                                (SetDialogState Nothing)
+                        )
+                        duplicateSuspect.nationalIdNumber
+                )
+                model.dialogState
     in
     div
         [ class "page-person-create" ]
@@ -1381,6 +1402,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                     ]
                 ]
             ]
+        , viewModal duplicateSuspectDialog
         ]
 
 
