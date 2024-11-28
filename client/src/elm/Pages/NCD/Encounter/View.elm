@@ -1,10 +1,7 @@
 module Pages.NCD.Encounter.View exposing (view)
 
 import Backend.Entities exposing (..)
-import Backend.IndividualEncounterParticipant.Model
-    exposing
-        ( IndividualParticipantInitiator(..)
-        )
+import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NCDActivity.Model exposing (NCDActivity)
 import Backend.NCDActivity.Utils exposing (allActivities, getActivityIcon)
@@ -18,7 +15,7 @@ import Pages.NCD.Encounter.Model exposing (..)
 import Pages.NCD.Model exposing (..)
 import Pages.NCD.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewConfirmationDialog, viewPersonDetailsExtended, viewReportLink)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetailsExtended, viewReportLink)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
