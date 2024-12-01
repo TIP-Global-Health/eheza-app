@@ -43,7 +43,7 @@ import Pages.AcuteIllness.Encounter.View exposing (allowEndingEncounter, partiti
 import Pages.AcuteIllness.ProgressReport.Model exposing (..)
 import Pages.GlobalCaseManagement.Utils exposing (calculateDueDate)
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog, viewEndEncounterMenuForProgressReport)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterMenuForProgressReport)
 import Pages.WellChild.ProgressReport.View exposing (viewNutritionSigns, viewPaneHeading, viewPersonInfoPane)
 import SyncManager.Model exposing (Site, SiteFeature)
 import Translate exposing (TranslationId, translate)
@@ -87,7 +87,7 @@ viewContent language currentDate site features id isChw initiator model assemble
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter id)

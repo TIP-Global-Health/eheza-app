@@ -38,7 +38,7 @@ import Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter)
 import Pages.Tuberculosis.ProgressReport.Model exposing (..)
 import Pages.Utils
     exposing
-        ( viewEndEncounterDialog
+        ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         )
@@ -74,7 +74,7 @@ view language currentDate site features id db model =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter id)

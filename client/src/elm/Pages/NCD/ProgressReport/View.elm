@@ -53,7 +53,7 @@ import Pages.Report.Utils exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewEndEncounterDialog
+        ( viewConfirmationDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         )
@@ -89,7 +89,7 @@ view language currentDate site features id initiator db model =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter id)

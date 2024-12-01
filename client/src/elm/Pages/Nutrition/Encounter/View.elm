@@ -14,7 +14,7 @@ import Pages.Nutrition.Activity.Utils exposing (activityCompleted, allMandatoryA
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterButton, viewEndEncounterDialog, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -64,7 +64,7 @@ viewHeaderAndContent language currentDate zscores features id isChw db model dat
                 (\state ->
                     case state of
                         DialogEndEncounter ->
-                            viewEndEncounterDialog language
+                            viewConfirmationDialog language
                                 Translate.EndEncounterQuestion
                                 Translate.OnceYouEndTheEncounter
                                 (CloseEncounter id)

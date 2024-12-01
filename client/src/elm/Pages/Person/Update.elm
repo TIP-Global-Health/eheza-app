@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, nationalIdNumber, validatePerson)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
@@ -13,14 +13,15 @@ import Form.Field
 import GeoLocation.Model exposing (ReverseGeoInfo)
 import GeoLocation.Utils exposing (getGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust)
 import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (Site)
 
 
-update : NominalDate -> Site -> ReverseGeoInfo -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> Msg -> ModelIndexedDb -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw msg db model =
+update : NominalDate -> Site -> ReverseGeoInfo -> Maybe HealthCenterId -> Maybe VillageId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw db msg model =
     case msg of
         MsgForm operation initiator subMsg ->
             let
@@ -40,15 +41,15 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                 newForm =
                     Form.update (validatePerson site related operation (Just currentDate)) subMsg model.form
 
-                appMsgs =
+                ( appMsgs, extraMsgs ) =
                     case subMsg of
                         Form.Submit ->
                             let
-                                maybeVillage =
-                                    maybeVillageId
-                                        |> Maybe.andThen (getVillageById db)
-
                                 formWithDefaults =
+                                    let
+                                        maybeVillage =
+                                            Maybe.andThen (getVillageById db) maybeVillageId
+                                    in
                                     applyDefaultValuesForPerson currentDate
                                         site
                                         reverseGeoInfo
@@ -61,27 +62,48 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                             in
                             case operation of
                                 CreatePerson _ ->
-                                    formWithDefaults
-                                        |> Form.getOutput
+                                    Form.getOutput formWithDefaults
                                         |> Maybe.map
                                             (\person ->
                                                 let
                                                     personWithShard =
                                                         { person | shard = selectedHealthCenter }
                                                 in
-                                                [ personWithShard
-                                                    |> Backend.Model.PostPerson relation initiator
-                                                    |> App.Model.MsgIndexedDb
-                                                ]
+                                                Maybe.andThen
+                                                    (\nationalId ->
+                                                        Dict.get nationalId db.personSearchesByNationalId
+                                                            |> Maybe.andThen RemoteData.toMaybe
+                                                            |> Maybe.andThen (Dict.values >> List.head)
+                                                            |> Maybe.map
+                                                                (\suspectedDuplicate ->
+                                                                    ( []
+                                                                    , [ SetDialogState <|
+                                                                            Just <|
+                                                                                ( suspectedDuplicate
+                                                                                , PostPerson relation initiator personWithShard
+                                                                                )
+                                                                      ]
+                                                                    )
+                                                                )
+                                                    )
+                                                    personWithShard.nationalIdNumber
+                                                    |> Maybe.withDefault
+                                                        ( [ Backend.Model.PostPerson relation initiator personWithShard
+                                                                |> App.Model.MsgIndexedDb
+                                                          ]
+                                                        , []
+                                                        )
                                             )
                                         -- If we submit, but can't actually submit,
                                         -- then change the request status to
                                         -- `NotAsked` (to reset network errors
                                         -- etc.)
                                         |> Maybe.withDefault
-                                            [ Backend.Model.HandlePostedPerson relation initiator NotAsked
-                                                |> App.Model.MsgIndexedDb
-                                            ]
+                                            ( [ Backend.Model.HandlePostedPerson relation initiator NotAsked
+                                                    |> App.Model.MsgIndexedDb
+                                              ]
+                                            , []
+                                            )
 
                                 EditPerson _ ->
                                     relation
@@ -95,35 +117,77 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                                                 personWithShard =
                                                                     { person | shard = selectedHealthCenter }
                                                             in
-                                                            generateMsgsForPersonEdit currentDate personId personWithShard model.form db
+                                                            ( generateMsgsForPersonEdit currentDate
+                                                                personId
+                                                                personWithShard
+                                                                model.form
+                                                                db
+                                                            , []
+                                                            )
                                                         )
                                                     -- If we submit, but can't actually submit,
                                                     -- then change the request status to
                                                     -- `NotAsked` (to reset network errors
                                                     -- etc.)
                                                     |> Maybe.withDefault
-                                                        [ Backend.Model.HandlePatchedPerson InitiatorEditForm personId NotAsked
-                                                            |> App.Model.MsgIndexedDb
-                                                        ]
+                                                        ( [ Backend.Model.HandlePatchedPerson InitiatorEditForm personId NotAsked
+                                                                |> App.Model.MsgIndexedDb
+                                                          ]
+                                                        , []
+                                                        )
                                             )
                                         -- We should never get here, because when editing,
                                         -- we always have the ID of person being edited.
-                                        |> Maybe.withDefault []
+                                        |> Maybe.withDefault ( [], [] )
+
+                        Form.Input nationalIdNumber _ (Form.Field.String value) ->
+                            if String.length value > 13 then
+                                ( [ Backend.Model.FetchPeopleByNationalId value
+                                        |> App.Model.MsgIndexedDb
+                                  ]
+                                , []
+                                )
+
+                            else
+                                ( [], [] )
 
                         _ ->
-                            []
+                            ( [], [] )
             in
             ( { model | form = newForm }
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra
+                    (update currentDate
+                        site
+                        reverseGeoInfo
+                        selectedHealthCenter
+                        maybeVillageId
+                        isChw
+                        db
+                    )
+                    extraMsgs
 
         DropZoneComplete operation initiator result ->
             let
                 subMsg =
                     Form.Input Backend.Person.Form.photo Form.Text (Form.Field.String result.url)
             in
-            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw (MsgForm operation initiator subMsg) db model
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra
+                    (update currentDate
+                        site
+                        reverseGeoInfo
+                        selectedHealthCenter
+                        maybeVillageId
+                        isChw
+                        db
+                    )
+                    [ MsgForm operation initiator subMsg ]
 
         ResetCreateForm ->
             ( Pages.Person.Model.emptyCreateModel site
@@ -145,18 +209,47 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
 
         DateSelected operation initiator date ->
             let
-                dateAsString =
-                    Date.format "yyyy-MM-dd" date
-
                 setFieldMsg =
-                    Form.Input birthDate Form.Text (Form.Field.String dateAsString) |> MsgForm operation initiator
+                    let
+                        dateAsString =
+                            Date.format "yyyy-MM-dd" date
+                    in
+                    Form.Input birthDate Form.Text (Form.Field.String dateAsString)
+                        |> MsgForm operation initiator
             in
-            update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw setFieldMsg db model
+            ( model
+            , Cmd.none
+            , []
+            )
+                |> sequenceExtra
+                    (update currentDate
+                        site
+                        reverseGeoInfo
+                        selectedHealthCenter
+                        maybeVillageId
+                        isChw
+                        db
+                    )
+                    [ setFieldMsg ]
 
         SetDateSelectorState state ->
             ( { model | dateSelectorPopupState = state }
             , Cmd.none
             , []
+            )
+
+        SetDialogState state ->
+            ( { model | dialogState = state }
+            , Cmd.none
+            , []
+            )
+
+        PostPerson relation initiator person ->
+            ( model
+            , Cmd.none
+            , [ Backend.Model.PostPerson relation initiator person
+                    |> App.Model.MsgIndexedDb
+              ]
             )
 
 

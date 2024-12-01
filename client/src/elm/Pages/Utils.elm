@@ -923,8 +923,8 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
-viewEndEncounterDialog language heading message confirmAction cancelAction =
+viewConfirmationDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
+viewConfirmationDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]
         [ div [ class "header" ]
             [ text <| translate language heading ]

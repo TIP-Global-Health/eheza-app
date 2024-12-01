@@ -71,9 +71,9 @@ import Pages.Report.Utils
 import Pages.Report.View exposing (viewAcuteIllnessDiagnosisEntry, viewEntries)
 import Pages.Utils
     exposing
-        ( viewEncounterActionButton
+        ( viewConfirmationDialog
+        , viewEncounterActionButton
         , viewEndEncounterButton
-        , viewEndEncounterDialog
         , viewEndEncounterMenuForProgressReport
         , viewPersonDetailsExtended
         , viewStartEncounterButton
@@ -634,7 +634,7 @@ viewActions language features initiator activeTab msgReportToWhatsAppDialogMsg b
                 endEncounterDialog =
                     if data.showEndEncounterDialog then
                         Just <|
-                            viewEndEncounterDialog language
+                            viewConfirmationDialog language
                                 Translate.EndEncounterQuestion
                                 Translate.OnceYouEndTheEncounter
                                 data.closeEncounterMsg
