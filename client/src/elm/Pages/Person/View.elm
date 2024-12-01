@@ -294,7 +294,7 @@ viewPerson language currentDate initiator db id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village]
                         ]
                     ]
                 , action
@@ -434,7 +434,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village]
                         ]
                     , groups
                     ]
