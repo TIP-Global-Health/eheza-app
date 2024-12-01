@@ -5147,7 +5147,7 @@ translationSet trans =
             }
 
         DuplicateSuspectMessage name nationalId ->
-            { english = "Patient " ++ name ++ " already assigned national ID " ++ nationalId ++ ". Proceed with creation?"
+            { english = "National ID " ++ nationalId ++ " is already assigned to patient "   ++ name ++ ". Shall we proceed with creation?"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
