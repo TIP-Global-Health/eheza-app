@@ -9,8 +9,6 @@ import Backend.IndividualEncounterParticipant.Model exposing (HIVOutcome(..))
 import Backend.Measurement.Model exposing (AdverseEvent(..), HIVPrescribedMedication(..), HIVSymptom(..), TestResult(..))
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString)
 import Backend.Model exposing (ModelIndexedDb)
-import Date
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (unwrap)
@@ -25,7 +23,7 @@ import Pages.HIV.Activity.Model exposing (..)
 import Pages.HIV.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (setMultiSelectInputValue)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 
 
 update : NominalDate -> HIVEncounterId -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
@@ -49,9 +47,6 @@ update currentDate id db msg model =
 
         treatmentReviewForm =
             resolveFormWithDefaults .treatmentReview ongoingTreatmentReviewFormWithDefault model.medicationData.treatmentReviewForm
-
-        symptomReviewForm =
-            resolveFormWithDefaults .symptomReview symptomReviewFormWithDefault model.symptomReviewData.form
 
         generateMedicationMsgs nextTask =
             Maybe.map (\task -> [ SetActiveMedicationTask task ]) nextTask
@@ -409,6 +404,9 @@ update currentDate id db msg model =
 
         SetSymptom symptom ->
             let
+                symptomReviewForm =
+                    resolveFormWithDefaults .symptomReview symptomReviewFormWithDefault model.symptomReviewData.form
+
                 form =
                     symptomReviewForm
 

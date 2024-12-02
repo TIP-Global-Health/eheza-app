@@ -13,7 +13,6 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
 import Measurement.Utils
     exposing
@@ -57,10 +56,11 @@ import Pages.Prenatal.Utils exposing (..)
 import Pages.Prenatal.View exposing (viewMalariaPreventionContent, viewMedicationDistributionForm)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
+        , resolveNextTask
         , tasksBarId
         , viewSaveAction
+        , viewTasksCount
         )
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -326,21 +326,15 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                 activeTask
                 |> Maybe.withDefault ( emptyNode, 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.andThen
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of
@@ -394,7 +388,7 @@ viewLabResultsContent language currentDate isLabTech assembled model =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             [ viewForm
@@ -497,49 +491,43 @@ viewNextStepsContent language currentDate assembled data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            tasks
-                |> List.filter
-                    (\task ->
-                        (Just task /= activeTask)
-                            && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                    )
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    NextStepsSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    NextStepsMedicationDistribution ->
-                                        SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+                        saveMsg =
+                            case task of
+                                NextStepsSendToHC ->
+                                    SaveSendToHC personId measurements.sendToHC nextTask
 
-                                    NextStepsHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
-                        in
-                        div [ class "actions next-steps" ]
-                            [ button
-                                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                                , onClick saveMsg
-                                ]
-                                [ text <| translate language Translate.Save ]
+                                NextStepsMedicationDistribution ->
+                                    SaveMedicationDistribution personId measurements.medicationDistribution nextTask
+
+                                NextStepsHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
+                    in
+                    div [ class "actions next-steps" ]
+                        [ button
+                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
+                            , onClick saveMsg
                             ]
-                    )
+                            [ text <| translate language Translate.Save ]
+                        ]
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -591,16 +579,15 @@ viewExaminationContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map
-                    (\task ->
-                        ( task, examinationTasksCompletedFromTotal assembled data task )
-                    )
+            List.map
+                (\task ->
+                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
@@ -646,7 +633,7 @@ viewExaminationContent language currentDate assembled data =
             List.map viewTask <|
                 tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -660,18 +647,7 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         formConfig =
-            { setIntInputMsg = \_ _ -> NoOp
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = form.sysBloodPressure
-            , diaBloodPressurePreviousValue = form.diaBloodPressure
-            , heartRatePreviousValue = Nothing
-            , respiratoryRatePreviousValue = Nothing
-            , bodyTemperaturePreviousValue = Nothing
-            , birthDate = assembled.person.birthDate
-            , formClass = "examination vitals"
-            , mode = VitalsFormRepeated
-            , invokationModule = InvokationModulePrenatal
-            }
+            generateVitalsFormConfig assembled form
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
@@ -786,21 +762,15 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                 activeTask
                 |> Maybe.withDefault ( emptyNode, 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.andThen
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of
@@ -828,7 +798,7 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             [ viewForm
@@ -1089,7 +1059,7 @@ viewLab language currentDate lab assembled data =
             in
             viewSaveAction language saveMsg (tasksCompleted /= totalTasks)
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             [ viewForm

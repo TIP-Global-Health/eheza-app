@@ -7,7 +7,6 @@ module Translate exposing
     , ValidationError(..)
     , translate
     , translateText
-    , translationSet
     )
 
 {-| This module has just the translations ... for types and
@@ -23,7 +22,7 @@ import Backend.Counseling.Model exposing (CounselingTopic)
 import Backend.EducationSession.Model exposing (EducationTopic(..))
 import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
-import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
+import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity)
 import Backend.IndividualEncounterParticipant.Model exposing (AcuteIllnessOutcome(..), IndividualEncounterType(..), PregnancyOutcome(..))
 import Backend.Measurement.Model exposing (..)
 import Backend.NCDActivity.Model exposing (NCDActivity, NCDRecurrentActivity)
@@ -1302,7 +1301,6 @@ type TranslationId
     | PregnancyOutcomeLabel
     | PregnancyOutcome PregnancyOutcome
     | PrescribedMedicationsChangedQuestion
-    | PrescribedMedicationsQuestion
     | PrescribedMedicationsTakenQuestion
     | PreviousCSectionScar
     | PreviousDelivery
@@ -1898,7 +1896,6 @@ type TranslationId
     | TuberculosisNextStepsTask Pages.Tuberculosis.Activity.Model.NextStepsTask
     | TuberculosisPast
     | TuberculosisPrescribedMedication TuberculosisPrescribedMedication
-    | TuberculosisPrescribedMedicationsQuestion
     | TuberculosisPresent
     | TuberculosisProvideDOTTodayQuestion
     | TuberculosisReasonNotProvidedToday TuberculosisDOTSign
@@ -17291,12 +17288,6 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        PrescribedMedicationsQuestion ->
-            { english = "What are the medications that were prescribed"
-            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Nothing
-            }
-
         PrescribedMedicationsTakenQuestion ->
             { english = "What are the medications being taken"
             , kinyarwanda = Nothing
@@ -22986,12 +22977,6 @@ translationSet trans =
 
                 NoTuberculosisPrescribedMedications ->
                     translationSet EmptyString
-
-        TuberculosisPrescribedMedicationsQuestion ->
-            { english = "What are the medications that were prescribed"
-            , kinyarwanda = Just "Ni iyihe miti yatanzwe"
-            , kirundi = Just "Ni iyihe miti yandikiwe"
-            }
 
         TuberculosisPresent ->
             { english = "Tuberculosis in the present"

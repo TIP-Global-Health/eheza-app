@@ -34,6 +34,7 @@ import Pages.Utils
         ( customPopup
         , maybeToBoolTask
         , resolveSelectedDateForMonthSelector
+        , resolveTasksCompletedFromTotal
         , viewBoolInput
         , viewCheckBoxSelectInput
         , viewLabel
@@ -43,6 +44,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewSaveAction
         , viewSelectListInput
+        , viewTasksCount
         , viewTextInput
         )
 import RemoteData exposing (RemoteData(..))
@@ -624,10 +626,7 @@ viewModeReceiveStock language currentDate nurseId nurse consumptionAverage form 
             )
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
     in
     viewStockUpdateContent language
         form.confirmIdentity
@@ -763,10 +762,7 @@ viewModeCorrectEntry language currentDate nurseId nurse form =
             )
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
     in
     viewStockUpdateContent language
         form.confirmIdentity
@@ -831,11 +827,7 @@ viewSignaturePad language handleStoredSignatureMsg =
 viewStockUpdateContent : Language -> Maybe Bool -> List (Html Msg) -> Msg -> Bool -> Msg -> Int -> Int -> List (Html Msg)
 viewStockUpdateContent language confirmIdentity formForView saveMsg displayPopup hidePopupMsg tasksCompleted totalTasks =
     [ div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ]
-            [ text <|
-                translate language <|
-                    Translate.TasksCompleted tasksCompleted totalTasks
-            ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "ui full content" ]
                 formForView

@@ -2,6 +2,7 @@ module Pages.WellChild.Activity.Model exposing (..)
 
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
+import Backend.Person.Model exposing (Person)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
@@ -9,10 +10,13 @@ import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Model exposing (..)
 import Pages.Page exposing (Page)
 import Pages.WellChild.Activity.Types exposing (..)
+import SyncManager.Model exposing (Site)
+import Translate exposing (TranslationId)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetWarningPopupState (Maybe WarningPopupType)
       -- PREGNANCY SUMMARY
     | SetExpectedDateConcluded Date
@@ -466,4 +470,13 @@ emptyHomeVisitData =
     , foodSecurityForm = emptyNutritionFoodSecurityForm
     , caringForm = emptyNutritionCaringForm
     , activeTask = Nothing
+    }
+
+
+type alias MedicationAdministrationFormConfig =
+    { medication : MedicationDistributionSign
+    , setMedicationAdministeredMsg : Bool -> Msg
+    , setReasonForNonAdministration : AdministrationNote -> Msg
+    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
+    , helper : TranslationId
     }

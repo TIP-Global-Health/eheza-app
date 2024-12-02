@@ -1,7 +1,7 @@
 module Pages.Reports.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
-import Backend.Reports.Model exposing (PatientData, PersonId)
+import AssocList exposing (Dict)
+import Backend.Reports.Model exposing (PersonId)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import RemoteData exposing (RemoteData(..))

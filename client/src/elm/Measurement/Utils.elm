@@ -892,9 +892,6 @@ vaccinationFormDynamicContentAndTasks :
     -> ( List (Html msg), Int, Int )
 vaccinationFormDynamicContentAndTasks language currentDate site config vaccineType form =
     let
-        expectedDoses =
-            config.expectedDoses
-
         dosesFromPreviousEncountersData =
             config.dosesFromPreviousEncountersData
 
@@ -905,27 +902,11 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
             dosesFromPreviousEncountersData
                 ++ dosesFromCurrentEncounterData
 
-        allDosesGiven =
-            List.map Tuple.first allDosesGivenData
-
-        dosesMissing =
-            List.filter (\dose -> not <| List.member dose allDosesGiven)
-                expectedDoses
-
         lastDoseData =
             List.filter (\( _, date ) -> date /= currentDate)
                 allDosesGivenData
                 |> List.reverse
                 |> List.head
-
-        doseGivenToday =
-            List.filter
-                (\( _, date ) ->
-                    date == currentDate
-                )
-                dosesFromCurrentEncounterData
-                |> List.head
-                |> Maybe.map Tuple.first
 
         historySection =
             case form.viewMode of
@@ -1018,6 +999,23 @@ vaccinationFormDynamicContentAndTasks language currentDate site config vaccineTy
         ( inputs, tasksCompleted, tasksActive ) =
             case form.viewMode of
                 ViewModeInitial ->
+                    let
+                        allDosesGiven =
+                            List.map Tuple.first allDosesGivenData
+
+                        doseGivenToday =
+                            List.filter
+                                (\( _, date ) ->
+                                    date == currentDate
+                                )
+                                dosesFromCurrentEncounterData
+                                |> List.head
+                                |> Maybe.map Tuple.first
+
+                        dosesMissing =
+                            List.filter (\dose -> not <| List.member dose allDosesGiven)
+                                config.expectedDoses
+                    in
                     Maybe.Extra.or doseGivenToday (List.head dosesMissing)
                         |> Maybe.map
                             (\nextDose ->
@@ -2310,9 +2308,6 @@ urineDipstickUniversalFormWithDefault form saved =
                     immediateResultValue =
                         Maybe.map (EverySet.member PrerequisiteImmediateResult)
                             value.testPrerequisites
-
-                    testPerformedTodayFromValue =
-                        value.executionNote == TestNoteRunToday
                 in
                 { testPerformed = valueConsideringIsDirtyField form.testPerformedDirty form.testPerformed testPerformedValue
                 , testPerformedDirty = form.testPerformedDirty
@@ -3259,10 +3254,6 @@ viewHIVTestUniversalForm :
     -> ( Html msg, Int, Int )
 viewHIVTestUniversalForm language currentDate configInitial configPerformed partnerHIVTestResult form =
     let
-        isLabTech =
-            -- Only nurses perform initial phase of prenatal encounter.
-            False
-
         ( knownAsPositiveSection, knownAsPositiveTasksCompleted, knownAsPositiveTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestKnownAsPositive language currentDate configInitial TaskHIVTest form
 
@@ -3306,7 +3297,12 @@ viewHIVTestUniversalForm language currentDate configInitial configPerformed part
                             else
                                 Maybe.map
                                     (\immediateResult ->
-                                        if immediateResult == True then
+                                        if immediateResult then
+                                            let
+                                                isLabTech =
+                                                    -- Only nurses perform initial phase of prenatal encounter.
+                                                    False
+                                            in
                                             hivResultInputsAndTasks language
                                                 isLabTech
                                                 configPerformed.setHIVTestResultMsg
@@ -3363,7 +3359,7 @@ contentAndTasksLaboratoryResultConfirmation language currentDate config task for
         msgs =
             let
                 resolveNote value =
-                    if value == True then
+                    if value then
                         Just TestNoteRunConfirmedByLabTech
 
                     else
@@ -3959,7 +3955,7 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
                                         standardTestResultInputsAndTasks language
                                             configPerformed.setMalariaTestResultMsg
                                             form.testResult
@@ -4000,7 +3996,7 @@ viewMalariaTestForm language currentDate configInitial configPerformed form =
                                 ( bloodSmearResultSection, bloodSmearResultTasksCompleted, bloodSmearResultTasksTotal ) =
                                     Maybe.map
                                         (\immediateResult ->
-                                            if immediateResult == True then
+                                            if immediateResult then
                                                 bloodSmearResultInputsAndTasks language
                                                     Translate.TestResultQuestion
                                                     configPerformed.setBloodSmearResultMsg
@@ -4601,7 +4597,7 @@ viewUrineDipstickTestUniversalForm language currentDate configInitial configPerf
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         Maybe.map
                             (\immediateResult ->
-                                if immediateResult == True then
+                                if immediateResult then
                                     urineDipstickResultInputsAndTasks language
                                         configPerformed.setProteinMsg
                                         configPerformed.setPHMsg
@@ -4906,7 +4902,7 @@ viewRandomBloodSugarTestForm language currentDate configInitial configPerformed 
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
                                         randomBloodSugarResultInputsAndTasks language
                                             configPerformed.setRandomBloodSugarResultMsg
                                             form.sugarCount
@@ -4965,7 +4961,7 @@ viewRandomBloodSugarTestUniversalForm language currentDate configInitial configP
                     ( testResultSection, testResultTasksCompleted, testResultTasksTotal ) =
                         Maybe.map
                             (\immediateResult ->
-                                if immediateResult == True then
+                                if immediateResult then
                                     randomBloodSugarResultInputsAndTasks language
                                         configPerformed.setRandomBloodSugarResultMsg
                                         form.sugarCount
@@ -5124,7 +5120,7 @@ viewBloodGpRsTestForm language currentDate configInitial configPerformed form =
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
                                         bloodGpRsResultInputsAndTasks language
                                             configPerformed.setBloodGroupMsg
                                             configPerformed.setRhesusMsg
@@ -5261,7 +5257,7 @@ viewHemoglobinTestForm language currentDate configInitial configPerformed form =
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
                                         hemoglobinResultInputsAndTasks language
                                             configPerformed.setHemoglobinCountMsg
                                             form.hemoglobinCount
@@ -5389,7 +5385,7 @@ viewHepatitisBTestForm language currentDate configInitial configPerformed form =
                             else
                                 Maybe.map
                                     (\immediateResult ->
-                                        if immediateResult == True then
+                                        if immediateResult then
                                             standardTestResultInputsAndTasks language
                                                 configPerformed.setHepatitisBTestResultMsg
                                                 form.testResult
@@ -5501,7 +5497,7 @@ viewHIVPCRTestForm language currentDate configInitial configPerformed form =
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
                                         hivPCRResultInputsAndTasks language
                                             configPerformed.setHIVViralLoadMsg
                                             configPerformed.setHIVViralLoadUndetectableMsg
@@ -5619,10 +5615,6 @@ viewSyphilisTestForm :
     -> ( Html msg, Int, Int )
 viewSyphilisTestForm language currentDate configInitial configPerformed form =
     let
-        isLabTech =
-            -- Only nurses perform initial phase of prenatal encounter.
-            False
-
         ( initialSection, initialTasksCompleted, initialTasksTotal ) =
             contentAndTasksLaboratoryUniversalTestInitial language currentDate configInitial TaskSyphilisTest form
 
@@ -5655,7 +5647,12 @@ viewSyphilisTestForm language currentDate configInitial configPerformed form =
                         else
                             Maybe.map
                                 (\immediateResult ->
-                                    if immediateResult == True then
+                                    if immediateResult then
+                                        let
+                                            isLabTech =
+                                                -- Only nurses perform initial phase of prenatal encounter.
+                                                False
+                                        in
                                         syphilisResultInputsAndTasks language
                                             isLabTech
                                             configPerformed.setSyphilisTestResultMsg
@@ -6235,7 +6232,7 @@ contentAndTasksLaboratoryUniversalTestInitial language currentDate config task f
         msgs =
             let
                 resolveNoteAndDate value =
-                    if value == True then
+                    if value then
                         ( Just TestNoteRunToday, Just currentDate )
 
                     else

@@ -657,22 +657,17 @@ resolveIndividualChildScoreboardValues measurementsWithDates measurementFunc val
 
 
 calculateZScoreWeightForAge : NominalDate -> ZScore.Model.Model -> Person -> Maybe Float -> Maybe Float
-calculateZScoreWeightForAge currentDate zscores person maybeWeight =
-    let
-        maybeAgeInDays =
+calculateZScoreWeightForAge currentDate zscores person =
+    Maybe.andThen
+        (\weight ->
             Maybe.map
                 (\birthDate -> diffDays birthDate currentDate)
                 person.birthDate
-    in
-    maybeWeight
-        |> Maybe.andThen
-            (\weight ->
-                Maybe.andThen
+                |> Maybe.andThen
                     (\ageInDays ->
                         zScoreWeightForAge zscores ageInDays person.gender (Kilograms weight)
                     )
-                    maybeAgeInDays
-            )
+        )
 
 
 zScoreWeightForAgeModerate : NominalDate -> Person -> Float -> Maybe Float -> Bool

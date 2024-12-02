@@ -1,17 +1,14 @@
 module Pages.Tuberculosis.Activity.Utils exposing (..)
 
-import AssocList as Dict exposing (Dict)
 import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
-import Backend.TuberculosisActivity.Utils exposing (allActivities)
-import Date
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
+import Maybe.Extra exposing (isJust, or, unwrap)
 import Measurement.Utils
     exposing
         ( followUpFormWithDefault
@@ -19,15 +16,16 @@ import Measurement.Utils
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
         )
+import Measurement.View exposing (followUpFormInputsAndTasks, sendToFacilityInputsAndTasks)
 import Pages.Tuberculosis.Activity.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Model exposing (AssembledData, EncounterData)
 import Pages.Utils
     exposing
         ( ifEverySetEmpty
         , ifNullableTrue
-        , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -152,10 +150,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                 ( _, tasks ) =
                     dotInputsAndTasks language currentDate assembled form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskTreatmentReview ->
             let
@@ -172,10 +167,7 @@ medicationTasksCompletedFromTotal language currentDate assembled data task =
                         SetAdverseEvent
                         form
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
 
 nextStepsTasks : List NextStepsTask
@@ -253,54 +245,70 @@ nextStepsTaskCompleted assembled task =
             isJust assembled.measurements.followUp
 
 
-nextStepsTasksCompletedFromTotal : TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
-    case task of
-        TaskHealthEducation ->
-            let
-                form =
+nextStepsTasksCompletedFromTotal : NominalDate -> TuberculosisMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
+    let
+        ( _, tasks ) =
+            case task of
+                TaskHealthEducation ->
                     getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
-            in
-            ( taskCompleted form.followUpTesting
-            , 1
-            )
+                        |> healthEducationFormInputsAndTasks English currentDate
 
-        TaskFollowUp ->
-            let
-                form =
+                TaskFollowUp ->
                     getMeasurementValueFunc measurements.followUp
                         |> followUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            SetFollowUpOption
 
-        TaskReferral ->
-            let
-                form =
+                TaskReferral ->
                     getMeasurementValueFunc measurements.referral
                         |> sendToHCFormWithDefault data.sendToHCForm
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            SetReferToHealthCenter
+                            SetReasonForNonReferral
+                            SetHandReferralForm
+                            Nothing
+    in
+    resolveTasksCompletedFromTotal tasks
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
 
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
+healthEducationFormInputsAndTasks : Language -> NominalDate -> HealthEducationForm -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language currentDate form =
+    let
+        followUpTestingTable =
+            let
+                viewRow stage =
+                    div [ class "row" ]
+                        [ div [ class "item label" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageLabel stage ]
+                        , div [ class "item test" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageTest stage ]
+                        , div [ class "item guidance" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageInstructions stage ]
+                        ]
             in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
+            div [ class "follow-up-testing-table" ] <|
+                List.map viewRow
+                    [ FollowUpTestingMonth1
+                    , FollowUpTestingMonth2
+                    , FollowUpTestingEndMonth2
+                    , FollowUpTestingEndMonth5
+                    , FollowUpTestingEndMonth6
+                    ]
+    in
+    ( [ followUpTestingTable
+      , viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
+      , viewBoolInput
+            language
+            form.followUpTesting
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | followUpTesting = Just value }))
+            "followup-testing"
+            Nothing
+      ]
+    , [ maybeToBoolTask form.followUpTesting ]
+    )
 
 
 mandatoryActivitiesForNextStepsCompleted : NominalDate -> AssembledData -> Bool
@@ -663,11 +671,11 @@ prescribedMedicationsInputsAndTasks :
     -> ( List (Html Msg), ( Int, Int ) )
 prescribedMedicationsInputsAndTasks language currentDate assembled form =
     let
-        ( recordMedicationsInputs, recordMedicationsTasks ) =
-            recordMedicationsInputsAndTasks language Translate.PrescribedMedicationsTakenQuestion form
+        ( recordMedicationsForm, recordMedicationsTasks ) =
+            recordMedicationsFormAndTasks language Translate.PrescribedMedicationsTakenQuestion form
     in
     if assembled.initialEncounter then
-        ( recordMedicationsInputs, recordMedicationsTasks )
+        ( recordMedicationsForm, recordMedicationsTasks )
 
     else
         generateAllEncountersData assembled
@@ -681,7 +689,7 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                                 ( [], ( 0, 0 ) )
 
                             else
-                                ( recordMedicationsInputs, recordMedicationsTasks )
+                                ( recordMedicationsForm, recordMedicationsTasks )
 
                         prescribedMedicationForView =
                             EverySet.toList prescribedMedication
@@ -707,15 +715,15 @@ prescribedMedicationsInputsAndTasks language currentDate assembled form =
                       )
                     )
                 )
-            |> Maybe.withDefault ( recordMedicationsInputs, recordMedicationsTasks )
+            |> Maybe.withDefault ( recordMedicationsForm, recordMedicationsTasks )
 
 
-recordMedicationsInputsAndTasks :
+recordMedicationsFormAndTasks :
     Language
     -> TranslationId
     -> PrescribedMedicationForm
     -> ( List (Html Msg), ( Int, Int ) )
-recordMedicationsInputsAndTasks language questionTransId form =
+recordMedicationsFormAndTasks language questionTransId form =
     ( [ div [ class "ui form prescribed-medication" ]
             [ viewQuestionLabel language questionTransId
             , viewCheckBoxMultipleSelectInput language

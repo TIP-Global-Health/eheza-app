@@ -45,7 +45,12 @@ update currentDate id msg model =
 
         SetFilter filter ->
             if filter == FilterDemographics then
-                update currentDate id (SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id) model
+                ( model
+                , Cmd.none
+                , []
+                )
+                    |> sequenceExtra (update currentDate id)
+                        [ SetActivePage <| UserPage <| DemographicsReportPage (InitiatorPatientRecord id) id ]
 
             else
                 ( { model | filter = filter }

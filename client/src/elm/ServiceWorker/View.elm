@@ -26,7 +26,6 @@ view currentTime language model =
                 , onClick BackToPinCodePage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , div

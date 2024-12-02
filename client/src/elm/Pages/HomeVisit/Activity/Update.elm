@@ -15,7 +15,6 @@ import Measurement.Utils
         , toNutritionHygieneValueWithDefault
         )
 import Pages.HomeVisit.Activity.Model exposing (..)
-import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
 
 

@@ -12,24 +12,25 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Maybe.Extra
 import Pages.AcuteIllness.Activity.Types exposing (SymptomsTask(..))
 import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomAction
         , viewCustomLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
+        , viewTasksCount
         )
 import RemoteData
 import Translate exposing (Language, translate)
@@ -85,7 +86,6 @@ viewHeader language =
             , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -197,7 +197,7 @@ viewStepInitiateContact language currentDate contact data =
             else
                 ( 0, 0 )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             instructions
@@ -275,19 +275,13 @@ viewStepRecordSymptoms language currentDate contact data =
                 Nothing ->
                     emptyNode
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
                         saveMsg =
                             case task of
                                 SymptomsGeneral ->
@@ -308,7 +302,7 @@ viewStepRecordSymptoms language currentDate contact data =
         [ div [ class "ui three column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ viewForm
@@ -432,13 +426,7 @@ viewWarningPopup language popupState =
                     ]
                 ]
                 [ div [ class "content" ] content
-                , div [ class "actions" ]
-                    [ button
-                        [ class "ui primary fluid button"
-                        , onClick <| SetActivePage <| UserPage GlobalCaseManagementPage
-                        ]
-                        [ text <| translate language Translate.Continue ]
-                    ]
+                , viewCustomAction language (SetActivePage <| UserPage GlobalCaseManagementPage) False Translate.Continue
                 ]
         )
         popupState

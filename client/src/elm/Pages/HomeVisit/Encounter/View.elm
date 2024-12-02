@@ -12,7 +12,7 @@ import Pages.HomeVisit.Activity.Utils exposing (activityCompleted, expectActivit
 import Pages.HomeVisit.Encounter.Model exposing (..)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewPersonDetails)
+import Pages.Utils exposing (viewCustomAction, viewPersonDetails)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem)
 import Utils.WebData exposing (viewWebData)
@@ -59,7 +59,6 @@ viewHeader language isChw data =
             , onClick <| SetActivePage <| UserPage <| NutritionParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -121,23 +120,10 @@ viewMainPageContent language currentDate id isChw db data model =
         allowEndEncounter =
             List.isEmpty pendingActivities
 
-        endEcounterButtonAttributes =
-            if allowEndEncounter then
-                [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewCustomAction language (CloseEncounter id) (not allowEndEncounter) Translate.EndEncounter
                 ]
     in
     [ tabs

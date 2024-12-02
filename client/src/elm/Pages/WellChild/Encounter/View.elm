@@ -11,7 +11,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (viewPersonDetailsExtended, viewSkipNCDADialog)
+import Pages.Utils exposing (viewCustomAction, viewPersonDetailsExtended, viewSkipNCDADialog)
 import Pages.WellChild.Activity.Utils exposing (activityCompleted, expectActivity)
 import Pages.WellChild.Encounter.Model exposing (..)
 import Pages.WellChild.Encounter.Utils exposing (allowEndingEncounter, generateAssembledData)
@@ -102,7 +102,6 @@ viewHeader language isChw assembled =
             , onClick <| SetActivePage <| UserPage <| WellChildParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -241,23 +240,10 @@ viewMainPageContent language currentDate zscores site features id isChw db assem
         allowEndEncounter =
             allowEndingEncounter currentDate pendingActivities assembled
 
-        endEcounterButtonAttributes =
-            if allowEndEncounter then
-                [ class "ui fluid primary button"
-                , onClick <| CloseEncounter id
-                ]
-
-            else
-                [ class "ui fluid primary button disabled" ]
-
         content =
             div [ class "ui full segment" ]
                 [ innerContent
-                , div [ class "actions" ]
-                    [ button
-                        endEcounterButtonAttributes
-                        [ text <| translate language Translate.EndEncounter ]
-                    ]
+                , viewCustomAction language (CloseEncounter id) (not allowEndEncounter) Translate.EndEncounter
                 ]
     in
     [ tabs
