@@ -1435,6 +1435,21 @@ type TranslationId
     | ResilienceMessageGrowth4Title
     | ResilienceMessageGrowth4Paragraph1
     | ResilienceMessageGrowth4Paragraph2
+    | ResilienceMessageGrowth5Title
+    | ResilienceMessageGrowth5Paragraph1
+    | ResilienceMessageGrowth5Paragraph2
+    | ResilienceMessageGrowth6Title
+    | ResilienceMessageGrowth6Paragraph1
+    | ResilienceMessageGrowth6Paragraph2
+    | ResilienceMessageGrowth7Title
+    | ResilienceMessageGrowth7Paragraph1
+    | ResilienceMessageGrowth7Paragraph2
+    | ResilienceMessageGrowth8Title
+    | ResilienceMessageGrowth8Paragraph1
+    | ResilienceMessageGrowth8Paragraph2
+    | ResilienceMessageGrowth9Title
+    | ResilienceMessageGrowth9Paragraph1
+    | ResilienceMessageGrowth9Paragraph2
     | ResilienceGuideSection1Title
     | ResilienceGuideSection1TitleNote1
     | ResilienceGuideSection1TitleNote2
@@ -1488,6 +1503,19 @@ type TranslationId
     | ResilienceMessageStressManagement7Bullet1
     | ResilienceMessageStressManagement7Bullet2
     | ResilienceMessageStressManagement7Bullet3
+    | ResilienceMessageStressManagement8Title
+    | ResilienceMessageStressManagement8Paragraph1
+    | ResilienceMessageStressManagement8Paragraph2
+    | ResilienceMessageStressManagement8Bullet1
+    | ResilienceMessageStressManagement8Bullet2
+    | ResilienceMessageStressManagement8Bullet3
+    | ResilienceMessageStressManagement8Bullet4
+    | ResilienceMessageStressManagement9Title
+    | ResilienceMessageStressManagement9Paragraph1
+    | ResilienceMessageStressManagement9Paragraph2
+    | ResilienceMessageStressManagement10Title
+    | ResilienceMessageStressManagement10Paragraph1
+    | ResilienceMessageStressManagement10Paragraph2
     | ResilienceMessageMindfulness1Title
     | ResilienceMessageMindfulness1Paragraph1
     | ResilienceMessageMindfulness1Paragraph2
@@ -1518,6 +1546,15 @@ type TranslationId
     | ResilienceMessageMindfulness6Bullet1
     | ResilienceMessageMindfulness6Bullet2
     | ResilienceMessageMindfulness6Bullet3
+    | ResilienceMessageMindfulness7Title
+    | ResilienceMessageMindfulness7Paragraph1
+    | ResilienceMessageMindfulness7Paragraph2
+    | ResilienceMessageMindfulness8Title
+    | ResilienceMessageMindfulness8Paragraph1
+    | ResilienceMessageMindfulness8Paragraph2
+    | ResilienceMessageMindfulness9Title
+    | ResilienceMessageMindfulness9Paragraph1
+    | ResilienceMessageMindfulness9Paragraph2
     | ResilienceMessageConnecting1Title
     | ResilienceMessageConnecting1Paragraph1
     | ResilienceMessageConnecting1Paragraph2
@@ -1541,6 +1578,25 @@ type TranslationId
     | ResilienceMessageConnecting6Paragraph1
     | ResilienceMessageConnecting6Paragraph2
     | ResilienceMessageConnecting6Paragraph3
+    | ResilienceMessageConnecting7Title
+    | ResilienceMessageConnecting7Paragraph1
+    | ResilienceMessageConnecting7Paragraph2
+    | ResilienceMessageConnecting8Title
+    | ResilienceMessageConnecting8Paragraph1
+    | ResilienceMessageConnecting8Paragraph2
+    | ResilienceMessageConnecting9Title
+    | ResilienceMessageConnecting9Paragraph1
+    | ResilienceMessageConnecting9Paragraph2
+    | ResilienceMessageConnecting10Title
+    | ResilienceMessageConnecting10Paragraph1
+    | ResilienceMessageConnecting10Paragraph2
+    | ResilienceMessageConnecting11Title
+    | ResilienceMessageConnecting11Paragraph1
+    | ResilienceMessageConnecting11Paragraph2
+    | ResilienceMessageConnecting11Paragraph3
+    | ResilienceMessageConnecting12Title
+    | ResilienceMessageConnecting12Paragraph1
+    | ResilienceMessageConnecting12Paragraph2
     | ResilienceMessageSelfCare1Title
     | ResilienceMessageSelfCare1Paragraph1
     | ResilienceMessageSelfCare1Paragraph2
@@ -1557,6 +1613,15 @@ type TranslationId
     | ResilienceMessageSelfCare3Paragraph1
     | ResilienceMessageSelfCare3Paragraph2
     | ResilienceMessageSelfCare3Paragraph3
+    | ResilienceMessageSelfCare4Title
+    | ResilienceMessageSelfCare4Paragraph1
+    | ResilienceMessageSelfCare4Paragraph2
+    | ResilienceMessageSelfCare5Title
+    | ResilienceMessageSelfCare5Paragraph1
+    | ResilienceMessageSelfCare5Paragraph2
+    | ResilienceMessageSelfCare5Bullet1
+    | ResilienceMessageSelfCare5Bullet2
+    | ResilienceMessageSelfCare5Bullet3
     | ResilienceMessageEndOfFirstMonthTitle
     | ResilienceMessageEndOfFirstMonthParagraph1
     | ResilienceMessageEndOfFirstMonthParagraph2
@@ -1574,6 +1639,21 @@ type TranslationId
     | ResilienceMessageEndOfSecondMonthBullet3
     | ResilienceMessageEndOfSecondMonthBullet4
     | ResilienceMessageEndOfSecondMonthBullet5
+    | ResilienceMessageEndOfThirdMonthTitle
+    | ResilienceMessageEndOfThirdMonthParagraph1
+    | ResilienceMessageEndOfThirdMonthParagraph2
+    | ResilienceMessageEndOfThirdMonthBullet1
+    | ResilienceMessageEndOfThirdMonthBullet2
+    | ResilienceMessageEndOfThirdMonthBullet3
+    | ResilienceMessageEndOfThirdMonthBullet4
+    | ResilienceMessageEndOfFourthMonthTitle
+    | ResilienceMessageEndOfFourthMonthParagraph1
+    | ResilienceMessageEndOfFourthMonthParagraph2
+    | ResilienceMessageEndOfFourthMonthBullet1
+    | ResilienceMessageEndOfFourthMonthBullet2
+    | ResilienceMessageEndOfFourthMonthBullet3
+    | ResilienceMessageEndOfFourthMonthBullet4
+    | ResilienceMessageEndOfFourthMonthBullet5
     | ResilienceKickOffBirthDateQuestion
     | ResilienceKickOffEducationLevelQuestion
     | ResilienceKickOffGenderQuestion
@@ -1982,7 +2062,7 @@ translationSet trans =
         Abortions ->
             { english = "Abortions"
             , kinyarwanda = Just "Inda yavuyemo"
-            , kirundi = Just "Ikugwamwo ry'imbanyi/inda"
+            , kirundi = Just "Ugukoroka kw'imbanyi"
             }
 
         Accept ->
@@ -2256,7 +2336,7 @@ translationSet trans =
                 DiagnosisRespiratoryInfectionComplicated ->
                     { english = "Acute Respiratory Infection with Complications"
                     , kinyarwanda = Just "Indwara y'ubuhumekero ikabije"
-                    , kirundi = Just "Ingwara yo guhema nabi ibabaje/uguhema nabi bibabaje hamwe n'ingorane bijanye"
+                    , kirundi = Just "Indwara ikaze ifatira mubihimba vy'ihemero hamwe n'ingorane ziyiherekeje"
                     }
 
                 DiagnosisRespiratoryInfectionUncomplicated ->
@@ -2440,7 +2520,7 @@ translationSet trans =
         ActiveDiagnosis ->
             { english = "Active Diagnosis"
             , kinyarwanda = Just "Uburwayi Bwasuzumwe"
-            , kirundi = Just " Ingwara agwaye ubu"
+            , kirundi = Just "Indwara arwaye ubu"
             }
 
         AcuteIllnessOutcome outcome ->
@@ -2466,7 +2546,7 @@ translationSet trans =
                 OutcomePatientDied ->
                     { english = "Patient Died"
                     , kinyarwanda = Just "Umurwayi yarapfuye"
-                    , kirundi = Just "Umugwayi yapfuye"
+                    , kirundi = Just "Umurwayi yapfuye"
                     }
 
                 Backend.IndividualEncounterParticipant.Model.OutcomeReferredToHC ->
@@ -2496,7 +2576,7 @@ translationSet trans =
         AddedToPatientRecordOn ->
             { english = "Added to patient record on"
             , kinyarwanda = Just "Yongewe ku makuru y'umurwayi kuwa"
-            , kirundi = Just "Ongerako aho abagwayi bamaze kwandikwa"
+            , kirundi = Just "Kongerako aho abagwayi bamaze kwandikwa"
             }
 
         AddFamilyMember ->
@@ -2532,7 +2612,7 @@ translationSet trans =
         Administer ->
             { english = "Administer"
             , kinyarwanda = Just "Tanga umuti"
-            , kirundi = Just "Kuyobora"
+            , kirundi = Just "Tanga umuti"
             }
 
         AdministerAzithromycinHelper ->
@@ -2628,7 +2708,7 @@ translationSet trans =
         AddressInformation ->
             { english = "Address Information"
             , kinyarwanda = Just "Aho atuye/Aho abarizwa"
-            , kirundi = Just "Amakuru (y'imvaho) yaho aba"
+            , kirundi = Just "Amakuru ajanye n'aho aba"
             }
 
         AfterEachLiquidStool ->
@@ -3173,7 +3253,7 @@ translationSet trans =
         AndSentence ->
             { english = "and"
             , kinyarwanda = Just "maze"
-            , kirundi = Nothing
+            , kirundi = Just "kandi"
             }
 
         AntenatalCare ->
@@ -3245,7 +3325,7 @@ translationSet trans =
         AppointmentConfirmationInstrunction ->
             { english = "The patient should visit the health center on the following date"
             , kinyarwanda = Just "Umubyeyi agomba kujya ku kigo nderabuzima ku itariki ikurikira"
-            , kirundi = Just "Umugwayi ategerezwa kuja k'ivuriro kw'itarike ikurikira"
+            , kirundi = Just "Umurwayi ategerezwa kuja k'ivuriro kw'itarike ikurikira"
             }
 
         All ->
@@ -3307,7 +3387,7 @@ translationSet trans =
                 AvoidingGuidanceHypertensionPatientDeclined ->
                     { english = "Patient Declined"
                     , kinyarwanda = Just "Umurwayi yanze"
-                    , kirundi = Just "Umugwayi yaranse"
+                    , kirundi = Just "Umurwayi yaranse"
                     }
 
                 AvoidingGuidanceHypertensionPatientUnableToAfford ->
@@ -3363,7 +3443,7 @@ translationSet trans =
                 IsBreastfeeding ->
                     { english = "Are you breastfeeding"
                     , kinyarwanda = Just "Waba wonsa"
-                    , kirundi = Just "Uronsa"
+                    , kirundi = Just "Uraconsa umwana"
                     }
 
                 BreastPain ->
@@ -3416,7 +3496,7 @@ translationSet trans =
                 DefectBirthInjury ->
                     { english = "Birth Injury"
                     , kinyarwanda = Just "Impanuka zo mu kuvuka"
-                    , kirundi = Just "Ingorane zabaye igihe c'ivuka"
+                    , kirundi = Just "Igikomere yavukanye"
                     }
 
                 DefectCleftLipWithCleftPalate ->
@@ -3651,7 +3731,7 @@ translationSet trans =
         BowedLegs ->
             { english = "Bowed Legs"
             , kinyarwanda = Just "Amaguru atameze neza (yagize imitego)"
-            , kirundi = Just "Amaguru y'ingonze"
+            , kirundi = Just "Amaguru yigonze"
             }
 
         BpmUnit respiratoryRate ->
@@ -3953,7 +4033,7 @@ translationSet trans =
         Child0to5 ->
             { english = "Child (0-5)"
             , kinyarwanda = Just "Umwa (0-5)"
-            , kirundi = Just "Umwana (0-5)"
+            , kirundi = Just "Umwa (0-5)"
             }
 
         Child6to24 ->
@@ -3965,7 +4045,7 @@ translationSet trans =
         ChildCleanQuestion ->
             { english = "Is the sick child clean"
             , kinyarwanda = Just "Ese umwana urwaye afite isuku"
-            , kirundi = Just "Mbega umwana agwaye arafise isuku"
+            , kirundi = Just "Mbega umwana arwaye arafise isuku"
             }
 
         ChildHasMalnutritionPhrase ->
@@ -4145,7 +4225,7 @@ translationSet trans =
         ClickTheCheckMarkEducationSesison ->
             { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Klika ku kavivuzo niba umurwayi yaje."
             }
 
         ClinicType clinicType ->
@@ -4643,7 +4723,7 @@ translationSet trans =
                 PreviousCSection ->
                     { english = "Previous c-section"
                     , kinyarwanda = Just "Kubagwa guheruka"
-                    , kirundi = Just "Ugokwa guheruka"
+                    , kirundi = Just "Ugukorwa guheruka"
                     }
 
         CreateRelationship ->
@@ -4789,7 +4869,7 @@ translationSet trans =
         DangerSignsLabelForNurse ->
             { english = "Patient shows signs of"
             , kinyarwanda = Just "Umurwayi aragaragaza ibimenyetso bya"
-            , kirundi = Just "Umugwayi yerekana ibimenyetso vya"
+            , kirundi = Just "Umurwayi yerekana ibimenyetso vya"
             }
 
         DangerSignsTask task ->
@@ -4797,7 +4877,7 @@ translationSet trans =
                 ReviewDangerSigns ->
                     { english = "Review Danger Signs"
                     , kinyarwanda = Just "Kureba ibimenyetso mpuruza"
-                    , kirundi = Just "Subiramwo ibimenyetso vya bikomeye"
+                    , kirundi = Just "Subiramwo ibimenyetso mburizi"
                     }
 
         Date ->
@@ -5403,49 +5483,49 @@ translationSet trans =
                 TopicSTD ->
                     { english = "STDs & Prevention of HIV"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara zandurirwa mu mibonano mpuzabitsina no gukingira SIDA"
                     }
 
                 TopicMentalHealth ->
                     { english = "Mental Health Diseases & Epilepsy"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara wo mu mutwe n'Intandara"
                     }
 
                 TopicMalaria ->
                     { english = "Malarial diseases and the use of mosquito nets"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara za Malariya n'ugukoresha umusegeera"
                     }
 
                 TopicChildhoodIllnesses ->
                     { english = "Childhood illnesses (Prevention, danger signs & emergency case management)"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Indwara zikarira abana (Uko zikingirwa, Ibimenyetso mburizi vyazo, n'uko uvyifatamwo mu kumutabara(riza) vyihuta cane)"
                     }
 
                 TopicMalnutrition ->
                     { english = "Malnutrition (The prevention and fight against diseases caused by malnutrition)"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugufungura nabi canke kurwanya indwara ziterwa n'ugufungura nabi"
                     }
 
                 TopicANCPostpartum ->
                     { english = "Antenatal Care, Postnatal Care & Danger Signs in Pregnancy"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Uko witwara neza wibungenze imbere yo kwibaruka n'inyuma yo kwibaruka, n'ibimenyetso mburizi ku wibungenze"
                     }
 
                 TopicFamilyPlanning ->
                     { english = "Family Planning & Sexual and reproductive health"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugutandukanya imvyaro no kwumvikana ibirabana n'imibonano mpuzabitsina, n'amagara meza mu vy'ibihimba vy'irondoka"
                     }
 
                 TopicGender ->
                     { english = "Gender equality, Gender-Based Violence (GBV) & Behavior change"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Uburinganire ku birabana n'igitsina, Amabi afatiye ku gitsina"
                     }
 
                 TopicNCD ->
@@ -5457,7 +5537,7 @@ translationSet trans =
         EducationSessionNoCandidatesInVillage ->
             { english = "This village got no candidates for Group Education"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Iki kigwati nta muntu bafise azoba mu biga ivyigwa m'umugwi"
             }
 
         EducationSessionInitialResultsDisplay display ->
@@ -5465,13 +5545,13 @@ translationSet trans =
                 Pages.EducationSession.Model.InitialResultsHidden ->
                     { english = "Display all participants"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Shira ahabona abitabiriye"
                     }
 
                 Pages.EducationSession.Model.InitialResultsShown ->
                     { english = "Hide all participants"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Nyegeza abitabiriye bose"
                     }
 
         Ega ->
@@ -5549,7 +5629,7 @@ translationSet trans =
         EncounterTypes ->
             { english = "Encounter Types"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ubwoko bw'umubonano"
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -5572,7 +5652,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "Do you want to start a HIV Management encounter for"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Urashaka gutangura umubonano kuvyerekeye ingwara y'umugera wa SIDA kuri"
                     }
 
                 HomeVisitEncounter ->
@@ -5951,7 +6031,7 @@ translationSet trans =
                 AutoObservation ->
                     { english = "Auto-observation"
                     , kinyarwanda = Just "Kwigenzura ururenda"
-                    , kirundi = Just "Ukwiyihweza"
+                    , kirundi = Just "Umwihwezo wo ku giti canje"
                     }
 
                 Condoms ->
@@ -6566,7 +6646,7 @@ translationSet trans =
                 SendAmbulance ->
                     { english = "agreed to call the District Hospital to send an ambulance"
                     , kinyarwanda = Just "bemeranya guhamagara ibitaro ngo byohereze imbangukiragutabara"
-                    , kirundi = Just "yemeye guhamagara ku Bitaro vy'Akarere ngo barungike Rusehabaniha (ambiranse)"
+                    , kirundi = Just "Yemeye guhamagara ku bitaro vy'akarere k'ubuvuzi kugira barungike rusehabaniha"
                     }
 
                 HomeIsolation ->
@@ -6578,7 +6658,7 @@ translationSet trans =
                 ComeToHealthCenter ->
                     { english = "advised patient to go to the health center for further evaluation"
                     , kinyarwanda = Just "kimugira inama yo kujya ku kigo nderabuzima gukoresha isuzuma ryimbitse"
-                    , kirundi = Just "Guhanura umugwayi kugira angende kw'Ivuriro (kwa muganga) hama bamugirire ibipimo vy'umwihariko"
+                    , kirundi = Just "Guhanura umurwayi kugira angende kw'ivuriro mu ntumbero yo kurushirizaho gusuzuma"
                     }
 
                 ChwMonitoring ->
@@ -6671,13 +6751,13 @@ translationSet trans =
         HealthTopics ->
             { english = "Health Topics"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imitwe y'ivyigwa vy'amagara meza"
             }
 
         HealthTopicsQuestion ->
             { english = "Which Health Education topics will be covered today"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni uwuhe mutwe w'icigwa c'amagara meza tuza kuraba uno musi"
             }
 
         Heart ->
@@ -6952,19 +7032,19 @@ translationSet trans =
         HIVPositiveDateCorrectQuestion date ->
             { english = "The patient tested positive for HIV on " ++ formatDDMMYYYY date ++ ". Is this date correct"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just <| "Uwu murwayi baramutoye umugera wa SIDA kw'igenekerewo rya " ++ formatDDMMYYYY date ++ ". Iryo genekerezo ni ryo"
             }
 
         HIVPositiveDiagnosedQuestion ->
             { english = "Was this person diagnosed with HIV"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Uwu murwayi baramutoye umugera wa SIDA"
             }
 
         HIVPositiveTestDateQuestion ->
             { english = "When was the positive test date"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni itariki zingahe bamutoye umugera wa SIDA"
             }
 
         HIVPrescribedMedication medication ->
@@ -7130,7 +7210,7 @@ translationSet trans =
                 NegativeDiscordantCouple ->
                     { english = "Negative - discordant couple"
                     , kinyarwanda = Just "Nta bwandu afite ariko abana n'ubufite"
-                    , kirundi = Just "Umugwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
+                    , kirundi = Just "Umurwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
                     }
 
                 Positive ->
@@ -7168,7 +7248,7 @@ translationSet trans =
                 HIVSymptomSwollenLymphNodes ->
                     { english = "Swollen lymph nodes"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Udusumbi tw'amatembabuzi turavyimvye"
                     }
 
                 HIVSymptomSoreThroat ->
@@ -7177,13 +7257,13 @@ translationSet trans =
                 HIVSymptomRash ->
                     { english = "Rash"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukwama uruherehere"
                     }
 
                 HIVSymptomMuscleJointPain ->
                     { english = "Muscle and joint pain"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ububabare mu nyama no mu ngingo"
                     }
 
                 HIVSymptomHeadache ->
@@ -7204,19 +7284,19 @@ translationSet trans =
                 HIVSymptomCoughingUpBlood ->
                     { english = "Coughing up blood"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ugukorora amaraso"
                     }
 
                 HIVSymptomHairLoss ->
                     { english = "Hair loss"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukumyoka umushatsi"
                     }
 
                 HIVSymptomMouthUlcers ->
                     { english = "Mouth ulcers"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Ibikomere vyo mu kanwa"
                     }
 
                 HIVSymptomDifficultyBreathing ->
@@ -7231,7 +7311,7 @@ translationSet trans =
         HIVSymptomReviewQuestion ->
             { english = "Which, if any, of these symptoms does the patient have"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Ni ikihe kimenyetso gikomeye mu bimenyetso umurwayi afise"
             }
 
         HIVTreatmentSign sign ->
@@ -7386,7 +7466,7 @@ translationSet trans =
         HypertensionRecommendedTreatmentUpdateCurrentTreatment ->
             { english = "The patient is currently prescribed"
             , kinyarwanda = Just "Ubu umubyeyi afata imiti ikurikira"
-            , kirundi = Just "Umugwayi ubu yandikiwe"
+            , kirundi = Just "Umurwayi ubu yandikiwe"
             }
 
         HypertensionRecommendedTreatmentUpdateNewTreatment value ->
@@ -7416,7 +7496,7 @@ translationSet trans =
         HypertensionRecommendedTreatmentUpdateNoCurrentTreatment ->
             { english = "The patient is currently receiving no treatment"
             , kinyarwanda = Just "Ubu umubyeyi nta muti ari gufata"
-            , kirundi = Just "Umugwayi ubu nta muti ariko aravugwa"
+            , kirundi = Just "Umurwayi ubu nta muti ariko aravugwa"
             }
 
         HypertensionRecommendedTreatmentUpdateStartTreatment ->
@@ -7545,13 +7625,13 @@ translationSet trans =
         IndexPatient ->
             { english = "Index Patient"
             , kinyarwanda = Just "Umubare w'umurwayi"
-            , kirundi = Just "Ironderero ry'umugwayi"
+            , kirundi = Just "Ironderero ry'umurwayi"
             }
 
         IndividualEncounter ->
             { english = "Individual Encounter"
             , kinyarwanda = Just "Gukorera umuntu umwe"
-            , kirundi = Just "Umubonano n'umuntu ku giti ciwe"
+            , kirundi = Just "Umubonano n'umuntu umwe"
             }
 
         IndividualEncounterFirstVisit encounterType ->
@@ -7577,7 +7657,7 @@ translationSet trans =
                 HIVEncounter ->
                     { english = "First HIV Encounter"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Umubonano wambere werekeye ingwara y’umugera wa SIDA"
                     }
 
                 HomeVisitEncounter ->
@@ -7948,7 +8028,7 @@ translationSet trans =
         IsolatedAtHome ->
             { english = "Isolated at home"
             , kinyarwanda = Just "Yashyizwe mu kato mu rugo"
-            , kirundi = Just "Umugwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene m'urugo"
+            , kirundi = Just "Umurwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene m'urugo"
             }
 
         IsThisYouQuestion ->
@@ -7992,7 +8072,7 @@ translationSet trans =
                 TaskHepatitisBTest ->
                     { english = "Is this patient known to be Hepatitis B positive"
                     , kinyarwanda = Just "Uyu murwayi yaba asanzwe azwi ko afite indwara y'umwijima yo mu bwoko bwa B"
-                    , kirundi = Just "Mbega umugwayi arazi ko agwaye igitigu (afise Hépatite B)"
+                    , kirundi = Just "Mbega umugwayi arazi ko arwaye igitigu (afise Hépatite B)"
                     }
 
                 TaskMalariaTest ->
@@ -8068,7 +8148,7 @@ translationSet trans =
         KnownPositive ->
             { english = "Known Positive"
             , kinyarwanda = Just "Asanzwe arwaye"
-            , kirundi = Just "Aragwaye"
+            , kirundi = Just "Ararwaye"
             }
 
         KnownPositiveHepatitisB ->
@@ -8707,7 +8787,7 @@ translationSet trans =
         PrenatalLabsCaseManagementEntryTypeResults ->
             { english = "ANC Lab Results"
             , kinyarwanda = Just "Ibisubizo by'Ibizamini Byafashwe ku mugore utwite"
-            , kirundi = Just "Inyishu z'ibipimo vyo muri laboratware vyakozwe mw'isuzumisha ry'imbanyi"
+            , kirundi = Just "Inyishu z'ibipimo vyakozwe mu gusuzumisha imbanyi"
             }
 
         PrenatalLabsCaseManagementEntryTypeVitals ->
@@ -9165,7 +9245,7 @@ translationSet trans =
         LaboratoryTaskResultsHelper ->
             { english = "When ready, update test results via case management"
             , kinyarwanda = Just "Ibisubizo nibiboneka, uhite ubyandika unyuze ku Gukurikirana umurwayi"
-            , kirundi = Just "Mugihe witeguye, shira k'umunsi/ku mwanya inyishu z'ibipimo uciye mw'icungengwa c'ingwara"
+            , kirundi = Just "Mugihe witeguye, shira k'umunsi/ku mwanya inyishu z'ibipimo uciye ku Gukurikirana umurwayi"
             }
 
         LabResults ->
@@ -9629,7 +9709,7 @@ translationSet trans =
         LessCommonAntiRetroviralMedications ->
             { english = "Less Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti Ikoreshwa gake igabanya imigera ya SIDA   "
             }
 
         LevelOfEducationLabel ->
@@ -9679,7 +9759,7 @@ translationSet trans =
                 AdvancedDiploma ->
                     { english = "Advanced Diploma"
                     , kinyarwanda = Just "(A1)"
-                    , kirundi = Just "Urupapuro rw'umutsindo rwo hejuru"
+                    , kirundi = Just "Urupapuro rw'umutsindo rwo kurugero rwo hejuru"
                     }
 
                 -- Not in use.
@@ -9725,7 +9805,7 @@ translationSet trans =
                 AdvancedDiploma ->
                     { english = "Advanced Diploma (A1)"
                     , kinyarwanda = Just "(A1)"
-                    , kirundi = Just "Urupapuro rw'umutsindo rwo hejuru(A1)"
+                    , kirundi = Just "Urupapuro rw'umutsindo rwo kurugero rwo hejuru(A1)"
                     }
 
                 HigherEducation ->
@@ -9837,7 +9917,7 @@ translationSet trans =
         Location ->
             { english = "Location"
             , kinyarwanda = Just "Aho Ruzatangirwa"
-            , kirundi = Nothing
+            , kirundi = Just "Aho ruzotangirwa"
             }
 
         LoginPhrase phrase ->
@@ -10334,7 +10414,7 @@ translationSet trans =
                 MedicationAceInhibitors ->
                     { english = "Ace-Inhibitors (Example: Captopril)"
                     , kinyarwanda = Just "Caputopili"
-                    , kirundi = Just "Imiti ibuza ECA (Enzyme de Conversion Angiotensine) (akarorero: captopril)"
+                    , kirundi = Just "Imiti ibuza ECA (Enzyme de Conversion Angiotensine)"
                     }
 
                 MedicationARBs ->
@@ -10358,7 +10438,7 @@ translationSet trans =
                 MedicationBetaBlockers ->
                     { english = "Beta-Blockers"
                     , kinyarwanda = Just "Beta boloka"
-                    , kirundi = Just "Bêta-bloquants"
+                    , kirundi = Just "Umurwi w'imiti ifasha umutima mu gihe utera nabi"
                     }
 
                 MedicationHydralazine ->
@@ -10556,7 +10636,7 @@ translationSet trans =
         MedicationDistributionHelperAnemia ->
             { english = "Patient shows signs of Mild - Moderate Anemia"
             , kinyarwanda = Just "Umurwayi afite amaraso make byoroheje"
-            , kirundi = Just "Umugwayi yerekana ibimenyetso vy'ibura ry'amaraso ryorohejeè - hagati"
+            , kirundi = Just "Umurwayi yerekana ibimenyetso vy'ibura ry'amaraso ryorohejeè - hagati"
             }
 
         MedicationDistributionHelperDiscordantPartnership ->
@@ -10785,7 +10865,7 @@ translationSet trans =
         MedicationForFeverPast6Hours ->
             { english = "Patient took medication to treat a fever in the past six hours"
             , kinyarwanda = Just "Umurwayi yanyoye imiti y’umuriro mu masaha atandatu ashize"
-            , kirundi = Just "Umugwayi yafashe imiti yo kuvura ubushuhe mu masaha 6 aheze"
+            , kirundi = Just "Umurwayi yafashe imiti yo kuvura ubushuhe mu masaha 6 aheze"
             }
 
         MedicationHelpedEnding helped ->
@@ -10810,13 +10890,13 @@ translationSet trans =
         MedicationForMalariaToday ->
             { english = "Patient received medication for malaria today before this visit"
             , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya uyu munsi mbere yuko aza mu isuzuma"
-            , kirundi = Just "Umugwayi yaronse imiti ya malariya imbere yuko aza/imbere y'umubonano"
+            , kirundi = Just "Umurwayi yaronse imiti ya malariya imbere yuko aza/imbere y'umubonano"
             }
 
         MedicationForMalariaPastMonth ->
             { english = "Patient received medication for malaria within the past month before today's visit"
             , kinyarwanda = Just "Umurwayi yahawe imiti ya malariya mu kwezi gushize mbere yuko aza mu isuzuma uyu munsi "
-            , kirundi = Just "Umugwayi yaronse imiti ya malariya mu kwezi guheze imbere yuko aza/imbere y'umubonano"
+            , kirundi = Just "Umurwayi yaronse imiti ya malariya mu kwezi guheze imbere yuko aza/imbere y'umubonano"
             }
 
         MedicalHistoryInfectiousDiseasesReviewQuestion ->
@@ -11070,7 +11150,7 @@ translationSet trans =
         MostCommonAntiRetroviralMedications ->
             { english = "Most Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti ikoreshwa cane igabanya imigera ya SIDA"
             }
 
         MostRecentPregnancyDeliveryMethod ->
@@ -11112,7 +11192,7 @@ translationSet trans =
         MUAC ->
             { english = "MUAC"
             , kinyarwanda = Just "Ikizigira cy'akaboko"
-            , kirundi = Just "Intikuro y’akaboko"
+            , kirundi = Just "Igipimo c'inkikuro y'ukuboko"
             }
 
         MyRelatedBy relationship ->
@@ -11383,31 +11463,31 @@ translationSet trans =
                 Backend.Measurement.Model.ConditionalFoodItems ->
                     { english = "Receipt of other support (e.g., food items or small livestock,...)"
                     , kinyarwanda = Just "Izindi nkunga z’ingoboka (urugero: ibiryo, amatungo,...)"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ukuronka iyindi mfashanyo yaronse (nk’ibifungurwa canke ibitungwa bitobito,…)"
                     }
 
                 TreatedForAcuteMalnutrition ->
                     { english = "Is the child being treated"
                     , kinyarwanda = Just "Umwana ari kuvurwa"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana ariko aravurwa"
                     }
 
                 ChildWithDisability ->
                     { english = "Does the child have disability"
                     , kinyarwanda = Just "Umwana afite ubumuga"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana afise ubumuga"
                     }
 
                 ReceivingSupport ->
                     { english = "Does the child receive support"
                     , kinyarwanda = Just "Umwana ahabwa ubufasha"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana araronka ubufasha"
                     }
 
                 ChildGotDiarrhea ->
                     { english = "Does the child have diarrhea"
                     , kinyarwanda = Just "Umwana afite impiswi"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana afise gucibwamo"
                     }
 
                 Backend.Measurement.Model.HasCleanWater ->
@@ -11437,13 +11517,13 @@ translationSet trans =
                 InsecticideTreatedBednets ->
                     { english = "Is the mother using the insecticide-treated bednets"
                     , kinyarwanda = Just "Umubyeyi akoresha inzitiramubu iteye umuti"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umukenyezi akoresha umusegetera uteye umuti"
                     }
 
                 MealsAtRecommendedTimes ->
                     { english = "Does the child eat at the recommended times per day"
                     , kinyarwanda = Just "Umwana afata ifunguro ku munsi inshuro zihagije kandi zagenwe"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana afungura ku munsi igihe cagenwe"
                     }
 
                 ChildReceivesFBF ->
@@ -11461,25 +11541,25 @@ translationSet trans =
                 ChildReceivesVitaminA ->
                     { english = "Did the child receive Vitamin A in the last six months"
                     , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cya vitamini A"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana yaronse Vitamine A mu mezi atandatu ashize"
                     }
 
                 ChildReceivesDewormer ->
                     { english = "Did the child receive deworming medication in the last six months"
                     , kinyarwanda = Just "Mu mezi atandatu ashize, umwana yahawe ikinini cy’inzoka"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana yaronse imiti yo munda mu mezi atandatu ashize?"
                     }
 
                 ChildReceivesECD ->
                     { english = "Do you sing lullabies, poems, and read books to your child, or play games with your child"
                     , kinyarwanda = Just "Uririmbira umwana ibihozo, n'imivugo, ukamusomera ibitabo mukanakina"
-                    , kirundi = Nothing
+                    , kirundi = Just "Uraririmba indirimbo z’abana, ukavuga imivugo, ukasoma ibitabo ku mwana wawe, canke ukakina imikino n’umwana wawe"
                     }
 
                 ShowsEdemaSigns ->
                     { english = "Does the child show signs of Edema"
                     , kinyarwanda = Just "Umwana agaragaza ibimenyetso b’ububyimbe"
-                    , kirundi = Nothing
+                    , kirundi = Just "Umwana arafise ibimenyetso bya Oedeme"
                     }
 
                 NoNCDASigns ->
@@ -11499,7 +11579,7 @@ translationSet trans =
                 Backend.NCDActivity.Model.Examination ->
                     { english = "Examination"
                     , kinyarwanda = Just "Gusuzuma"
-                    , kirundi = Just "Ikibazo"
+                    , kirundi = Just "Ibipimo"
                     }
 
                 Backend.NCDActivity.Model.FamilyPlanning ->
@@ -11743,7 +11823,7 @@ translationSet trans =
                 Dyspnea ->
                     { english = "Acute Shortness of Breath (Dyspnea)"
                     , kinyarwanda = Just "Guhumeka nabi biziyeho"
-                    , kirundi = Just "Ukubura impwemu bikabije cane (dyspinée)"
+                    , kirundi = Just "Urugero rukaze rwo kubura impwemu"
                     }
 
                 VisionChanges ->
@@ -12185,7 +12265,7 @@ translationSet trans =
                 RiskFactorConsumeSalt ->
                     { english = "Adds Salt to Diet"
                     , kinyarwanda = Just "Wongera Umunyu mu biryo"
-                    , kirundi = Just "Kongeramwo umunyu mw'ifunguro"
+                    , kirundi = Just "Kwongeramwo umunyu mu bifungurwa"
                     }
 
                 RiskFactorHypertensionHistory ->
@@ -12318,7 +12398,7 @@ translationSet trans =
             if isChw then
                 { english = "Next immunization visit at the health center"
                 , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
-                , kirundi = Nothing
+                , kirundi = Just "Ukugendera icandaga rikurikira kw'ivuriro"
                 }
 
             else
@@ -12331,7 +12411,7 @@ translationSet trans =
             if isChw then
                 { english = "Next pediatric visit at the health center"
                 , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
-                , kirundi = Nothing
+                , kirundi = Just "Ukuvura abana gukurikira kw'ivuriro"
                 }
 
             else
@@ -12343,7 +12423,7 @@ translationSet trans =
         NextSteps ->
             { english = "Next Steps"
             , kinyarwanda = Just "Ibikurikiyeho"
-            , kirundi = Just "Intambwe zikurkira"
+            , kirundi = Just "Intambwe zikurikira"
             }
 
         NextStepsTask isChw task ->
@@ -12352,7 +12432,7 @@ translationSet trans =
                     if isChw then
                         { english = "Isolate Patient"
                         , kinyarwanda = Just "Shyira umurwayi mu kato"
-                        , kirundi = Just "Umugwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene"
+                        , kirundi = Just "Umurwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene"
                         }
 
                     else
@@ -12512,7 +12592,7 @@ translationSet trans =
                 ClientRefused ->
                     { english = "Client refused"
                     , kinyarwanda = Just "Umurwayi yabyanze"
-                    , kirundi = Just "Umugwayi yaranse"
+                    , kirundi = Just "Umurwayi yaranse"
                     }
 
                 NoAmbulance ->
@@ -12524,13 +12604,13 @@ translationSet trans =
                 ClientUnableToAffordFees ->
                     { english = "Client unable to afford fees"
                     , kinyarwanda = Just "Nta bushobozi bwo kwishyura afite"
-                    , kirundi = Just "Umugwayi adashobora kwishura amafaranga"
+                    , kirundi = Just "Umurwayi adashobora kwishura amafaranga"
                     }
 
                 ClientAlreadyInCare ->
                     { english = "Client already in care"
                     , kinyarwanda = Just "Umukiriya ari kwitabwaho"
-                    , kirundi = Just "Umugwayi asanzwe yitahweho"
+                    , kirundi = Just "Umurwayi asanzwe yitahweho"
                     }
 
                 ReasonForNonReferralNotIndicated ->
@@ -12565,7 +12645,7 @@ translationSet trans =
                 NonAdministrationPatientDeclined ->
                     { english = "Patient Declined"
                     , kinyarwanda = Just "Umurwayi yanze"
-                    , kirundi = Just "Umugwayi yaranse"
+                    , kirundi = Just "Umurwayi yaranse"
                     }
 
                 NonAdministrationPatientUnableToAfford ->
@@ -12583,7 +12663,7 @@ translationSet trans =
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
                     , kinyarwanda = Just "Ararembye"
-                    , kirundi = Just "Aragwaye cane"
+                    , kirundi = Just "Ararwaye cane"
                     }
 
                 NonAdministrationOther ->
@@ -12601,7 +12681,7 @@ translationSet trans =
                 AdministeredPreviously ->
                     { english = "Already Received"
                     , kinyarwanda = Just "Byamaze kwakirwa"
-                    , kirundi = Just "Vyamaze kwakirwa vyose"
+                    , kirundi = Just "Vyamaze kwakirwa"
                     }
 
         AdministrationNoteForPrenatalImmunisation note ->
@@ -12621,7 +12701,7 @@ translationSet trans =
                 NonAdministrationPatientDeclined ->
                     { english = "Patient Declined"
                     , kinyarwanda = Just "Umurwayi yanze"
-                    , kirundi = Just "Umugwayi yaranse"
+                    , kirundi = Just "Umurwayi yaranse"
                     }
 
                 NonAdministrationPatientUnableToAfford ->
@@ -12633,7 +12713,7 @@ translationSet trans =
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
                     , kinyarwanda = Just "Ararembye"
-                    , kirundi = Just "Aragwaye cane"
+                    , kirundi = Just "Ararwaye cane"
                     }
 
                 NonAdministrationOther ->
@@ -12675,7 +12755,7 @@ translationSet trans =
                 NonAdministrationTooIll ->
                     { english = "Too Sick"
                     , kinyarwanda = Just "Ararembye"
-                    , kirundi = Just "Aragwaye cane"
+                    , kirundi = Just "Ararwaye cane"
                     }
 
                 NonAdministrationOther ->
@@ -12697,7 +12777,7 @@ translationSet trans =
         NoParticipantsPending ->
             { english = "All attending participants have completed their activities."
             , kinyarwanda = Just "Abaje bose barangirijwe"
-            , kirundi = Just "Abitavye inyigisho (canke ibikorwa) bose bahejeje ibikorwa vyabo"
+            , kirundi = Just "Abitavye inyigisho bose bahejeje ibikorwa vyabo"
             }
 
         NoParticipantsCompletedForThisActivity ->
@@ -13054,13 +13134,13 @@ translationSet trans =
                 SupplementShared ->
                     { english = "Is the food supplement being shared or eaten only by the sick child"
                     , kinyarwanda = Just "Ese inyongeramirire yaba ifatwa n'umwana urwaye gusa cyangwa yaba ayisangira n'abandi"
-                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana agwaye wenyene canke azisangira n’abandi"
+                    , kirundi = Just "Za ngaburo wakuye kwa muganga uziha umwana arwaye wenyene canke azisangira n’abandi"
                     }
 
                 EncouragedToEat ->
                     { english = "Does someone help / encourage the sick child to eat"
                     , kinyarwanda = Just "Hari umuntu waba afasha cyangwa ashishikariza umwana kurya"
-                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana agwaye gufungura"
+                    , kirundi = Just "Mbega hari uwufasha/uwuremesha umwana arwaye gufungura"
                     }
 
                 RefusingToEat ->
@@ -13072,7 +13152,7 @@ translationSet trans =
                 FeedingSignBreastfeeding ->
                     { english = "Is the child currently breastfeeding (for children < 2)"
                     , kinyarwanda = Just "Umwana yaba yonka (ku bana bari munsi y'imyaka 2)"
-                    , kirundi = Just "Mbega ubu umwana aronswa (ku bana bari < 2)"
+                    , kirundi = Just "Mbega ubu umwana aronka (ku bana bari < 2)"
                     }
 
                 CleanWaterAvailable ->
@@ -13392,7 +13472,7 @@ translationSet trans =
         OnlySickChild ->
             { english = "Only Sick Child"
             , kinyarwanda = Just "Umwana urwaye gusa"
-            , kirundi = Just "Umwana agwaye gusa"
+            , kirundi = Just "Umwana arwaye gusa"
             }
 
         OnTrack ->
@@ -13458,7 +13538,7 @@ translationSet trans =
         ParentsAliveAndHealthyQuestion ->
             { english = "Are both parents alive and healthy"
             , kinyarwanda = Just "Ese ababyeyi bombi bariho kandi bafite ubuzima bwiza"
-            , kirundi = Just "Mbega abavyeyi uko ari babiri (2) bariho bose kandi bafise amagara meza"
+            , kirundi = Just "Mbega ufise abavyeyi uko ari babiri bafise n'amagara meza"
             }
 
         PaleConjuctiva ->
@@ -13512,7 +13592,7 @@ translationSet trans =
         PatientDiagnosedWithLabel ->
             { english = "The patient has been diagnosed with"
             , kinyarwanda = Just "Umurwayi yasuzumwe uburwayi bwo"
-            , kirundi = Just "Umugwayi bamusuzumye"
+            , kirundi = Just "Umurwayi bamusuzumye"
             }
 
         PatientExhibitAnyFindings ->
@@ -13573,7 +13653,7 @@ translationSet trans =
         PatientProgress ->
             { english = "Patient Progress"
             , kinyarwanda = Just "Uruhererekane rw'ibyakorewe umubyeyi"
-            , kirundi = Just "Iterambere ry'umugwayi"
+            , kirundi = Just "Iterambere ry'umurwayi"
             }
 
         PatientRecord ->
@@ -13585,7 +13665,7 @@ translationSet trans =
         PatientRefused ->
             { english = "Patient refused"
             , kinyarwanda = Just "Umurwayi yabyanze"
-            , kirundi = Just "Umugwayi yanse"
+            , kirundi = Just "Umurwayi yanse"
             }
 
         PatientInformation ->
@@ -13645,7 +13725,7 @@ translationSet trans =
         PatientShowsNoSignsOfCovid ->
             { english = "Patient shows no signs of Covid"
             , kinyarwanda = Just "Umurwayi nta bimenyetso bya Koronavirusi agaragaza"
-            , kirundi = Just "Umugwayi ntiyerekana ikimenyetso na kimwe ca Korona"
+            , kirundi = Just "Umurwayi ntiyerekana ikimenyetso na kimwe ca Korona"
             }
 
         Patients ->
@@ -14057,7 +14137,7 @@ translationSet trans =
         Pregnancy ->
             { english = "Pregnancy (1-9)"
             , kinyarwanda = Just "Gutwita (1-9)"
-            , kirundi = Nothing
+            , kirundi = Just "Inda (1-9)"
             }
 
         PregnancyConclusion ->
@@ -14083,7 +14163,7 @@ translationSet trans =
                 BirthLength ->
                     { english = "Is birth length available"
                     , kinyarwanda = Just "Uburebure umwana yavukanye burazwi"
-                    , kirundi = Just "Mbega uburebure bw'avuka burahari"
+                    , kirundi = Just "Mbega uburebure bw'amavuka burahari"
                     }
 
                 NoPregnancySummarySigns ->
@@ -14098,7 +14178,10 @@ translationSet trans =
                     }
 
                 PregnancyTestNegative ->
-                    translationSet NegativeLabel
+                    { english = "Negative"
+                    , kinyarwanda = Just "Ntago nda afite"
+                    , kirundi = Just "Ntago afise imbanyi"
+                    }
 
                 PregnancyTestIndeterminate ->
                     { english = "Indeterminate"
@@ -14986,7 +15069,7 @@ translationSet trans =
                 DiagnosisPostAbortionSepsis ->
                     { english = "Possible Post Abortion Sepsis"
                     , kinyarwanda = Just "Ashobora kuba afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda"
-                    , kirundi = Just "Birashoboka ko igitereko cagwaye inyuma yaho imbanyi yavuyeyo giturumbuka"
+                    , kirundi = Just "Birashoboka ko igitereko carwaye inyuma yaho imbanyi yavuyeyo giturumbuka"
                     }
 
                 DiagnosisEctopicPregnancy ->
@@ -15100,7 +15183,7 @@ translationSet trans =
                 DiagnosisPyelonephritis ->
                     { english = "Possible Pyelonephritis"
                     , kinyarwanda = Just "Ashobora kuba afite Indwara yo kubyimba impyiko"
-                    , kirundi = Just "Birashoboka ko amafyigo yagwaye bivuye ku miringoti y'umukoyo yagwaye nayo nyene"
+                    , kirundi = Just "Birashoboka ko amafyigo yarwaye bivuye ku miringoti y'umukoyo yarwaye nayo nyene"
                     }
 
                 DiagnosisCandidiasis ->
@@ -15142,7 +15225,7 @@ translationSet trans =
                 Backend.PrenatalEncounter.Types.DiagnosisTuberculosis ->
                     { english = "Possible Active Tuberculosis"
                     , kinyarwanda = Just "Ashobora kuba afite Igituntu"
-                    , kirundi = Just "Birashoboka ko agwaye Igituntu"
+                    , kirundi = Just "Birashoboka ko arwaye Igituntu"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
@@ -15267,7 +15350,7 @@ translationSet trans =
                 DiagnosisHIVDetectableViralLoadInitialPhase ->
                     { english = "Patient has a detectable HIV Viral Load"
                     , kinyarwanda = Just "Umurwayi agaragaza  udukoko dutera virusi ya SIDA mu maraso"
-                    , kirundi = Just "Umugwayi afise umugera wa SIDA ugaragara"
+                    , kirundi = Just "Umurwayi afise umugera wa SIDA ugaragara"
                     }
 
                 DiagnosisHIVDetectableViralLoadRecurrentPhase ->
@@ -15276,7 +15359,7 @@ translationSet trans =
                 DiagnosisDiscordantPartnershipInitialPhase ->
                     { english = "Patient is HIV Negative with a discordant partner"
                     , kinyarwanda = Just "Umwe mubashakanye afite ubwandu bwa virusi itera SIDA"
-                    , kirundi = Just "Umugwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
+                    , kirundi = Just "Umurwayi ata mugera wa Sida afise ariko mugenziwe ayifise"
                     }
 
                 DiagnosisDiscordantPartnershipRecurrentPhase ->
@@ -15285,7 +15368,7 @@ translationSet trans =
                 DiagnosisSyphilisInitialPhase ->
                     { english = "Patient has tested positive for Syphilis"
                     , kinyarwanda = Just "Afite ubwandu bw'indwara ya Mburugu"
-                    , kirundi = Just "Umugwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
+                    , kirundi = Just "Umurwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
                     }
 
                 DiagnosisSyphilisRecurrentPhase ->
@@ -15294,7 +15377,7 @@ translationSet trans =
                 DiagnosisSyphilisWithComplicationsInitialPhase ->
                     { english = "Patient has tested positive for Syphilis"
                     , kinyarwanda = Just "Afite ubwandu bw'indwara ya Mburugu"
-                    , kirundi = Just "Umugwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
+                    , kirundi = Just "Umurwayi bamutoye ingwara yo mu bihimba vy'irondoka yitwa Syphilis"
                     }
 
                 DiagnosisSyphilisWithComplicationsRecurrentPhase ->
@@ -15312,7 +15395,7 @@ translationSet trans =
                 DiagnosisHepatitisBInitialPhase ->
                     { english = "Patient has tested positive for Hepatitis B"
                     , kinyarwanda = Just "Afite ubwandu bw'umwijima wo mu bwoko bwa B"
-                    , kirundi = Just "Umugwayi bamutoye ingwara y'igitigu"
+                    , kirundi = Just "Umurwayi bamutoye ingwara y'igitigu"
                     }
 
                 DiagnosisHepatitisBRecurrentPhase ->
@@ -15321,7 +15404,7 @@ translationSet trans =
                 DiagnosisMalariaInitialPhase ->
                     { english = "Patient has tested positive for Malaria"
                     , kinyarwanda = Just "Afite ubwandu bwa Malariya"
-                    , kirundi = Just "Umugwayi bamutoye Malariya"
+                    , kirundi = Just "Umurwayi bamutoye Malariya"
                     }
 
                 DiagnosisMalariaRecurrentPhase ->
@@ -15441,7 +15524,7 @@ translationSet trans =
                 DiagnosisHeartburnPersistent ->
                     { english = "Patient shows signs of Persistent Heartburn that is not responding to treatment"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'ikirungurira gihoraho ariko imiti itari kuvura"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vy'ingwara yo gusha mu nda/mu mutima ibandanya kandi imiti itariko irayivura"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vy'ingwara yo gusha mu nda/mu mutima ibandanya kandi imiti itariko irayivura"
                     }
 
                 DiagnosisDeepVeinThrombosis ->
@@ -15525,7 +15608,7 @@ translationSet trans =
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase ->
                     { english = "Patient shows signs of Diabetes"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vya Diyabete"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vya Diyabete"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase ->
@@ -15534,7 +15617,7 @@ translationSet trans =
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase ->
                     { english = "Patient shows signs of Gestational Diabetes"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso bya Diyabete yatewe no gutwita"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vya Diyabete igihe c'imbanyi"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vya Diyabete igihe c'imbanyi"
                     }
 
                 Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase ->
@@ -15545,7 +15628,7 @@ translationSet trans =
                 DiagnosisRhesusNegativeInitialPhase ->
                     { english = "Patient has Rh-Negative status"
                     , kinyarwanda = Just "Umubyeyi afite Rezisi Negatifu"
-                    , kirundi = Just "Umugwayi/umuvyeyi afise indangakamere ya Rhesus Négatif"
+                    , kirundi = Just "Umurwayi/umuvyeyi afise indangakamere ya Rhesus Négatif"
                     }
 
                 DiagnosisRhesusNegativeRecurrentPhase ->
@@ -15584,7 +15667,7 @@ translationSet trans =
                 DiagnosisDepressionProbable ->
                     { english = "Patient shows signs of probable depression"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byuko ashobora kuba afite indwara y'agahinda gakabije"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso ko hari naho yo kwihebura"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso ko hari naho yo kwihebura"
                     }
 
                 DiagnosisSuicideRisk ->
@@ -15623,7 +15706,7 @@ translationSet trans =
                 DiagnosisPostpartumInfection ->
                     { english = "Patient shows signs of Infection"
                     , kinyarwanda = Just "Umubyei agaragaza ibimenyetso bya infegisiyo"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vyo kwandukiza"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vyo kwandukiza"
                     }
 
                 DiagnosisPostpartumExcessiveBleeding ->
@@ -15635,13 +15718,13 @@ translationSet trans =
                 DiagnosisPostpartumEarlyMastitisOrEngorgment ->
                     { english = "Patient shows signs of Early Mastitis or Engorgement"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'uburwayi bwo kubyimba amabere bwaje kare cyane"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vyo ukubabara mw'ibere canke rikavyimba hakiri kare"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vyo ukubabara mw'ibere canke rikavyimba hakiri kare"
                     }
 
                 DiagnosisPostpartumMastitis ->
                     { english = "Patient shows signs of Mastitis"
                     , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso by'uburwayi bw'amabere"
-                    , kirundi = Just "Umugwayi yerekana ibimenyetso vy'ububabare mu mabere"
+                    , kirundi = Just "Umurwayi yerekana ibimenyetso vy'ububabare mu mabere"
                     }
 
                 DiagnosisOther ->
@@ -16009,7 +16092,7 @@ translationSet trans =
         PrenatalHealthEducationNauseaAndVomitingAdvise ->
             { english = "Advise the patient that small amounts of chamomile tea, ginger, and Vitamin B6 can help relieve these symptoms if these are available to the patient"
             , kinyarwanda = Just "Gira umubyeyi inama ko gufata icyayi cya Chamomile, tangawizi na vitamini B6 byagabanya ibimenyetso afite igihe byaba bihari"
-            , kirundi = Just "Kubwira umuvyeyi ko icayi ca Camomille gikeya, Tangawizi nkeya hamwe na Vitamine B6 bishobora gufasha mu kugabanya ivyo bimenyetso, mugihe uwo mugwayi yobironka"
+            , kirundi = Just "Guhanura umurwayi ko icayi (camomille) gikeya, tangawizi nkeya hamwe na vitamini B6 bishobora gufasha mu kugabanya ivyo bimenyetso, mu gihe uwo murwayi yobironka"
             }
 
         PrenatalHealthEducationNauseaAndVomitingInform ->
@@ -16153,7 +16236,7 @@ translationSet trans =
         PrescribedMedication ->
             { english = "Prescribed Medication"
             , kinyarwanda = Just "Imiti yatanzwe"
-            , kirundi = Just "Imiti yasabwe"
+            , kirundi = Just "Imiti yandikiwe"
             }
 
         PrenatalRecurrentNextStepsTask task ->
@@ -16327,13 +16410,13 @@ translationSet trans =
                         MentalHealthQuestionOption1 ->
                             { english = "Not quite so much now"
                             , kinyarwanda = Just "Ubu ntago ari cyane"
-                            , kirundi = Just "Sivyinshi cane ubu"
+                            , kirundi = Just "Si vyinshi cane ubu"
                             }
 
                         MentalHealthQuestionOption2 ->
                             { english = "Definitely not so much now"
                             , kinyarwanda = Just "Ntago ari cyane na gato"
-                            , kirundi = Just "Sivyinshi cane ubu"
+                            , kirundi = Just "Si vyinshi cane ubu"
                             }
 
                         MentalHealthQuestionOption3 ->
@@ -16591,7 +16674,7 @@ translationSet trans =
         PrenatalMentalHealthWarningPopupMessage ->
             { english = "Patient shows signs of being a suicide risk"
             , kinyarwanda = Just "Umubyeyi agaragaza ibimenyetso byo kuba afite ibyago byo kwiyahura"
-            , kirundi = Just "Umugwayi yerekana ibimenyetso yuko ashobora kwiyahura"
+            , kirundi = Just "Umurwayi yerekana ibimenyetso yuko ashobora kwiyahura"
             }
 
         PrenatalMentalHealthWarningPopupInstructions ->
@@ -16981,7 +17064,7 @@ translationSet trans =
                 SymptomQuestionDarkUrine ->
                     { english = "Are you experiencing dark urine"
                     , kinyarwanda = Just "Waba ujya unyara inkari zijimye"
-                    , kirundi = Just "Mbega ubona uzana amasobwe usa n'uwirabura"
+                    , kirundi = Just "Mbega ubona uzana amasobwe asa n'ayirabura"
                     }
 
                 SymptomQuestionPelvicPainHospitalization ->
@@ -17062,7 +17145,7 @@ translationSet trans =
         PrenatalSymptomQuestionsHeader ->
             { english = "The patient has noted symptoms that require follow up questions"
             , kinyarwanda = Just "Umubyeyi yagaragaje ibimenyetso bisaba ibindi bibazo"
-            , kirundi = Just "Umugwayi yerekanye ibimenyetso bisaba gukurikizako ibindi bibazo (kugira umuntu ategere)"
+            , kirundi = Just "Umurwayi yerekanye ibimenyetso bisaba gukurikizako ibindi bibazo (kugira umuntu ategere)"
             }
 
         TestExecutionNote note ->
@@ -17100,7 +17183,7 @@ translationSet trans =
                 TestNoteBrokenEquipment ->
                     { english = "Broken Equipment"
                     , kinyarwanda = Just "Igikoresho gipima cyarangiritse"
-                    , kirundi = Just "Ibikoresho bimenetse"
+                    , kirundi = Just "Ibikoresho vyaramenetse"
                     }
 
                 TestNoteNotIndicated ->
@@ -17109,7 +17192,7 @@ translationSet trans =
                 TestNoteKnownAsPositive ->
                     { english = "Known as Positive"
                     , kinyarwanda = Just "Asanzwe afite ubwandu"
-                    , kirundi = Just "Birazwi ko agwaye"
+                    , kirundi = Just "Birazwi ko arwaye"
                     }
 
                 TestNoteToBeDoneAtHospital ->
@@ -17314,7 +17397,7 @@ translationSet trans =
         ProphylaxisMedications ->
             { english = "Prophylaxis Medications"
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Imiti ikinga"
             }
 
         ProvideHealthEducationAndInstructToIsolate ->
@@ -17575,7 +17658,7 @@ translationSet trans =
                 TooIll ->
                     { english = "Too ill to leave alone"
                     , kinyarwanda = Just "Umurwayi ararembye ntagomba gusigara wenyine"
-                    , kirundi = Just "Aragwaye cane kuburyo atogenda wenyene"
+                    , kirundi = Just "Ararwaye cane kuburyo atogenda wenyene"
                     }
 
                 CanNotSeparateFromFamily ->
@@ -17598,7 +17681,7 @@ translationSet trans =
                 PatientNeedsEmergencyReferral ->
                     { english = "Patient needs an emergency referral"
                     , kinyarwanda = Just "Umurwayi akeneye kwoherezwa ku ivuriro byihutirwa"
-                    , kirundi = Just "Umugwayi akeneye kujanwa kwa muganga vy'ihuta/kujanwa kubindi bitaro mu maguru masha"
+                    , kirundi = Just "Umurwayi akeneye kujanwa kwa muganga vy'ihuta/kujanwa kubindi bitaro mu maguru masha"
                     }
 
                 ReceivedEmergencyCase ->
@@ -17619,7 +17702,7 @@ translationSet trans =
                 PatientTooIll ->
                     { english = "Patient too ill"
                     , kinyarwanda = Just "Umurwayi ararembye"
-                    , kirundi = Just "Umugwaye aragwaye cane"
+                    , kirundi = Just "Umugwaye ararwaye cane"
                     }
 
                 NoReasonForNotProvidingHealthEducation ->
@@ -17989,25 +18072,25 @@ translationSet trans =
                 TreatmentMetformin2m1e ->
                     { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
                     , kinyarwanda = Just "ibinini 2 mu kanwa mu gitondo n'ikinini kimwe mu kanwa nijoro"
-                    , kirundi = Just "Kumira ibinini 2 vyo  mu gatondo n'ikinini 1 k'umugoroba"
+                    , kirundi = Just "Ibinini bibiri (2) vyo kumira mu gatondo n'ikinini kimwe co kumira kumugoroba"
                     }
 
                 TreatmentGlipenclamide2m1e ->
                     { english = "2 tablets by mouth in the morning and 1 tablet by mouth in the evening"
                     , kinyarwanda = Just "ibinini 2 mu kanwa mu gitondo n'ikinini kimwe mu kanwa nijoro"
-                    , kirundi = Just "Kumira ibinini 2 vyo  mu gatondo n'ikinini 1 k'umugoroba"
+                    , kirundi = Just "Ibinini bibiri (2) vyo kumira mu gatondo n'ikinini kimwe co kumira kumugoroba"
                     }
 
                 TreatmentMetformin2m2e ->
                     { english = "2 tablets by mouth twice a day"
                     , kinyarwanda = Just "ibinini bibiri mu kanwa inshuro 2 ku munsi"
-                    , kirundi = Just "Kumira ibinini 2 incuro 2 ku munsi"
+                    , kirundi = Just "Ibinini bibiri (2) vyo kumira kabiri ku musi"
                     }
 
                 TreatmentGlipenclamide2m2e ->
                     { english = "2 tablets by mouth twice a day"
                     , kinyarwanda = Just "ibinini bibiri mu kanwa inshuro 2 ku munsi"
-                    , kirundi = Just "Kumira ibinini 2 incuro 2 ku munsi"
+                    , kirundi = Just "Ibinini bibiri (2) vyo kumira kabiri ku musi"
                     }
 
                 -- Dosage is not applicable for other options.
@@ -18603,7 +18686,7 @@ translationSet trans =
                 ComponentAntenatalPatientProgress ->
                     { english = "Patient Progress"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Iterambere ry'umugwayi"
+                    , kirundi = Just "Iterambere ry'umurwayi"
                     }
 
                 ComponentAntenatalLabsResults ->
@@ -18638,7 +18721,7 @@ translationSet trans =
                 ComponentNCDPatientProgress ->
                     { english = "Patient Progress"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Iterambere ry'umugwayi"
+                    , kirundi = Just "Iterambere ry'umurwayi"
                     }
 
                 ComponentNCDLabsResults ->
@@ -19065,6 +19148,96 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageGrowth5Title ->
+            { english = "Make it happen-Goal planning!"
+            , kinyarwanda = Just "Uwa mbere mushya, intego nshya"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth5Paragraph1 ->
+            { english = "Setting yourself small achievable goals every week will help you stay focused and motivated. As you work on achieving your weekly goals, make sure to congratulate yourself for doing so. You have made progress in your path to achieving your purpose. You know you can do it!"
+            , kinyarwanda = Just "Kugira intego nto zaburi cyumweru bigufasha gukomeza kwibanda kubyo ukora no kugira ishyaka. Uko ukora ugerageza kugera ku ntego zawe za buri cyumweru, ninako wakagombye kubyishimira. Wateye intambwe mu nzira mu kuba wagera ku ntego yawe. Urabizi ko ushobora kuyigeraho!"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth5Paragraph2 ->
+            { english = "Remember: Every day may not be good, but there will be something good in every day."
+            , kinyarwanda = Just "Imihigo irakomeye kandi irakomeje/irashoboka. Kandi Buhoro buhoro nirwo rugendo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Title ->
+            { english = "Make a list of things you value and want to achieve"
+            , kinyarwanda = Just "Kora urutonde rw'ibyo uha agaciro kandi ushaka kugeraho"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Paragraph1 ->
+            { english = "Think about what you value most in life. Is it being a good parent? Is it helping your community? Is it your career? Plan activities that help you do what is most important to you. If you want to be a good parent, make sure you spend an hour playing with your child every day."
+            , kinyarwanda = Just "Tekereza kubyo uha agaciro cyane mu buzima. Ese ni ukuba umubyeyi mwiza? Ese ni ugufasha abaturage? Ese ni umwuga wawe? Tegura ibikorwa bigufasha gukora ibifite akamaro. Niba ushaka kuba umubyeyi mwiza, mara nibura isaha ukina n'umwana wawe buri munsi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth6Paragraph2 ->
+            { english = "Remember: Live a life of purpose."
+            , kinyarwanda = Just "Baho ubuzima bufite intego."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Title ->
+            { english = "Here is a time of positivity"
+            , kinyarwanda = Just "Iki ni igihe cyo gutekereza ibiguteza imbere"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Paragraph1 ->
+            { english = "When something unexpected happens, you may have thoughts like ‘I’m bad’ or ‘It’s all my fault.’ Thinking negative thoughts about yourself can affect your mood, your work, and your relationships. You can practice thinking more positive thoughts. Instead of ‘It’s my fault’, try thinking ‘I made a mistake, but I have learned a lesson.’ You are in charge of your thoughts."
+            , kinyarwanda = Just "Iyo ikintu gitunguranye kibaye, ushobora kugira ibitekerezo uti: \"Ndi mubi\", ni \"amakosa yanjye\". Kugira ibitekerezo bitari byiza kuri wowe bishobora kugira ingaruka ku myumvire yawe, ku kazi kawe, n'umubano wawe n'abandi. Ushobora kwitoza kugira ibitekerezo byiza. Aho kugira ngo uvuge \"Ni amakosa yanjye\", gerageza utekereze uti \"Nakoze ikosa, ariko nakuyemo isomo\". Ni wowe uyobora ibitekerezo byawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth7Paragraph2 ->
+            { english = "Remember: Praise loudly, blame softly."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Title ->
+            { english = "Time to write down things you do better and learned from others."
+            , kinyarwanda = Just "Kwiga bihoraho, gira uwo wikigiraho wagufasha kwaguka mu bitekerezo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Paragraph1 ->
+            { english = "When you learn, you grow as a person and as a health worker. You can learn from the people around you. Think of a health worker you admire. This could be a co-worker or your supervisor. Make a list of the things they do well that you would like to be better at. Choose one thing from the list to try. Later you can try other things."
+            , kinyarwanda = Just "Iyo wize, ubumenyi bwawe buriyongera nk'umukozi utanga serevisi z'ubuvuzi. Ushobora kwigira ku bantu bakuba hafi. Tekereza ku mukozi utanga serevisi z'ubuvuzi w'icyitegererezo kuri wowe. Uyu ashobora kuba umukozi mukorana cyangwa umuyobozi wawe. Kora urutonde rw'ibintu bakora neza wifuza nawe gukora. Hitamo kimwe muri urwo rutonde uri bugerageze. Ushobora kuba wagerageza ibindi nyuma."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth8Paragraph2 ->
+            { english = "Remember: Make improvements not excuses."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Title ->
+            { english = "Nobody can give you wiser advice than yourself."
+            , kinyarwanda = Just "Nta muntu ushobora kukugira inama nziza nkawe ubwawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Paragraph1 ->
+            { english = "Sometimes we judge ourselves more harshly than we do others. “‘I did that wrong, I was late, I forgot something’.” Think about what advice you would give to a friend. Then be your own best friend and use that advice yourself."
+            , kinyarwanda = Just "Rimwe na rimwe twicira urubanza cyane kurusha uko turucira abandi uti \"nabikoze nabi, nari natinze, nari nabyibagiwe.\" Tekereze ku nama waha incuti yawe, noneho ba incuti yawe ubwawe wigire iyo nama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageGrowth9Paragraph2 ->
+            { english = "Remember: Make your co-workers your work family."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceGuideSection1Title ->
             { english = "Program Overview"
             , kinyarwanda = Just "Ibikubiye muri porogaramu"
@@ -19383,6 +19556,84 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageStressManagement8Title ->
+            { english = "Be more blessed and less stressed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Paragraph1 ->
+            { english = "There are things you can do during your working day that can help you manage the challenges of work. Here are a few tips. Choose any that work for you:"
+            , kinyarwanda = Just "Hari ibintu ushobora gukora mu gihe uri mukazi bikaba byagufasha gukemura imbogamizi z'akazi uhura nazo. Izi ni zimwe mu nama zagufasha. Hitamo iyariyo yose yagufasha: "
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Paragraph2 ->
+            { english = "Remember: Be more blessed and less stressed."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet1 ->
+            { english = "Take regular breaks."
+            , kinyarwanda = Just "Gufata akaruhuko"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet2 ->
+            { english = "Take a sip of water at regular intervals."
+            , kinyarwanda = Just "Gufata ikirahuri cy'amazi mu gihe bibaye ngombwa."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet3 ->
+            { english = "Stand up, do a stretch, and take 5 deep breaths."
+            , kinyarwanda = Just "Guhaguruka, kugorora ingingo, no gukora umwitozo wo guhumeka ukabikora inshuro eshanu."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement8Bullet4 ->
+            { english = "Start to have a friendly chat with a co-worker."
+            , kinyarwanda = Just "Girana ibiganiro by'ubucuti n'uwo mukorana."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Title ->
+            { english = "Happiness is the art of relaxation"
+            , kinyarwanda = Just "Kwishima ni umwuga wo kuruhuka"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Paragraph1 ->
+            { english = "At the end of your day think about the things you are grateful for. The good weather, the help someone gave you, the clean water you drank, the chance you had to rest with your family. Add them up. You may find there are more things to be grateful for than you realized."
+            , kinyarwanda = Just "Igihe umunsi wawe uri kurangira, tekereza kubintu wishimiye cyangwa byagushimishije. Ese ni ikirere cyiza, n'ubufasha wahawe n'umuntu, n'amazi asukuye wanyoye, n'amahirwe wagize yo kuruhukana n'umuryango wawe se? Bitekerezeho. Ushobora gusanga hari ibintu byinshi byo kwishimira kuruta uko wabitekerezaga."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement9Paragraph2 ->
+            { english = "Remember: When it rains, look for rainbows. When it’s dark, look for stars."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Title ->
+            { english = "Short break time!!!"
+            , kinyarwanda = Just "Igihe cyo gufata akaruhuko gatoya"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Paragraph1 ->
+            { english = "Have you found a way to add little breaks into your everyday life? Experts say that even a 30-60 second break every 20 minutes of work can help to give you more energy. It could be a stretch, a minute of deep breathing, taking a sip of water, or a mindful handwashing exercise. Whatever you prefer, try to build short breaks into your working day."
+            , kinyarwanda = Just "Ese wabashije kubona uburyo bwo gufata ibiruhuko bigufi mu buzima bwawe bwa buri munsi? Inzobere zivugako ko kuruhuka amasegonda 30-60 buri minota 20 y'akazi bishobora kukongerera imbaraga. Bishobora kuba ari ukunanura ingingo, umunota wo gukora umwitozo wo guhumeka, kunywa ikirahuri cy'amazi, cyangwa umwitozo wo gukaraba intoki. Icyo aricyo cyose, gerageza gushaka ibiruhuko bigufi mu gihe cy'akazi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageStressManagement10Paragraph2 ->
+            { english = "Remember: Rest and be thankful."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageMindfulness1Title ->
             { english = "It's time for a short break"
             , kinyarwanda = Just "Akanya k'ikiruhuko karageze"
@@ -19563,6 +19814,60 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageMindfulness7Title ->
+            { english = "A Gentle reminder: Take a deep breath"
+            , kinyarwanda = Just "Guhumeka ni ingirakamaro ku buzima bwawe. Humeka"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness7Paragraph1 ->
+            { english = "Angry? Upset? Rushing to get things done? Calm yourself with a few deep, slow breaths. Breath in through your nose and then out through your mouth. Make it a long slow out breath. It’s good to feel calmer."
+            , kinyarwanda = Just "Ese urarakaye? Urababaye? Ese uri kwihutisha ibintu ngo birangire? Tuza, ukore umwitozo wo guhumeka. Injiza umwuka ukoresheje amazuru, hanyuma uwusohore ukoresheje umunwa. Bikore igihe kirekire. Biragufasha kumva utuje."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness7Paragraph2 ->
+            { english = "Remember: Be kind, even on your bad days."
+            , kinyarwanda = Just "Iminsi irasa ariko ntihwana, kandi buri munsi ugira ibyiza byawo"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Title ->
+            { english = "It takes consistent practice to get there"
+            , kinyarwanda = Just "Kugera ku ntego bisaba guhozaho"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Paragraph1 ->
+            { english = "How are you doing with practicing mindfulness? Try to take it a step further by taking some time every day (maybe at home, before you go to sleep) to just be aware of every part of your body, your breathing, and your thoughts."
+            , kinyarwanda = Just "Ese urumva umerewe ute nyuma yo gukora imyitozo ya mindfulness? Gerageza gutera indi ntambwe ufata umwanya buri munsi. Menya ibice bigize umubiri wawe, umenye uko guhumeka kwawe kumeze, cyangwa se uko ibitekerezo byawe bimeze uri mu rugo."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness8Paragraph2 ->
+            { english = "Remember: Start each day thinking about the things you are grateful for."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Title ->
+            { english = "This might be a good time to practice mindfulness"
+            , kinyarwanda = Just "Iki ni igihe cyiza cyo gukora umwitozo wa Mindfulness"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Paragraph1 ->
+            { english = "Research has shown that being more aware of sensations and feelings can enhance our well-being. Take a moment away from your work and focus on your body. Listen to your breathing. Feel the sensation of the air on your lips. Notice the movement in your chest. That is being mindful. You can do it any time: wash your hands mindfully, even walk mindfully."
+            , kinyarwanda = Just "Ubushakashatsi bwagaragaje ko kumenya neza ibyiyumvo n'amarangamutima bishobora kuzamura imibereho myiza yacu. Shakisha akanya gato mu kazi kawe ukore umwitozo wa mindfulness wibanda ku mubiri wawe. Umva uburyo uhumeka, uko wiyumva iyo umuyaga uguhushye ku munwa, reba uko bigenda mu gituza cyawe iyo uhumeka. Ushobora kubikora igihe icyo aricyo cyose; karaba intoki ubitekerezaho, hanyuma genda unabitekerezaho."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageMindfulness9Paragraph2 ->
+            { english = "Remember: Experience the here and now and feel refreshed."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageConnecting1Title ->
             { english = "Surround yourself with positive people."
             , kinyarwanda = Just "Girana ibihe byiza n'inshuti n'umuryango wawe."
@@ -19701,6 +20006,120 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        ResilienceMessageConnecting7Title ->
+            { english = "It can be useful to reach out to the counselor"
+            , kinyarwanda = Just "Ni ibyingirakamaro kugana umujyanama wabigize umwuga"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting7Paragraph1 ->
+            { english = "Feeling sad and low? Talk to a counselor. They can help you find the tools to feel better. They will also make sure whatever you say is between you and them. If you can’t get to a counselor, talk to someone you can trust like an older relative, a friend, or a religious leader. Make an appointment so you can feel better quicker."
+            , kinyarwanda = Just "Ese urumva ubabaye kandi ucitse intege? Gana umujyanama wabigize umwuga. Yagufasha kumva umerewe neza. Ikindi azi neza ko ibyo uvuga byose bisigara hagati yanyu. Niba utabashije kubona umujyanama w'umunyamwuga, gana umuntu wizeye nk'umuntu mukuru wo mu muryango wawe, inshuti, cyangwa umubwirizabutumwa. Tegura gahunda yo kwegera umwe muri abo uzagufasha kumva umerewe neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting7Paragraph2 ->
+            { english = "Remember: The best time to be happy is now!"
+            , kinyarwanda = Just "Utaganiriye na se ntamenya icyo sekuru yasize avuze."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Title ->
+            { english = "Sharing is caring!"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Paragraph1 ->
+            { english = "What are the things you worry about most? Share your list of worries with a co-worker. You may find you have worries in common. You can share your solutions as well."
+            , kinyarwanda = Just "Haba hari bintu bigutera impungenge/biguhangayikishije cyane? Sangiza uwo mukorana wizeye izo mpungenge. Ushobora gusanga muzisangiye. Mushobora no gusangira uko zacyemuka."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting8Paragraph2 ->
+            { english = "Remember: A problem shared is a problem halved."
+            , kinyarwanda = Just "Ahari abagabo ntihapfa abandi. Kandi Ujya gukira indwara arayirata"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Title ->
+            { english = "Spend quality time with your friends/family"
+            , kinyarwanda = Just "Nakwibutsaga ko gusabana n'inshuti n'umuryango bishobora kugufasha kumva unezerewe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Paragraph1 ->
+            { english = "Ever been so busy you have no time for yourself? We all do this sometimes, but it makes it harder to deal with the pressures of life. Connecting with friends and family can help you feel happier. Plan to connect with an old friend, someone who is special to you. Find time each week to connect."
+            , kinyarwanda = Just "Ese ujya ugira akazi kenshi gatuma wiburira umwanya? Twese bitubaho bigatuma guhangana n'ibibazo by'ubuzima bitugora. Gusabana n'inshuti n'umuryango bishobora kugufasha kumva unezerewe. Geregeza utegure kujya uhura n'inshuti mudaherukana cyangwa se umuntu w'agaciro kuri wowe. Shakisha umwanya uhagije kugira ngo muganire."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting9Paragraph2 ->
+            { english = "Remember: The only way to have a friend is to be one."
+            , kinyarwanda = Just "Ifuni ibagara ubucuti ni akarenge."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Title ->
+            { english = "Just a reminder, you can talk to your friend/family"
+            , kinyarwanda = Just "Ushobora kuganira n'inshuti yawe"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Paragraph1 ->
+            { english = "Healthy relationships can help you recover from challenging situations. Open communication with people around you can help strengthen your relationships. If you are stressed about your workload or feel your work is going unappreciated, talk to your supervisor. Together you can look for solutions to help you work and feel better."
+            , kinyarwanda = Just "Umubano mwiza ushobora kugufasha kuva mu bihe bigoranye. Kugirana ikiganiro kirambuye n'abantu mubana/mukorana bishobora kugufasha gukomeza umubano nabo. Niba uhangayikishijwe n'ingano y’akazi ufite cyangwa se ukumva akazi kawe kadashimwa, vugana n'umuyobozi wawe. Hamwe na we mushobora gushakisha ibisubizo bigufasha gukora akazi no kumva umerewe neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting10Paragraph2 ->
+            { english = "Remember: Good words are worth much and cost little."
+            , kinyarwanda = Just "Ijambo ryiza ni mugenzi w’Imana."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Title ->
+            { english = "The most important things in life is the connections you make with others"
+            , kinyarwanda = Just "Ikintu cy'ingenzi mu buzima n'uko ubana n'abandi"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph1 ->
+            { english = "You can learn a lot from the people you work with. Share your joys and pains with your co-workers. It will help you understand each other. You can also offer each other help and advice."
+            , kinyarwanda = Just "Ushobora kwigira byinshi ku bantu mukorana. Sangiza abo mukorana ibi kunezeza n'ibikubabaza. Bizabafasha kumvikana hagati yanyu, gufashanya no kungurana inama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph2 ->
+            { english = "Next time you spend some time with a co-worker, try to share one thing about yourself that they don’t already know. Invite them to do the same."
+            , kinyarwanda = Just "Ubutaha numarana igihe n'umukozi mukorana, gerageza kumusangiza ikintu kimwe atazi kuri wowe. Musabe nawe kuba yagusangiza ibye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting11Paragraph3 ->
+            { english = "Remember: Count your blessings, but also make your blessings count."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Title ->
+            { english = "Staying in touch can be challenging, you can start now buidling a huge connection."
+            , kinyarwanda = Just "Tangira ubu wubaka ubucuti bunini kuko gusigasira ubucuti bigora."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Paragraph1 ->
+            { english = "Spending time with co-workers can help you build a good relationship with them. Find time in your busy schedule to take part in activities with your co-workers. You could eat together, travel together to and from work, do breathing exercises together, or do something that is not work related, so you can all relax together."
+            , kinyarwanda = Just "Kumarana umwanya n'abakozi mukorana byagufasha kugirana umubano mwiza nabo. Shakisha umwanya hagati mu kazi ugire ibikorwa mukorera hamwe. Mushobora gusangira ifunguro, gutemberana, kugendana muva cyangwa mujya ku kazi, gukora imyitozo yo guhumeka, gukora ikindi kintu kitajyanye n'akazi mukora, cyangwa kuruhukira hamwe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageConnecting12Paragraph2 ->
+            { english = "Remember: Make your co-workers your work family."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
         ResilienceMessageSelfCare1Title ->
             { english = "Take care of yourself"
             , kinyarwanda = Just "Bimwe mu byagufasha kwiyitaho"
@@ -19794,6 +20213,60 @@ translationSet trans =
         ResilienceMessageSelfCare3Paragraph3 ->
             { english = "Remember: Eat healthy, live healthy."
             , kinyarwanda = Just "Gahunda iyo zibaye nyinshi uhera kuyo kurya."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Title ->
+            { english = "Healthy requires healthy food"
+            , kinyarwanda = Just "Ubuzima bwiza busaba indyo nziza"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Paragraph1 ->
+            { english = "When you are very busy, you may not have time to eat. If you don’t eat for a long time, you can get a headache or feel tired and irritable. If you reach for a sugary drink or sweet food, it can make you feel worse. Try to take some healthy snacks with you when you’re working. Pack some nuts or a piece of fruit. Wash your hands before eating."
+            , kinyarwanda = Just "Iyo ufite akazi kenshi, ushobora kutabona umwanya wo kurya. Iyo utabashije kurya mu gihe nyacyo, ushobora kurwara umutwe, ukumva urushye cyangwa urakaye. Uramutse ufashe ikintu kiryohereye muri ako kanya gishobora gutuma ukomeza kumererwa nabi. Mu gihe uri gukora, gerageza gufata amafunguro mato. Gendana ubunyobwa cyangwa imbuto. Wibuke gukaraba intoki mbere yuko urya."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare4Paragraph2 ->
+            { english = "Remember: You are what you eat, so eat well."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Title ->
+            { english = "Sleep is the best meditation"
+            , kinyarwanda = Just "Gusinzira ni bwo buryo byiza bwo kuruhuka cyangwa Meditation"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Paragraph1 ->
+            { english = "If you struggle to sleep well, you're not alone. Studies have shown that workers who do long hours and shift work find it difficult to sleep properly. But it is not impossible. Simple lifestyle changes can help:"
+            , kinyarwanda = Just "Niba bijya bikugora kubona ibitotsi, ntabwo uri wenyine. Ubushakashatsi bwagaragaje ko abakozi bakora amasaha y'ikirenga n'abakora basimburanwa (shifts) bagorwa no gusinzira neza. Ariko birashoboka. Impinduka mu buzima zagufasha:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Paragraph2 ->
+            { english = "Remember: Tired minds don’t work well."
+            , kinyarwanda = Just ""
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet1 ->
+            { english = "Have a warm shower or listen to quiet music before you go to bed."
+            , kinyarwanda = Just "Gukaraba amazi ashyushye cyangwa kumva indirimbo/umuziki utuje mbere yo kujya kuryama."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet2 ->
+            { english = "Make sure the room is dark."
+            , kinyarwanda = Just "Menya neza ko icyumba cyijimye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageSelfCare5Bullet3 ->
+            { english = "Avoid heavy meals right before you sleep."
+            , kinyarwanda = Just "Irinde amafunguro aremereye mbere yo kujya kuryama."
             , kirundi = Nothing
             }
 
@@ -19896,6 +20369,96 @@ translationSet trans =
         ResilienceMessageEndOfSecondMonthBullet5 ->
             { english = "Get help when you need it"
             , kinyarwanda = Just "Gushaka ubufasha mu gihe ubukeneye"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthTitle ->
+            { english = "Congratulations, you have completed month 3 of this journey."
+            , kinyarwanda = Just "Iherezo ry'ukwezi kwa Gatatu"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthParagraph1 ->
+            { english = "This month you learned that setting small goals and achieving them is rewarding. You may have:"
+            , kinyarwanda = Just "Uku kwezi wize ko kugira intego nto no kuzigeraho bitera ishema. Ushobora:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthParagraph2 ->
+            { english = "Write in your notebook about how you feel. Plan to use these new skills in the next month as well."
+            , kinyarwanda = Just "Andika mu ikayi yawe uko wiyumva. Teganya gukoresha ubu bumenyi mu kwezi gutaha."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet1 ->
+            { english = "Connected with your friends and family more."
+            , kinyarwanda = Just "Kuba waratangiye gusabana n'inshuti n'umuryango wawe inshuro nyinshi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet2 ->
+            { english = "Started to eat healthier."
+            , kinyarwanda = Just "Kuba waratangiye kurya indyo yuzuye."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet3 ->
+            { english = "Practiced mindfulness."
+            , kinyarwanda = Just "Kwimenyereza umwitozo wa mindfulness."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfThirdMonthBullet4 ->
+            { english = "Learned why and when to seek professional help."
+            , kinyarwanda = Just "Waramenye impamvu n'igihe ukeneye gushaka ubufasha ku nyamwuga."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthTitle ->
+            { english = "Congratulations on completing month 4 of your resilience journey."
+            , kinyarwanda = Just "Iherezo ry'ukwezi kwa Kane"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthParagraph1 ->
+            { english = " We hope you have learned to:"
+            , kinyarwanda = Just "Twizera ko wabashije kumenya:"
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthParagraph2 ->
+            { english = " Write down in your notebook what the most important things have been for you."
+            , kinyarwanda = Just "Andika mu ikayi yawe ibintu by'ingenzi byakugendekeye neza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet1 ->
+            { english = "Make mindfulness and self-care a regular part of your life."
+            , kinyarwanda = Just "Mindfulenss ndetse no kwiyitaho ni bimwe mu bigize ubuzima bwawe."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet2 ->
+            { english = "Practice gratitude and be kinder to yourself."
+            , kinyarwanda = Just "Itoze gushimira kandi wigirire ineza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet3 ->
+            { english = "PBe honest and open with others."
+            , kinyarwanda = Just "Ba inyangamugayo kandi uganire n'abandi."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet4 ->
+            { english = "Think positively."
+            , kinyarwanda = Just "Gira intekerezo nziza."
+            , kirundi = Nothing
+            }
+
+        ResilienceMessageEndOfFourthMonthBullet5 ->
+            { english = "Connect with your friends and family regularly."
+            , kinyarwanda = Just "Sabana n'inshuti n'umuryango ku buryo buhoraho."
             , kirundi = Nothing
             }
 
@@ -20450,25 +21013,25 @@ translationSet trans =
                 SendToHealthCenter ->
                     { english = "114 recommended to send patient to the nearest health center"
                     , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku kigo nderabuzima kinyegereye"
-                    , kirundi = Just "Ku 114 bemeje kurungika umugwayi mu Kigo c'amagara y'abantu kiri/ca hafi cane"
+                    , kirundi = Just "Ku 114 bemeje kurungika umurwayi mu Kigo c'amagara y'abantu kiri/ca hafi cane"
                     }
 
                 SendToRRTCenter ->
                     { english = "114 recommended to send patient to Rapid Response Team center"
                     , kinyarwanda = Just "Ku 114 Bangiriye inama yo kohereza umurwayi ku itsinda rishinzwe gutanga ubuvuzi bwihuse"
-                    , kirundi = Just "Kuri 114 bemeje kurungika umugwayi mu kigo c'Umugwi w'Inyishu Yihuta"
+                    , kirundi = Just "Kuri 114 bemeje kurungika umurwayi mu kigo c'Umugwi w'Inyishu Yihuta"
                     }
 
                 SendToHospital ->
                     { english = "114 recommended to send patient to the nearest hospital"
                     , kinyarwanda = Just "Ku 114 bangiriye inama yo kohereza umurwayi ku bitaro binyegereye"
-                    , kirundi = Just "Ku 114 bemeje kurungika umugwayi ku bitaro biri/vya hafi cane"
+                    , kirundi = Just "Ku 114 bemeje kurungika umurwayi ku bitaro biri/vya hafi cane"
                     }
 
                 OtherRecommendation114 ->
                     { english = "114 did not recommended to send patient to site"
                     , kinyarwanda = Just "Ku 114 bansabye kutohereza umurwayi"
-                    , kirundi = Just "Ku 114 ntibemeje kurungika umugwayi ku kibanza c'iyakiriro"
+                    , kirundi = Just "Ku 114 ntibemeje kurungika umurwayi ku kibanza c'iyakiriro"
                     }
 
                 NoneNoAnswer ->
@@ -20512,13 +21075,13 @@ translationSet trans =
                 NoneSentWithForm ->
                     { english = "Not able to talk to site due - no response. Sent patient with referral form"
                     , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera- nta gisubizo cyabonetse. Nohereje umurwayi yitwaje impapuro zimwohereza"
-                    , kirundi = Just "Ntivyakunze kuvuganira k'urubuga/mu kigo kubera - nta nyishu. Rungika umugwayi wamuhaye n'urupapuro/Ifishi rumurungika ahandi"
+                    , kirundi = Just "Ntivyakunze kuvuganira k'urubuga/mu kigo kubera - nta nyishu. Rungika umurwayi wamuhaye n'urupapuro/Ifishi rumurungika ahandi"
                     }
 
                 NonePatientRefused ->
                     { english = "Did not talk to site as patient has refused"
                     , kinyarwanda = Just "Ntibyakunze kuvugana n’urwego rubishinzwe kubera umurwayi yanze"
-                    , kirundi = Just "Ntiyashoboye kuvuga ashitse mu kigo/ku kibanza kuko umugwayi yanse"
+                    , kirundi = Just "Ntiyashoboye kuvuga ashitse mu kigo/ku kibanza kuko umurwayi yanse"
                     }
 
                 NoneOtherRecommendationSite ->
@@ -20569,13 +21132,13 @@ translationSet trans =
         RHFactorNegative ->
             { english = "RH Factor Negative"
             , kinyarwanda = Just "Rezisi Negatifu"
-            , kirundi = Nothing
+            , kirundi = Just "Rhesus negatif"
             }
 
         RHFactorUnknown ->
             { english = "RH Factor Unknown"
             , kinyarwanda = Just "Rezisi ntago Izwi"
-            , kirundi = Nothing
+            , kirundi = Just "Rhesus ntago izwi"
             }
 
         Right ->
@@ -20653,7 +21216,7 @@ translationSet trans =
         SearchHelper ->
             { english = "Search to see if the participant already exists in E-Heza. If the person you are looking for does not appear in the search, please create a new record for them."
             , kinyarwanda = Just "Shakisha kugirango urebe niba umugenerwabikorwa asanzwe ari muri E-Heza. Niba atagaragara, mwandike nku mushya."
-            , kirundi = Just "Rondera nimba uwitavye (inama canke inyigisho) arimwo muri E-Heza.Mu gihe uwo urondera atabonetse, ugurura/tegura iyindi fishe/urupapuro rw'abo."
+            , kirundi = Just "Rondera nimba uwitavye (inama canke inyigisho) arimwo muri E-Heza. Mu gihe uwo urondera atabonetse, ugurura/tegura iyindi fishe/urupapuro rw'abo."
             }
 
         SearchHelperFamilyMember ->
@@ -20707,7 +21270,7 @@ translationSet trans =
         SelectDangerSigns ->
             { english = "Please select one or more of the danger signs the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cg byinshi mu bimenyetso mpuruza umubyeyi yaba afite"
-            , kirundi = Just "Hitamwo kimwe canke birenga mu bimenyetso mburizi vyugarije umugwayi"
+            , kirundi = Just "Hitamwo kimwe canke birenga mu bimenyetso mburizi vyugarije umurwayi"
             }
 
         SelectDate ->
@@ -20725,7 +21288,7 @@ translationSet trans =
         SelectIllnessSymptoms ->
             { english = "Please select one or more symptoms the patient is experiencing"
             , kinyarwanda = Just "Hitamo kimwe cyangwa byinshi mu bimenyetso umurwayi afite"
-            , kirundi = Just "Hitamwo ikimenyetso c'ingwara canke birenga umugwayi ariko arumva"
+            , kirundi = Just "Hitamwo ikimenyetso c'ingwara canke birenga umurwayi ariko arumva"
             }
 
         SelectPostpartumChildDangerSigns ->
@@ -20899,13 +21462,13 @@ translationSet trans =
         ReportToWhatsAppConsentQuestion ->
             { english = "Does the patient consent to having their medical records sent via WhatsApp?"
             , kinyarwanda = Nothing
-            , kirundi = Just "Mbega umugwayi yaremeye kuronka ivyegeranyo vyo kwa muganga birungitswe kuri WhatsApp?"
+            , kirundi = Just "Mbega umurwayi yaremeye kuronka ivyegeranyo vyo kwa muganga birungitswe kuri WhatsApp?"
             }
 
         ReportToWhatsAppExecutionResultFailure ->
             { english = "Action Failed. Please try again. If problem persists, please contact system administrator."
             , kinyarwanda = Nothing
-            , kirundi = Just "Ivyo mwakoze ntivyakunze. Gerageza kandi. Mugihe ingorane ibandanije, gerageza uvugane n'uwujejwe ubwo buhinga/umukuru w'ubuhinga ( umuhinga mu ma porogarama ya mudasobwa)"
+            , kirundi = Just "Ivyo mwakoze ntivyakunze. Gerageza kandi. Mu gihe ingorane ibandanije, gerageza uvugane n'uwujejwe ubwo buhinga/umukuru w'ubuhinga ( umuhinga mu ma porogarama ya mudasobwa)."
             }
 
         ReportToWhatsAppExecutionResultSomethingWentWrong ->
@@ -20929,7 +21492,7 @@ translationSet trans =
         ReportToWhatsAppPhoneInputHeader ->
             { english = "Enter the correct phone number for the patient:"
             , kinyarwanda = Nothing
-            , kirundi = Just "Injiza/andika inimero ya /umurongo wa terefone yo y'umugwayi"
+            , kirundi = Just "Injiza/andika inimero ya /umurongo wa terefone yo y'umurwayi"
             }
 
         ReportToWhatsAppPhoneVerificationHeader ->
@@ -20941,13 +21504,13 @@ translationSet trans =
         ReportToWhatsAppPhoneVerificationQuestion ->
             { english = "Is this the correct number for the patient's WhatsApp?"
             , kinyarwanda = Nothing
-            , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umugwayi/umuvyeyi niyo"
+            , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umurwayi/umuvyeyi niyo"
             }
 
         ReportToWhatsAppPhoneUpdateAtProfileQuestionPrefix ->
             { english = "Would you like to update the patient profile for"
             , kinyarwanda = Nothing
-            , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umugwayi/umuvyeyi niyo"
+            , kirundi = Just "Mbega iyi nimero ya WhatsApp y'umurwayi/umuvyeyi niyo"
             }
 
         ReportToWhatsAppPhoneUpdateAtProfileQuestionSuffix ->
@@ -20959,7 +21522,7 @@ translationSet trans =
         ReportToWhatsAppPhoneUpdateConfirmationMessasge ->
             { english = "The patient record has been updated."
             , kinyarwanda = Nothing
-            , kirundi = Just "Ivyanditswe vy'umugwayi vyavuguruwe/vyashizwe k'umunsi"
+            , kirundi = Just "Ivyanditswe vy'umurwayi vyavuguruwe/vyashizwe k'umunsi"
             }
 
         ServiceWorkerActive ->
@@ -20983,19 +21546,19 @@ translationSet trans =
         ServiceWorkerInstalling ->
             { english = "A new version of the app has been detected and is being downloaded. You can continue to work while this is in progress."
             , kinyarwanda = Nothing
-            , kirundi = Just "Urugero rushasha rwa E-Heza rwarabonetse kandi ruriko rurinjira mwitelefone yawe. Urashobora kubandanya gukora mugihe ubwo buryo butaraheza kwishira kugihe."
+            , kirundi = Just "Urugero rushasha rwa porogarama rwarabonetse kandi ruriko rurinjira mwitelefone yawe. Urashobora kubandanya gukora mugihe ubwo buryo butaraheza kwinjira."
             }
 
         ServiceWorkerInstalled ->
             { english = "A new version of the app has been downloaded."
             , kinyarwanda = Just "Gufungura verisio nshyashya byarangiye."
-            , kirundi = Just "Urugero rushasha rwa E-Heza rwahejeje kwishira kugihe."
+            , kirundi = Just "Urugero rushasha rwa porogarama rwahejeje kwinjizwa."
             }
 
         ServiceWorkerSkipWaiting ->
             { english = "Activate new version of the app"
             , kinyarwanda = Just "Gufungura verisio nshyashya"
-            , kirundi = Just "Kora/ugurura uburyo bushasha bwo kwinjiza ivyengeranyo (porogarama nshasha)"
+            , kirundi = Just "Ugurura uburyo bushasha bwa porogarama"
             }
 
         ServiceWorkerRestarting ->
@@ -21007,19 +21570,19 @@ translationSet trans =
         ServiceWorkerActivating ->
             { english = "A new version of the app is preparing itself for use."
             , kinyarwanda = Nothing
-            , kirundi = Just "Urugero rushasha rwa E-Heza ruriko ruritegurira gukoreshwa."
+            , kirundi = Just "Urugero rushasha rwa porogarama ruriko rwishiraho kugira rukoreshwe."
             }
 
         ServiceWorkerActivated ->
             { english = "A new version of the app is ready for use."
             , kinyarwanda = Nothing
-            , kirundi = Just "Urugero rushasha rwa E-Heza rurashobora gukoreshwa."
+            , kirundi = Just "Urugero rushasha rurahari kugira rukoreshwe."
             }
 
         ServiceWorkerRedundant ->
             { english = "An error occurred installing a new version of the app."
             , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kirundi = Just "Hibonekeje ikosha mu gushiramwo uburyo bushasha bwo kwinjizamwo amakuru canke ivyegeranyo"
             }
 
         ServiceWorkerInactive ->
@@ -21109,7 +21672,7 @@ translationSet trans =
         SoreThroatLabel ->
             { english = "Sore Throat"
             , kinyarwanda = Just "Kubabara mu muhogo"
-            , kirundi = Nothing
+            , kirundi = Just "Kubabara mu muhogo"
             }
 
         SpecialityCareHeaderPrefix ->
@@ -21370,7 +21933,7 @@ translationSet trans =
             if encounterType == AcuteIllnessEncounterCHW then
                 { english = "CHW Referral"
                 , kinyarwanda = Just "Kohereza umurwayi ku mujyanama w'ubuzima"
-                , kirundi = Just "Ukurungika umugwayi kw'ivuriro bikozwe n'Abaremeshakiyago"
+                , kirundi = Just "Ukurungika umurwayi kw'ivuriro bikozwe n'Abaremeshakiyago"
                 }
 
             else
@@ -21646,13 +22209,13 @@ translationSet trans =
                 SymptomsGI ->
                     { english = "GI"
                     , kinyarwanda = Just "Urwungano ngogozi"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ingwara zo mu nda"
                     }
 
         SymptomReview ->
             { english = "Symptom Review"
             , kinyarwanda = Just "Kureba ibimenyetso by'uburwayi"
-            , kirundi = Just "Isubiramwo ry'ikimenyetso"
+            , kirundi = Just "Kuraba ibimenyetso"
             }
 
         Syphilis ->
@@ -21670,13 +22233,13 @@ translationSet trans =
         SyphilisRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
             , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umugwayi"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
             }
 
         SyphilisRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
             , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
-            , kirundi = Just "Umenye neza ko umugwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
+            , kirundi = Just "Umenye neza ko umurwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
             }
 
         SyphilisRecommendedTreatmentWarning ->
@@ -21730,13 +22293,13 @@ translationSet trans =
                 FacilityHealthCenter ->
                     { english = "Send patient to the health center"
                     , kinyarwanda = Just "Ohereza umurwayi ku kigo nderabuzima"
-                    , kirundi = Just "Rungika umugwayi kw'ivuriro"
+                    , kirundi = Just "Rungika umurwayi kw'ivuriro"
                     }
 
                 FacilityHospital ->
                     { english = "Send patient to the hospital"
                     , kinyarwanda = Just "Ohereza umurwayi kwa muganga"
-                    , kirundi = Just "Rungika umugwayi ku bitaro"
+                    , kirundi = Just "Rungika umurwayi ku bitaro"
                     }
 
                 FacilityMentalHealthSpecialist ->
@@ -21748,7 +22311,7 @@ translationSet trans =
                 FacilityARVProgram ->
                     { english = "Direct patient to the appropriate location"
                     , kinyarwanda = Just "Yobora umurwayi ahantu habugenewe"
-                    , kirundi = Just "Ereka neza umugwayi aho atumbera"
+                    , kirundi = Just "Ereka neza umurwayi aho atumbera"
                     }
 
                 FacilityNCDProgram ->
@@ -21760,7 +22323,7 @@ translationSet trans =
                 FacilityUltrasound ->
                     { english = "Send patient to ultrasound"
                     , kinyarwanda = Nothing
-                    , kirundi = Just "Rungika umugwayi mw'Iradiyo"
+                    , kirundi = Just "Rungika umurwayi mw'Iradiyo"
                     }
 
         StartEncounter ->
@@ -22096,7 +22659,7 @@ translationSet trans =
         TreatmentReviewQuestionAdverseEventsHospitalization ->
             { english = "The patient had an adverse reaction to the medication. Would you like to refer them to the hospital as next step"
             , kinyarwanda = Just "Umurwayi yabonye ibintu bidasanzwe byatewe n'imiti yahawe. Waba ushaka kumwhoreza ku bitaro nk'igikorwa gikurikiyeho"
-            , kirundi = Just "Umugwayi yagize ingaruka mbi kuri uyo muti. Wumva ushaka kumurungika ku bitoro nk'intambwe ikurikira"
+            , kirundi = Just "Umurwayi yagize ingaruka mbi kuri uyo muti. Wumva ushaka kumurungika ku bitoro nk'intambwe ikurikira"
             }
 
         TreatmentReviewQuestionMedicationByPMTCT ->
@@ -22171,13 +22734,13 @@ translationSet trans =
         TreatmentReviewWarningPopupMessage ->
             { english = "Patient non-adherent"
             , kinyarwanda = Just "Uyu murwayi ntabwo yubahiriza gahunda yo kunywa imiti uko bisabwa"
-            , kirundi = Just "Umugwayi atubahiriza ivyo bamubwiye"
+            , kirundi = Just "Umurwayi atubahiriza ivyo bamubwiye"
             }
 
         TreatmentReviewWarningPopupInstructions ->
             { english = "Further evaluation necessary"
             , kinyarwanda = Just "Gusuzuma byimbitse"
-            , kirundi = Just "Umugwayi atubahiriza ivyo bamubwiye"
+            , kirundi = Just "Umurwayi atubahiriza ivyo bamubwiye"
             }
 
         TreatmentTimeline ->
@@ -22189,7 +22752,7 @@ translationSet trans =
         TrySyncing ->
             { english = "Try syncing with backend"
             , kinyarwanda = Just "Gerageza guhuza amakuru y'iki gikoresho cy'ikoranabuhanga n'abakoze E-Heza"
-            , kirundi = Nothing
+            , kirundi = Just "Gerageza guhuza amakuru y'ubuhinga n'abakoze E-heza"
             }
 
         Tuberculosis ->
@@ -22518,7 +23081,7 @@ translationSet trans =
         TuberculosisWarning ->
             { english = "Patient is high risk for active Tuberculosis"
             , kinyarwanda = Just "Umubyeyi afite ibyago byinshi byo kuba afite igituntu"
-            , kirundi = Just "Umugwayi afise ingorane iri hejuru y'ingwara y'igituntu"
+            , kirundi = Just "Umurwayi afise ingorane iri hejuru y'ingwara y'igituntu"
             }
 
         TwiceAMonth ->
@@ -22709,13 +23272,13 @@ translationSet trans =
         UrinaryTractInfectionRecommendedTreatmentHelper ->
             { english = "Select the medication and dosage you will administer to the patient"
             , kinyarwanda = Just "Hitamo umuti ugiye guha umurwayi n'uburyo bwo kuwufata"
-            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umugwayi"
+            , kirundi = Just "Hitamo imiti n'igipimo/ibipimo (idoze) uzotanga k'umurwayi"
             }
 
         UrinaryTractInfectionRecommendedTreatmentInstructions ->
             { english = "Ensure the patient is not allergic to the medication before prescribing"
             , kinyarwanda = Just "Menya neza ko umurwayi adafite aleriji ku miti mbere yo kuyimwandikira"
-            , kirundi = Just "Umenye neza ko umugwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
+            , kirundi = Just "Umenye neza ko umurwayi afashe imiti itamumerera nabi imbere yo kuyimwandikira"
             }
 
         UterineMyoma ->
@@ -22750,7 +23313,7 @@ translationSet trans =
         VaccineDoseAdministeredPreviouslyPrenatalQuestion vaccineType ->
             { english = "Did the patient receive any " ++ vaccineType ++ " immunizations prior to today that are not recorded above"
             , kinyarwanda = Just <| "Uyu mubyeyi yaba yarabonye urukingo rw'" ++ vaccineType ++ "bakaba batarabyanditse"
-            , kirundi = Just <| "Mbega umugwayi yararonse incanco y' " ++ vaccineType ++ " yuyu munsi, zitanditswe aho hejuru."
+            , kirundi = Just <| "Mbega umurwayi yararonse incanco y' " ++ vaccineType ++ " yuyu munsi, zitanditswe aho hejuru."
             }
 
         VaccineDoseAdministeredPreviouslyWellChildQuestion vaccineType ->
@@ -22911,7 +23474,7 @@ translationSet trans =
         VitaminAWarningPopupMessage ->
             { english = "Patient did not recieve Vitamin A"
             , kinyarwanda = Nothing
-            , kirundi = Just "Umugwayi ntiyaronse Vitamine A"
+            , kirundi = Just "Umurwayi ntiyaronse Vitamine A"
             }
 
         VomitingLabel ->
@@ -22923,13 +23486,13 @@ translationSet trans =
         WaitForVitalsRecheckHelper ->
             { english = "Patient needs to return in 2 hours to confirm blood pressure. Instruct the patient to wait until called for further testing."
             , kinyarwanda = Just "Umurwayi agomba kugaruka mu masaha 2 kugira ngo twemeze neza umuvuduko w'amaraso. Saba umurwayi kwihangana kugeza umuhamagaye kugira ngo yongere asuzumwe."
-            , kirundi = Just "Umugwayi arategerezwa kugaruka mu masaha 2 kugira amenye ivyerekeye Ivuduka ry'amaraso. Bwira umugwayi arindire gushika bamuhamagaye kugira agirishe ibindi bipimo birengako."
+            , kirundi = Just "Umurwayi arategerezwa kugaruka mu masaha 2 kugira amenye ivyerekeye Ivuduka ry'amaraso. Bwira umurwayi arindire gushika bamuhamagaye kugira agirishe ibindi bipimo birengako."
             }
 
         WaitForLabsResultsHelper ->
             { english = "Patient has labs pending. Instruct the patient to wait until called for lab results and further diagnoses."
             , kinyarwanda = Just "Umurwayi afite ibisubizo ategereje bya Laboratwari. Musabe gutegereza kugeza umuhamagaye ngo afate ibisubizo anamenye indwara afite."
-            , kirundi = Just "Umugwayi afise ibipimo bikiriko birihwezwa. Bwira umugwayi wawe yihanganye gushika bamuhamagaye aze gutora inyishu z'ibipimo hamwe n'ibindi basuzumye"
+            , kirundi = Just "Umurwayi afise ibipimo bikiriko birihwezwa. Bwira umurwayi wawe yihanganye gushika bamuhamagaye aze gutora inyishu z'ibipimo hamwe n'ibindi basuzumye"
             }
 
         WaitInstructions ->
@@ -23427,7 +23990,7 @@ translationSet trans =
                 Measurement.Model.TaskBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Urucanco rwa BCG"
                     }
 
                 Measurement.Model.TaskDTP ->
@@ -23627,7 +24190,7 @@ translationSet trans =
                 VaccineBCG ->
                     { english = "BCG"
                     , kinyarwanda = Just "Urukingo rw'igituntu"
-                    , kirundi = Nothing
+                    , kirundi = Just "Urucanco rwa BCG"
                     }
 
                 VaccineDTP ->
@@ -23773,7 +24336,7 @@ translationSet trans =
         ZScoreMuacForAge ->
             { english = "MUAC for Age: "
             , kinyarwanda = Just "MUAC ku myaka: "
-            , kirundi = Just "CMB ku myaka: "
+            , kirundi = Just " Igipimo c'inkikuro y'ukuboko ku myaka: "
             }
 
         ZScoreWeightForAge ->
@@ -23908,7 +24471,7 @@ translateActivePage page =
                 GlobalCaseManagementPage ->
                     { english = "Case Management"
                     , kinyarwanda = Just "Gukurikirana Umurwayi"
-                    , kirundi = Just "Ugucungera ingwara"
+                    , kirundi = Just "Gukurikirana umurwayi"
                     }
 
                 DemographicsReportPage _ _ ->
@@ -23938,13 +24501,13 @@ translateActivePage page =
                 PersonsPage _ _ ->
                     { english = "Participant Directory"
                     , kinyarwanda = Just "Ububiko bw'amakuru y'umurwayi"
-                    , kirundi = Just "Umwidondoro w’umugwayi"
+                    , kirundi = Just "Umwidondoro w’umurwayi"
                     }
 
                 PrenatalParticipantPage _ _ ->
                     { english = "Antenatal Participant"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Uwitavye imbere yo kuvyara"
                     }
 
                 IndividualEncounterParticipantsPage encounterType ->
@@ -23952,7 +24515,7 @@ translateActivePage page =
                         AcuteIllnessEncounter ->
                             { english = "Acute Illness Participants"
                             , kinyarwanda = Just "Abagaragweho n'uburwayi butunguranye"
-                            , kirundi = Nothing
+                            , kirundi = Just "Abitavye bafise uburwayi bukaze"
                             }
 
                         AntenatalEncounter ->
@@ -23970,7 +24533,7 @@ translateActivePage page =
                         HIVEncounter ->
                             { english = "HIV Participants"
                             , kinyarwanda = Nothing
-                            , kirundi = Nothing
+                            , kirundi = Just "Abarwayi ba SIDA baje"
                             }
 
                         HomeVisitEncounter ->
@@ -24026,13 +24589,13 @@ translateActivePage page =
                         ActivityPage _ ->
                             { english = "Activity"
                             , kinyarwanda = Just "Igikorwa"
-                            , kirundi = Nothing
+                            , kirundi = Just "Igikorwa"
                             }
 
                         AttendancePage ->
                             { english = "Attendance"
                             , kinyarwanda = Just "Ubwitabire"
-                            , kirundi = Nothing
+                            , kirundi = Just "Ukwitaba"
                             }
 
                         ParticipantsPage ->
@@ -24143,13 +24706,13 @@ translateActivePage page =
                 AcuteIllnessProgressReportPage _ _ ->
                     { english = "Acute Illness Progress Report"
                     , kinyarwanda = Just "Raporo y’ibyakozwe ku ndwara zifatiyeho"
-                    , kirundi = Nothing
+                    , kirundi = Just "Icegeranyo cerekana uburwayi bukaze aho bugeze"
                     }
 
                 AcuteIllnessOutcomePage _ ->
                     { english = "Acute Illness Outcome"
                     , kinyarwanda = Just "Iherezo ry'indwara ifatiyeho"
-                    , kirundi = Nothing
+                    , kirundi = Just "Ingaruka z'uburwayi bukaze"
                     }
 
                 HomeVisitEncounterPage _ ->
@@ -24209,7 +24772,7 @@ translateActivePage page =
                 NCDRecurrentEncounterPage _ ->
                     { english = "NCD Recurrent Encounter"
                     , kinyarwanda = Just "Isuzuma Rigaruka ku Burwayi Butandura"
-                    , kirundi = Just "Umubonano ugaruka canke wa minsi yose w'ingwara zandukira"
+                    , kirundi = Just "Umubonano ugaruka canke wa minsi yose w'ingwara zatandukira"
                     }
 
                 NCDRecurrentActivityPage _ _ ->
@@ -24233,7 +24796,7 @@ translateActivePage page =
                 PatientRecordPage _ _ ->
                     { english = "Patient Record"
                     , kinyarwanda = Just "Amakuru y'Umurwayi"
-                    , kirundi = Just "Icegeranyo c'umugwayi"
+                    , kirundi = Just "Icegeranyo c'umurwayi"
                     }
 
                 PrenatalLabsHistoryPage _ _ _ ->
@@ -24326,7 +24889,7 @@ translateActivePage page =
                 HIVActivityPage _ _ ->
                     { english = "HIV Activity"
                     , kinyarwanda = Nothing
-                    , kirundi = Nothing
+                    , kirundi = Just "Igikorwa ku barwayi ba SIDA"
                     }
 
 
@@ -24362,19 +24925,19 @@ translateChartPhrase phrase =
                 RangeBirthToFiveYears ->
                     { english = "Birth to 5-years (z-scores)"
                     , kinyarwanda = Just "Imyaka 0-5"
-                    , kirundi = Just "Kuva kw'ivuka gushika ku myaka 5 (z-scores)"
+                    , kirundi = Just "Imyaka 0-5 (Ibipimo vy'urugezo Z)"
                     }
 
                 RangeFiveToTenYears ->
                     { english = "5 to 10-years (z-scores)"
                     , kinyarwanda = Just "Imyaka 5-10"
-                    , kirundi = Just "Kuva ku myaka 5-10 (z-scores)"
+                    , kirundi = Just "Imyaka 5-10 (Ibipimo vy'urugezo Z)"
                     }
 
                 RangeFiveToNineteenYears ->
                     { english = "5 to 19-years (z-scores)"
                     , kinyarwanda = Just "Imyaka 5-19"
-                    , kirundi = Just "Imyaka 5-19 (z-scores)"
+                    , kirundi = Just "Imyaka 5-19 (Ibipimo vy'urugezo Z)"
                     }
 
         HeadCircumferenceCm ->
@@ -24546,7 +25109,7 @@ translateDashboard trans =
         CaseManagementLabel ->
             { english = "Case Management"
             , kinyarwanda = Just "Gukurikirana Umurwayi"
-            , kirundi = Just "Ugucungera ingwara"
+            , kirundi = Just "Gukurikirana umurwayi"
             }
 
         CompletedProgramLabel ->
@@ -25050,7 +25613,7 @@ translateDashboard trans =
         TotalMalnourished ->
             { english = "Total Malnourished"
             , kinyarwanda = Nothing
-            , kirundi = Just "Abagwaye ingwara yo gufungura nabi bose"
+            , kirundi = Just "Abarwaye ingwara yo gufungura nabi bose"
             }
 
         TotalEncountersLabel ->
@@ -25132,7 +25695,7 @@ translateLoginPhrase phrase =
         ForgotPassword1 ->
             { english = "Forgot your password?"
             , kinyarwanda = Just "Wibagiwe ijambo ry'ibanga?"
-            , kirundi = Nothing
+            , kirundi = Just "Wahevye ijambo ry'ibanga"
             }
 
         ForgotPassword2 ->
