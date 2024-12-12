@@ -793,7 +793,7 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
     if ($ncda->type == HEDLEY_ACTIVITY_CHILD_SCOREBOARD_NCDA_CONTENT_TYPE) {
       // Accounting for MUAC.
       if (!empty($ncda->field_muac) && !empty($ncda->field_muac[LANGUAGE_NONE][0]['value'])) {
-        $value = $muac->field_muac[LANGUAGE_NONE][0]['value'];
+        $value = $ncda->field_muac[LANGUAGE_NONE][0]['value'];
         if ($value <= 11.5) {
           $data['nutrition']['muac']['severe'][] = $date_measured;
         }
@@ -811,9 +811,11 @@ function hedley_ncda_calculate_aggregated_data_for_person($person, $birth_date_f
           case 'red':
             $data['nutrition']['stunting']['severe'][] = $date_measured;
             break;
+
           case 'yellow':
             $data['nutrition']['stunting']['moderate'][] = $date_measured;
             break;
+
           case 'green':
             $data['nutrition']['stunting']['normal'][] = $date_measured;
             break;
