@@ -1258,6 +1258,19 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     if gpsCoordinatesEnabled features && not isEditOperation then
                         Maybe.map
                             (\coords ->
+                                let
+                                    saveCoordinatesInput =
+                                        div [ class "ui grid" ]
+                                            [ div [ class "eight wide column" ]
+                                                [ text <| translate language Translate.GPSLocationSaveLabel ++ ":" ]
+                                            , div
+                                                [ class "three wide column" ]
+                                                [ Form.Input.checkboxInput birthDateEstimatedField
+                                                    [ class "field" ]
+                                                    |> Html.map (MsgForm operation initiator)
+                                                ]
+                                            ]
+                                in
                                 [ div [ class "ui grid" ]
                                     [ div [ class "six wide column" ]
                                         [ text <| translate language Translate.GPSLocation ++ ":" ]
@@ -1266,6 +1279,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                         [ text <| String.fromFloat coords.latitude ++ " , " ++ String.fromFloat coords.longitude
                                         ]
                                     ]
+                                , saveCoordinatesInput
                                 ]
                             )
                             coordinates
@@ -1280,20 +1294,20 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             else
                 let
                     addressFields =
-                        [ viewProvince
-                        , viewDistrict
-                        , viewSector
-                        , viewCell
-                        , viewVillage
-                        ]
-                            ++ gpsLocation
+                        List.map (Html.map (MsgForm operation initiator))
+                            [ viewProvince
+                            , viewDistrict
+                            , viewSector
+                            , viewCell
+                            , viewVillage
+                            ]
                 in
                 [ h3
                     [ class "ui header" ]
                     [ text <| translate language Translate.AddressInformation ++ ":" ]
-                , fieldset [ class "registration-form address-info" ]
+                , fieldset [ class "registration-form address-info" ] <|
                     addressFields
-                    |> Html.map (MsgForm operation initiator)
+                        ++ gpsLocation
                 ]
 
         contactInformationSection =

@@ -719,7 +719,7 @@ type TranslationId
     | GoHome
     | GotResultsPreviouslyQuestion
     | GPSLocation
-    | GPSLocationSaveLablel
+    | GPSLocationSaveLabel
     | GroupAssessment
     | Grams
     | Gravida
@@ -6502,7 +6502,7 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        GPSLocationSaveLablel ->
+        GPSLocationSaveLabel ->
             { english = "Save this GPS Location"
             , kinyarwanda = Nothing
             , kirundi = Nothing
