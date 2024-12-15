@@ -15,6 +15,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
@@ -1101,7 +1102,11 @@ update msg model =
                 extraCmd =
                     case page of
                         UserPage (CreatePersonPage _ _) ->
-                            App.Ports.getCoordinates ()
+                            if gpsCoordinatesEnabled features then
+                                App.Ports.getCoordinates ()
+
+                            else
+                                Cmd.none
 
                         _ ->
                             Cmd.none
