@@ -1392,6 +1392,7 @@ update msg model =
                             Cmd.batch
                                 [ App.Ports.bindDropZone ()
                                 , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
                                     App.Ports.getCoordinates ()
 
                                   else
