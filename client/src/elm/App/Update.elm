@@ -1099,18 +1099,6 @@ update msg model =
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
 
-                extraCmd =
-                    case page of
-                        UserPage (CreatePersonPage _ _) ->
-                            if gpsCoordinatesEnabled features then
-                                App.Ports.getCoordinates ()
-
-                            else
-                                Cmd.none
-
-                        _ ->
-                            Cmd.none
-
                 extraMsgs =
                     case page of
                         -- When navigating to Device page (which is used for Sync management), trigger Sync.
@@ -1142,7 +1130,7 @@ update msg model =
                             []
             in
             ( { model | activePage = page }
-            , Cmd.batch [ cmd, extraCmd ]
+            , cmd
             )
                 |> sequence update extraMsgs
 
@@ -1401,7 +1389,14 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (EditPersonPage _) ->
                             App.Ports.bindDropZone ()
