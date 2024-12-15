@@ -718,6 +718,8 @@ type TranslationId
     | Glass String
     | GoHome
     | GotResultsPreviouslyQuestion
+    | GPSLocation
+    | GPSLocationSaveLablel
     | GroupAssessment
     | Grams
     | Gravida
@@ -6492,6 +6494,18 @@ translationSet trans =
             { english = "Has patient previously performed HBA1C test and got results"
             , kinyarwanda = Just "Umurwayi yaba yarakorewe ikizamini cy'ikigereranyo cy'isukari mu maraso mu mezi atatu ashize abona n'ibisubizo"
             , kirundi = Just "Mbega umugwayi yarigeze agira igipimo ca 'hémoglobine A1C (HbA1c)'"
+            }
+
+        GPSLocation ->
+            { english = "GPS Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        GPSLocationSaveLablel ->
+            { english = "Save this GPS Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         GroupAssessment ->
