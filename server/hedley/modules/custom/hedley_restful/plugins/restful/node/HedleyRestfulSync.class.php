@@ -430,6 +430,8 @@ class HedleyRestfulSync extends \RestfulBase implements \RestfulDataProviderInte
       // client, we simply ignore them.
       'health_centers',
       'villages',
+      // Property sent during person creation.
+      'save_gps_location',
     ];
 
     // We'd like this entire operation to succeed or fail as a whole, so that

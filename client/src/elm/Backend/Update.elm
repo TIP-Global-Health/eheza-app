@@ -4203,7 +4203,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             let
                 -- Adding GPS coordinates.
                 personWithCoordinates =
-                    if gpsCoordinatesEnabled features then
+                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
                         Maybe.map
                             (\coords ->
                                 { person

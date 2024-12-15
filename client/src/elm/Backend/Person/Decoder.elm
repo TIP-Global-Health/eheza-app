@@ -45,6 +45,7 @@ decodePerson =
         |> optional "village" (nullable decodeGeoField) Nothing
         |> optional "latitude" (nullable string) Nothing
         |> optional "longitude" (nullable string) Nothing
+        |> optional "save_gps_location" bool False
         |> optional "phone_number" (nullable string) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "deleted" bool

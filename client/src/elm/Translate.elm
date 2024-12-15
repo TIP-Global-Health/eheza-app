@@ -718,6 +718,7 @@ type TranslationId
     | Glass String
     | GoHome
     | GotResultsPreviouslyQuestion
+    | GPSInfo
     | GPSLocation
     | GPSLocationSaveLabel
     | GroupAssessment
@@ -6496,6 +6497,12 @@ translationSet trans =
             , kirundi = Just "Mbega umugwayi yarigeze agira igipimo ca 'hémoglobine A1C (HbA1c)'"
             }
 
+        GPSInfo ->
+            { english = "GPS Info"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         GPSLocation ->
             { english = "GPS Location"
             , kinyarwanda = Nothing
@@ -6503,7 +6510,7 @@ translationSet trans =
             }
 
         GPSLocationSaveLabel ->
-            { english = "Save this GPS Location"
+            { english = "Save GPS Location"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
