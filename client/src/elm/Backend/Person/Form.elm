@@ -431,6 +431,7 @@ validatePerson site maybeRelated operation maybeCurrentDate =
                 |> andMap (field village (validateVillage geoInfo maybeRelated))
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
+                |> andMap (field saveGPSLocation bool)
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (field healthCenter (validateHealthCenterId maybeRelated))
                 |> andMap (succeed False)
@@ -472,6 +473,7 @@ validateContact site =
                 |> andMap (field village (validateVillageForContact geoInfo))
                 |> andMap (succeed Nothing)
                 |> andMap (succeed Nothing)
+                |> andMap (succeed False)
                 |> andMap (field phoneNumber <| nullable validateDigitsOnly)
                 |> andMap (succeed Nothing)
                 |> andMap (succeed False)
@@ -878,3 +880,8 @@ modeOfDelivery =
 hivStatus : String
 hivStatus =
     "hiv_status"
+
+
+saveGPSLocation : String
+saveGPSLocation =
+    "save_gps_location"

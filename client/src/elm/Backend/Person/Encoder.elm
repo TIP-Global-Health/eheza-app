@@ -42,6 +42,7 @@ encodePerson person =
     , ( "village", maybe string person.village )
     , ( "latitude", maybe string person.registrationLatitude )
     , ( "longitude", maybe string person.registrationLongitude )
+    , ( "save_gps_location", bool person.saveGPSLocation )
     , ( "phone_number", maybe string person.telephoneNumber )
     , ( "health_center", maybe encodeEntityUuid person.healthCenterId )
     , ( "deleted", bool person.deleted )

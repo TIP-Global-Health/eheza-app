@@ -15,6 +15,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
@@ -1098,14 +1099,6 @@ update msg model =
                 cmd =
                     Nav.pushUrl model.navigationKey (Url.toString redirectUrl)
 
-                extraCmd =
-                    case page of
-                        UserPage (CreatePersonPage _ _) ->
-                            App.Ports.getCoordinates ()
-
-                        _ ->
-                            Cmd.none
-
                 extraMsgs =
                     case page of
                         -- When navigating to Device page (which is used for Sync management), trigger Sync.
@@ -1137,7 +1130,7 @@ update msg model =
                             []
             in
             ( { model | activePage = page }
-            , Cmd.batch [ cmd, extraCmd ]
+            , cmd
             )
                 |> sequence update extraMsgs
 
@@ -1396,7 +1389,15 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (EditPersonPage _) ->
                             App.Ports.bindDropZone ()

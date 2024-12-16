@@ -4203,15 +4203,19 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             let
                 -- Adding GPS coordinates.
                 personWithCoordinates =
-                    Maybe.map
-                        (\coords ->
-                            { person
-                                | registrationLatitude = String.fromFloat coords.latitude |> Just
-                                , registrationLongitude = String.fromFloat coords.longitude |> Just
-                            }
-                        )
-                        coordinates
-                        |> Maybe.withDefault person
+                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                        Maybe.map
+                            (\coords ->
+                                { person
+                                    | registrationLatitude = String.fromFloat coords.latitude |> Just
+                                    , registrationLongitude = String.fromFloat coords.longitude |> Just
+                                }
+                            )
+                            coordinates
+                            |> Maybe.withDefault person
+
+                    else
+                        person
             in
             ( { model | postPerson = Loading }
             , sw.post personEndpoint personWithCoordinates
