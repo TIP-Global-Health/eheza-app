@@ -1,6 +1,6 @@
 port module App.Ports exposing (..)
 
-import App.Model exposing (MemoryQuota, StorageQuota)
+import App.Model exposing (GPSCoordinates, MemoryQuota, StorageQuota)
 
 
 {-| Saves PIN code entered by user, so that we can use it again if
@@ -12,6 +12,11 @@ port cachePinCode : String -> Cmd msg
 {-| Set the user's current language.
 -}
 port setLanguage : String -> Cmd msg
+
+
+{-| Requests GPS coordinates.
+-}
+port getCoordinates : () -> Cmd msg
 
 
 {-| Let the Javascript tell us if we've successfully requested persistent
@@ -28,6 +33,11 @@ port memoryQuota : (MemoryQuota -> msg) -> Sub msg
 {-| Let the Javascript tell us about our storage quota.
 -}
 port storageQuota : (StorageQuota -> msg) -> Sub msg
+
+
+{-| Let the Javascript tell us about our GPS coordinates.
+-}
+port coordinates : (GPSCoordinates -> msg) -> Sub msg
 
 
 {-| Saves Health center ID selected by user, so that we can use it again if

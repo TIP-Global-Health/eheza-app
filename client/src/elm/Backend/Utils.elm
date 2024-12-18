@@ -296,6 +296,11 @@ groupEducationEnabled =
     EverySet.member FeatureGroupEducation
 
 
+gpsCoordinatesEnabled : EverySet SiteFeature -> Bool
+gpsCoordinatesEnabled =
+    EverySet.member FeatureGPSCoordinates
+
+
 hivManagementEnabled : EverySet SiteFeature -> Bool
 hivManagementEnabled =
     EverySet.member FeatureHIVManagement

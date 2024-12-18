@@ -153,6 +153,7 @@ updateIndexedDb :
     Language
     -> NominalDate
     -> Time.Posix
+    -> Maybe App.Model.GPSCoordinates
     -> ZScore.Model.Model
     -> Site
     -> EverySet SiteFeature
@@ -166,7 +167,7 @@ updateIndexedDb :
     -> MsgIndexedDb
     -> ModelIndexedDb
     -> ( ModelIndexedDb, Cmd MsgIndexedDb, List App.Model.Msg )
-updateIndexedDb language currentDate currentTime zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
+updateIndexedDb language currentDate currentTime coordinates zscores site features nurseId healthCenterId villageId isChw isLabTech activePage syncManager msg model =
     let
         noChange =
             ( model, Cmd.none, [] )
@@ -328,6 +329,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     (updateIndexedDb language
                         currentDate
                         currentTime
+                        coordinates
                         zscores
                         site
                         features
@@ -1474,6 +1476,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     (updateIndexedDb language
                         currentDate
                         currentTime
+                        coordinates
                         zscores
                         site
                         features
@@ -4141,6 +4144,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     (updateIndexedDb language
                         currentDate
                         currentTime
+                        coordinates
                         zscores
                         site
                         features
@@ -4196,8 +4200,25 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
             )
 
         PostPerson relation initiator person ->
+            let
+                -- Adding GPS coordinates.
+                personWithCoordinates =
+                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                        Maybe.map
+                            (\coords ->
+                                { person
+                                    | registrationLatitude = String.fromFloat coords.latitude |> Just
+                                    , registrationLongitude = String.fromFloat coords.longitude |> Just
+                                }
+                            )
+                            coordinates
+                            |> Maybe.withDefault person
+
+                    else
+                        person
+            in
             ( { model | postPerson = Loading }
-            , sw.post personEndpoint person
+            , sw.post personEndpoint personWithCoordinates
                 |> toCmd (RemoteData.fromResult >> RemoteData.map Tuple.first >> HandlePostedPerson relation initiator)
             , []
             )
@@ -4355,6 +4376,7 @@ updateIndexedDb language currentDate currentTime zscores site features nurseId h
                     (updateIndexedDb language
                         currentDate
                         currentTime
+                        coordinates
                         zscores
                         site
                         features

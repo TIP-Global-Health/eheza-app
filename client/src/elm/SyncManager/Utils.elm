@@ -1921,6 +1921,9 @@ siteFeatureFromString str =
         "hiv_management" ->
             Just FeatureHIVManagement
 
+        "gps_coordinates" ->
+            Just FeatureGPSCoordinates
+
         _ ->
             Nothing
 
@@ -1945,6 +1948,9 @@ siteFeatureToString feature =
 
         FeatureHIVManagement ->
             "hiv_management"
+
+        FeatureGPSCoordinates ->
+            "gps_coordinates"
 
 
 siteFeaturesFromString : String -> EverySet SiteFeature

@@ -15,6 +15,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
@@ -274,6 +275,7 @@ update msg model =
                     Backend.Update.updateIndexedDb model.language
                         currentDate
                         model.currentTime
+                        model.coordinates
                         model.zscores
                         site
                         features
@@ -1147,6 +1149,11 @@ update msg model =
             , Cmd.none
             )
 
+        SetGPSCoordinates coordinates ->
+            ( { model | coordinates = Just coordinates }
+            , Cmd.none
+            )
+
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
@@ -1382,7 +1389,15 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (EditPersonPage _) ->
                             App.Ports.bindDropZone ()
@@ -1532,6 +1547,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+         , coordinates SetGPSCoordinates
          , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted

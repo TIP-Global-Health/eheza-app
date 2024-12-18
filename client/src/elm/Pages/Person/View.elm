@@ -1,6 +1,6 @@
 module Pages.Person.View exposing (view, viewCreateEditForm, viewSelectInput, viewTextInput)
 
-import App.Model
+import App.Model exposing (GPSCoordinates)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
@@ -38,9 +38,11 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship)
 import Backend.Session.Utils exposing (getSession)
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import EverySet exposing (EverySet)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -59,7 +61,7 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
@@ -465,7 +467,9 @@ viewPhotoThumb url =
 viewCreateEditForm :
     Language
     -> NominalDate
+    -> Maybe GPSCoordinates
     -> Site
+    -> EverySet SiteFeature
     -> GeoInfo
     -> ReverseGeoInfo
     -> Maybe VillageId
@@ -475,7 +479,7 @@ viewCreateEditForm :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
+viewCreateEditForm language currentDate coordinates site features geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -1253,22 +1257,60 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                 []
 
             else
+                [ h3 [ class "ui header" ]
+                    [ text <| translate language Translate.AddressInformation ++ ":" ]
+                , fieldset [ class "registration-form address-info" ]
+                    [ viewProvince
+                    , viewDistrict
+                    , viewSector
+                    , viewCell
+                    , viewVillage
+                    ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
+
+        gpsInfoSection =
+            if gpsCoordinatesEnabled features && not isEditOperation then
                 let
-                    addressFields =
-                        [ viewProvince
-                        , viewDistrict
-                        , viewSector
-                        , viewCell
-                        , viewVillage
-                        ]
+                    sectionContent =
+                        Maybe.map
+                            (\coords ->
+                                let
+                                    saveGPSLocationField =
+                                        Form.getFieldAsBool Backend.Person.Form.saveGPSLocation personForm
+                                in
+                                [ div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.GPSLocation ++ ":" ]
+                                    , div
+                                        [ class "ten wide column" ]
+                                        [ text <| String.fromFloat coords.latitude ++ " , " ++ String.fromFloat coords.longitude
+                                        ]
+                                    ]
+                                , div [ class "ui grid" ]
+                                    [ div [ class "eight wide column" ]
+                                        [ text <| translate language Translate.GPSLocationSaveLabel ++ ":" ]
+                                    , div
+                                        [ class "three wide column" ]
+                                        [ Form.Input.checkboxInput saveGPSLocationField
+                                            [ class "field" ]
+                                            |> Html.map (MsgForm operation initiator)
+                                        ]
+                                    ]
+                                ]
+                            )
+                            coordinates
+                            |> Maybe.withDefault []
                 in
                 [ h3
                     [ class "ui header" ]
-                    [ text <| translate language Translate.AddressInformation ++ ":" ]
-                , addressFields
-                    |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm operation initiator)
+                    [ text <| translate language Translate.GPSInfo ++ ":" ]
+                , fieldset [ class "registration-form gps-info" ]
+                    sectionContent
                 ]
+
+            else
+                []
 
         contactInformationSection =
             if originBasedSettings.expectedAge /= ExpectChild then
@@ -1343,6 +1385,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             demographicSection
                 ++ familyInformationSection
                 ++ addressSection
+                ++ gpsInfoSection
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []
