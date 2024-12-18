@@ -548,7 +548,7 @@ elmApp.ports.getCoordinates.subscribe(function() {
         options
     );
   } else {
-      console.error("Geolocation is not available.");
+      rollbar.log("Geolocation is not available.");
   }
 });
 
@@ -1311,7 +1311,7 @@ function makeProgressReportScreenshot(elementId, data) {
                   document.head.appendChild(style);
                 })
                 .catch(function(error) {
-                  console.error('Error fetching stylesheet:', error);
+                  rollbar.log('Error fetching stylesheet:', error);
                 });
 
               promises.push(promise);
