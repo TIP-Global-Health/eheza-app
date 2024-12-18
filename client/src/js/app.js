@@ -519,6 +519,12 @@ elmApp.ports.scrollToElement.subscribe(function(elementId) {
 
 elmApp.ports.getCoordinates.subscribe(function() {
   if ("geolocation" in navigator) {
+    const options = {
+        enableHighAccuracy: true,  // Use GPS if available for better accuracy.
+        timeout: 15000,            // Time to wait for position (15 * 1000 ms).
+        maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+    };
+
     navigator.geolocation.getCurrentPosition(
         (position) => {
             const { latitude, longitude } = position.coords;
@@ -526,8 +532,20 @@ elmApp.ports.getCoordinates.subscribe(function() {
             elmApp.ports.coordinates.send(result);
         },
         (error) => {
-            console.error("Error fetching location:", error);
-        }
+            rollbar.log(("Error fetching location:", error);
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    rollbar.log("User denied geolocation permission");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    rollbar.log("Location information unavailable");
+                    break;
+                case error.TIMEOUT:
+                    rollbar.log("Location request timed out");
+                    break;
+            }
+        },
+        options
     );
   } else {
       console.error("Geolocation is not available.");
