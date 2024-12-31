@@ -141,6 +141,92 @@ while (TRUE) {
   }
 }
 
+// Create a nurse for all sample health centers.
+$hc_target_ids = [];
+foreach ($data['sample_health_centers_ids'] as $index => $sample_health_centers_id) {
+  $hc_target_ids[] = ['target_id' => $sample_health_centers_id];
+}
+$nurse = entity_create('node', [
+  'type' => 'nurse',
+  'title' => 'Sample Nurse',
+  'field_pin_code' => [
+    LANGUAGE_NONE => [
+      [
+        'value' => '1234',
+      ],
+    ],
+  ],
+  'field_role' => [
+    LANGUAGE_NONE => [
+      [
+        'value' => 'nurse',
+      ],
+    ],
+  ],
+  'field_health_centers' => [
+    LANGUAGE_NONE => $hc_target_ids,
+  ],
+]);
+node_save($nurse);
+
+// Create a CHW for all sample health centers villages.
+$villages = [];
+foreach ($data['sample_health_centers_ids'] as $sample_health_centers_id) {
+  $villages = array_merge($villages, hedley_health_center_get_villages_by_health_center($sample_health_centers_id));
+}
+
+if (!empty($villages)) {
+  $village_target_ids = [];
+  foreach ($villages as $village) {
+    $village_target_ids[] = ['target_id' => $village];
+  }
+  $chw = entity_create('node', [
+    'type' => 'nurse',
+    'title' => 'Sample CHW',
+    'field_pin_code' => [
+      LANGUAGE_NONE => [
+        [
+          'value' => '2345',
+        ],
+      ],
+    ],
+    'field_role' => [
+      LANGUAGE_NONE => [
+        [
+          'value' => 'chw',
+        ],
+      ],
+    ],
+    'field_health_centers' => [
+      LANGUAGE_NONE => $hc_target_ids,
+    ],
+    'field_villages' => [
+      LANGUAGE_NONE => $village_target_ids,
+    ],
+  ]);
+  node_save($chw);
+}
+
+// Delete all users but admin (uid = 1).
+$result = db_select('users', 'u')
+  ->fields('u', array('uid'))
+  ->condition('uid', 1, '>')
+  ->execute();
+foreach ($result as $record) {
+  user_delete($record->uid);
+}
+
+// Create Gizra Admin.
+$role = user_role_load_by_name('administrator');
+$gizra_admin = [
+  'name' => 'gizra',
+  'mail' => 'gizra@example.com',
+  'pass' => '2ASC$Hvm',
+  'roles' => [$role->rid => $role->name],
+  'status' => 1,
+];
+user_save(NULL, $gizra_admin);
+
 drush_print("Done!");
 
 /**
@@ -269,10 +355,14 @@ function process_node($node, $data) {
  * Drops all shards that are nor in sample HC list.
  */
 function sanitise_shards($shards, $sample_health_centers_ids) {
+  if (empty($shards)) {
+    return [];
+  }
+
   foreach ($shards as $index => $shard) {
     if (!in_array($shard['target_id'], $sample_health_centers_ids)) {
       unset($shards[$index]);
-    };
+    }
   }
 
   return array_values($shards);
