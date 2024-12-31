@@ -85,10 +85,14 @@ getActivityIcon activity =
     encodeActivityAsString activity
 
 
-getAllActivities : Bool -> List AcuteIllnessActivity
-getAllActivities isFirstEncounter =
-    if isFirstEncounter then
-        [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
-
-    else
-        [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
+getAllActivities : List AcuteIllnessActivity
+getAllActivities =
+    [ AcuteIllnessSymptoms
+    , AcuteIllnessExposure
+    , AcuteIllnessPriorTreatment
+    , AcuteIllnessPhysicalExam
+    , AcuteIllnessLaboratory
+    , AcuteIllnessDangerSigns
+    , AcuteIllnessOngoingTreatment
+    , AcuteIllnessNextSteps
+    ]

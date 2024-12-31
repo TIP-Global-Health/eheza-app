@@ -5,6 +5,8 @@ import App.Types exposing (Page(..))
 import Error.View
 import Gizra.NominalDate exposing (fromLocalDateTime)
 import Html exposing (..)
+import Pages.Completion.View
+import Pages.CompletionMenu.View
 import Pages.Reports.View
 import Pages.ReportsMenu.View
 import Pages.Scoreboard.View
@@ -56,6 +58,29 @@ view model =
                         model.themePath
                         model.backend
                         model.reportsPage
+                ]
+
+        CompletionMenu ->
+            div []
+                [ Error.View.view model.language model.errors
+                , Html.map MsgCompletionMenuPage <|
+                    Pages.CompletionMenu.View.view
+                        model.language
+                        model.themePath
+                        model.backend
+                        model.completionMenuPage
+                ]
+
+        Completion ->
+            div []
+                [ Error.View.view model.language model.errors
+                , Html.map MsgCompletionPage <|
+                    Pages.Completion.View.view
+                        model.language
+                        (fromLocalDateTime model.currentTime)
+                        model.themePath
+                        model.backend
+                        model.completionPage
                 ]
 
         NotFound ->

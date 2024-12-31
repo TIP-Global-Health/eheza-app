@@ -821,7 +821,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
                    )
                 |> List.sortWith (sortByDateDesc .startDate)
 
-        dignoses =
+        diganoses =
             List.concatMap
                 (\data ->
                     let
@@ -986,7 +986,7 @@ viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasureme
     div [ class "medical-diagnosis" ]
         [ viewItemHeading language Translate.MedicalDiagnosis "blue"
         , div [ class "pane-content" ] <|
-            dignoses
+            diganoses
                 :: alerts
         ]
 
