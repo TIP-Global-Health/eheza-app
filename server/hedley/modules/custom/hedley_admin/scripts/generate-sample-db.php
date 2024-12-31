@@ -80,7 +80,7 @@ foreach ($files_array as $item) {
 }
 
 $data = [
-  'sample_health_centers_ids' => [4],
+  'sample_health_centers_ids' => [7091, 7092],
   'male_first_names' => hedley_migrate_male_first_names(),
   'female_first_names' => hedley_migrate_female_first_names(),
   'second_names' => hedley_migrate_second_names(),
