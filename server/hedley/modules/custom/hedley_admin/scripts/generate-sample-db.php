@@ -39,12 +39,12 @@ if ($count == 0) {
 
 drush_print("There are $count nodes at DB.");
 
-// Get all image files from module directory
+// Get all image files from module directory.
 $module_path = drupal_get_path('module', 'hedley_migrate');
 $images_path = $module_path . '/images';
 $files = file_scan_directory($images_path, '/\.(jpg|jpeg|png|gif)$/i');
 $files_array = array_values($files);
-// Create a map to track managed files
+// Create a map to track managed files.
 $managed_files = [
   'boy' => [],
   'girl' => [],
@@ -61,7 +61,7 @@ foreach ($files_array as $item) {
     'status' => 1,
   ];
 
-  // Copy file to public directory
+  // Copy file to public directory.
   $directory = 'public://photos';
   file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
   $file = file_copy($file, $directory);
@@ -143,6 +143,9 @@ while (TRUE) {
 
 drush_print("Done!");
 
+/**
+ * Performs logic for provided node.
+ */
 function process_node($node, $data) {
   if ($node->type === 'catchment_area') {
     return;
@@ -164,7 +167,7 @@ function process_node($node, $data) {
 
   if ($node->type === 'village') {
     $health_center_id = $node->field_health_center[LANGUAGE_NONE][0]['target_id'];
-    if (!in_array($health_center_id , $sample_health_centers_ids)) {
+    if (!in_array($health_center_id, $sample_health_centers_ids)) {
       node_delete($node->nid);
     };
     return;
@@ -262,9 +265,12 @@ function process_node($node, $data) {
   }
 }
 
+/**
+ * Drops all shards that are nor in sample HC list.
+ */
 function sanitise_shards($shards, $sample_health_centers_ids) {
   foreach ($shards as $index => $shard) {
-    if (!in_array($shard['target_id'] , $sample_health_centers_ids)) {
+    if (!in_array($shard['target_id'], $sample_health_centers_ids)) {
       unset($shards[$index]);
     };
   }
