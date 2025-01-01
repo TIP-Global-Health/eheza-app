@@ -20,7 +20,7 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 16000);
 
 
 $base_query = new EntityFieldQuery();
@@ -259,95 +259,79 @@ function process_node($node, $data) {
     return;
   }
 
-  if ($node->type === 'person') {
-    $shards = sanitise_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids);
-    if (empty($shards)) {
-      node_delete($node->nid);
-    }
-    else {
-      $node->field_shards[LANGUAGE_NONE] = $shards;
-      // Anonymise national ID.
-      $node->field_national_id_number[LANGUAGE_NONE][0]['value'] = '';
-      // Anonymise phone number.
-      $node->field_phone_number[LANGUAGE_NONE][0]['value'] = '';
-      // Anonymise name.
-      $gender = $node->field_gender[LANGUAGE_NONE][0]['value'];
-      if (!$gender) {
-        $gender = 'female';
-      }
-      $first_name_key = $gender == 'male' ? array_rand($data['male_first_names']) : array_rand($data['female_first_names']);
-      $first_name = $gender == 'male' ? $data['male_first_names'][$first_name_key] : $data['female_first_names'][$first_name_key];
-      $second_name_key = array_rand($data['second_names']);
-      $second_name = $data['second_names'][$second_name_key];
-      $node->title = $second_name . ' ' . $first_name;
-      $node->field_first_name[LANGUAGE_NONE][0]['value'] = $first_name;
-      $node->field_second_name[LANGUAGE_NONE][0]['value'] = $second_name;
-      // Replace photo.
-      $current_file = field_get_items('node', $node, 'field_photo');
-      if ($current_file) {
-        $file = file_load($current_file[0]['fid']);
-        if ($file) {
-          file_delete($file);
-        }
-      }
-      $birth_date = field_get_items('node', $node, 'field_birth_date');
-      if ($birth_date) {
-        $birth_timestamp = strtotime($birth_date[0]['value']);
-        $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
-        $is_adult = $age >= 13;
-        if ($gender == 'male') {
-          $folder = $is_adult ? 'father' : 'boy';
-        }
-        else {
-          $folder = $is_adult ? 'mother' : 'girl';
-        }
-        $file_key = array_rand($data['managed_files'][$folder]);
-        $file = $data['managed_files'][$folder][$file_key];
-        $node->field_photo[LANGUAGE_NONE][0] = (array) $file;
-      }
-
-      try {
-        node_save($node);
-      }
-      catch (\Exception $e) {
-        drush_print("Error when saving person node ID $node->nid.");
-      }
-    }
-
-    return;
-  }
-
-  // For any other node type.
   $shards = sanitise_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids);
   if (empty($shards)) {
     node_delete($node->nid);
+    return;
   }
-  else {
-    $node->field_shards[LANGUAGE_NONE] = $shards;
-    if (strpos($node->type, 'photo')) {
-      // Replace photo with the one from person profile.
-      $current_file = field_get_items('node', $node, 'field_photo');
-      if ($current_file) {
-        $file = file_load($current_file[0]['fid']);
-        if ($file) {
-          file_delete($file);
-        }
+
+  $node->field_shards[LANGUAGE_NONE] = $shards;
+
+  if ($node->type === 'person') {
+    // Anonymise national ID.
+    $node->field_national_id_number[LANGUAGE_NONE][0]['value'] = '';
+    // Anonymise phone number.
+    $node->field_phone_number[LANGUAGE_NONE][0]['value'] = '';
+    // Anonymise name.
+    $gender = $node->field_gender[LANGUAGE_NONE][0]['value'];
+    if (!$gender) {
+      $gender = 'female';
+    }
+    $first_name_key = $gender == 'male' ? array_rand($data['male_first_names']) : array_rand($data['female_first_names']);
+    $first_name = $gender == 'male' ? $data['male_first_names'][$first_name_key] : $data['female_first_names'][$first_name_key];
+    $second_name_key = array_rand($data['second_names']);
+    $second_name = $data['second_names'][$second_name_key];
+    $node->title = $second_name . ' ' . $first_name;
+    $node->field_first_name[LANGUAGE_NONE][0]['value'] = $first_name;
+    $node->field_second_name[LANGUAGE_NONE][0]['value'] = $second_name;
+    // Replace photo.
+    $current_file = field_get_items('node', $node, 'field_photo');
+    if ($current_file) {
+      $file = file_load($current_file[0]['fid']);
+      if ($file) {
+        file_delete($file);
       }
-      $person_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
-      $person = node_load($person_id);
-      if ($person) {
-        $photo_field = field_get_items('node', $person, 'field_photo');
-        if ($photo_field) {
-          $node->field_photo[LANGUAGE_NONE][0] = $photo_field[0];
-        }
+    }
+    $birth_date = field_get_items('node', $node, 'field_birth_date');
+    if ($birth_date) {
+      $birth_timestamp = strtotime($birth_date[0]['value']);
+      $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
+      $is_adult = $age >= 13;
+      if ($gender == 'male') {
+        $folder = $is_adult ? 'father' : 'boy';
+      }
+      else {
+        $folder = $is_adult ? 'mother' : 'girl';
+      }
+      $file_key = array_rand($data['managed_files'][$folder]);
+      $file = $data['managed_files'][$folder][$file_key];
+      $node->field_photo[LANGUAGE_NONE][0] = (array) $file;
+    }
+  }
+  elseif (strpos($node->type, 'photo')) {
+    // Replace photo with the one from person profile.
+    $current_file = field_get_items('node', $node, 'field_photo');
+    if ($current_file) {
+      $file = file_load($current_file[0]['fid']);
+      if ($file) {
+        file_delete($file);
       }
     }
-    try {
-      node_save($node);
+    $person_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
+    $person = node_load($person_id);
+    if ($person) {
+      $photo_field = field_get_items('node', $person, 'field_photo');
+      if ($photo_field) {
+        $node->field_photo[LANGUAGE_NONE][0] = $photo_field[0];
+      }
     }
-    catch (\Exception $e) {
-      drush_print("Error when saving node ID $node->nid.");
-    }
+  }
+
+  try {
+    node_save($node);
+  }
+  catch (\Exception $e) {
+    drush_print("Error when saving node ID $node->nid.");
   }
 }
 
