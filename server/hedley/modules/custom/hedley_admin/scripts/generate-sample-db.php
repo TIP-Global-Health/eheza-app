@@ -92,7 +92,7 @@ $nurse = entity_create('node', [
   'field_pin_code' => [
     LANGUAGE_NONE => [
       [
-        'value' => '1234',
+        'value' => '12345',
       ],
     ],
   ],
@@ -125,7 +125,7 @@ if (!empty($villages)) {
     'field_pin_code' => [
       LANGUAGE_NONE => [
         [
-          'value' => '2345',
+          'value' => '23456',
         ],
       ],
     ],
@@ -168,7 +168,7 @@ $data = [
   'managed_files' => $managed_files,
 ];
 
-$processed = 0;
+$processed = $kept = 0;
 while (TRUE) {
   // Free up memory.
   drupal_static_reset();
@@ -190,7 +190,7 @@ while (TRUE) {
   $ids = array_keys($result['node']);
   $nodes = node_load_multiple($ids);
   foreach ($nodes as $node) {
-    process_node($node, $data);
+    $kept += process_node($node, $data);
   }
 
   $nid = end($ids);
@@ -199,11 +199,13 @@ while (TRUE) {
   // Explicitly unset large variables after use for memory optimization.
   unset($nodes);
 
+  $memory = round(memory_get_usage() / 1048576);
+
   if ($processed % 5000 == 0) {
-    drush_print("Processed $processed out of $count.");
+    drush_print("Processed $processed out of $count. Nodes kept: $kept. Memory usage: $memory.");
   }
 
-  if (round(memory_get_usage() / 1048576) >= $memory_limit) {
+  if ($memory >= $memory_limit) {
     drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
     return;
   }
@@ -229,20 +231,20 @@ $gizra_admin = [
 ];
 user_save(NULL, $gizra_admin);
 
-drush_print("Done!");
+drush_print("Done! Nodes kept: $kept.");
 
 /**
  * Performs logic for provided node.
  */
 function process_node($node, $data) {
   if ($node->type === 'catchment_area') {
-    return;
+    return 1;
   }
 
   $bundles_to_delete = $data['bundles_to_delete'];
   if (in_array($node->type, $bundles_to_delete)) {
     node_delete($node->nid);
-    return;
+    return 0;
   }
 
   $sample_health_centers_ids = $data['sample_health_centers_ids'];
@@ -250,7 +252,7 @@ function process_node($node, $data) {
     if (!in_array($node->nid, $sample_health_centers_ids)) {
       node_delete($node->nid);
     };
-    return;
+    return 0;
   }
 
   if ($node->type === 'village') {
@@ -258,12 +260,12 @@ function process_node($node, $data) {
     if (!in_array($health_center_id, $sample_health_centers_ids)) {
       node_delete($node->nid);
     };
-    return;
+    return 0;
   }
 
   if (!keep_by_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids)) {
     node_delete($node->nid);
-    return;
+    return 0;
   }
 
   // For nodes that got nurse field, set it to sample nurse (since other
@@ -334,9 +336,11 @@ function process_node($node, $data) {
 
   try {
     node_save($node);
+    return 1;
   }
   catch (\Exception $e) {
     drush_print("Error when saving node ID $node->nid.");
+    return 0;
   }
 }
 
