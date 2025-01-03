@@ -79,8 +79,76 @@ foreach ($files_array as $item) {
   }
 }
 
+$sample_health_centers_ids = [7091, 7092, 28589];
+
+// Create a nurse for all sample health centers.
+$hc_target_ids = [];
+foreach ($sample_health_centers_ids as $index => $sample_health_centers_id) {
+  $hc_target_ids[] = ['target_id' => $sample_health_centers_id];
+}
+$nurse = entity_create('node', [
+  'type' => 'nurse',
+  'title' => 'Sample Nurse',
+  'field_pin_code' => [
+    LANGUAGE_NONE => [
+      [
+        'value' => '1234',
+      ],
+    ],
+  ],
+  'field_role' => [
+    LANGUAGE_NONE => [
+      [
+        'value' => 'nurse',
+      ],
+    ],
+  ],
+  'field_health_centers' => [
+    LANGUAGE_NONE => $hc_target_ids,
+  ],
+]);
+node_save($nurse);
+
+// Create a CHW for all sample health centers villages.
+$villages = [];
+foreach ($sample_health_centers_ids as $sample_health_centers_id) {
+  $villages = array_merge($villages, hedley_health_center_get_villages_by_health_center($sample_health_centers_id));
+}
+if (!empty($villages)) {
+  $village_target_ids = [];
+  foreach ($villages as $village) {
+    $village_target_ids[] = ['target_id' => $village];
+  }
+  $chw = entity_create('node', [
+    'type' => 'nurse',
+    'title' => 'Sample CHW',
+    'field_pin_code' => [
+      LANGUAGE_NONE => [
+        [
+          'value' => '2345',
+        ],
+      ],
+    ],
+    'field_role' => [
+      LANGUAGE_NONE => [
+        [
+          'value' => 'chw',
+        ],
+      ],
+    ],
+    'field_health_centers' => [
+      LANGUAGE_NONE => $hc_target_ids,
+    ],
+    'field_villages' => [
+      LANGUAGE_NONE => $village_target_ids,
+    ],
+  ]);
+  node_save($chw);
+}
+
 $data = [
-  'sample_health_centers_ids' => [7091, 7092],
+  'sample_health_centers_ids' => $sample_health_centers_ids,
+  'sample_nurse' => $nurse->nid,
   'male_first_names' => hedley_migrate_male_first_names(),
   'female_first_names' => hedley_migrate_female_first_names(),
   'second_names' => hedley_migrate_second_names(),
@@ -141,72 +209,6 @@ while (TRUE) {
   }
 }
 
-// Create a nurse for all sample health centers.
-$hc_target_ids = [];
-foreach ($data['sample_health_centers_ids'] as $index => $sample_health_centers_id) {
-  $hc_target_ids[] = ['target_id' => $sample_health_centers_id];
-}
-$nurse = entity_create('node', [
-  'type' => 'nurse',
-  'title' => 'Sample Nurse',
-  'field_pin_code' => [
-    LANGUAGE_NONE => [
-      [
-        'value' => '1234',
-      ],
-    ],
-  ],
-  'field_role' => [
-    LANGUAGE_NONE => [
-      [
-        'value' => 'nurse',
-      ],
-    ],
-  ],
-  'field_health_centers' => [
-    LANGUAGE_NONE => $hc_target_ids,
-  ],
-]);
-node_save($nurse);
-
-// Create a CHW for all sample health centers villages.
-$villages = [];
-foreach ($data['sample_health_centers_ids'] as $sample_health_centers_id) {
-  $villages = array_merge($villages, hedley_health_center_get_villages_by_health_center($sample_health_centers_id));
-}
-
-if (!empty($villages)) {
-  $village_target_ids = [];
-  foreach ($villages as $village) {
-    $village_target_ids[] = ['target_id' => $village];
-  }
-  $chw = entity_create('node', [
-    'type' => 'nurse',
-    'title' => 'Sample CHW',
-    'field_pin_code' => [
-      LANGUAGE_NONE => [
-        [
-          'value' => '2345',
-        ],
-      ],
-    ],
-    'field_role' => [
-      LANGUAGE_NONE => [
-        [
-          'value' => 'chw',
-        ],
-      ],
-    ],
-    'field_health_centers' => [
-      LANGUAGE_NONE => $hc_target_ids,
-    ],
-    'field_villages' => [
-      LANGUAGE_NONE => $village_target_ids,
-    ],
-  ]);
-  node_save($chw);
-}
-
 // Delete all users but admin (uid = 1).
 $result = db_select('users', 'u')
   ->fields('u', array('uid'))
@@ -259,13 +261,16 @@ function process_node($node, $data) {
     return;
   }
 
-  $shards = sanitise_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids);
-  if (empty($shards)) {
+  if (!keep_by_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids)) {
     node_delete($node->nid);
     return;
   }
 
-  $node->field_shards[LANGUAGE_NONE] = $shards;
+  // For nodes that got nurse field, set it to sample nurse (since other
+  // nurses are being deleted).
+  if (!empty(field_info_instance('node', 'field_nurse', $node->type))) {
+    $node->field_nurse[LANGUAGE_NONE][0]['target_id'] = $data['sample_nurse'];
+  }
 
   if ($node->type === 'person') {
     // Anonymise national ID.
@@ -336,18 +341,18 @@ function process_node($node, $data) {
 }
 
 /**
- * Drops all shards that are nor in sample HC list.
+ * Keep node, if any of it's shards appears in sample HCs list.
  */
-function sanitise_shards($shards, $sample_health_centers_ids) {
+function keep_by_shards($shards, $sample_health_centers_ids) {
   if (empty($shards)) {
-    return [];
+    return FALSE;
   }
 
-  foreach ($shards as $index => $shard) {
-    if (!in_array($shard['target_id'], $sample_health_centers_ids)) {
-      unset($shards[$index]);
+  foreach ($shards as $shard) {
+    if (in_array($shard['target_id'], $sample_health_centers_ids)) {
+      return TRUE;
     }
   }
 
-  return array_values($shards);
+  return FALSE;
 }
