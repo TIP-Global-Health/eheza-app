@@ -253,6 +253,7 @@ function process_node($node, $data) {
       node_delete($node->nid);
       return 0;
     };
+    return 1;
   }
 
   if ($node->type === 'village') {
@@ -261,6 +262,7 @@ function process_node($node, $data) {
       node_delete($node->nid);
       return 0;
     };
+    return 1;
   }
 
   if (!keep_by_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids)) {
