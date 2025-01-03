@@ -251,16 +251,16 @@ function process_node($node, $data) {
   if ($node->type === 'health_center') {
     if (!in_array($node->nid, $sample_health_centers_ids)) {
       node_delete($node->nid);
+      return 0;
     };
-    return 0;
   }
 
   if ($node->type === 'village') {
     $health_center_id = $node->field_health_center[LANGUAGE_NONE][0]['target_id'];
     if (!in_array($health_center_id, $sample_health_centers_ids)) {
       node_delete($node->nid);
+      return 0;
     };
-    return 0;
   }
 
   if (!keep_by_shards($node->field_shards[LANGUAGE_NONE], $sample_health_centers_ids)) {
