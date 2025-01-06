@@ -149,6 +149,7 @@ if (!empty($villages)) {
 $data = [
   'sample_health_centers_ids' => $sample_health_centers_ids,
   'sample_nurse' => $nurse->nid,
+  'sample_chw' => !empty($chw) ? $chw->nid : NULL,
   'male_first_names' => hedley_migrate_male_first_names(),
   'female_first_names' => hedley_migrate_female_first_names(),
   'second_names' => hedley_migrate_second_names(),
@@ -162,7 +163,6 @@ $data = [
     'resilience_survey',
     'sync_incident',
     'whatsapp_record',
-    'nurse',
     'device',
   ],
   'managed_files' => $managed_files,
@@ -212,13 +212,13 @@ while (TRUE) {
 }
 
 // Delete all users but admin (uid = 1).
-$result = db_select('users', 'u')
-  ->fields('u', array('uid'))
-  ->condition('uid', 1, '>')
-  ->execute();
-foreach ($result as $record) {
-  user_delete($record->uid);
-}
+//$result = db_select('users', 'u')
+//  ->fields('u', array('uid'))
+//  ->condition('uid', 1, '>')
+//  ->execute();
+//foreach ($result as $record) {
+//  user_delete($record->uid);
+//}
 
 // Create Gizra Admin.
 $role = user_role_load_by_name('administrator');
@@ -247,6 +247,14 @@ function process_node($node, $data) {
     return 0;
   }
 
+  if ($node->type === 'nurse') {
+    if (!in_array($node->nid, [$data['sample_nurse'], $data['sample_chw']])) {
+      node_delete($node->nid);
+      return 0;
+    }
+    return 1;
+  }
+
   $sample_health_centers_ids = $data['sample_health_centers_ids'];
   if ($node->type === 'health_center') {
     if (!in_array($node->nid, $sample_health_centers_ids)) {
@@ -270,10 +278,13 @@ function process_node($node, $data) {
     return 0;
   }
 
+  $save_required = FALSE;
+
   // For nodes that got nurse field, set it to sample nurse (since other
   // nurses are being deleted).
   if (!empty(field_info_instance('node', 'field_nurse', $node->type))) {
     $node->field_nurse[LANGUAGE_NONE][0]['target_id'] = $data['sample_nurse'];
+    $save_required = TRUE;
   }
 
   if ($node->type === 'person') {
@@ -316,6 +327,7 @@ function process_node($node, $data) {
       $file = $data['managed_files'][$folder][$file_key];
       $node->field_photo[LANGUAGE_NONE][0] = (array) $file;
     }
+    $save_required = TRUE;
   }
   elseif (strpos($node->type, 'photo')) {
     // Replace photo with the one from person profile.
@@ -324,6 +336,7 @@ function process_node($node, $data) {
       $file = file_load($current_file[0]['fid']);
       if ($file) {
         file_delete($file);
+        $save_required = TRUE;
       }
     }
     $person_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
@@ -332,8 +345,13 @@ function process_node($node, $data) {
       $photo_field = field_get_items('node', $person, 'field_photo');
       if ($photo_field) {
         $node->field_photo[LANGUAGE_NONE][0] = $photo_field[0];
+        $save_required = TRUE;
       }
     }
+  }
+
+  if (!$save_required) {
+    return 1;
   }
 
   try {
