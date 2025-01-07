@@ -105,6 +105,36 @@ resilienceMessageOrderToString value =
         ResilienceMessage14 ->
             "14"
 
+        ResilienceMessage15 ->
+            "15"
+
+        ResilienceMessage16 ->
+            "16"
+
+        ResilienceMessage17 ->
+            "17"
+
+        ResilienceMessage18 ->
+            "18"
+
+        ResilienceMessage19 ->
+            "19"
+
+        ResilienceMessage20 ->
+            "20"
+
+        ResilienceMessage21 ->
+            "21"
+
+        ResilienceMessage22 ->
+            "22"
+
+        ResilienceMessage23 ->
+            "23"
+
+        ResilienceMessage24 ->
+            "24"
+
 
 resilienceMessageOrderFromString : String -> Maybe ResilienceMessageOrder
 resilienceMessageOrderFromString value =
@@ -150,6 +180,36 @@ resilienceMessageOrderFromString value =
 
         "14" ->
             Just ResilienceMessage14
+
+        "15" ->
+            Just ResilienceMessage15
+
+        "16" ->
+            Just ResilienceMessage16
+
+        "17" ->
+            Just ResilienceMessage17
+
+        "18" ->
+            Just ResilienceMessage18
+
+        "19" ->
+            Just ResilienceMessage19
+
+        "20" ->
+            Just ResilienceMessage20
+
+        "21" ->
+            Just ResilienceMessage21
+
+        "22" ->
+            Just ResilienceMessage22
+
+        "23" ->
+            Just ResilienceMessage23
+
+        "24" ->
+            Just ResilienceMessage24
 
         _ ->
             Nothing
@@ -204,12 +264,12 @@ numberOfMessagesByCategory : Dict ResilienceCategory Int
 numberOfMessagesByCategory =
     Dict.fromList
         [ ( ResilienceCategoryIntroduction, 8 )
-        , ( ResilienceCategoryGrowth, 9 )
-        , ( ResilienceCategoryStressManagement, 10 )
-        , ( ResilienceCategoryMindfulness, 9 )
-        , ( ResilienceCategoryConnecting, 12 )
-        , ( ResilienceCategorySelfCare, 5 )
-        , ( ResilienceCategoryEndOfPeriod, 4 )
+        , ( ResilienceCategoryGrowth, 23 )
+        , ( ResilienceCategoryStressManagement, 15 )
+        , ( ResilienceCategoryMindfulness, 11 )
+        , ( ResilienceCategoryConnecting, 18 )
+        , ( ResilienceCategorySelfCare, 10 )
+        , ( ResilienceCategoryEndOfPeriod, 6 )
         ]
 
 
@@ -283,6 +343,39 @@ resolveDisplayDay category order =
                 ResilienceMessage12 ->
                     Just 140
 
+                ResilienceMessage13 ->
+                    Just 154
+
+                ResilienceMessage14 ->
+                    Just 156
+
+                ResilienceMessage15 ->
+                    Just 158
+
+                ResilienceMessage16 ->
+                    Just 161
+
+                ResilienceMessage17 ->
+                    Just 163
+
+                ResilienceMessage18 ->
+                    Just 170
+
+                ResilienceMessage19 ->
+                    Just 179
+
+                ResilienceMessage20 ->
+                    Just 184
+
+                ResilienceMessage21 ->
+                    Just 191
+
+                ResilienceMessage22 ->
+                    Just 196
+
+                ResilienceMessage23 ->
+                    Just 198
+
                 _ ->
                     Nothing
 
@@ -330,6 +423,12 @@ resolveDisplayDay category order =
                 ResilienceMessage14 ->
                     Just 144
 
+                ResilienceMessage15 ->
+                    Just 149
+
+                _ ->
+                    Nothing
+
         ResilienceCategoryMindfulness ->
             case order of
                 ResilienceMessage1 ->
@@ -361,6 +460,9 @@ resolveDisplayDay category order =
 
                 ResilienceMessage10 ->
                     Just 133
+
+                ResilienceMessage11 ->
+                    Just 172
 
                 _ ->
                     Nothing
@@ -409,6 +511,21 @@ resolveDisplayDay category order =
                 ResilienceMessage14 ->
                     Just 130
 
+                ResilienceMessage15 ->
+                    Just 168
+
+                ResilienceMessage16 ->
+                    Just 175
+
+                ResilienceMessage17 ->
+                    Just 189
+
+                ResilienceMessage18 ->
+                    Just 193
+
+                _ ->
+                    Nothing
+
         ResilienceCategorySelfCare ->
             case order of
                 ResilienceMessage1 ->
@@ -432,6 +549,15 @@ resolveDisplayDay category order =
                 ResilienceMessage7 ->
                     Just 142
 
+                ResilienceMessage8 ->
+                    Just 151
+
+                ResilienceMessage9 ->
+                    Just 165
+
+                ResilienceMessage10 ->
+                    Just 182
+
                 _ ->
                     Nothing
 
@@ -451,6 +577,9 @@ resolveDisplayDay category order =
 
                 ResilienceMessage5 ->
                     Just 147
+
+                ResilienceMessage6 ->
+                    Just 200
 
                 _ ->
                     Nothing
