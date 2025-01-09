@@ -1076,6 +1076,13 @@ viewStressManagementMessage language nurse order =
               ]
             )
 
+        ResilienceMessage16 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement16Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement16Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement16Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 

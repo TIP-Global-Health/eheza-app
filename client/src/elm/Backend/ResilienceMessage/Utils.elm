@@ -259,7 +259,7 @@ numberOfMessagesByCategory =
     Dict.fromList
         [ ( ResilienceCategoryIntroduction, 8 )
         , ( ResilienceCategoryGrowth, 23 )
-        , ( ResilienceCategoryStressManagement, 15 )
+        , ( ResilienceCategoryStressManagement, 16 )
         , ( ResilienceCategoryMindfulness, 11 )
         , ( ResilienceCategoryConnecting, 18 )
         , ( ResilienceCategorySelfCare, 10 )
@@ -329,46 +329,46 @@ resolveDisplayDay category order =
                     Just 107
 
                 ResilienceMessage10 ->
-                    Just 123
+                    Just 144
 
                 ResilienceMessage11 ->
-                    Just 126
+                    Just 147
 
                 ResilienceMessage12 ->
-                    Just 140
-
-                ResilienceMessage13 ->
-                    Just 154
-
-                ResilienceMessage14 ->
-                    Just 156
-
-                ResilienceMessage15 ->
-                    Just 158
-
-                ResilienceMessage16 ->
                     Just 161
 
-                ResilienceMessage17 ->
-                    Just 163
+                ResilienceMessage13 ->
+                    Just 175
 
-                ResilienceMessage18 ->
-                    Just 170
+                ResilienceMessage14 ->
+                    Just 177
 
-                ResilienceMessage19 ->
+                ResilienceMessage15 ->
                     Just 179
 
-                ResilienceMessage20 ->
+                ResilienceMessage16 ->
+                    Just 182
+
+                ResilienceMessage17 ->
                     Just 184
 
-                ResilienceMessage21 ->
+                ResilienceMessage18 ->
                     Just 191
 
+                ResilienceMessage19 ->
+                    Just 200
+
+                ResilienceMessage20 ->
+                    Just 205
+
+                ResilienceMessage21 ->
+                    Just 212
+
                 ResilienceMessage22 ->
-                    Just 196
+                    Just 217
 
                 ResilienceMessage23 ->
-                    Just 198
+                    Just 219
 
         ResilienceCategoryStressManagement ->
             case order of
@@ -403,19 +403,22 @@ resolveDisplayDay category order =
                     Just 93
 
                 ResilienceMessage11 ->
-                    Just 119
+                    Just 140
 
                 ResilienceMessage12 ->
-                    Just 121
+                    Just 142
 
                 ResilienceMessage13 ->
-                    Just 137
+                    Just 158
 
                 ResilienceMessage14 ->
-                    Just 144
+                    Just 165
 
                 ResilienceMessage15 ->
-                    Just 149
+                    Just 170
+
+                ResilienceMessage16 ->
+                    Just 207
 
                 _ ->
                     Nothing
@@ -450,10 +453,10 @@ resolveDisplayDay category order =
                     Just 112
 
                 ResilienceMessage10 ->
-                    Just 133
+                    Just 154
 
                 ResilienceMessage11 ->
-                    Just 172
+                    Just 193
 
                 _ ->
                     Nothing
@@ -497,22 +500,22 @@ resolveDisplayDay category order =
                     Just 110
 
                 ResilienceMessage13 ->
-                    Just 128
+                    Just 149
 
                 ResilienceMessage14 ->
-                    Just 130
+                    Just 151
 
                 ResilienceMessage15 ->
-                    Just 168
-
-                ResilienceMessage16 ->
-                    Just 175
-
-                ResilienceMessage17 ->
                     Just 189
 
+                ResilienceMessage16 ->
+                    Just 196
+
+                ResilienceMessage17 ->
+                    Just 210
+
                 ResilienceMessage18 ->
-                    Just 193
+                    Just 214
 
                 _ ->
                     Nothing
@@ -535,19 +538,19 @@ resolveDisplayDay category order =
                     Just 114
 
                 ResilienceMessage6 ->
-                    Just 135
+                    Just 156
 
                 ResilienceMessage7 ->
-                    Just 142
+                    Just 163
 
                 ResilienceMessage8 ->
-                    Just 151
+                    Just 172
 
                 ResilienceMessage9 ->
-                    Just 165
+                    Just 186
 
                 ResilienceMessage10 ->
-                    Just 182
+                    Just 203
 
                 _ ->
                     Nothing
@@ -567,13 +570,13 @@ resolveDisplayDay category order =
                     Just 117
 
                 ResilienceMessage5 ->
-                    Just 147
+                    Just 168
 
                 ResilienceMessage6 ->
-                    Just 177
+                    Just 198
 
                 ResilienceMessage7 ->
-                    Just 200
+                    Just 221
 
                 _ ->
                     Nothing
