@@ -132,9 +132,6 @@ resilienceMessageOrderToString value =
         ResilienceMessage23 ->
             "23"
 
-        ResilienceMessage24 ->
-            "24"
-
 
 resilienceMessageOrderFromString : String -> Maybe ResilienceMessageOrder
 resilienceMessageOrderFromString value =
@@ -207,9 +204,6 @@ resilienceMessageOrderFromString value =
 
         "23" ->
             Just ResilienceMessage23
-
-        "24" ->
-            Just ResilienceMessage24
 
         _ ->
             Nothing
@@ -375,9 +369,6 @@ resolveDisplayDay category order =
 
                 ResilienceMessage23 ->
                     Just 198
-
-                _ ->
-                    Nothing
 
         ResilienceCategoryStressManagement ->
             case order of
@@ -579,6 +570,9 @@ resolveDisplayDay category order =
                     Just 147
 
                 ResilienceMessage6 ->
+                    Just 177
+
+                ResilienceMessage7 ->
                     Just 200
 
                 _ ->

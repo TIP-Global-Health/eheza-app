@@ -941,9 +941,6 @@ viewGrowthMessage language order =
               ]
             )
 
-        _ ->
-            ( [], [] )
-
 
 viewStressManagementMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewStressManagementMessage language nurse order =
@@ -1508,6 +1505,19 @@ viewEndOfPeriodMessage language order =
         ResilienceMessage6 ->
             ( [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthTitle ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthParagraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthParagraph2 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthParagraph3 ]
+              ]
+            )
+
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfSeventhMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSeventhMonthParagraph1 ]
               ]
             )
 
