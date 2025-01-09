@@ -263,7 +263,7 @@ numberOfMessagesByCategory =
         , ( ResilienceCategoryMindfulness, 11 )
         , ( ResilienceCategoryConnecting, 18 )
         , ( ResilienceCategorySelfCare, 10 )
-        , ( ResilienceCategoryEndOfPeriod, 6 )
+        , ( ResilienceCategoryEndOfPeriod, 7 )
         ]
 
 
