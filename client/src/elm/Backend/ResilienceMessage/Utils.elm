@@ -99,6 +99,39 @@ resilienceMessageOrderToString value =
         ResilienceMessage12 ->
             "12"
 
+        ResilienceMessage13 ->
+            "13"
+
+        ResilienceMessage14 ->
+            "14"
+
+        ResilienceMessage15 ->
+            "15"
+
+        ResilienceMessage16 ->
+            "16"
+
+        ResilienceMessage17 ->
+            "17"
+
+        ResilienceMessage18 ->
+            "18"
+
+        ResilienceMessage19 ->
+            "19"
+
+        ResilienceMessage20 ->
+            "20"
+
+        ResilienceMessage21 ->
+            "21"
+
+        ResilienceMessage22 ->
+            "22"
+
+        ResilienceMessage23 ->
+            "23"
+
 
 resilienceMessageOrderFromString : String -> Maybe ResilienceMessageOrder
 resilienceMessageOrderFromString value =
@@ -138,6 +171,39 @@ resilienceMessageOrderFromString value =
 
         "12" ->
             Just ResilienceMessage12
+
+        "13" ->
+            Just ResilienceMessage13
+
+        "14" ->
+            Just ResilienceMessage14
+
+        "15" ->
+            Just ResilienceMessage15
+
+        "16" ->
+            Just ResilienceMessage16
+
+        "17" ->
+            Just ResilienceMessage17
+
+        "18" ->
+            Just ResilienceMessage18
+
+        "19" ->
+            Just ResilienceMessage19
+
+        "20" ->
+            Just ResilienceMessage20
+
+        "21" ->
+            Just ResilienceMessage21
+
+        "22" ->
+            Just ResilienceMessage22
+
+        "23" ->
+            Just ResilienceMessage23
 
         _ ->
             Nothing
@@ -192,12 +258,12 @@ numberOfMessagesByCategory : Dict ResilienceCategory Int
 numberOfMessagesByCategory =
     Dict.fromList
         [ ( ResilienceCategoryIntroduction, 8 )
-        , ( ResilienceCategoryGrowth, 9 )
-        , ( ResilienceCategoryStressManagement, 10 )
-        , ( ResilienceCategoryMindfulness, 9 )
-        , ( ResilienceCategoryConnecting, 12 )
-        , ( ResilienceCategorySelfCare, 5 )
-        , ( ResilienceCategoryEndOfPeriod, 4 )
+        , ( ResilienceCategoryGrowth, 23 )
+        , ( ResilienceCategoryStressManagement, 16 )
+        , ( ResilienceCategoryMindfulness, 11 )
+        , ( ResilienceCategoryConnecting, 18 )
+        , ( ResilienceCategorySelfCare, 10 )
+        , ( ResilienceCategoryEndOfPeriod, 7 )
         ]
 
 
@@ -262,8 +328,47 @@ resolveDisplayDay category order =
                 ResilienceMessage9 ->
                     Just 107
 
-                _ ->
-                    Nothing
+                ResilienceMessage10 ->
+                    Just 144
+
+                ResilienceMessage11 ->
+                    Just 147
+
+                ResilienceMessage12 ->
+                    Just 161
+
+                ResilienceMessage13 ->
+                    Just 175
+
+                ResilienceMessage14 ->
+                    Just 177
+
+                ResilienceMessage15 ->
+                    Just 179
+
+                ResilienceMessage16 ->
+                    Just 182
+
+                ResilienceMessage17 ->
+                    Just 184
+
+                ResilienceMessage18 ->
+                    Just 191
+
+                ResilienceMessage19 ->
+                    Just 200
+
+                ResilienceMessage20 ->
+                    Just 205
+
+                ResilienceMessage21 ->
+                    Just 212
+
+                ResilienceMessage22 ->
+                    Just 217
+
+                ResilienceMessage23 ->
+                    Just 219
 
         ResilienceCategoryStressManagement ->
             case order of
@@ -297,6 +402,24 @@ resolveDisplayDay category order =
                 ResilienceMessage10 ->
                     Just 93
 
+                ResilienceMessage11 ->
+                    Just 140
+
+                ResilienceMessage12 ->
+                    Just 142
+
+                ResilienceMessage13 ->
+                    Just 158
+
+                ResilienceMessage14 ->
+                    Just 165
+
+                ResilienceMessage15 ->
+                    Just 170
+
+                ResilienceMessage16 ->
+                    Just 207
+
                 _ ->
                     Nothing
 
@@ -328,6 +451,12 @@ resolveDisplayDay category order =
 
                 ResilienceMessage9 ->
                     Just 112
+
+                ResilienceMessage10 ->
+                    Just 154
+
+                ResilienceMessage11 ->
+                    Just 193
 
                 _ ->
                     Nothing
@@ -370,6 +499,27 @@ resolveDisplayDay category order =
                 ResilienceMessage12 ->
                     Just 110
 
+                ResilienceMessage13 ->
+                    Just 149
+
+                ResilienceMessage14 ->
+                    Just 151
+
+                ResilienceMessage15 ->
+                    Just 189
+
+                ResilienceMessage16 ->
+                    Just 196
+
+                ResilienceMessage17 ->
+                    Just 210
+
+                ResilienceMessage18 ->
+                    Just 214
+
+                _ ->
+                    Nothing
+
         ResilienceCategorySelfCare ->
             case order of
                 ResilienceMessage1 ->
@@ -387,6 +537,21 @@ resolveDisplayDay category order =
                 ResilienceMessage5 ->
                     Just 114
 
+                ResilienceMessage6 ->
+                    Just 156
+
+                ResilienceMessage7 ->
+                    Just 163
+
+                ResilienceMessage8 ->
+                    Just 172
+
+                ResilienceMessage9 ->
+                    Just 186
+
+                ResilienceMessage10 ->
+                    Just 203
+
                 _ ->
                     Nothing
 
@@ -403,6 +568,15 @@ resolveDisplayDay category order =
 
                 ResilienceMessage4 ->
                     Just 117
+
+                ResilienceMessage5 ->
+                    Just 168
+
+                ResilienceMessage6 ->
+                    Just 198
+
+                ResilienceMessage7 ->
+                    Just 221
 
                 _ ->
                     Nothing
