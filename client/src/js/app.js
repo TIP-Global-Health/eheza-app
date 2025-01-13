@@ -532,7 +532,7 @@ elmApp.ports.getCoordinates.subscribe(function() {
             elmApp.ports.coordinates.send(result);
         },
         (error) => {
-            rollbar.log(("Error fetching location:", error);
+            rollbar.log("Error fetching location:", error);
             switch(error.code) {
                 case error.PERMISSION_DENIED:
                     rollbar.log("User denied geolocation permission");
