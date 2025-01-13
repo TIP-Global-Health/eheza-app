@@ -409,7 +409,9 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                     CreatePersonPage relation initiator ->
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            model.coordinates
                             site
+                            features
                             geoInfo
                             reverseGeoInfo
                             model.villageId
@@ -465,7 +467,9 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Person.View.viewCreateEditForm model.language
                             currentDate
+                            model.coordinates
                             site
+                            features
                             geoInfo
                             reverseGeoInfo
                             model.villageId
