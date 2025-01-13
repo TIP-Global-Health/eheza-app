@@ -27,6 +27,9 @@ type alias Person =
     , sector : Maybe String
     , cell : Maybe String
     , village : Maybe String
+    , registrationLatitude : Maybe String
+    , registrationLongitude : Maybe String
+    , saveGPSLocation : Bool
     , telephoneNumber : Maybe String
     , healthCenterId : Maybe HealthCenterId
     , deleted : Bool

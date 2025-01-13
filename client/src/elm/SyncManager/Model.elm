@@ -719,7 +719,8 @@ type Site
 
 
 type SiteFeature
-    = FeatureGroupEducation
+    = FeatureGPSCoordinates
+    | FeatureGroupEducation
     | FeatureHIVManagement
     | FeatureNCDA
     | FeatureReportToWhatsApp
