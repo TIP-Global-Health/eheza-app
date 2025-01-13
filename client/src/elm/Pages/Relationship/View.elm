@@ -383,7 +383,7 @@ viewParticipant language currentDate id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ text <| Maybe.withDefault "" person.village]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 ]
