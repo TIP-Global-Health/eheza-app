@@ -5,19 +5,17 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity(..))
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..))
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultFromString, testResultToString)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc, testResultToString)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getNCDEncountersForParticipant, getPrenatalEncountersForParticipant)
 import Backend.Utils exposing (resolveIndividualParticipantsForPerson)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (OngoingTreatmentReviewForm)
 import Measurement.Utils
@@ -40,23 +38,20 @@ import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , maybeToBoolTask
-        , resolveActiveTask
-        , saveButton
+        ( resolveActiveTask
+        , resolveNextTask
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxMultipleSelectSectionsInput
         , viewEndEncounterDialog
         , viewLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
+        , viewTasksCount
         )
 import RemoteData
-import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -143,12 +138,10 @@ viewDiagnosticsContent language currentDate assembled db data =
             resolveIndividualParticipantsForPerson personId AntenatalEncounter db
 
         ncdEncountersIds =
-            List.map (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
-                |> List.concat
+            List.concatMap (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
 
         prenatalEncountersIds =
-            List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
-                |> List.concat
+            List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
 
         resolvePositiveHIVResultDates getMeasurementsFunc =
             List.filterMap
@@ -235,16 +228,11 @@ viewDiagnosticsContent language currentDate assembled db data =
                 (isJust mPositiveHIVResultDate)
                 assembled.measurements.diagnostics
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
-            [ div [ class "ui form danger-signs" ] inputs
-            ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                saveAction
-            ]
+            [ div [ class "ui form danger-signs" ] inputs ]
+        , viewSaveAction language saveAction (tasksCompleted /= totalTasks)
         ]
     , viewModal endEncounterDialog
     ]
@@ -500,32 +488,25 @@ viewMedicationContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            let
-                tasksAfterSave =
-                    case activeTask of
-                        Just TaskPrescribedMedication ->
-                            -- DOT and Treatment Review review appear only after
-                            -- Prescribed Medication task is saved.
-                            [ TaskPrescribedMedication, TaskTreatmentReview ]
-
-                        _ ->
-                            tasks
-            in
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasksAfterSave
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasksAfterSave
+
+                        tasksAfterSave =
+                            case task of
+                                TaskPrescribedMedication ->
+                                    -- DOT and Treatment Review review appear only after
+                                    -- Prescribed Medication task is saved.
+                                    [ TaskPrescribedMedication, TaskTreatmentReview ]
+
+                                _ ->
+                                    tasks
 
                         saveMsg =
                             case task of
@@ -547,7 +528,7 @@ viewMedicationContent language currentDate assembled data =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -619,16 +600,14 @@ viewSymptomReviewContent language currentDate assembled data =
             , 1
             )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
-            ]
+        , viewSaveAction language
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -681,7 +660,7 @@ viewNextStepsContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -695,7 +674,6 @@ viewNextStepsContent language currentDate assembled data =
                         |> healthEducationFormWithDefault data.healthEducationForm
                         |> viewHealthEducationForm language
                             currentDate
-                            assembled
                         |> List.singleton
 
                 Just TaskFollowUp ->
@@ -721,46 +699,40 @@ viewNextStepsContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                        saveMsg =
+                            case task of
+                                TaskHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    TaskReferral ->
-                                        SaveReferral personId measurements.referral nextTask
+                                TaskFollowUp ->
+                                    SaveFollowUp personId measurements.followUp nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskReferral ->
+                                    SaveReferral personId measurements.referral nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -768,35 +740,11 @@ viewNextStepsContent language currentDate assembled data =
     ]
 
 
-viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
-viewHealthEducationForm language currentDate assembled form =
+viewHealthEducationForm : Language -> NominalDate -> HealthEducationForm -> Html Msg
+viewHealthEducationForm language currentDate form =
+    let
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language currentDate form
+    in
     div [ class "ui form health-education" ]
-        [ viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationPositiveResult
-        , viewBoolInput
-            language
-            form.positiveResult
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | positiveResult = Just value }))
-            "positive-result"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationSaferSexPractices
-        , viewBoolInput
-            language
-            form.saferSexPractices
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | saferSexPractices = Just value }))
-            "safer-sex-practices"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationEncouragedPartnerTesting
-        , viewBoolInput
-            language
-            form.encouragedPartnerTesting
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | encouragedPartnerTesting = Just value }))
-            "encouraged-partner-testing"
-            Nothing
-        , viewQuestionLabel language <| Translate.HIVHealthEducationQuestion EducationFamilyPlanningOptions
-        , viewBoolInput
-            language
-            form.familyPlanningOptions
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | familyPlanningOptions = Just value }))
-            "family-planning-options"
-            Nothing
-        ]
+        inputs

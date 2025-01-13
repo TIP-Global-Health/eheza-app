@@ -188,12 +188,11 @@ fetchForCHWAtVillage currentDate villageId db allFollowUps =
             List.map .participantId positiveResultHIVFollowUps
 
         fetchHIVEncountersForPositiveResultFollowUpsParticipantMsg =
-            List.map
+            List.concatMap
                 (\personId ->
                     resolveIndividualParticipantsForPerson personId HIVEncounter db
                 )
                 peopleFromPositiveResultHIVFollowUps
-                |> List.concat
                 |> FetchHIVEncountersForParticipants
     in
     [ FetchPeopleInVillage villageId

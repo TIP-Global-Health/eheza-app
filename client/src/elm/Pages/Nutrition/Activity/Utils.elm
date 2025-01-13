@@ -4,6 +4,7 @@ import Backend.Measurement.Model
     exposing
         ( NutritionAssessment
         , NutritionMeasurements
+        , ReferralFacility(..)
         )
 import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -22,10 +23,18 @@ import Measurement.Utils
         , nutritionFollowUpFormWithDefault
         , sendToHCFormWithDefault
         )
+import Measurement.View
+    exposing
+        ( contributingFactorsFormInutsAndTasks
+        , followUpFormInputsAndTasks
+        , healthEducationFormInutsAndTasks
+        , sendToFacilityInputsAndTasks
+        )
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
-import Pages.Utils exposing (taskCompleted)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
 import SyncManager.Model exposing (SiteFeature)
+import Translate.Model exposing (Language(..))
 import ZScore.Model
 
 
@@ -120,8 +129,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
 mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
 mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
     allMandatoryActivities isChw
-        |> List.filter (not << activityCompleted currentDate zscores features isChw assembled db)
-        |> List.isEmpty
+        |> List.all (activityCompleted currentDate zscores features isChw assembled db)
 
 
 {-| List of activities that need to be completed, in order to
@@ -136,81 +144,43 @@ allMandatoryActivities isChw =
         [ Height, Muac, Nutrition, Weight ]
 
 
-nextStepsTasksCompletedFromTotal : NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
-nextStepsTasksCompletedFromTotal measurements data task =
-    case task of
-        NextStepsSendToHC ->
-            let
-                form =
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )
+nextStepsTasksCompletedFromTotal currentDate measurements data task =
+    let
+        ( _, tasks ) =
+            case task of
+                NextStepsSendToHC ->
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
+                        |> sendToFacilityInputsAndTasks English
+                            currentDate
+                            FacilityHealthCenter
+                            Pages.Nutrition.Activity.Model.SetReferToHealthCenter
+                            Pages.Nutrition.Activity.Model.SetReasonForNonReferral
+                            Pages.Nutrition.Activity.Model.SetHandReferralForm
+                            Nothing
 
-                ( reasonForNotSentActive, reasonForNotSentCompleted ) =
-                    form.referToHealthCenter
-                        |> Maybe.map
-                            (\sentToHC ->
-                                if not sentToHC then
-                                    if isJust form.reasonForNotSendingToHC then
-                                        ( 2, 2 )
-
-                                    else
-                                        ( 1, 2 )
-
-                                else
-                                    ( 1, 1 )
-                            )
-                        |> Maybe.withDefault ( 0, 1 )
-            in
-            ( reasonForNotSentActive + taskCompleted form.handReferralForm
-            , reasonForNotSentCompleted + 1
-            )
-
-        NextStepsHealthEducation ->
-            let
-                form =
-                    measurements.healthEducation
-                        |> getMeasurementValueFunc
+                NextStepsHealthEducation ->
+                    getMeasurementValueFunc measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
+                        |> healthEducationFormInutsAndTasks English
+                            currentDate
+                            Pages.Nutrition.Activity.Model.SetProvidedEducationForDiagnosis
+                            Pages.Nutrition.Activity.Model.SetReasonForNotProvidingHealthEducation
 
-                ( reasonForProvidingEducationActive, reasonForProvidingEducationCompleted ) =
-                    form.educationForDiagnosis
-                        |> Maybe.map
-                            (\providedHealthEducation ->
-                                if not providedHealthEducation then
-                                    if isJust form.reasonForNotProvidingHealthEducation then
-                                        ( 1, 1 )
-
-                                    else
-                                        ( 0, 1 )
-
-                                else
-                                    ( 0, 0 )
-                            )
-                        |> Maybe.withDefault ( 0, 0 )
-            in
-            ( reasonForProvidingEducationActive + taskCompleted form.educationForDiagnosis
-            , reasonForProvidingEducationCompleted + 1
-            )
-
-        NextStepContributingFactors ->
-            let
-                form =
-                    measurements.contributingFactors
-                        |> getMeasurementValueFunc
+                NextStepContributingFactors ->
+                    getMeasurementValueFunc measurements.contributingFactors
                         |> contributingFactorsFormWithDefault data.contributingFactorsForm
-            in
-            ( taskCompleted form.signs
-            , 1
-            )
+                        |> contributingFactorsFormInutsAndTasks English
+                            currentDate
+                            Pages.Nutrition.Activity.Model.SetContributingFactorsSign
 
-        NextStepFollowUp ->
-            let
-                form =
-                    measurements.followUp
-                        |> getMeasurementValueFunc
+                NextStepFollowUp ->
+                    getMeasurementValueFunc measurements.followUp
                         |> nutritionFollowUpFormWithDefault data.followUpForm
-            in
-            ( taskCompleted form.option
-            , 1
-            )
+                        |> followUpFormInputsAndTasks English
+                            currentDate
+                            []
+                            Pages.Nutrition.Activity.Model.SetFollowUpOption
+    in
+    resolveTasksCompletedFromTotal tasks

@@ -48,12 +48,10 @@ fetchForDiagnostics id db =
                         resolveIndividualParticipantsForPerson personId AntenatalEncounter db
 
                     ncdEncountersIds =
-                        List.map (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
-                            |> List.concat
+                        List.concatMap (getNCDEncountersForParticipant db >> List.map Tuple.first) ncdParticipantsIds
 
                     prenatalEncountersIds =
-                        List.map (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
-                            |> List.concat
+                        List.concatMap (getPrenatalEncountersForParticipant db >> List.map Tuple.first) prenatalParticipantsIds
 
                     fetchNCDMeasurementsMsgs =
                         List.map Backend.Model.FetchNCDMeasurements ncdEncountersIds

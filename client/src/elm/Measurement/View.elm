@@ -14,16 +14,13 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils
     exposing
         ( currentValues
-        , getHeightValue
         , getMeasurementValueFunc
         , mapMeasurementData
         , muacIndication
-        , muacValueFunc
         , nutritionSignToString
-        , receiveOptionToString
-        , weightValueFunc
         )
 import Backend.Model exposing (ModelIndexedDb)
+import Backend.NutritionActivity.Model
 import Backend.NutritionEncounter.Utils
     exposing
         ( calculateZScoreWeightForAge
@@ -53,7 +50,8 @@ import Measurement.Model exposing (..)
 import Measurement.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
+        ( concatInputsAndTasksSections
+        , isTaskCompleted
         , maybeToBoolTask
         , taskCompleted
         , tasksBarId
@@ -69,6 +67,7 @@ import Pages.Utils
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
+        , viewTasksCount
         )
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
@@ -903,16 +902,32 @@ viewContributingFactorsForm :
     -> ContributingFactorsForm
     -> Html msg
 viewContributingFactorsForm language currentDate setContributingFactorsSignMsg form =
+    let
+        ( inputs, _ ) =
+            contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form
+    in
     div [ class "ui form contributing-factors" ]
-        [ viewQuestionLabel language Translate.ContributingFactorsQuestion
-        , viewCheckBoxMultipleSelectInput language
+        inputs
+
+
+contributingFactorsFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> (ContributingFactorsSign -> msg)
+    -> ContributingFactorsForm
+    -> ( List (Html msg), List (Maybe Bool) )
+contributingFactorsFormInutsAndTasks language currentDate setContributingFactorsSignMsg form =
+    ( [ viewQuestionLabel language Translate.ContributingFactorsQuestion
+      , viewCheckBoxMultipleSelectInput language
             [ FactorLackOfBreastMilk, FactorMaternalMastitis, FactorPoorSuck, FactorDiarrheaOrVomiting ]
             []
-            (form.signs |> Maybe.withDefault [])
+            (Maybe.withDefault [] form.signs)
             (Just NoContributingFactorsSign)
             setContributingFactorsSignMsg
             Translate.ContributingFactor
-        ]
+      ]
+    , [ maybeToBoolTask form.signs ]
+    )
 
 
 viewFollowUp :
@@ -981,15 +996,32 @@ viewFollowUpForm :
     -> { f | option : Maybe FollowUpOption }
     -> Html msg
 viewFollowUpForm language currentDate options setFollowUpOptionMsg form =
+    let
+        ( inputs, _ ) =
+            followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form
+    in
     div [ class "ui form follow-up" ]
-        [ viewLabel language Translate.FollowUpLabel
-        , viewCheckBoxSelectInput language
+        inputs
+
+
+followUpFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> List FollowUpOption
+    -> (FollowUpOption -> msg)
+    -> { f | option : Maybe FollowUpOption }
+    -> ( List (Html msg), List (Maybe Bool) )
+followUpFormInputsAndTasks language currentDate options setFollowUpOptionMsg form =
+    ( [ viewLabel language Translate.FollowUpLabel
+      , viewCheckBoxSelectInput language
             options
             []
             form.option
             setFollowUpOptionMsg
             Translate.FollowUpOption
-        ]
+      ]
+    , [ maybeToBoolTask form.option ]
+    )
 
 
 viewHealthEducation : Language -> NominalDate -> MeasurementData (Maybe ( GroupHealthEducationId, GroupHealthEducation )) -> HealthEducationForm -> Html MsgChild
@@ -1062,51 +1094,75 @@ viewHealthEducationForm :
     -> Html msg
 viewHealthEducationForm language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
     let
+        ( inputs, _ ) =
+            healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form
+    in
+    div [ class "ui form health-education" ]
+        inputs
+
+
+healthEducationFormInutsAndTasks :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (ReasonForNotProvidingHealthEducation -> msg)
+    -> HealthEducationForm
+    -> ( List (Html msg), List (Maybe Bool) )
+healthEducationFormInutsAndTasks language currentDate setProvidedEducationForDiagnosisMsg setReasonForNotProvidingHealthEducationMsg form =
+    let
         healthEducationSection =
             let
                 providedHealthEducation =
-                    form.educationForDiagnosis
-                        |> Maybe.withDefault True
+                    Maybe.withDefault True form.educationForDiagnosis
 
-                reasonForNotProvidingHealthEducation =
+                reasonForNotProvidingHealthEducationSection =
                     if not providedHealthEducation then
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ PatientNeedsEmergencyReferral
-                            , ReceivedEmergencyCase
-                            , LackOfAppropriateEducationUserGuide
-                            , PatientRefused
-                            , PatientTooIll
-                            ]
-                            []
-                            form.reasonForNotProvidingHealthEducation
-                            setReasonForNotProvidingHealthEducationMsg
-                            Translate.ReasonForNotProvidingHealthEducation
-                        ]
+                        ( [ viewQuestionLabel language Translate.WhyNot
+                          , viewCheckBoxSelectInput language
+                                [ PatientNeedsEmergencyReferral
+                                , ReceivedEmergencyCase
+                                , LackOfAppropriateEducationUserGuide
+                                , PatientRefused
+                                , PatientTooIll
+                                ]
+                                []
+                                form.reasonForNotProvidingHealthEducation
+                                setReasonForNotProvidingHealthEducationMsg
+                                Translate.ReasonForNotProvidingHealthEducation
+                          ]
+                        , [ maybeToBoolTask form.reasonForNotProvidingHealthEducation ]
+                        )
 
                     else
-                        []
+                        ( [], [] )
             in
-            [ div [ class "label" ]
-                [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
-                , text "?"
+            concatInputsAndTasksSections
+                [ ( [ div [ class "label" ]
+                        [ text <| translate language Translate.ProvidedPreventionEducationQuestionShort
+                        , text "?"
+                        ]
+                    , viewBoolInput
+                        language
+                        form.educationForDiagnosis
+                        setProvidedEducationForDiagnosisMsg
+                        "education-for-diagnosis"
+                        Nothing
+                    ]
+                  , [ form.educationForDiagnosis ]
+                  )
+                , reasonForNotProvidingHealthEducationSection
                 ]
-            , viewBoolInput
-                language
-                form.educationForDiagnosis
-                setProvidedEducationForDiagnosisMsg
-                "education-for-diagnosis"
-                Nothing
-            ]
-                ++ reasonForNotProvidingHealthEducation
     in
-    div [ class "ui form health-education" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
-            [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
+    concatInputsAndTasksSections
+        [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+            , div [ class "instructions" ]
+                [ viewHealthEducationLabel language Translate.ProvideHealthEducationShort "icon-open-book" Nothing
+                ]
             ]
+          , []
+          )
+        , healthEducationSection
         ]
-            ++ healthEducationSection
 
 
 viewHealthEducationLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
@@ -1225,6 +1281,32 @@ viewSendToFacilityForm :
     -> Html msg
 viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
     let
+        ( inputs, _ ) =
+            sendToFacilityInputsAndTasks language
+                currentDate
+                facility
+                setReferToHealthCenterMsg
+                setReasonForNonReferralMsg
+                setHandReferralFormMsg
+                setAccompanyToHCMsg
+                form
+    in
+    div [ class "ui form send-to-hc" ]
+        inputs
+
+
+sendToFacilityInputsAndTasks :
+    Language
+    -> NominalDate
+    -> ReferralFacility
+    -> (Bool -> msg)
+    -> (ReasonForNonReferral -> msg)
+    -> (Bool -> msg)
+    -> Maybe (Bool -> msg)
+    -> SendToHCForm
+    -> ( List (Html msg), List (Maybe Bool) )
+sendToFacilityInputsAndTasks language currentDate facility setReferToHealthCenterMsg setReasonForNonReferralMsg setHandReferralFormMsg setAccompanyToHCMsg form =
+    let
         headerHelper =
             case facility of
                 FacilityHospital ->
@@ -1236,76 +1318,88 @@ viewSendToFacilityForm language currentDate facility setReferToHealthCenterMsg s
         sendToHCSection =
             let
                 sentToHealthCenter =
-                    form.referToHealthCenter
-                        |> Maybe.withDefault True
+                    Maybe.withDefault True form.referToHealthCenter
 
-                reasonForNotSendingToHCInput =
+                reasonForNotSendingToHCSection =
                     if not sentToHealthCenter then
-                        [ div [ class "why-not" ]
-                            [ viewQuestionLabel language Translate.WhyNot
-                            , viewCheckBoxSelectInput language
-                                [ ClientRefused
-                                , NoAmbulance
-                                , ClientUnableToAffordFees
-                                , ReasonForNonReferralNotIndicated
-                                , ReasonForNonReferralOther
+                        ( [ div [ class "why-not" ]
+                                [ viewQuestionLabel language Translate.WhyNot
+                                , viewCheckBoxSelectInput language
+                                    [ ClientRefused
+                                    , NoAmbulance
+                                    , ClientUnableToAffordFees
+                                    , ReasonForNonReferralNotIndicated
+                                    , ReasonForNonReferralOther
+                                    ]
+                                    []
+                                    form.reasonForNotSendingToHC
+                                    setReasonForNonReferralMsg
+                                    Translate.ReasonForNonReferral
                                 ]
-                                []
-                                form.reasonForNotSendingToHC
-                                setReasonForNonReferralMsg
-                                Translate.ReasonForNonReferral
-                            ]
-                        ]
+                          ]
+                        , [ maybeToBoolTask form.reasonForNotSendingToHC ]
+                        )
 
                     else
-                        []
+                        ( [], [] )
             in
-            [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
-            , viewBoolInput
-                language
-                form.referToHealthCenter
-                setReferToHealthCenterMsg
-                "refer-to-hc"
-                Nothing
-            ]
-                ++ reasonForNotSendingToHCInput
+            concatInputsAndTasksSections
+                [ ( [ viewQuestionLabel language <| Translate.ReferredPatientToFacilityQuestion facility
+                    , viewBoolInput
+                        language
+                        form.referToHealthCenter
+                        setReferToHealthCenterMsg
+                        "refer-to-hc"
+                        Nothing
+                    ]
+                  , [ form.referToHealthCenter ]
+                  )
+                , reasonForNotSendingToHCSection
+                ]
 
         handReferralFormSection =
-            [ viewQuestionLabel language Translate.HandedReferralFormQuestion
-            , viewBoolInput
-                language
-                form.handReferralForm
-                setHandReferralFormMsg
-                "hand-referral-form"
-                Nothing
-            ]
+            ( [ viewQuestionLabel language Translate.HandedReferralFormQuestion
+              , viewBoolInput
+                    language
+                    form.handReferralForm
+                    setHandReferralFormMsg
+                    "hand-referral-form"
+                    Nothing
+              ]
+            , [ form.handReferralForm ]
+            )
 
         accompanyToHCSection =
             Maybe.map
                 (\msg ->
-                    [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
-                    , viewBoolInput
-                        language
-                        form.accompanyToHealthCenter
-                        msg
-                        "accompany-to-hc"
-                        Nothing
-                    ]
+                    ( [ viewQuestionLabel language <| Translate.AccompanyToFacilityQuestion facility
+                      , viewBoolInput
+                            language
+                            form.accompanyToHealthCenter
+                            msg
+                            "accompany-to-hc"
+                            Nothing
+                      ]
+                    , [ form.accompanyToHealthCenter ]
+                    )
                 )
                 setAccompanyToHCMsg
-                |> Maybe.withDefault []
+                |> Maybe.withDefault ( [], [] )
     in
-    div [ class "ui form send-to-hc" ] <|
-        headerHelper
-            ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-               , div [ class "instructions" ]
-                    [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
-                    , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
-                    ]
-               ]
-            ++ sendToHCSection
-            ++ handReferralFormSection
-            ++ accompanyToHCSection
+    concatInputsAndTasksSections
+        [ ( headerHelper
+                ++ [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                   , div [ class "instructions" ]
+                        [ viewActionTakenLabel language (Translate.CompleteFacilityReferralForm facility) "icon-forms" Nothing
+                        , viewActionTakenLabel language (Translate.SendPatientToFacility facility) "icon-shuttle" Nothing
+                        ]
+                   ]
+          , []
+          )
+        , sendToHCSection
+        , handReferralFormSection
+        , accompanyToHCSection
+        ]
 
 
 viewReferToProgramForm :
@@ -1316,31 +1410,58 @@ viewReferToProgramForm :
     -> SendToHCForm
     -> Html msg
 viewReferToProgramForm language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
-    div [ class "ui form send-to-hc" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , div [ class "instructions" ]
+    let
+        ( inputs, _ ) =
+            referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form
+    in
+    div [ class "ui form send-to-hc" ]
+        inputs
+
+
+referToProgramFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (Bool -> msg)
+    -> (Bool -> msg)
+    -> SendToHCForm
+    -> ( List (Html msg), List (Maybe Bool) )
+referToProgramFormInputsAndTasks language currentDate setEnrollToNutritionProgramMsg setReferToNutritionProgramMsg form =
+    ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+      , div [ class "instructions" ]
             [ viewActionTakenLabel language Translate.ReferToProgramAction "icon-forms" Nothing
             , viewActionTakenLabel language Translate.EnrollToProgramAction "icon-shuttle" Nothing
             ]
-        , viewQuestionLabel language Translate.EnrollToProgramQuestion
-        , viewBoolInput
+      , viewQuestionLabel language Translate.EnrollToProgramQuestion
+      , viewBoolInput
             language
             form.enrollToNutritionProgram
             setEnrollToNutritionProgramMsg
             "enroll-to-program"
             Nothing
-        , viewQuestionLabel language Translate.ReferToProgramQuestion
-        , viewBoolInput
+      , viewQuestionLabel language Translate.ReferToProgramQuestion
+      , viewBoolInput
             language
             form.referToNutritionProgram
             setReferToNutritionProgramMsg
             "refer-to-program"
             Nothing
-        ]
+      ]
+    , [ form.enrollToNutritionProgram, form.referToNutritionProgram ]
+    )
 
 
 viewVitalsForm : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> Html msg
 viewVitalsForm language currentDate config form =
+    let
+        ( inputs, _ ) =
+            vitalsFormInputsAndTasks language currentDate config form
+    in
+    div [ class <| "ui form " ++ config.formClass ]
+        inputs
+
+
+vitalsFormInputsAndTasks : Language -> NominalDate -> VitalsFormConfig msg -> VitalsForm -> ( List (Html msg), List (Maybe Bool) )
+vitalsFormInputsAndTasks language currentDate config form =
     let
         sysBloodPressureUpdateFunc value form_ =
             { form_ | sysBloodPressure = value, sysBloodPressureDirty = True }
@@ -1374,7 +1495,7 @@ viewVitalsForm language currentDate config form =
                     if ageYears < 12 then
                         -- Blood presure is taken for patients that are
                         -- 12 years old, or older.
-                        []
+                        ( [], [] )
 
                     else
                         let
@@ -1395,100 +1516,49 @@ viewVitalsForm language currentDate config form =
                                   ]
                                 )
                         in
-                        [ div [ class "ui grid" ]
-                            [ div [ class "eleven wide column" ]
-                                [ viewLabel language Translate.BloodPressure ]
-                            ]
-                        , div [ class "ui grid systolic" ]
-                            [ div [ class "twelve wide column" ]
-                                [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert sys
-                                    redAlertsSys
-                                    []
+                        ( [ div [ class "ui grid" ]
+                                [ div [ class "eleven wide column" ]
+                                    [ viewLabel language Translate.BloodPressure ]
                                 ]
-                            ]
-                        , viewMeasurementInput
-                            language
-                            sys
-                            (config.setFloatInputMsg sysUpdateFunc)
-                            "sys-blood-pressure"
-                            Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
-                        , div [ class "ui grid" ]
-                            [ div [ class "twelve wide column" ]
-                                [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
-                            , div [ class "four wide column" ]
-                                [ viewConditionalAlert dia
-                                    redAlertsDia
-                                    []
+                          , div [ class "ui grid systolic" ]
+                                [ div [ class "twelve wide column" ]
+                                    [ div [ class "title sys" ] [ text <| translate language Translate.BloodPressureSysLabel ] ]
+                                , div [ class "four wide column" ]
+                                    [ viewConditionalAlert sys
+                                        redAlertsSys
+                                        []
+                                    ]
                                 ]
-                            ]
-                        , viewMeasurementInput
-                            language
-                            dia
-                            (config.setFloatInputMsg diaUpdateFunc)
-                            "dia-blood-pressure"
-                            Translate.MMHGUnit
-                        , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
-                        , separator |> showIf addSeparator
-                        ]
+                          , viewMeasurementInput
+                                language
+                                sys
+                                (config.setFloatInputMsg sysUpdateFunc)
+                                "sys-blood-pressure"
+                                Translate.MMHGUnit
+                          , Pages.Utils.viewPreviousMeasurement language sysPrevValue Translate.MMHGUnit
+                          , div [ class "ui grid" ]
+                                [ div [ class "twelve wide column" ]
+                                    [ div [ class "title dia" ] [ text <| translate language Translate.BloodPressureDiaLabel ] ]
+                                , div [ class "four wide column" ]
+                                    [ viewConditionalAlert dia
+                                        redAlertsDia
+                                        []
+                                    ]
+                                ]
+                          , viewMeasurementInput
+                                language
+                                dia
+                                (config.setFloatInputMsg diaUpdateFunc)
+                                "dia-blood-pressure"
+                                Translate.MMHGUnit
+                          , Pages.Utils.viewPreviousMeasurement language diaPrevValue Translate.MMHGUnit
+                          , separator |> showIf addSeparator
+                          ]
+                        , [ maybeToBoolTask sys, maybeToBoolTask dia ]
+                        )
                 )
                 ageInYears
-                |> Maybe.withDefault []
-
-        heartRateSection =
-            let
-                ( redAlerts, yellowAlerts ) =
-                    case config.invokationModule of
-                        InvokationModulePrenatal ->
-                            ( [ [ (>) 40 ], [ (<=) 120 ] ]
-                            , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
-                            )
-
-                        _ ->
-                            Maybe.map
-                                (\ageYears ->
-                                    let
-                                        ( redAlertMinValue, redAlertMaxValue ) =
-                                            if ageYears < 1 then
-                                                ( 110, 160 )
-
-                                            else if ageYears < 2 then
-                                                ( 100, 150 )
-
-                                            else if ageYears < 5 then
-                                                ( 95, 140 )
-
-                                            else if ageYears < 12 then
-                                                ( 80, 120 )
-
-                                            else
-                                                ( 60, 100 )
-                                    in
-                                    ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
-                                )
-                                ageInYears
-                                |> Maybe.withDefault ( [], [] )
-            in
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.HeartRate ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.heartRate
-                        redAlerts
-                        yellowAlerts
-                    ]
-                ]
-            , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.heartRate)
-                (config.setIntInputMsg heartRateUpdateFunc)
-                "heart-rate"
-                Translate.BeatsPerMinuteUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
-            , separator
-            ]
+                |> Maybe.withDefault ( [], [] )
 
         respiratoryRateSection =
             let
@@ -1518,82 +1588,138 @@ viewVitalsForm language currentDate config form =
                                 ageInYears
                                 |> Maybe.withDefault ( [], [] )
             in
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.RespiratoryRate ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.respiratoryRate
-                        redAlerts
-                        yellowAlerts
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.RespiratoryRate ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.respiratoryRate
+                            redAlerts
+                            yellowAlerts
+                        ]
                     ]
-                ]
-            , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.respiratoryRate)
-                (config.setIntInputMsg respiratoryRateUpdateFunc)
-                "respiratory-rate"
-                Translate.BreathsPerMinuteUnitLabel
-            , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
-            , separator
-            ]
+              , viewMeasurementInput
+                    language
+                    (Maybe.map toFloat form.respiratoryRate)
+                    (config.setIntInputMsg respiratoryRateUpdateFunc)
+                    "respiratory-rate"
+                    Translate.BreathsPerMinuteUnitLabel
+              , Pages.Utils.viewPreviousMeasurement language config.respiratoryRatePreviousValue Translate.BreathsPerMinuteUnitLabel
+              , separator
+              ]
+            , [ maybeToBoolTask form.respiratoryRate ]
+            )
 
         bodyTemperatureSection =
-            [ div [ class "ui grid" ]
-                [ div [ class "twelve wide column" ]
-                    [ viewLabel language Translate.BodyTemperature ]
-                , div [ class "four wide column" ]
-                    [ viewConditionalAlert form.bodyTemperature
-                        [ [ (>) 35 ], [ (<=) 37.5 ] ]
-                        []
+            ( [ div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewLabel language Translate.BodyTemperature ]
+                    , div [ class "four wide column" ]
+                        [ viewConditionalAlert form.bodyTemperature
+                            [ [ (>) 35 ], [ (<=) 37.5 ] ]
+                            []
+                        ]
                     ]
-                ]
-            , viewMeasurementInput
-                language
-                form.bodyTemperature
-                (config.setFloatInputMsg bodyTemperatureUpdateFunc)
-                "body-temperature"
-                Translate.Celsius
-            , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
-            ]
+              , viewMeasurementInput
+                    language
+                    form.bodyTemperature
+                    (config.setFloatInputMsg bodyTemperatureUpdateFunc)
+                    "body-temperature"
+                    Translate.Celsius
+              , Pages.Utils.viewPreviousMeasurement language config.bodyTemperaturePreviousValue Translate.Celsius
+              ]
+            , [ maybeToBoolTask form.bodyTemperature ]
+            )
 
         separator =
             div [ class "separator" ] []
+    in
+    case config.mode of
+        VitalsFormBasic ->
+            concatInputsAndTasksSections [ respiratoryRateSection, bodyTemperatureSection ]
 
-        content =
-            case config.mode of
-                VitalsFormBasic ->
-                    respiratoryRateSection
-                        ++ bodyTemperatureSection
-
-                VitalsFormFull ->
-                    let
-                        bloodPressureSection =
-                            viewBloodPressureSection
-                                form.sysBloodPressure
-                                form.diaBloodPressure
-                                sysBloodPressureUpdateFunc
-                                diaBloodPressureUpdateFunc
-                                config.sysBloodPressurePreviousValue
-                                config.diaBloodPressurePreviousValue
-                                True
-                    in
-                    bloodPressureSection
-                        ++ heartRateSection
-                        ++ respiratoryRateSection
-                        ++ bodyTemperatureSection
-
-                VitalsFormRepeated ->
+        VitalsFormFull ->
+            let
+                bloodPressureSection =
                     viewBloodPressureSection
-                        form.sysRepeated
-                        form.diaRepeated
-                        sysRepeatedUpdateFunc
-                        diaRepeatedUpdateFunc
                         form.sysBloodPressure
                         form.diaBloodPressure
-                        False
-    in
-    div [ class <| "ui form " ++ config.formClass ]
-        content
+                        sysBloodPressureUpdateFunc
+                        diaBloodPressureUpdateFunc
+                        config.sysBloodPressurePreviousValue
+                        config.diaBloodPressurePreviousValue
+                        True
+
+                heartRateSection =
+                    let
+                        ( redAlerts, yellowAlerts ) =
+                            case config.invokationModule of
+                                InvokationModulePrenatal ->
+                                    ( [ [ (>) 40 ], [ (<=) 120 ] ]
+                                    , [ [ (<=) 40, (>=) 50 ], [ (<) 100, (>) 120 ] ]
+                                    )
+
+                                _ ->
+                                    Maybe.map
+                                        (\ageYears ->
+                                            let
+                                                ( redAlertMinValue, redAlertMaxValue ) =
+                                                    if ageYears < 1 then
+                                                        ( 110, 160 )
+
+                                                    else if ageYears < 2 then
+                                                        ( 100, 150 )
+
+                                                    else if ageYears < 5 then
+                                                        ( 95, 140 )
+
+                                                    else if ageYears < 12 then
+                                                        ( 80, 120 )
+
+                                                    else
+                                                        ( 60, 100 )
+                                            in
+                                            ( [ [ (>) redAlertMinValue ], [ (<) redAlertMaxValue ] ], [] )
+                                        )
+                                        ageInYears
+                                        |> Maybe.withDefault ( [], [] )
+                    in
+                    ( [ div [ class "ui grid" ]
+                            [ div [ class "twelve wide column" ]
+                                [ viewLabel language Translate.HeartRate ]
+                            , div [ class "four wide column" ]
+                                [ viewConditionalAlert form.heartRate
+                                    redAlerts
+                                    yellowAlerts
+                                ]
+                            ]
+                      , viewMeasurementInput
+                            language
+                            (Maybe.map toFloat form.heartRate)
+                            (config.setIntInputMsg heartRateUpdateFunc)
+                            "heart-rate"
+                            Translate.BeatsPerMinuteUnitLabel
+                      , Pages.Utils.viewPreviousMeasurement language config.heartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+                      , separator
+                      ]
+                    , [ maybeToBoolTask form.heartRate ]
+                    )
+            in
+            concatInputsAndTasksSections
+                [ bloodPressureSection
+                , heartRateSection
+                , respiratoryRateSection
+                , bodyTemperatureSection
+                ]
+
+        VitalsFormRepeated ->
+            viewBloodPressureSection
+                form.sysRepeated
+                form.diaRepeated
+                sysRepeatedUpdateFunc
+                diaRepeatedUpdateFunc
+                form.sysBloodPressure
+                form.diaBloodPressure
+                False
 
 
 viewActionTakenLabel : Language -> TranslationId -> String -> Maybe NominalDate -> Html any
@@ -2493,9 +2619,6 @@ viewNCDAContent language currentDate zscores site personId person config helperS
                                                 ]
                                                 [ text <| ("< " ++ translate language Translate.Back) ]
 
-                                        totalSteps =
-                                            List.length steps
-
                                         previousStep =
                                             List.Extra.getAt (stepIndex - 1) steps
 
@@ -2530,7 +2653,7 @@ viewNCDAContent language currentDate zscores site personId person config helperS
                 |> Maybe.withDefault ( emptyNode, emptyNode )
     in
     [ header
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form ncda" ] viewForm ]
@@ -3195,10 +3318,6 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                       ]
                     )
 
-                weightAsFloat =
-                    Maybe.map (\(WeightInKg weight) -> weight)
-                        form.weight
-
                 ( weightInput, weightTask ) =
                     let
                         measurementNotTakenChecked =
@@ -3216,6 +3335,11 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                 []
 
                             else
+                                let
+                                    weightAsFloat =
+                                        Maybe.map (\(WeightInKg weight) -> weight)
+                                            form.weight
+                                in
                                 [ viewMeasurementInput
                                     language
                                     weightAsFloat
@@ -3254,10 +3378,6 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                             (\ageMonths ->
                                 if ageMonths >= 6 then
                                     let
-                                        muacAsFloat =
-                                            Maybe.map (\(MuacInCm muac) -> muac)
-                                                form.muac
-
                                         measurementNotTakenChecked =
                                             form.muacNotTaken == Just True
 
@@ -3273,6 +3393,11 @@ ncdaFormInputsAndTasks language currentDate zscores site personId person config 
                                                 []
 
                                             else
+                                                let
+                                                    muacAsFloat =
+                                                        Maybe.map (\(MuacInCm muac) -> muac)
+                                                            form.muac
+                                                in
                                                 [ div [ class "ui grid" ]
                                                     [ div [ class "eleven wide column" ]
                                                         [ viewMeasurementInput
@@ -3820,10 +3945,10 @@ nutritionFeedingInputsAndTasks language currentDate personId setBoolInputMsg set
                     Nothing
               ]
                 ++ derivedReceiveSupplementInputs
-            , [ form.receiveSupplement ] ++ derivedReceiveSupplementTasks
+            , form.receiveSupplement :: derivedReceiveSupplementTasks
             )
 
-        ( ( sachetsPerDayInput, sachetsPerDayTask ), ( eatenWithWaterInput, eatenWithWaterTask ) ) =
+        ( ( sachetsPerDayInput, sachetsPerDayTask ), _ ) =
             if form.receiveSupplement == Just True && form.supplementType == Just Rutf then
                 let
                     sachetsPerDayHelper =
@@ -4108,4 +4233,296 @@ nutritionFoodSecurityInputsAndTasks language currentDate setFoodSecurityBoolInpu
     , [ maybeToBoolTask form.mainIncomeSource
       , form.householdGotFood
       ]
+    )
+
+
+viewHeightForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> HeightForm
+    -> List (Html msg)
+viewHeightForm language currentDate zscores person previousValue setHeightMsg form =
+    let
+        ( formForView, _ ) =
+            heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form
+    in
+    formForView
+
+
+heightFormAndTasks :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> HeightForm
+    -> ( List (Html msg), List (Maybe Bool) )
+heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Height
+
+        zScoreText =
+            Maybe.andThen
+                (\height ->
+                    Maybe.map
+                        (\birthDate -> diffDays birthDate currentDate)
+                        person.birthDate
+                        |> Maybe.andThen
+                            (\ageInDays ->
+                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                            )
+                )
+                form.height
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsHeight
+    in
+    ( [ div [ class "ui form height" ]
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+            , div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewMeasurementInput
+                        language
+                        form.height
+                        setHeightMsg
+                        "height"
+                        Translate.UnitCentimeter
+                    ]
+                , div
+                    [ class "five wide column" ]
+                    [ showMaybe <|
+                        Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+                            form.height
+                            previousValue
+                    ]
+                ]
+            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+            ]
+      , div [ class "ui large header z-score age" ]
+            [ text <| translate language Translate.ZScoreHeightForAge
+            , span [ class "sub header" ]
+                [ text zScoreText ]
+            ]
+      ]
+    , [ maybeToBoolTask form.height ]
+    )
+
+
+viewMuacForm :
+    Language
+    -> NominalDate
+    -> Site
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> MuacForm
+    -> List (Html msg)
+viewMuacForm language currentDate site person previousValue setMuacMsg form =
+    let
+        ( inputs, _ ) =
+            muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form
+    in
+    [ div [ class "ui form muac" ]
+        inputs
+    ]
+
+
+muacFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Site
+    -> Person
+    -> Maybe Float
+    -> (String -> msg)
+    -> MuacForm
+    -> ( List (Html msg), List (Maybe Bool) )
+muacFormInputsAndTasks language currentDate site person previousValue setMuacMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Muac
+
+        constraints =
+            getInputConstraintsMuac site
+
+        ( currentValue, unitTransId ) =
+            case site of
+                SiteBurundi ->
+                    ( -- Value is stored in cm, but for Burundi, we need to
+                      -- view it as mm. Therefore, multiplying by 10.
+                      Maybe.map ((*) 10) form.muac
+                    , Translate.UnitMillimeter
+                    )
+
+                _ ->
+                    ( form.muac, Translate.UnitCentimeter )
+    in
+    ( [ viewLabel language <| Translate.NutritionActivityTitle activity
+      , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+      , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+      , div [ class "ui grid" ]
+            [ div [ class "eleven wide column" ]
+                [ viewMeasurementInput
+                    language
+                    currentValue
+                    setMuacMsg
+                    "muac"
+                    unitTransId
+                ]
+            , div
+                [ class "five wide column" ]
+                [ showMaybe <|
+                    Maybe.map (MuacInCm >> muacIndication >> viewColorAlertIndication language) form.muac
+                ]
+            ]
+      , Pages.Utils.viewPreviousMeasurement language previousValue unitTransId
+      ]
+    , [ maybeToBoolTask form.muac ]
+    )
+
+
+viewNutritionForm : Language -> NominalDate -> (ChildNutritionSign -> msg) -> NutritionForm -> List (Html msg)
+viewNutritionForm language currentDate setSignMsg form =
+    let
+        ( inputs, _ ) =
+            nutritionFormInputsAndTasks language currentDate setSignMsg form
+    in
+    [ div [ class "ui form nutrition" ]
+        inputs
+    ]
+
+
+nutritionFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> (ChildNutritionSign -> msg)
+    -> NutritionForm
+    -> ( List (Html msg), List (Maybe Bool) )
+nutritionFormInputsAndTasks language currentDate setSignMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Nutrition
+    in
+    ( [ p [] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+      , viewLabel language Translate.SelectAllSigns
+      , viewCheckBoxMultipleSelectInput language
+            [ Edema, AbdominalDistension, DrySkin ]
+            [ Apathy, PoorAppetite, BrittleHair ]
+            (Maybe.withDefault [] form.signs)
+            (Just NormalChildNutrition)
+            setSignMsg
+            Translate.ChildNutritionSignLabel
+      ]
+    , [ maybeToBoolTask form.signs ]
+    )
+
+
+viewWeightForm :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe HeightInCm
+    -> Maybe Float
+    -> Bool
+    -> (String -> msg)
+    -> WeightForm
+    -> List (Html msg)
+viewWeightForm language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+    let
+        ( formForView, _ ) =
+            weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form
+    in
+    formForView
+
+
+weightFormAndTasks :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Person
+    -> Maybe HeightInCm
+    -> Maybe Float
+    -> Bool
+    -> (String -> msg)
+    -> WeightForm
+    -> ( List (Html msg), List (Maybe Bool) )
+weightFormAndTasks language currentDate zscores person heightValue previousValue showWeightForHeightZScore setWeightMsg form =
+    let
+        activity =
+            Backend.NutritionActivity.Model.Weight
+
+        zScoreForAgeText =
+            calculateZScoreWeightForAge currentDate zscores person form.weight
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        zScoreForHeightText =
+            Maybe.andThen
+                (\(HeightInCm height) ->
+                    Maybe.andThen
+                        (\weight ->
+                            Maybe.map
+                                (\birthDate -> diffDays birthDate currentDate)
+                                person.birthDate
+                                |> Maybe.andThen
+                                    (\ageInDays ->
+                                        zScoreForHeightOrLength zscores ageInDays (Centimetres height) person.gender weight
+                                    )
+                        )
+                        form.weight
+                )
+                heightValue
+                |> Maybe.map viewZScore
+                |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+        constraints =
+            getInputConstraintsWeight
+    in
+    ( [ div [ class "ui form weight" ]
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
+            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+            , div [ class "ui grid" ]
+                [ div [ class "eleven wide column" ]
+                    [ viewMeasurementInput
+                        language
+                        form.weight
+                        setWeightMsg
+                        "weight"
+                        Translate.KilogramShorthand
+                    ]
+                , div
+                    [ class "five wide column" ]
+                    [ showMaybe <|
+                        Maybe.map2 (viewMeasurementFloatDiff language Translate.KilogramShorthand)
+                            form.weight
+                            previousValue
+                    ]
+                ]
+            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.KilogramShorthand
+            ]
+      , div [ class "ui large header z-score age" ]
+            [ text <| translate language Translate.ZScoreWeightForAge
+            , span [ class "sub header" ]
+                [ text zScoreForAgeText ]
+            ]
+      , showIf showWeightForHeightZScore <|
+            div [ class "ui large header z-score height" ]
+                [ text <| translate language Translate.ZScoreWeightForHeight
+                , span [ class "sub header" ]
+                    [ text zScoreForHeightText
+                    ]
+                ]
+      ]
+    , [ maybeToBoolTask form.weight ]
     )

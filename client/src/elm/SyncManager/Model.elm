@@ -703,7 +703,6 @@ downloadRequestTimeout =
 
 type SyncIncidentType
     = FileUploadIncident IncidentContnentIdentifier
-    | ContentUploadIncident IncidentContnentIdentifier
 
 
 type alias IncidentContnentIdentifier =

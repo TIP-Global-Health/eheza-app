@@ -1,6 +1,5 @@
 module Pages.WellChild.ProgressReport.View exposing
     ( view
-    , viewNCDAScorecard
     , viewNutritionSigns
     , viewPaneHeading
     , viewPersonInfoPane
@@ -702,7 +701,6 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
         ( activeAssessmentEntries, completedAssessmentEntries ) =
             resolveDateOfLastNutritionAssessment
                 currentDate
-                isChw
                 initiator
                 mandatoryNutritionAssessmentMeasurementsTaken
                 individualNutritionParticipantId
@@ -805,7 +803,6 @@ viewDiagnosisPane language currentDate isChw initiator mandatoryNutritionAssessm
 
 resolveDateOfLastNutritionAssessment :
     NominalDate
-    -> Bool
     -> WellChildProgressReportInitiator
     -> Bool
     -> Maybe IndividualEncounterParticipantId
@@ -813,7 +810,7 @@ resolveDateOfLastNutritionAssessment :
     -> ChildMeasurementList
     -> ModelIndexedDb
     -> Maybe NominalDate
-resolveDateOfLastNutritionAssessment currentDate isChw initiator mandatoryNutritionAssessmentMeasurementsTaken individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements db =
+resolveDateOfLastNutritionAssessment currentDate initiator mandatoryNutritionAssessmentMeasurementsTaken individualNutritionParticipantId wellChildEncounters groupNutritionMeasurements db =
     if mandatoryNutritionAssessmentMeasurementsTaken then
         Just currentDate
 
@@ -1425,7 +1422,7 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
             , div [ class "growth-charts" ]
                 charts
             , div [ class "growth-photos" ] <|
-                viewPhotos language photoValues
+                viewPhotos photoValues
             ]
         ]
 
@@ -1537,8 +1534,8 @@ viewNutritionSigns language measurements =
     entriesHeading :: viewEntries language entries
 
 
-viewPhotos : Language -> List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
-viewPhotos language measurements =
+viewPhotos : List { a | dateMeasured : NominalDate, value : ImageUrl } -> List (Html any)
+viewPhotos measurements =
     let
         viewImageUrl (ImageUrl url) =
             div
@@ -2012,35 +2009,6 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
         pregnancyValues =
             List.repeat 9 NCDACellValueDash
 
-        breastfedForSixMonthsByAgeInMonths =
-            if List.isEmpty allNCDAQuestionnaires then
-                Dict.empty
-
-            else
-                let
-                    breastfedForSixMonths =
-                        List.map (Tuple.second >> .signs >> EverySet.member BreastfedForSixMonths) allNCDAQuestionnaires
-                            |> List.member True
-
-                    firstPeriodIndicator =
-                        if breastfedForSixMonths then
-                            NCDACellValueV
-
-                        else
-                            NCDACellValueX
-
-                    firstPeriod =
-                        List.range 0 5
-                            |> List.map (\month -> ( month, firstPeriodIndicator ))
-
-                    secondPeriod =
-                        List.range 6 24
-                            |> List.map (\month -> ( month, NCDACellValueDash ))
-                in
-                firstPeriod
-                    ++ secondPeriod
-                    |> Dict.fromList
-
         appropriateComplementaryFeedingValues =
             generateValues currentDate
                 child
@@ -2058,6 +2026,35 @@ viewNutritionBehaviorPane language currentDate child allNCDAQuestionnaires allQu
         -- reached the age for which value is given (empty value otherwise).
         ( breastfedForSixMonthsFirstPeriod, breastfedForSixMonthsSecondPeriod ) =
             let
+                breastfedForSixMonthsByAgeInMonths =
+                    if List.isEmpty allNCDAQuestionnaires then
+                        Dict.empty
+
+                    else
+                        let
+                            breastfedForSixMonths =
+                                List.map (Tuple.second >> .signs >> EverySet.member BreastfedForSixMonths) allNCDAQuestionnaires
+                                    |> List.member True
+
+                            firstPeriodIndicator =
+                                if breastfedForSixMonths then
+                                    NCDACellValueV
+
+                                else
+                                    NCDACellValueX
+
+                            first =
+                                List.range 0 5
+                                    |> List.map (\month -> ( month, firstPeriodIndicator ))
+
+                            second =
+                                List.range 6 24
+                                    |> List.map (\month -> ( month, NCDACellValueDash ))
+                        in
+                        first
+                            ++ second
+                            |> Dict.fromList
+
                 breastfedForSixMonthsValues =
                     generateValues currentDate child (Just breastfedForSixMonthsByAgeInMonths) ((==) NCDACellValueV)
 

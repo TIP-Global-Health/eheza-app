@@ -53,7 +53,6 @@ import Measurement.Utils exposing (generateFutureVaccinationsData)
 import Pages.Dashboard.GraphUtils exposing (..)
 import Pages.Dashboard.Model exposing (..)
 import Pages.Dashboard.Utils exposing (..)
-import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..))
 import Pages.Page
     exposing
         ( AcuteIllnessSubPage(..)
@@ -69,6 +68,7 @@ import Pages.Utils
     exposing
         ( calculatePercentage
         , resolveSelectedDateForMonthSelector
+        , viewCustomAction
         , viewCustomSelectListInput
         , viewMonthSelector
         )
@@ -80,7 +80,7 @@ import Shape exposing (Arc, defaultPieConfig)
 import Svg
 import Svg.Attributes exposing (cx, cy, r)
 import SyncManager.Model exposing (Site, SiteFeature)
-import Translate exposing (Language, TranslationId, translate, translateText, translationSet)
+import Translate exposing (Language, TranslationId, translate, translateText)
 import TypedSvg exposing (g, svg)
 import TypedSvg.Attributes as Explicit exposing (fill, transform, viewBox)
 import TypedSvg.Core exposing (Svg)
@@ -803,42 +803,38 @@ viewAcuteIllnessPage language currentDate healthCenterId isChw activePage assemb
         dateLastDayOfSelectedMonth =
             resolveSelectedDateForMonthSelector currentDate model.monthGap
 
-        dataForNurses =
-            List.filterMap
-                (\illness ->
-                    let
-                        nurseEncounters =
-                            List.filter isAcuteIllnessNurseEncounter illness.encounters
-                    in
-                    if List.isEmpty nurseEncounters then
-                        Nothing
-
-                    else
-                        Just { illness | encounters = nurseEncounters }
-                )
-                assembled.acuteIllnessData
-
-        dataForChws =
-            List.filterMap
-                (\illness ->
-                    let
-                        chwEncounters =
-                            List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
-                    in
-                    if List.isEmpty chwEncounters then
-                        Nothing
-
-                    else
-                        Just { illness | encounters = chwEncounters }
-                )
-                assembled.acuteIllnessData
-
         encountersForSelectedMonth =
             if isChw then
-                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForChws
+                List.filterMap
+                    (\illness ->
+                        let
+                            chwEncounters =
+                                List.filter (isAcuteIllnessNurseEncounter >> not) illness.encounters
+                        in
+                        if List.isEmpty chwEncounters then
+                            Nothing
+
+                        else
+                            Just { illness | encounters = chwEncounters }
+                    )
+                    assembled.acuteIllnessData
+                    |> getEncountersForSelectedMonth dateLastDayOfSelectedMonth
 
             else
-                getEncountersForSelectedMonth dateLastDayOfSelectedMonth dataForNurses
+                List.filterMap
+                    (\illness ->
+                        let
+                            nurseEncounters =
+                                List.filter isAcuteIllnessNurseEncounter illness.encounters
+                        in
+                        if List.isEmpty nurseEncounters then
+                            Nothing
+
+                        else
+                            Just { illness | encounters = nurseEncounters }
+                    )
+                    assembled.acuteIllnessData
+                    |> getEncountersForSelectedMonth dateLastDayOfSelectedMonth
 
         limitDate =
             Date.ceiling Date.Month dateLastDayOfSelectedMonth
@@ -1000,16 +996,6 @@ viewCovid19Page language isChw encounters managedCovid model =
         ]
 
     else
-        let
-            -- Not viewd for now, as https://github.com/TIP-Global-Health/eheza-app/issues/959 is on hold.
-            hospitalReferralsCard =
-                let
-                    -- @todo: implement once issue is off hold.
-                    sentToHospital =
-                        0
-                in
-                chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt sentToHospital)
-        in
         [ div [ class "ui grid" ]
             [ div [ class "two column row center" ]
                 [ chwCard language (Translate.Dashboard Translate.PatientsManagedAtHome) (String.fromInt managedAtHome)
@@ -1197,8 +1183,7 @@ viewGroupEducationStandard language currentDate isChw assembled db model =
             List.filter (.startDate >> withinSelectedMonth dateLastDayOfSelectedMonth) assembled.groupEducationData
 
         attendeesDuringSelectedMonth =
-            List.map (.participants >> EverySet.toList) sessionsDuringSelectedMonth
-                |> List.concat
+            List.concatMap (.participants >> EverySet.toList) sessionsDuringSelectedMonth
 
         uniqueAttendeesDuringSelectedMonth =
             EverySet.fromList attendeesDuringSelectedMonth
@@ -1297,27 +1282,25 @@ viewPrenatalPage language currentDate isChw assembled db model =
                 , chwCard language (Translate.Dashboard Translate.HospitalReferrals) (String.fromInt hospitalReferrals)
                 ]
 
-        dataForNurses =
-            List.filterMap
-                (\pregnancy ->
-                    let
-                        nurseEncounters =
-                            List.filter isNurseEncounter pregnancy.encounters
-                    in
-                    if List.isEmpty nurseEncounters then
-                        Nothing
-
-                    else
-                        Just { pregnancy | encounters = nurseEncounters }
-                )
-                assembled.prenatalData
-
         prenatalDiagnosesSection =
             if isChw then
                 []
 
             else
-                viewPrenatalDiagnosesSection language dateLastDayOfSelectedMonth currentlyPregnantWithDangerSigns dataForNurses
+                List.filterMap
+                    (\pregnancy ->
+                        let
+                            nurseEncounters =
+                                List.filter isNurseEncounter pregnancy.encounters
+                        in
+                        if List.isEmpty nurseEncounters then
+                            Nothing
+
+                        else
+                            Just { pregnancy | encounters = nurseEncounters }
+                    )
+                    assembled.prenatalData
+                    |> viewPrenatalDiagnosesSection language dateLastDayOfSelectedMonth currentlyPregnantWithDangerSigns
     in
     [ monthSelector language dateLastDayOfSelectedMonth model
     , div [ class "ui grid" ]
@@ -2437,8 +2420,7 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
                 []
 
             else
-                db.villages
-                    |> RemoteData.toMaybe
+                RemoteData.toMaybe db.villages
                     |> Maybe.map
                         (\villages ->
                             let
@@ -2489,18 +2471,8 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
                         )
                     |> Maybe.withDefault []
 
-        closeButtonDisabled =
+        disabled =
             (model.programTypeFilter == FilterProgramCommunity) && isNothing model.selectedVillageFilter
-
-        closeButtonAttributes =
-            if closeButtonDisabled then
-                [ class "ui primary fluid button disabled"
-                ]
-
-            else
-                [ class "ui primary fluid button"
-                , onClick <| SetModalState Nothing
-                ]
     in
     div [ class "ui active modal" ]
         [ div [ class "header" ]
@@ -2508,11 +2480,7 @@ viewFiltersModal language page isChw nurse healthCenterVillages db model =
         , div [ class "content" ] <|
             programTypeFilterInputSection
                 ++ villageInputSection
-        , div [ class "actions" ]
-            [ button
-                closeButtonAttributes
-                [ text <| translate language Translate.Close ]
-            ]
+        , viewCustomAction language (SetModalState Nothing) disabled Translate.Close
         ]
 
 

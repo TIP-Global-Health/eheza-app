@@ -78,7 +78,6 @@ viewHeader language assembled =
             , onClick <| SetActivePage <| UserPage <| NCDParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
