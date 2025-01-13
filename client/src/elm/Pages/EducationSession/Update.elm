@@ -4,10 +4,9 @@ import App.Model
 import Backend.EducationSession.Model
 import Backend.Entities exposing (..)
 import Backend.Model
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
-import Maybe.Extra
 import Pages.EducationSession.Model exposing (..)
 import Pages.Page exposing (Page(..))
 

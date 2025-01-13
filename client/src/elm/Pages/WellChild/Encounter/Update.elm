@@ -5,7 +5,7 @@ import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticip
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (EncounterNote(..))
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -18,8 +18,8 @@ import SyncManager.Model exposing (Site)
 import ZScore.Model
 
 
-update : NominalDate -> ZScore.Model.Model -> Site -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
-update currentDate zscores site isChw db msg model =
+update : NominalDate -> ZScore.Model.Model -> Site -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
+update currentDate zscores site db msg model =
     case msg of
         CloseEncounter id ->
             ( model
@@ -36,7 +36,7 @@ update currentDate zscores site isChw db msg model =
             , Cmd.none
             , [ App.Model.SetActivePage page ]
             )
-                |> sequenceExtra (update currentDate zscores site isChw db) [ SetDialogState Nothing ]
+                |> sequenceExtra (update currentDate zscores site db) [ SetDialogState Nothing ]
 
         SetSelectedTab tab ->
             ( { model | selectedTab = tab }, Cmd.none, [] )
@@ -58,7 +58,7 @@ update currentDate zscores site isChw db msg model =
             , Cmd.none
             , markEncounterAsAITriggerMsg
             )
-                |> sequenceExtra (update currentDate zscores site isChw db) extraMsgs
+                |> sequenceExtra (update currentDate zscores site db) extraMsgs
 
         NavigateToActivity encounterId activity ->
             let
@@ -108,14 +108,14 @@ update currentDate zscores site isChw db msg model =
             , Cmd.none
             , appMsgs
             )
-                |> sequenceExtra (update currentDate zscores site isChw db) extraMsgs
+                |> sequenceExtra (update currentDate zscores site db) extraMsgs
 
         SkipActivity activity ->
             ( { model | skippedActivities = EverySet.insert activity model.skippedActivities }
             , Cmd.none
             , []
             )
-                |> sequenceExtra (update currentDate zscores site isChw db) [ SetDialogState Nothing ]
+                |> sequenceExtra (update currentDate zscores site db) [ SetDialogState Nothing ]
 
         SetDialogState state ->
             ( { model | dialogState = state }, Cmd.none, [] )

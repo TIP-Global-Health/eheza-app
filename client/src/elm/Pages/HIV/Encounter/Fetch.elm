@@ -3,7 +3,6 @@ module Pages.HIV.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Fetch
 import Backend.NutritionEncounter.Utils exposing (getHIVEncountersForParticipant)
 import Maybe.Extra
 import RemoteData

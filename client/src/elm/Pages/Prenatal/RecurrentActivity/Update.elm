@@ -26,7 +26,6 @@ import Measurement.Utils
         , toUrineDipstickResultValueWithDefault
         , toVitalsValueWithDefault
         )
-import Pages.GlobalCaseManagement.Utils exposing (labsResultsTestData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.RecurrentActivity.Model exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils exposing (..)

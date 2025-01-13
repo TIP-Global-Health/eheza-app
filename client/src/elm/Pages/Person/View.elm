@@ -1,6 +1,6 @@
 module Pages.Person.View exposing (view, viewCreateEditForm, viewSelectInput, viewTextInput)
 
-import App.Model
+import App.Model exposing (GPSCoordinates)
 import AssocList as Dict exposing (Dict)
 import Backend.Clinic.Model exposing (Clinic, ClinicType(..))
 import Backend.Entities exposing (..)
@@ -38,9 +38,11 @@ import Backend.PmtctParticipant.Model exposing (PmtctParticipant)
 import Backend.PrenatalActivity.Model
 import Backend.Relationship.Model exposing (MyRelationship)
 import Backend.Session.Utils exposing (getSession)
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.Village.Utils exposing (getVillageById)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
+import EverySet exposing (EverySet)
 import Form exposing (Form)
 import Form.Field
 import Form.Input
@@ -59,7 +61,7 @@ import Pages.Person.Model exposing (..)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
-import SyncManager.Model exposing (Site(..))
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Form exposing (getValueAsInt, isFormFieldSet, viewFormError)
 import Utils.Html exposing (thumbnailImage, viewLoading, viewModal)
@@ -105,7 +107,6 @@ viewHeader language initiator name =
             , onClick <| App.Model.SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -295,7 +296,7 @@ viewPerson language currentDate initiator db id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 , action
@@ -435,7 +436,7 @@ viewOtherPerson language currentDate isChw initiator db relationMainId ( otherPe
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     , groups
                     ]
@@ -465,7 +466,9 @@ viewPhotoThumb url =
 viewCreateEditForm :
     Language
     -> NominalDate
+    -> Maybe GPSCoordinates
     -> Site
+    -> EverySet SiteFeature
     -> GeoInfo
     -> ReverseGeoInfo
     -> Maybe VillageId
@@ -475,7 +478,7 @@ viewCreateEditForm :
     -> Model
     -> ModelIndexedDb
     -> Html Msg
-viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
+viewCreateEditForm language currentDate coordinates site features geoInfo reverseGeoInfo maybeVillageId isChw operation initiator model db =
     let
         formBeforeDefaults =
             model.form
@@ -749,7 +752,6 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                     , onClick <| SetActivePage originBasedSettings.goBackPage
                     ]
                     [ span [ class "icon-back" ] []
-                    , span [] []
                     ]
                 ]
 
@@ -1053,16 +1055,6 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                 |> fieldset [ class "registration-form" ]
             ]
 
-        ubudeheOptions =
-            allUbudehes
-                |> List.map
-                    (\ubudehe ->
-                        ( String.fromInt (ubudeheToInt ubudehe)
-                        , String.fromInt (ubudeheToInt ubudehe)
-                        )
-                    )
-                |> (::) emptyOption
-
         -- Only field here is Ubudehe, and it's Rwanda specific.
         familyInformationSection =
             if site == SiteRwanda then
@@ -1077,6 +1069,16 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                             False
                             personForm
                         ]
+
+                    ubudeheOptions =
+                        allUbudehes
+                            |> List.map
+                                (\ubudehe ->
+                                    ( String.fromInt (ubudeheToInt ubudehe)
+                                    , String.fromInt (ubudeheToInt ubudehe)
+                                    )
+                                )
+                            |> (::) emptyOption
                 in
                 [ h3
                     [ class "ui header" ]
@@ -1098,117 +1100,6 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                         ""
                    )
 
-        district =
-            Form.getFieldAsString Backend.Person.Form.district personForm
-
-        sector =
-            Form.getFieldAsString Backend.Person.Form.sector personForm
-
-        cell =
-            Form.getFieldAsString Backend.Person.Form.cell personForm
-
-        village =
-            Form.getFieldAsString Backend.Person.Form.village personForm
-
-        viewProvince =
-            let
-                options =
-                    emptyOption
-                        :: geoLocationDictToOptions geoInfo.provinces
-
-                disabled =
-                    isFormFieldSet district
-            in
-            viewSelectInput language
-                (resolveGeoSructureLabelLevel1 site)
-                options
-                Backend.Person.Form.province
-                "ten"
-                (geoLocationInputClass disabled)
-                True
-                personForm
-
-        viewDistrict =
-            let
-                province =
-                    Form.getFieldAsString Backend.Person.Form.province personForm
-
-                options =
-                    emptyOption
-                        :: (case getValueAsInt province of
-                                Nothing ->
-                                    []
-
-                                Just provinceId ->
-                                    geoInfo.districts
-                                        |> filterGeoLocationDictByParent provinceId
-                                        |> geoLocationDictToOptions
-                           )
-
-                disabled =
-                    isFormFieldSet sector
-            in
-            viewSelectInput language
-                (resolveGeoSructureLabelLevel2 site)
-                options
-                Backend.Person.Form.district
-                "ten"
-                (geoLocationInputClass disabled)
-                True
-                personForm
-
-        viewSector =
-            let
-                options =
-                    emptyOption
-                        :: (case getValueAsInt district of
-                                Nothing ->
-                                    []
-
-                                Just districtId ->
-                                    geoInfo.sectors
-                                        |> filterGeoLocationDictByParent districtId
-                                        |> geoLocationDictToOptions
-                           )
-
-                disabled =
-                    isFormFieldSet cell
-            in
-            viewSelectInput language
-                (resolveGeoSructureLabelLevel3 site)
-                options
-                Backend.Person.Form.sector
-                "ten"
-                (geoLocationInputClass disabled)
-                True
-                personForm
-
-        viewCell =
-            let
-                options =
-                    emptyOption
-                        :: (case getValueAsInt sector of
-                                Nothing ->
-                                    []
-
-                                Just sectorId ->
-                                    geoInfo.cells
-                                        |> filterGeoLocationDictByParent sectorId
-                                        |> geoLocationDictToOptions
-                           )
-
-                disabled =
-                    isFormFieldSet village
-            in
-            viewSelectInput language
-                (resolveGeoSructureLabelLevel4 site)
-                options
-                Backend.Person.Form.cell
-                "ten"
-                (geoLocationInputClass disabled)
-                True
-                personForm
-
         isEditOperation =
             case operation of
                 CreatePerson _ ->
@@ -1217,58 +1108,208 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
                 EditPerson _ ->
                     True
 
-        viewVillage =
-            let
-                disabled =
-                    isEditOperation
-                        && (isAdult currentDate selectedBirthDate
-                                |> Maybe.map not
-                                |> Maybe.withDefault False
-                           )
-                        && isFormFieldSet village
-
-                options =
-                    emptyOption
-                        :: (case getValueAsInt cell of
-                                Nothing ->
-                                    []
-
-                                Just cellId ->
-                                    geoInfo.villages
-                                        |> filterGeoLocationDictByParent cellId
-                                        |> geoLocationDictToOptions
-                           )
-            in
-            viewSelectInput language
-                (resolveGeoSructureLabelLevel5 site)
-                options
-                Backend.Person.Form.village
-                "ten"
-                (geoLocationInputClass disabled)
-                True
-                personForm
-
         addressSection =
             if isChw then
                 []
 
             else
                 let
-                    addressFields =
-                        [ viewProvince
-                        , viewDistrict
-                        , viewSector
-                        , viewCell
-                        , viewVillage
-                        ]
+                    district =
+                        Form.getFieldAsString Backend.Person.Form.district personForm
+
+                    sector =
+                        Form.getFieldAsString Backend.Person.Form.sector personForm
+
+                    cell =
+                        Form.getFieldAsString Backend.Person.Form.cell personForm
+
+                    village =
+                        Form.getFieldAsString Backend.Person.Form.village personForm
+
+                    viewProvince =
+                        let
+                            options =
+                                emptyOption
+                                    :: geoLocationDictToOptions geoInfo.provinces
+
+                            disabled =
+                                isFormFieldSet district
+                        in
+                        viewSelectInput language
+                            (resolveGeoSructureLabelLevel1 site)
+                            options
+                            Backend.Person.Form.province
+                            "ten"
+                            (geoLocationInputClass disabled)
+                            True
+                            personForm
+
+                    viewDistrict =
+                        let
+                            province =
+                                Form.getFieldAsString Backend.Person.Form.province personForm
+
+                            options =
+                                emptyOption
+                                    :: (case getValueAsInt province of
+                                            Nothing ->
+                                                []
+
+                                            Just provinceId ->
+                                                geoInfo.districts
+                                                    |> filterGeoLocationDictByParent provinceId
+                                                    |> geoLocationDictToOptions
+                                       )
+
+                            disabled =
+                                isFormFieldSet sector
+                        in
+                        viewSelectInput language
+                            (resolveGeoSructureLabelLevel2 site)
+                            options
+                            Backend.Person.Form.district
+                            "ten"
+                            (geoLocationInputClass disabled)
+                            True
+                            personForm
+
+                    viewSector =
+                        let
+                            options =
+                                emptyOption
+                                    :: (case getValueAsInt district of
+                                            Nothing ->
+                                                []
+
+                                            Just districtId ->
+                                                geoInfo.sectors
+                                                    |> filterGeoLocationDictByParent districtId
+                                                    |> geoLocationDictToOptions
+                                       )
+
+                            disabled =
+                                isFormFieldSet cell
+                        in
+                        viewSelectInput language
+                            (resolveGeoSructureLabelLevel3 site)
+                            options
+                            Backend.Person.Form.sector
+                            "ten"
+                            (geoLocationInputClass disabled)
+                            True
+                            personForm
+
+                    viewCell =
+                        let
+                            options =
+                                emptyOption
+                                    :: (case getValueAsInt sector of
+                                            Nothing ->
+                                                []
+
+                                            Just sectorId ->
+                                                geoInfo.cells
+                                                    |> filterGeoLocationDictByParent sectorId
+                                                    |> geoLocationDictToOptions
+                                       )
+
+                            disabled =
+                                isFormFieldSet village
+                        in
+                        viewSelectInput language
+                            (resolveGeoSructureLabelLevel4 site)
+                            options
+                            Backend.Person.Form.cell
+                            "ten"
+                            (geoLocationInputClass disabled)
+                            True
+                            personForm
+
+                    viewVillage =
+                        let
+                            disabled =
+                                isEditOperation
+                                    && (isAdult currentDate selectedBirthDate
+                                            |> Maybe.map not
+                                            |> Maybe.withDefault False
+                                       )
+                                    && isFormFieldSet village
+
+                            options =
+                                emptyOption
+                                    :: (case getValueAsInt cell of
+                                            Nothing ->
+                                                []
+
+                                            Just cellId ->
+                                                geoInfo.villages
+                                                    |> filterGeoLocationDictByParent cellId
+                                                    |> geoLocationDictToOptions
+                                       )
+                        in
+                        viewSelectInput language
+                            (resolveGeoSructureLabelLevel5 site)
+                            options
+                            Backend.Person.Form.village
+                            "ten"
+                            (geoLocationInputClass disabled)
+                            True
+                            personForm
+                in
+                [ h3 [ class "ui header" ]
+                    [ text <| translate language Translate.AddressInformation ++ ":" ]
+                , fieldset [ class "registration-form address-info" ]
+                    [ viewProvince
+                    , viewDistrict
+                    , viewSector
+                    , viewCell
+                    , viewVillage
+                    ]
+                    |> Html.map (MsgForm operation initiator)
+                ]
+
+        gpsInfoSection =
+            if gpsCoordinatesEnabled features && not isEditOperation then
+                let
+                    sectionContent =
+                        Maybe.map
+                            (\coords ->
+                                let
+                                    saveGPSLocationField =
+                                        Form.getFieldAsBool Backend.Person.Form.saveGPSLocation personForm
+                                in
+                                [ div [ class "ui grid" ]
+                                    [ div [ class "six wide column" ]
+                                        [ text <| translate language Translate.GPSLocation ++ ":" ]
+                                    , div
+                                        [ class "ten wide column" ]
+                                        [ text <| String.fromFloat coords.latitude ++ " , " ++ String.fromFloat coords.longitude
+                                        ]
+                                    ]
+                                , div [ class "ui grid" ]
+                                    [ div [ class "eight wide column" ]
+                                        [ text <| translate language Translate.GPSLocationSaveLabel ++ ":" ]
+                                    , div
+                                        [ class "three wide column" ]
+                                        [ Form.Input.checkboxInput saveGPSLocationField
+                                            [ class "field" ]
+                                            |> Html.map (MsgForm operation initiator)
+                                        ]
+                                    ]
+                                ]
+                            )
+                            coordinates
+                            |> Maybe.withDefault []
                 in
                 [ h3
                     [ class "ui header" ]
-                    [ text <| translate language Translate.AddressInformation ++ ":" ]
-                , addressFields
-                    |> fieldset [ class "registration-form address-info" ]
-                    |> Html.map (MsgForm operation initiator)
+                    [ text <| translate language Translate.GPSInfo ++ ":" ]
+                , fieldset [ class "registration-form gps-info" ]
+                    sectionContent
                 ]
+
+            else
+                []
 
         contactInformationSection =
             if originBasedSettings.expectedAge /= ExpectChild then
@@ -1343,6 +1384,7 @@ viewCreateEditForm language currentDate site geoInfo reverseGeoInfo maybeVillage
             demographicSection
                 ++ familyInformationSection
                 ++ addressSection
+                ++ gpsInfoSection
                 ++ contactInformationSection
                 ++ healthCenterSection
                 ++ [ p [] []

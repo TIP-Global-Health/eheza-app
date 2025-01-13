@@ -3,7 +3,7 @@ module Pages.Participant.Update exposing (updateChild, updateMother)
 import Activity.Model exposing (ChildActivity(..), MotherActivity)
 import App.Ports exposing (bindDropZone)
 import Backend.Measurement.Model exposing (MeasurementData, MotherMeasurements)
-import EverySet exposing (EverySet)
+import EverySet
 import Measurement.Model
 import Measurement.Update
 import Pages.Participant.Model exposing (ChildUpdateReturns, Model, MotherUpdateReturns, Msg(..), Tab(..))

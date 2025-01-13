@@ -12,7 +12,7 @@ import Editable
 import Error.Utils exposing (decoderError, maybeHttpError, noError)
 import GeoLocation.Utils exposing (getGeoInfo, getReverseGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
-import Http exposing (Error(..))
+import Http exposing (Error)
 import HttpBuilder exposing (..)
 import Json.Decode exposing (Value, decodeValue)
 import Json.Encode
@@ -1214,20 +1214,17 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             let
                                                 currentZipper =
                                                     Zipper.current zipper
-
-                                                zipperUpdated =
-                                                    if currentZipper.status == Uploading then
-                                                        zipper
-
-                                                    else
-                                                        Zipper.mapCurrent
-                                                            (\old -> { old | status = Uploading })
-                                                            zipper
                                             in
                                             if currentZipper.status == Uploading then
                                                 ( model.syncInfoAuthorities, Cmd.none )
 
                                             else
+                                                let
+                                                    zipperUpdated =
+                                                        Zipper.mapCurrent
+                                                            (\old -> { old | status = Uploading })
+                                                            zipper
+                                                in
                                                 ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipper )
                                         )
                                     |> Maybe.withDefault ( model.syncInfoAuthorities, Cmd.none )

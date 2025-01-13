@@ -2,11 +2,9 @@ module Pages.HIV.Encounter.Update exposing (update)
 
 import App.Model
 import Backend.HIVEncounter.Model
-import Backend.IndividualEncounterParticipant.Model exposing (IndividualParticipantInitiator(..))
 import Backend.Model
-import Gizra.Update exposing (sequenceExtra)
 import Pages.HIV.Encounter.Model exposing (..)
-import Pages.Page exposing (Page(..), UserPage(..))
+import Pages.Page exposing (Page(..))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )

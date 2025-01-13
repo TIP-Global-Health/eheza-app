@@ -15,7 +15,7 @@ import Pages.AcuteIllness.Encounter.Utils exposing (generateAssembledData)
 import Pages.AcuteIllness.Encounter.View exposing (viewPersonDetailsWithAlert)
 import Pages.AcuteIllness.Outcome.Model exposing (Model, Msg(..))
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils exposing (taskCompleted, viewLabel, viewSelectListInput)
+import Pages.Utils exposing (taskCompleted, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData exposing (RemoteData(..))
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
@@ -31,11 +31,11 @@ view language currentDate features id isChw db model =
                 |> Maybe.map Tuple.first
 
         data =
-            firstEncounterId
-                |> Maybe.map
-                    (\encounterId ->
-                        generateAssembledData currentDate features encounterId isChw db
-                    )
+            Maybe.map
+                (\encounterId ->
+                    generateAssembledData currentDate features encounterId isChw db
+                )
+                firstEncounterId
                 |> Maybe.withDefault NotAsked
 
         header =
@@ -62,7 +62,6 @@ viewHeader language data =
             , onClick <| SetActivePage <| UserPage <| AcuteIllnessParticipantPage InitiatorParticipantsPage data.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -92,7 +91,7 @@ viewAcuteIllnessOutcome language currentDate data model =
         tasksCompleted =
             taskCompleted model.acuteIllnessOutcome
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "form acute-illness-dating" ]
@@ -100,12 +99,6 @@ viewAcuteIllnessOutcome language currentDate data model =
                 , acuteIllnessOutcomeInput
                 ]
             ]
-        , div [ class "actions" ]
-            [ button
-                [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                , onClick SaveAcuteIllnessOutcome
-                ]
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language SaveAcuteIllnessOutcome (tasksCompleted /= totalTasks)
         ]
     ]

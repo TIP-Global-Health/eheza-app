@@ -9,7 +9,7 @@ import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestion(..), ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet
@@ -29,7 +29,9 @@ import Pages.Utils
         , viewCheckBoxSelectInput
         , viewCustomLabel
         , viewQuestionLabel
+        , viewSaveAction
         , viewSelectListInput
+        , viewTasksCount
         )
 import RemoteData
 import Time exposing (posixToMillis)
@@ -64,9 +66,6 @@ view language currentTime nurseId nurse db model =
             Maybe.map
                 (\programStartDate ->
                     let
-                        messagingCenterView =
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
-
                         surveys =
                             Dict.get nurseId db.resilienceSurveysByNurse
                                 |> Maybe.andThen RemoteData.toMaybe
@@ -85,13 +84,6 @@ view language currentTime nurseId nurse db model =
                                     List.length filteredSurveys
 
                                 filterCondition survey =
-                                    let
-                                        diffMonthsLastSurveyCurrent =
-                                            Date.diff Months survey.dateMeasured currentDate
-
-                                        diffMonthsProgramStartLastSurvey =
-                                            Date.diff Months programStartDate survey.dateMeasured
-                                    in
                                     if surveyCount == 0 then
                                         -- We need to have at least one survey completed.
                                         True
@@ -102,26 +94,27 @@ view language currentTime nurseId nurse db model =
                                         -- So, if we have 3 surveys already, there's no need to another one,
                                         False
 
-                                    else if diffMonthsProgramStartLastSurvey >= 6 then
-                                        -- Last survey run after 6 months from programstart date.
-                                        -- It means that program has alreqady ended there.
-                                        -- No need to run another one.
-                                        False
-
-                                    else if diffMonthsLastSurveyCurrent >= 3 then
-                                        -- If we got so far, and interval from last survey
-                                        -- is 3 months or more, we should run the survey.
-                                        True
-
                                     else
-                                        False
+                                        let
+                                            diffMonthsProgramStartLastSurvey =
+                                                Date.diff Months programStartDate survey.dateMeasured
+                                        in
+                                        if diffMonthsProgramStartLastSurvey >= 6 then
+                                            -- Last survey run after 6 months from programstart date.
+                                            -- It means that program has alreqady ended there.
+                                            -- No need to run another one.
+                                            False
+
+                                        else
+                                            let
+                                                diffMonthsLastSurveyCurrent =
+                                                    Date.diff Months survey.dateMeasured currentDate
+                                            in
+                                            diffMonthsLastSurveyCurrent >= 3
                             in
                             List.head filteredSurveys
                                 |> Maybe.map filterCondition
                                 |> Maybe.withDefault True
-
-                        runAdoptionSurvey =
-                            runSurvey ResilienceSurveyAdoption
 
                         runQuarterlySurvey =
                             runSurvey ResilienceSurveyQuarterly
@@ -129,11 +122,16 @@ view language currentTime nurseId nurse db model =
                     if runQuarterlySurvey then
                         viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
-                    else if runAdoptionSurvey then
-                        viewAdoptionSurvey language currentDate nurseId model.surveyForm
-
                     else
-                        messagingCenterView
+                        let
+                            runAdoptionSurvey =
+                                runSurvey ResilienceSurveyAdoption
+                        in
+                        if runAdoptionSurvey then
+                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                        else
+                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
                 )
                 nurse.resilienceProgramStartDate
                 |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
@@ -259,7 +257,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
             6
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form kick-off-survey" ] <|
@@ -269,13 +267,7 @@ viewKickOffSurvey language currentDate nurseId nurse form =
                         ++ educationLevelInput
                         ++ ubudeheInput
                         ++ maritalStatusInput
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveKickOffSurvey nurseId nurse
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveKickOffSurvey nurseId nurse) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]
@@ -307,18 +299,12 @@ viewQuarterlySurvey language currentDate nurseId form =
             List.length quarterlySurveyQuestions
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
                     List.concatMap questionInput quarterlySurveyQuestions
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveSurvey ResilienceSurveyQuarterly nurseId
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveSurvey ResilienceSurveyQuarterly nurseId) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]
@@ -350,18 +336,12 @@ viewAdoptionSurvey language currentDate nurseId form =
             List.length adoptionSurveyQuestions
     in
     div [ class "ui unstackable items" ]
-        [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+        [ viewTasksCount language tasksCompleted totalTasks
         , div [ class "ui full segment" ]
             [ div [ class "full content" ]
                 [ div [ class "ui form monthly-survey" ] <|
                     List.concatMap questionInput adoptionSurveyQuestions
-                , div [ class "actions" ]
-                    [ button
-                        [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                        , onClick <| SaveSurvey ResilienceSurveyAdoption nurseId
-                        ]
-                        [ text <| translate language Translate.Save ]
-                    ]
+                , viewSaveAction language (SaveSurvey ResilienceSurveyAdoption nurseId) (tasksCompleted /= totalTasks)
                 ]
             ]
         ]
@@ -637,18 +617,6 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
         messageClickedAction =
             ResilienceMessageClicked messageId nurseId nurse updateTimeRead
 
-        sentDate =
-            Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
-
-        dateSent =
-            sentDate
-                |> Maybe.map
-                    (\date ->
-                        span [ class "date-sent" ]
-                            [ text <| renderDate language date ]
-                    )
-                |> Maybe.withDefault emptyNode
-
         title =
             let
                 messageCategory =
@@ -664,6 +632,15 @@ viewResilienceMessage language nurseId nurse model ( messageId, message ) =
 
                         _ ->
                             "blue"
+
+                dateSent =
+                    Maybe.map (Date.add Days message.displayDay) nurse.resilienceProgramStartDate
+                        |> Maybe.map
+                            (\date ->
+                                span [ class "date-sent" ]
+                                    [ text <| renderDate language date ]
+                            )
+                        |> Maybe.withDefault emptyNode
 
                 plainTitle =
                     div [ class <| "header", onClick messageClickedAction ]
@@ -843,8 +820,103 @@ viewGrowthMessage language order =
               ]
             )
 
-        _ ->
-            ( [], [] )
+        ResilienceMessage10 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth10Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth10Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth10Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage11 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth11Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth11Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth11Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage12 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth12Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth12Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth12Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage13 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth13Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth13Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth13Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage14 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth14Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth14Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth14Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage15 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth15Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth15Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth15Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage16 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth16Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth16Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth16Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage17 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth17Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth17Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth17Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage18 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth18Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth18Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth18Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage19 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth19Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth19Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth19Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage20 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth20Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth20Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth20Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage21 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth21Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth21Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth21Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage22 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth22Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth22Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth22Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage23 ->
+            ( [ text <| translate language Translate.ResilienceMessageGrowth23Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageGrowth23Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageGrowth23Paragraph2 ]
+              ]
+            )
 
 
 viewStressManagementMessage : Language -> Nurse -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
@@ -941,6 +1013,53 @@ viewStressManagementMessage language nurse order =
               ]
             )
 
+        ResilienceMessage11 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement11Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement11Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement11Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage12 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement12Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement12Paragraph1 ]
+              , ol []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageStressManagement12Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement12Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageStressManagement12Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage13 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement13Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement13Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement13Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage14 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement14Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement14Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement14Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage15 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement15Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement15Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement15Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage16 ->
+            ( [ text <| translate language Translate.ResilienceMessageStressManagement16Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageStressManagement16Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageStressManagement16Paragraph2 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -1024,6 +1143,25 @@ viewMindfulnessMessage language order =
             ( [ text <| translate language Translate.ResilienceMessageMindfulness9Title ]
             , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness9Paragraph1 ]
               , p [] [ text <| translate language Translate.ResilienceMessageMindfulness9Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage10 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness10Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness10Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageMindfulness10Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageMindfulness10Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageMindfulness10Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness10Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage11 ->
+            ( [ text <| translate language Translate.ResilienceMessageMindfulness11Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageMindfulness11Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageMindfulness11Paragraph2 ]
               ]
             )
 
@@ -1124,6 +1262,51 @@ viewConnectingMessage language order =
               ]
             )
 
+        ResilienceMessage13 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting13Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting13Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting13Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage14 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting14Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting14Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting14Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage15 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting15Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting15Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting15Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage16 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting16Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting16Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting16Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage17 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting17Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting17Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting17Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage18 ->
+            ( [ text <| translate language Translate.ResilienceMessageConnecting18Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageConnecting18Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageConnecting18Paragraph2 ]
+              ]
+            )
+
+        _ ->
+            ( [], [] )
+
 
 viewSelfCareMessage : Language -> ResilienceMessageOrder -> ( List (Html Msg), List (Html Msg) )
 viewSelfCareMessage language order =
@@ -1174,6 +1357,56 @@ viewSelfCareMessage language order =
                     , li [] [ text <| translate language Translate.ResilienceMessageSelfCare5Bullet3 ]
                     ]
               , p [] [ text <| translate language Translate.ResilienceMessageSelfCare5Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage6 ->
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare6Title ] ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare6Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare6Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare6Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare6Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare6Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage7 ->
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare7Title ] ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare7Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare7Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare7Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare7Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare7Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage8 ->
+            ( [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare8Title ] ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare8Paragraph1 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageSelfCare8Bullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare8Bullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageSelfCare8Bullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare8Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage9 ->
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare9Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare9Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare9Paragraph2 ]
+              ]
+            )
+
+        ResilienceMessage10 ->
+            ( [ text <| translate language Translate.ResilienceMessageSelfCare10Title ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageSelfCare10Paragraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageSelfCare10Paragraph2 ]
               ]
             )
 
@@ -1240,6 +1473,38 @@ viewEndOfPeriodMessage language order =
               ]
             )
 
+        ResilienceMessage5 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthParagraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthParagraph2 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthBullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthParagraph3 ]
+              ]
+            )
+
+        ResilienceMessage6 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthParagraph1 ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthParagraph2 ]
+              , ul []
+                    [ li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet1 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet2 ]
+                    , li [] [ text <| translate language Translate.ResilienceMessageEndOfSixthMonthBullet3 ]
+                    ]
+              , p [] [ text <| translate language Translate.ResilienceMessageEndOfFifthMonthParagraph3 ]
+              ]
+            )
+
+        ResilienceMessage7 ->
+            ( [ text <| translate language Translate.ResilienceMessageEndOfSeventhMonthTitle ]
+            , [ p [] [ text <| translate language Translate.ResilienceMessageEndOfSeventhMonthParagraph1 ]
+              ]
+            )
+
         _ ->
             ( [], [] )
 
@@ -1262,21 +1527,22 @@ messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
                         favoriteUnfavorite ++ reminder
 
                     else
+                        let
+                            readUnread =
+                                let
+                                    isRead =
+                                        tab /= TabUnread
+                                in
+                                [ button
+                                    [ class "ui fluid button cyan"
+                                    , onClick <| ToggleMessageRead messageId nurseId nurse isRead
+                                    ]
+                                    [ img [ src "assets/images/envelope.svg" ] []
+                                    , text <| translate language <| Translate.ReadToggle isRead
+                                    ]
+                                ]
+                        in
                         readUnread ++ favoriteUnfavorite ++ reminder
-
-                readUnread =
-                    let
-                        isRead =
-                            tab /= TabUnread
-                    in
-                    [ button
-                        [ class "ui fluid button cyan"
-                        , onClick <| ToggleMessageRead messageId nurseId nurse isRead
-                        ]
-                        [ img [ src "assets/images/envelope.svg" ] []
-                        , text <| translate language <| Translate.ReadToggle isRead
-                        ]
-                    ]
 
                 favoriteUnfavorite =
                     [ button

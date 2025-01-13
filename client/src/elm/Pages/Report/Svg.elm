@@ -162,10 +162,12 @@ withinRange value min max =
         && (value <= max)
 
 
+widthPx : Float
 widthPx =
     dimensionsPx.right - dimensionsPx.left
 
 
+heightPx : Float
 heightPx =
     dimensionsPx.bottom - dimensionsPx.top
 

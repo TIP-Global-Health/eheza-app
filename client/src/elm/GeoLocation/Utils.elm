@@ -2,7 +2,7 @@ module GeoLocation.Utils exposing (..)
 
 import AssocList as Dict exposing (Dict)
 import GeoLocation.Model exposing (..)
-import Restful.Endpoint exposing (EntityId, fromEntityId, toEntityId)
+import Restful.Endpoint exposing (fromEntityId, toEntityId)
 import SyncManager.Model exposing (Site(..))
 import Translate exposing (TranslationId)
 

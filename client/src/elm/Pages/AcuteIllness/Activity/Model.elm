@@ -282,7 +282,7 @@ emptyCovidTestingForm =
 type alias ExposureData =
     { travelHistoryForm : TravelHistoryForm
     , exposureForm : ExposureForm
-    , activeTask : ExposureTask
+    , activeTask : Maybe ExposureTask
     }
 
 
@@ -290,7 +290,7 @@ emptyExposureData : ExposureData
 emptyExposureData =
     { travelHistoryForm = TravelHistoryForm Nothing
     , exposureForm = ExposureForm Nothing
-    , activeTask = ExposureTravel
+    , activeTask = Nothing
     }
 
 
@@ -310,14 +310,14 @@ type alias ExposureForm =
 
 type alias PriorTreatmentData =
     { treatmentReviewForm : TreatmentReviewForm
-    , activeTask : PriorTreatmentTask
+    , activeTask : Maybe PriorTreatmentTask
     }
 
 
 emptyPriorTreatmentData : PriorTreatmentData
 emptyPriorTreatmentData =
     { treatmentReviewForm = emptyTreatmentReviewForm
-    , activeTask = TreatmentReview
+    , activeTask = Nothing
     }
 
 
@@ -496,14 +496,14 @@ emptyRegisterContactData site =
 
 type alias OngoingTreatmentData =
     { treatmentReviewForm : OngoingTreatmentReviewForm
-    , activeTask : OngoingTreatmentTask
+    , activeTask : Maybe OngoingTreatmentTask
     }
 
 
 emptyOngoingTreatmentData : OngoingTreatmentData
 emptyOngoingTreatmentData =
     { treatmentReviewForm = emptyOngoingTreatmentReviewForm
-    , activeTask = OngoingTreatmentReview
+    , activeTask = Nothing
     }
 
 
@@ -513,14 +513,14 @@ emptyOngoingTreatmentData =
 
 type alias DangerSignsData =
     { reviewDangerSignsForm : ReviewDangerSignsForm
-    , activeTask : DangerSignsTask
+    , activeTask : Maybe DangerSignsTask
     }
 
 
 emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { reviewDangerSignsForm = emptyReviewDangerSignsForm
-    , activeTask = ReviewDangerSigns
+    , activeTask = Nothing
     }
 
 

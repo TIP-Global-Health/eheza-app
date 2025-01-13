@@ -91,7 +91,6 @@ viewHeader language isChw assembled =
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

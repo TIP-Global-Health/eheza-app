@@ -74,7 +74,6 @@ wrapError language sessionId errorHtml =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , errorHtml
@@ -95,30 +94,30 @@ viewFoundSession :
     -> ModelIndexedDb
     -> Html Msg
 viewFoundSession language currentDate zscores site features isChw nurse ( sessionId, session ) page model db =
-    let
-        authorized =
-            db.clinics
-                |> RemoteData.toMaybe
-                |> Maybe.andThen (Dict.get session.clinicId)
-                |> Maybe.map (\clinic -> isAuthorithedNurse clinic nurse)
-                |> Maybe.withDefault False
-    in
     if isClosed currentDate session then
         viewClosedSession language sessionId session db
 
-    else if authorized then
-        let
-            editableSession =
-                Dict.get sessionId db.editableSessions
-                    |> Maybe.withDefault NotAsked
-        in
-        viewWebData language
-            (viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db)
-            (wrapError language sessionId)
-            editableSession
-
     else
-        viewUnauthorizedSession language sessionId session db
+        let
+            authorized =
+                RemoteData.toMaybe db.clinics
+                    |> Maybe.andThen (Dict.get session.clinicId)
+                    |> Maybe.map (\clinic -> isAuthorithedNurse clinic nurse)
+                    |> Maybe.withDefault False
+        in
+        if authorized then
+            let
+                editableSession =
+                    Dict.get sessionId db.editableSessions
+                        |> Maybe.withDefault NotAsked
+            in
+            viewWebData language
+                (viewEditableSession language currentDate zscores site features isChw nurse sessionId page model db)
+                (wrapError language sessionId)
+                editableSession
+
+        else
+            viewUnauthorizedSession language sessionId session db
 
 
 viewEditableSession :
@@ -229,7 +228,6 @@ viewClosedSession language sessionId session db =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , div
@@ -259,7 +257,6 @@ viewUnauthorizedSession language sessionId session db =
                 , onClick <| SetActivePage <| UserPage ClinicsPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             ]
         , div

@@ -17,7 +17,7 @@ import Html.Events exposing (onClick)
 import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
 import Pages.Utils exposing (viewBySyncStatus)
-import RemoteData exposing (RemoteData(..))
+import RemoteData
 import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 
