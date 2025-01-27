@@ -10,6 +10,8 @@ import Backend.Person.Utils exposing (defaultIconForPerson, graduatingAgeInMonth
 import Backend.PrenatalActivity.Model
 import Backend.Session.Utils exposing (getSession)
 import Backend.Village.Utils exposing (personLivesInVillage)
+import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showIf, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffMonths)
 import Html exposing (..)
@@ -125,11 +127,11 @@ viewSearchForm : Language -> NominalDate -> Maybe VillageId -> Bool -> Initiator
 viewSearchForm language currentDate maybeVillageId isChw initiator relation model db =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
+            Components.PatientsSearchForm.View.view language model
+                |> Html.map Pages.People.Model.MsgPatientsSearchForm
 
         relatedPerson =
-            relation
-                |> Maybe.andThen (\id -> Dict.get id db.people)
+            Maybe.andThen (\id -> Dict.get id db.people) relation
                 |> Maybe.andThen RemoteData.toMaybe
 
         expectedAge =
@@ -148,8 +150,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                    )
 
         searchValue =
-            model.search
-                |> Maybe.withDefault ""
+            Components.PatientsSearchForm.Utils.getSearchValue model
 
         results =
             if String.isEmpty searchValue then
@@ -224,8 +225,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                         else
                             True
                 in
-                Dict.get searchValue db.personSearches
-                    |> Maybe.withDefault NotAsked
+                Components.PatientsSearchForm.Utils.getSearchResults db model
                     |> RemoteData.map
                         (Dict.filter
                             (\filteredPersonId filteredPerson ->
@@ -239,8 +239,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                     |> Just
 
         summary =
-            results
-                |> Maybe.map (viewWebData language viewSummary identity)
+            Maybe.map (viewWebData language viewSummary identity) results
                 |> Maybe.withDefault emptyNode
 
         viewSummary data =
@@ -250,8 +249,7 @@ viewSearchForm language currentDate maybeVillageId isChw initiator relation mode
                 |> text
 
         searchResultsParticipants =
-            results
-                |> Maybe.withDefault (Success Dict.empty)
+            Maybe.withDefault (Success Dict.empty) results
                 |> RemoteData.withDefault Dict.empty
                 |> Dict.map (viewParticipant language currentDate initiator relation db)
                 |> Dict.values

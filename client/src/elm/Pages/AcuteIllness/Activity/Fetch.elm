@@ -5,6 +5,7 @@ import Backend.AcuteIllnessActivity.Model exposing (AcuteIllnessActivity(..))
 import Backend.Entities exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
+import Components.PatientsSearchForm.Fetch
 import Pages.AcuteIllness.Activity.Model exposing (ContactsTracingFormState(..), Model)
 import Pages.AcuteIllness.Encounter.Fetch
 import RemoteData
@@ -30,16 +31,7 @@ fetch id activity db model =
                         fetchSearchMsg =
                             case form.state of
                                 ContactsTracingFormSearchParticipants searchData ->
-                                    let
-                                        trimmed =
-                                            Maybe.withDefault "" searchData.search
-                                                |> String.trim
-                                    in
-                                    if String.isEmpty trimmed then
-                                        []
-
-                                    else
-                                        [ FetchPeopleByName trimmed ]
+                                    Components.PatientsSearchForm.Fetch.fetch searchData
 
                                 _ ->
                                     []

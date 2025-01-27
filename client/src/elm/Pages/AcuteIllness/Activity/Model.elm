@@ -5,9 +5,9 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
+import Components.PatientsSearchForm.Model exposing (..)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
-import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
@@ -98,9 +98,7 @@ type Msg
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe AcuteIllnessDiagnosis) (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetContactsTracingFormState ContactsTracingFormState
-    | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
-    | SetContactsTracingInput String
-    | SetContactsTracingSearch String
+    | MsgPatientsSearchForm Components.PatientsSearchForm.Model.Msg
     | SetContactsTracingDate Date
     | SetContactsTracingDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetContactsTracingPhoneNumber String
@@ -438,7 +436,7 @@ type alias ContactsTracingForm =
 
 type ContactsTracingFormState
     = ContactsTracingFormSummary
-    | ContactsTracingFormSearchParticipants SearchParticipantsData
+    | ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.Model
     | ContactsTracingFormRecordContactDetails PersonId RecordContactDetailsData
     | ContactsTracingFormRegisterContact RegisterContactData
 
@@ -448,21 +446,6 @@ emptyContactsTracingForm =
     { state = ContactsTracingFormSummary
     , contacts = Nothing
     , finished = False
-    }
-
-
-type alias SearchParticipantsData =
-    { debouncer : Debouncer Msg Msg
-    , search : Maybe String
-    , input : String
-    }
-
-
-emptySearchParticipantsData : SearchParticipantsData
-emptySearchParticipantsData =
-    { debouncer = debounce 500 |> toDebouncer
-    , search = Nothing
-    , input = ""
     }
 
 

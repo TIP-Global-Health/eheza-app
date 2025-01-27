@@ -1433,14 +1433,33 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             in
             -- We'll limit the search to 500 each for now ... basically,
             -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            ( { model | personSearchesByName = Dict.insert trimmed Loading model.personSearchesByName }
             , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
         HandleFetchedPeopleByName trimmed data ->
-            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            ( { model | personSearchesByName = Dict.insert trimmed data model.personSearchesByName }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleByNationalId nationalId ->
+            let
+                trimmed =
+                    String.trim nationalId
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearchesByNationalId = Dict.insert trimmed Loading model.personSearchesByNationalId }
+            , sw.selectRange personEndpoint (ParamsNationalIdContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByNationalId trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByNationalId trimmed data ->
+            ( { model | personSearchesByNationalId = Dict.insert trimmed data model.personSearchesByNationalId }
             , Cmd.none
             , []
             )
@@ -5908,7 +5927,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     Dict.update uuid (Maybe.map (always (Success data))) model.people
             in
             ( { model
-                | personSearches = Dict.empty
+                | personSearchesByName = Dict.empty
+                , personSearchesByNationalId = Dict.empty
                 , people = people
               }
             , True

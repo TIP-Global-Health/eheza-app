@@ -439,12 +439,6 @@ resolveSelectedDateForMonthSelector currentDate monthGap =
 -- Inputs
 
 
-viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
-viewSearchForm language inputValue placeholderTransId setInputMsg =
-    div [ class "ui search form" ]
-        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
-
-
 viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
 viewTextInput language inputValue setInputMsg placeholderTransId inputClass =
     let
