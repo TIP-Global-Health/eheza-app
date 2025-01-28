@@ -271,9 +271,49 @@ everySetsEqual set1 set2 =
 -- FEATURES ON/OFF
 
 
+acuteIllnessEnabled : EverySet SiteFeature -> Bool
+acuteIllnessEnabled =
+    EverySet.member FeatureAcuteIllness
+
+
+antenatalEnabled : EverySet SiteFeature -> Bool
+antenatalEnabled =
+    EverySet.member FeatureAntenatal
+
+
+gpsCoordinatesEnabled : EverySet SiteFeature -> Bool
+gpsCoordinatesEnabled =
+    EverySet.member FeatureGPSCoordinates
+
+
+groupEducationEnabled : EverySet SiteFeature -> Bool
+groupEducationEnabled =
+    EverySet.member FeatureGroupEducation
+
+
+hivManagementEnabled : EverySet SiteFeature -> Bool
+hivManagementEnabled =
+    EverySet.member FeatureHIVManagement
+
+
+ncdEnabled : EverySet SiteFeature -> Bool
+ncdEnabled =
+    EverySet.member FeatureNCD
+
+
 ncdaEnabled : EverySet SiteFeature -> Bool
 ncdaEnabled =
     EverySet.member FeatureNCDA
+
+
+nutritionGroupEnabled : EverySet SiteFeature -> Bool
+nutritionGroupEnabled =
+    EverySet.member FeatureNutritionGroup
+
+
+nutritionIndividualEnabled : EverySet SiteFeature -> Bool
+nutritionIndividualEnabled =
+    EverySet.member FeatureNutritionIndividual
 
 
 reportToWhatsAppEnabled : EverySet SiteFeature -> Bool
@@ -291,16 +331,6 @@ tuberculosisManagementEnabled =
     EverySet.member FeatureTuberculosisManagement
 
 
-groupEducationEnabled : EverySet SiteFeature -> Bool
-groupEducationEnabled =
-    EverySet.member FeatureGroupEducation
-
-
-gpsCoordinatesEnabled : EverySet SiteFeature -> Bool
-gpsCoordinatesEnabled =
-    EverySet.member FeatureGPSCoordinates
-
-
-hivManagementEnabled : EverySet SiteFeature -> Bool
-hivManagementEnabled =
-    EverySet.member FeatureHIVManagement
+wellChildEnabled : EverySet SiteFeature -> Bool
+wellChildEnabled =
+    EverySet.member FeatureWellChild

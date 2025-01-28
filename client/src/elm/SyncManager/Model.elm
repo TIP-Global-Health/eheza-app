@@ -718,13 +718,19 @@ type Site
 
 
 type SiteFeature
-    = FeatureGPSCoordinates
+    = FeatureAcuteIllness
+    | FeatureAntenatal
+    | FeatureGPSCoordinates
     | FeatureGroupEducation
     | FeatureHIVManagement
+    | FeatureNCD
     | FeatureNCDA
+    | FeatureNutritionGroup
+    | FeatureNutritionIndividual
     | FeatureReportToWhatsApp
     | FeatureStockManagement
     | FeatureTuberculosisManagement
+    | FeatureWellChild
 
 
 type Msg
