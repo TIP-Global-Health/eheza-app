@@ -31,6 +31,15 @@ function hedley_admin_menu() {
     'type' => MENU_NORMAL_ITEM,
   );
 
+  $items['admin/reports/resilience-survey-report'] = array(
+    'title' => 'Resilience Survey Report',
+    'description' => 'Presents the Resilience Survey Results',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('hedley_admin_resilience_survey_results_table'),
+    'access callback' => 'hedley_admin_administrators_access',
+    'type' => MENU_NORMAL_ITEM,
+  );
+
   return $items;
 }
 
@@ -313,7 +322,6 @@ function hedley_admin_health_center_access($account = FALSE) {
     }
 
     $hc_ids = $account_wrapper->field_health_centers->value(['identifier' => TRUE]);
-
     return in_array($child_center_nid, $hc_ids);
   }
   catch (Exception $e) {
@@ -415,4 +423,152 @@ function hedley_admin_administrators_access() {
   $admin_role = user_role_load_by_name('administrator');
 
   return user_has_role($admin_role->rid);
+}
+
+/**
+ * Implements hook_form() for generating the Resilience survey results table.
+ *
+ * This function generates a table displaying the resilience survey results.
+ */
+function hedley_admin_resilience_survey_results_table(array $form, array &$form_state) {
+  $header = array(
+    'nurse' => t('Nurse'),
+    'health_center' => t('Health Center'),
+    'survey_type' => t('Survey Type'),
+    'date_measured' => t('Date Measured'),
+  );
+
+  for ($i = 1; $i <= 12; $i++) {
+    $header["question_$i"] = t('Question @number', ['@number' => $i]);
+  }
+
+  $query = db_select('node', 'n')
+    ->fields('n', ['title']);
+  $query->join('field_data_field_nurse', 'fn', 'fn.entity_id = n.nid');
+  $query->addField('fn', 'field_nurse_target_id', 'nurse_id');
+  $query->join('node', 'nurse_node', 'nurse_node.nid = fn.field_nurse_target_id');
+  $query->addField('nurse_node', 'title', 'nurse_name');
+  $query->join('field_data_field_health_centers', 'hc', 'hc.entity_id = nurse_node.nid');
+  $query->addField('hc', 'field_health_centers_target_id', 'health_center_id');
+  $query->join('node', 'health_center_node', 'health_center_node.nid = hc.field_health_centers_target_id');
+  $query->addField('health_center_node', 'title', 'health_center_name');
+  $query->join('field_data_field_resilience_survey_signs', 'signs', 'signs.entity_id = n.nid');
+  $query->join('field_data_field_resilience_survey_type', 'type', 'type.entity_id = n.nid');
+  $query->join('field_data_field_date_measured', 'date', 'date.entity_id = n.nid');
+  $query->fields('type', ['field_resilience_survey_type_value']);
+  $query->fields('date', ['field_date_measured_value']);
+  $query->fields('signs', ['field_resilience_survey_signs_value']);
+
+  $result = $query->execute();
+
+  $rows = [];
+  $surveys = [];
+
+  foreach ($result as $row) {
+    $survey_answers = explode('|', $row->field_resilience_survey_signs_value);
+    $survey_id = $row->field_resilience_survey_type_value . '-' . $row->nurse_name;
+
+    if (!isset($surveys[$survey_id])) {
+      $surveys[$survey_id] = [
+        'nurse' => $row->nurse_name,
+        'health_center' => $row->health_center_name,
+        'survey_type' => $row->field_resilience_survey_type_value,
+        'date_measured' => date('Y-m-d', strtotime($row->field_date_measured_value)),
+        'answers' => [],
+      ];
+    }
+
+    foreach ($survey_answers as $answer_pair) {
+      list($question, $answer) = explode('-', $answer_pair);
+      $question_number = str_replace('q', '', $question);
+
+      if (is_numeric($answer)) {
+        $answer = (int) $answer + 1;
+      }
+
+      if ($question_number >= 1 && $question_number <= 12) {
+        $surveys[$survey_id]["answers"]["question_$question_number"] = $answer;
+      }
+    }
+
+    for ($i = 1; $i <= 12; $i++) {
+      if (!isset($surveys[$survey_id]["answers"]["question_$i"])) {
+        $surveys[$survey_id]["answers"]["question_$i"] = 'n/a';
+      }
+    }
+  }
+
+  foreach ($surveys as $survey) {
+    $row_data = array_merge(
+      [
+        'nurse' => $survey['nurse'],
+        'health_center' => $survey['health_center'],
+        'survey_type' => $survey['survey_type'],
+        'date_measured' => $survey['date_measured'],
+      ],
+      $survey['answers']
+    );
+
+    $rows[] = $row_data;
+  }
+  $form_state['rows'] = $rows;
+
+  // Add a button to export as CSV.
+  $form['csv_export_button'] = array(
+    '#type' => 'submit',
+    '#value' => t('Export to CSV'),
+    '#submit' => array('hedley_admin_resilience_survey_export_csv'),
+  );
+
+  $form['table'] = [
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No survey results available'),
+  ];
+
+  drupal_add_css('.align-center { text-align: center; }', array('type' => 'inline'));
+  return $form;
+}
+
+/**
+ * Custom submit handler to export table data to CSV.
+ */
+function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
+  if (!isset($form_state['rows'])) {
+    drupal_set_message(t('No data available to export.'));
+    return;
+  }
+
+  $rows = $form_state['rows'];
+
+  $filename = 'resilience_survey_results.csv';
+  $csv_output = '';
+
+  $header = array(
+    'Nurse', 'Health Center', 'Survey Type', 'Date Measured',
+  );
+  for ($i = 1; $i <= 12; $i++) {
+    $header[] = "Question $i";
+  }
+  $csv_output .= implode(',', $header) . "\n";
+
+  // Add the rows to the CSV.
+  foreach ($rows as $row) {
+    $csv_row = [];
+    foreach ($row as $column) {
+      $csv_row[] = '"' . str_replace('"', '""', $column) . '"';
+    }
+    $csv_output .= implode(',', $csv_row) . "\n";
+  }
+
+  // Set the headers to force the file download.
+  drupal_add_http_header('Content-Type', 'text/csv');
+  drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+  drupal_add_http_header('Pragma', 'no-cache');
+  drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
+
+  // Output the CSV content.
+  echo $csv_output;
+  exit;
 }
