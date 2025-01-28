@@ -428,7 +428,7 @@ function hedley_admin_administrators_access() {
 /**
  * Implements hook_form() for generating the Resilience survey results table.
  *
- * This function generates a table displaying the resilience survey results with nurse.
+ * This function generates a table displaying the resilience survey results.
  */
 function hedley_admin_resilience_survey_results_table(array $form, array &$form_state) {
   $header = array(
@@ -439,7 +439,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   );
 
   for ($i = 1; $i <= 12; $i++) {
-    $header["question_$i"] = t("Question $i");
+    $header["question_$i"] = t('Question @number', ['@number' => $i]);
   }
 
   $query = db_select('node', 'n')
@@ -474,7 +474,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
         'health_center' => $row->health_center_name,
         'survey_type' => $row->field_resilience_survey_type_value,
         'date_measured' => date('Y-m-d', strtotime($row->field_date_measured_value)),
-        'answers' => []
+        'answers' => [],
       ];
     }
 
@@ -500,7 +500,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
         'nurse' => $survey['nurse'],
         'health_center' => $survey['health_center'],
         'survey_type' => $survey['survey_type'],
-        'date_measured' => $survey['date_measured']
+        'date_measured' => $survey['date_measured'],
       ],
       $survey['answers']
     );
@@ -542,7 +542,7 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
   $csv_output = '';
 
   $header = array(
-    'Nurse', 'Health Center', 'Survey Type', 'Date Measured'
+    'Nurse', 'Health Center', 'Survey Type', 'Date Measured',
   );
   for ($i = 1; $i <= 12; $i++) {
     $header[] = "Question $i";
