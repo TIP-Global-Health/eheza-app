@@ -482,6 +482,10 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
       list($question, $answer) = explode('-', $answer_pair);
       $question_number = str_replace('q', '', $question);
 
+      if (is_numeric($answer)) {
+        $answer = (int) $answer + 1;
+      }
+
       if ($question_number >= 1 && $question_number <= 12) {
         $surveys[$survey_id]["answers"]["question_$question_number"] = $answer;
       }
