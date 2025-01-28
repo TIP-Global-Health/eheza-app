@@ -248,7 +248,8 @@ function hedley_admin_views_post_execute(&$view) {
     // this boolean outcome.
     if ($result->field_field_related_by[0]['rendered']['#markup'] !== 'Caregiver for') {
       $result->field_field_related_by[0]['rendered']['#markup'] = '';
-    } else {
+    }
+    else {
       $result->field_field_related_by[0]['rendered']['#markup'] = t('X');
     }
   }
@@ -321,9 +322,9 @@ function hedley_admin_health_center_access($account = FALSE) {
     }
 
     $hc_ids = $account_wrapper->field_health_centers->value(['identifier' => TRUE]);
-
     return in_array($child_center_nid, $hc_ids);
-  } catch (Exception $e) {
+  }
+  catch (Exception $e) {
     // Might be impartial data, anyways, simply disallow the access.
     watchdog('hedley_admin', $e->getMessage());
     return FALSE;
