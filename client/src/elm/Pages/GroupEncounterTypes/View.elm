@@ -6,7 +6,7 @@ import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.EducationSession.Model exposing (emptyEducationSession)
 import Backend.Entities exposing (..)
 import Backend.Model exposing (MsgIndexedDb(..))
-import Backend.Utils exposing (groupEducationEnabled)
+import Backend.Utils exposing (groupEducationEnabled, nutritionGroupEnabled)
 import Backend.Village.Utils exposing (getVillageClinicId)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -49,7 +49,56 @@ viewHeader language =
 viewContent : Language -> NominalDate -> EverySet SiteFeature -> HealthCenterId -> NurseId -> App.Model.Model -> Html App.Model.Msg
 viewContent language currentDate features healthCenterId nurseId model =
     let
-        groupEncounterEducationButton =
+        nutritionEncounterButton =
+            if nutritionGroupEnabled features then
+                let
+                    groupAssessmentButtonAction =
+                        Maybe.andThen
+                            (\villageId ->
+                                -- There is one clinic for each village, so, if we got village ID,
+                                -- we should be able to find the ID of its clinic.
+                                getVillageClinicId villageId model.indexedDb
+                                    |> Maybe.map
+                                        (\clinicId ->
+                                            let
+                                                clinicSessions =
+                                                    Dict.get clinicId model.indexedDb.sessionsByClinic
+                                                        |> Maybe.andThen RemoteData.toMaybe
+                                                        |> Maybe.map Dict.toList
+                                                        |> Maybe.withDefault []
+
+                                                currentDaySessionId =
+                                                    List.filter (Tuple.second >> .startDate >> (==) currentDate) clinicSessions
+                                                        |> List.head
+                                                        |> Maybe.map Tuple.first
+                                            in
+                                            currentDaySessionId
+                                                |> Maybe.map
+                                                    (\sessionId ->
+                                                        SessionPage sessionId AttendancePage
+                                                            |> UserPage
+                                                            |> SetActivePage
+                                                    )
+                                                |> Maybe.withDefault
+                                                    ({ startDate = currentDate
+                                                     , endDate = Nothing
+                                                     , clinicId = clinicId
+                                                     , clinicType = Chw
+                                                     }
+                                                        |> PostSession
+                                                        |> MsgIndexedDb
+                                                    )
+                                        )
+                            )
+                            model.villageId
+                            |> Maybe.withDefault NoOp
+                in
+                encounterButton GroupEncounterNutrition groupAssessmentButtonAction
+
+            else
+                emptyNode
+
+        groupEducationButton =
             if groupEducationEnabled features then
                 Maybe.map
                     (\villageId ->
@@ -64,47 +113,6 @@ viewContent language currentDate features healthCenterId nurseId model =
             else
                 emptyNode
 
-        groupAssessmentButtonAction =
-            Maybe.andThen
-                (\villageId ->
-                    -- There is one clinic for each village, so, if we got village ID,
-                    -- we should be able to find the ID of its clinic.
-                    getVillageClinicId villageId model.indexedDb
-                        |> Maybe.map
-                            (\clinicId ->
-                                let
-                                    clinicSessions =
-                                        Dict.get clinicId model.indexedDb.sessionsByClinic
-                                            |> Maybe.andThen RemoteData.toMaybe
-                                            |> Maybe.map Dict.toList
-                                            |> Maybe.withDefault []
-
-                                    currentDaySessionId =
-                                        List.filter (Tuple.second >> .startDate >> (==) currentDate) clinicSessions
-                                            |> List.head
-                                            |> Maybe.map Tuple.first
-                                in
-                                currentDaySessionId
-                                    |> Maybe.map
-                                        (\sessionId ->
-                                            SessionPage sessionId AttendancePage
-                                                |> UserPage
-                                                |> SetActivePage
-                                        )
-                                    |> Maybe.withDefault
-                                        ({ startDate = currentDate
-                                         , endDate = Nothing
-                                         , clinicId = clinicId
-                                         , clinicType = Chw
-                                         }
-                                            |> PostSession
-                                            |> MsgIndexedDb
-                                        )
-                            )
-                )
-                model.villageId
-                |> Maybe.withDefault NoOp
-
         encounterButton encounterType action =
             button
                 [ class "ui primary button encounter-type"
@@ -116,6 +124,6 @@ viewContent language currentDate features healthCenterId nurseId model =
     in
     div [ class "ui full segment" ]
         [ p [] [ text <| translate language Translate.SelectEncounterType ++ ":" ]
-        , encounterButton GroupEncounterNutrition groupAssessmentButtonAction
-        , groupEncounterEducationButton
+        , nutritionEncounterButton
+        , groupEducationButton
         ]

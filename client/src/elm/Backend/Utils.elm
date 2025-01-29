@@ -271,6 +271,46 @@ everySetsEqual set1 set2 =
 -- FEATURES ON/OFF
 
 
+individualEncounterFeatures : Bool -> List SiteFeature
+individualEncounterFeatures isChw =
+    if isChw then
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureHIVManagement
+        , FeatureNCD
+        , FeatureNutritionIndividual
+        , FeatureTuberculosisManagement
+        , FeatureWellChild
+        ]
+
+    else
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureNCD
+        , FeatureNutritionIndividual
+        , FeatureWellChild
+        ]
+
+
+individualEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
+individualEncountersEnabled isChw features =
+    individualEncounterFeatures isChw
+        |> List.any
+            (\feature ->
+                EverySet.member feature features
+            )
+
+
+groupEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
+groupEncountersEnabled isChw features =
+    if isChw then
+        groupEducationEnabled features
+            || nutritionGroupEnabled features
+
+    else
+        nutritionGroupEnabled features
+
+
 acuteIllnessEnabled : EverySet SiteFeature -> Bool
 acuteIllnessEnabled =
     EverySet.member FeatureAcuteIllness

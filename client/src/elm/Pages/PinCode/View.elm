@@ -8,7 +8,7 @@ import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, 
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.Utils exposing (stockManagementEnabled)
+import Backend.Utils exposing (groupEncountersEnabled, individualEncountersEnabled, stockManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -293,13 +293,19 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                     , MenuDeviceStatus
                     ]
 
-                else
+                else if
+                    individualEncountersEnabled isChw features
+                        || groupEncountersEnabled isChw features
+                then
                     [ MenuClinical
                     , MenuParticipantDirectory
                     , MenuDashboards
                     , MenuCaseManagement
                     , MenuDeviceStatus
                     ]
+
+                else
+                    []
                         ++ (if nurse.resilienceProgramEnabled then
                                 [ MenuWellbeing ]
 
