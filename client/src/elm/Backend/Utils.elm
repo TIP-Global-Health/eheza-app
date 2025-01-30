@@ -296,6 +296,62 @@ groupEncountersEnabled isChw features =
         nutritionGroupEnabled features
 
 
+anyOfDashboardFeaturesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfDashboardFeaturesEnabled isChw features =
+    let
+        dashboardFeatures =
+            if isChw then
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureGroupEducation
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                ]
+
+            else
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureGroupEducation
+                , FeatureNCD
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                , FeatureWellChild
+                ]
+    in
+    List.any
+        (\feature ->
+            EverySet.member feature features
+        )
+        dashboardFeatures
+
+
+anyOfCaseManagementFeaturesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfCaseManagementFeaturesEnabled isChw features =
+    let
+        caseManagementFeatures =
+            if isChw then
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureHIVManagement
+                , FeatureNutritionIndividual
+                , FeatureNutritionGroup
+                , FeatureTuberculosisManagement
+                , FeatureWellChild
+                ]
+
+            else
+                [ FeatureAcuteIllness
+                , FeatureAntenatal
+                , FeatureNCD
+                ]
+    in
+    List.any
+        (\feature ->
+            EverySet.member feature features
+        )
+        caseManagementFeatures
+
+
 acuteIllnessEnabled : EverySet SiteFeature -> Bool
 acuteIllnessEnabled =
     EverySet.member FeatureAcuteIllness
