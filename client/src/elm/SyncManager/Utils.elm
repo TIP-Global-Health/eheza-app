@@ -1939,6 +1939,9 @@ siteFeatureFromString str =
         "tuberculosis_management" ->
             Just FeatureTuberculosisManagement
 
+        "well_child" ->
+            Just FeatureWellChild
+
         _ ->
             Nothing
 
