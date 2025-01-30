@@ -271,25 +271,10 @@ everySetsEqual set1 set2 =
 -- FEATURES ON/OFF
 
 
-individualEncounterFeatures : Bool -> List SiteFeature
-individualEncounterFeatures isChw =
-    if isChw then
-        [ FeatureAcuteIllness
-        , FeatureAntenatal
-        , FeatureHIVManagement
-        , FeatureNCD
-        , FeatureNutritionIndividual
-        , FeatureTuberculosisManagement
-        , FeatureWellChild
-        ]
-
-    else
-        [ FeatureAcuteIllness
-        , FeatureAntenatal
-        , FeatureNCD
-        , FeatureNutritionIndividual
-        , FeatureWellChild
-        ]
+anyOfEncounterTypesEnabled : Bool -> EverySet SiteFeature -> Bool
+anyOfEncounterTypesEnabled isChw features =
+    individualEncountersEnabled isChw features
+        || groupEncountersEnabled isChw features
 
 
 individualEncountersEnabled : Bool -> EverySet SiteFeature -> Bool
@@ -346,6 +331,12 @@ ncdaEnabled =
     EverySet.member FeatureNCDA
 
 
+nutritionEnabled : EverySet SiteFeature -> Bool
+nutritionEnabled features =
+    nutritionGroupEnabled features
+        || nutritionIndividualEnabled features
+
+
 nutritionGroupEnabled : EverySet SiteFeature -> Bool
 nutritionGroupEnabled =
     EverySet.member FeatureNutritionGroup
@@ -374,3 +365,24 @@ tuberculosisManagementEnabled =
 wellChildEnabled : EverySet SiteFeature -> Bool
 wellChildEnabled =
     EverySet.member FeatureWellChild
+
+
+individualEncounterFeatures : Bool -> List SiteFeature
+individualEncounterFeatures isChw =
+    if isChw then
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureHIVManagement
+        , FeatureNCD
+        , FeatureNutritionIndividual
+        , FeatureTuberculosisManagement
+        , FeatureWellChild
+        ]
+
+    else
+        [ FeatureAcuteIllness
+        , FeatureAntenatal
+        , FeatureNCD
+        , FeatureNutritionIndividual
+        , FeatureWellChild
+        ]

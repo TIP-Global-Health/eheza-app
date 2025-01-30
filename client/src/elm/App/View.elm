@@ -270,6 +270,10 @@ don't have one.
 -}
 viewConfiguredModel : Model -> ConfiguredModel -> Html Msg
 viewConfiguredModel model configured =
+    let
+        features =
+            model.syncManager.syncInfoGeneral.features
+    in
     if not model.serviceWorker.active then
         -- If our service worker is not active, then the only thing we allow
         -- is showing the status of the service worker. (Since we need the
@@ -288,15 +292,12 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper configured.config model
 
             _ ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
+                Pages.Device.View.view model.language features configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
                     |> flexPageWrapper configured.config model
 
     else
         let
-            features =
-                model.syncManager.syncInfoGeneral.features
-
             deviceName =
                 if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
                     Nothing
@@ -306,7 +307,7 @@ viewConfiguredModel model configured =
         in
         case model.activePage of
             DevicePage ->
-                Pages.Device.View.view model.language configured.device model configured.devicePage
+                Pages.Device.View.view model.language features configured.device model configured.devicePage
                     |> Html.map MsgPageDevice
                     |> flexPageWrapper configured.config model
 

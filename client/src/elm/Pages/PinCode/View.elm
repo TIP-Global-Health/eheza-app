@@ -8,7 +8,7 @@ import Backend.Nurse.Utils exposing (assignedToHealthCenter, assignedToVillage, 
 import Backend.Person.Model exposing (Initiator(..))
 import Backend.Person.Utils exposing (getHealthCenterName)
 import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
-import Backend.Utils exposing (groupEncountersEnabled, individualEncountersEnabled, stockManagementEnabled)
+import Backend.Utils exposing (anyOfEncounterTypesEnabled, stockManagementEnabled)
 import Date exposing (Unit(..))
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode, showIf)
@@ -59,7 +59,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                                     |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
                                     |> Maybe.withDefault False
                     in
-                    ( viewLoggedInHeader language isChw selectedAuthorizedLocation
+                    ( viewLoggedInHeader language features isChw selectedAuthorizedLocation
                     , viewLoggedInContent language
                         currentTime
                         features
@@ -82,9 +82,13 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
         |> div [ class "ui basic segment page-pincode" ]
 
 
-viewLoggedInHeader : Language -> Bool -> Bool -> Html Msg
-viewLoggedInHeader language isChw selectedAuthorizedLocation =
-    if selectedAuthorizedLocation then
+viewLoggedInHeader : Language -> EverySet SiteFeature -> Bool -> Bool -> Html Msg
+viewLoggedInHeader language features isChw selectedAuthorizedLocation =
+    let
+        encountersEnabled =
+            anyOfEncounterTypesEnabled isChw features
+    in
+    if selectedAuthorizedLocation || not encountersEnabled then
         viewLogo language
 
     else
@@ -200,8 +204,11 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                     |> translate language
                     |> text
                 ]
+
+        encountersEnabled =
+            anyOfEncounterTypesEnabled isChw features
     in
-    if selectedAuthorizedLocation then
+    if selectedAuthorizedLocation || not encountersEnabled then
         let
             currentDate =
                 fromLocalDateTime currentTime
@@ -288,39 +295,29 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                     (SendOutMsg <| SetActivePage navigationPage)
 
             activities =
-                if isLabTech then
-                    [ MenuCaseManagement
-                    , MenuDeviceStatus
-                    ]
+                let
+                    viewMenus menus isOn =
+                        if isOn then
+                            menus
 
-                else if
-                    individualEncountersEnabled isChw features
-                        || groupEncountersEnabled isChw features
-                then
-                    [ MenuClinical
-                    , MenuParticipantDirectory
-                    , MenuDashboards
-                    , MenuCaseManagement
-                    , MenuDeviceStatus
-                    ]
+                        else
+                            []
+                in
+                if isLabTech then
+                    viewMenus [ MenuCaseManagement ] encountersEnabled
+                        ++ [ MenuDeviceStatus ]
 
                 else
-                    []
-                        ++ (if nurse.resilienceProgramEnabled then
-                                [ MenuWellbeing ]
-
-                            else
-                                []
-                           )
-                        ++ (if
-                                stockManagementEnabled features
-                                    && not isChw
-                            then
-                                [ MenuStockManagement ]
-
-                            else
-                                []
-                           )
+                    viewMenus
+                        [ MenuClinical
+                        , MenuParticipantDirectory
+                        , MenuDashboards
+                        , MenuCaseManagement
+                        ]
+                        encountersEnabled
+                        ++ viewMenus [ MenuWellbeing ] nurse.resilienceProgramEnabled
+                        ++ viewMenus [ MenuStockManagement ] (stockManagementEnabled features && not isChw)
+                        ++ [ MenuDeviceStatus ]
 
             cards =
                 div [ class "wrap-cards" ]
