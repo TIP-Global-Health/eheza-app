@@ -25736,8 +25736,6 @@ translateActivePage page =
                     , kirundi = Just "Akahise k'ibipimo vy'ingwara"
                     }
 
-
-
                 StockManagementPage ->
                     { english = "Stock Management"
                     , kinyarwanda = Just "Ububiko bw'imiti"
