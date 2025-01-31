@@ -1,10 +1,10 @@
 module Pages.Device.View exposing (view)
 
 import App.Model
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedIn)
 import AssocList as Dict
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
-import Backend.Utils exposing (anyOfEncounterTypesEnabled)
+import Backend.Utils exposing (authoritySelectionRequired)
 import Device.Model exposing (..)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
@@ -184,9 +184,9 @@ viewPhotosTransferInfo language syncStatus status =
 
 viewHealthCenters : Language -> EverySet SiteFeature -> App.Model.Model -> Html Msg
 viewHealthCenters language features app =
-    getLoggedInData app
+    getLoggedIn app
         |> Maybe.map
-            (\( _, loggedInModel ) ->
+            (\loggedInModel ->
                 RemoteData.map
                     (\healthCentersDict ->
                         let
@@ -194,7 +194,7 @@ viewHealthCenters language features app =
                                 Tuple.second loggedInModel.nurse
                                     |> isCommunityHealthWorker
                         in
-                        if not <| anyOfEncounterTypesEnabled isChw features then
+                        if not <| authoritySelectionRequired isChw features then
                             emptyNode
 
                         else

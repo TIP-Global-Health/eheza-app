@@ -1,7 +1,7 @@
 module App.View exposing (view)
 
 import App.Model exposing (..)
-import App.Utils exposing (getLoggedInData)
+import App.Utils exposing (getLoggedIn, getLoggedInData)
 import AssocList as Dict
 import Backend.NCDEncounter.Types exposing (NCDProgressReportInitiator(..))
 import Backend.Nurse.Utils exposing (isCommunityHealthWorker, isLabTechnician)
@@ -298,6 +298,19 @@ viewConfiguredModel model configured =
 
     else
         let
+            viewMainPage =
+                Pages.PinCode.View.view model.language
+                    model.currentTime
+                    features
+                    model.activePage
+                    (RemoteData.map .nurse configured.loggedIn)
+                    ( model.healthCenterId, model.villageId )
+                    deviceName
+                    configured.pinCodePage
+                    model.indexedDb
+                    |> Html.map MsgPagePinCode
+                    |> flexPageWrapper configured.config model
+
             deviceName =
                 if String.isEmpty model.syncManager.syncInfoGeneral.deviceName then
                     Nothing
@@ -312,16 +325,56 @@ viewConfiguredModel model configured =
                     |> flexPageWrapper configured.config model
 
             PinCodePage ->
-                Pages.PinCode.View.view model.language
-                    model.currentTime
-                    features
-                    model.activePage
-                    (RemoteData.map .nurse configured.loggedIn)
-                    ( model.healthCenterId, model.villageId )
-                    deviceName
-                    configured.pinCodePage
-                    model.indexedDb
-                    |> Html.map MsgPagePinCode
+                viewMainPage
+
+            MessagingCenterPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedInModel ->
+                            let
+                                ( nurseId, nurse ) =
+                                    loggedInModel.nurse
+
+                                page_ =
+                                    Dict.get nurseId loggedInModel.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                            in
+                            Pages.MessagingCenter.View.view model.language
+                                model.currentTime
+                                nurseId
+                                nurse
+                                model.indexedDb
+                                page_
+                                |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                |> flexPageWrapper configured.config model
+                        )
+                    |> Maybe.withDefault viewMainPage
+
+            WellbeingPage ->
+                getLoggedIn model
+                    |> Maybe.map
+                        (\loggedInModel ->
+                            let
+                                ( nurseId, nurse ) =
+                                    loggedInModel.nurse
+
+                                page_ =
+                                    Dict.get nurseId loggedInModel.messagingCenterPages
+                                        |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
+                            in
+                            Pages.Wellbeing.View.view model.language
+                                model.currentTime
+                                nurseId
+                                nurse
+                                model.indexedDb
+                                page_
+                                |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
+                                |> flexPageWrapper configured.config model
+                        )
+                    |> Maybe.withDefault viewMainPage
+
+            MessagingGuide ->
+                Pages.MessagingGuide.View.view model.language
                     |> flexPageWrapper configured.config model
 
             PageNotFound url ->
@@ -1070,46 +1123,6 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                             model.indexedDb
                             page_
                             |> Html.map (MsgLoggedIn << MsgPagePatientRecord personId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingCenterPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                        in
-                        Pages.MessagingCenter.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    WellbeingPage ->
-                        let
-                            ( nurseId, nurse ) =
-                                loggedInModel.nurse
-
-                            page_ =
-                                Dict.get nurseId loggedInModel.messagingCenterPages
-                                    |> Maybe.withDefault Pages.MessagingCenter.Model.emptyModel
-                        in
-                        Pages.Wellbeing.View.view model.language
-                            model.currentTime
-                            nurseId
-                            nurse
-                            model.indexedDb
-                            page_
-                            |> Html.map (MsgLoggedIn << MsgPageMessagingCenter nurseId)
-                            |> flexPageWrapper configured.config model
-
-                    MessagingGuide ->
-                        Pages.MessagingGuide.View.view model.language
                             |> flexPageWrapper configured.config model
 
                     StockManagementPage ->

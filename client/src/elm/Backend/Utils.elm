@@ -271,6 +271,12 @@ everySetsEqual set1 set2 =
 -- FEATURES ON/OFF
 
 
+authoritySelectionRequired : Bool -> EverySet SiteFeature -> Bool
+authoritySelectionRequired isChw features =
+    anyOfEncounterTypesEnabled isChw features
+        || (stockManagementEnabled features && not isChw)
+
+
 anyOfEncounterTypesEnabled : Bool -> EverySet SiteFeature -> Bool
 anyOfEncounterTypesEnabled isChw features =
     individualEncountersEnabled isChw features
@@ -408,11 +414,6 @@ reportToWhatsAppEnabled =
     EverySet.member FeatureReportToWhatsApp
 
 
-stockManagementEnabled : EverySet SiteFeature -> Bool
-stockManagementEnabled =
-    EverySet.member FeatureStockManagement
-
-
 tuberculosisManagementEnabled : EverySet SiteFeature -> Bool
 tuberculosisManagementEnabled =
     EverySet.member FeatureTuberculosisManagement
@@ -421,6 +422,11 @@ tuberculosisManagementEnabled =
 wellChildEnabled : EverySet SiteFeature -> Bool
 wellChildEnabled =
     EverySet.member FeatureWellChild
+
+
+stockManagementEnabled : EverySet SiteFeature -> Bool
+stockManagementEnabled =
+    EverySet.member FeatureStockManagement
 
 
 individualEncounterFeatures : Bool -> List SiteFeature

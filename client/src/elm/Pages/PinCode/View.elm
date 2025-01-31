@@ -13,6 +13,7 @@ import Backend.Utils
         ( anyOfCaseManagementFeaturesEnabled
         , anyOfDashboardFeaturesEnabled
         , anyOfEncounterTypesEnabled
+        , authoritySelectionRequired
         , stockManagementEnabled
         )
 import Date exposing (Unit(..))
@@ -54,7 +55,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                         isChw =
                             isCommunityHealthWorker nurse
 
-                        selectedAuthorizedLocation =
+                        authoritySelected =
                             if isChw then
                                 villageId
                                     |> Maybe.map (\id -> EverySet.member id nurse.villages)
@@ -65,7 +66,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                                     |> Maybe.map (\id -> EverySet.member id nurse.healthCenters)
                                     |> Maybe.withDefault False
                     in
-                    ( viewLoggedInHeader language features isChw selectedAuthorizedLocation
+                    ( viewLoggedInHeader language features isChw authoritySelected
                     , viewLoggedInContent language
                         currentTime
                         features
@@ -74,7 +75,7 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
                         ( healthCenterId, villageId )
                         isChw
                         deviceName
-                        selectedAuthorizedLocation
+                        authoritySelected
                         db
                         model
                     )
@@ -89,12 +90,8 @@ view language currentTime features activePage nurseData ( healthCenterId, villag
 
 
 viewLoggedInHeader : Language -> EverySet SiteFeature -> Bool -> Bool -> Html Msg
-viewLoggedInHeader language features isChw selectedAuthorizedLocation =
-    let
-        encountersEnabled =
-            anyOfEncounterTypesEnabled isChw features
-    in
-    if selectedAuthorizedLocation || not encountersEnabled then
+viewLoggedInHeader language features isChw authoritySelected =
+    if authoritySelected || (not <| authoritySelectionRequired isChw features) then
         viewLogo language
 
     else
@@ -199,7 +196,7 @@ viewLoggedInContent :
     -> ModelIndexedDb
     -> Model
     -> List (Html Msg)
-viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName selectedAuthorizedLocation db model =
+viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId, villageId ) isChw deviceName authoritySelected db model =
     let
         logoutButton =
             button
@@ -210,11 +207,8 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
                     |> translate language
                     |> text
                 ]
-
-        encountersEnabled =
-            anyOfEncounterTypesEnabled isChw features
     in
-    if selectedAuthorizedLocation || not encountersEnabled then
+    if authoritySelected || (not <| authoritySelectionRequired isChw features) then
         let
             currentDate =
                 fromLocalDateTime currentTime
@@ -279,7 +273,7 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
                             MenuWellbeing ->
                                 ( "messaging-center"
-                                , UserPage WellbeingPage
+                                , WellbeingPage
                                 )
 
                             MenuStockManagement ->
@@ -302,6 +296,9 @@ viewLoggedInContent language currentTime features nurseId nurse ( healthCenterId
 
             activities =
                 let
+                    encountersEnabled =
+                        anyOfEncounterTypesEnabled isChw features
+
                     viewMenus menus isOn =
                         if isOn then
                             menus
