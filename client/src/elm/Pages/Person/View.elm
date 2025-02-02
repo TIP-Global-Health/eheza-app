@@ -975,6 +975,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         hivStatusInput =
             viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
+        -- Not in use anymore - not displayed on form.
         numberOfChildrenUnder5Input =
             let
                 options =
@@ -1032,7 +1033,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
-                                , numberOfChildrenUnder5Input
                                 ]
 
                             ExpectChild ->
@@ -1049,7 +1049,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , levelOfEducationInput
                                 , maritalStatusInput
                                 , modeOfDeliveryInput
-                                , numberOfChildrenUnder5Input
                                 ]
                    )
 
