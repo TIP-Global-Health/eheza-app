@@ -985,8 +985,14 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
+        -- Used only on Rwanda site.
         hmisNumberInput =
-            viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+            case site of
+                SiteRwanda ->
+                    viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+
+                _ ->
+                    emptyNode
 
         firstNameInput =
             viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
