@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , LastMenstrualPeriodValue
         , MedicalHistoryInfectiousDisease(..)
         , MedicalHistoryMentalHealthIssue(..)
         , MedicalHistoryPhysicalCondition(..)
@@ -311,6 +312,17 @@ viewContent :
     -> Html Msg
 viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled =
     let
+        globalLmpValue =
+            let
+                nursePreviousMeasurements =
+                    List.map .measurements assembled.nursePreviousEncountersData
+
+                chwPreviousMeasurements =
+                    List.map (\( _, _, measurements ) -> measurements)
+                        assembled.chwPreviousMeasurementsWithDates
+            in
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
+
         content =
             let
                 labResultsConfig =
@@ -522,13 +534,13 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewVaccinationHistoryPane language currentDate assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
-                    , viewPatientProgressPane language currentDate isChw assembled
+                    , viewPatientProgressPane language currentDate isChw globalLmpValue assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -542,12 +554,12 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
         , Html.Attributes.id "report-content"
         ]
     <|
-        viewHeaderPane language currentDate assembled
+        viewHeaderPane language currentDate globalLmpValue assembled
             :: content
 
 
-viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewHeaderPane language currentDate assembled =
+viewHeaderPane : Language -> NominalDate -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewHeaderPane language currentDate globalLmpValue assembled =
     let
         mother =
             assembled.person
@@ -568,6 +580,18 @@ viewHeaderPane language currentDate assembled =
                     )
                 )
                 obstetricHistoryValue
+
+        viewUnsureOfLmp =
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        p [] [ text <| translate language Translate.UnsureOfLmp ]
+
+                    else
+                        emptyNode
+                )
+                globalLmpValue
+                |> Maybe.withDefault emptyNode
 
         viewLineItem class_ label value =
             p [ class class_ ]
@@ -593,6 +617,7 @@ viewHeaderPane language currentDate assembled =
                 , div [ class "content right" ]
                     [ viewLineItem "edd" Translate.Edd edd
                     , viewLineItem "ega" Translate.Ega ega
+                    , viewUnsureOfLmp
                     ]
                 ]
             , div [ class "gravida-para" ]
@@ -1001,8 +1026,8 @@ viewProgramReferralEntry language date diagnosis facility =
         |> wrapWithLI
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -1145,29 +1170,21 @@ viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasu
                 allNurseEncountersData
 
         lmpDateNonConfidentEntry =
-            let
-                nursePreviousMeasurements =
-                    List.map .measurements assembled.nursePreviousEncountersData
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        Maybe.map
+                            (Translate.LmpDateNotConfidentReasonforReport
+                                >> translate language
+                                >> wrapWithLI
+                            )
+                            value.notConfidentReason
+                            |> Maybe.withDefault []
 
-                chwPreviousMeasurements =
-                    List.map (\( _, _, measurements ) -> measurements)
-                        assembled.chwPreviousMeasurementsWithDates
-            in
-            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
-                |> Maybe.map
-                    (\value ->
-                        if value.confident == False then
-                            Maybe.map
-                                (Translate.LmpDateNotConfidentReasonforReport
-                                    >> translate language
-                                    >> wrapWithLI
-                                )
-                                value.notConfidentReason
-                                |> Maybe.withDefault []
-
-                        else
-                            []
-                    )
+                    else
+                        []
+                )
+                globalLmpValue
                 |> Maybe.withDefault []
 
         common =
@@ -1361,8 +1378,8 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.birthPlan
 
 
-viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate isChw assembled =
+viewPatientProgressPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
     let
         allNurseEncountersData =
             List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
@@ -1704,11 +1721,24 @@ viewPatientProgressPane language currentDate isChw assembled =
                 )
                 assembled.globalLmpDate
                 |> Maybe.withDefault []
+
+        viewUnsureOfLmp =
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        p [] [ text <| translate language Translate.UnsureOfLmp ]
+
+                    else
+                        emptyNode
+                )
+                globalLmpValue
+                |> Maybe.withDefault emptyNode
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
+            , viewUnsureOfLmp
             , div [ class "timeline-section" ]
                 [ div [ class "indicators" ]
                     [ fetalHeartRateLabel
