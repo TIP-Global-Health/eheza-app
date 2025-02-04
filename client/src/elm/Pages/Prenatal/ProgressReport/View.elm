@@ -585,7 +585,7 @@ viewHeaderPane language currentDate globalLmpValue assembled =
             Maybe.map
                 (\value ->
                     if value.confident == False then
-                        p [] [ text <| translate language Translate.UnsureOfLmp ]
+                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
 
                     else
                         emptyNode
@@ -1726,7 +1726,7 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
             Maybe.map
                 (\value ->
                     if value.confident == False then
-                        p [] [ text <| translate language Translate.UnsureOfLmp ]
+                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
 
                     else
                         emptyNode
