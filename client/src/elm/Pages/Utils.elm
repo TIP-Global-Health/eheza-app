@@ -439,12 +439,6 @@ resolveSelectedDateForMonthSelector currentDate monthGap =
 -- Inputs
 
 
-viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
-viewSearchForm language inputValue placeholderTransId setInputMsg =
-    div [ class "ui search form" ]
-        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
-
-
 viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
 viewTextInput language inputValue setInputMsg placeholderTransId inputClass =
     let
@@ -926,8 +920,8 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
-viewEndEncounterDialog language heading message confirmAction cancelAction =
+viewConfirmationDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
+viewConfirmationDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]
         [ div [ class "header" ]
             [ text <| translate language heading ]

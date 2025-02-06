@@ -10,6 +10,9 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (defaultIconForPerson, generateFullName, isPersonAFertileWoman)
+import Components.PatientsSearchForm.Model
+import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.View
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
@@ -2007,7 +2010,9 @@ viewContactsTracingFormSummary language currentDate db contactsTracingFinished c
                 [ ( "ui primary button", True )
                 , ( "disabled", contactsTracingFinished )
                 ]
-            , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+            , onClick <|
+                SetContactsTracingFormState <|
+                    ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.emptyModel
             ]
             [ text <| translate language Translate.AddContact
             ]
@@ -2092,22 +2097,29 @@ viewTracedContact language currentDate db finished contact =
         ]
 
 
-viewContactsTracingFormSearchParticipants : Language -> NominalDate -> Site -> ModelIndexedDb -> List PersonId -> SearchParticipantsData -> List (Html Msg)
+viewContactsTracingFormSearchParticipants :
+    Language
+    -> NominalDate
+    -> Site
+    -> ModelIndexedDb
+    -> List PersonId
+    -> Components.PatientsSearchForm.Model.Model
+    -> List (Html Msg)
 viewContactsTracingFormSearchParticipants language currentDate site db existingContacts data =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language data.input Translate.PlaceholderSearchContactName SetContactsTracingInput
+            Components.PatientsSearchForm.View.view language data
+                |> Html.map Pages.AcuteIllness.Activity.Model.MsgPatientsSearchForm
 
         searchValue =
-            Maybe.withDefault "" data.search
+            Components.PatientsSearchForm.Utils.getSearchValue data
 
         results =
             if String.isEmpty searchValue then
                 Nothing
 
             else
-                Dict.get searchValue db.personSearches
-                    |> Maybe.withDefault NotAsked
+                Components.PatientsSearchForm.Utils.getSearchResults db data
                     |> RemoteData.map
                         (Dict.filter
                             (\personId _ ->
@@ -2247,7 +2259,13 @@ viewContactsTracingFormRecordContactDetails language currentDate personId db dat
                 in
                 [ viewCustomLabel language Translate.ContactsTracingCompleteDetails ":" "instructions"
                 , div [ class "ui items" ] <|
-                    [ viewContactTracingParticipant language currentDate personId person True (ContactsTracingFormSearchParticipants emptySearchParticipantsData) ]
+                    [ viewContactTracingParticipant language
+                        currentDate
+                        personId
+                        person
+                        True
+                        (ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.emptyModel)
+                    ]
                 , div [ class "contact-detail" ]
                     [ viewLabel language Translate.DateOfContact
                     , div
@@ -2589,7 +2607,10 @@ viewCreateContactForm language currentDate site geoInfo db data =
         cancelButton =
             button
                 [ class "ui button primary"
-                , onClick <| SetContactsTracingFormState <| ContactsTracingFormSearchParticipants emptySearchParticipantsData
+                , onClick <|
+                    SetContactsTracingFormState <|
+                        ContactsTracingFormSearchParticipants
+                            Components.PatientsSearchForm.Model.emptyModel
                 ]
                 [ text <| translate language Translate.Cancel ]
 

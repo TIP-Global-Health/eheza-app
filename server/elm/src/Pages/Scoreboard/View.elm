@@ -1218,10 +1218,14 @@ formatValues currentDate yearSelectorGap =
     let
         currentMonthNumber =
             Date.monthNumber currentDate
+
+        yearsGapFrom2023 =
+            2023 - Date.year currentDate
     in
     List.indexedMap
         (\index value ->
             if yearSelectorGap == 0 then
+                -- We're at current year.
                 if index < currentMonthNumber then
                     value
 
@@ -1229,14 +1233,14 @@ formatValues currentDate yearSelectorGap =
                     -- Not showing data of future months.
                     ""
 
-            else if yearSelectorGap == -1 then
-                if index >= 10 then
-                    -- Showing data starting Nov 2023.
-                    -- For prior dates - dash for all rows.
-                    value
+            else if yearSelectorGap > yearsGapFrom2023 then
+                -- We're in 2024, or above.
+                value
 
-                else
-                    "-"
+            else if index >= 10 then
+                -- We're in 2023. Showing data starting Nov 2023.
+                -- For prior dates - dash for all rows.
+                value
 
             else
                 "-"

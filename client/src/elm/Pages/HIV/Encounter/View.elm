@@ -15,8 +15,8 @@ import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewEndEncounterDialog
+        ( viewConfirmationDialog
+        , viewEndEncounterButton
         , viewPersonDetailsExtended
         )
 import SyncManager.Model exposing (Site)
@@ -46,7 +46,7 @@ viewHeaderAndContent language currentDate db model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)

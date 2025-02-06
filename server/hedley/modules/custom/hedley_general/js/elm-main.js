@@ -35000,11 +35000,12 @@ var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) 
 };
 var $author$project$Pages$Scoreboard$View$formatValues = F2(
 	function (currentDate, yearSelectorGap) {
+		var yearsGapFrom2023 = 2023 - $justinmimbs$date$Date$year(currentDate);
 		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
 		return $elm$core$List$indexedMap(
 			F2(
 				function (index, value) {
-					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? value : '') : (_Utils_eq(yearSelectorGap, -1) ? ((index >= 10) ? value : '-') : '-');
+					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? value : '') : ((_Utils_cmp(yearSelectorGap, yearsGapFrom2023) > 0) ? value : ((index >= 10) ? value : '-'));
 				}));
 	});
 var $author$project$Pages$Scoreboard$View$viewTableRow = F5(

@@ -97,8 +97,8 @@ import Pages.Report.Model exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewCustomAction
-        , viewEndEncounterDialog
+        ( viewConfirmationDialog
+        , viewCustomAction
         , viewEndEncounterMenuForProgressReport
         , viewPhotoThumbFromImageUrl
         )
@@ -166,7 +166,7 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)
