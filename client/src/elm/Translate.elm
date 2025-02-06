@@ -24135,7 +24135,7 @@ translationSet trans =
             }
 
         UnsureOfLmp ->
-            { english = "Patient unsure of LMP"
+            { english = "LMP not confident"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
