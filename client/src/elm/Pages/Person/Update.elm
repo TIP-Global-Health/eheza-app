@@ -11,7 +11,6 @@ import Date
 import Form
 import Form.Field
 import GeoLocation.Model exposing (ReverseGeoInfo)
-import GeoLocation.Utils exposing (getGeoInfo)
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra exposing (isJust)

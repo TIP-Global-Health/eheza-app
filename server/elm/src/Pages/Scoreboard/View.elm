@@ -6,7 +6,7 @@ import Backend.Model exposing (ModelBackend)
 import Backend.Scoreboard.Model exposing (ScoreboardData)
 import Date exposing (Interval(..), Unit(..))
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffMonths, formatDDMMYYYY, toLastDayOfMonth)
+import Gizra.NominalDate exposing (NominalDate, diffMonths, toLastDayOfMonth)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -273,14 +273,6 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.nutrition.muac.severe
 
-                                            muacModerateAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.muac.moderate
-
-                                            muacNormalAsAgeInMonths =
-                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
-                                                    record.nutrition.muac.normal
-
                                             ( row1, row2, row3 ) =
                                                 if
                                                     existedDuringExaminationMonth
@@ -288,20 +280,32 @@ viewAcuteMalnutritionPane language currentDate yearSelectorGap monthsGap childre
                                                 then
                                                     ( accumValue.row1 + 1, accumValue.row2, accumValue.row3 )
 
-                                                else if
-                                                    existedDuringExaminationMonth
-                                                        && (not <| List.isEmpty muacModerateAsAgeInMonths)
-                                                then
-                                                    ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
-
-                                                else if
-                                                    existedDuringExaminationMonth
-                                                        && (not <| List.isEmpty muacNormalAsAgeInMonths)
-                                                then
-                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
-
                                                 else
-                                                    ( accumValue.row1, accumValue.row2, accumValue.row3 )
+                                                    let
+                                                        muacModerateAsAgeInMonths =
+                                                            List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                                record.nutrition.muac.moderate
+                                                    in
+                                                    if
+                                                        existedDuringExaminationMonth
+                                                            && (not <| List.isEmpty muacModerateAsAgeInMonths)
+                                                    then
+                                                        ( accumValue.row1, accumValue.row2 + 1, accumValue.row3 )
+
+                                                    else
+                                                        let
+                                                            muacNormalAsAgeInMonths =
+                                                                List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
+                                                                    record.nutrition.muac.normal
+                                                        in
+                                                        if
+                                                            existedDuringExaminationMonth
+                                                                && (not <| List.isEmpty muacNormalAsAgeInMonths)
+                                                        then
+                                                            ( accumValue.row1, accumValue.row2, accumValue.row3 + 1 )
+
+                                                        else
+                                                            ( accumValue.row1, accumValue.row2, accumValue.row3 )
                                         in
                                         { row1 = row1
                                         , row2 = row2
@@ -455,11 +459,6 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
                                             targetDateForMonth =
                                                 resolveTargetDateForMonth gapInMonths currentDate
 
-                                            ageInMonths =
-                                                -- Using EDD date to properly resolve the month of
-                                                -- prgnancy (as child may have been borm premature).
-                                                diffMonths (Date.floor Month record.eddDate) targetDateForMonth
-
                                             row1AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.ancNewborn.row1
@@ -476,6 +475,11 @@ viewANCNewbornPane language currentDate yearSelectorGap monthsGap childrenUnder2
 
                                             row2 =
                                                 let
+                                                    ageInMonths =
+                                                        -- Using EDD date to properly resolve the month of
+                                                        -- prgnancy (as child may have been borm premature).
+                                                        diffMonths (Date.floor Month record.eddDate) targetDateForMonth
+
                                                     gap =
                                                         gapInMonths - ageInMonths
                                                 in
@@ -1051,9 +1055,6 @@ viewInfrastructureEnvironmentWashPane language currentDate yearSelectorGap month
                                                 -- Making sure patient was already created during examination month.
                                                 Date.compare record.created targetDateForMonth == LT
 
-                                            ageInMonths =
-                                                diffMonths (Date.floor Month record.birthDate) targetDateForMonth
-
                                             row1AsAgeInMonths =
                                                 List.filter (\date -> equalByYearAndMonth date targetDateForMonth)
                                                     record.ncda.infrastructureEnvironmentWash.row1
@@ -1217,10 +1218,14 @@ formatValues currentDate yearSelectorGap =
     let
         currentMonthNumber =
             Date.monthNumber currentDate
+
+        yearsGapFrom2023 =
+            2023 - Date.year currentDate
     in
     List.indexedMap
         (\index value ->
             if yearSelectorGap == 0 then
+                -- We're at current year.
                 if index < currentMonthNumber then
                     value
 
@@ -1228,14 +1233,14 @@ formatValues currentDate yearSelectorGap =
                     -- Not showing data of future months.
                     ""
 
-            else if yearSelectorGap == -1 then
-                if index >= 10 then
-                    -- Showing data starting Nov 2023.
-                    -- For prior dates - dash for all rows.
-                    value
+            else if yearSelectorGap > yearsGapFrom2023 then
+                -- We're in 2024, or above.
+                value
 
-                else
-                    "-"
+            else if index >= 10 then
+                -- We're in 2023. Showing data starting Nov 2023.
+                -- For prior dates - dash for all rows.
+                value
 
             else
                 "-"

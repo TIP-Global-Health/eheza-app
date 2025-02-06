@@ -14,7 +14,7 @@ import Backend.Person.Utils
         , ubudeheFromInt
         )
 import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
-import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
+import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..))
 import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)

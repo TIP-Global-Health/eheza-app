@@ -8,6 +8,7 @@ import Backend.Model
 import Backend.StockUpdate.Model
 import Backend.StockUpdate.Utils exposing (stockSupplierFromString)
 import Gizra.NominalDate exposing (NominalDate)
+import Gizra.Update exposing (sequenceExtra)
 import Maybe.Extra
 import Pages.StockManagement.Model exposing (..)
 import Pages.StockManagement.Utils exposing (..)
@@ -69,7 +70,12 @@ update currentDate maybeHealthCenterId msg model =
         ChangeDetailsMonthGap value ->
             case model.displayMode of
                 ModeMonthDetails monthGap ->
-                    update currentDate maybeHealthCenterId (SetDisplayMode (ModeMonthDetails (monthGap + value))) model
+                    ( model
+                    , Cmd.none
+                    , []
+                    )
+                        |> sequenceExtra (update currentDate maybeHealthCenterId)
+                            [ SetDisplayMode (ModeMonthDetails (monthGap + value)) ]
 
                 _ ->
                     ( model

@@ -2,10 +2,8 @@ module Pages.HomeVisit.Activity.View exposing (view)
 
 import Backend.Entities exposing (..)
 import Backend.HomeVisitActivity.Model exposing (HomeVisitActivity(..))
-import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -27,21 +25,15 @@ import Measurement.View
         , nutritionHygieneInputsAndTasks
         )
 import Pages.HomeVisit.Activity.Model exposing (..)
-import Pages.HomeVisit.Activity.Utils exposing (..)
 import Pages.HomeVisit.Encounter.Model exposing (AssembledData)
 import Pages.HomeVisit.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( maybeToBoolTask
-        , taskCompleted
-        , taskCompletedWithException
-        , viewBoolInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewCustomSelectListInput
+        ( resolveTasksCompletedFromTotal
         , viewPersonDetails
-        , viewQuestionLabel
+        , viewSaveAction
+        , viewTasksCount
         )
 import Translate exposing (Language, translate)
 import Utils.WebData exposing (viewWebData)
@@ -83,7 +75,6 @@ viewHeader language id activity =
             , onClick <| SetActivePage <| UserPage <| HomeVisitEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -131,19 +122,19 @@ viewFeedingContent language currentDate assembled db feedingForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveFeeding assembled.participant.person assembled.measurements.feeding) disabled
+                ++ [ viewSaveAction language
+                        (SaveFeeding assembled.participant.person assembled.measurements.feeding)
+                        disabled
+                   ]
         ]
     ]
 
@@ -165,19 +156,19 @@ viewCaringContent language currentDate assembled db caringForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveNutritionCaring assembled.participant.person assembled.measurements.caring) disabled
+                ++ [ viewSaveAction language
+                        (SaveNutritionCaring assembled.participant.person assembled.measurements.caring)
+                        disabled
+                   ]
         ]
     ]
 
@@ -199,19 +190,19 @@ viewHygieneContent language currentDate assembled db hygieneForm =
                 form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveHygiene assembled.participant.person assembled.measurements.hygiene) disabled
+                ++ [ viewSaveAction language
+                        (SaveHygiene assembled.participant.person assembled.measurements.hygiene)
+                        disabled
+                   ]
         ]
     ]
 
@@ -228,30 +219,18 @@ viewFoodSecurityContent language currentDate assembled db foodSecurityForm =
             nutritionFoodSecurityInputsAndTasks language currentDate SetFoodSecurityBoolInput SetMainIncomeSource form
 
         ( tasksCompleted, tasksTotal ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= tasksTotal
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted tasksTotal ]
+    [ viewTasksCount language tasksCompleted tasksTotal
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             inputs
-                ++ viewAction language (SaveFoodSecurity assembled.participant.person assembled.measurements.foodSecurity) disabled
-        ]
-    ]
-
-
-viewAction : Language -> Msg -> Bool -> List (Html Msg)
-viewAction language saveMsg disabled =
-    [ div [ class "actions" ]
-        [ button
-            [ classList [ ( "ui fluid primary button", True ), ( "disabled", disabled ) ]
-            , onClick saveMsg
-            ]
-            [ text <| translate language Translate.Save ]
+                ++ [ viewSaveAction language
+                        (SaveFoodSecurity assembled.participant.person assembled.measurements.foodSecurity)
+                        disabled
+                   ]
         ]
     ]

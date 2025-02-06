@@ -4,9 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HIVActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -20,7 +18,6 @@ import Pages.Utils
         ( viewConfirmationDialog
         , viewEndEncounterButton
         , viewPersonDetailsExtended
-        , viewReportLink
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)

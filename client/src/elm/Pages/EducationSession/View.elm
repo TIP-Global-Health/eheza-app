@@ -1,15 +1,12 @@
 module Pages.EducationSession.View exposing (view)
 
-import AssocList as Dict exposing (Dict)
+import AssocList as Dict
 import Backend.EducationSession.Model exposing (EducationSession, EducationTopic(..))
 import Backend.Entities exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Person)
 import Backend.Person.Utils exposing (isPersonAnAdult)
-import Backend.Village.Utils exposing (personLivesInVillage)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -182,13 +179,6 @@ viewSearchForm language currentDate villageId selectedParticipants db model =
                     )
                 |> Maybe.withDefault Dict.empty
 
-        results =
-            if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
-                Dict.empty
-
-            else
-                candidates
-
         resultsForView =
             if Dict.isEmpty candidates then
                 [ div [ class "ui message warning" ]
@@ -197,6 +187,13 @@ viewSearchForm language currentDate villageId selectedParticipants db model =
 
             else
                 let
+                    results =
+                        if String.isEmpty model.filter && model.initialResultsDisplay == InitialResultsHidden then
+                            Dict.empty
+
+                        else
+                            candidates
+
                     filter =
                         normalizeFilter model.filter
 

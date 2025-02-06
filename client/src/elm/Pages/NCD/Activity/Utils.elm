@@ -21,6 +21,7 @@ import Measurement.Utils
         , resolveLabTestDate
         , vitalsFormWithDefault
         )
+import Measurement.View exposing (vitalsFormInputsAndTasks)
 import Pages.NCD.Activity.Model exposing (..)
 import Pages.NCD.Activity.Types exposing (..)
 import Pages.NCD.Model exposing (..)
@@ -32,6 +33,7 @@ import Pages.Utils
         , ifTrue
         , maybeToBoolTask
         , maybeValueConsideringIsDirtyField
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
@@ -283,36 +285,16 @@ examinationTasksCompletedFromTotal : NominalDate -> AssembledData -> Examination
 examinationTasksCompletedFromTotal currentDate assembled data task =
     case task of
         TaskVitals ->
-            Maybe.map
-                (\birthDate ->
-                    let
-                        form =
-                            assembled.measurements.vitals
-                                |> getMeasurementValueFunc
-                                |> vitalsFormWithDefault data.vitalsForm
+            let
+                formConfig =
+                    generateVitalsFormConfig assembled
 
-                        ageYears =
-                            Gizra.NominalDate.diffYears birthDate currentDate
-
-                        ( ageDependentInputsCompleted, ageDependentInputsActive ) =
-                            if ageYears < 12 then
-                                ( 0, 0 )
-
-                            else
-                                ( taskCompleted form.sysBloodPressure
-                                    + taskCompleted form.diaBloodPressure
-                                , 2
-                                )
-                    in
-                    ( taskCompleted form.heartRate
-                        + taskCompleted form.respiratoryRate
-                        + taskCompleted form.bodyTemperature
-                        + ageDependentInputsCompleted
-                    , 3 + ageDependentInputsActive
-                    )
-                )
-                assembled.person.birthDate
-                |> Maybe.withDefault ( 0, 0 )
+                ( _, tasks ) =
+                    getMeasurementValueFunc assembled.measurements.vitals
+                        |> vitalsFormWithDefault data.vitalsForm
+                        |> vitalsFormInputsAndTasks English currentDate formConfig
+            in
+            resolveTasksCompletedFromTotal tasks
 
         TaskCoreExam ->
             let
@@ -340,6 +322,26 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
                   )
             , 7
             )
+
+
+generateVitalsFormConfig : AssembledData -> VitalsFormConfig Msg
+generateVitalsFormConfig assembled =
+    { setIntInputMsg = SetVitalsIntInput
+    , setFloatInputMsg = SetVitalsFloatInput
+    , sysBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .sys
+    , diaBloodPressurePreviousValue = resolvePreviousMaybeValue assembled .vitals .dia
+    , heartRatePreviousValue =
+        resolvePreviousMaybeValue assembled .vitals .heartRate
+            |> Maybe.map toFloat
+    , respiratoryRatePreviousValue =
+        resolvePreviousValue assembled .vitals .respiratoryRate
+            |> Maybe.map toFloat
+    , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
+    , birthDate = assembled.person.birthDate
+    , formClass = "vitals"
+    , mode = VitalsFormFull
+    , invokationModule = InvokationModuleNCD
+    }
 
 
 coMorbiditiesFormWithDefault : CoMorbiditiesForm -> Maybe NCDCoMorbiditiesValue -> CoMorbiditiesForm
@@ -508,55 +510,110 @@ toSocialHistoryValue form =
 
 medicalHistoryTasksCompletedFromTotal : NominalDate -> Site -> AssembledData -> MedicalHistoryData -> MedicalHistoryTask -> ( Int, Int )
 medicalHistoryTasksCompletedFromTotal currentDate site assembled data task =
-    case task of
-        TaskCoMorbidities ->
-            let
-                form =
+    let
+        ( _, tasks ) =
+            case task of
+                TaskCoMorbidities ->
                     getMeasurementValueFunc assembled.measurements.coMorbidities
                         |> coMorbiditiesFormWithDefault data.coMorbiditiesForm
-            in
-            ( taskCompleted form.conditions, 1 )
+                        |> coMorbiditiesFormInputsAndTasks English currentDate
 
-        TaskMedicationHistory ->
-            let
-                form =
+                TaskMedicationHistory ->
                     getMeasurementValueFunc assembled.measurements.medicationHistory
                         |> medicationHistoryFormWithDefault data.medicationHistoryForm
-            in
-            ( taskCompleted form.medicationsCausingHypertension
-                + taskCompleted form.medicationsTreatingHypertension
-                + taskCompleted form.medicationsTreatingDiabetes
-            , 3
-            )
+                        |> medicationHistoryFormInputsAndTasks English currentDate
 
-        TaskSocialHistory ->
-            let
-                ( _, tasks ) =
+                TaskSocialHistory ->
                     getMeasurementValueFunc assembled.measurements.socialHistory
                         |> socialHistoryFormWithDefault data.socialHistoryForm
                         |> socialHistoryFormInputsAndTasks English currentDate site
-            in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
 
-        TaskFamilyHistory ->
-            let
-                ( _, tasks ) =
+                TaskFamilyHistory ->
                     getMeasurementValueFunc assembled.measurements.familyHistory
                         |> familyHistoryFormWithDefault data.familyHistoryForm
                         |> familyHistoryFormInputsAndTasks English currentDate
-            in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
 
-        TaskOutsideCare ->
-            -- This is not in use, because OutsideCare task got
-            -- special treatment at viewMedicalHistoryContent().
-            ( 0, 0 )
+                TaskOutsideCare ->
+                    -- This is not in use, because OutsideCare task got
+                    -- special treatment at viewMedicalHistoryContent().
+                    ( [], [] )
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+coMorbiditiesFormInputsAndTasks : Language -> NominalDate -> CoMorbiditiesForm -> ( List (Html Msg), List (Maybe Bool) )
+coMorbiditiesFormInputsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.MedicalConditionQuestion
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ MedicalConditionHIV
+            , MedicalConditionDiabetes
+            , MedicalConditionKidneyDisease
+            , MedicalConditionPregnancy
+            , MedicalConditionHypertension
+            , MedicalConditionGestationalDiabetes
+            , MedicalConditionPregnancyRelatedHypertension
+            ]
+            []
+            (Maybe.withDefault [] form.conditions)
+            (Just NoMedicalConditions)
+            SetMedicalCondition
+            Translate.MedicalCondition
+      ]
+    , [ maybeToBoolTask form.conditions ]
+    )
+
+
+medicationHistoryFormInputsAndTasks : Language -> NominalDate -> MedicationHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
+medicationHistoryFormInputsAndTasks language currentDate form =
+    ( [ viewQuestionLabel language Translate.MedicationCausingHypertensionQuestion
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ MedicationOestrogens
+            , MedicationSteroids
+            , MedicationAmitriptyline
+            ]
+            [ MedicationIbuprofen
+            , NoMedicationCausingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationsCausingHypertension)
+            Nothing
+            SetMedicationCausingHypertension
+            Translate.MedicationCausingHypertension
+      , viewQuestionLabel language Translate.MedicationTreatingHypertensionQuestion
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ MedicationAceInhibitors
+            , MedicationARBs
+            , MedicationHCTZ
+            , MedicationCalciumChannelBlockers
+            ]
+            [ MedicationMethyldopa
+            , MedicationBetaBlockers
+            , MedicationHydralazine
+            , NoMedicationTreatingHypertension
+            ]
+            (Maybe.withDefault [] form.medicationsTreatingHypertension)
+            Nothing
+            SetMedicationTreatingHypertension
+            Translate.MedicationTreatingHypertension
+      , viewQuestionLabel language Translate.MedicationTreatingDiabetesQuestion
+      , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
+      , viewCheckBoxMultipleSelectInput language
+            [ MedicationMetformin
+            , MedicationGlibenclamide
+            ]
+            [ MedicationInsulin, NoMedicationTreatingDiabetes ]
+            (Maybe.withDefault [] form.medicationsTreatingDiabetes)
+            Nothing
+            SetMedicationTreatingDiabetes
+            Translate.MedicationTreatingDiabetes
+      ]
+    , [ maybeToBoolTask form.medicationsCausingHypertension
+      , maybeToBoolTask form.medicationsTreatingHypertension
+      , maybeToBoolTask form.medicationsTreatingDiabetes
+      ]
+    )
 
 
 socialHistoryFormInputsAndTasks : Language -> NominalDate -> Site -> SocialHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -968,59 +1025,67 @@ toHealthEducationValue saved form =
 
 
 nextStepsTasksCompletedFromTotal :
-    Language
-    -> NominalDate
+    NominalDate
     -> AssembledData
     -> NextStepsData
     -> Pages.NCD.Activity.Types.NextStepsTask
     -> ( Int, Int )
-nextStepsTasksCompletedFromTotal language currentDate assembled data task =
+nextStepsTasksCompletedFromTotal currentDate assembled data task =
     case task of
         TaskHealthEducation ->
             let
-                form =
+                ( _, tasks ) =
                     getMeasurementValueFunc assembled.measurements.healthEducation
                         |> healthEducationFormWithDefault data.healthEducationForm
+                        |> healthEducationFormInputsAndTasks English currentDate
             in
-            ( taskCompleted form.hypertension
-            , 1
-            )
+            resolveTasksCompletedFromTotal tasks
 
         TaskMedicationDistribution ->
             let
-                form =
+                ( _, completed, total ) =
                     getMeasurementValueFunc assembled.measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
-
-                ( _, completed, total ) =
-                    resolveMedicationDistributionInputsAndTasks language
-                        currentDate
-                        NCDEncounterPhaseInitial
-                        assembled
-                        SetRecommendedTreatmentSignSingle
-                        SetRecommendedTreatmentSignMultiple
-                        SetMedicationDistributionBoolInput
-                        form
+                        |> resolveMedicationDistributionInputsAndTasks English
+                            currentDate
+                            NCDEncounterPhaseInitial
+                            assembled
+                            SetRecommendedTreatmentSignSingle
+                            SetRecommendedTreatmentSignMultiple
+                            SetMedicationDistributionBoolInput
             in
             ( completed, total )
 
         TaskReferral ->
             let
-                form =
-                    assembled.measurements.referral
-                        |> getMeasurementValueFunc
-                        |> referralFormWithDefault data.referralForm
-
                 ( _, tasks ) =
-                    resolveReferralInputsAndTasks language
-                        currentDate
-                        NCDEncounterPhaseInitial
-                        assembled
-                        SetReferralBoolInput
-                        SetFacilityNonReferralReason
-                        form
+                    getMeasurementValueFunc assembled.measurements.referral
+                        |> referralFormWithDefault data.referralForm
+                        |> resolveReferralInputsAndTasks English
+                            currentDate
+                            NCDEncounterPhaseInitial
+                            assembled
+                            SetReferralBoolInput
+                            SetFacilityNonReferralReason
             in
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
+
+
+healthEducationFormInputsAndTasks :
+    Language
+    -> NominalDate
+    -> Pages.NCD.Activity.Model.HealthEducationForm
+    -> ( List (Html Msg), List (Maybe Bool) )
+healthEducationFormInputsAndTasks language currentDate form =
+    ( [ viewCustomLabel language Translate.NCDHealthEducationHeader "" "label header"
+      , viewCustomLabel language Translate.NCDHealthEducationInstructions "." "label paragraph"
+      , viewQuestionLabel language Translate.NCDHealthEducationQuestion
+      , viewBoolInput
+            language
+            form.hypertension
+            (SetHealthEducationBoolInput (\value form_ -> { form_ | hypertension = Just value }))
+            "hypertension"
+            Nothing
+      ]
+    , [ form.hypertension ]
+    )

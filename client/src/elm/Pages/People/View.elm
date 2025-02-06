@@ -119,7 +119,6 @@ viewHeader initiator relation title =
             , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -345,7 +344,7 @@ viewParticipant language currentDate initiator relation db id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 , action

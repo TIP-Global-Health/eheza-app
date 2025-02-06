@@ -2,32 +2,10 @@ module Pages.HIV.Encounter.Utils exposing (..)
 
 import AssocList as Dict
 import Backend.Entities exposing (..)
-import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (diabetesBySugarCount, diabetesByUrineGlucose, getCurrentReasonForNonReferral, getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils exposing (getHIVEncountersForParticipant)
-import Date
-import EverySet exposing (EverySet)
-import Gizra.NominalDate exposing (NominalDate)
-import Html exposing (..)
-import Html.Attributes exposing (..)
-import Maybe.Extra exposing (andMap, isJust, or, unwrap)
 import Pages.HIV.Encounter.Model exposing (..)
-import Pages.Utils
-    exposing
-        ( ifEverySetEmpty
-        , ifNullableTrue
-        , maybeToBoolTask
-        , taskCompleted
-        , viewBoolInput
-        , viewCheckBoxSelectCustomInput
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewInstructionsLabel
-        , viewQuestionLabel
-        )
 import RemoteData exposing (RemoteData(..), WebData)
-import Translate exposing (Language, translate)
 import Utils.NominalDate exposing (sortByStartDateDesc)
 
 

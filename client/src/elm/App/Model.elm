@@ -1,6 +1,7 @@
 module App.Model exposing
     ( ConfiguredModel
     , Flags
+    , GPSCoordinates
     , LoggedInModel
     , MemoryQuota
     , Model
@@ -164,6 +165,9 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
+
+    -- GPS coordinates that need to be recorded during registration.
+    , coordinates : Maybe GPSCoordinates
     }
 
 
@@ -215,6 +219,13 @@ emptyModel key url flags =
     , villageId = villageId
     , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
+    , coordinates = Nothing
+    }
+
+
+type alias GPSCoordinates =
+    { latitude : Float
+    , longitude : Float
     }
 
 
@@ -404,6 +415,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
+    | SetGPSCoordinates GPSCoordinates
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
     | Tick Time.Posix

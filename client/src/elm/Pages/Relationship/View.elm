@@ -57,7 +57,6 @@ viewHeader language initiator id1 =
             , onClick <| SetActivePage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -384,7 +383,7 @@ viewParticipant language currentDate id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 ]

@@ -5,7 +5,7 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
 import Components.PatientsSearchForm.Utils exposing (..)
 import Components.PatientsSearchForm.View
@@ -58,7 +58,6 @@ viewHeader title =
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -270,7 +269,7 @@ viewParticipant language currentDate encounterType db id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 , viewAction

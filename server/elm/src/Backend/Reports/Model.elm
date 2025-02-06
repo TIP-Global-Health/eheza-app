@@ -1,8 +1,6 @@
 module Backend.Reports.Model exposing (..)
 
 import App.Types exposing (Site)
-import AssocList as Dict exposing (Dict)
-import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Json.Encode exposing (Value)
 

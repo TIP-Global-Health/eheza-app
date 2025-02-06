@@ -36,6 +36,8 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_mode_of_delivery',
       'field_hmis_number',
       'field_deleted',
+      'field_latitude',
+      'field_longitude',
     ];
 
     foreach ($standard_fields_names as $field_name) {
@@ -92,6 +94,8 @@ class HedleyRestfulPeople extends HedleyRestfulSyncBase {
       'field_mode_of_delivery',
       'field_hmis_number',
       'field_deleted',
+      'field_latitude',
+      'field_longitude',
 
       // Other fields.
       'field_photo',
