@@ -17,8 +17,8 @@ import Pages.Utils
         ( filterDependentNoResultsMessage
         , matchMotherAndHerChildren
         , normalizeFilter
+        , viewConfirmationDialog
         , viewCustomAction
-        , viewEndEncounterDialog
         , viewNameFilter
         )
 import Translate as Trans exposing (Language, translate)
@@ -124,7 +124,11 @@ view language isChw ( sessionId, session ) model =
         endSessionDialog =
             if model.showEndSessionDialog then
                 Just <|
-                    viewEndEncounterDialog language Trans.AreYouSure Trans.OnceYouEndYourGroupEncounter CloseSession (ShowEndSessionDialog False)
+                    viewConfirmationDialog language
+                        Trans.AreYouSure
+                        Trans.OnceYouEndYourGroupEncounter
+                        CloseSession
+                        (ShowEndSessionDialog False)
 
             else
                 Nothing

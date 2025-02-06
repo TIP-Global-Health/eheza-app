@@ -614,6 +614,7 @@ type TranslationId
     | DOB
     | DropzoneDefaultMessage
     | DueDate
+    | DuplicateSuspectMessage String String
     | DueTo
     | EarlyMastitisOrEngorgmentReliefMethod EarlyMastitisOrEngorgmentReliefMethod
     | EarlyChildhoodDevelopment
@@ -5273,6 +5274,12 @@ translationSet trans =
             { english = "Due Date"
             , kinyarwanda = Just "Itariki azabyariraho"
             , kirundi = Just "Itarike ntarengwa"
+            }
+
+        DuplicateSuspectMessage name nationalId ->
+            { english = "National ID " ++ nationalId ++ " is already assigned to patient " ++ name ++ ". Shall we proceed with creation?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         DueTo ->
