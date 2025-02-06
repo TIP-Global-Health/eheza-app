@@ -860,6 +860,8 @@
                 var modifyQuery = Promise.resolve();
 
                 if (type === 'person') {
+                    // There're 3 options for SINGLE param that's passed.
+                    // No need ot wory about combinations of several params.
                     var nameContains = params.get('name_contains');
                     if (nameContains) {
                         // For the case when there's more than one word as an input,
@@ -904,23 +906,45 @@
                             return Promise.resolve();
                         });
                     }
-                    else {
-                        var geoFields = params.get('geo_fields');
-                        if (geoFields) {
-                            var fields = geoFields.split('|');
-                            modifyQuery = modifyQuery.then(function () {
-                                criteria.province = fields[0];
-                                criteria.district = fields[1];
-                                criteria.sector = fields[2];
-                                criteria.cell = fields[3];
-                                criteria.village = fields[4];
-                                query = table.where(criteria);
 
-                                countQuery = query.clone();
-
-                                return Promise.resolve();
+                    // Second option for param.
+                    var nationalIdContains = params.get('national_id_contains');
+                    if (nationalIdContains) {
+                        modifyQuery = modifyQuery.then(function () {
+                            // We search for resulting persons that start with any of the input words (apply 'OR' condition).
+                            query = table.where('national_id_number').startsWith(nationalIdContains).distinct().and(function (person) {
+                              // If person is marked as deleted, do not include it in search results.
+                              return (person.deleted !== true);
                             });
-                        }
+
+                            // Cloning doesn't seem to work for this one.
+                            countQuery = table.where('national_id_number').startsWith(nationalIdContains).distinct().and(function (person) {
+                              // If person is marked as deleted, do not include it in search results.
+                              return (person.deleted !== true);
+                            });
+
+                            sortBy = 'label';
+
+                            return Promise.resolve();
+                        });
+                    }
+
+                    // Third option for param.
+                    var geoFields = params.get('geo_fields');
+                    if (geoFields) {
+                        var fields = geoFields.split('|');
+                        modifyQuery = modifyQuery.then(function () {
+                            criteria.province = fields[0];
+                            criteria.district = fields[1];
+                            criteria.sector = fields[2];
+                            criteria.cell = fields[3];
+                            criteria.village = fields[4];
+                            query = table.where(criteria);
+
+                            countQuery = query.clone();
+
+                            return Promise.resolve();
+                        });
                     }
                 }
 

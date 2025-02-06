@@ -137,7 +137,12 @@ shouldFetch currentTime model msg =
             isNotAsked model.participantForms
 
         FetchPeopleByName search ->
-            Dict.get (String.trim search) model.personSearches
+            Dict.get (String.trim search) model.personSearchesByName
+                |> Maybe.withDefault NotAsked
+                |> isNotAsked
+
+        FetchPeopleByNationalId search ->
+            Dict.get (String.trim search) model.personSearchesByNationalId
                 |> Maybe.withDefault NotAsked
                 |> isNotAsked
 
@@ -502,7 +507,10 @@ forget msg model =
             { model | participantForms = NotAsked }
 
         FetchPeopleByName search ->
-            { model | personSearches = Dict.remove (String.trim search) model.personSearches }
+            { model | personSearchesByName = Dict.remove (String.trim search) model.personSearchesByName }
+
+        FetchPeopleByNationalId search ->
+            { model | personSearchesByNationalId = Dict.remove (String.trim search) model.personSearchesByNationalId }
 
         FetchPeopleInVillage id ->
             { model | peopleInVillage = Dict.remove id model.peopleInVillage }
