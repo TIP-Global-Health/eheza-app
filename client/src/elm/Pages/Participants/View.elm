@@ -17,8 +17,8 @@ import Pages.Utils
         ( filterDependentNoResultsMessage
         , matchMotherAndHerChildren
         , normalizeFilter
+        , viewConfirmationDialog
         , viewCustomAction
-        , viewEndEncounterDialog
         , viewNameFilter
         )
 import Translate as Trans exposing (Language, translate)
