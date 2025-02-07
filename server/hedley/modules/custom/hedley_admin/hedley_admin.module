@@ -445,7 +445,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'resilience_survey')
-    ->propertyCondition('status', 1); // Only published surveys
+    ->propertyCondition('status', 1);
 
   $result = $query->execute();
 
@@ -567,9 +567,6 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   drupal_add_css('.align-center { text-align: center; }', array('type' => 'inline'));
   return $form;
 }
-
-
-
 
 /**
  * Custom submit handler to export table data to CSV.
