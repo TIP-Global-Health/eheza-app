@@ -12,8 +12,7 @@ type AcuteIllnessEncounterType
 
 
 type AcuteIllnessDiagnosis
-    = DiagnosisCovid19Suspect
-    | DiagnosisSevereCovid19
+    = DiagnosisSevereCovid19
     | DiagnosisPneuminialCovid19
     | DiagnosisLowRiskCovid19
     | DiagnosisMalariaComplicated
@@ -28,6 +27,8 @@ type AcuteIllnessDiagnosis
     | DiagnosisUndeterminedMoreEvaluationNeeded
     | DiagnosisTuberculosisSuspect
     | NoAcuteIllnessDiagnosis
+      -- Obsolete
+    | DiagnosisCovid19Suspect
 
 
 type AcuteIllnessProgressReportInitiator
