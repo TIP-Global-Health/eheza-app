@@ -637,7 +637,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -13 today
+                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
