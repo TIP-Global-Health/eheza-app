@@ -3389,7 +3389,7 @@ covid19DiagnosisPath currentDate person isChw measurements =
                                             else
                                                 Just DiagnosisSevereCovid19
                                         )
-                                    |> Maybe.withDefault (Just DiagnosisSevereCovid19)
+                                    |> Maybe.withDefault (Just DiagnosisCovid19Suspect)
 
                             else
                                 Just DiagnosisSevereCovid19
