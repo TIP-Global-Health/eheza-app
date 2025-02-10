@@ -12593,31 +12593,6 @@ translationSet trans =
 
         NextStepsTask isChw task ->
             case task of
-                NextStepsIsolation ->
-                    if isChw then
-                        { english = "Isolate Patient"
-                        , kinyarwanda = Just "Shyira umurwayi mu kato"
-                        , kirundi = Just "Umurwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene"
-                        }
-
-                    else
-                        { english = "Monitor at Home"
-                        , kinyarwanda = Just "Gukurikiranira umurwayi mu rugo"
-                        , kirundi = Just "Gukurikiranira muhira"
-                        }
-
-                NextStepsContactHC ->
-                    { english = "Contact Health Center"
-                    , kinyarwanda = Just "Menyesha ikigo nderabuzima"
-                    , kirundi = Just "Ukuvugana n'ivuriro"
-                    }
-
-                NextStepsCall114 ->
-                    { english = "Call 114"
-                    , kinyarwanda = Just "Hamagara 114"
-                    , kirundi = Just "Hamagara kuri 114"
-                    }
-
                 NextStepsMedicationDistribution ->
                     translationSet MedicationDistribution
 

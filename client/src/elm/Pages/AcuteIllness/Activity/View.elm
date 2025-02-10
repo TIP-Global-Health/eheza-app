@@ -1303,21 +1303,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
             let
                 ( iconClass, isCompleted ) =
                     case task of
-                        NextStepsIsolation ->
-                            ( "next-steps-isolation"
-                            , isJust measurements.isolation
-                            )
-
-                        NextStepsContactHC ->
-                            ( "next-steps-call"
-                            , isJust measurements.hcContact
-                            )
-
-                        NextStepsCall114 ->
-                            ( "next-steps-call"
-                            , isJust measurements.call114
-                            )
-
                         NextStepsMedicationDistribution ->
                             ( "next-steps-medication-distribution"
                             , isJust measurements.medicationDistribution
@@ -1396,19 +1381,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
         viewForm =
             case activeTask of
-                Just NextStepsIsolation ->
-                    getMeasurementValueFunc measurements.isolation
-                        |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate isChw
-
-                Just NextStepsContactHC ->
-                    getMeasurementValueFunc measurements.hcContact
-                        |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate assembled.initialEncounter
-
-                Just NextStepsCall114 ->
-                    viewCall114Form language currentDate call114Form
-
                 Just NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
@@ -1474,43 +1446,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
                             tasksAfterSave =
                                 case task of
-                                    -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                                    -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
-                                    NextStepsCall114 ->
-                                        if assembled.initialEncounter then
-                                            if call114Form.called114 == Just False then
-                                                [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
-
-                                            else if call114Form.called114 == Just True then
-                                                [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
-
-                                            else
-                                                tasks
-
-                                        else
-                                            tasks
-
-                                    -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
-                                    -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
-                                    NextStepsContactHC ->
-                                        if assembled.initialEncounter then
-                                            tasks
-
-                                        else
-                                            let
-                                                hcContactForm =
-                                                    getMeasurementValueFunc measurements.hcContact
-                                                        |> hcContactFormWithDefault data.hcContactForm
-                                            in
-                                            if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                                                [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                                            else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                                                [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                                            else
-                                                tasks
-
                                     -- If medication is prescribed, but it's out of stock, or partient
                                     -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
                                     -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
@@ -1554,15 +1489,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
                             saveMsg =
                                 case task of
-                                    NextStepsIsolation ->
-                                        SaveIsolation personId measurements.isolation nextTask
-
-                                    NextStepsContactHC ->
-                                        SaveHCContact personId measurements.hcContact nextTask
-
-                                    NextStepsCall114 ->
-                                        SaveCall114 personId measurements.call114 nextTask
-
                                     NextStepsSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC nextTask
 

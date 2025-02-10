@@ -828,21 +828,6 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagn
     let
         ( _, tasks ) =
             case task of
-                NextStepsIsolation ->
-                    getMeasurementValueFunc measurements.isolation
-                        |> isolationFormWithDefault data.isolationForm
-                        |> isolationFormInutsAndTasks English currentDate isChw
-
-                NextStepsContactHC ->
-                    getMeasurementValueFunc measurements.hcContact
-                        |> hcContactFormWithDefault data.hcContactForm
-                        |> hcContactFormInutsAndTasks English currentDate initialEncounter
-
-                NextStepsCall114 ->
-                    getMeasurementValueFunc measurements.call114
-                        |> call114FormWithDefault data.call114Form
-                        |> call114FormInutsAndTasks English currentDate
-
                 NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
@@ -2743,12 +2728,12 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
+        [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else
@@ -2784,17 +2769,6 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
     in
     case task of
-        NextStepsIsolation ->
-            (isChw && (diagnosis == Just DiagnosisCovid19Suspect))
-                || (diagnosis == Just DiagnosisPneuminialCovid19)
-                || (diagnosis == Just DiagnosisLowRiskCovid19)
-
-        NextStepsCall114 ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect)
-
-        NextStepsContactHC ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect) && isJust measurements.call114 && (not <| talkedTo114 measurements)
-
         NextStepsMedicationDistribution ->
             medicationPrescribed
 
@@ -2838,10 +2812,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
 
             else
                 -- Whenever any other next step exists.
-                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
+                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
 
         NextStepsSymptomsReliefGuidance ->
@@ -2874,17 +2845,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                     || -- No improvement, with danger signs, and diagnosis is not Covid19 suspect.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
-                    || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
-                            && (diagnosis == Just DiagnosisCovid19Suspect)
-                            && healthCenterRecommendedToCome measurements
-                       )
-
-        NextStepsContactHC ->
-            not malariaDiagnosedAtCurrentEncounter
-                && -- No improvement, with danger signs, and diagnosis is Covid19.
-                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19Suspect)
+                       noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -2895,7 +2856,6 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
             -- there's no need for a follow up.
             expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
                 || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsSendToHC
-                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsContactHC
 
         _ ->
             False
@@ -2911,15 +2871,6 @@ nextStepsTaskCompleted currentDate isChw assembled task =
             expectNextStepsTask currentDate isChw assembled
     in
     case task of
-        NextStepsIsolation ->
-            (not <| taskExpected NextStepsIsolation) || isJust measurements.isolation
-
-        NextStepsContactHC ->
-            (not <| taskExpected NextStepsContactHC) || isJust measurements.hcContact
-
-        NextStepsCall114 ->
-            (not <| taskExpected NextStepsCall114) || isJust measurements.call114
-
         NextStepsMedicationDistribution ->
             (not <| taskExpected NextStepsMedicationDistribution) || isJust measurements.medicationDistribution
 
@@ -3298,7 +3249,9 @@ if Covid RDT could not be perfrmed.
 covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 covid19DiagnosisPath currentDate person isChw measurements =
     if
-        (not <| covid19SuspectDiagnosed measurements)
+        -- CHW may not diagnose COVID anymore.
+        isChw
+            || (not <| covid19SuspectDiagnosed measurements)
             || -- In case we have cough symptom for more than 2 weeks,
                -- we must diagnose Tuberculosis suspect.
                -- Therefore, we need to exit COVID19 path.
