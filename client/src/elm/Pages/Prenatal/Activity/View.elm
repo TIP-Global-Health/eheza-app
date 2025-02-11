@@ -3148,7 +3148,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                                 [ [ (<=) (egaInWeeks - 4), (>) (egaInWeeks - 2) ], [ (<) (egaInWeeks + 2), (>=) (egaInWeeks + 4) ] ]
 
                         fetalPresentationAlert =
-                            if egaInWeeks > 36 then
+                            if egaInWeeks >= 36 then
                                 viewConditionalAlert form.fetalPresentation
                                     [ [ (==) Cephalic ], [ (==) Twins ] ]
                                     []
@@ -3156,7 +3156,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                             else if egaInWeeks > 31 then
                                 viewConditionalAlert form.fetalPresentation
                                     []
-                                    [ [ (==) Cephalic ], [ (==) Twins ] ]
+                                    [ [ (==) Twins ] ]
 
                             else
                                 emptyNode
