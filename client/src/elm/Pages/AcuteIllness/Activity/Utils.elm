@@ -853,6 +853,8 @@ viewHCRecommendation language recommendation =
         , text <| translate language Translate.AndSentence
         , span [ class "strong" ] [ text <| translate language <| Translate.HCRecommendation recommendation ]
         ]
+
+
 medicationDistributionFormInutsAndTasks :
     Language
     -> NominalDate
@@ -2358,7 +2360,7 @@ expectLaboratoryTask currentDate isChw assembled task =
                        )
 
         LaboratoryCovidTesting ->
-            not isChw && covid19SuspectDiagnosed assembled.measurements
+            covid19SuspectDiagnosed assembled.measurements
 
 
 covid19Diagnosed : AcuteIllnessDiagnosis -> Bool
@@ -2845,30 +2847,6 @@ resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
 covid19SuspectDiagnosed : AcuteIllnessMeasurements -> Bool
 covid19SuspectDiagnosed measurements =
     let
-        countSigns measurement_ exclusion =
-            measurement_
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            set =
-                                Tuple.second measurement |> .value
-
-                            setSize =
-                                EverySet.size set
-                        in
-                        case setSize of
-                            1 ->
-                                if EverySet.member exclusion set then
-                                    0
-
-                                else
-                                    1
-
-                            _ ->
-                                setSize
-                    )
-                |> Maybe.withDefault 0
-
         generalSymptomsCount =
             let
                 excludesGeneral =
@@ -2879,27 +2857,6 @@ covid19SuspectDiagnosed measurements =
         respiratorySymptomsCount =
             countRespiratorySymptoms measurements []
 
-        giSymptomsCount =
-            countGISymptoms measurements []
-
-        symptomsIndicateCovid =
-            if giSymptomsCount > 0 then
-                respiratorySymptomsCount > 0
-
-            else
-                let
-                    totalSymptoms =
-                        generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
-                in
-                totalSymptoms > 1
-
-        totalSigns =
-            countSigns measurements.travelHistory NoTravelHistorySigns
-                + countSigns measurements.exposure NoExposureSigns
-
-        signsIndicateCovid =
-            totalSigns > 0
-
         feverOnRecord =
             feverRecorded measurements
 
@@ -2909,10 +2866,7 @@ covid19SuspectDiagnosed measurements =
         feverAndRdtNotPositive =
             feverOnRecord && isJust malariaRDTResult && malariaRDTResult /= Just RapidTestPositive
     in
-    (signsIndicateCovid && symptomsIndicateCovid)
-        || (signsIndicateCovid && feverOnRecord)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
+    feverAndRdtNotPositive && (respiratorySymptomsCount > 0 || generalSymptomsCount > 1)
 
 
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
