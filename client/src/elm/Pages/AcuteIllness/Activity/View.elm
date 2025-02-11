@@ -1435,36 +1435,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
     ]
 
 
-viewIsolationForm : Language -> NominalDate -> Bool -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate isChw form =
-    let
-        ( inputs, _ ) =
-            isolationFormInutsAndTasks language currentDate isChw form
-    in
-    div [ class "ui form next-steps isolation" ]
-        inputs
-
-
-viewHCContactForm : Language -> NominalDate -> Bool -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate initialEncounter form =
-    let
-        ( inputs, _ ) =
-            hcContactFormInutsAndTasks language currentDate initialEncounter form
-    in
-    div [ class "ui form exposure hc-contact" ]
-        inputs
-
-
-viewCall114Form : Language -> NominalDate -> Call114Form -> Html Msg
-viewCall114Form language currentDate form =
-    let
-        ( inputs, _ ) =
-            call114FormInutsAndTasks language currentDate form
-    in
-    div [ class "ui form next-steps call-114" ]
-        inputs
-
-
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg
 viewMedicationDistributionForm language currentDate person diagnosis form =
     let

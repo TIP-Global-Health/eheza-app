@@ -64,22 +64,9 @@ type Msg
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
     | SetActiveNextStepsTask Pages.AcuteIllness.Activity.Types.NextStepsTask
-    | SetPatientIsolated Bool
     | SetHealthEducation Bool
+    | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
-    | SetSignOnDoor Bool
-    | SetReasonForNotIsolating ReasonForNotIsolating
-    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetContactedHC Bool
-    | SetHCRecommendation HCRecommendation
-    | SetResponsePeriod ResponsePeriod
-    | SetAmbulanceArrivalPeriod ResponsePeriod
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetCalled114 Bool
-    | SetContactedSite Bool
-    | SetRecommendation114 Recommendation114
-    | SetRecommendationSite RecommendationSite
-    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
@@ -87,7 +74,6 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe AcuteIllnessDiagnosis) (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
