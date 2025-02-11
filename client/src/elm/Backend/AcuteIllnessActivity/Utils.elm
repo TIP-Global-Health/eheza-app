@@ -31,9 +31,6 @@ encodeActivityAsString activity =
         AcuteIllnessLaboratory ->
             "laboratory"
 
-        AcuteIllnessExposure ->
-            "exposure"
-
         AcuteIllnessNextSteps ->
             "next-steps"
 
@@ -61,9 +58,6 @@ decodeActivityFromString s =
         "laboratory" ->
             Just AcuteIllnessLaboratory
 
-        "exposure" ->
-            Just AcuteIllnessExposure
-
         "next-steps" ->
             Just AcuteIllnessNextSteps
 
@@ -88,7 +82,7 @@ getActivityIcon activity =
 getAllActivities : Bool -> List AcuteIllnessActivity
 getAllActivities isFirstEncounter =
     if isFirstEncounter then
-        [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
+        [ AcuteIllnessSymptoms, AcuteIllnessPriorTreatment, AcuteIllnessPhysicalExam, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]
 
     else
         [ AcuteIllnessDangerSigns, AcuteIllnessPhysicalExam, AcuteIllnessOngoingTreatment, AcuteIllnessLaboratory, AcuteIllnessNextSteps ]

@@ -3178,12 +3178,6 @@ translationSet trans =
                     , kirundi = Just "Icumba c'ipimiro"
                     }
 
-                AcuteIllnessExposure ->
-                    { english = "Exposure / Travel History"
-                    , kinyarwanda = Just "Afite ibyago byo kwandura/amakuru ku ngendo yakoze"
-                    , kirundi = Just "Kumenyesha/Akahise k'urugendo"
-                    }
-
                 AcuteIllnessNextSteps ->
                     translationSet NextSteps
 

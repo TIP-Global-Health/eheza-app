@@ -102,10 +102,6 @@ update currentDate site selectedHealthCenter id db msg model =
         generateNextStepsMsgs nextTask =
             Maybe.map (\task -> [ SetActiveNextStepsTask task ]) nextTask
                 |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-
-        generateExposureMsgs nextTask =
-            Maybe.map (\task -> [ SetActiveExposureTask task ]) nextTask
-                |> Maybe.withDefault [ SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
     in
     case msg of
         SetActivePage page ->
@@ -775,105 +771,6 @@ update currentDate site selectedHealthCenter id db msg model =
                     toCovidTestingValueWithDefault measurement model.laboratoryData.covidTestingForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
-
-        SetActiveExposureTask task ->
-            let
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | activeTask = Just task })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetCovid19Country value ->
-            let
-                form =
-                    model.exposureData.travelHistoryForm
-
-                updatedForm =
-                    { form | covid19Country = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | travelHistoryForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveTravelHistory personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateExposureMsgs nextTask
-
-                appMsgs =
-                    toTravelHistoryValueWithDefault measurement model.exposureData.travelHistoryForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveTravelHistory personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
-
-        SetCovid19Symptoms value ->
-            let
-                form =
-                    model.exposureData.exposureForm
-
-                updatedForm =
-                    { form | covid19Symptoms = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | exposureForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveExposure personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateExposureMsgs nextTask
-
-                appMsgs =
-                    toExposureValueWithDefault measurement model.exposureData.exposureForm
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveExposure personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

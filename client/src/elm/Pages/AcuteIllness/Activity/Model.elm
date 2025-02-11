@@ -58,12 +58,6 @@ type Msg
     | SetCovidTestingBoolInput (Bool -> CovidTestingForm -> CovidTestingForm) Bool
     | SetCovidTestingAdministrationNote AdministrationNote
     | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting )) (Maybe AILaboratoryTask)
-      -- EXPOSURE Msgs
-    | SetActiveExposureTask ExposureTask
-    | SetCovid19Country Bool
-    | SaveTravelHistory PersonId (Maybe ( TravelHistoryId, TravelHistory )) (Maybe ExposureTask)
-    | SetCovid19Symptoms Bool
-    | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
       -- PRIOR TREATMENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool

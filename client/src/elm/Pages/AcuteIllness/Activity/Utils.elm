@@ -146,9 +146,6 @@ activityCompleted currentDate isChw assembled activity =
             (not <| activityExpected AcuteIllnessLaboratory)
                 || List.all (laboratoryTaskCompleted currentDate isChw assembled) laboratoryTasks
 
-        AcuteIllnessExposure ->
-            mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessExposure
-
         AcuteIllnessNextSteps ->
             (not <| activityExpected AcuteIllnessNextSteps)
                 || (resolveNextStepsTasks currentDate isChw assembled
@@ -600,53 +597,6 @@ covidTestingFormInputsAndTasks language currentDate person form =
           )
         , derivedSection
         ]
-
-
-exposureTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
-exposureTasksCompletedFromTotal currentDate measurements data task =
-    let
-        ( _, tasks ) =
-            case task of
-                ExposureTravel ->
-                    getMeasurementValueFunc measurements.travelHistory
-                        |> travelHistoryFormWithDefault data.travelHistoryForm
-                        |> travelHistoryFormInutsAndTasks English currentDate
-
-                ExposureExposure ->
-                    getMeasurementValueFunc measurements.exposure
-                        |> exposureFormWithDefault data.exposureForm
-                        |> exposureFormInutsAndTasks English currentDate
-    in
-    resolveTasksCompletedFromTotal tasks
-
-
-travelHistoryFormInutsAndTasks : Language -> NominalDate -> TravelHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-travelHistoryFormInutsAndTasks language currentDate form =
-    ( [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion
-      , viewBoolInput
-            language
-            form.covid19Country
-            SetCovid19Country
-            "covid19-country"
-            Nothing
-      ]
-    , [ form.covid19Country ]
-    )
-
-
-exposureFormInutsAndTasks : Language -> NominalDate -> ExposureForm -> ( List (Html Msg), List (Maybe Bool) )
-exposureFormInutsAndTasks language currentDate form =
-    ( [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion
-      , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
-      , viewBoolInput
-            language
-            form.covid19Symptoms
-            SetCovid19Symptoms
-            "covid19-symptoms"
-            Nothing
-      ]
-    , [ form.covid19Symptoms ]
-    )
 
 
 treatmentTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )
@@ -3035,7 +2985,7 @@ Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative
 -}
 mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Bool
 mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
+    [ AcuteIllnessSymptoms, AcuteIllnessPhysicalExam ]
         |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements)
 
 
@@ -3053,10 +3003,6 @@ mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements a
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamMuac) || isJust measurements.muac)
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamNutrition) || isJust measurements.nutrition)
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
-
-        AcuteIllnessExposure ->
-            isJust measurements.travelHistory
-                && isJust measurements.exposure
 
         _ ->
             False
