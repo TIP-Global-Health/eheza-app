@@ -501,7 +501,6 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
     }
 
     $offset += $batch_size;
-    drupal_static_reset();
   }
 
   $form_state['rows'] = $rows;
