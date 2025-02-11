@@ -431,7 +431,6 @@ function hedley_admin_administrators_access() {
  * This function generates a table displaying the resilience survey results.
  */
 function hedley_admin_resilience_survey_results_table(array $form, array &$form_state) {
-  drupal_add_css('.align-center { text-align: center; }', ['type' => 'inline']);
   $batch_size = 50;
   $offset = 0;
 
@@ -458,35 +457,52 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
     $query = clone $base_query;
     $result = $query->range($offset, $batch_size)->execute();
 
-    if (empty($result['node'])) return [];
+    if (empty($result['node'])) {
+      return [];
+    }
 
-    foreach (node_load_multiple(array_keys($result['node'])) as $node) {
-      $nurse_id = field_get_items('node', $node, 'field_nurse')[0]['target_id'] ?? NULL;
-      $nurse_name = $nurse_id ? (node_load($nurse_id)->title ?? 'Unknown Nurse') : 'Unknown Nurse';
+    $nodes = node_load_multiple(array_keys($result['node']));
+    foreach ($nodes as $node) {
+      $nurse_items = field_get_items('node', $node, 'field_nurse');
+      $nurse_id = isset($nurse_items[0]['target_id']) ? $nurse_items[0]['target_id'] : NULL;
+      $nurse_name = 'Unknown Nurse';
 
-      $health_center_name = 'Unknown Center';
       if ($nurse_id) {
         $nurse_node = node_load($nurse_id);
-        if ($nurse_node) {
-          $health_center_id = field_get_items('node', $nurse_node, 'field_health_centers')[0]['target_id'] ?? NULL;
-          $health_center_name = $health_center_id ? (node_load($health_center_id)->title ?? 'Unknown Center') : 'Unknown Center';
+        $nurse_name = isset($nurse_node->title) ? $nurse_node->title : 'Unknown Nurse';
+
+        $health_center_name = 'Unknown Center';
+        $health_center_items = field_get_items('node', $nurse_node, 'field_health_centers');
+        $health_center_id = isset($health_center_items[0]['target_id']) ? $health_center_items[0]['target_id'] : NULL;
+
+        if ($health_center_id) {
+          $health_center_node = node_load($health_center_id);
+          $health_center_name = isset($health_center_node->title) ? $health_center_node->title : 'Unknown Center';
         }
+      } else {
+        $health_center_name = 'Unknown Center';
       }
 
-      $survey_type = field_get_items('node', $node, 'field_resilience_survey_type')[0]['value'] ?? 'Unknown';
-      $date_measured = field_get_items('node', $node, 'field_date_measured')[0]['value'] ?? 'Unknown';
-      $date_measured = $date_measured !== 'Unknown' ? date('Y-m-d', strtotime($date_measured)) : 'Unknown';
+      $survey_type_items = field_get_items('node', $node, 'field_resilience_survey_type');
+      $survey_type = isset($survey_type_items[0]['value']) ? $survey_type_items[0]['value'] : 'Unknown';
+
+      $date_items = field_get_items('node', $node, 'field_date_measured');
+      $date_measured = isset($date_items[0]['value']) ? $date_items[0]['value'] : 'Unknown';
+      $date_measured = ($date_measured !== 'Unknown') ? date('Y-m-d', strtotime($date_measured)) : 'Unknown';
 
       $answers_processed = array_fill(1, 12, 'n/a');
       $survey_answers_field = field_get_items('node', $node, 'field_resilience_survey_signs');
 
       if (!empty($survey_answers_field)) {
-        foreach (explode('|', implode('|', array_column($survey_answers_field, 'value'))) as $answer_pair) {
-          $parts = explode('-', $answer_pair);
-          if (count($parts) === 2) {
-            $question_number = str_replace('q', '', $parts[0]);
-            if (is_numeric($question_number)) {
-              $answers_processed[$question_number] = is_numeric($parts[1]) ? (int) $parts[1] + 1 : $parts[1];
+        foreach ($survey_answers_field as $item) {
+          $answer_pairs = explode('|', $item['value']);
+          foreach ($answer_pairs as $answer_pair) {
+            $parts = explode('-', $answer_pair);
+            if (count($parts) === 2) {
+              $question_number = str_replace('q', '', $parts[0]);
+              if (is_numeric($question_number)) {
+                $answers_processed[$question_number] = is_numeric($parts[1]) ? (int) $parts[1] + 1 : $parts[1];
+              }
             }
           }
         }
@@ -504,30 +520,37 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   }
 
   $form_state['rows'] = $rows;
-  $form['csv_export_button'] = ['#type' => 'submit', '#value' => t('Export to CSV'), '#submit' => ['hedley_admin_resilience_survey_export_csv']];
-  $form['table'] = ['#theme' => 'table', '#header' => $header, '#rows' => $rows, '#empty' => t('No survey results available')];
+  $form['csv_export_button'] = [
+    '#type' => 'submit',
+    '#value' => t('Export to CSV'),
+    '#submit' => ['hedley_admin_resilience_survey_export_csv']
+  ];
 
+  $form['table'] = [
+    '#theme' => 'table',
+    '#header' => $header,
+    '#rows' => $rows,
+    '#empty' => t('No survey results available')
+  ];
+
+  drupal_add_css('.align-center { text-align: center; }', ['type' => 'inline']);
   return $form;
 }
-
 
 /**
  * Custom submit handler to export table data to CSV.
  */
 function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
-  if (!isset($form_state['rows'])) {
-    drupal_set_message(t('No data available to export.'));
+  if (empty($form_state['rows'])) {
+    drupal_set_message(t('No data available to export.'), 'error');
     return;
   }
 
   $rows = $form_state['rows'];
-
   $filename = 'resilience_survey_results.csv';
   $csv_output = '';
 
-  $header = array(
-    'Nurse', 'Health Center', 'Survey Type', 'Date Measured',
-  );
+  $header = ['Nurse', 'Health Center', 'Survey Type', 'Date Measured'];
   for ($i = 1; $i <= 12; $i++) {
     $header[] = "Question $i";
   }
@@ -541,10 +564,11 @@ function hedley_admin_resilience_survey_export_csv($form, &$form_state) {
     $csv_output .= implode(',', $csv_row) . "\n";
   }
 
-  drupal_add_http_header('Content-Type', 'text/csv');
+  drupal_add_http_header('Content-Type', 'text/csv; charset=UTF-8');
   drupal_add_http_header('Content-Disposition', 'attachment; filename="' . $filename . '"');
   drupal_add_http_header('Pragma', 'no-cache');
   drupal_add_http_header('Cache-Control', 'must-revalidate, post-check=0, pre-check=0');
 
   echo $csv_output;
+  exit;
 }
