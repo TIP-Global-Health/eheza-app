@@ -585,13 +585,13 @@ viewHeaderPane language currentDate globalLmpValue assembled =
             Maybe.map
                 (\value ->
                     if value.confident == False then
-                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
+                        translate language Translate.UnsureOfLmp
 
                     else
-                        emptyNode
+                        ""
                 )
                 globalLmpValue
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault ""
 
         viewLineItem class_ label value =
             p [ class class_ ]
@@ -617,7 +617,7 @@ viewHeaderPane language currentDate globalLmpValue assembled =
                 , div [ class "content right" ]
                     [ viewLineItem "edd" Translate.Edd edd
                     , viewLineItem "ega" Translate.Ega ega
-                    , viewUnsureOfLmp
+                    , viewLineItem "lmp" Translate.Lmp viewUnsureOfLmp
                     ]
                 ]
             , div [ class "gravida-para" ]
@@ -1726,19 +1726,20 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
             Maybe.map
                 (\value ->
                     if value.confident == False then
-                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
+                        translate language Translate.UnsureOfLmp
 
                     else
-                        emptyNode
+                        ""
                 )
                 globalLmpValue
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault ""
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
-            , viewUnsureOfLmp
+            , p [ class "lmp-warning" ]
+                [ text (translate language Translate.Lmp ++ ": " ++ viewUnsureOfLmp) ]
             , div [ class "timeline-section" ]
                 [ div [ class "indicators" ]
                     [ fetalHeartRateLabel
