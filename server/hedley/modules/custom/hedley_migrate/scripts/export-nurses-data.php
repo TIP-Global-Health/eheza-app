@@ -47,7 +47,24 @@ $surveys = [
   ],
 ];
 
-$nurses_ids = [2];
+$nurses_ids = [
+  1627763, // Joseph HITIMANA
+  1627758, // Mary Rose UWIZEYIMANA
+  3856395, // Ndahayo Safi
+  1627761, // Esther Nyiranzigiyimana
+  3128895, // Nyirabashyitsi Patricie
+  1592985, // Gentille NYIRAMATUNGO
+  1592988, // Seraphine MUKAMURENZI
+  4196825, // Hyacinthe MUKAKALISA
+  1627766, // Louise UWIMANA KABERA
+  1627765, // Beathe UMULISA
+  1627760, // Alexie BENIHIRWE
+  1627759, // Ancille KABAGWIRE
+  4196850, // Mukandashimye Demetrie
+  1592987, // Jacqueline KAYITESI
+  1592989, // Ulimuze UTAZIRUBANDA
+  4004781, // Nyirahitimana Dative
+];
 foreach ($nurses_ids as $nurse_id) {
   $wrapper = entity_metadata_wrapper('node', $nurse_id);
 
