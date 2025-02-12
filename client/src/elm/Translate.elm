@@ -926,7 +926,6 @@ type TranslationId
     | LevelOfEducationForResilience EducationLevel
     | LipidPanel
     | LiveChildren
-    | Lmp
     | LmpDateConfirmationLabel
     | LmpDateConfirmationQuestion
     | LmpDateConfidentHeader
@@ -9990,12 +9989,6 @@ translationSet trans =
             { english = "Live Children"
             , kinyarwanda = Just "Abana bariho"
             , kirundi = Just "Abana bariho"
-            }
-
-        Lmp ->
-            { english = "LMP"
-            , kinyarwanda = Just "Itariki aheruka imihango"
-            , kirundi = Just "Itarike aheruka kuja mu kwezi"
             }
 
         LmpDateConfirmationLabel ->
@@ -24170,9 +24163,9 @@ translationSet trans =
             }
 
         UnsureOfLmp ->
-            { english = "Not confident"
-            , kinyarwanda = Just "Ntabwo izwi neza"
-            , kirundi = Just "Ntago ayizeye neza"
+            { english = "LMP: Not confident"
+            , kinyarwanda = Just "Itariki aheruka imihango: Ntabwo izwi neza"
+            , kirundi = Just "Itarike aheruka kuja mu kwezi: Ntago ayizeye neza"
             }
 
         Update ->
