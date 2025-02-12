@@ -36,8 +36,18 @@ $nurses = [
   //  'field_resilience_messages',
   ],
 ];
+$surveys = [
+  [
+    'id',
+    'title',
+    'field_nurse',
+    'field_date_measured',
+    'field_resilience_survey_type',
+    'field_resilience_survey_signs',
+  ],
+];
 
-$nurses_ids = [190];
+$nurses_ids = [2];
 foreach ($nurses_ids as $nurse_id) {
   $wrapper = entity_metadata_wrapper('node', $nurse_id);
 
@@ -61,11 +71,24 @@ foreach ($nurses_ids as $nurse_id) {
  //   $wrapper->field_resilience_messages->value(),
   ];
 }
+$surveys_ids = hedley_migrate_resolve_for_export('resilience_survey', 'field_nurse', [$nurses_ids]);
+foreach ($surveys_ids as $survey_id) {
+  $wrapper = entity_metadata_wrapper('node', $survey_id);
+
+  $surveys[$survey_id] = [
+    $survey_id,
+    str_replace(',', ' ', $wrapper->label()),
+    $wrapper->field_nurse->getIdentifier(),
+    hedley_migrate_export_date_field($wrapper->field_date_measured->value()),
+    $wrapper->field_resilience_survey_type->value(),
+    implode('|', $wrapper->field_resilience_survey_signs->value()),
+  ];
+}
 
 $mapping = [
   'nurse' => array_values($nurses),
+  'resilience_survey' => array_values($surveys),
 ];
-
 
 foreach ($mapping as $name => $rows) {
   $content = [];
