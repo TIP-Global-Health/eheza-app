@@ -248,7 +248,8 @@ function hedley_admin_views_post_execute(&$view) {
     // this boolean outcome.
     if ($result->field_field_related_by[0]['rendered']['#markup'] !== 'Caregiver for') {
       $result->field_field_related_by[0]['rendered']['#markup'] = '';
-    } else {
+    }
+    else {
       $result->field_field_related_by[0]['rendered']['#markup'] = t('X');
     }
   }
@@ -436,7 +437,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
     'nurse' => t('Nurse'),
     'health_center' => t('Health Center'),
     'survey_type' => t('Survey Type'),
-    'date_measured' => t('Date Measured')
+    'date_measured' => t('Date Measured'),
   ];
   for ($i = 1; $i <= 12; $i++) {
     $header["question_$i"] = t('Q@number', ['@number' => $i]);
@@ -477,7 +478,8 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
           $health_center_node = node_load($health_center_id);
           $health_center_name = isset($health_center_node->title) ? $health_center_node->title : 'Unknown Center';
         }
-      } else {
+      }
+      else {
         $health_center_name = 'Unknown Center';
       }
 
