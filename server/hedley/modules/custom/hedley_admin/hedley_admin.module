@@ -509,7 +509,7 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
         }
       }
 
-    $rows[] = [
+      $rows[] = [
         'nurse' => $nurse_name,
         'health_center' => $health_center_name,
         'survey_type' => $survey_type,
