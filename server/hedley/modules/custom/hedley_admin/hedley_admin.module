@@ -524,14 +524,14 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
   $form['csv_export_button'] = [
     '#type' => 'submit',
     '#value' => t('Export to CSV'),
-    '#submit' => ['hedley_admin_resilience_survey_export_csv']
+    '#submit' => ['hedley_admin_resilience_survey_export_csv'],
   ];
 
   $form['table'] = [
     '#theme' => 'table',
     '#header' => $header,
     '#rows' => $rows,
-    '#empty' => t('No survey results available')
+    '#empty' => t('No survey results available'),
   ];
 
   drupal_add_css('.align-center { text-align: center; }', ['type' => 'inline']);
