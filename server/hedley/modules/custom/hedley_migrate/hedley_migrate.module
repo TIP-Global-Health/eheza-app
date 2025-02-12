@@ -188,8 +188,8 @@ function hedley_migrate_migrate_api() {
       'HedleyMigrateRelationships' => [
         'class_name' => 'HedleyMigrateRelationships',
       ],
-      'HedleyMigrateResilienceSurveys'=> [
-        'class_name' => 'HedleyMigrateNurses',
+      'HedleyMigrateResilienceSurveys' => [
+        'class_name' => 'HedleyMigrateResilienceSurveys',
       ],
       'HedleyMigrateResource' => [
         'class_name' => 'HedleyMigrateResource',
