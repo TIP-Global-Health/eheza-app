@@ -614,6 +614,7 @@ type TranslationId
     | DOB
     | DropzoneDefaultMessage
     | DueDate
+    | DuplicateSuspectMessage String String
     | DueTo
     | EarlyMastitisOrEngorgmentReliefMethod EarlyMastitisOrEngorgmentReliefMethod
     | EarlyChildhoodDevelopment
@@ -1035,6 +1036,7 @@ type TranslationId
     | MyRelatedBy MyRelatedBy
     | MyRelatedByQuestion MyRelatedBy
     | Name
+    | NationalId
     | NationalIdNumber
     | NCDAANCVisitsCounseling
     | NCDABirthweightQuestion
@@ -1220,6 +1222,7 @@ type TranslationId
     | PlaceholderEnterHeight
     | PlaceholderEnterMUAC
     | PlaceholderEnterParticipantName
+    | PlaceholderEnterParticipantNationalId
     | PlaceholderEnterWeight
     | PlaceholderSearchContactName
     | PlacentaPrevia
@@ -1829,6 +1832,7 @@ type TranslationId
     | SavedMoneyQuestion
     | SaveError
     | ScheduleFollowUp
+    | SearchBy
     | SearchEhezaForExistingParticipants
     | SearchExistingParticipants
     | SearchHelper
@@ -5270,6 +5274,12 @@ translationSet trans =
             { english = "Due Date"
             , kinyarwanda = Just "Itariki azabyariraho"
             , kirundi = Just "Itarike ntarengwa"
+            }
+
+        DuplicateSuspectMessage name nationalId ->
+            { english = "National ID " ++ nationalId ++ " is already assigned to patient " ++ name ++ ". Shall we proceed with creation?"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         DueTo ->
@@ -11355,6 +11365,12 @@ translationSet trans =
             , kirundi = Just "Izina"
             }
 
+        NationalId ->
+            { english = "National ID"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NationalIdNumber ->
             { english = "National ID Number"
             , kinyarwanda = Just "Numero y'irangamuntu"
@@ -14071,6 +14087,12 @@ translationSet trans =
             { english = "Enter participant name here"
             , kinyarwanda = Just "Andika izina ry'umurwayi hano"
             , kirundi = Just "Andika izina ry'uwitavye hano"
+            }
+
+        PlaceholderEnterParticipantNationalId ->
+            { english = "Enter participant national ID here"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PlaceholderEnterWeight ->
@@ -22121,6 +22143,12 @@ translationSet trans =
             { english = "Schedule Follow Up"
             , kinyarwanda = Nothing
             , kirundi = Just "Tegura ibikurikira"
+            }
+
+        SearchBy ->
+            { english = "Search by"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         SearchEhezaForExistingParticipants ->

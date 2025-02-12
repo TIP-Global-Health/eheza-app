@@ -38,8 +38,8 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
+        , viewConfirmationDialog
         , viewCustomBoolInput
-        , viewEndEncounterDialog
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
@@ -179,7 +179,7 @@ viewDiagnosticsContent language currentDate assembled data =
         endEncounterDialog =
             if data.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.EndEncounterNoTuberculosisDiagnosisPhrase
                         saveDiagnosticsMsg

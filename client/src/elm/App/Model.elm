@@ -31,6 +31,7 @@ import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
+import Components.PatientsSearchForm.Model
 import Config.Model
 import Device.Model exposing (Device)
 import Error.Model exposing (Error, ErrorType)
@@ -341,7 +342,7 @@ emptyLoggedInModel site villageId nurse =
     , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
     , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
-    , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
+    , individualEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , stockManagementPage = Pages.StockManagement.Model.emptyModel
     , relationshipPages = Dict.empty

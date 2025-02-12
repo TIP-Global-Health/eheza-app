@@ -327,8 +327,8 @@ update msg model =
                                         model.healthCenterId
                                         model.villageId
                                         isChw
-                                        subMsg
                                         model.indexedDb
+                                        subMsg
                                         data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
@@ -367,8 +367,8 @@ update msg model =
                                             model.healthCenterId
                                             model.villageId
                                             isChw
-                                            subMsg
                                             model.indexedDb
+                                            subMsg
                             in
                             ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
