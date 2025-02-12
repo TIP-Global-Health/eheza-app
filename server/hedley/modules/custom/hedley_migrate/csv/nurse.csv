@@ -1,6 +1,2 @@
-id,title,field_role,field_health_centers,field_villages,field_pin_code,created
-188,Maya,nurse,4|5,,1234,1592244289
-189,Jojo,chw,4|5,140|165,2345,1592244289
-190,PhePhe,nurse,4|5,,4321,1592244289
-191,YumYum,chw,4|5,140|165,5432,1592244289
-192,LabTech,lab-tech,4|5,,3333,1592244289
+id,title,field_role,field_pin_code,created,field_resilience_program,field_resilience_start_date,field_resilience_role,field_birth_date,field_gender,field_education_level,field_ubudehe,field_marital_status,field_next_reminder
+190,Maya,nurse,1234,1592244289,1,2025-01-31,line-manager,2015-01-01,male,1,1,divorced,1739347200
