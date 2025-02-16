@@ -24163,9 +24163,9 @@ translationSet trans =
             }
 
         UnsureOfLmp ->
-            { english = "LMP not confident"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
+            { english = "LMP: Not confident"
+            , kinyarwanda = Just "Itariki aheruka imihango: Ntabwo izwi neza"
+            , kirundi = Just "Itarike aheruka kuja mu kwezi: Ntago ayizeye neza"
             }
 
         Update ->
