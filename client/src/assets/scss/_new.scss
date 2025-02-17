@@ -3247,6 +3247,10 @@ div.page-report.clinical .ui.unstackable.items {
                 height: 40px;
                 width: 40px;
               }
+
+              img.rotate {
+                transform: rotate(180deg);
+              }
             }
 
             .due-date-label {

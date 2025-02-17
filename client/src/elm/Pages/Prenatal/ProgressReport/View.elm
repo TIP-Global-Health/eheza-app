@@ -6,6 +6,7 @@ import Backend.Measurement.Model
     exposing
         ( DangerSign(..)
         , EyesCPESign(..)
+        , FetalPresentation(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
@@ -1452,42 +1453,42 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
             generateEGAWeeksDaysLabel language_ diffInDays
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            assembled.globalLmpDate
-                |> Maybe.map
-                    (\lmpDate ->
-                        let
-                            eddDate =
-                                lmpToEDDDate lmpDate
-                        in
-                        ( div [ class "due-date-label" ]
-                            [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
-                            , div []
-                                [ text <|
-                                    (Date.day eddDate |> String.fromInt)
-                                        ++ " "
-                                        ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
-                                ]
+            Maybe.map
+                (\lmpDate ->
+                    let
+                        eddDate =
+                            lmpToEDDDate lmpDate
+                    in
+                    ( div [ class "due-date-label" ]
+                        [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
+                        , div []
+                            [ text <|
+                                (Date.day eddDate |> String.fromInt)
+                                    ++ " "
+                                    ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
                             ]
-                        , fetalHeartRateDate
-                            |> Maybe.map
-                                (\date ->
-                                    div [ class "heart-rate-label" ]
-                                        [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
-                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
-                                        ]
-                                )
-                            |> Maybe.withDefault emptyNode
-                        , fetalMovementsDate
-                            |> Maybe.map
-                                (\date ->
-                                    div [ class "movements-label" ]
-                                        [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
-                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
-                                        ]
-                                )
-                            |> Maybe.withDefault emptyNode
-                        )
+                        ]
+                    , fetalHeartRateDate
+                        |> Maybe.map
+                            (\date ->
+                                div [ class "heart-rate-label" ]
+                                    [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
+                                    , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , fetalMovementsDate
+                        |> Maybe.map
+                            (\date ->
+                                div [ class "movements-label" ]
+                                    [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
+                                    , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
                     )
+                )
+                assembled.globalLmpDate
                 |> Maybe.withDefault ( emptyNode, emptyNode, emptyNode )
 
         viewTrimesterTimeline trimester =
@@ -1571,8 +1572,45 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
 
                 dueDateInfo =
                     if trimester == ThirdTrimester then
+                        let
+                            -- At 36 weeks and after and if Cephalic condition is present, the head of the icon
+                            -- should face upwards, with no Cephalic condition, it should face downward.
+                            -- Before 36 weeks the heads should face upward.
+                            babyHeadDown =
+                                Maybe.map
+                                    (\lmpDate ->
+                                        let
+                                            currentWeek =
+                                                diffDays lmpDate currentDate // 7
+                                        in
+                                        if currentWeek < 36 then
+                                            False
+
+                                        else
+                                            let
+                                                currentFetalPresentation =
+                                                    List.reverse allNurseEncountersData
+                                                        |> List.filterMap
+                                                            (\( _, measurements ) ->
+                                                                getMeasurementValueFunc measurements.obstetricalExam
+                                                                    |> Maybe.map .fetalPresentation
+                                                            )
+                                                        |> List.head
+                                            in
+                                            Maybe.map ((/=) Cephalic) currentFetalPresentation
+                                                |> Maybe.withDefault True
+                                    )
+                                    assembled.globalLmpDate
+                                    |> Maybe.withDefault False
+                        in
                         div [ class "due-date-info" ]
-                            [ span [ class "due-date-icon" ] [ img [ src "assets/images/icon-baby-due-date.png" ] [] ]
+                            [ span [ class "due-date-icon" ]
+                                [ img
+                                    [ classList [ ( "rotate", babyHeadDown ) ]
+                                    , src "assets/images/icon-baby-due-date.png"
+                                    ]
+                                    []
+                                ]
                             , eddLabel
                             ]
 
