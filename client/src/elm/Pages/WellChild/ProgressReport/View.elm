@@ -1217,12 +1217,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                     )
                 |> Dict.fromList
 
-        heightValuesBySession =
-            valuesIndexedBySession .heights
-
-        weightValuesBySession =
-            valuesIndexedBySession .weights
-
         photoValuesBySession =
             valuesIndexedBySession .photos
 
@@ -1255,16 +1249,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                 )
                 >> Dict.fromList
 
-        heightValuesByEncounter =
-            Dict.union
-                (valuesIndexedByEncounter .height nutritionMeasurements)
-                (valuesIndexedByEncounter .height wellChildMeasurements)
-
-        weightValuesByEncounter =
-            Dict.union
-                (valuesIndexedByEncounter .weight nutritionMeasurements)
-                (valuesIndexedByEncounter .weight wellChildMeasurements)
-
         photoValuesByEncounter =
             Dict.union
                 (valuesIndexedByEncounter .photo nutritionMeasurements)
@@ -1278,12 +1262,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
         --
         -- COMMON CONTEXT
         --
-        heightValues =
-            Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
-
-        weightValues =
-            Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
-
         nutritionValues =
             Dict.values nutritionValuesBySession
                 ++ Dict.values nutritionValuesByEncounter
@@ -1292,19 +1270,41 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
         photoValues =
             Dict.values photoValuesBySession ++ Dict.values photoValuesByEncounter
 
-        heightForAgeData =
-            List.filterMap (chartHeightForAge child) heightValues
-
-        weightForAgeData =
-            List.filterMap (chartWeightForAge child) weightValues
-
-        weightForLengthAndHeightData =
-            List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
-
         charts =
             Maybe.map
                 (\birthDate ->
                     let
+                        heightValuesBySession =
+                            valuesIndexedBySession .heights
+
+                        weightValuesBySession =
+                            valuesIndexedBySession .weights
+
+                        heightValuesByEncounter =
+                            Dict.union
+                                (valuesIndexedByEncounter .height nutritionMeasurements)
+                                (valuesIndexedByEncounter .height wellChildMeasurements)
+
+                        weightValuesByEncounter =
+                            Dict.union
+                                (valuesIndexedByEncounter .weight nutritionMeasurements)
+                                (valuesIndexedByEncounter .weight wellChildMeasurements)
+
+                        heightValues =
+                            Dict.values heightValuesBySession ++ Dict.values heightValuesByEncounter
+
+                        weightValues =
+                            Dict.values weightValuesBySession ++ Dict.values weightValuesByEncounter
+
+                        heightForAgeData =
+                            List.filterMap (chartHeightForAge child) heightValues
+
+                        weightForAgeData =
+                            List.filterMap (chartWeightForAge child) weightValues
+
+                        weightForLengthAndHeightData =
+                            List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
+
                         headCircumferenceValuesByEncounter =
                             valuesIndexedByEncounter .headCircumference wellChildMeasurements
 
@@ -1346,6 +1346,14 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
 
                         childAgeInMonths =
                             diffMonths birthDate currentDate
+
+                        weightForAgeDaysData =
+                            weightForAgeData
+                                |> List.map (\( days, _, weight ) -> ( days, weight ))
+
+                        heightForAgeDaysData =
+                            heightForAgeData
+                                |> List.map (\( days, _, height ) -> ( days, height ))
                     in
                     -- With exception of Sortwathe, children graduate from all
                     -- groups at the age of 26 month. Therefore, we will show
@@ -1367,14 +1375,6 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                             weightForLengthData =
                                 weightForLengthAndHeightData
                                     |> List.map (\( length, _, weight ) -> ( length, weight ))
-
-                            weightForAgeDaysData =
-                                weightForAgeData
-                                    |> List.map (\( days, _, weight ) -> ( days, weight ))
-
-                            heightForAgeDaysData =
-                                heightForAgeData
-                                    |> List.map (\( days, _, height ) -> ( days, height ))
                         in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData

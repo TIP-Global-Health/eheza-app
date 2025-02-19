@@ -35,7 +35,6 @@ import Pages.Utils
         ( ifEverySetEmpty
         , ifNullableTrue
         , resolveTasksCompletedFromTotal
-        , taskAllCompleted
         , taskCompleted
         )
 import Translate.Model exposing (Language(..))

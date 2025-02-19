@@ -206,12 +206,12 @@ initiatorFromUrlFragment s =
                 in
                 case String.split "-" birthDate of
                     [ yyyy, mm, dd ] ->
-                        let
-                            uuid =
-                                String.dropLeft 11 birthDateWithUuid
-                        in
                         Maybe.map3
                             (\year month day ->
+                                let
+                                    uuid =
+                                        String.dropLeft 11 birthDateWithUuid
+                                in
                                 Just <|
                                     PrenatalNextStepsNewbornEnrolmentOrigin
                                         (Date.fromCalendarDate year (Date.numberToMonth month) day)

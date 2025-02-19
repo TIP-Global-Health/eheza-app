@@ -79,16 +79,6 @@ import Translate exposing (Language)
 update : Language -> NominalDate -> PrenatalEncounterId -> Bool -> ModelIndexedDb -> Msg -> Model -> ( Model, Cmd Msg, List App.Model.Msg )
 update language currentDate id isLabTech db msg model =
     let
-        obstetricFormSecondStep =
-            Dict.get id db.prenatalMeasurements
-                |> Maybe.andThen RemoteData.toMaybe
-                |> Maybe.map
-                    (.obstetricHistoryStep2
-                        >> getMeasurementValueFunc
-                        >> obstetricHistoryStep2FormWithDefault model.historyData.obstetricFormSecondStep
-                    )
-                |> Maybe.withDefault model.historyData.obstetricFormSecondStep
-
         medicalHistoryForm =
             Dict.get id db.prenatalMeasurements
                 |> Maybe.andThen RemoteData.toMaybe
@@ -480,6 +470,16 @@ update language currentDate id isLabTech db msg model =
 
         SetObstetricFormSecondStepSign sign ->
             let
+                obstetricFormSecondStep =
+                    Dict.get id db.prenatalMeasurements
+                        |> Maybe.andThen RemoteData.toMaybe
+                        |> Maybe.map
+                            (.obstetricHistoryStep2
+                                >> getMeasurementValueFunc
+                                >> obstetricHistoryStep2FormWithDefault model.historyData.obstetricFormSecondStep
+                            )
+                        |> Maybe.withDefault model.historyData.obstetricFormSecondStep
+
                 form =
                     obstetricFormSecondStep
 

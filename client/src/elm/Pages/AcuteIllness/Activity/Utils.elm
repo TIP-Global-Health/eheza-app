@@ -57,7 +57,7 @@ import Pages.Utils
         , viewRedAlertForSelect
         )
 import SyncManager.Model exposing (Site(..), SiteFeature)
-import Translate exposing (Language, TranslationId, translate)
+import Translate exposing (TranslationId, translate)
 import Translate.Model exposing (Language(..))
 
 

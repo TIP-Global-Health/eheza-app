@@ -3,7 +3,7 @@ module Pages.WellChild.Activity.View exposing (view, viewVaccinationOverview)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc, headCircumferenceIndication)
+import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.NutritionEncounter.Utils
     exposing
@@ -19,24 +19,21 @@ import Backend.WellChildEncounter.Model exposing (WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
-import Gizra.Html exposing (emptyNode, showIf, showMaybe)
+import Gizra.Html exposing (emptyNode, showIf)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
 import Maybe.Extra exposing (isJust)
 import Measurement.Model
     exposing
         ( ImmunisationTask(..)
-        , InvokationModule(..)
         , NCDAData
         , PhotoForm
         , VaccinationFormViewMode(..)
         , VaccinationProgressDict
         , VaccinationStatus(..)
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils exposing (..)
 import Measurement.View
@@ -46,7 +43,6 @@ import Measurement.View
         , nutritionFeedingInputsAndTasks
         , nutritionFoodSecurityInputsAndTasks
         , nutritionHygieneInputsAndTasks
-        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewHealthEducationForm
         , viewHeightForm
@@ -57,7 +53,6 @@ import Measurement.View
         , viewSendToHealthCenterForm
         , viewWeightForm
         )
-import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Nutrition.Activity.View exposing (viewPhotoForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
@@ -71,13 +66,10 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
         , viewCustomAction
-        , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
         , viewPersonDetailsExtended
-        , viewPreviousMeasurement
         , viewQuestionLabel
         , viewSaveAction
         , viewTasksCount
@@ -92,7 +84,7 @@ import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
 import ZScore.Model exposing (Centimetres(..))
-import ZScore.Utils exposing (diffDays, viewZScore, zScoreHeadCircumferenceForAge)
+import ZScore.Utils exposing (diffDays, zScoreHeadCircumferenceForAge)
 
 
 view :
@@ -1874,11 +1866,6 @@ viewMedicationAdministrationForm language currentDate site assembled config form
     [ div [ class "ui form medication-administration" ]
         inputs
     ]
-
-
-viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
-viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass dosage Nothing
 
 
 viewNextStepsContent :
