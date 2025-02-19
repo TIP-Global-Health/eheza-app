@@ -1763,16 +1763,21 @@ viewAcuteIllnessOngoingTreatment language currentDate id ( personId, measurement
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+            Maybe.andThen
+                (\task ->
+                    let
+                        tasksCompletedFromTotalDict =
+                            List.map
+                                (\task ->
+                                    ( task, ongoingTreatmentTasksCompletedFromTotal currentDate measurements data task )
+                                )
+                                tasks
+                                |> Dict.fromList
+                    in
+                    Dict.get task tasksCompletedFromTotalDict
+                )
+                activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =

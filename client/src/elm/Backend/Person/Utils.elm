@@ -203,12 +203,13 @@ initiatorFromUrlFragment s =
 
                     birthDate =
                         String.left 10 birthDateWithUuid
-
-                    uuid =
-                        String.dropLeft 11 birthDateWithUuid
                 in
                 case String.split "-" birthDate of
                     [ yyyy, mm, dd ] ->
+                        let
+                            uuid =
+                                String.dropLeft 11 birthDateWithUuid
+                        in
                         Maybe.map3
                             (\year month day ->
                                 Just <|

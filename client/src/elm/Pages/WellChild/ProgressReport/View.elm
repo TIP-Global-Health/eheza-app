@@ -1295,35 +1295,11 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
         heightForAgeData =
             List.filterMap (chartHeightForAge child) heightValues
 
-        heightForAgeDaysData =
-            heightForAgeData
-                |> List.map (\( days, _, height ) -> ( days, height ))
-
-        heightForAgeMonthsData =
-            heightForAgeData
-                |> List.map (\( _, month, height ) -> ( month, height ))
-
         weightForAgeData =
             List.filterMap (chartWeightForAge child) weightValues
 
-        weightForAgeDaysData =
-            weightForAgeData
-                |> List.map (\( days, _, weight ) -> ( days, weight ))
-
-        weightForAgeMonthsData =
-            weightForAgeData
-                |> List.map (\( _, month, weight ) -> ( month, weight ))
-
         weightForLengthAndHeightData =
             List.filterMap (chartWeightForLengthAndHeight heightValues) weightValues
-
-        weightForLengthData =
-            weightForLengthAndHeightData
-                |> List.map (\( length, _, weight ) -> ( length, weight ))
-
-        weightForHeightData =
-            weightForLengthAndHeightData
-                |> List.map (\( _, height, weight ) -> ( height, weight ))
 
         charts =
             Maybe.map
@@ -1387,6 +1363,18 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
 
                                 else
                                     zScoreViewCharts.headCircumferenceForAge0To2 language zscores headCircumferenceForAgeData
+
+                            weightForLengthData =
+                                weightForLengthAndHeightData
+                                    |> List.map (\( length, _, weight ) -> ( length, weight ))
+
+                            weightForAgeDaysData =
+                                weightForAgeData
+                                    |> List.map (\( days, _, weight ) -> ( days, weight ))
+
+                            heightForAgeDaysData =
+                                heightForAgeData
+                                    |> List.map (\( days, _, height ) -> ( days, height ))
                         in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge language zscores heightForAgeDaysData
@@ -1396,6 +1384,11 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                         ]
 
                     else if childAgeInMonths < 60 then
+                        let
+                            weightForHeightData =
+                                weightForLengthAndHeightData
+                                    |> List.map (\( _, height, weight ) -> ( height, weight ))
+                        in
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge0To5 language zscores heightForAgeDaysData
                         , zScoreViewCharts.weightForAge0To5 language zscores weightForAgeDaysData
@@ -1404,6 +1397,15 @@ viewGrowthPane language currentDate zscores child historical nutritionMeasuremen
                         ]
 
                     else
+                        let
+                            weightForAgeMonthsData =
+                                weightForAgeData
+                                    |> List.map (\( _, month, weight ) -> ( month, weight ))
+
+                            heightForAgeMonthsData =
+                                heightForAgeData
+                                    |> List.map (\( _, month, height ) -> ( month, height ))
+                        in
                         -- Child is older than 5 years.
                         [ ZScore.View.viewMarkers
                         , zScoreViewCharts.heightForAge5To19 language zscores heightForAgeMonthsData
