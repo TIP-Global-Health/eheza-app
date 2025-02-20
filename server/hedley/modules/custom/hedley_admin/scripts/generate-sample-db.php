@@ -211,15 +211,6 @@ while (TRUE) {
   }
 }
 
-// Delete all users but admin (uid = 1).
-//$result = db_select('users', 'u')
-//  ->fields('u', array('uid'))
-//  ->condition('uid', 1, '>')
-//  ->execute();
-//foreach ($result as $record) {
-//  user_delete($record->uid);
-//}
-
 // Create Gizra Admin.
 $role = user_role_load_by_name('administrator');
 $gizra_admin = [
