@@ -61,8 +61,8 @@ foreach ($files_array as $item) {
     'status' => 1,
   ];
 
-  // Copy file to public directory.
-  $directory = 'public://photos';
+  // Copy file to private directory.
+  $directory = 'private://photos';
   file_prepare_directory($directory, FILE_CREATE_DIRECTORY);
   $file = file_copy($file, $directory);
 
