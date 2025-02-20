@@ -223,8 +223,8 @@ while (TRUE) {
 // Create Gizra Admin.
 $role = user_role_load_by_name('administrator');
 $gizra_admin = [
-  'name' => 'gizra',
-  'mail' => 'gizra@example.com',
+  'name' => 'gizraAdmin',
+  'mail' => 'gizraAdmin@example.com',
   'pass' => '2ASC$Hvm',
   'roles' => [$role->rid => $role->name],
   'status' => 1,
@@ -312,21 +312,8 @@ function process_node($node, $data) {
         file_delete($file);
       }
     }
-    $birth_date = field_get_items('node', $node, 'field_birth_date');
-    if ($birth_date) {
-      $birth_timestamp = strtotime($birth_date[0]['value']);
-      $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
-      $is_adult = $age >= 13;
-      if ($gender == 'male') {
-        $folder = $is_adult ? 'father' : 'boy';
-      }
-      else {
-        $folder = $is_adult ? 'mother' : 'girl';
-      }
-      $file_key = array_rand($data['managed_files'][$folder]);
-      $file = $data['managed_files'][$folder][$file_key];
-      $node->field_photo[LANGUAGE_NONE][0] = (array) $file;
-    }
+    $file = load_photo_for_person($node, $data);
+    $node->field_photo[LANGUAGE_NONE][0] = $file;
     $save_required = TRUE;
   }
   elseif (strpos($node->type, 'photo')) {
@@ -342,11 +329,10 @@ function process_node($node, $data) {
     $person_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
     $person = node_load($person_id);
     if ($person) {
-      $photo_field = field_get_items('node', $person, 'field_photo');
-      if ($photo_field) {
-        $node->field_photo[LANGUAGE_NONE][0] = $photo_field[0];
-        $save_required = TRUE;
-      }
+      // Replace image.
+      $file = load_photo_for_person($person, $data);
+      $node->field_photo[LANGUAGE_NONE][0] = $file;
+      $save_required = TRUE;
     }
   }
 
@@ -379,4 +365,32 @@ function keep_by_shards($shards, $sample_health_centers_ids) {
   }
 
   return FALSE;
+}
+
+/**
+ * Load appropriate photo for person, per age and gender.
+ */
+function load_photo_for_person($node, $data) {
+  $birth_date = field_get_items('node', $node, 'field_birth_date');
+  if (empty($birth_date)) {
+    $file_key = array_rand($data['managed_files']['mother']);
+  }
+  else {
+    $gender = $node->field_gender[LANGUAGE_NONE][0]['value'];
+    if (!$gender) {
+      $gender = 'female';
+    }
+    $birth_timestamp = strtotime($birth_date[0]['value']);
+    $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
+    $is_adult = $age >= 13;
+    if ($gender == 'male') {
+      $folder = $is_adult ? 'father' : 'boy';
+    }
+    else {
+      $folder = $is_adult ? 'mother' : 'girl';
+    }
+    $file_key = array_rand($data['managed_files'][$folder]);
+  }
+
+  return (array) $data['managed_files'][$folder][$file_key];
 }
