@@ -44,7 +44,7 @@ import Pages.Utils
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewEndEncounterDialog
+        , viewConfirmationDialog
         , viewLabel
         , viewPersonDetailsExtended
         , viewQuestionLabel
@@ -199,7 +199,7 @@ viewDiagnosticsContent language currentDate assembled db data =
                                 }
                 in
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.EndEncounterNoHIVDiagnosisPhrase
                         saveDiagnosticsMsg

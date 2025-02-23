@@ -102,12 +102,7 @@ viewPersonDetails language currentDate person maybeDiagnosisTranslationId =
         , maybeDiagnosisTranslationId
             |> Maybe.map
                 (\diagnosis ->
-                    div
-                        [ classList
-                            [ ( "diagnosis-wrapper", True )
-                            , ( "covid-19", diagnosis == Translate.AcuteIllnessDiagnosis DiagnosisCovid19Suspect )
-                            ]
-                        ]
+                    div [ class "diagnosis-wrapper" ]
                         [ div [ class "label upper" ] [ text <| translate language Translate.Diagnosis ++ ":" ]
                         , div [ class "diagnosis" ] [ text <| translate language diagnosis ]
                         ]
@@ -437,12 +432,6 @@ resolveSelectedDateForMonthSelector currentDate monthGap =
 
 
 -- Inputs
-
-
-viewSearchForm : Language -> String -> TranslationId -> (String -> msg) -> Html msg
-viewSearchForm language inputValue placeholderTransId setInputMsg =
-    div [ class "ui search form" ]
-        [ viewTextInput language inputValue setInputMsg (Just placeholderTransId) (Just "search-input") ]
 
 
 viewTextInput : Language -> String -> (String -> msg) -> Maybe TranslationId -> Maybe String -> Html msg
@@ -926,8 +915,8 @@ emptySelectOption isSelected =
         [ text "" ]
 
 
-viewEndEncounterDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
-viewEndEncounterDialog language heading message confirmAction cancelAction =
+viewConfirmationDialog : Language -> TranslationId -> TranslationId -> msg -> msg -> Html msg
+viewConfirmationDialog language heading message confirmAction cancelAction =
     div [ class "ui tiny active modal" ]
         [ div [ class "header" ]
             [ text <| translate language heading ]

@@ -328,8 +328,8 @@ update msg model =
                                         model.healthCenterId
                                         model.villageId
                                         isChw
-                                        subMsg
                                         model.indexedDb
+                                        subMsg
                                         data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
@@ -368,8 +368,8 @@ update msg model =
                                             model.healthCenterId
                                             model.villageId
                                             isChw
-                                            subMsg
                                             model.indexedDb
+                                            subMsg
                             in
                             ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
@@ -1400,7 +1400,15 @@ update msg model =
                                 ]
 
                         UserPage (EditPersonPage _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()

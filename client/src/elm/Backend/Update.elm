@@ -1433,14 +1433,33 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
             in
             -- We'll limit the search to 500 each for now ... basically,
             -- just to avoid truly pathological cases.
-            ( { model | personSearches = Dict.insert trimmed Loading model.personSearches }
+            ( { model | personSearchesByName = Dict.insert trimmed Loading model.personSearchesByName }
             , sw.selectRange personEndpoint (ParamsNameContains trimmed) 0 (Just 500)
                 |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByName trimmed)
             , []
             )
 
         HandleFetchedPeopleByName trimmed data ->
-            ( { model | personSearches = Dict.insert trimmed data model.personSearches }
+            ( { model | personSearchesByName = Dict.insert trimmed data model.personSearchesByName }
+            , Cmd.none
+            , []
+            )
+
+        FetchPeopleByNationalId nationalId ->
+            let
+                trimmed =
+                    String.trim nationalId
+            in
+            -- We'll limit the search to 500 each for now ... basically,
+            -- just to avoid truly pathological cases.
+            ( { model | personSearchesByNationalId = Dict.insert trimmed Loading model.personSearchesByNationalId }
+            , sw.selectRange personEndpoint (ParamsNationalIdContains trimmed) 0 (Just 500)
+                |> toCmd (RemoteData.fromResult >> RemoteData.map (.items >> Dict.fromList) >> HandleFetchedPeopleByNationalId trimmed)
+            , []
+            )
+
+        HandleFetchedPeopleByNationalId trimmed data ->
+            ( { model | personSearchesByNationalId = Dict.insert trimmed data model.personSearchesByNationalId }
             , Cmd.none
             , []
             )
@@ -4204,15 +4223,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 -- Adding GPS coordinates.
                 personWithCoordinates =
                     if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        Maybe.map
-                            (\coords ->
-                                { person
-                                    | registrationLatitude = String.fromFloat coords.latitude |> Just
-                                    , registrationLongitude = String.fromFloat coords.longitude |> Just
-                                }
-                            )
-                            coordinates
-                            |> Maybe.withDefault person
+                        updatePersonWithCooridnates person coordinates
 
                     else
                         person
@@ -4391,8 +4402,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     extraMsgs
 
         PatchPerson origin personId person ->
+            let
+                -- Adding GPS coordinates.
+                personWithCoordinates =
+                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                        updatePersonWithCooridnates person coordinates
+
+                    else
+                        person
+            in
             ( { model | postPerson = Loading }
-            , sw.patchFull personEndpoint personId person
+            , sw.patchFull personEndpoint personId personWithCoordinates
                 |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
             )
@@ -5908,7 +5928,8 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                     Dict.update uuid (Maybe.map (always (Success data))) model.people
             in
             ( { model
-                | personSearches = Dict.empty
+                | personSearchesByName = Dict.empty
+                , personSearchesByNationalId = Dict.empty
                 , people = people
               }
             , True
@@ -7821,7 +7842,15 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs :
+    NominalDate
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> ModelIndexedDb
+    -> AcuteIllnessEncounterId
+    -> Person
+    -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->
@@ -8436,3 +8465,15 @@ generateTuberculosisEncounterCompletedMsgs currentDate after id =
                     []
             )
         |> Maybe.withDefault []
+
+
+updatePersonWithCooridnates : Person -> Maybe App.Model.GPSCoordinates -> Person
+updatePersonWithCooridnates person =
+    Maybe.map
+        (\coordinates ->
+            { person
+                | registrationLatitude = String.fromFloat coordinates.latitude |> Just
+                , registrationLongitude = String.fromFloat coordinates.longitude |> Just
+            }
+        )
+        >> Maybe.withDefault person

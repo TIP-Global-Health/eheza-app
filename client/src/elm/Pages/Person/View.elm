@@ -26,6 +26,7 @@ import Backend.Person.Utils
         ( defaultIconForPerson
         , educationLevelToInt
         , expectedAgeByPerson
+        , generateFullName
         , graduatingAgeInMonth
         , hivStatusToString
         , isAdult
@@ -58,6 +59,7 @@ import Maybe.Extra exposing (isJust)
 import Measurement.Decoder exposing (decodeDropZoneFile)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Person.Model exposing (..)
+import Pages.Utils exposing (viewConfirmationDialog)
 import RemoteData exposing (RemoteData(..), WebData)
 import Restful.Endpoint exposing (fromEntityUuid)
 import Set
@@ -587,7 +589,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Years -45 today
+                            , birthDateSelectorFrom = Date.add Years -50 today
                             , birthDateSelectorTo = Date.add Years -13 today
                             , title = Translate.People
                             }
@@ -635,7 +637,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NutritionEncounter)
                             , expectedAge = ExpectChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -5 today
+                            , birthDateSelectorFrom = Date.add Years -13 today |> Date.add Days 1
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -975,6 +977,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
         hivStatusInput =
             viewSelectInput language Translate.HIVStatusLabel hivStatusOptions Backend.Person.Form.hivStatus "ten" "select-input" False personForm
 
+        -- Not in use anymore - not displayed on form.
         numberOfChildrenUnder5Input =
             let
                 options =
@@ -985,8 +988,14 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
             in
             viewSelectInput language Translate.NumberOfChildrenUnder5 options Backend.Person.Form.numberOfChildren "ten" "select-input" False personForm
 
+        -- Used only on Rwanda site.
         hmisNumberInput =
-            viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+            case site of
+                SiteRwanda ->
+                    viewSelectInput language Translate.ChildHmisNumber hmisNumberOptions Backend.Person.Form.hmisNumber "ten" "select-input" False personForm
+
+                _ ->
+                    emptyNode
 
         firstNameInput =
             viewTextInput language Translate.FirstName Backend.Person.Form.firstName False personForm
@@ -1026,7 +1035,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , hivStatusInput
                                 , levelOfEducationInput
                                 , maritalStatusInput
-                                , numberOfChildrenUnder5Input
                                 ]
 
                             ExpectChild ->
@@ -1043,7 +1051,6 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                 , levelOfEducationInput
                                 , maritalStatusInput
                                 , modeOfDeliveryInput
-                                , numberOfChildrenUnder5Input
                                 ]
                    )
 
@@ -1269,7 +1276,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                 ]
 
         gpsInfoSection =
-            if gpsCoordinatesEnabled features && not isEditOperation then
+            if gpsCoordinatesEnabled features then
                 let
                     sectionContent =
                         Maybe.map
@@ -1401,6 +1408,25 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             |> ul []
                         ]
                    ]
+
+        duplicateSuspectDialog =
+            Maybe.andThen
+                (\( duplicateSuspect, confirmationMsg ) ->
+                    Maybe.map
+                        (\nationalIdNumber ->
+                            let
+                                name =
+                                    generateFullName duplicateSuspect.firstName duplicateSuspect.secondName
+                            in
+                            viewConfirmationDialog language
+                                Translate.Warning
+                                (Translate.DuplicateSuspectMessage name nationalIdNumber)
+                                confirmationMsg
+                                (SetDialogState Nothing)
+                        )
+                        duplicateSuspect.nationalIdNumber
+                )
+                model.dialogState
     in
     div
         [ class "page-person-create" ]
@@ -1423,6 +1449,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                     ]
                 ]
             ]
+        , viewModal duplicateSuspectDialog
         ]
 
 
