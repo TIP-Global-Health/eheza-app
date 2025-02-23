@@ -2360,7 +2360,8 @@ expectLaboratoryTask currentDate isChw assembled task =
                        )
 
         LaboratoryCovidTesting ->
-            covid19SuspectDiagnosed assembled.measurements
+            not isChw
+                && covid19SuspectDiagnosed assembled.measurements
 
 
 covid19Diagnosed : AcuteIllnessDiagnosis -> Bool
