@@ -1276,7 +1276,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                 ]
 
         gpsInfoSection =
-            if gpsCoordinatesEnabled features && not isEditOperation then
+            if gpsCoordinatesEnabled features then
                 let
                     sectionContent =
                         Maybe.map

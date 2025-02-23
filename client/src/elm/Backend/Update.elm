@@ -4223,15 +4223,7 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 -- Adding GPS coordinates.
                 personWithCoordinates =
                     if gpsCoordinatesEnabled features && person.saveGPSLocation then
-                        Maybe.map
-                            (\coords ->
-                                { person
-                                    | registrationLatitude = String.fromFloat coords.latitude |> Just
-                                    , registrationLongitude = String.fromFloat coords.longitude |> Just
-                                }
-                            )
-                            coordinates
-                            |> Maybe.withDefault person
+                        updatePersonWithCooridnates person coordinates
 
                     else
                         person
@@ -4410,8 +4402,17 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                     extraMsgs
 
         PatchPerson origin personId person ->
+            let
+                -- Adding GPS coordinates.
+                personWithCoordinates =
+                    if gpsCoordinatesEnabled features && person.saveGPSLocation then
+                        updatePersonWithCooridnates person coordinates
+
+                    else
+                        person
+            in
             ( { model | postPerson = Loading }
-            , sw.patchFull personEndpoint personId person
+            , sw.patchFull personEndpoint personId personWithCoordinates
                 |> toCmd (RemoteData.fromResult >> HandlePatchedPerson origin personId)
             , []
             )
@@ -8464,3 +8465,15 @@ generateTuberculosisEncounterCompletedMsgs currentDate after id =
                     []
             )
         |> Maybe.withDefault []
+
+
+updatePersonWithCooridnates : Person -> Maybe App.Model.GPSCoordinates -> Person
+updatePersonWithCooridnates person =
+    Maybe.map
+        (\coordinates ->
+            { person
+                | registrationLatitude = String.fromFloat coordinates.latitude |> Just
+                , registrationLongitude = String.fromFloat coordinates.longitude |> Just
+            }
+        )
+        >> Maybe.withDefault person
