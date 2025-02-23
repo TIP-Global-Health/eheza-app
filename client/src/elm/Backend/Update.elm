@@ -7841,7 +7841,15 @@ generateNutritionAssessmentWellChildlMsgs currentDate zscores site isChw before 
         |> Maybe.withDefault []
 
 
-generateSuspectedDiagnosisMsgs : NominalDate -> EverySet SiteFeature -> Bool -> ModelIndexedDb -> ModelIndexedDb -> AcuteIllnessEncounterId -> Person -> List App.Model.Msg
+generateSuspectedDiagnosisMsgs :
+    NominalDate
+    -> EverySet SiteFeature
+    -> Bool
+    -> ModelIndexedDb
+    -> ModelIndexedDb
+    -> AcuteIllnessEncounterId
+    -> Person
+    -> List App.Model.Msg
 generateSuspectedDiagnosisMsgs currentDate features isChw before after id person =
     Maybe.map2
         (\assembledBefore assembledAfter ->

@@ -146,9 +146,6 @@ activityCompleted currentDate isChw assembled activity =
             (not <| activityExpected AcuteIllnessLaboratory)
                 || List.all (laboratoryTaskCompleted currentDate isChw assembled) laboratoryTasks
 
-        AcuteIllnessExposure ->
-            mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements AcuteIllnessExposure
-
         AcuteIllnessNextSteps ->
             (not <| activityExpected AcuteIllnessNextSteps)
                 || (resolveNextStepsTasks currentDate isChw assembled
@@ -602,53 +599,6 @@ covidTestingFormInputsAndTasks language currentDate person form =
         ]
 
 
-exposureTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> ExposureData -> ExposureTask -> ( Int, Int )
-exposureTasksCompletedFromTotal currentDate measurements data task =
-    let
-        ( _, tasks ) =
-            case task of
-                ExposureTravel ->
-                    getMeasurementValueFunc measurements.travelHistory
-                        |> travelHistoryFormWithDefault data.travelHistoryForm
-                        |> travelHistoryFormInutsAndTasks English currentDate
-
-                ExposureExposure ->
-                    getMeasurementValueFunc measurements.exposure
-                        |> exposureFormWithDefault data.exposureForm
-                        |> exposureFormInutsAndTasks English currentDate
-    in
-    resolveTasksCompletedFromTotal tasks
-
-
-travelHistoryFormInutsAndTasks : Language -> NominalDate -> TravelHistoryForm -> ( List (Html Msg), List (Maybe Bool) )
-travelHistoryFormInutsAndTasks language currentDate form =
-    ( [ viewQuestionLabel language Translate.TraveledToCOVID19CountryQuestion
-      , viewBoolInput
-            language
-            form.covid19Country
-            SetCovid19Country
-            "covid19-country"
-            Nothing
-      ]
-    , [ form.covid19Country ]
-    )
-
-
-exposureFormInutsAndTasks : Language -> NominalDate -> ExposureForm -> ( List (Html Msg), List (Maybe Bool) )
-exposureFormInutsAndTasks language currentDate form =
-    ( [ viewQuestionLabel language Translate.ContactWithCOVID19SymptomsQuestion
-      , div [ class "question-helper" ] [ text <| translate language Translate.ContactWithCOVID19SymptomsHelper ++ "." ]
-      , viewBoolInput
-            language
-            form.covid19Symptoms
-            SetCovid19Symptoms
-            "covid19-symptoms"
-            Nothing
-      ]
-    , [ form.covid19Symptoms ]
-    )
-
-
 treatmentTasksCompletedFromTotal : NominalDate -> AcuteIllnessMeasurements -> PriorTreatmentData -> PriorTreatmentTask -> ( Int, Int )
 treatmentTasksCompletedFromTotal currentDate measurements data task =
     case task of
@@ -828,21 +778,6 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagn
     let
         ( _, tasks ) =
             case task of
-                NextStepsIsolation ->
-                    getMeasurementValueFunc measurements.isolation
-                        |> isolationFormWithDefault data.isolationForm
-                        |> isolationFormInutsAndTasks English currentDate isChw
-
-                NextStepsContactHC ->
-                    getMeasurementValueFunc measurements.hcContact
-                        |> hcContactFormWithDefault data.hcContactForm
-                        |> hcContactFormInutsAndTasks English currentDate initialEncounter
-
-                NextStepsCall114 ->
-                    getMeasurementValueFunc measurements.call114
-                        |> call114FormWithDefault data.call114Form
-                        |> call114FormInutsAndTasks English currentDate
-
                 NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
@@ -892,168 +827,6 @@ nextStepsTasksCompletedFromTotal currentDate isChw initialEncounter person diagn
     resolveTasksCompletedFromTotal tasks
 
 
-isolationFormInutsAndTasks : Language -> NominalDate -> Bool -> IsolationForm -> ( List (Html Msg), List (Maybe Bool) )
-isolationFormInutsAndTasks language currentDate isChw form =
-    let
-        headerHelper =
-            if isChw then
-                emptyNode
-
-            else
-                viewCustomLabel language Translate.AcuteIllnessLowRiskCaseHelper "." "instructions"
-
-        derivedSection =
-            let
-                healthEducationSection =
-                    ( [ viewQuestionLabel language Translate.HealthEducationProvidedQuestion
-                      , viewBoolInput
-                            language
-                            form.healthEducation
-                            SetHealthEducation
-                            "health-education"
-                            Nothing
-                      ]
-                    , [ form.healthEducation ]
-                    )
-            in
-            case form.patientIsolated of
-                Just True ->
-                    let
-                        signOnDoorSection =
-                            if isChw then
-                                ( [ viewQuestionLabel language Translate.SignOnDoorPostedQuestion
-                                  , viewBoolInput
-                                        language
-                                        form.signOnDoor
-                                        SetSignOnDoor
-                                        "sign-on-door"
-                                        Nothing
-                                  ]
-                                , [ form.signOnDoor ]
-                                )
-
-                            else
-                                ( [], [] )
-                    in
-                    concatInputsAndTasksSections [ signOnDoorSection, healthEducationSection ]
-
-                Just False ->
-                    concatInputsAndTasksSections
-                        [ ( [ viewQuestionLabel language Translate.WhyNot
-                            , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-                            , viewCheckBoxMultipleSelectInput language
-                                [ NoSpace, TooIll, CanNotSeparateFromFamily, OtherReason ]
-                                []
-                                (form.reasonsForNotIsolating |> Maybe.withDefault [])
-                                Nothing
-                                SetReasonForNotIsolating
-                                Translate.ReasonForNotIsolating
-                            ]
-                          , [ maybeToBoolTask form.reasonsForNotIsolating ]
-                          )
-                        , healthEducationSection
-                        ]
-
-                Nothing ->
-                    ( [], [] )
-    in
-    concatInputsAndTasksSections
-        [ ( [ headerHelper
-            , viewQuestionLabel language (Translate.PatientIsolatedQuestion isChw)
-            , viewBoolInput
-                language
-                form.patientIsolated
-                SetPatientIsolated
-                "patient-isolated"
-                Nothing
-            ]
-          , [ form.patientIsolated ]
-          )
-        , derivedSection
-        ]
-
-
-hcContactFormInutsAndTasks : Language -> NominalDate -> Bool -> HCContactForm -> ( List (Html Msg), List (Maybe Bool) )
-hcContactFormInutsAndTasks language currentDate initialEncounter form =
-    let
-        derivedSection =
-            case form.contactedHC of
-                Just True ->
-                    let
-                        hcRespnonseSection =
-                            let
-                                hcRespnonseOptions =
-                                    if initialEncounter then
-                                        [ SendAmbulance, HomeIsolation, ComeToHealthCenter, ChwMonitoring ]
-
-                                    else
-                                        [ SendAmbulance, ComeToHealthCenter ]
-                            in
-                            ( [ viewQuestionLabel language Translate.HCResponseQuestion
-                              , viewCheckBoxSelectCustomInput language
-                                    hcRespnonseOptions
-                                    []
-                                    form.recommendations
-                                    SetHCRecommendation
-                                    (viewHCRecommendation language)
-                              ]
-                            , [ maybeToBoolTask form.recommendations ]
-                            )
-
-                        hcRespnonsePeriodSection =
-                            ( [ viewQuestionLabel language Translate.HCResponsePeriodQuestion
-                              , viewCheckBoxSelectInput language
-                                    [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                    []
-                                    form.responsePeriod
-                                    SetResponsePeriod
-                                    Translate.ResponsePeriod
-                              ]
-                            , [ maybeToBoolTask form.responsePeriod ]
-                            )
-
-                        sendAmbulanceSection =
-                            Maybe.map
-                                (\recommendations ->
-                                    if recommendations == SendAmbulance then
-                                        ( [ viewQuestionLabel language Translate.AmbulancArrivalPeriodQuestion
-                                          , viewCheckBoxSelectInput language
-                                                [ LessThan30Min, Between30min1Hour, Between1Hour2Hour, Between2Hour1Day ]
-                                                []
-                                                form.ambulanceArrivalPeriod
-                                                SetAmbulanceArrivalPeriod
-                                                Translate.ResponsePeriod
-                                          ]
-                                        , [ maybeToBoolTask form.ambulanceArrivalPeriod ]
-                                        )
-
-                                    else
-                                        ( [], [] )
-                                )
-                                form.recommendations
-                                |> Maybe.withDefault ( [], [] )
-                    in
-                    concatInputsAndTasksSections
-                        [ hcRespnonseSection, hcRespnonsePeriodSection, sendAmbulanceSection ]
-
-                _ ->
-                    ( [], [] )
-    in
-    concatInputsAndTasksSections
-        [ ( [ viewQuestionLabel language Translate.ContactedHCQuestion
-            , viewBoolInput
-                language
-                form.contactedHC
-                SetContactedHC
-                "contacted-hc"
-                Nothing
-            ]
-          , [ form.contactedHC ]
-          )
-        , derivedSection
-        ]
-
-
 viewHCRecommendation : Language -> HCRecommendation -> Html any
 viewHCRecommendation language recommendation =
     let
@@ -1079,116 +852,6 @@ viewHCRecommendation language recommendation =
         , span [ class "strong" ] [ text <| translate language riskLevel ]
         , text <| translate language Translate.AndSentence
         , span [ class "strong" ] [ text <| translate language <| Translate.HCRecommendation recommendation ]
-        ]
-
-
-call114FormInutsAndTasks : Language -> NominalDate -> Call114Form -> ( List (Html Msg), List (Maybe Bool) )
-call114FormInutsAndTasks language currentDate form =
-    let
-        derivedSection =
-            Maybe.map
-                (\called114 ->
-                    if called114 then
-                        let
-                            recommendation114Section =
-                                ( [ viewQuestionLabel language Translate.WhatWasTheirResponse
-                                  , viewCheckBoxSelectInput language
-                                        [ SendToHealthCenter, SendToRRTCenter, SendToHospital, OtherRecommendation114 ]
-                                        []
-                                        form.recommendation114
-                                        SetRecommendation114
-                                        Translate.Recommendation114
-                                  ]
-                                , [ maybeToBoolTask form.recommendation114 ]
-                                )
-
-                            derivedSiteSection =
-                                if isJust form.recommendation114 && form.recommendation114 /= Just OtherRecommendation114 then
-                                    let
-                                        contactedSiteSection =
-                                            ( [ viewQuestionLabel language Translate.ContactedRecommendedSiteQuestion
-                                              , viewBoolInput
-                                                    language
-                                                    form.contactedSite
-                                                    SetContactedSite
-                                                    "contacted-site"
-                                                    Nothing
-                                              ]
-                                            , [ form.contactedSite ]
-                                            )
-
-                                        recommndationSiteSection =
-                                            Maybe.map
-                                                (\contactedSite ->
-                                                    if contactedSite then
-                                                        ( [ viewQuestionLabel language Translate.WhatWasTheirResponse
-                                                          , viewCheckBoxSelectInput language
-                                                                [ TeamComeToVillage, SendToSiteWithForm, OtherRecommendationSite ]
-                                                                []
-                                                                form.recommendationSite
-                                                                SetRecommendationSite
-                                                                Translate.RecommendationSite
-                                                          ]
-                                                        , [ maybeToBoolTask form.recommendationSite ]
-                                                        )
-
-                                                    else
-                                                        ( [ viewQuestionLabel language Translate.WhyNot
-                                                          , viewCheckBoxSelectInput language
-                                                                [ NoneSentWithForm, NonePatientRefused, NoneOtherRecommendationSite ]
-                                                                []
-                                                                form.recommendationSite
-                                                                SetRecommendationSite
-                                                                Translate.RecommendationSite
-                                                          ]
-                                                        , [ maybeToBoolTask form.recommendationSite ]
-                                                        )
-                                                )
-                                                form.contactedSite
-                                                |> Maybe.withDefault ( [], [] )
-                                    in
-                                    concatInputsAndTasksSections [ contactedSiteSection, recommndationSiteSection ]
-
-                                else
-                                    ( [], [] )
-                        in
-                        concatInputsAndTasksSections [ recommendation114Section, derivedSiteSection ]
-
-                    else
-                        ( [ viewQuestionLabel language Translate.WhyNot
-                          , viewCheckBoxSelectInput language
-                                [ NoneNoAnswer, NoneBusySignal, NoneOtherRecommendation114 ]
-                                []
-                                form.recommendation114
-                                SetRecommendation114
-                                Translate.Recommendation114
-                          ]
-                        , [ maybeToBoolTask form.recommendation114 ]
-                        )
-                )
-                form.called114
-                |> Maybe.withDefault ( [], [] )
-    in
-    concatInputsAndTasksSections
-        [ ( [ viewCustomLabel language Translate.Call114 "" "helper call-114"
-            , div
-                [ class "review-case-wrapper"
-                , onClick <| SetPertinentSymptomsPopupState True
-                ]
-                [ viewCustomLabel language Translate.ReviewCaseWith144Respondent "" "helper review-case"
-                , img [ src "assets/images/icon-review.png" ] []
-                ]
-            , viewQuestionLabel language Translate.Called114Question
-            , viewBoolInput
-                language
-                form.called114
-                SetCalled114
-                "called-114"
-                Nothing
-            ]
-          , [ form.called114 ]
-          )
-        , derivedSection
         ]
 
 
@@ -2697,7 +2360,8 @@ expectLaboratoryTask currentDate isChw assembled task =
                        )
 
         LaboratoryCovidTesting ->
-            not isChw && covid19SuspectDiagnosed assembled.measurements
+            not isChw
+                && covid19SuspectDiagnosed assembled.measurements
 
 
 covid19Diagnosed : AcuteIllnessDiagnosis -> Bool
@@ -2743,12 +2407,12 @@ resolveNextStepsTasks : NominalDate -> Bool -> AssembledData -> List NextStepsTa
 resolveNextStepsTasks currentDate isChw assembled =
     if assembled.initialEncounter then
         -- The order is important. Do not change.
-        [ NextStepsContactTracing, NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
+        [ NextStepsContactTracing, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsSymptomsReliefGuidance, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else if mandatoryActivitiesCompletedSubsequentVisit currentDate isChw assembled then
         -- The order is important. Do not change.
-        [ NextStepsContactHC, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
+        [ NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
             |> List.filter (expectNextStepsTask currentDate isChw assembled)
 
     else
@@ -2784,17 +2448,6 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
                 || (diagnosis == Just DiagnosisPneuminialCovid19)
     in
     case task of
-        NextStepsIsolation ->
-            (isChw && (diagnosis == Just DiagnosisCovid19Suspect))
-                || (diagnosis == Just DiagnosisPneuminialCovid19)
-                || (diagnosis == Just DiagnosisLowRiskCovid19)
-
-        NextStepsCall114 ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect)
-
-        NextStepsContactHC ->
-            isChw && (diagnosis == Just DiagnosisCovid19Suspect) && isJust measurements.call114 && (not <| talkedTo114 measurements)
-
         NextStepsMedicationDistribution ->
             medicationPrescribed
 
@@ -2838,10 +2491,7 @@ expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurement
 
             else
                 -- Whenever any other next step exists.
-                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsIsolation
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsCall114
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsContactHC
-                    || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
+                expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsMedicationDistribution
                     || expectNextStepsTaskFirstEncounter currentDate isChw person diagnosis measurements NextStepsSendToHC
 
         NextStepsSymptomsReliefGuidance ->
@@ -2874,17 +2524,7 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
                 -- No improvement, without danger signs.
                 noImprovementOnSubsequentVisitWithoutDangerSigns currentDate person measurements
                     || -- No improvement, with danger signs, and diagnosis is not Covid19 suspect.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis /= Just DiagnosisCovid19Suspect)
-                    || -- No improvement, with danger signs, diagnosis is Covid19, and HC recomended to send patient over.
-                       (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
-                            && (diagnosis == Just DiagnosisCovid19Suspect)
-                            && healthCenterRecommendedToCome measurements
-                       )
-
-        NextStepsContactHC ->
-            not malariaDiagnosedAtCurrentEncounter
-                && -- No improvement, with danger signs, and diagnosis is Covid19.
-                   (noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements && diagnosis == Just DiagnosisCovid19Suspect)
+                       noImprovementOnSubsequentVisitWithDangerSigns currentDate person measurements
 
         NextStepsHealthEducation ->
             not malariaDiagnosedAtCurrentEncounter
@@ -2895,7 +2535,6 @@ expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements
             -- there's no need for a follow up.
             expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsMedicationDistribution
                 || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsSendToHC
-                || expectNextStepsTaskSubsequentEncounter currentDate person diagnosis measurements NextStepsContactHC
 
         _ ->
             False
@@ -2911,15 +2550,6 @@ nextStepsTaskCompleted currentDate isChw assembled task =
             expectNextStepsTask currentDate isChw assembled
     in
     case task of
-        NextStepsIsolation ->
-            (not <| taskExpected NextStepsIsolation) || isJust measurements.isolation
-
-        NextStepsContactHC ->
-            (not <| taskExpected NextStepsContactHC) || isJust measurements.hcContact
-
-        NextStepsCall114 ->
-            (not <| taskExpected NextStepsCall114) || isJust measurements.call114
-
         NextStepsMedicationDistribution ->
             (not <| taskExpected NextStepsMedicationDistribution) || isJust measurements.medicationDistribution
 
@@ -3084,7 +2714,7 @@ Covid19 diagnosis is special, therefore, we assume here that Covid19 is negative
 -}
 mandatoryActivitiesCompletedFirstEncounter : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Bool
 mandatoryActivitiesCompletedFirstEncounter currentDate person isChw measurements =
-    [ AcuteIllnessSymptoms, AcuteIllnessExposure, AcuteIllnessPhysicalExam ]
+    [ AcuteIllnessSymptoms, AcuteIllnessPhysicalExam ]
         |> List.all (mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements)
 
 
@@ -3102,10 +2732,6 @@ mandatoryActivityCompletedFirstEncounter currentDate person isChw measurements a
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamMuac) || isJust measurements.muac)
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamNutrition) || isJust measurements.nutrition)
                 && ((not <| expectPhysicalExamTask currentDate person isChw True PhysicalExamCoreExam) || isJust measurements.coreExam)
-
-        AcuteIllnessExposure ->
-            isJust measurements.travelHistory
-                && isJust measurements.exposure
 
         _ ->
             False
@@ -3222,30 +2848,6 @@ resolveAcuteIllnessDiagnosis currentDate features isChw assembled =
 covid19SuspectDiagnosed : AcuteIllnessMeasurements -> Bool
 covid19SuspectDiagnosed measurements =
     let
-        countSigns measurement_ exclusion =
-            measurement_
-                |> Maybe.map
-                    (\measurement ->
-                        let
-                            set =
-                                Tuple.second measurement |> .value
-
-                            setSize =
-                                EverySet.size set
-                        in
-                        case setSize of
-                            1 ->
-                                if EverySet.member exclusion set then
-                                    0
-
-                                else
-                                    1
-
-                            _ ->
-                                setSize
-                    )
-                |> Maybe.withDefault 0
-
         generalSymptomsCount =
             let
                 excludesGeneral =
@@ -3256,27 +2858,6 @@ covid19SuspectDiagnosed measurements =
         respiratorySymptomsCount =
             countRespiratorySymptoms measurements []
 
-        giSymptomsCount =
-            countGISymptoms measurements []
-
-        symptomsIndicateCovid =
-            if giSymptomsCount > 0 then
-                respiratorySymptomsCount > 0
-
-            else
-                let
-                    totalSymptoms =
-                        generalSymptomsCount + respiratorySymptomsCount + giSymptomsCount
-                in
-                totalSymptoms > 1
-
-        totalSigns =
-            countSigns measurements.travelHistory NoTravelHistorySigns
-                + countSigns measurements.exposure NoExposureSigns
-
-        signsIndicateCovid =
-            totalSigns > 0
-
         feverOnRecord =
             feverRecorded measurements
 
@@ -3286,10 +2867,7 @@ covid19SuspectDiagnosed measurements =
         feverAndRdtNotPositive =
             feverOnRecord && isJust malariaRDTResult && malariaRDTResult /= Just RapidTestPositive
     in
-    (signsIndicateCovid && symptomsIndicateCovid)
-        || (signsIndicateCovid && feverOnRecord)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && respiratorySymptomsCount > 0)
-        || (not signsIndicateCovid && feverAndRdtNotPositive && generalSymptomsCount > 1)
+    feverAndRdtNotPositive && (respiratorySymptomsCount > 0 || generalSymptomsCount > 1)
 
 
 {-| This may result in Covid diagnosis, or Malaria diagnosis,
@@ -3298,7 +2876,9 @@ if Covid RDT could not be perfrmed.
 covid19DiagnosisPath : NominalDate -> Person -> Bool -> AcuteIllnessMeasurements -> Maybe AcuteIllnessDiagnosis
 covid19DiagnosisPath currentDate person isChw measurements =
     if
-        (not <| covid19SuspectDiagnosed measurements)
+        -- CHW may not diagnose COVID anymore.
+        isChw
+            || (not <| covid19SuspectDiagnosed measurements)
             || -- In case we have cough symptom for more than 2 weeks,
                -- we must diagnose Tuberculosis suspect.
                -- Therefore, we need to exit COVID19 path.

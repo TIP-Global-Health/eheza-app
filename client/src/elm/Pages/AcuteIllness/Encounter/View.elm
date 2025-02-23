@@ -101,13 +101,7 @@ viewWarningPopupFirstEncounter language isChw setStateMsg diagnosis =
                             ]
                     in
                     ( warningHeading
-                    , if isChw then
-                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseIsolate ]
-                        , div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CaseContactHC ]
-                        ]
-
-                      else
-                        [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CasePerformRapidTest ] ]
+                    , [ div [ class "popup-action" ] [ text <| translate language Translate.SuspectedCovid19CasePerformRapidTest ] ]
                     )
 
                 _ ->
