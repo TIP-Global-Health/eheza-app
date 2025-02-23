@@ -9139,6 +9139,9 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
 
         ( interval, unit ) =
             getIntervalForVaccine site vaccineType
+
+        never =
+            Date.add Years 999 birthDate
     in
     case vaccineType of
         VaccineBCG ->
@@ -9185,9 +9188,7 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                         else
                             dateWhen18MonthsOld
                     )
-                |> Maybe.withDefault
-                    -- In other words, never.
-                    (Date.add Years 999 birthDate)
+                |> Maybe.withDefault never
 
         VaccinePCV13 ->
             Date.add Weeks 6 birthDate
@@ -9198,8 +9199,40 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                 |> Date.add unit (dosesInterval * interval)
 
         VaccineIPV ->
-            Date.add Weeks 14 birthDate
-                |> Date.add unit (dosesInterval * interval)
+            case site of
+                SiteRwanda ->
+                    case vaccineDose of
+                        VaccineDoseFirst ->
+                            Date.add Weeks 14 birthDate
+
+                        -- At Rwanda site, we got second dose scheduled on the latter
+                        -- between age of 36 weeks, and 4 weeks after first dose was administered.
+                        VaccineDoseSecond ->
+                            Dict.get VaccineIPV vaccinationProgress
+                                |> Maybe.andThen (Dict.get VaccineDoseFirst)
+                                |> Maybe.map
+                                    (\firstDoseDate ->
+                                        let
+                                            fourWeeksAfterFirstDose =
+                                                Date.add Days 28 firstDoseDate
+
+                                            dateWhen9MonthsOld =
+                                                Date.add Weeks 36 birthDate
+                                        in
+                                        if Date.compare fourWeeksAfterFirstDose dateWhen9MonthsOld == GT then
+                                            fourWeeksAfterFirstDose
+
+                                        else
+                                            dateWhen9MonthsOld
+                                    )
+                                |> Maybe.withDefault never
+
+                        _ ->
+                            never
+
+                _ ->
+                    Date.add Weeks 14 birthDate
+                        |> Date.add unit (dosesInterval * interval)
 
         VaccineMR ->
             Date.add Weeks 36 birthDate
@@ -9225,7 +9258,7 @@ nextVaccinationDataForVaccine : Site -> Maybe NominalDate -> WellChildVaccineTyp
 nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdministered lastDoseDate lastDoseAdministered =
     Maybe.andThen
         (\birthDate ->
-            if getLastDoseForVaccine initialOpvAdministered vaccineType == lastDoseAdministered then
+            if getLastDoseForVaccine site initialOpvAdministered vaccineType == lastDoseAdministered then
                 Nothing
 
             else
@@ -9254,6 +9287,26 @@ nextVaccinationDataForVaccine site maybeBirthDate vaccineType initialOpvAdminist
 
                                   else
                                     secondDoseByInterval
+                                )
+
+                            else if
+                                (site == SiteRwanda)
+                                    && (vaccineType == VaccineIPV)
+                                    && (dose == VaccineDoseSecond)
+                            then
+                                let
+                                    fourWeeksAfterFirstDose =
+                                        Date.add Days 28 lastDoseDate
+
+                                    dateWhen9MonthsOld =
+                                        Date.add Weeks 36 birthDate
+                                in
+                                ( dose
+                                , if Date.compare fourWeeksAfterFirstDose dateWhen9MonthsOld == GT then
+                                    fourWeeksAfterFirstDose
+
+                                  else
+                                    dateWhen9MonthsOld
                                 )
 
                             else
@@ -9310,11 +9363,11 @@ immunisationTaskToVaccineType task =
             Nothing
 
 
-getAllDosesForVaccine : Bool -> WellChildVaccineType -> List VaccineDose
-getAllDosesForVaccine initialOpvAdministered vaccineType =
+getAllDosesForVaccine : Site -> Bool -> WellChildVaccineType -> List VaccineDose
+getAllDosesForVaccine site initialOpvAdministered vaccineType =
     let
         lastDose =
-            getLastDoseForVaccine initialOpvAdministered vaccineType
+            getLastDoseForVaccine site initialOpvAdministered vaccineType
     in
     List.filterMap
         (\dose ->
@@ -9327,8 +9380,8 @@ getAllDosesForVaccine initialOpvAdministered vaccineType =
         allVaccineDoses
 
 
-getLastDoseForVaccine : Bool -> WellChildVaccineType -> VaccineDose
-getLastDoseForVaccine initialOpvAdministered vaccineType =
+getLastDoseForVaccine : Site -> Bool -> WellChildVaccineType -> VaccineDose
+getLastDoseForVaccine site initialOpvAdministered vaccineType =
     case vaccineType of
         VaccineBCG ->
             VaccineDoseFirst
@@ -9353,7 +9406,12 @@ getLastDoseForVaccine initialOpvAdministered vaccineType =
             VaccineDoseSecond
 
         VaccineIPV ->
-            VaccineDoseFirst
+            case site of
+                SiteRwanda ->
+                    VaccineDoseSecond
+
+                _ ->
+                    VaccineDoseFirst
 
         VaccineMR ->
             VaccineDoseSecond
@@ -9383,6 +9441,12 @@ getIntervalForVaccine site vaccineType =
         VaccineRotarix ->
             ( 4, Weeks )
 
+        -- So far, there was only single IPV dose.
+        -- Since https://github.com/TIP-Global-Health/eheza-app/issues/1426,
+        -- at Rwanda site, we got second dose scheduled on the latter
+        -- between age of 36 weeks, and 4 weeks after first dose was administered.
+        -- This requirement is not reflected here. Instead, it's defined as
+        -- special case at appropriate spots in code (which use getIntervalForVaccine).
         VaccineIPV ->
             ( 0, Days )
 
