@@ -3018,6 +3018,18 @@ div.page-report.clinical .ui.unstackable.items {
         }
       }
 
+      .content.right  {
+        padding-right: 25px;
+
+        p {
+          margin-bottom: 10px;
+        }
+
+        .lmp-warning {
+          color: $color-velvet;
+        }
+      }
+
       .label {
         font-weight: bold;
       }
@@ -3180,6 +3192,10 @@ div.page-report.clinical .ui.unstackable.items {
       }
     }
 
+    .lmp-warning {
+      color: $color-velvet;
+    }
+
     .timeline-section {
 
       .indicators {
@@ -3230,6 +3246,10 @@ div.page-report.clinical .ui.unstackable.items {
               img {
                 height: 40px;
                 width: 40px;
+              }
+
+              img.rotate {
+                transform: rotate(180deg);
               }
             }
 
@@ -3334,7 +3354,6 @@ div.page-report.clinical .ui.unstackable.items {
         }
       }
     }
-
   }
 
   .progress-photos .pane-content {

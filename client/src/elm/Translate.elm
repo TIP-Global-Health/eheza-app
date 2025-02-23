@@ -2059,6 +2059,7 @@ type TranslationId
     | UnitMillimolesPerLiter
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
+    | UnsureOfLmp
     | Update
     | UpdateError
     | Uploading
@@ -24159,6 +24160,12 @@ translationSet trans =
             { english = "Universal Interventions"
             , kinyarwanda = Just "Ibikorwa bifasha umwana muri rusange"
             , kirundi = Just "Intabaro zizwi hose"
+            }
+
+        UnsureOfLmp ->
+            { english = "LMP: Not confident"
+            , kinyarwanda = Just "Itariki aheruka imihango: Ntabwo izwi neza"
+            , kirundi = Just "Itarike aheruka kuja mu kwezi: Ntago ayizeye neza"
             }
 
         Update ->
