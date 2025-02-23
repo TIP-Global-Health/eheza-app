@@ -24734,10 +24734,18 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "There is only one dose of the inactivated vaccine at 14 weeks."
-                    , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa ku byumweru 14."
-                    , kirundi = Just "Hano hari igipimo kimwe gusa/Idoze imwe gusa y'urucanco itegeze ikora mu gihe c'indwi 14"
-                    }
+                    case site of
+                        SiteRwanda ->
+                            { english = "There are two doses of the inactivated vaccine at 14 weeks and 36 weeks."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "There is only one dose of the inactivated vaccine at 14 weeks."
+                            , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa ku byumweru 14."
+                            , kirundi = Just "Hano hari igipimo kimwe gusa/Idoze imwe gusa y'urucanco itegeze ikora mu gihe c'indwi 14"
+                            }
 
                 VaccineMR ->
                     case site of
