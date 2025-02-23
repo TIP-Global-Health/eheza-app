@@ -9099,29 +9099,29 @@ to current date + 1 year.
 -}
 expectVaccineDoseForPerson : NominalDate -> Site -> Person -> Bool -> VaccinationProgressDict -> ( WellChildVaccineType, VaccineDose ) -> Bool
 expectVaccineDoseForPerson limitDate site person initialOpvAdministered vaccinationProgress ( vaccineType, vaccineDose ) =
-    person.birthDate
-        |> Maybe.map
-            (\birthDate ->
-                let
-                    expectedDate =
-                        initialVaccinationDateByBirthDate site
-                            birthDate
-                            initialOpvAdministered
-                            vaccinationProgress
-                            ( vaccineType, vaccineDose )
+    Maybe.map
+        (\birthDate ->
+            let
+                expectedDate =
+                    initialVaccinationDateByBirthDate site
+                        birthDate
+                        initialOpvAdministered
+                        vaccinationProgress
+                        ( vaccineType, vaccineDose )
 
-                    compared =
-                        Date.compare expectedDate limitDate
+                compared =
+                    Date.compare expectedDate limitDate
 
-                    genderCondition =
-                        if vaccineType == VaccineHPV then
-                            person.gender == Female
+                genderCondition =
+                    if vaccineType == VaccineHPV then
+                        person.gender == Female
 
-                        else
-                            True
-                in
-                (compared == LT || compared == EQ) && genderCondition
-            )
+                    else
+                        True
+            in
+            (compared == LT || compared == EQ) && genderCondition
+        )
+        person.birthDate
         |> Maybe.withDefault False
 
 
@@ -9208,6 +9208,10 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                         -- At Rwanda site, we got second dose scheduled on the latter
                         -- between age of 36 weeks, and 4 weeks after first dose was administered.
                         VaccineDoseSecond ->
+                            let
+                                dateWhen9MonthsOld =
+                                    Date.add Weeks 36 birthDate
+                            in
                             Dict.get VaccineIPV vaccinationProgress
                                 |> Maybe.andThen (Dict.get VaccineDoseFirst)
                                 |> Maybe.map
@@ -9215,9 +9219,6 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                                         let
                                             fourWeeksAfterFirstDose =
                                                 Date.add Days 28 firstDoseDate
-
-                                            dateWhen9MonthsOld =
-                                                Date.add Weeks 36 birthDate
                                         in
                                         if Date.compare fourWeeksAfterFirstDose dateWhen9MonthsOld == GT then
                                             fourWeeksAfterFirstDose
@@ -9225,7 +9226,10 @@ initialVaccinationDateByBirthDate site birthDate initialOpvAdministered vaccinat
                                         else
                                             dateWhen9MonthsOld
                                     )
-                                |> Maybe.withDefault never
+                                |> Maybe.withDefault
+                                    -- We default to 9 months, because it's first date when second dose is allowed at.
+                                    -- This is needed when filling in vaccination history.
+                                    dateWhen9MonthsOld
 
                         _ ->
                             never
