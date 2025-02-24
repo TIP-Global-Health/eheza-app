@@ -307,7 +307,7 @@ function process_node($node, $data) {
     $node->field_photo[LANGUAGE_NONE][0] = $file;
     $save_required = TRUE;
   }
-  elseif (strpos($node->type, 'photo')) {
+  elseif (strpos($node->type, 'photo') !== FALSE) {
     // Replace photo with the one from person profile.
     $current_file = field_get_items('node', $node, 'field_photo');
     if ($current_file) {
@@ -365,23 +365,22 @@ function load_photo_for_person($node, $data) {
   $birth_date = field_get_items('node', $node, 'field_birth_date');
   if (empty($birth_date)) {
     $file_key = array_rand($data['managed_files']['mother']);
-  }
-  else {
-    $gender = $node->field_gender[LANGUAGE_NONE][0]['value'];
-    if (!$gender) {
-      $gender = 'female';
-    }
-    $birth_timestamp = strtotime($birth_date[0]['value']);
-    $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
-    $is_adult = $age >= 13;
-    if ($gender == 'male') {
-      $folder = $is_adult ? 'father' : 'boy';
-    }
-    else {
-      $folder = $is_adult ? 'mother' : 'girl';
-    }
-    $file_key = array_rand($data['managed_files'][$folder]);
+    return (array) $data['managed_files']['mother'][$file_key];
   }
 
+  $gender = $node->field_gender[LANGUAGE_NONE][0]['value'];
+  if (!$gender) {
+    $gender = 'female';
+  }
+  $birth_timestamp = strtotime($birth_date[0]['value']);
+  $age = (time() - $birth_timestamp) / (365 * 24 * 60 * 60);
+  $is_adult = $age >= 13;
+  if ($gender == 'male') {
+    $folder = $is_adult ? 'father' : 'boy';
+  }
+  else {
+    $folder = $is_adult ? 'mother' : 'girl';
+  }
+  $file_key = array_rand($data['managed_files'][$folder]);
   return (array) $data['managed_files'][$folder][$file_key];
 }
