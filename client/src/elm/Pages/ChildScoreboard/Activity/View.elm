@@ -50,8 +50,8 @@ import Pages.ChildScoreboard.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , resolveActiveTask
+        ( resolveActiveTask
+        , resolveNextTask
         , tasksBarId
         , viewLabel
         , viewPersonDetailsExtended
@@ -333,15 +333,6 @@ viewImmunisationContent language currentDate site assembled db data =
                     )
                 |> Maybe.withDefault ( emptyNode, True, True )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             activeTask
                 |> Maybe.map
@@ -349,6 +340,9 @@ viewImmunisationContent language currentDate site assembled db data =
                         let
                             personId =
                                 assembled.participant.person
+
+                            nextTask =
+                                resolveNextTask task tasksCompletedFromTotalDict tasks
 
                             saveMsg =
                                 case task of
@@ -430,43 +424,35 @@ immunisationTasksCompletedFromTotal language currentDate site assembled data tas
                 form =
                     case vaccineType of
                         VaccineBCG ->
-                            assembled.measurements.bcgImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.bcgImmunisation
                                 |> vaccinationFormWithDefault data.bcgForm
 
                         VaccineDTP ->
-                            assembled.measurements.dtpImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.dtpImmunisation
                                 |> vaccinationFormWithDefault data.dtpForm
 
                         VaccineDTPStandalone ->
-                            assembled.measurements.dtpStandaloneImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.dtpStandaloneImmunisation
                                 |> vaccinationFormWithDefault data.dtpStandaloneForm
 
                         VaccineIPV ->
-                            assembled.measurements.ipvImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.ipvImmunisation
                                 |> vaccinationFormWithDefault data.ipvForm
 
                         VaccineMR ->
-                            assembled.measurements.mrImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.mrImmunisation
                                 |> vaccinationFormWithDefault data.mrForm
 
                         VaccineOPV ->
-                            assembled.measurements.opvImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.opvImmunisation
                                 |> vaccinationFormWithDefault data.opvForm
 
                         VaccinePCV13 ->
-                            assembled.measurements.pcv13Immunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.pcv13Immunisation
                                 |> vaccinationFormWithDefault data.pcv13Form
 
                         VaccineRotarix ->
-                            assembled.measurements.rotarixImmunisation
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.rotarixImmunisation
                                 |> vaccinationFormWithDefault data.rotarixForm
 
                         -- Vaccine type not in use.
@@ -560,7 +546,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccin
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
-                    getAllDosesForVaccine initialOpvAdministered vaccineType
+                    getAllDosesForVaccine site initialOpvAdministered vaccineType
                         |> List.filter
                             (\dose ->
                                 expectVaccineDoseForPerson currentDate

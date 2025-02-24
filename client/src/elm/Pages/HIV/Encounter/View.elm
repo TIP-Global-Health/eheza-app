@@ -4,9 +4,7 @@ import Backend.Entities exposing (..)
 import Backend.HIVActivity.Model exposing (HIVActivity)
 import Backend.HIVActivity.Utils exposing (allActivities, getActivityIcon)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -17,10 +15,9 @@ import Pages.HIV.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewEndEncounterDialog
+        ( viewConfirmationDialog
+        , viewEndEncounterButton
         , viewPersonDetailsExtended
-        , viewReportLink
         )
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
@@ -49,7 +46,7 @@ viewHeaderAndContent language currentDate db model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)

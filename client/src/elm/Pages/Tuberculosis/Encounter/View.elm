@@ -2,11 +2,9 @@ module Pages.Tuberculosis.Encounter.View exposing (allowEndingEncounter, view)
 
 import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model
-import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.TuberculosisActivity.Utils exposing (allActivities, getActivityIcon)
-import EverySet
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
@@ -17,8 +15,8 @@ import Pages.Tuberculosis.Encounter.Model exposing (..)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData, partitionActivities)
 import Pages.Utils
     exposing
-        ( viewEndEncounterButton
-        , viewEndEncounterDialog
+        ( viewConfirmationDialog
+        , viewEndEncounterButton
         , viewPersonDetailsExtended
         , viewReportLink
         )
@@ -49,7 +47,7 @@ viewHeaderAndContent language currentDate db model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)

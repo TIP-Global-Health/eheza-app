@@ -3,7 +3,6 @@ module Pages.Tuberculosis.Encounter.Fetch exposing (fetch)
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb, MsgIndexedDb(..))
-import Backend.NutritionEncounter.Fetch
 import Backend.NutritionEncounter.Utils exposing (getTuberculosisEncountersForParticipant)
 import Maybe.Extra
 import RemoteData

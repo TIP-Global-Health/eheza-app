@@ -1,6 +1,7 @@
 module App.Model exposing
     ( ConfiguredModel
     , Flags
+    , GPSCoordinates
     , LoggedInModel
     , MemoryQuota
     , Model
@@ -30,6 +31,7 @@ import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity)
 import Backend.WellChildActivity.Model exposing (WellChildActivity)
 import Browser
 import Browser.Navigation as Nav
+import Components.PatientsSearchForm.Model
 import Config.Model
 import Device.Model exposing (Device)
 import Error.Model exposing (Error, ErrorType)
@@ -163,6 +165,9 @@ type alias Model =
 
     -- List of errors we'll send to console.log
     , errors : List Error
+
+    -- GPS coordinates that need to be recorded during registration.
+    , coordinates : Maybe GPSCoordinates
     }
 
 
@@ -214,6 +219,13 @@ emptyModel key url flags =
     , villageId = villageId
     , syncManager = SyncManager.Model.emptyModel syncManagerFlags
     , errors = []
+    , coordinates = Nothing
+    }
+
+
+type alias GPSCoordinates =
+    { latitude : Float
+    , longitude : Float
     }
 
 
@@ -330,7 +342,7 @@ emptyLoggedInModel site villageId nurse =
     , globalCaseManagementPage = Pages.GlobalCaseManagement.Model.emptyModel
     , editPersonPages = Dict.empty
     , personsPage = Pages.People.Model.emptyModel
-    , individualEncounterParticipantsPage = Pages.IndividualEncounterParticipants.Model.emptyModel
+    , individualEncounterParticipantsPage = Components.PatientsSearchForm.Model.emptyModel
     , clinicsPage = Pages.Clinics.Model.emptyModel
     , stockManagementPage = Pages.StockManagement.Model.emptyModel
     , relationshipPages = Dict.empty
@@ -403,6 +415,7 @@ type Msg
     | SetPersistentStorage Bool
     | SetStorageQuota StorageQuota
     | SetMemoryQuota MemoryQuota
+    | SetGPSCoordinates GPSCoordinates
     | SetHealthCenter (Maybe HealthCenterId)
     | SetVillage (Maybe VillageId)
     | Tick Time.Posix

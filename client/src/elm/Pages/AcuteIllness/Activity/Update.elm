@@ -24,6 +24,7 @@ import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Form
 import Backend.Person.Model
 import Backend.Village.Utils exposing (getVillageHealthCenterId, getVillageIdByGeoFields)
+import Components.PatientsSearchForm.Update
 import Debouncer.Basic as Debouncer exposing (provideInput)
 import EverySet
 import Form
@@ -453,8 +454,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generatePhysicalExamMsgs nextTask
 
                 appMsgs =
-                    model.physicalExamData.vitalsForm
-                        |> toVitalsValueWithDefault measurement
+                    toVitalsValueWithDefault measurement model.physicalExamData.vitalsForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveVitals personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -469,7 +469,7 @@ update currentDate site selectedHealthCenter id db msg model =
             )
                 |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
 
-        SaveAcuteFindings personId saved nextTask_ ->
+        SaveAcuteFindings personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -477,35 +477,24 @@ update currentDate site selectedHealthCenter id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , PhysicalExamVitals
-                            )
+                extraMsgs =
+                    generatePhysicalExamMsgs nextTask
 
                 appMsgs =
-                    model.physicalExamData.acuteFindingsForm
-                        |> toAcuteFindingsValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
+                    toAcuteFindingsValueWithDefault measurement model.physicalExamData.acuteFindingsForm
+                        |> Maybe.map
+                            (Backend.AcuteIllnessEncounter.Model.SaveAcuteFindings personId measurementId
+                                >> Backend.Model.MsgAcuteIllnessEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
                             )
-
-                updatedData =
-                    model.physicalExamData
-                        |> (\data -> { data | activeTask = Just nextTask })
+                        |> Maybe.withDefault []
             in
-            ( { model | physicalExamData = updatedData }
+            ( model
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
 
         SetMuac string ->
             let
@@ -536,8 +525,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generatePhysicalExamMsgs nextTask
 
                 appMsgs =
-                    model.physicalExamData.muacForm
-                        |> toMuacValueWithDefault measurement
+                    toMuacValueWithDefault measurement model.physicalExamData.muacForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveMuac personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -585,8 +573,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generatePhysicalExamMsgs nextTask
 
                 appMsgs =
-                    model.physicalExamData.nutritionForm
-                        |> Pages.AcuteIllness.Activity.Utils.toNutritionValueWithDefault measurement
+                    Pages.AcuteIllness.Activity.Utils.toNutritionValueWithDefault measurement model.physicalExamData.nutritionForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveNutrition personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -648,8 +635,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generatePhysicalExamMsgs nextTask
 
                 appMsgs =
-                    model.physicalExamData.coreExamForm
-                        |> toCoreExamValueWithDefault measurement
+                    toCoreExamValueWithDefault measurement model.physicalExamData.coreExamForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveCoreExam personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -721,8 +707,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateLaboratoryMsgs nextTask
 
                 appMsgs =
-                    model.laboratoryData.malariaTestingForm
-                        |> toMalariaTestingValueWithDefault measurement
+                    toMalariaTestingValueWithDefault measurement model.laboratoryData.malariaTestingForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveMalariaTesting personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -783,8 +768,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateLaboratoryMsgs nextTask
 
                 appMsgs =
-                    model.laboratoryData.covidTestingForm
-                        |> toCovidTestingValueWithDefault measurement
+                    toCovidTestingValueWithDefault measurement model.laboratoryData.covidTestingForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveCovidTesting personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -799,132 +783,11 @@ update currentDate site selectedHealthCenter id db msg model =
             )
                 |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
 
-        SetActiveExposureTask task ->
-            let
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | activeTask = task })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetCovid19Country value ->
-            let
-                form =
-                    model.exposureData.travelHistoryForm
-
-                updatedForm =
-                    { form | covid19Country = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | travelHistoryForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveTravelHistory personId saved nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , ExposureTravel
-                            )
-
-                appMsgs =
-                    model.exposureData.travelHistoryForm
-                        |> toTravelHistoryValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.AcuteIllnessEncounter.Model.SaveTravelHistory personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
-                            )
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | activeTask = nextTask })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , appMsgs
-            )
-
-        SetCovid19Symptoms value ->
-            let
-                form =
-                    model.exposureData.exposureForm
-
-                updatedForm =
-                    { form | covid19Symptoms = Just value }
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | exposureForm = updatedForm })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveExposure personId saved nextTask_ ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                ( backToActivitiesMsg, nextTask ) =
-                    nextTask_
-                        |> Maybe.map (\task -> ( [], task ))
-                        |> Maybe.withDefault
-                            ( [ App.Model.SetActivePage <| UserPage <| AcuteIllnessEncounterPage id ]
-                            , ExposureTravel
-                            )
-
-                appMsgs =
-                    model.exposureData.exposureForm
-                        |> toExposureValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                (Backend.AcuteIllnessEncounter.Model.SaveExposure personId measurementId value
-                                    |> Backend.Model.MsgAcuteIllnessEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                )
-                                    :: backToActivitiesMsg
-                            )
-
-                updatedData =
-                    model.exposureData
-                        |> (\data -> { data | activeTask = nextTask })
-            in
-            ( { model | exposureData = updatedData }
-            , Cmd.none
-            , appMsgs
-            )
-
         SetActivePriorTreatmentTask task ->
             let
                 updatedData =
                     model.priorTreatmentData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | priorTreatmentData = updatedData }
             , Cmd.none
@@ -955,8 +818,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    model.priorTreatmentData.treatmentReviewForm
-                        |> toTreatmentReviewValueWithDefault measurement
+                    toTreatmentReviewValueWithDefault measurement model.priorTreatmentData.treatmentReviewForm
                         |> unwrap
                             []
                             (\value ->
@@ -982,385 +844,6 @@ update currentDate site selectedHealthCenter id db msg model =
             , Cmd.none
             , []
             )
-
-        SetPatientIsolated value ->
-            let
-                form =
-                    model.nextStepsData.isolationForm
-
-                updatedForm =
-                    { form | patientIsolated = Just value, signOnDoor = Nothing }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHealthEducation value ->
-            let
-                form =
-                    model.nextStepsData.isolationForm
-
-                updatedForm =
-                    { form | healthEducation = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetSignOnDoor value ->
-            let
-                form =
-                    model.nextStepsData.isolationForm
-
-                updatedForm =
-                    { form | signOnDoor = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetReasonForNotIsolating reason ->
-            let
-                form =
-                    Dict.get id db.acuteIllnessMeasurements
-                        |> Maybe.withDefault NotAsked
-                        |> RemoteData.toMaybe
-                        |> Maybe.map
-                            (.isolation
-                                >> getMeasurementValueFunc
-                                >> isolationFormWithDefault model.nextStepsData.isolationForm
-                            )
-                        |> Maybe.withDefault model.nextStepsData.isolationForm
-
-                updatedForm =
-                    setMultiSelectInputValue .reasonsForNotIsolating
-                        (\reasons -> { form | reasonsForNotIsolating = reasons })
-                        IsolationReasonNotApplicable
-                        reason
-                        form
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | isolationForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveIsolation personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.isolationForm
-                        |> toIsolationValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveIsolation personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
-
-        SetContactedHC value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    { form | contactedHC = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetHCRecommendation value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    case form.recommendations of
-                        Just period ->
-                            if period == value then
-                                { form | recommendations = Nothing }
-
-                            else
-                                { form | recommendations = Just value }
-
-                        Nothing ->
-                            { form | recommendations = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetResponsePeriod value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    case form.responsePeriod of
-                        Just period ->
-                            if period == value then
-                                { form | responsePeriod = Nothing }
-
-                            else
-                                { form | responsePeriod = Just value }
-
-                        Nothing ->
-                            { form | responsePeriod = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetAmbulanceArrivalPeriod value ->
-            let
-                form =
-                    model.nextStepsData.hcContactForm
-
-                updatedForm =
-                    case form.ambulanceArrivalPeriod of
-                        Just period ->
-                            if period == value then
-                                { form | ambulanceArrivalPeriod = Nothing }
-
-                            else
-                                { form | ambulanceArrivalPeriod = Just value }
-
-                        Nothing ->
-                            { form | ambulanceArrivalPeriod = Just value }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | hcContactForm = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveHCContact personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.hcContactForm
-                        |> toHCContactValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveHCContact personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
-
-        SetCalled114 value ->
-            let
-                form =
-                    model.nextStepsData.call114Form
-
-                updatedForm =
-                    { form
-                        | called114 = Just value
-                        , recommendation114 = Nothing
-                        , recommendation114Dirty = True
-                        , contactedSite = Nothing
-                        , contactedSiteDirty = True
-                        , recommendationSite = Nothing
-                        , recommendationSiteDirty = True
-                    }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | call114Form = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetRecommendation114 value ->
-            let
-                form =
-                    model.nextStepsData.call114Form
-
-                updatedForm =
-                    case form.recommendation114 of
-                        Just period ->
-                            if period == value then
-                                { form
-                                    | recommendation114 = Nothing
-                                    , recommendation114Dirty = True
-                                    , contactedSite = Nothing
-                                    , contactedSiteDirty = True
-                                    , recommendationSite = Nothing
-                                    , recommendationSiteDirty = True
-                                }
-
-                            else
-                                { form
-                                    | recommendation114 = Just value
-                                    , recommendation114Dirty = True
-                                    , contactedSite = Nothing
-                                    , contactedSiteDirty = True
-                                    , recommendationSite = Nothing
-                                    , recommendationSiteDirty = True
-                                }
-
-                        Nothing ->
-                            { form
-                                | recommendation114 = Just value
-                                , recommendation114Dirty = True
-                                , contactedSite = Nothing
-                                , contactedSiteDirty = True
-                                , recommendationSite = Nothing
-                                , recommendationSiteDirty = True
-                            }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | call114Form = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetContactedSite value ->
-            let
-                form =
-                    model.nextStepsData.call114Form
-
-                updatedForm =
-                    { form
-                        | contactedSite = Just value
-                        , contactedSiteDirty = True
-                        , recommendationSite = Nothing
-                        , recommendationSiteDirty = True
-                    }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | call114Form = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SetRecommendationSite value ->
-            let
-                form =
-                    model.nextStepsData.call114Form
-
-                updatedForm =
-                    case form.recommendationSite of
-                        Just period ->
-                            if period == value then
-                                { form | recommendationSite = Nothing, recommendationSiteDirty = True }
-
-                            else
-                                { form | recommendationSite = Just value, recommendationSiteDirty = True }
-
-                        Nothing ->
-                            { form | recommendationSite = Just value, recommendationSiteDirty = True }
-
-                updatedData =
-                    model.nextStepsData
-                        |> (\data -> { data | call114Form = updatedForm })
-            in
-            ( { model | nextStepsData = updatedData }
-            , Cmd.none
-            , []
-            )
-
-        SaveCall114 personId saved nextTask ->
-            let
-                measurementId =
-                    Maybe.map Tuple.first saved
-
-                measurement =
-                    getMeasurementValueFunc saved
-
-                extraMsgs =
-                    generateNextStepsMsgs nextTask
-
-                appMsgs =
-                    model.nextStepsData.call114Form
-                        |> toCall114ValueWithDefault measurement
-                        |> Maybe.map
-                            (Backend.AcuteIllnessEncounter.Model.SaveCall114 personId measurementId
-                                >> Backend.Model.MsgAcuteIllnessEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
-            in
-            ( model
-            , Cmd.none
-            , appMsgs
-            )
-                |> sequenceExtra (update currentDate site selectedHealthCenter id db) extraMsgs
 
         SetReferToHealthCenter value ->
             let
@@ -1425,8 +908,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    model.nextStepsData.sendToHCForm
-                        |> toSendToHCValueWithDefault measurement
+                    toSendToHCValueWithDefault measurement model.nextStepsData.sendToHCForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveSendToHC personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -1458,28 +940,28 @@ update currentDate site selectedHealthCenter id db msg model =
 
         SetMedicationDistributionAdministrationNote currentValue medication reason ->
             let
-                form =
-                    model.nextStepsData.medicationDistributionForm
-
-                updatedValue =
-                    nonAdministrationReasonToSign medication reason
-
-                updatedNonAdministrationSigns =
-                    form.nonAdministrationSigns
-                        |> Maybe.map
-                            (\nonAdministrationSigns ->
-                                case currentValue of
-                                    Just value ->
-                                        EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
-                                            |> EverySet.insert updatedValue
-
-                                    Nothing ->
-                                        EverySet.insert updatedValue nonAdministrationSigns
-                            )
-                        |> Maybe.withDefault (EverySet.singleton updatedValue)
-
                 updatedData =
                     let
+                        form =
+                            model.nextStepsData.medicationDistributionForm
+
+                        updatedValue =
+                            nonAdministrationReasonToSign medication reason
+
+                        updatedNonAdministrationSigns =
+                            form.nonAdministrationSigns
+                                |> Maybe.map
+                                    (\nonAdministrationSigns ->
+                                        case currentValue of
+                                            Just value ->
+                                                EverySet.remove (nonAdministrationReasonToSign medication value) nonAdministrationSigns
+                                                    |> EverySet.insert updatedValue
+
+                                            Nothing ->
+                                                EverySet.insert updatedValue nonAdministrationSigns
+                                    )
+                                |> Maybe.withDefault (EverySet.singleton updatedValue)
+
                         updatedForm =
                             { form | nonAdministrationSigns = Just updatedNonAdministrationSigns }
                     in
@@ -1503,8 +985,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    model.nextStepsData.medicationDistributionForm
-                        |> toMedicationDistributionValueWithDefault measurement
+                    toMedicationDistributionValueWithDefault measurement model.nextStepsData.medicationDistributionForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveMedicationDistribution personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -1523,7 +1004,7 @@ update currentDate site selectedHealthCenter id db msg model =
             let
                 updatedData =
                     model.ongoingTreatmentData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | ongoingTreatmentData = updatedData }
             , Cmd.none
@@ -1609,8 +1090,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    model.ongoingTreatmentData.treatmentReviewForm
-                        |> toOngoingTreatmentReviewValueWithDefault measurement
+                    toOngoingTreatmentReviewValueWithDefault measurement model.ongoingTreatmentData.treatmentReviewForm
                         |> unwrap
                             []
                             (\value ->
@@ -1630,7 +1110,7 @@ update currentDate site selectedHealthCenter id db msg model =
             let
                 updatedData =
                     model.dangerSignsData
-                        |> (\data -> { data | activeTask = task })
+                        |> (\data -> { data | activeTask = Just task })
             in
             ( { model | dangerSignsData = updatedData }
             , Cmd.none
@@ -1684,8 +1164,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     getMeasurementValueFunc saved
 
                 appMsgs =
-                    model.dangerSignsData.reviewDangerSignsForm
-                        |> toReviewDangerSignsValueWithDefault measurement
+                    toReviewDangerSignsValueWithDefault measurement model.dangerSignsData.reviewDangerSignsForm
                         |> unwrap
                             []
                             (\value ->
@@ -1699,6 +1178,23 @@ update currentDate site selectedHealthCenter id db msg model =
             ( model
             , Cmd.none
             , appMsgs
+            )
+
+        SetHealthEducation value ->
+            let
+                form =
+                    model.nextStepsData.isolationForm
+
+                updatedForm =
+                    { form | healthEducation = Just value }
+
+                updatedData =
+                    model.nextStepsData
+                        |> (\data -> { data | isolationForm = updatedForm })
+            in
+            ( { model | nextStepsData = updatedData }
+            , Cmd.none
+            , []
             )
 
         SetProvidedEducationForDiagnosis value ->
@@ -1747,8 +1243,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    model.nextStepsData.healthEducationForm
-                        |> toHealthEducationValueWithDefault measurement
+                    toHealthEducationValueWithDefault measurement model.nextStepsData.healthEducationForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveHealthEducation personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id
@@ -1835,7 +1330,7 @@ update currentDate site selectedHealthCenter id db msg model =
             , fetchPersonMsg
             )
 
-        MsgContactsTracingDebouncer subMsg ->
+        MsgPatientsSearchForm subMsg ->
             let
                 form =
                     model.nextStepsData.contactsTracingForm
@@ -1843,11 +1338,8 @@ update currentDate site selectedHealthCenter id db msg model =
             case form.state of
                 ContactsTracingFormSearchParticipants searchData ->
                     let
-                        ( subModel, subCmd, extraMsg ) =
-                            Debouncer.update subMsg searchData.debouncer
-
-                        updatedSearchData =
-                            { searchData | debouncer = subModel }
+                        ( updatedSearchData, cmd ) =
+                            Components.PatientsSearchForm.Update.update subMsg searchData
 
                         updatedForm =
                             { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
@@ -1857,71 +1349,7 @@ update currentDate site selectedHealthCenter id db msg model =
                                 |> (\data -> { data | contactsTracingForm = updatedForm })
                     in
                     ( { model | nextStepsData = updatedData }
-                    , Cmd.map MsgContactsTracingDebouncer subCmd
-                    , []
-                    )
-                        |> sequenceExtra (update currentDate site selectedHealthCenter id db) (Maybe.Extra.toList extraMsg)
-
-                _ ->
-                    noChange
-
-        SetContactsTracingInput input ->
-            let
-                form =
-                    model.nextStepsData.contactsTracingForm
-            in
-            case form.state of
-                ContactsTracingFormSearchParticipants searchData ->
-                    let
-                        updatedSearchData =
-                            { searchData | input = input }
-
-                        updatedForm =
-                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
-
-                        updatedData =
-                            model.nextStepsData
-                                |> (\data -> { data | contactsTracingForm = updatedForm })
-                    in
-                    ( { model | nextStepsData = updatedData }
-                    , Cmd.none
-                    , []
-                    )
-                        |> sequenceExtra (update currentDate site selectedHealthCenter id db) [ MsgContactsTracingDebouncer <| provideInput <| SetContactsTracingSearch input ]
-
-                _ ->
-                    noChange
-
-        SetContactsTracingSearch search ->
-            let
-                form =
-                    model.nextStepsData.contactsTracingForm
-            in
-            case form.state of
-                ContactsTracingFormSearchParticipants searchData ->
-                    let
-                        trimmed =
-                            String.trim search
-
-                        maybeSearch =
-                            if String.isEmpty trimmed then
-                                Nothing
-
-                            else
-                                Just trimmed
-
-                        updatedSearchData =
-                            { searchData | search = maybeSearch }
-
-                        updatedForm =
-                            { form | state = ContactsTracingFormSearchParticipants updatedSearchData }
-
-                        updatedData =
-                            model.nextStepsData
-                                |> (\data -> { data | contactsTracingForm = updatedForm })
-                    in
-                    ( { model | nextStepsData = updatedData }
-                    , Cmd.none
+                    , Cmd.map MsgPatientsSearchForm cmd
                     , []
                     )
 
@@ -2156,8 +1584,7 @@ update currentDate site selectedHealthCenter id db msg model =
                     generateNextStepsMsgs nextTask
 
                 appMsgs =
-                    model.nextStepsData.contactsTracingForm
-                        |> toContactsTracingValueWithDefault measurement
+                    toContactsTracingValueWithDefault measurement model.nextStepsData.contactsTracingForm
                         |> Maybe.map
                             (Backend.AcuteIllnessEncounter.Model.SaveContactsTracing personId measurementId
                                 >> Backend.Model.MsgAcuteIllnessEncounter id

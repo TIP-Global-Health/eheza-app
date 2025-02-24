@@ -3,7 +3,7 @@ module Pages.Nutrition.Encounter.Update exposing (update)
 import App.Model
 import Backend.Model
 import Backend.NutritionEncounter.Model
-import EverySet exposing (EverySet)
+import EverySet
 import Gizra.Update exposing (sequenceExtra)
 import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Page exposing (Page(..))

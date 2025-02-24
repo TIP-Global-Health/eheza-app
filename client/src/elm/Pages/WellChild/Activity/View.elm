@@ -49,23 +49,30 @@ import Measurement.View
         , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewHealthEducationForm
+        , viewHeightForm
+        , viewMuacForm
         , viewNutritionFollowUpForm
+        , viewNutritionForm
         , viewReferToProgramForm
         , viewSendToHealthCenterForm
+        , viewWeightForm
         )
-import Pages.AcuteIllness.Activity.View exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
-import Pages.Nutrition.Activity.View exposing (viewHeightForm, viewMuacForm, viewNutritionForm, viewPhotoForm, viewWeightForm, warningPopup)
+import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Pages.Nutrition.Activity.View exposing (viewPhotoForm, warningPopup)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils
     exposing
         ( isTaskCompleted
         , maybeToBoolTask
         , resolveActiveTask
+        , resolveNextTask
+        , resolveTasksCompletedFromTotal
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCheckBoxSelectInput
+        , viewCustomAction
         , viewCustomLabel
         , viewLabel
         , viewMeasurementInput
@@ -73,6 +80,7 @@ import Pages.Utils
         , viewPreviousMeasurement
         , viewQuestionLabel
         , viewSaveAction
+        , viewTasksCount
         )
 import Pages.WellChild.Activity.Model exposing (..)
 import Pages.WellChild.Activity.Types exposing (..)
@@ -148,7 +156,6 @@ viewHeader language id activity =
             , onClick <| SetActivePage <| UserPage <| WellChildEncounterPage id
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -185,11 +192,11 @@ viewWarningPopup language currentDate warningPopupState =
                             (SetWarningPopupState Nothing)
                             assessment
 
-                    PopupMacrocephaly personId saved nextTask_ ->
-                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMacrocephalyWarning
+                    PopupMacrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMacrocephalyWarning
 
-                    PopupMicrocephaly personId saved nextTask_ ->
-                        headCircumferencePopup language ( personId, saved, nextTask_ ) Translate.WellChildMicrocephalyWarning
+                    PopupMicrocephaly personId saved nextTask ->
+                        headCircumferencePopup language ( personId, saved, nextTask ) Translate.WellChildMicrocephalyWarning
             )
 
 
@@ -198,7 +205,7 @@ headCircumferencePopup :
     -> ( PersonId, Maybe ( WellChildHeadCircumferenceId, WellChildHeadCircumference ), Maybe NutritionAssessmentTask )
     -> TranslationId
     -> Maybe (Html Msg)
-headCircumferencePopup language ( personId, saved, nextTask_ ) message =
+headCircumferencePopup language ( personId, saved, nextTask ) message =
     Just <|
         div [ class "ui active modal danger-signs-popup" ]
             [ div [ class "content" ]
@@ -208,13 +215,10 @@ headCircumferencePopup language ( personId, saved, nextTask_ ) message =
                     ]
                 , div [ class "popup-action" ] [ text <| translate language message ]
                 ]
-            , div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button"
-                    , onClick <| CloseHeadCircumferencePopup personId saved nextTask_
-                    ]
-                    [ text <| translate language Translate.Continue ]
-                ]
+            , viewCustomAction language
+                (CloseHeadCircumferencePopup personId saved nextTask)
+                False
+                Translate.Continue
             ]
 
 
@@ -561,15 +565,12 @@ viewPregnancySummaryForm language currentDate assembled form_ =
                 ++ birthDefectsTasks
 
         ( tasksCompleted, totalTasks ) =
-            ( Maybe.Extra.values tasks
-                |> List.length
-            , List.length tasks
-            )
+            resolveTasksCompletedFromTotal tasks
 
         disabled =
             tasksCompleted /= totalTasks
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form pregnancy-summary" ] <|
@@ -639,7 +640,7 @@ viewDangerSignsContent language currentDate assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, dangerSignsTasksCompletedFromTotal currentDate assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -667,43 +668,37 @@ viewDangerSignsContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskSymptomsReview ->
-                                        SaveSymptomsReview personId measurements.symptomsReview nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskVitals ->
-                                        SaveVitals personId measurements.vitals nextTask
+                        saveMsg =
+                            case task of
+                                TaskSymptomsReview ->
+                                    SaveSymptomsReview personId measurements.symptomsReview nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskVitals ->
+                                    SaveVitals personId measurements.vitals nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -715,51 +710,19 @@ viewVitalsForm : Language -> NominalDate -> AssembledData -> VitalsForm -> Html 
 viewVitalsForm language currentDate assembled form =
     let
         formConfig =
-            { setIntInputMsg = SetVitalsIntInput
-            , setFloatInputMsg = SetVitalsFloatInput
-            , sysBloodPressurePreviousValue = Nothing
-            , diaBloodPressurePreviousValue = Nothing
-            , heartRatePreviousValue = Nothing
-            , respiratoryRatePreviousValue =
-                resolvePreviousValue assembled .vitals .respiratoryRate
-                    |> Maybe.map toFloat
-            , bodyTemperaturePreviousValue = resolvePreviousValue assembled .vitals .bodyTemperature
-            , birthDate = assembled.person.birthDate
-            , formClass = "vitals"
-            , mode = VitalsFormBasic
-            , invokationModule = InvokationModuleWellChild
-            }
+            generateVitalsFormConfig assembled
     in
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
 viewSymptomsReviewForm : Language -> NominalDate -> Person -> SymptomsReviewForm -> List (Html Msg)
 viewSymptomsReviewForm language currentDate person form =
+    let
+        ( inputs, _ ) =
+            symptomsReviewFormInputsAndTasks language currentDate form
+    in
     [ div [ class "ui form symptoms-review" ]
-        [ viewQuestionLabel language Translate.PatientGotAnySymptoms
-        , viewCustomLabel language Translate.CheckAllThatApply "." "helper"
-        , viewCheckBoxMultipleSelectInput language
-            [ SymptomBreathingProblems
-            , SymptomConvulsions
-            , SymptomLethargyOrUnresponsiveness
-            , SymptomDiarrhea
-            , SymptomVomiting
-            , SymptomUmbilicalCordRedness
-            , SymptomStiffNeckOrBulgingFontanelle
-            , SymptomSevereEdema
-            , SymptomPalmoplantarPallor
-            , SymptomHistoryOfFever
-            , SymptomBabyTiresQuicklyWhenFeeding
-            , SymptomCoughingOrTearingWhileFeeding
-            , SymptomRigidMusclesOrJawClenchingPreventingFeeding
-            , ExcessiveSweatingWhenFeeding
-            ]
-            []
-            (form.symptoms |> Maybe.withDefault [])
-            (Just NoWellChildSymptoms)
-            SetSymptom
-            Translate.WellChildSymptom
-        ]
+        inputs
     ]
 
 
@@ -835,21 +798,18 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 ]
 
         tasksCompletedFromTotalDict =
-            tasks
-                |> List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal measurements data task ))
+            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         previousValuesSet =
             resolvePreviousValuesSetForChild currentDate site assembled.participant.person db
 
         headCircumferenceForm =
-            measurements.headCircumference
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc measurements.headCircumference
                 |> headCircumferenceFormWithDefault data.headCircumferenceForm
 
         headCircumferenceZScore =
@@ -857,30 +817,22 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 Nothing
 
             else
-                let
-                    person =
-                        assembled.person
-
-                    maybeAgeInDays =
+                Maybe.andThen
+                    (\headCircumference ->
                         Maybe.map
                             (\birthDate -> diffDays birthDate currentDate)
-                            person.birthDate
-                in
-                headCircumferenceForm.headCircumference
-                    |> Maybe.andThen
-                        (\headCircumference ->
-                            Maybe.andThen
+                            assembled.person.birthDate
+                            |> Maybe.andThen
                                 (\ageInDays ->
-                                    zScoreHeadCircumferenceForAge zscores ageInDays person.gender (Centimetres headCircumference)
+                                    zScoreHeadCircumferenceForAge zscores ageInDays assembled.person.gender (Centimetres headCircumference)
                                 )
-                                maybeAgeInDays
-                        )
+                    )
+                    headCircumferenceForm.headCircumference
 
         viewForm =
             case activeTask of
                 Just TaskHeight ->
-                    measurements.height
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.height
                         |> heightFormWithDefault data.heightForm
                         |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
 
@@ -888,85 +840,75 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                     viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
 
                 Just TaskMuac ->
-                    measurements.muac
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.muac
                         |> muacFormWithDefault data.muacForm
                         |> viewMuacForm language currentDate site assembled.person previousValuesSet.muac SetMuac
 
                 Just TaskNutrition ->
-                    measurements.nutrition
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.nutrition
                         |> nutritionFormWithDefault data.nutritionForm
                         |> viewNutritionForm language currentDate SetNutritionSign
 
                 Just TaskWeight ->
                     let
                         heightValue =
-                            assembled.measurements.height
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.height
 
                         showWeightForHeightZScore =
                             assembled.encounter.encounterType /= NewbornExam
                     in
-                    measurements.weight
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.weight
                         |> weightFormWithDefault data.weightForm
                         |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
 
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskHeight ->
-                                        SaveHeight personId measurements.height nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskHeadCircumference ->
-                                        PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
+                        saveMsg =
+                            case task of
+                                TaskHeight ->
+                                    SaveHeight personId measurements.height nextTask
 
-                                    TaskMuac ->
-                                        SaveMuac personId measurements.muac nextTask
+                                TaskHeadCircumference ->
+                                    PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
 
-                                    TaskNutrition ->
-                                        let
-                                            assessment =
-                                                generateNutritionAssessment currentDate zscores db assembled
-                                                    |> nutritionAssessmentForBackend
-                                        in
-                                        SaveNutrition personId measurements.nutrition assessment nextTask
+                                TaskMuac ->
+                                    SaveMuac personId measurements.muac nextTask
 
-                                    TaskWeight ->
-                                        SaveWeight personId measurements.weight nextTask
+                                TaskNutrition ->
+                                    let
+                                        assessment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveNutrition personId measurements.nutrition assessment nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskWeight ->
+                                    SaveWeight personId measurements.weight nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -984,60 +926,10 @@ viewHeadCircumferenceForm :
     -> List (Html Msg)
 viewHeadCircumferenceForm language currentDate person zscore previousValue form =
     let
-        inputSection =
-            if measurementNotTakenChecked then
-                []
-
-            else
-                let
-                    zScoreText =
-                        Maybe.map viewZScore zscore
-                            |> Maybe.withDefault (translate language Translate.NotAvailable)
-                in
-                [ div [ class "ui grid" ]
-                    [ div [ class "eleven wide column" ]
-                        [ viewMeasurementInput
-                            language
-                            form.headCircumference
-                            SetHeadCircumference
-                            "head-circumference"
-                            Translate.UnitCentimeter
-                        ]
-                    , div
-                        [ class "five wide column" ]
-                        [ showMaybe <|
-                            Maybe.map (HeadCircumferenceInCm >> headCircumferenceIndication >> viewColorAlertIndication language) zscore
-                        ]
-                    ]
-                , viewPreviousMeasurement language previousValue Translate.UnitCentimeter
-                , div [ class "ui large header z-score age" ]
-                    [ text <| translate language Translate.ZScoreHeadCircumferenceForAge
-                    , span [ class "sub header" ]
-                        [ text zScoreText ]
-                    ]
-                ]
-
-        measurementNotTakenChecked =
-            form.measurementNotTaken == Just True
+        ( formForView, _ ) =
+            headCircumferenceFormAndTasks language currentDate person zscore previousValue form
     in
-    [ div [ class "ui form head-circumference" ] <|
-        [ viewLabel language <| Translate.NutritionAssessmentTask TaskHeadCircumference
-        , p [ class "activity-helper" ] [ text <| translate language Translate.HeadCircumferenceHelper ]
-        ]
-            ++ inputSection
-    , div
-        [ class "ui checkbox activity"
-        , onClick ToggleHeadCircumferenceNotTaken
-        ]
-        [ input
-            [ type_ "checkbox"
-            , checked measurementNotTakenChecked
-            , classList [ ( "checked", measurementNotTakenChecked ) ]
-            ]
-            []
-        , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
-        ]
-    ]
+    formForView
 
 
 viewImmunisationContent :
@@ -1205,60 +1097,54 @@ viewImmunisationContent language currentDate site isChw assembled db data =
                     , True
                     )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskBCG ->
-                                        SaveBCGImmunisation personId measurements.bcgImmunisation nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskDTP ->
-                                        SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
+                        saveMsg =
+                            case task of
+                                TaskBCG ->
+                                    SaveBCGImmunisation personId measurements.bcgImmunisation nextTask
 
-                                    TaskDTPStandalone ->
-                                        SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
+                                TaskDTP ->
+                                    SaveDTPImmunisation personId measurements.dtpImmunisation nextTask
 
-                                    TaskHPV ->
-                                        SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
+                                TaskDTPStandalone ->
+                                    SaveDTPStandaloneImmunisation personId measurements.dtpStandaloneImmunisation nextTask
 
-                                    TaskIPV ->
-                                        SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
+                                TaskHPV ->
+                                    SaveHPVImmunisation personId measurements.hpvImmunisation nextTask
 
-                                    TaskMR ->
-                                        SaveMRImmunisation personId measurements.mrImmunisation nextTask
+                                TaskIPV ->
+                                    SaveIPVImmunisation personId measurements.ipvImmunisation nextTask
 
-                                    TaskOPV ->
-                                        SaveOPVImmunisation personId measurements.opvImmunisation nextTask
+                                TaskMR ->
+                                    SaveMRImmunisation personId measurements.mrImmunisation nextTask
 
-                                    TaskPCV13 ->
-                                        SavePCV13Immunisation personId measurements.pcv13Immunisation nextTask
+                                TaskOPV ->
+                                    SaveOPVImmunisation personId measurements.opvImmunisation nextTask
 
-                                    TaskRotarix ->
-                                        SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
+                                TaskPCV13 ->
+                                    SavePCV13Immunisation personId measurements.pcv13Immunisation nextTask
 
-                                    TaskOverview ->
-                                        SetActivePage <| UserPage <| WellChildEncounterPage assembled.id
+                                TaskRotarix ->
+                                    SaveRotarixImmunisation personId measurements.rotarixImmunisation nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskOverview ->
+                                    SetActivePage <| UserPage <| WellChildEncounterPage assembled.id
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
                 |> showIf allowSave
     in
@@ -1287,80 +1173,17 @@ viewImmunisationContent language currentDate site isChw assembled db data =
     ]
 
 
-immunisationTasksCompletedFromTotal :
-    Language
-    -> NominalDate
-    -> Site
-    -> Bool
-    -> AssembledData
-    -> ImmunisationData
-    -> Measurement.Model.ImmunisationTask
-    -> ( Int, Int )
-immunisationTasksCompletedFromTotal language currentDate site isChw assembled data task =
-    Maybe.map
-        (\vaccineType ->
-            let
-                form =
-                    case vaccineType of
-                        VaccineBCG ->
-                            assembled.measurements.bcgImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.bcgForm
-
-                        VaccineDTP ->
-                            assembled.measurements.dtpImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpForm
-
-                        VaccineDTPStandalone ->
-                            assembled.measurements.dtpStandaloneImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.dtpStandaloneForm
-
-                        VaccineHPV ->
-                            assembled.measurements.hpvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.hpvForm
-
-                        VaccineIPV ->
-                            assembled.measurements.ipvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.ipvForm
-
-                        VaccineMR ->
-                            assembled.measurements.mrImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.mrForm
-
-                        VaccineOPV ->
-                            assembled.measurements.opvImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.opvForm
-
-                        VaccinePCV13 ->
-                            assembled.measurements.pcv13Immunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.pcv13Form
-
-                        VaccineRotarix ->
-                            assembled.measurements.rotarixImmunisation
-                                |> getMeasurementValueFunc
-                                |> vaccinationFormWithDefault data.rotarixForm
-
-                ( _, tasksActive, tasksCompleted ) =
-                    vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
-            in
-            ( tasksActive, tasksCompleted )
-        )
-        (immunisationTaskToVaccineType task)
-        |> Maybe.withDefault ( 0, 0 )
-
-
 viewVaccinationForm : Language -> NominalDate -> Site -> Bool -> AssembledData -> WellChildVaccineType -> WellChildVaccinationForm -> Html Msg
 viewVaccinationForm language currentDate site isChw assembled vaccineType form =
     let
         ( contentByViewMode, _, _ ) =
-            vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form
+            Pages.WellChild.Activity.Utils.vaccinationFormDynamicContentAndTasks language
+                currentDate
+                site
+                isChw
+                assembled
+                vaccineType
+                form
     in
     div [ class "ui form vaccination" ] <|
         [ h2 [] [ text <| translate language <| Translate.WellChildImmunisationHeader vaccineType ]
@@ -1448,106 +1271,6 @@ viewVaccinationOverview language currentDate site child vaccinationProgress db =
     entriesHeading :: entries
 
 
-vaccinationFormDynamicContentAndTasks :
-    Language
-    -> NominalDate
-    -> Site
-    -> Bool
-    -> AssembledData
-    -> WellChildVaccineType
-    -> WellChildVaccinationForm
-    -> ( List (Html Msg), Int, Int )
-vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled vaccineType form =
-    Maybe.map
-        (\birthDate ->
-            let
-                config =
-                    { birthDate = birthDate
-                    , expectedDoses = expectedDoses
-                    , dosesFromPreviousEncountersData = dosesFromPreviousEncountersData
-                    , dosesFromCurrentEncounterData = dosesFromCurrentEncounterData
-                    , setVaccinationFormViewModeMsg = SetVaccinationFormViewMode vaccineType
-                    , setUpdatePreviousVaccinesMsg = SetUpdatePreviousVaccines vaccineType
-                    , setWillReceiveVaccineTodayMsg = SetWillReceiveVaccineToday vaccineType
-                    , setAdministrationNoteMsg = SetAdministrationNote vaccineType
-                    , setVaccinationUpdateDateSelectorStateMsg = SetVaccinationUpdateDateSelectorState vaccineType
-                    , setVaccinationUpdateDateMsg = SetVaccinationUpdateDate vaccineType
-                    , saveVaccinationUpdateDateMsg = SaveVaccinationUpdateDate vaccineType
-                    , deleteVaccinationUpdateDateMsg = DeleteVaccinationUpdateDate vaccineType
-                    , nextVaccinationDataForVaccine = nextVaccinationDataForVaccine site assembled.person.birthDate vaccineType initialOpvAdministered
-                    , getIntervalForVaccine = always (getIntervalForVaccine site vaccineType)
-                    , firstDoseExpectedFrom =
-                        initialVaccinationDateByBirthDate site
-                            birthDate
-                            initialOpvAdministered
-                            assembled.vaccinationProgress
-                            ( vaccineType, VaccineDoseFirst )
-
-                    -- Only nurses at HC can administer vaccinations.
-                    -- CHWs only record previous vaccinations given by nurses.
-                    , suggestDoseToday = assembled.encounter.encounterType == PediatricCare
-                    }
-
-                initialOpvAdministeredByForm =
-                    wasFirstDoseAdministeredWithin14DaysFromBirthByVaccinationForm birthDate form
-
-                initialOpvAdministered =
-                    if form.administeredDosesDirty then
-                        initialOpvAdministeredByForm
-
-                    else
-                        let
-                            initialOpvAdministeredByProgress =
-                                wasInitialOpvAdministeredByVaccinationProgress assembled.person.birthDate assembled.vaccinationProgress
-                        in
-                        initialOpvAdministeredByForm || initialOpvAdministeredByProgress
-
-                expectedDoses =
-                    getAllDosesForVaccine initialOpvAdministered vaccineType
-                        |> List.filter
-                            (\dose ->
-                                expectVaccineDoseForPerson currentDate
-                                    site
-                                    assembled.person
-                                    initialOpvAdministered
-                                    assembled.vaccinationProgress
-                                    ( vaccineType, dose )
-                            )
-
-                dosesFromPreviousEncountersData =
-                    Dict.get vaccineType assembled.vaccinationHistory
-                        |> Maybe.withDefault Dict.empty
-                        |> Dict.toList
-
-                dosesFromCurrentEncounterData =
-                    Maybe.map2
-                        (\doses dates ->
-                            let
-                                orderedDoses =
-                                    EverySet.toList doses
-                                        |> List.sortBy vaccineDoseToComparable
-
-                                orderedDates =
-                                    EverySet.toList dates
-                                        |> List.sortWith Date.compare
-                            in
-                            List.Extra.zip orderedDoses orderedDates
-                        )
-                        form.administeredDoses
-                        form.administrationDates
-                        |> Maybe.withDefault []
-            in
-            Measurement.Utils.vaccinationFormDynamicContentAndTasks language
-                currentDate
-                site
-                config
-                (WellChildVaccine vaccineType)
-                form
-        )
-        assembled.person.birthDate
-        |> Maybe.withDefault ( [], 0, 1 )
-
-
 viewECDForm : Language -> NominalDate -> AssembledData -> WellChildECDForm -> List (Html Msg)
 viewECDForm language currentDate assembled ecdForm =
     let
@@ -1564,7 +1287,7 @@ viewECDForm language currentDate assembled ecdForm =
         disabled =
             tasksCompleted /= totalTasks
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form ecd" ]
@@ -2036,7 +1759,7 @@ viewMedicationContent language currentDate site isChw assembled data =
 
         tasksCompletedFromTotalDict =
             tasks
-                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal measurements data task ))
+                |> List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate site assembled data task ))
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -2094,60 +1817,45 @@ viewMedicationContent language currentDate site isChw assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskAlbendazole ->
-                                        SaveAlbendazole personId measurements.albendazole nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskMebendezole ->
-                                        SaveMebendezole personId measurements.mebendezole nextTask
+                        saveMsg =
+                            case task of
+                                TaskAlbendazole ->
+                                    SaveAlbendazole personId measurements.albendazole nextTask
 
-                                    TaskVitaminA ->
-                                        SaveVitaminA personId measurements.vitaminA nextTask
+                                TaskMebendezole ->
+                                    SaveMebendezole personId measurements.mebendezole nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskVitaminA ->
+                                    SaveVitaminA personId measurements.vitaminA nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue" ]
         [ div [ class "ui four column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
         ]
     ]
-
-
-type alias MedicationAdministrationFormConfig =
-    { medication : MedicationDistributionSign
-    , setMedicationAdministeredMsg : Bool -> Msg
-    , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
-    , helper : TranslationId
-    }
 
 
 viewMedicationAdministrationForm :
@@ -2160,47 +1868,11 @@ viewMedicationAdministrationForm :
     -> List (Html Msg)
 viewMedicationAdministrationForm language currentDate site assembled config form =
     let
-        instructions =
-            config.resolveDosageAndIconFunc currentDate site assembled.person
-                |> Maybe.map
-                    (\( dosage, icon ) ->
-                        div [ class "instructions" ]
-                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
-                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-
-        questions =
-            [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
-            , viewBoolInput
-                language
-                form.medicationAdministered
-                config.setMedicationAdministeredMsg
-                ""
-                Nothing
-            ]
-                ++ derivedQuestion
-
-        derivedQuestion =
-            if form.medicationAdministered == Just False then
-                [ viewQuestionLabel language Translate.WhyNot
-                , viewCheckBoxSelectInput language
-                    [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
-                    [ NonAdministrationPatientDeclined, NonAdministrationOther ]
-                    form.reasonForNonAdministration
-                    config.setReasonForNonAdministration
-                    Translate.AdministrationNote
-                ]
-
-            else
-                []
+        ( inputs, _ ) =
+            medicationAdministrationFormInputsAndTasks language currentDate site assembled config form
     in
-    [ div [ class "ui form medication-administration" ] <|
-        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-        , instructions
-        ]
-            ++ questions
+    [ div [ class "ui form medication-administration" ]
+        inputs
     ]
 
 
@@ -2283,7 +1955,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal isChw measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate isChw measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -2339,8 +2011,7 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                                     SetEnrollToNutritionProgram
                                     SetReferToNutritionProgram
                     in
-                    measurements.sendToHC
-                        |> getMeasurementValueFunc
+                    getMeasurementValueFunc measurements.sendToHC
                         |> sendToHCFormWithDefault data.sendToHCForm
                         |> viewFormFunc
                         |> List.singleton
@@ -2352,73 +2023,67 @@ viewNextStepsContent language currentDate zscores site features id assembled db 
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskContributingFactors ->
-                                        SaveContributingFactors personId measurements.contributingFactors nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        saveMsg =
+                            case task of
+                                TaskContributingFactors ->
+                                    SaveContributingFactors personId measurements.contributingFactors nextTask
 
-                                    TaskFollowUp ->
-                                        let
-                                            assesment =
-                                                generateNutritionAssessment currentDate zscores db assembled
-                                                    |> nutritionAssessmentForBackend
-                                        in
-                                        SaveFollowUp personId measurements.followUp assesment nextTask
+                                TaskHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    TaskSendToHC ->
-                                        SaveSendToHC personId measurements.sendToHC nextTask
+                                TaskFollowUp ->
+                                    let
+                                        assesment =
+                                            generateNutritionAssessment currentDate zscores db assembled
+                                                |> nutritionAssessmentForBackend
+                                    in
+                                    SaveFollowUp personId measurements.followUp assesment nextTask
 
-                                    TaskNextVisit ->
-                                        let
-                                            ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
-                                                resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
+                                TaskSendToHC ->
+                                    SaveSendToHC personId measurements.sendToHC nextTask
 
-                                            asapImmunisationDate =
-                                                generateASAPImmunisationDate currentDate site assembled
-                                        in
-                                        SaveNextVisit personId
-                                            measurements.nextVisit
-                                            nextDateForImmunisationVisit
-                                            nextDateForPediatricVisit
-                                            asapImmunisationDate
-                                            nextTask
+                                TaskNextVisit ->
+                                    let
+                                        ( nextDateForImmunisationVisit, nextDateForPediatricVisit ) =
+                                            resolveNextVisitDates currentDate site isChw assembled db nextVisitForm
 
-                            disabled =
-                                if task == TaskNextVisit then
-                                    False
+                                        asapImmunisationDate =
+                                            generateASAPImmunisationDate currentDate site assembled
+                                    in
+                                    SaveNextVisit personId
+                                        measurements.nextVisit
+                                        nextDateForImmunisationVisit
+                                        nextDateForPediatricVisit
+                                        asapImmunisationDate
+                                        nextTask
 
-                                else
-                                    tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                        disabled =
+                            if task == TaskNextVisit then
+                                False
+
+                            else
+                                tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -2476,7 +2141,7 @@ viewPhotoContent language currentDate assembled form =
         -- If we have a photo that we've just taken, but not saved, that is in
         -- `data.url`. We show that if we have it. Otherwise, we'll show the saved
         -- measurement, if we have that.
-        ( displayPhoto, saveMsg, isDisabled ) =
+        ( displayPhoto, saveMsg, disabled ) =
             case form.url of
                 Just url ->
                     let
@@ -2484,13 +2149,13 @@ viewPhotoContent language currentDate assembled form =
                             Maybe.map Tuple.first assembled.measurements.photo
                     in
                     ( Just url
-                    , [ onClick <| SavePhoto assembled.participant.person photoId url ]
+                    , SavePhoto assembled.participant.person photoId url
                     , False
                     )
 
                 Nothing ->
                     ( getMeasurementValueFunc assembled.measurements.photo
-                    , []
+                    , NoOp
                     , True
                     )
 
@@ -2500,20 +2165,11 @@ viewPhotoContent language currentDate assembled form =
         tasksCompleted =
             taskCompleted displayPhoto
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             viewPhotoForm language currentDate displayPhoto DropZoneComplete
-        , div [ class "actions" ]
-            [ button
-                (classList
-                    [ ( "ui fluid primary button", True )
-                    , ( "disabled", isDisabled )
-                    ]
-                    :: saveMsg
-                )
-                [ text <| translate language Translate.Save ]
-            ]
+        , viewSaveAction language saveMsg disabled
         ]
     ]
 
@@ -2577,9 +2233,6 @@ viewHomeVisitContent :
     -> List (Html Msg)
 viewHomeVisitContent language currentDate site assembled data db =
     let
-        measurements =
-            assembled.measurements
-
         tasks =
             [ TaskFeeding, TaskCaring, TaskHygiene, TaskFoodSecurity ]
 
@@ -2708,21 +2361,18 @@ viewHomeVisitContent language currentDate site assembled data db =
                 activeTask
                 |> Maybe.withDefault ( [], 0, 0 )
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
+                        measurements =
+                            assembled.measurements
+
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
                         saveMsg =
                             case task of
@@ -2750,7 +2400,7 @@ viewHomeVisitContent language currentDate site assembled data db =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])

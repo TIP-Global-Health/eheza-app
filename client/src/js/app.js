@@ -312,6 +312,11 @@ dbSync.version(28).upgrade(function (tx) {
 dbSync.version(29).upgrade(function (tx) {
   return tx.nodeChanges.clear();
 });
+
+dbSync.version(30).stores({
+    shards: '&uuid,type,vid,status,person,[shard+vid],prenatal_encounter,nutrition_encounter,acute_illness_encounter,home_visit_encounter,well_child_encounter,ncd_encounter,child_scoreboard_encounter,tuberculosis_encounter,hiv_encounter,*name_search,[type+clinic],[type+person],[type+related_to],[type+person+related_to],[type+individual_participant],[type+adult],[type+province+district+sector+cell+village],newborn,*participating_patients,*national_id_number',
+});
+
 /**
  * --- !!! IMPORTANT !!! ---
  *
@@ -370,7 +375,7 @@ function gatherWords (text) {
  *
  * @type {number}
  */
-const dbVersion = 29;
+const dbVersion = 30;
 
 /**
  * Return saved info for General sync.
@@ -515,6 +520,41 @@ elmApp.ports.setLanguage.subscribe(function(language) {
 
 elmApp.ports.scrollToElement.subscribe(function(elementId) {
   waitForElement(elementId, scrollToElement, null);
+});
+
+elmApp.ports.getCoordinates.subscribe(function() {
+  if ("geolocation" in navigator) {
+    const options = {
+        enableHighAccuracy: true,  // Use GPS if available for better accuracy.
+        timeout: 15000,            // Time to wait for position (15 * 1000 ms).
+        maximumAge: 600000         // Accept cached positions up to 10 minutes old (10 * 60 * 1000 ms).
+    };
+
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            const { latitude, longitude } = position.coords;
+            const result = {latitude: latitude, longitude: longitude};
+            elmApp.ports.coordinates.send(result);
+        },
+        (error) => {
+            rollbar.log("Error fetching location:", error);
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    rollbar.log("User denied geolocation permission");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    rollbar.log("Location information unavailable");
+                    break;
+                case error.TIMEOUT:
+                    rollbar.log("Location request timed out");
+                    break;
+            }
+        },
+        options
+    );
+  } else {
+      rollbar.log("Geolocation is not available.");
+  }
 });
 
 
@@ -1276,7 +1316,7 @@ function makeProgressReportScreenshot(elementId, data) {
                   document.head.appendChild(style);
                 })
                 .catch(function(error) {
-                  console.error('Error fetching stylesheet:', error);
+                  rollbar.log('Error fetching stylesheet:', error);
                 });
 
               promises.push(promise);

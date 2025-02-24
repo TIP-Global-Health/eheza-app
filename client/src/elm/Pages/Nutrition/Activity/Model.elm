@@ -9,7 +9,8 @@ import Pages.Page exposing (Page)
 
 
 type Msg
-    = SetActivePage Page
+    = NoOp
+    | SetActivePage Page
     | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
     | SaveHeight PersonId (Maybe ( NutritionHeightId, NutritionHeight ))

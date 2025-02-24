@@ -205,11 +205,6 @@ encodeSyncIncident incidentType =
             , ( "content_identifier", string identifier )
             ]
 
-        ContentUploadIncident identifier ->
-            [ ( "incident_type", string "content-upload" )
-            , ( "content_identifier", string identifier )
-            ]
-
 
 encodeUploadMethod : UploadMethod -> Value
 encodeUploadMethod uploadMethod =

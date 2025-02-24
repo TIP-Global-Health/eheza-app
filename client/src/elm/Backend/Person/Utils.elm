@@ -33,9 +33,12 @@ ageInMonths currentDate person =
 
 
 isAdult : NominalDate -> Maybe NominalDate -> Maybe Bool
-isAdult currentDate maybeBirthDate =
-    maybeBirthDate
-        |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (<) 12)
+isAdult currentDate =
+    Maybe.map
+        (\birthDate ->
+            diffYears birthDate currentDate
+                |> (\age -> age > 12)
+        )
 
 
 isNewborn : NominalDate -> Person -> Maybe Bool
@@ -56,7 +59,11 @@ isPersonAFertileWoman currentDate person =
 
     else
         person.birthDate
-            |> Maybe.map (\birthDate -> diffYears birthDate currentDate |> (\age -> age > 12 && age < 45))
+            |> Maybe.map
+                (\birthDate ->
+                    diffYears birthDate currentDate
+                        |> (\age -> age > 12 && age < 50)
+                )
             |> Maybe.withDefault False
 
 
