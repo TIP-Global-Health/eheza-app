@@ -17,7 +17,7 @@ if (!drupal_is_cli()) {
 $nid = drush_get_option('nid', 0);
 
 // Get the number of nodes to be processed.
-$batch = drush_get_option('batch', 50);
+$batch = drush_get_option('batch', 2000);
 
 // Get allowed memory limit.
 $memory_limit = drush_get_option('memory_limit', 16000);
