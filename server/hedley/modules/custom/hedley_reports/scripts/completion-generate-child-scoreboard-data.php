@@ -34,10 +34,6 @@ $base_query
   ->propertyCondition('status', NODE_PUBLISHED)
   ->addTag('exclude_deleted');
 
-if ($exclude_set) {
-  $base_query->addTag('exclude_set_reports_data');
-}
-
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');
 $count = $count_query->count()->execute();
