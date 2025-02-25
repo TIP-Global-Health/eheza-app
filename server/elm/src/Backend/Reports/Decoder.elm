@@ -1,6 +1,5 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
-import AssocList as Dict
 import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
@@ -10,7 +9,6 @@ import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
-import Maybe.Extra exposing (isNothing)
 
 
 decodeReportsData : Decoder ReportsData

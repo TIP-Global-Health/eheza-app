@@ -4,10 +4,8 @@ import Activity.Model exposing (Activity(..), ChildActivity(..), emptySummaryByA
 import Activity.Utils exposing (getActivityIcon, getAllChildActivitiesExcludingNextSteps, getParticipantCountForActivity)
 import Backend.Clinic.Model exposing (ClinicType(..))
 import Backend.Entities exposing (..)
-import Backend.Nurse.Model exposing (Nurse)
-import Backend.Nurse.Utils exposing (isCommunityHealthWorker)
 import Backend.Session.Model exposing (EditableSession)
-import EverySet exposing (EverySet)
+import EverySet
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -15,7 +13,7 @@ import List
 import LocalData
 import Pages.Activities.Model exposing (DialogType(..), Model, Msg(..), Tab(..))
 import Pages.Page exposing (Page(..), SessionPage(..), UserPage(..))
-import Pages.Utils exposing (viewEndEncounterDialog, viewSkipNCDADialog)
+import Pages.Utils exposing (viewConfirmationDialog, viewCustomAction, viewSkipNCDADialog)
 import Translate as Trans exposing (Language, translate)
 import Utils.Html exposing (tabItem, viewModal)
 
@@ -107,7 +105,7 @@ view language isChw ( sessionId, session ) model =
                 (\state ->
                     case state of
                         DialogEndSession ->
-                            viewEndEncounterDialog language
+                            viewConfirmationDialog language
                                 Trans.AreYouSure
                                 Trans.OnceYouEndYourGroupEncounter
                                 CloseSession
@@ -141,13 +139,7 @@ view language isChw ( sessionId, session ) model =
                 UserPage ClinicsPage
 
         endSessionButton =
-            div [ class "actions" ]
-                [ button
-                    [ class "ui fluid button green"
-                    , onClick <| SetRedirectPage <| UserPage ClinicalPage
-                    ]
-                    [ text <| translate language Trans.EndGroupEncounter ]
-                ]
+            viewCustomAction language (SetRedirectPage <| UserPage ClinicalPage) False Trans.EndGroupEncounter
     in
     div
         [ class "wrap wrap-alt-2" ]
@@ -161,7 +153,6 @@ view language isChw ( sessionId, session ) model =
                 , onClick <| SetRedirectPage goBackPage
                 ]
                 [ span [ class "icon-back" ] []
-                , span [] []
                 ]
             , ul [ class "links-head" ]
                 [ li

@@ -5,8 +5,10 @@ import Backend.Entities exposing (..)
 import Backend.IndividualEncounterParticipant.Model exposing (IndividualEncounterType(..), IndividualParticipantInitiator(..))
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.Person.Model exposing (Initiator(..), Person)
-import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isNewborn, isPersonAFertileWoman, isPersonAnAdult)
+import Backend.Person.Utils exposing (defaultIconForPerson, isChildUnderAgeOf2, isPersonAFertileWoman, isPersonAnAdult)
 import Backend.Village.Utils exposing (personLivesInVillage)
+import Components.PatientsSearchForm.Utils exposing (..)
+import Components.PatientsSearchForm.View
 import Gizra.Html exposing (emptyNode, showMaybe)
 import Gizra.NominalDate exposing (NominalDate, diffYears)
 import Html exposing (..)
@@ -56,7 +58,6 @@ viewHeader title =
             , onClick <| SetActivePage <| UserPage IndividualEncounterTypesPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -75,11 +76,11 @@ viewSearchForm : Language -> NominalDate -> ( HealthCenterId, Maybe VillageId ) 
 viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw encounterType model db =
     let
         searchForm =
-            Pages.Utils.viewSearchForm language model.input Translate.PlaceholderEnterParticipantName SetInput
+            Components.PatientsSearchForm.View.view language model
+                |> Html.map Pages.IndividualEncounterParticipants.Model.MsgPatientsSearchForm
 
         searchValue =
-            model.search
-                |> Maybe.withDefault ""
+            Components.PatientsSearchForm.Utils.getSearchValue model
 
         encounterCondition person =
             case encounterType of
@@ -137,8 +138,7 @@ viewSearchForm language currentDate ( healthCenterId, maybeVillageId ) isChw enc
                 Nothing
 
             else
-                Dict.get searchValue db.personSearches
-                    |> Maybe.withDefault NotAsked
+                Components.PatientsSearchForm.Utils.getSearchResults db model
                     |> RemoteData.map
                         (Dict.filter
                             (\_ filteredPerson ->
@@ -269,7 +269,7 @@ viewParticipant language currentDate encounterType db id person =
                         ]
                     , p []
                         [ label [] [ text <| translate language Translate.Village ++ ": " ]
-                        , span [] [ person.village |> Maybe.withDefault "" |> text ]
+                        , span [] [ text <| Maybe.withDefault "" person.village ]
                         ]
                     ]
                 , viewAction

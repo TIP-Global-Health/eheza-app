@@ -31,7 +31,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Utils exposing (undeterminedPostpartumDiagnoses)
 import Pages.Prenatal.View exposing (customWarningPopup, viewPauseEncounterButton)
-import Pages.Utils exposing (viewEndEncounterButtonCustomColor, viewEndEncounterDialog, viewPersonDetails, viewReportLink)
+import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButtonCustomColor, viewPersonDetails, viewReportLink)
 import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
@@ -59,7 +59,7 @@ viewHeaderAndContent language currentDate site id isChw model assembled =
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         CloseEncounter
@@ -91,7 +91,6 @@ viewHeader language isChw assembled =
             , onClick <| SetActivePage <| UserPage <| PrenatalParticipantPage InitiatorParticipantsPage assembled.participant.person
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 

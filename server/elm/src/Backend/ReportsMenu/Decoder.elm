@@ -4,7 +4,7 @@ import Backend.Components.Decoder exposing (decodeHealthCenterData)
 import Backend.Decoder exposing (decodeSite)
 import Backend.ReportsMenu.Model exposing (..)
 import Gizra.Json exposing (decodeInt)
-import Json.Decode exposing (Decoder, andThen, list, string, succeed)
+import Json.Decode exposing (Decoder, list, string, succeed)
 import Json.Decode.Pipeline exposing (required)
 
 

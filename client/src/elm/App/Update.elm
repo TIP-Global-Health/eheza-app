@@ -15,6 +15,7 @@ import Backend.Person.Model exposing (Initiator(..))
 import Backend.PrenatalActivity.Model exposing (PrenatalActivity(..))
 import Backend.Session.Utils exposing (getSession)
 import Backend.Update
+import Backend.Utils exposing (gpsCoordinatesEnabled)
 import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Browser
 import Browser.Navigation as Nav
@@ -257,9 +258,6 @@ update msg model =
 
         features =
             model.syncManager.syncInfoGeneral.features
-
-        reverseGeoInfo =
-            model.syncManager.reverseGeoInfo
     in
     case msg of
         NoOp ->
@@ -274,6 +272,7 @@ update msg model =
                     Backend.Update.updateIndexedDb model.language
                         currentDate
                         model.currentTime
+                        model.coordinates
                         model.zscores
                         site
                         features
@@ -303,6 +302,10 @@ update msg model =
                 |> sequence update (extraMsgs ++ revisionMsgs)
 
         MsgLoggedIn loggedInMsg ->
+            let
+                reverseGeoInfo =
+                    model.syncManager.reverseGeoInfo
+            in
             updateLoggedIn
                 (\data ->
                     case loggedInMsg of
@@ -325,8 +328,8 @@ update msg model =
                                         model.healthCenterId
                                         model.villageId
                                         isChw
-                                        subMsg
                                         model.indexedDb
+                                        subMsg
                                         data.createPersonPage
                             in
                             ( { data | createPersonPage = subModel }
@@ -365,8 +368,8 @@ update msg model =
                                             model.healthCenterId
                                             model.villageId
                                             isChw
-                                            subMsg
                                             model.indexedDb
+                                            subMsg
                             in
                             ( { data | editPersonPages = Dict.insert id subModel data.editPersonPages }
                             , Cmd.map (MsgLoggedIn << MsgPageEditPerson id) subCmd
@@ -525,7 +528,6 @@ update msg model =
                                         |> Pages.WellChild.Encounter.Update.update currentDate
                                             model.zscores
                                             site
-                                            isChw
                                             model.indexedDb
                                             subMsg
                             in
@@ -1147,6 +1149,11 @@ update msg model =
             , Cmd.none
             )
 
+        SetGPSCoordinates coordinates ->
+            ( { model | coordinates = Just coordinates }
+            , Cmd.none
+            )
+
         SetStorageQuota quota ->
             ( { model | storageQuota = Just quota }
             , Cmd.none
@@ -1382,10 +1389,26 @@ update msg model =
                             App.Ports.bindDropZone ()
 
                         UserPage (CreatePersonPage _ _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (EditPersonPage _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()
@@ -1532,6 +1555,7 @@ subscriptions model =
          , persistentStorage SetPersistentStorage
          , storageQuota SetStorageQuota
          , memoryQuota SetMemoryQuota
+         , coordinates SetGPSCoordinates
          , Sub.map App.Model.MsgSyncManager (SyncManager.Update.subscriptions model.syncManager)
          ]
             ++ checkDataWanted

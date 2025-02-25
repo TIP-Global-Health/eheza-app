@@ -6128,6 +6128,11 @@ var $justinmimbs$date$Date$Years = {$: 'Years'};
 var $elm$core$List$concat = function (lists) {
 	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
 };
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
 var $elm$core$Maybe$map = F2(
 	function (f, maybe) {
 		if (maybe.$ === 'Just') {
@@ -6483,87 +6488,86 @@ var $author$project$Pages$Reports$Update$calculateNutritionReportDataTask = F2(
 						return ($author$project$Pages$Reports$Utils$countTotalNutritionEncounters(record) > 1) ? $elm$core$Maybe$Just(record.id) : $elm$core$Maybe$Nothing;
 					},
 					records);
-				var currentYear = $justinmimbs$date$Date$year(currentDate);
 				var allEncounters = function () {
+					var currentYear = $justinmimbs$date$Date$year(currentDate);
 					var startingYear = currentYear - 3;
 					var filterByYear = function (encounter) {
 						return _Utils_cmp(
 							$justinmimbs$date$Date$year(encounter.startDate),
 							startingYear) > -1;
 					};
-					return $elm$core$List$concat(
-						A2(
-							$elm$core$List$map,
-							function (record) {
-								return $elm$core$List$concat(
-									$elm_community$maybe_extra$Maybe$Extra$values(
-										_List_fromArray(
-											[
-												A2(
-												$elm$core$Maybe$map,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$List$concat,
-													A2(
-														$elm$core$Basics$composeR,
-														$elm$core$List$filter(filterByYear),
-														$elm$core$List$map(
-															$elm$core$Tuple$pair(record.id)))),
-												record.wellChildData),
-												A2(
-												$elm$core$Maybe$map,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$List$concat,
-													A2(
-														$elm$core$Basics$composeR,
-														$elm$core$List$filter(filterByYear),
-														$elm$core$List$map(
-															$elm$core$Tuple$pair(record.id)))),
-												record.individualNutritionData),
-												A2(
-												$elm$core$Maybe$map,
+					return A2(
+						$elm$core$List$concatMap,
+						function (record) {
+							return $elm$core$List$concat(
+								$elm_community$maybe_extra$Maybe$Extra$values(
+									_List_fromArray(
+										[
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$concat,
 												A2(
 													$elm$core$Basics$composeR,
 													$elm$core$List$filter(filterByYear),
 													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id))),
-												record.groupNutritionPmtctData),
-												A2(
-												$elm$core$Maybe$map,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$List$filter(filterByYear),
-													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id))),
-												record.groupNutritionFbfData),
-												A2(
-												$elm$core$Maybe$map,
+														$elm$core$Tuple$pair(record.id)))),
+											record.wellChildData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$concat,
 												A2(
 													$elm$core$Basics$composeR,
 													$elm$core$List$filter(filterByYear),
 													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id))),
-												record.groupNutritionSorwatheData),
-												A2(
-												$elm$core$Maybe$map,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$List$filter(filterByYear),
-													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id))),
-												record.groupNutritionChwData),
-												A2(
-												$elm$core$Maybe$map,
-												A2(
-													$elm$core$Basics$composeR,
-													$elm$core$List$filter(filterByYear),
-													$elm$core$List$map(
-														$elm$core$Tuple$pair(record.id))),
-												record.groupNutritionAchiData)
-											])));
-							},
-							records));
+														$elm$core$Tuple$pair(record.id)))),
+											record.individualNutritionData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionPmtctData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionFbfData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionSorwatheData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionChwData),
+											A2(
+											$elm$core$Maybe$map,
+											A2(
+												$elm$core$Basics$composeR,
+												$elm$core$List$filter(filterByYear),
+												$elm$core$List$map(
+													$elm$core$Tuple$pair(record.id))),
+											record.groupNutritionAchiData)
+										])));
+						},
+						records);
 				}();
 				var encountersByMonth = A3(
 					$elm$core$List$foldl,
@@ -11306,12 +11310,6 @@ var $author$project$Translate$translationSet = function (transId) {
 					kinyarwanda: $elm$core$Maybe$Nothing,
 					kirundi: $elm$core$Maybe$Just('Nta Gupima/gusuzuma')
 				};
-			case 'None':
-				return {
-					english: 'None',
-					kinyarwanda: $elm$core$Maybe$Just('Ntabyo'),
-					kirundi: $elm$core$Maybe$Just('Nta na kimwe')
-				};
 			case 'NumberOfVisits':
 				var number = transId.a;
 				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 5) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
@@ -11637,8 +11635,6 @@ var $author$project$Translate$translationSet = function (transId) {
 				var _short = transId.a;
 				var month = transId.b;
 				return A2($author$project$Translate$translateMonth, month, _short);
-			case 'Result':
-				return {english: 'Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Save':
 				return {
 					english: 'Save',
@@ -15692,11 +15688,8 @@ var $author$project$Pages$Reports$View$generateAcuteIllnessReportData = F3(
 			heading: '',
 			rows: _Utils_ap(
 				rows,
-				_Utils_ap(
-					_List_fromArray(
-						[totalsRow]),
-					_List_fromArray(
-						[noneRow])))
+				_List_fromArray(
+					[totalsRow, noneRow]))
 		};
 	});
 var $elm$core$String$replace = F3(
@@ -15781,24 +15774,20 @@ var $author$project$Pages$Reports$View$viewAcuteIllnessReport = F5(
 				[
 					$elm$html$Html$Attributes$class('report acute-illness')
 				]),
-			_Utils_ap(
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$div,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('table')
-							]),
-						A2(
-							$elm$core$List$cons,
-							captionsRow,
-							A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows)))
-					]),
-				_List_fromArray(
-					[
-						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
-					])));
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
 	});
 var $author$project$Pages$Reports$View$demographicsReportEncountersDataToCSV = function (data) {
 	return A2(
@@ -15899,21 +15888,18 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				$elm$core$Maybe$map(
 					A2(
 						$elm$core$Basics$composeR,
-						$elm$core$List$map(
+						$elm$core$List$concatMap(
 							function ($) {
 								return $.encounters;
 							}),
-						A2(
-							$elm$core$Basics$composeR,
-							$elm$core$List$concat,
-							$elm$core$List$filter(
-								function (encounter) {
-									return A2(
-										$elm$core$List$member,
-										encounter.encounterType,
-										_List_fromArray(
-											[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
-								}))))),
+						$elm$core$List$filter(
+							function (encounter) {
+								return A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+							})))),
 			records);
 		var prenatalDataChwEncounters = A2(
 			$elm$core$List$filterMap,
@@ -15925,21 +15911,18 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 				$elm$core$Maybe$map(
 					A2(
 						$elm$core$Basics$composeR,
-						$elm$core$List$map(
+						$elm$core$List$concatMap(
 							function ($) {
 								return $.encounters;
 							}),
-						A2(
-							$elm$core$Basics$composeR,
-							$elm$core$List$concat,
-							$elm$core$List$filter(
-								function (encounter) {
-									return !A2(
-										$elm$core$List$member,
-										encounter.encounterType,
-										_List_fromArray(
-											[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
-								}))))),
+						$elm$core$List$filter(
+							function (encounter) {
+								return !A2(
+									$elm$core$List$member,
+									encounter.encounterType,
+									_List_fromArray(
+										[$author$project$Backend$Reports$Model$NurseEncounter, $author$project$Backend$Reports$Model$NursePostpartumEncounter]));
+							})))),
 			records);
 		var nutritionIndividualEncountersData = A2(
 			$elm$core$List$filterMap,
@@ -15952,48 +15935,33 @@ var $author$project$Pages$Reports$View$generateDemographicsReportEncountersData 
 			records);
 		var nutritionGroupSorwatheEncountersData = A2(
 			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.groupNutritionSorwatheData;
-				},
-				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			function ($) {
+				return $.groupNutritionSorwatheData;
+			},
 			records);
 		var nutritionGroupPmtctEncountersData = A2(
 			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.groupNutritionPmtctData;
-				},
-				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			function ($) {
+				return $.groupNutritionPmtctData;
+			},
 			records);
 		var nutritionGroupFbfEncountersData = A2(
 			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.groupNutritionFbfData;
-				},
-				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			function ($) {
+				return $.groupNutritionFbfData;
+			},
 			records);
 		var nutritionGroupChwEncountersData = A2(
 			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.groupNutritionChwData;
-				},
-				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			function ($) {
+				return $.groupNutritionChwData;
+			},
 			records);
 		var nutritionGroupAchiEncountersData = A2(
 			$elm$core$List$filterMap,
-			A2(
-				$elm$core$Basics$composeR,
-				function ($) {
-					return $.groupNutritionAchiData;
-				},
-				$elm$core$Maybe$map($elm$core$Basics$identity)),
+			function ($) {
+				return $.groupNutritionAchiData;
+			},
 			records);
 		var ncdEncountersData = A2(
 			$elm$core$List$filterMap,
@@ -16393,122 +16361,116 @@ var $author$project$Pages$Reports$View$generateDemographicsReportPatientsData = 
 				])
 		};
 	});
-var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = F2(
-	function (language, data) {
-		var viewRow = function (_v0) {
-			var cells = _v0.a;
-			var shiftLeft = _v0.b;
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('row')
-					]),
-				A2(
-					$elm$core$List$indexedMap,
-					F2(
-						function (index, cellText) {
-							return A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$classList(
-										_List_fromArray(
-											[
-												_Utils_Tuple2('item', true),
-												_Utils_Tuple2('label', !index),
-												_Utils_Tuple2('ml-5', (!index) && shiftLeft),
-												_Utils_Tuple2('value', !(!index))
-											]))
-									]),
-								_List_fromArray(
-									[
-										$elm$html$Html$text(cellText)
-									]));
-						}),
-					cells));
-		};
-		return _List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('section heading')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(data.heading)
-					])),
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('table encounters')
-					]),
-				_Utils_ap(
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row captions')
-								]),
-							$author$project$Pages$Components$View$viewStandardCells(data.captions))
-						]),
-					_Utils_ap(
-						A2($elm$core$List$map, viewRow, data.rows),
-						_List_fromArray(
-							[
-								A2(
-								$elm$html$Html$div,
-								_List_fromArray(
-									[
-										$elm$html$Html$Attributes$class('row encounters-totals')
-									]),
-								$author$project$Pages$Components$View$viewStandardCells(
-									_List_fromArray(
-										[data.totals.label, data.totals.total, data.totals.unique])))
-							]))))
-			]);
-	});
-var $author$project$Pages$Reports$View$viewDemographicsReportPatients = F3(
-	function (language, limitDate, data) {
-		var viewTable = function (tableData) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('table ' + tableData.name)
-					]),
-				_Utils_ap(
-					_List_fromArray(
-						[
-							A2(
-							$elm$html$Html$div,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$class('row captions')
-								]),
-							$author$project$Pages$Components$View$viewStandardCells(tableData.captions))
-						]),
-					A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)));
-		};
+var $author$project$Pages$Reports$View$viewDemographicsReportEncounters = function (data) {
+	var viewRow = function (_v0) {
+		var cells = _v0.a;
+		var shiftLeft = _v0.b;
 		return A2(
-			$elm$core$List$cons,
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row')
+				]),
 			A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('section heading')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text(data.heading)
-					])),
-			A2($elm$core$List$map, viewTable, data.tables));
-	});
+				$elm$core$List$indexedMap,
+				F2(
+					function (index, cellText) {
+						return A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$classList(
+									_List_fromArray(
+										[
+											_Utils_Tuple2('item', true),
+											_Utils_Tuple2('label', !index),
+											_Utils_Tuple2('ml-5', (!index) && shiftLeft),
+											_Utils_Tuple2('value', !(!index))
+										]))
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text(cellText)
+								]));
+					}),
+				cells));
+	};
+	return _List_fromArray(
+		[
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+			A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table encounters')
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row captions')
+						]),
+					$author$project$Pages$Components$View$viewStandardCells(data.captions)),
+				_Utils_ap(
+					A2($elm$core$List$map, viewRow, data.rows),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('row encounters-totals')
+								]),
+							$author$project$Pages$Components$View$viewStandardCells(
+								_List_fromArray(
+									[data.totals.label, data.totals.total, data.totals.unique])))
+						]))))
+		]);
+};
+var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function (data) {
+	var viewTable = function (tableData) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('table ' + tableData.name)
+				]),
+			A2(
+				$elm$core$List$cons,
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('row captions')
+						]),
+					$author$project$Pages$Components$View$viewStandardCells(tableData.captions)),
+				A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, tableData.rows)));
+	};
+	return A2(
+		$elm$core$List$cons,
+		A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('section heading')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(data.heading)
+				])),
+		A2($elm$core$List$map, viewTable, data.tables));
+};
 var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 	function (language, limitDate, scopeLabel, records) {
 		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
@@ -16523,9 +16485,9 @@ var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
 					$elm$html$Html$Attributes$class('report demographics')
 				]),
 			_Utils_ap(
-				A3($author$project$Pages$Reports$View$viewDemographicsReportPatients, language, limitDate, demographicsReportPatientsData),
+				$author$project$Pages$Reports$View$viewDemographicsReportPatients(demographicsReportPatientsData),
 				_Utils_ap(
-					A2($author$project$Pages$Reports$View$viewDemographicsReportEncounters, language, demographicsReportEncountersData),
+					$author$project$Pages$Reports$View$viewDemographicsReportEncounters(demographicsReportEncountersData),
 					_List_fromArray(
 						[
 							A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
@@ -17462,7 +17424,6 @@ var $author$project$Pages$Reports$Utils$resolveDataSetForMonth = F3(
 		var selectedDate = A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Months, (-1) * monthIndex, date);
 		var year = $justinmimbs$date$Date$year(selectedDate);
 		var monthNumber = $justinmimbs$date$Date$monthNumber(selectedDate);
-		var month = $justinmimbs$date$Date$month(selectedDate);
 		return A2(
 			$elm$core$Maybe$withDefault,
 			$author$project$Pages$Reports$Model$emptyNutritionMetrics,
@@ -17744,7 +17705,6 @@ var $author$project$Pages$Reports$Utils$resolveDataSetForYear = F3(
 					F2(
 						function (_v0, _v1) {
 							var year = _v0.a;
-							var month = _v0.b;
 							return _Utils_eq(year, selectedYear);
 						}),
 					encountersByMonth)));
@@ -17900,8 +17860,7 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 					$elm$html$Html$Attributes$class('report nutrition')
 				]),
 			_Utils_ap(
-				$elm$core$List$concat(
-					A2($elm$core$List$map, $author$project$Pages$Components$View$viewMetricsResultsTable, generatedData)),
+				A2($elm$core$List$concatMap, $author$project$Pages$Components$View$viewMetricsResultsTable, generatedData),
 				_List_fromArray(
 					[
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
@@ -18174,8 +18133,7 @@ var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 					$elm$html$Html$Attributes$class('report prenatal')
 				]),
 			_Utils_ap(
-				$elm$core$List$concat(
-					A2($elm$core$List$map, viewTable, data)),
+				A2($elm$core$List$concatMap, viewTable, data),
 				_List_fromArray(
 					[
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
@@ -18369,18 +18327,22 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 																$elm$core$Basics$GT));
 														},
 														participantData.encounters);
-													var dateConcluded = A2(
-														$elm$core$Maybe$andThen,
-														function (date) {
-															return _Utils_eq(
-																A2($justinmimbs$date$Date$compare, limitDate, date),
-																$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
-														},
-														participantData.dateConcluded);
-													return $elm$core$List$isEmpty(filteredEncounters) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
-														_Utils_update(
-															participantData,
-															{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+													if ($elm$core$List$isEmpty(filteredEncounters)) {
+														return $elm$core$Maybe$Nothing;
+													} else {
+														var dateConcluded = A2(
+															$elm$core$Maybe$andThen,
+															function (date) {
+																return _Utils_eq(
+																	A2($justinmimbs$date$Date$compare, limitDate, date),
+																	$elm$core$Basics$LT) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(date);
+															},
+															participantData.dateConcluded);
+														return $elm$core$Maybe$Just(
+															_Utils_update(
+																participantData,
+																{dateConcluded: dateConcluded, encounters: filteredEncounters}));
+													}
 												}
 											}));
 									var filterIndividualBy = function (resolveDateFunc) {
@@ -18502,25 +18464,23 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 						[
 							$elm$html$Html$Attributes$class('inputs')
 						]),
-					_Utils_ap(
-						_List_fromArray(
-							[
-								A4(
-								$author$project$Pages$Utils$wrapSelectListInput,
+					A2(
+						$elm$core$List$cons,
+						A4(
+							$author$project$Pages$Utils$wrapSelectListInput,
+							language,
+							$author$project$Translate$ReportTypeLabel,
+							false,
+							A7(
+								$author$project$Pages$Utils$viewSelectListInput,
 								language,
-								$author$project$Translate$ReportTypeLabel,
-								false,
-								A7(
-									$author$project$Pages$Utils$viewSelectListInput,
-									language,
-									model.reportType,
-									_List_fromArray(
-										[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
-									$author$project$Pages$Reports$Utils$reportTypeToString,
-									$author$project$Pages$Reports$Model$SetReportType,
-									$author$project$Translate$ReportType,
-									'select-input'))
-							]),
+								model.reportType,
+								_List_fromArray(
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+								$author$project$Pages$Reports$Utils$reportTypeToString,
+								$author$project$Pages$Reports$Model$SetReportType,
+								$author$project$Translate$ReportType,
+								'select-input')),
 						_Utils_ap(
 							dateInputs,
 							_List_fromArray(
@@ -38387,11 +38347,12 @@ var $author$project$Pages$Scoreboard$View$viewTableHeader = function (language) 
 };
 var $author$project$Pages$Scoreboard$View$formatValues = F2(
 	function (currentDate, yearSelectorGap) {
+		var yearsGapFrom2023 = 2023 - $justinmimbs$date$Date$year(currentDate);
 		var currentMonthNumber = $justinmimbs$date$Date$monthNumber(currentDate);
 		return $elm$core$List$indexedMap(
 			F2(
 				function (index, value) {
-					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? value : '') : (_Utils_eq(yearSelectorGap, -1) ? ((index >= 10) ? value : '-') : '-');
+					return (!yearSelectorGap) ? ((_Utils_cmp(index, currentMonthNumber) < 0) ? value : '') : ((_Utils_cmp(yearSelectorGap, yearsGapFrom2023) > 0) ? value : ((index >= 10) ? value : '-'));
 				}));
 	});
 var $author$project$Pages$Scoreboard$View$viewTableRow = F5(
@@ -38451,6 +38412,14 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 										$elm$core$Maybe$map,
 										function (gapInMonths) {
 											var targetDateForMonth = A2($author$project$Pages$Scoreboard$View$resolveTargetDateForMonth, gapInMonths, currentDate);
+											var row2 = function () {
+												var ageInMonths = A2(
+													$author$project$Gizra$NominalDate$diffMonths,
+													A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
+													targetDateForMonth);
+												var gap = gapInMonths - ageInMonths;
+												return ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
+											}();
 											var row1AsAgeInMonths = A2(
 												$elm$core$List$filter,
 												function (date) {
@@ -38458,14 +38427,6 @@ var $author$project$Pages$Scoreboard$View$viewANCNewbornPane = F7(
 												},
 												record.ncda.ancNewborn.row1);
 											var row1 = (!$elm$core$List$isEmpty(row1AsAgeInMonths)) ? (accumValue.row1 + 1) : accumValue.row1;
-											var ageInMonths = A2(
-												$author$project$Gizra$NominalDate$diffMonths,
-												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.eddDate),
-												targetDateForMonth);
-											var row2 = function () {
-												var gap = gapInMonths - ageInMonths;
-												return ((record.ncda.ancNewborn.row2 && (gap > 0)) && (gap < 10)) ? (accumValue.row2 + 1) : accumValue.row2;
-											}();
 											return {row1: row1, row2: row2};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -38559,22 +38520,32 @@ var $author$project$Pages$Scoreboard$View$viewAcuteMalnutritionPane = F7(
 													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
 												},
 												record.nutrition.muac.severe);
-											var muacNormalAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.muac.normal);
-											var muacModerateAsAgeInMonths = A2(
-												$elm$core$List$filter,
-												function (date) {
-													return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
-												},
-												record.nutrition.muac.moderate);
 											var existedDuringExaminationMonth = _Utils_eq(
 												A2($justinmimbs$date$Date$compare, record.created, targetDateForMonth),
 												$elm$core$Basics$LT);
-											var _v0 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3) : ((existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3)));
+											var _v0 = function () {
+												if (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacSevereAsAgeInMonths))) {
+													return _Utils_Tuple3(accumValue.row1 + 1, accumValue.row2, accumValue.row3);
+												} else {
+													var muacModerateAsAgeInMonths = A2(
+														$elm$core$List$filter,
+														function (date) {
+															return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
+														},
+														record.nutrition.muac.moderate);
+													if (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacModerateAsAgeInMonths))) {
+														return _Utils_Tuple3(accumValue.row1, accumValue.row2 + 1, accumValue.row3);
+													} else {
+														var muacNormalAsAgeInMonths = A2(
+															$elm$core$List$filter,
+															function (date) {
+																return A2($author$project$Utils$NominalDate$equalByYearAndMonth, date, targetDateForMonth);
+															},
+															record.nutrition.muac.normal);
+														return (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(muacNormalAsAgeInMonths))) ? _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3 + 1) : _Utils_Tuple3(accumValue.row1, accumValue.row2, accumValue.row3);
+													}
+												}
+											}();
 											var row1 = _v0.a;
 											var row2 = _v0.b;
 											var row3 = _v0.c;
@@ -38880,10 +38851,6 @@ var $author$project$Pages$Scoreboard$View$viewInfrastructureEnvironmentWashPane 
 											var row3 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row3AsAgeInMonths))) ? (accumValue.row3 + 1) : accumValue.row3;
 											var row4 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row4AsAgeInMonths))) ? (accumValue.row4 + 1) : accumValue.row4;
 											var row5 = (existedDuringExaminationMonth && (!$elm$core$List$isEmpty(row5AsAgeInMonths))) ? (accumValue.row5 + 1) : accumValue.row5;
-											var ageInMonths = A2(
-												$author$project$Gizra$NominalDate$diffMonths,
-												A2($justinmimbs$date$Date$floor, $justinmimbs$date$Date$Month, record.birthDate),
-												targetDateForMonth);
 											return {row1: row1, row2: row2, row3: row3, row4: row4, row5: row5};
 										},
 										A2($pzp1997$assoc_list$AssocList$get, index, monthsGap)));
@@ -40086,7 +40053,6 @@ var $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation = F2(
 	});
 var $author$project$Pages$ScoreboardMenu$View$viewMenu = F3(
 	function (language, data, model) {
-		var geoInfo = $author$project$Utils$GeoLocation$getGeoInfo(data.site);
 		var _v0 = _Utils_Tuple2(
 			A4($author$project$Pages$Components$View$viewDemographicsSelection, language, data.site, $author$project$Pages$ScoreboardMenu$Model$SetGeoLocation, model.selectedDemographics),
 			($elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.province) && $elm_community$maybe_extra$Maybe$Extra$isJust(model.selectedDemographics.district)) ? A6($author$project$Pages$Components$View$viewDemographicsSelectionActionButton, language, data.site, '/admin/reports/aggregated-ncda', $author$project$Translate$GenerateReport, $author$project$Pages$ScoreboardMenu$Model$SelectionMade, model.selectedDemographics) : $author$project$Gizra$Html$emptyNode);

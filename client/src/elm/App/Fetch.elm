@@ -95,9 +95,6 @@ fetch model =
         let
             currentDate =
                 fromLocalDateTime model.currentTime
-
-            features =
-                model.syncManager.syncInfoGeneral.features
         in
         case model.activePage of
             DevicePage ->
@@ -173,7 +170,7 @@ fetch model =
                 getLoggedInData model
                     |> Maybe.map
                         (\( _, loggedIn ) ->
-                            Pages.People.Fetch.fetch relation initiator loggedIn.personsPage
+                            Pages.People.Fetch.fetch relation loggedIn.personsPage
                                 |> List.map MsgIndexedDb
                         )
                     |> Maybe.withDefault []
@@ -264,6 +261,10 @@ fetch model =
                     |> List.map MsgIndexedDb
 
             UserPage (SessionPage sessionId sessionPage) ->
+                let
+                    features =
+                        model.syncManager.syncInfoGeneral.features
+                in
                 Pages.Session.Fetch.fetch currentDate
                     model.zscores
                     features

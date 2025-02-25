@@ -159,7 +159,6 @@ type TranslationId
     | NewScope
     | NewSelection
     | NoDiagnosis
-    | None
     | NumberOfVisits Int
     | NumberOfVisitsLabel
     | Nutrition
@@ -192,7 +191,6 @@ type TranslationId
     | ReportType ReportType
     | ReportTypeLabel
     | ResolveMonth Bool Month
-    | Result
     | Save
     | Scope
     | Sector
@@ -1321,12 +1319,6 @@ translationSet transId =
             , kirundi = Just "Nta Gupima/gusuzuma"
             }
 
-        None ->
-            { english = "None"
-            , kinyarwanda = Just "Ntabyo"
-            , kirundi = Just "Nta na kimwe"
-            }
-
         NumberOfVisits number ->
             if number == 1 then
                 { english = "1 visit"
@@ -1888,12 +1880,6 @@ translationSet transId =
 
         ResolveMonth short month ->
             translateMonth month short
-
-        Result ->
-            { english = "Result"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
 
         Save ->
             { english = "Save"

@@ -18,7 +18,7 @@ import Pages.Prenatal.Encounter.Utils exposing (generateAssembledData)
 import Pages.Prenatal.Encounter.View exposing (viewMotherAndMeasurements)
 import Pages.Prenatal.Model exposing (AssembledData)
 import Pages.Prenatal.Outcome.Model exposing (Model, Msg(..))
-import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSelectListInput)
+import Pages.Utils exposing (taskCompleted, viewBoolInput, viewLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData exposing (RemoteData(..))
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
@@ -81,7 +81,6 @@ viewHeader language initiator data =
             , onClick <| SetActivePage <| UserPage goBackPage
             ]
             [ span [ class "icon-back" ] []
-            , span [] []
             ]
         ]
 
@@ -164,7 +163,7 @@ viewPregnancyOutcome language currentDate initiator data model =
                 form.deliveryLocation
                 |> Maybe.withDefault [ class "ui fluid primary button disabled" ]
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "form pregnancy-dating" ]

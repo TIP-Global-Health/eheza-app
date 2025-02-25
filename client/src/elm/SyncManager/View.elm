@@ -46,7 +46,7 @@ view language configuredModel db model =
                     ]
                     [ summary [] [ text "Sync Manager" ]
                     , viewHealthCentersForSync language db model
-                    , viewSyncSettings language model
+                    , viewSyncSettings model
                     , viewSyncStatus language db model
                     ]
 
@@ -54,8 +54,8 @@ view language configuredModel db model =
             emptyNode
 
 
-viewSyncSettings : Language -> Model -> Html Msg
-viewSyncSettings language model =
+viewSyncSettings : Model -> Html Msg
+viewSyncSettings model =
     let
         currentStatus =
             case model.syncCycle of
@@ -251,8 +251,8 @@ viewGeneralEntity language backendGeneralEntity =
         ]
 
 
-viewSyncDownloadAuthority : Language -> ModelIndexedDb -> Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
-viewSyncDownloadAuthority language db model webData =
+viewSyncDownloadAuthority : ModelIndexedDb -> Model -> WebData (DownloadSyncResponse BackendAuthorityEntity) -> Html Msg
+viewSyncDownloadAuthority db model webData =
     case model.syncInfoAuthorities of
         Nothing ->
             emptyNode
@@ -920,7 +920,7 @@ viewHealthCentersForSync language db model =
                                         List.Extra.find (\selectedUuid -> selectedUuid == fromEntityUuid healthCenterId) selectedHealthCentersUuid
                                             |> isJust
                                 in
-                                viewHealthCenter language ( healthCenterId, healthCenter ) isSynced
+                                viewHealthCenter ( healthCenterId, healthCenter ) isSynced
                             )
                             (Dict.toList healthCenters)
                         )
@@ -936,8 +936,8 @@ viewHealthCentersForSync language db model =
             emptyNode
 
 
-viewHealthCenter : Language -> ( HealthCenterId, HealthCenter ) -> Bool -> Html Msg
-viewHealthCenter language ( healthCenterId, healthCenter ) isSynced =
+viewHealthCenter : ( HealthCenterId, HealthCenter ) -> Bool -> Html Msg
+viewHealthCenter ( healthCenterId, healthCenter ) isSynced =
     let
         ( syncLabel, syncMsg ) =
             if isSynced then
@@ -969,7 +969,7 @@ viewSyncStatus language db model =
                 viewSyncDownloadGeneral language model webData
 
             SyncDownloadAuthority webData ->
-                viewSyncDownloadAuthority language db model webData
+                viewSyncDownloadAuthority db model webData
 
             _ ->
                 emptyNode

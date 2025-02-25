@@ -5,9 +5,9 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
+import Components.PatientsSearchForm.Model exposing (..)
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
-import Debouncer.Basic as Debouncer exposing (Debouncer, debounce, toDebouncer)
 import EverySet exposing (EverySet)
 import Form
 import Gizra.NominalDate exposing (NominalDate)
@@ -58,34 +58,15 @@ type Msg
     | SetCovidTestingBoolInput (Bool -> CovidTestingForm -> CovidTestingForm) Bool
     | SetCovidTestingAdministrationNote AdministrationNote
     | SaveCovidTesting PersonId (Maybe ( CovidTestingId, CovidTesting )) (Maybe AILaboratoryTask)
-      -- EXPOSURE Msgs
-    | SetActiveExposureTask ExposureTask
-    | SetCovid19Country Bool
-    | SaveTravelHistory PersonId (Maybe ( TravelHistoryId, TravelHistory )) (Maybe ExposureTask)
-    | SetCovid19Symptoms Bool
-    | SaveExposure PersonId (Maybe ( ExposureId, Exposure )) (Maybe ExposureTask)
       -- PRIOR TREATMENT
     | SetActivePriorTreatmentTask PriorTreatmentTask
     | SetTreatmentReviewBoolInput (Bool -> TreatmentReviewForm -> TreatmentReviewForm) Bool
     | SaveTreatmentReview PersonId (Maybe ( TreatmentReviewId, TreatmentReview ))
       -- NEXT STEPS
     | SetActiveNextStepsTask Pages.AcuteIllness.Activity.Types.NextStepsTask
-    | SetPatientIsolated Bool
     | SetHealthEducation Bool
+    | SetProvidedEducationForDiagnosis Bool
     | SetReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
-    | SetSignOnDoor Bool
-    | SetReasonForNotIsolating ReasonForNotIsolating
-    | SaveIsolation PersonId (Maybe ( IsolationId, Isolation )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetContactedHC Bool
-    | SetHCRecommendation HCRecommendation
-    | SetResponsePeriod ResponsePeriod
-    | SetAmbulanceArrivalPeriod ResponsePeriod
-    | SaveHCContact PersonId (Maybe ( HCContactId, HCContact )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetCalled114 Bool
-    | SetContactedSite Bool
-    | SetRecommendation114 Recommendation114
-    | SetRecommendationSite RecommendationSite
-    | SaveCall114 PersonId (Maybe ( Call114Id, Call114 )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetReferToHealthCenter Bool
     | SetHandReferralForm Bool
     | SaveSendToHC PersonId (Maybe ( SendToHCId, SendToHC )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
@@ -93,14 +74,11 @@ type Msg
     | SetMedicationDistributionBoolInput (Bool -> MedicationDistributionForm -> MedicationDistributionForm) Bool
     | SetMedicationDistributionAdministrationNote (Maybe AdministrationNote) MedicationDistributionSign AdministrationNote
     | SaveMedicationDistribution PersonId (Maybe ( MedicationDistributionId, MedicationDistribution )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
-    | SetProvidedEducationForDiagnosis Bool
     | SaveHealthEducation PersonId (Maybe ( HealthEducationId, HealthEducation )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetFollowUpOption FollowUpOption
     | SaveFollowUp PersonId (Maybe AcuteIllnessDiagnosis) (Maybe ( AcuteIllnessFollowUpId, AcuteIllnessFollowUp )) (Maybe Pages.AcuteIllness.Activity.Types.NextStepsTask)
     | SetContactsTracingFormState ContactsTracingFormState
-    | MsgContactsTracingDebouncer (Debouncer.Msg Msg)
-    | SetContactsTracingInput String
-    | SetContactsTracingSearch String
+    | MsgPatientsSearchForm Components.PatientsSearchForm.Model.Msg
     | SetContactsTracingDate Date
     | SetContactsTracingDateSelectorState (Maybe (DateSelectorConfig Msg))
     | SetContactsTracingPhoneNumber String
@@ -282,7 +260,7 @@ emptyCovidTestingForm =
 type alias ExposureData =
     { travelHistoryForm : TravelHistoryForm
     , exposureForm : ExposureForm
-    , activeTask : ExposureTask
+    , activeTask : Maybe ExposureTask
     }
 
 
@@ -290,7 +268,7 @@ emptyExposureData : ExposureData
 emptyExposureData =
     { travelHistoryForm = TravelHistoryForm Nothing
     , exposureForm = ExposureForm Nothing
-    , activeTask = ExposureTravel
+    , activeTask = Nothing
     }
 
 
@@ -310,14 +288,14 @@ type alias ExposureForm =
 
 type alias PriorTreatmentData =
     { treatmentReviewForm : TreatmentReviewForm
-    , activeTask : PriorTreatmentTask
+    , activeTask : Maybe PriorTreatmentTask
     }
 
 
 emptyPriorTreatmentData : PriorTreatmentData
 emptyPriorTreatmentData =
     { treatmentReviewForm = emptyTreatmentReviewForm
-    , activeTask = TreatmentReview
+    , activeTask = Nothing
     }
 
 
@@ -438,7 +416,7 @@ type alias ContactsTracingForm =
 
 type ContactsTracingFormState
     = ContactsTracingFormSummary
-    | ContactsTracingFormSearchParticipants SearchParticipantsData
+    | ContactsTracingFormSearchParticipants Components.PatientsSearchForm.Model.Model
     | ContactsTracingFormRecordContactDetails PersonId RecordContactDetailsData
     | ContactsTracingFormRegisterContact RegisterContactData
 
@@ -448,21 +426,6 @@ emptyContactsTracingForm =
     { state = ContactsTracingFormSummary
     , contacts = Nothing
     , finished = False
-    }
-
-
-type alias SearchParticipantsData =
-    { debouncer : Debouncer Msg Msg
-    , search : Maybe String
-    , input : String
-    }
-
-
-emptySearchParticipantsData : SearchParticipantsData
-emptySearchParticipantsData =
-    { debouncer = debounce 500 |> toDebouncer
-    , search = Nothing
-    , input = ""
     }
 
 
@@ -496,14 +459,14 @@ emptyRegisterContactData site =
 
 type alias OngoingTreatmentData =
     { treatmentReviewForm : OngoingTreatmentReviewForm
-    , activeTask : OngoingTreatmentTask
+    , activeTask : Maybe OngoingTreatmentTask
     }
 
 
 emptyOngoingTreatmentData : OngoingTreatmentData
 emptyOngoingTreatmentData =
     { treatmentReviewForm = emptyOngoingTreatmentReviewForm
-    , activeTask = OngoingTreatmentReview
+    , activeTask = Nothing
     }
 
 
@@ -513,14 +476,14 @@ emptyOngoingTreatmentData =
 
 type alias DangerSignsData =
     { reviewDangerSignsForm : ReviewDangerSignsForm
-    , activeTask : DangerSignsTask
+    , activeTask : Maybe DangerSignsTask
     }
 
 
 emptyDangerSignsData : DangerSignsData
 emptyDangerSignsData =
     { reviewDangerSignsForm = emptyReviewDangerSignsForm
-    , activeTask = ReviewDangerSigns
+    , activeTask = Nothing
     }
 
 

@@ -6,15 +6,11 @@ import Backend.Measurement.Model exposing (..)
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
 import Backend.TuberculosisActivity.Model exposing (TuberculosisActivity(..))
-import Date
-import EverySet
-import Gizra.Html exposing (emptyNode, showIf)
+import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import List.Extra
-import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (OngoingTreatmentReviewForm)
 import Measurement.Utils
     exposing
@@ -35,22 +31,20 @@ import Pages.Tuberculosis.Encounter.Model exposing (AssembledData)
 import Pages.Tuberculosis.Encounter.Utils exposing (generateAssembledData)
 import Pages.Utils
     exposing
-        ( isTaskCompleted
-        , maybeToBoolTask
-        , resolveActiveTask
+        ( resolveActiveTask
+        , resolveNextTask
         , saveButton
         , taskCompleted
         , tasksBarId
         , viewBoolInput
         , viewCheckBoxMultipleSelectInput
-        , viewCheckBoxSelectInput
+        , viewConfirmationDialog
         , viewCustomBoolInput
-        , viewEndEncounterDialog
         , viewPersonDetailsExtended
         , viewQuestionLabel
         , viewSaveAction
+        , viewTasksCount
         )
-import SyncManager.Model exposing (Site)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -185,7 +179,7 @@ viewDiagnosticsContent language currentDate assembled data =
         endEncounterDialog =
             if data.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.EndEncounterNoTuberculosisDiagnosisPhrase
                         saveDiagnosticsMsg
@@ -204,16 +198,12 @@ viewDiagnosticsContent language currentDate assembled data =
         saveDiagnosticsMsg =
             SaveDiagnostics assembled.participant.person assembled.encounter.participant assembled.measurements.diagnostics
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form danger-signs" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                saveAction
-            ]
+        , viewSaveAction language saveAction (tasksCompleted /= totalTasks)
         ]
     , viewModal endEncounterDialog
     ]
@@ -297,32 +287,25 @@ viewMedicationContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            let
-                tasksAfterSave =
-                    case activeTask of
-                        Just TaskPrescribedMedication ->
-                            -- DOT and Treatment Review review appear only after
-                            -- Prescribed Medication task is saved.
-                            [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
-
-                        _ ->
-                            tasks
-            in
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasksAfterSave
-                |> List.head
-
         actions =
             Maybe.map
                 (\task ->
                     let
                         personId =
                             assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasksAfterSave
+
+                        tasksAfterSave =
+                            case task of
+                                TaskPrescribedMedication ->
+                                    -- DOT and Treatment Review review appear only after
+                                    -- Prescribed Medication task is saved.
+                                    [ TaskPrescribedMedication, TaskDOT, TaskTreatmentReview ]
+
+                                _ ->
+                                    tasks
 
                         saveMsg =
                             case task of
@@ -347,7 +330,7 @@ viewMedicationContent language currentDate assembled data =
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -449,16 +432,14 @@ viewSymptomReviewContent language currentDate assembled data =
             , 4
             )
     in
-    [ div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ]
             [ div [ class "ui form symptom-review" ] inputs
             ]
-        , div [ class "actions" ]
-            [ saveButton language
-                (tasksCompleted == totalTasks)
-                (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
-            ]
+        , viewSaveAction language
+            (SaveSymptomReview assembled.participant.person assembled.measurements.symptomReview)
+            (tasksCompleted /= totalTasks)
         ]
     ]
 
@@ -511,7 +492,7 @@ viewNextStepsContent language currentDate assembled data =
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal measurements data task )) tasks
+            List.map (\task -> ( task, nextStepsTasksCompletedFromTotal currentDate measurements data task )) tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -551,46 +532,40 @@ viewNextStepsContent language currentDate assembled data =
                 Nothing ->
                     []
 
-        nextTask =
-            List.filter
-                (\task ->
-                    (Just task /= activeTask)
-                        && (not <| isTaskCompleted tasksCompletedFromTotalDict task)
-                )
-                tasks
-                |> List.head
-
         actions =
-            activeTask
-                |> Maybe.map
-                    (\task ->
-                        let
-                            personId =
-                                assembled.participant.person
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
 
-                            saveMsg =
-                                case task of
-                                    TaskHealthEducation ->
-                                        SaveHealthEducation personId measurements.healthEducation nextTask
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
 
-                                    TaskFollowUp ->
-                                        SaveFollowUp personId measurements.followUp nextTask
+                        saveMsg =
+                            case task of
+                                TaskHealthEducation ->
+                                    SaveHealthEducation personId measurements.healthEducation nextTask
 
-                                    TaskReferral ->
-                                        SaveReferral personId measurements.referral nextTask
+                                TaskFollowUp ->
+                                    SaveFollowUp personId measurements.followUp nextTask
 
-                            disabled =
-                                tasksCompleted /= totalTasks
-                        in
-                        viewSaveAction language saveMsg disabled
-                    )
+                                TaskReferral ->
+                                    SaveReferral personId measurements.referral nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
                 |> Maybe.withDefault emptyNode
     in
     [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
         [ div [ class "ui five column grid" ] <|
             List.map viewTask tasks
         ]
-    , div [ class "tasks-count" ] [ text <| translate language <| Translate.TasksCompleted tasksCompleted totalTasks ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
             (viewForm ++ [ actions ])
@@ -601,31 +576,8 @@ viewNextStepsContent language currentDate assembled data =
 viewHealthEducationForm : Language -> NominalDate -> AssembledData -> HealthEducationForm -> Html Msg
 viewHealthEducationForm language currentDate assembled form =
     let
-        followUpTestingTable =
-            let
-                viewRow stage =
-                    div [ class "row" ]
-                        [ div [ class "item label" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageLabel stage ]
-                        , div [ class "item test" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageTest stage ]
-                        , div [ class "item guidance" ] [ text <| translate language <| Translate.TuberculosisFollowUpTestingStageInstructions stage ]
-                        ]
-            in
-            div [ class "follow-up-testing-table" ] <|
-                List.map viewRow
-                    [ FollowUpTestingMonth1
-                    , FollowUpTestingMonth2
-                    , FollowUpTestingEndMonth2
-                    , FollowUpTestingEndMonth5
-                    , FollowUpTestingEndMonth6
-                    ]
+        ( inputs, _ ) =
+            healthEducationFormInputsAndTasks language currentDate form
     in
     div [ class "ui form health-education" ]
-        [ followUpTestingTable
-        , viewQuestionLabel language <| Translate.TuberculosisHealthEducationQuestion EducationFollowUpTesting
-        , viewBoolInput
-            language
-            form.followUpTesting
-            (SetHealthEducationBoolInput (\value form_ -> { form_ | followUpTesting = Just value }))
-            "followup-testing"
-            Nothing
-        ]
+        inputs

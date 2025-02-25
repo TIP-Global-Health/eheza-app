@@ -6,9 +6,11 @@ import Backend.Measurement.Model
     exposing
         ( DangerSign(..)
         , EyesCPESign(..)
+        , FetalPresentation(..)
         , HandsCPESign(..)
         , IllnessSymptom(..)
         , LabsResultsReviewState(..)
+        , LastMenstrualPeriodValue
         , MedicalHistoryInfectiousDisease(..)
         , MedicalHistoryMentalHealthIssue(..)
         , MedicalHistoryPhysicalCondition(..)
@@ -96,7 +98,8 @@ import Pages.Report.Model exposing (..)
 import Pages.Report.View exposing (..)
 import Pages.Utils
     exposing
-        ( viewEndEncounterDialog
+        ( viewConfirmationDialog
+        , viewCustomAction
         , viewEndEncounterMenuForProgressReport
         , viewPhotoThumbFromImageUrl
         )
@@ -164,7 +167,7 @@ viewContentAndHeader language currentDate site features nurse isChw initiator mo
         endEncounterDialog =
             if model.showEndEncounterDialog then
                 Just <|
-                    viewEndEncounterDialog language
+                    viewConfirmationDialog language
                         Translate.EndEncounterQuestion
                         Translate.OnceYouEndTheEncounter
                         (CloseEncounter assembled.id)
@@ -310,6 +313,17 @@ viewContent :
     -> Html Msg
 viewContent language currentDate site features isChw isLabTech isResultsReviewer initiator model assembled =
     let
+        globalLmpValue =
+            let
+                nursePreviousMeasurements =
+                    List.map .measurements assembled.nursePreviousEncountersData
+
+                chwPreviousMeasurements =
+                    List.map (\( _, _, measurements ) -> measurements)
+                        assembled.chwPreviousMeasurementsWithDates
+            in
+            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
+
         content =
             let
                 labResultsConfig =
@@ -499,13 +513,10 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                                         )
 
                                 InitiatorNewEncounter encounterId ->
-                                    div [ class "actions" ]
-                                        [ button
-                                            [ class "ui fluid primary button"
-                                            , onClick <| SetActivePage <| UserPage <| PrenatalEncounterPage encounterId
-                                            ]
-                                            [ text <| translate language Translate.Reviewed ]
-                                        ]
+                                    viewCustomAction language
+                                        (SetActivePage <| UserPage <| PrenatalEncounterPage encounterId)
+                                        False
+                                        Translate.Reviewed
 
                                 Backend.PrenatalEncounter.Model.InitiatorPatientRecord _ ->
                                     emptyNode
@@ -524,13 +535,13 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalHistory)
                     , viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
-                    , viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled
+                    , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
                     , viewVaccinationHistoryPane language currentDate assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalCHWActivity)
-                    , viewPatientProgressPane language currentDate isChw assembled
+                    , viewPatientProgressPane language currentDate isChw globalLmpValue assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalPatientProgress)
                     , labsPane
                     , viewProgressPhotosPane language currentDate isChw assembled
@@ -544,12 +555,12 @@ viewContent language currentDate site features isChw isLabTech isResultsReviewer
         , Html.Attributes.id "report-content"
         ]
     <|
-        viewHeaderPane language currentDate assembled
+        viewHeaderPane language currentDate globalLmpValue assembled
             :: content
 
 
-viewHeaderPane : Language -> NominalDate -> AssembledData -> Html Msg
-viewHeaderPane language currentDate assembled =
+viewHeaderPane : Language -> NominalDate -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewHeaderPane language currentDate globalLmpValue assembled =
     let
         mother =
             assembled.person
@@ -570,6 +581,18 @@ viewHeaderPane language currentDate assembled =
                     )
                 )
                 obstetricHistoryValue
+
+        viewUnsureOfLmp =
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
+
+                    else
+                        emptyNode
+                )
+                globalLmpValue
+                |> Maybe.withDefault emptyNode
 
         viewLineItem class_ label value =
             p [ class class_ ]
@@ -595,6 +618,7 @@ viewHeaderPane language currentDate assembled =
                 , div [ class "content right" ]
                     [ viewLineItem "edd" Translate.Edd edd
                     , viewLineItem "ega" Translate.Ega ega
+                    , viewUnsureOfLmp
                     ]
                 ]
             , div [ class "gravida-para" ]
@@ -1003,8 +1027,8 @@ viewProgramReferralEntry language date diagnosis facility =
         |> wrapWithLI
 
 
-viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasurements -> AssembledData -> Html Msg
-viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
+viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> PrenatalMeasurements -> AssembledData -> Html Msg
+viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
             assembled.nursePreviousEncountersData
@@ -1147,29 +1171,21 @@ viewObstetricalDiagnosisPane language currentDate isChw firstNurseEncounterMeasu
                 allNurseEncountersData
 
         lmpDateNonConfidentEntry =
-            let
-                nursePreviousMeasurements =
-                    List.map .measurements assembled.nursePreviousEncountersData
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        Maybe.map
+                            (Translate.LmpDateNotConfidentReasonforReport
+                                >> translate language
+                                >> wrapWithLI
+                            )
+                            value.notConfidentReason
+                            |> Maybe.withDefault []
 
-                chwPreviousMeasurements =
-                    List.map (\( _, _, measurements ) -> measurements)
-                        assembled.chwPreviousMeasurementsWithDates
-            in
-            resolveGlobalLmpValue nursePreviousMeasurements chwPreviousMeasurements assembled.measurements
-                |> Maybe.map
-                    (\value ->
-                        if value.confident == False then
-                            Maybe.map
-                                (Translate.LmpDateNotConfidentReasonforReport
-                                    >> translate language
-                                    >> wrapWithLI
-                                )
-                                value.notConfidentReason
-                                |> Maybe.withDefault []
-
-                        else
-                            []
-                    )
+                    else
+                        []
+                )
+                globalLmpValue
                 |> Maybe.withDefault []
 
         common =
@@ -1363,8 +1379,8 @@ matchCHWActivityAtEncounter measurements activity =
             isJust measurements.birthPlan
 
 
-viewPatientProgressPane : Language -> NominalDate -> Bool -> AssembledData -> Html Msg
-viewPatientProgressPane language currentDate isChw assembled =
+viewPatientProgressPane : Language -> NominalDate -> Bool -> Maybe LastMenstrualPeriodValue -> AssembledData -> Html Msg
+viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
     let
         allNurseEncountersData =
             List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
@@ -1437,42 +1453,42 @@ viewPatientProgressPane language currentDate isChw assembled =
             generateEGAWeeksDaysLabel language_ diffInDays
 
         ( eddLabel, fetalHeartRateLabel, fetalMovementsLabel ) =
-            assembled.globalLmpDate
-                |> Maybe.map
-                    (\lmpDate ->
-                        let
-                            eddDate =
-                                lmpToEDDDate lmpDate
-                        in
-                        ( div [ class "due-date-label" ]
-                            [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
-                            , div []
-                                [ text <|
-                                    (Date.day eddDate |> String.fromInt)
-                                        ++ " "
-                                        ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
-                                ]
+            Maybe.map
+                (\lmpDate ->
+                    let
+                        eddDate =
+                            lmpToEDDDate lmpDate
+                    in
+                    ( div [ class "due-date-label" ]
+                        [ div [] [ text <| translate language Translate.DueDate ++ ":" ]
+                        , div []
+                            [ text <|
+                                (Date.day eddDate |> String.fromInt)
+                                    ++ " "
+                                    ++ translate language (Translate.ResolveMonth False (Date.month eddDate))
                             ]
-                        , fetalHeartRateDate
-                            |> Maybe.map
-                                (\date ->
-                                    div [ class "heart-rate-label" ]
-                                        [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
-                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
-                                        ]
-                                )
-                            |> Maybe.withDefault emptyNode
-                        , fetalMovementsDate
-                            |> Maybe.map
-                                (\date ->
-                                    div [ class "movements-label" ]
-                                        [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
-                                        , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
-                                        ]
-                                )
-                            |> Maybe.withDefault emptyNode
-                        )
+                        ]
+                    , fetalHeartRateDate
+                        |> Maybe.map
+                            (\date ->
+                                div [ class "heart-rate-label" ]
+                                    [ span [] [ text <| translate language Translate.FetalHeartRate ++ ": " ]
+                                    , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
+                    , fetalMovementsDate
+                        |> Maybe.map
+                            (\date ->
+                                div [ class "movements-label" ]
+                                    [ span [] [ text <| translate language Translate.FetalMovement ++ ": " ]
+                                    , span [] [ egaWeeksDaysLabel language date lmpDate |> text ]
+                                    ]
+                            )
+                        |> Maybe.withDefault emptyNode
                     )
+                )
+                assembled.globalLmpDate
                 |> Maybe.withDefault ( emptyNode, emptyNode, emptyNode )
 
         viewTrimesterTimeline trimester =
@@ -1556,8 +1572,45 @@ viewPatientProgressPane language currentDate isChw assembled =
 
                 dueDateInfo =
                     if trimester == ThirdTrimester then
+                        let
+                            -- At 36 weeks and after and if Cephalic condition is present, the head of the icon
+                            -- should face upwards, with no Cephalic condition, it should face downward.
+                            -- Before 36 weeks the heads should face upward.
+                            babyHeadDown =
+                                Maybe.map
+                                    (\lmpDate ->
+                                        let
+                                            currentWeek =
+                                                diffDays lmpDate currentDate // 7
+                                        in
+                                        if currentWeek < 36 then
+                                            False
+
+                                        else
+                                            let
+                                                currentFetalPresentation =
+                                                    List.reverse allNurseEncountersData
+                                                        |> List.filterMap
+                                                            (\( _, measurements ) ->
+                                                                getMeasurementValueFunc measurements.obstetricalExam
+                                                                    |> Maybe.map .fetalPresentation
+                                                            )
+                                                        |> List.head
+                                            in
+                                            Maybe.map ((/=) Cephalic) currentFetalPresentation
+                                                |> Maybe.withDefault True
+                                    )
+                                    assembled.globalLmpDate
+                                    |> Maybe.withDefault False
+                        in
                         div [ class "due-date-info" ]
-                            [ span [ class "due-date-icon" ] [ img [ src "assets/images/icon-baby-due-date.png" ] [] ]
+                            [ span [ class "due-date-icon" ]
+                                [ img
+                                    [ classList [ ( "rotate", babyHeadDown ) ]
+                                    , src "assets/images/icon-baby-due-date.png"
+                                    ]
+                                    []
+                                ]
                             , eddLabel
                             ]
 
@@ -1706,11 +1759,24 @@ viewPatientProgressPane language currentDate isChw assembled =
                 )
                 assembled.globalLmpDate
                 |> Maybe.withDefault []
+
+        viewUnsureOfLmp =
+            Maybe.map
+                (\value ->
+                    if value.confident == False then
+                        p [ class "lmp-warning" ] [ text <| translate language Translate.UnsureOfLmp ]
+
+                    else
+                        emptyNode
+                )
+                globalLmpValue
+                |> Maybe.withDefault emptyNode
     in
     div [ class "patient-progress" ]
         [ viewItemHeading language Translate.PatientProgress "blue"
         , div [ class "pane-content" ]
             [ div [ class "caption timeline" ] [ text <| translate language Translate.ProgressTimeline ++ ":" ]
+            , viewUnsureOfLmp
             , div [ class "timeline-section" ]
                 [ div [ class "indicators" ]
                     [ fetalHeartRateLabel
