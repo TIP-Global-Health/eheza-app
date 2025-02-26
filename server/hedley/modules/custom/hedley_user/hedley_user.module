@@ -11,12 +11,12 @@ include_once 'hedley_user.features.inc';
  * Implements hook_menu_alter().
  */
 function hedley_user_menu_alter(&$menu) {
-  // Disable the password reset page
+  // Disable the password reset page.
   if (isset($menu['user/password'])) {
     $menu['user/password']['access callback'] = FALSE;
   }
 
-  // Disable the user registration page
+  // Disable the user registration page.
   if (isset($menu['user/register'])) {
     $menu['user/register']['access callback'] = FALSE;
   }
