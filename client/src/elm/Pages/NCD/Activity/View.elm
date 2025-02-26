@@ -17,12 +17,10 @@ import Measurement.Model
         ( ContentAndTasksForPerformedLaboratoryTestConfig
         , ContentAndTasksLaboratoryTestInitialConfig
         , CorePhysicalExamForm
-        , InvokationModule(..)
         , LaboratoryTask(..)
         , OutsideCareForm
         , OutsideCareStep(..)
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
@@ -63,7 +61,6 @@ import Pages.Utils
         , saveButton
         , taskCompleted
         , tasksBarId
-        , viewBoolInput
         , viewCheckBoxMultipleSelectInput
         , viewCustomLabel
         , viewPersonDetailsExtended
@@ -895,10 +892,6 @@ viewLaboratoryContent language currentDate assembled data =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -911,6 +904,10 @@ viewLaboratoryContent language currentDate assembled data =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks

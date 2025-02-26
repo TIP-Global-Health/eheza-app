@@ -1,10 +1,10 @@
 module Backend.Nurse.Model exposing (..)
 
-import AssocList as Dict exposing (Dict)
+import AssocList exposing (Dict)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (Gender)
 import Backend.Person.Model exposing (EducationLevel, MaritalStatus, Ubudehe)
-import Backend.ResilienceMessage.Model exposing (ResilienceCategory, ResilienceMessage)
+import Backend.ResilienceMessage.Model exposing (ResilienceMessage)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import RemoteData exposing (RemoteData(..), WebData)
