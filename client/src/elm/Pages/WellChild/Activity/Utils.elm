@@ -1811,7 +1811,7 @@ vaccinationFormDynamicContentAndTasks language currentDate site isChw assembled 
                         initialOpvAdministeredByForm || initialOpvAdministeredByProgress
 
                 expectedDoses =
-                    getAllDosesForVaccine initialOpvAdministered vaccineType
+                    getAllDosesForVaccine site initialOpvAdministered vaccineType
                         |> List.filter
                             (\dose ->
                                 expectVaccineDoseForPerson currentDate

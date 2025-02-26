@@ -10,7 +10,6 @@ type AcuteIllnessActivity
     | AcuteIllnessPhysicalExam
     | AcuteIllnessPriorTreatment
     | AcuteIllnessLaboratory
-    | AcuteIllnessExposure
     | AcuteIllnessNextSteps
     | AcuteIllnessOngoingTreatment
     | AcuteIllnessDangerSigns
