@@ -11,12 +11,30 @@ include_once 'hedley_user.features.inc';
  * Implements hook_menu_alter().
  */
 function hedley_user_menu_alter(&$menu) {
+  // Disable the password reset page.
+  if (isset($menu['user/password'])) {
+    $menu['user/password']['access callback'] = FALSE;
+  }
+
+  // Disable the user registration page.
+  if (isset($menu['user/register'])) {
+    $menu['user/register']['access callback'] = FALSE;
+  }
+
   foreach (node_type_get_types() as $type) {
     $type_url_str = str_replace('_', '-', $type->type);
     $menu['node/add/' . $type_url_str]['access callback'] = 'hedley_user_node_form_access_callback';
   }
 
   $menu['node/%node/edit']['access callback'] = 'hedley_user_node_form_access_callback';
+}
+
+/**
+ * Implements hook_user_form_user_login_block_alter().
+ */
+function hedley_user_form_user_login_block_alter(&$form, &$form_state) {
+  // Remove the links to request new password and register new user.
+  $form['links']['#markup'] = '';
 }
 
 /**
