@@ -421,9 +421,6 @@ viewActivity language currentDate site geoInfo id isChw activity db assembled mo
         AcuteIllnessLaboratory ->
             viewAcuteIllnessLaboratory language currentDate id isChw assembled model.laboratoryData
 
-        AcuteIllnessExposure ->
-            viewAcuteIllnessExposure language currentDate id ( personId, measurements ) model.exposureData
-
         AcuteIllnessNextSteps ->
             viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled db model.nextStepsData
 
@@ -1048,135 +1045,6 @@ viewCovidTestingForm language currentDate person form =
         inputs
 
 
-viewAcuteIllnessExposure : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> ExposureData -> List (Html Msg)
-viewAcuteIllnessExposure language currentDate id ( personId, measurements ) data =
-    let
-        tasks =
-            [ ExposureTravel, ExposureExposure ]
-
-        activeTask =
-            resolveActiveTask tasks data.activeTask
-
-        viewTask task =
-            let
-                ( iconClass, isCompleted ) =
-                    case task of
-                        ExposureTravel ->
-                            ( "exposure-travel"
-                            , isJust measurements.travelHistory
-                            )
-
-                        ExposureExposure ->
-                            ( "exposure-exposure"
-                            , isJust measurements.exposure
-                            )
-
-                isActive =
-                    activeTask == Just task
-
-                attributes =
-                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
-                        :: (if isActive then
-                                []
-
-                            else
-                                [ onClick <| SetActiveExposureTask task ]
-                           )
-            in
-            div [ class "column" ]
-                [ div attributes
-                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
-                    , text <| translate language (Translate.ExposureTask task)
-                    ]
-                ]
-
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, exposureTasksCompletedFromTotal currentDate measurements data task )
-                )
-                tasks
-                |> Dict.fromList
-
-        ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
-                |> Maybe.withDefault ( 0, 0 )
-
-        viewForm =
-            case activeTask of
-                Just ExposureTravel ->
-                    getMeasurementValueFunc measurements.travelHistory
-                        |> travelHistoryFormWithDefault data.travelHistoryForm
-                        |> viewTravelHistoryForm language currentDate
-
-                Just ExposureExposure ->
-                    getMeasurementValueFunc measurements.exposure
-                        |> exposureFormWithDefault data.exposureForm
-                        |> viewExposureForm language currentDate
-
-                _ ->
-                    emptyNode
-
-        actions =
-            Maybe.map
-                (\task ->
-                    let
-                        nextTask =
-                            resolveNextTask task tasksCompletedFromTotalDict tasks
-
-                        saveMsg =
-                            case task of
-                                ExposureTravel ->
-                                    SaveTravelHistory personId measurements.travelHistory nextTask
-
-                                ExposureExposure ->
-                                    SaveExposure personId measurements.exposure nextTask
-                    in
-                    div [ class "actions exposure" ]
-                        [ button
-                            [ classList [ ( "ui fluid primary button", True ), ( "disabled", tasksCompleted /= totalTasks ) ]
-                            , onClick saveMsg
-                            ]
-                            [ text <| translate language Translate.Save ]
-                        ]
-                )
-                activeTask
-                |> Maybe.withDefault emptyNode
-    in
-    [ div [ class "ui task segment blue", Html.Attributes.id tasksBarId ]
-        [ div [ class "ui five column grid" ] <|
-            List.map viewTask tasks
-        ]
-    , viewTasksCount language tasksCompleted totalTasks
-    , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewForm
-            , actions
-            ]
-        ]
-    ]
-
-
-viewTravelHistoryForm : Language -> NominalDate -> TravelHistoryForm -> Html Msg
-viewTravelHistoryForm language currentDate form =
-    let
-        ( inputs, _ ) =
-            travelHistoryFormInutsAndTasks language currentDate form
-    in
-    div [ class "ui form exposure travel-history" ]
-        inputs
-
-
-viewExposureForm : Language -> NominalDate -> ExposureForm -> Html Msg
-viewExposureForm language currentDate form =
-    let
-        ( inputs, _ ) =
-            exposureFormInutsAndTasks language currentDate form
-    in
-    div [ class "ui form exposure" ]
-        inputs
-
-
 viewAcuteIllnessPriorTreatment : Language -> NominalDate -> AcuteIllnessEncounterId -> ( PersonId, AcuteIllnessMeasurements ) -> PriorTreatmentData -> List (Html Msg)
 viewAcuteIllnessPriorTreatment language currentDate id ( personId, measurements ) data =
     let
@@ -1303,21 +1171,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
             let
                 ( iconClass, isCompleted ) =
                     case task of
-                        NextStepsIsolation ->
-                            ( "next-steps-isolation"
-                            , isJust measurements.isolation
-                            )
-
-                        NextStepsContactHC ->
-                            ( "next-steps-call"
-                            , isJust measurements.hcContact
-                            )
-
-                        NextStepsCall114 ->
-                            ( "next-steps-call"
-                            , isJust measurements.call114
-                            )
-
                         NextStepsMedicationDistribution ->
                             ( "next-steps-medication-distribution"
                             , isJust measurements.medicationDistribution
@@ -1396,19 +1249,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
         viewForm =
             case activeTask of
-                Just NextStepsIsolation ->
-                    getMeasurementValueFunc measurements.isolation
-                        |> isolationFormWithDefault data.isolationForm
-                        |> viewIsolationForm language currentDate isChw
-
-                Just NextStepsContactHC ->
-                    getMeasurementValueFunc measurements.hcContact
-                        |> hcContactFormWithDefault data.hcContactForm
-                        |> viewHCContactForm language currentDate assembled.initialEncounter
-
-                Just NextStepsCall114 ->
-                    viewCall114Form language currentDate call114Form
-
                 Just NextStepsMedicationDistribution ->
                     getMeasurementValueFunc measurements.medicationDistribution
                         |> medicationDistributionFormWithDefault data.medicationDistributionForm
@@ -1474,43 +1314,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
                             tasksAfterSave =
                                 case task of
-                                    -- On first visit, ContactHC task should appear in case nurse did not talk to 114.
-                                    -- Therefore, when the answer to 'called 114' is changed, we adjust tasks list accordingly.
-                                    NextStepsCall114 ->
-                                        if assembled.initialEncounter then
-                                            if call114Form.called114 == Just False then
-                                                [ NextStepsIsolation, NextStepsCall114, NextStepsContactHC, NextStepsFollowUp ]
-
-                                            else if call114Form.called114 == Just True then
-                                                [ NextStepsIsolation, NextStepsCall114, NextStepsFollowUp ]
-
-                                            else
-                                                tasks
-
-                                        else
-                                            tasks
-
-                                    -- At subsequent visit, SendToHC task should appear in case health center adviced to send patient over.
-                                    -- Therefore, when the answer to this is changed, we adjust tasks list accirdingly.
-                                    NextStepsContactHC ->
-                                        if assembled.initialEncounter then
-                                            tasks
-
-                                        else
-                                            let
-                                                hcContactForm =
-                                                    getMeasurementValueFunc measurements.hcContact
-                                                        |> hcContactFormWithDefault data.hcContactForm
-                                            in
-                                            if healthCenterRecommendedToCome measurements && hcContactForm.recommendations /= Just ComeToHealthCenter then
-                                                [ NextStepsContactHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                                            else if (not <| healthCenterRecommendedToCome measurements) && hcContactForm.recommendations == Just ComeToHealthCenter then
-                                                [ NextStepsContactHC, NextStepsSendToHC, NextStepsHealthEducation, NextStepsFollowUp ]
-
-                                            else
-                                                tasks
-
                                     -- If medication is prescribed, but it's out of stock, or partient
                                     -- if alergic, SendToHC should appear, so that patient is dircted to the HC.
                                     -- An exclusion here is when patient is diagnosed with Covid and Pneumonia,
@@ -1554,15 +1357,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
 
                             saveMsg =
                                 case task of
-                                    NextStepsIsolation ->
-                                        SaveIsolation personId measurements.isolation nextTask
-
-                                    NextStepsContactHC ->
-                                        SaveHCContact personId measurements.hcContact nextTask
-
-                                    NextStepsCall114 ->
-                                        SaveCall114 personId measurements.call114 nextTask
-
                                     NextStepsSendToHC ->
                                         SaveSendToHC personId measurements.sendToHC nextTask
 
@@ -1639,36 +1433,6 @@ viewAcuteIllnessNextSteps language currentDate site geoInfo id isChw assembled d
             ]
         ]
     ]
-
-
-viewIsolationForm : Language -> NominalDate -> Bool -> IsolationForm -> Html Msg
-viewIsolationForm language currentDate isChw form =
-    let
-        ( inputs, _ ) =
-            isolationFormInutsAndTasks language currentDate isChw form
-    in
-    div [ class "ui form next-steps isolation" ]
-        inputs
-
-
-viewHCContactForm : Language -> NominalDate -> Bool -> HCContactForm -> Html Msg
-viewHCContactForm language currentDate initialEncounter form =
-    let
-        ( inputs, _ ) =
-            hcContactFormInutsAndTasks language currentDate initialEncounter form
-    in
-    div [ class "ui form exposure hc-contact" ]
-        inputs
-
-
-viewCall114Form : Language -> NominalDate -> Call114Form -> Html Msg
-viewCall114Form language currentDate form =
-    let
-        ( inputs, _ ) =
-            call114FormInutsAndTasks language currentDate form
-    in
-    div [ class "ui form next-steps call-114" ]
-        inputs
 
 
 viewMedicationDistributionForm : Language -> NominalDate -> Person -> Maybe AcuteIllnessDiagnosis -> MedicationDistributionForm -> Html Msg

@@ -57,10 +57,7 @@ type PriorTreatmentTask
 
 
 type NextStepsTask
-    = NextStepsIsolation
-    | NextStepsContactHC
-    | NextStepsCall114
-    | NextStepsMedicationDistribution
+    = NextStepsMedicationDistribution
     | NextStepsSendToHC
     | NextStepsHealthEducation
     | NextStepsFollowUp

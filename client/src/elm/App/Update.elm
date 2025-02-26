@@ -1399,7 +1399,15 @@ update msg model =
                                 ]
 
                         UserPage (EditPersonPage _) ->
-                            App.Ports.bindDropZone ()
+                            Cmd.batch
+                                [ App.Ports.bindDropZone ()
+                                , if gpsCoordinatesEnabled features then
+                                    -- Query for GPS coordinates.
+                                    App.Ports.getCoordinates ()
+
+                                  else
+                                    Cmd.none
+                                ]
 
                         UserPage (PrenatalActivityPage _ PrenatalPhoto) ->
                             App.Ports.bindDropZone ()

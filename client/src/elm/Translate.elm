@@ -2059,6 +2059,7 @@ type TranslationId
     | UnitMillimolesPerLiter
     | UnitOfMeasurement UnitOfMeasurement
     | UniversalInterventions
+    | UnsureOfLmp
     | Update
     | UpdateError
     | Uploading
@@ -3175,12 +3176,6 @@ translationSet trans =
                     { english = "Laboratory"
                     , kinyarwanda = Just "Ibizamini"
                     , kirundi = Just "Icumba c'ipimiro"
-                    }
-
-                AcuteIllnessExposure ->
-                    { english = "Exposure / Travel History"
-                    , kinyarwanda = Just "Afite ibyago byo kwandura/amakuru ku ngendo yakoze"
-                    , kirundi = Just "Kumenyesha/Akahise k'urugendo"
                     }
 
                 AcuteIllnessNextSteps ->
@@ -12592,31 +12587,6 @@ translationSet trans =
 
         NextStepsTask isChw task ->
             case task of
-                NextStepsIsolation ->
-                    if isChw then
-                        { english = "Isolate Patient"
-                        , kinyarwanda = Just "Shyira umurwayi mu kato"
-                        , kirundi = Just "Umurwayi arategerezwa kwitandukanya mu kuja mu kibanza cawenyene"
-                        }
-
-                    else
-                        { english = "Monitor at Home"
-                        , kinyarwanda = Just "Gukurikiranira umurwayi mu rugo"
-                        , kirundi = Just "Gukurikiranira muhira"
-                        }
-
-                NextStepsContactHC ->
-                    { english = "Contact Health Center"
-                    , kinyarwanda = Just "Menyesha ikigo nderabuzima"
-                    , kirundi = Just "Ukuvugana n'ivuriro"
-                    }
-
-                NextStepsCall114 ->
-                    { english = "Call 114"
-                    , kinyarwanda = Just "Hamagara 114"
-                    , kirundi = Just "Hamagara kuri 114"
-                    }
-
                 NextStepsMedicationDistribution ->
                     translationSet MedicationDistribution
 
@@ -24161,6 +24131,12 @@ translationSet trans =
             , kirundi = Just "Intabaro zizwi hose"
             }
 
+        UnsureOfLmp ->
+            { english = "LMP: Not confident"
+            , kinyarwanda = Just "Itariki aheruka imihango: Ntabwo izwi neza"
+            , kirundi = Just "Itarike aheruka kuja mu kwezi: Ntago ayizeye neza"
+            }
+
         Update ->
             { english = "Update"
             , kinyarwanda = Just "Kuvugurura"
@@ -24758,10 +24734,18 @@ translationSet trans =
                     }
 
                 VaccineIPV ->
-                    { english = "There is only one dose of the inactivated vaccine at 14 weeks."
-                    , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa ku byumweru 14."
-                    , kirundi = Just "Hano hari igipimo kimwe gusa/Idoze imwe gusa y'urucanco itegeze ikora mu gihe c'indwi 14"
-                    }
+                    case site of
+                        SiteRwanda ->
+                            { english = "There are two doses of the inactivated vaccine at 14 weeks and 36 weeks."
+                            , kinyarwanda = Nothing
+                            , kirundi = Nothing
+                            }
+
+                        _ ->
+                            { english = "There is only one dose of the inactivated vaccine at 14 weeks."
+                            , kinyarwanda = Just "Uru rukingo aruhabwa inshuro imwe gusa ku byumweru 14."
+                            , kirundi = Just "Hano hari igipimo kimwe gusa/Idoze imwe gusa y'urucanco itegeze ikora mu gihe c'indwi 14"
+                            }
 
                 VaccineMR ->
                     case site of
