@@ -20,6 +20,14 @@ function hedley_user_menu_alter(&$menu) {
 }
 
 /**
+ * Implements hook_user_form_user_login_block_alter().
+ */
+function hedley_user_form_user_login_block_alter(&$form, &$form_state) {
+  // Remove the links to request new password and register new user.
+  $form['links']['#markup'] = '';
+}
+
+/**
  * Implements hook_node_presave().
  */
 function hedley_user_node_presave($node) {
