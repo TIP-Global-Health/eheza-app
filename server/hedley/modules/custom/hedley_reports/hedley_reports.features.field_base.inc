@@ -82,6 +82,7 @@ function hedley_reports_field_default_field_bases() {
       'allowed_values' => array(
         'aggregated-ncda' => 'Aggregated NCDA',
         'statistical-query' => 'Statistical Query',
+        'completion' => 'Completion',
       ),
       'allowed_values_function' => '',
     ),

@@ -90,7 +90,7 @@ nextStepsTaskCompleted assembled task =
 
         TaskReferral ->
             -- On recurrent phase of the encounter, only referral
-            -- facility possible is hospital, since referal to ARV
+            -- facility possible is hospital, since referral to ARV
             -- Services always happens on initial phase.
             referralToFacilityCompleted assembled FacilityHospital
 

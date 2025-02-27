@@ -6833,7 +6833,7 @@ generatePrenatalAssessmentMsgs currentDate language site isChw isLabTech activeP
                 let
                     diagnosesBefore =
                         -- At this stage new diagnoses were not updated yet, therefore,
-                        -- we can use the dignoses set for the encounter.
+                        -- we can use the diganoses set for the encounter.
                         assembledAfter.encounter.diagnoses
 
                     diagnosesAfter =
@@ -7318,7 +7318,7 @@ generateNCDAssessmentMsgs currentDate language activePage after id =
             let
                 diagnosesBefore =
                     -- At this stage new diagnoses were not updated yet, therefore,
-                    -- we can use the dignoses set for the encounter.
+                    -- we can use the diganoses set for the encounter.
                     assembledAfter.encounter.diagnoses
 
                 diagnosesAfter =

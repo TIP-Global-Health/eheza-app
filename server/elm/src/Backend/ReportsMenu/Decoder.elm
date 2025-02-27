@@ -1,5 +1,6 @@
 module Backend.ReportsMenu.Decoder exposing (decodeMenuData)
 
+import Backend.Components.Decoder exposing (decodeHealthCenterData)
 import Backend.Decoder exposing (decodeSite)
 import Backend.ReportsMenu.Model exposing (..)
 import Gizra.Json exposing (decodeInt)
@@ -12,10 +13,3 @@ decodeMenuData =
     succeed MenuData
         |> required "site" decodeSite
         |> required "health_centers" (list decodeHealthCenterData)
-
-
-decodeHealthCenterData : Decoder HealthCenterData
-decodeHealthCenterData =
-    succeed HealthCenterData
-        |> required "id" decodeInt
-        |> required "name" string

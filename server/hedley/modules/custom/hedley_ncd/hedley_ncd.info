@@ -89,6 +89,7 @@ features[field_instance][] = node-ncd_danger_signs-field_person
 features[field_instance][] = node-ncd_danger_signs-field_shards
 features[field_instance][] = node-ncd_danger_signs-field_uuid
 features[field_instance][] = node-ncd_encounter-field_ncd_diagnoses
+features[field_instance][] = node-ncd_encounter-field_reports_data
 features[field_instance][] = node-ncd_family_history-field_date_measured
 features[field_instance][] = node-ncd_family_history-field_diabetes_predecessors
 features[field_instance][] = node-ncd_family_history-field_heart_problem_predecessors

@@ -10,6 +10,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icons
 import Svg.Attributes
+import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
@@ -100,7 +101,7 @@ viewSelectListInput language currentValue options toStringFunc setMsg transId in
         toStringFunc
         setMsg
         inputClass
-        True
+        (Just "")
 
 
 viewCustomSelectListInput :
@@ -109,16 +110,17 @@ viewCustomSelectListInput :
     -> (a -> String)
     -> (String -> msg)
     -> String
-    -> Bool
+    -> Maybe String
     -> Html msg
-viewCustomSelectListInput currentValue options toStringFunc setMsg inputClass withEmptyOption =
+viewCustomSelectListInput currentValue options toStringFunc setMsg inputClass emptyOptionLabel =
     let
         emptyOption =
-            if withEmptyOption then
-                emptySelectOption (currentValue == Nothing)
-
-            else
-                emptyNode
+            Maybe.map
+                (\label ->
+                    customEmptySelectOption label (currentValue == Nothing)
+                )
+                emptyOptionLabel
+                |> Maybe.withDefault emptyNode
     in
     emptyOption
         :: List.map
@@ -193,12 +195,17 @@ wrapSelectListInput language labelTransId disabled selectList =
 
 
 emptySelectOption : Bool -> Html any
-emptySelectOption isSelected =
+emptySelectOption =
+    customEmptySelectOption ""
+
+
+customEmptySelectOption : String -> Bool -> Html any
+customEmptySelectOption label isSelected =
     option
         [ value ""
         , selected isSelected
         ]
-        [ text "" ]
+        [ text label ]
 
 
 
@@ -248,3 +255,14 @@ viewMenuActionButton language path label selectionMadeMsg =
 generateReportsHeaderImage : String -> Html any
 generateReportsHeaderImage themePath =
     img [ src <| "/" ++ themePath ++ "/icons/statistical-queries.png" ] []
+
+
+
+-- Constants
+
+
+{-| The date system became live, and first content was uploaded.
+-}
+launchDate : NominalDate
+launchDate =
+    Date.fromCalendarDate 2018 Jan 1

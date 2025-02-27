@@ -1,12 +1,13 @@
 module Backend.Reports.Decoder exposing (decodeReportsData)
 
-import Backend.Decoder exposing (decodeSite)
+import Backend.Decoder exposing (decodeSite, decodeWithFallback)
 import Backend.Reports.Model exposing (..)
 import Backend.Reports.Utils exposing (..)
 import Date
-import Gizra.Json exposing (decodeInt)
-import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, list, nullable, oneOf, string, succeed)
+import EverySet exposing (EverySet)
+import Gizra.Json exposing (decodeFloat, decodeInt)
+import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
 
 
@@ -329,8 +330,3 @@ decodeNutritionReportTableType =
                     _ ->
                         fail <| tableType ++ " is unknown NutritionReportTableType type"
             )
-
-
-decodeWithFallback : a -> Decoder a -> Decoder a
-decodeWithFallback fallback decoder =
-    oneOf [ decoder, succeed fallback ]

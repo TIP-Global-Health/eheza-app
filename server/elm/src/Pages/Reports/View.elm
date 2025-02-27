@@ -24,9 +24,18 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import List.Extra
 import Maybe.Extra exposing (isJust, isNothing)
+import Pages.Components.View exposing (viewCustomCells, viewMetricsResultsTable, viewStandardCells, viewStandardRow)
+import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
-import Pages.Utils exposing (generateReportsHeaderImage, viewCustomLabel, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils
+    exposing
+        ( generateReportsHeaderImage
+        , launchDate
+        , viewCustomLabel
+        , viewSelectListInput
+        , wrapSelectListInput
+        )
 import RemoteData exposing (RemoteData(..))
 import Round
 import Time exposing (Month(..))
@@ -73,10 +82,6 @@ viewReportsData language currentDate themePath data model =
                 _ ->
                     data.entityName ++ " " ++ (String.toLower <| translate language (Translate.SelectedScope data.entityType))
 
-        -- The date system became live, and first content was uploaded.
-        launchDate =
-            Date.fromCalendarDate 2018 Jan 1
-
         dateInputs =
             Maybe.map
                 (\reportType ->
@@ -117,7 +122,7 @@ viewReportsData language currentDate themePath data model =
                                 else
                                     let
                                         dateFrom =
-                                            Maybe.withDefault (Date.add Years -6 currentDate) model.startDate
+                                            Maybe.withDefault launchDate model.startDate
 
                                         dateSelectorConfig =
                                             { select = SetLimitDate
@@ -1010,7 +1015,7 @@ viewNutritionReport language currentDate scopeLabel mBackendGeneratedData report
             reportTablesDataToCSV generatedData
     in
     div [ class "report nutrition" ] <|
-        List.concatMap viewNutritionMetricsResultsTable generatedData
+        List.concatMap viewMetricsResultsTable generatedData
             ++ [ viewDownloadCSVButton language csvFileName csvContent ]
 
 
@@ -1349,24 +1354,6 @@ toMetricsResultsTableData language heading data =
             |> generateRow Translate.UnderweightSevere
         ]
     }
-
-
-viewNutritionMetricsResultsTable : MetricsResultsTableData -> List (Html Msg)
-viewNutritionMetricsResultsTable data =
-    let
-        captionsRow =
-            div [ class "row" ] <|
-                viewCustomCells "row-label" "heading" data.captions
-
-        viewRow cells =
-            div [ class "row" ] <|
-                viewCustomCells "row-label" "value" cells
-    in
-    [ div [ class "section heading" ] [ text data.heading ]
-    , div [ class "table wide" ] <|
-        captionsRow
-            :: List.map viewRow data.rows
-    ]
 
 
 viewPrenatalReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
@@ -1730,32 +1717,6 @@ generateAcuteIllnessReportData language startDate records =
         ]
     , rows = rows ++ [ totalsRow, noneRow ]
     }
-
-
-viewStandardRow : List String -> Html any
-viewStandardRow =
-    viewStandardCells
-        >> div [ class "row" ]
-
-
-viewStandardCells : List String -> List (Html any)
-viewStandardCells =
-    viewCustomCells "label" "value"
-
-
-viewCustomCells : String -> String -> List String -> List (Html any)
-viewCustomCells labelClass valueClass =
-    List.indexedMap
-        (\index cellText ->
-            div
-                [ classList
-                    [ ( "item", True )
-                    , ( labelClass, index == 0 )
-                    , ( valueClass, index /= 0 )
-                    ]
-                ]
-                [ text cellText ]
-        )
 
 
 viewDownloadCSVButton : Language -> String -> String -> Html Msg

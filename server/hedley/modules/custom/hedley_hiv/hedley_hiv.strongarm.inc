@@ -184,15 +184,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_diagnostics';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_diagnostics'] = $strongarm;
 
@@ -201,15 +201,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_encounter';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
-          'weight' => '-5',
+          'weight' => '0',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_encounter'] = $strongarm;
 
@@ -218,15 +218,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_follow_up';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_follow_up'] = $strongarm;
 
@@ -235,15 +235,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_health_education';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_health_education'] = $strongarm;
 
@@ -252,15 +252,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_medication';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_medication'] = $strongarm;
 
@@ -269,15 +269,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_referral';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_referral'] = $strongarm;
 
@@ -286,15 +286,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_symptom_review';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_symptom_review'] = $strongarm;
 
@@ -303,15 +303,15 @@ function hedley_hiv_strongarm() {
   $strongarm->api_version = 1;
   $strongarm->name = 'field_bundle_settings_node__hiv_treatment_review';
   $strongarm->value = array(
-    'view_modes' => array(),
     'extra_fields' => array(
+      'display' => array(),
       'form' => array(
         'title' => array(
           'weight' => '-5',
         ),
       ),
-      'display' => array(),
     ),
+    'view_modes' => array(),
   );
   $export['field_bundle_settings_node__hiv_treatment_review'] = $strongarm;
 
