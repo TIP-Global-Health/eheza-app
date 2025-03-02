@@ -19,7 +19,7 @@ $nid = drush_get_option('nid', 0);
 // Get the number of nodes to be processed.
 $batch = drush_get_option('batch', 50);
 
-// Flag to generate NCDA data only if it was not generated already.
+// Flag to generate data only if it was not generated already.
 $exclude_set = drush_get_option('exclude_set', FALSE);
 
 // Get allowed memory limit.
@@ -34,7 +34,7 @@ $base_query
   ->addTag('exclude_deleted');
 
 if ($exclude_set) {
-  $base_query->addTag('exclude_set');
+  $base_query->addTag('exclude_set_reports_data');
 }
 
 $count_query = clone $base_query;

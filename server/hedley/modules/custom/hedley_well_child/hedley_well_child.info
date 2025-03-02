@@ -94,6 +94,7 @@ features[field_instance][] = node-well_child_ecd-field_well_child_encounter
 features[field_instance][] = node-well_child_encounter-field_encounter_notes
 features[field_instance][] = node-well_child_encounter-field_encounter_warnings
 features[field_instance][] = node-well_child_encounter-field_individual_participant
+features[field_instance][] = node-well_child_encounter-field_reports_data
 features[field_instance][] = node-well_child_encounter-field_scheduled_date
 features[field_instance][] = node-well_child_encounter-field_shards
 features[field_instance][] = node-well_child_encounter-field_uuid
