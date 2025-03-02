@@ -1,5 +1,7 @@
 module Backend.Update exposing (updateBackend)
 
+import Backend.Completion.Update
+import Backend.CompletionMenu.Update
 import Backend.Model exposing (..)
 import Backend.Reports.Update
 import Backend.ReportsMenu.Update
@@ -39,4 +41,18 @@ updateBackend currentDate msg model =
                 subMsg
                 (\subMsg_ model_ -> Backend.Reports.Update.update currentDate subMsg_ model_)
                 (\subCmds -> MsgReports subCmds)
+                model
+
+        MsgCompletionMenu subMsg ->
+            updateSubModel
+                subMsg
+                (\subMsg_ model_ -> Backend.CompletionMenu.Update.update currentDate subMsg_ model_)
+                (\subCmds -> MsgCompletionMenu subCmds)
+                model
+
+        MsgCompletion subMsg ->
+            updateSubModel
+                subMsg
+                (\subMsg_ model_ -> Backend.Completion.Update.update currentDate subMsg_ model_)
+                (\subCmds -> MsgCompletion subCmds)
                 model

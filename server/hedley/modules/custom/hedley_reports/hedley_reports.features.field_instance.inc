@@ -11,6 +11,45 @@
 function hedley_reports_field_default_field_instances() {
   $field_instances = array();
 
+  // Exported field_instance: 'node-nutrition_encounter-field_reports_data'.
+  $field_instances['node-nutrition_encounter-field_reports_data'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 5,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_reports_data',
+    'label' => 'Completion Data',
+    'required' => FALSE,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'module' => 'text',
+      'settings' => array(
+        'rows' => 5,
+      ),
+      'type' => 'text_textarea',
+      'weight' => 7,
+    ),
+  );
+
   // Exported field_instance: 'node-report_data-field_cell'.
   $field_instances['node-report_data-field_cell'] = array(
     'bundle' => 'report_data',
@@ -205,6 +244,7 @@ function hedley_reports_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -415,6 +455,7 @@ function hedley_reports_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('Additional Data');
   t('Cell');
+  t('Completion Data');
   t('Data File');
   t('Data Scope');
   t('District');

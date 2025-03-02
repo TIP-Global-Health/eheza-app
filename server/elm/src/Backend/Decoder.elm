@@ -1,7 +1,9 @@
-module Backend.Decoder exposing (decodeSite)
+module Backend.Decoder exposing (decodeSite, decodeWithFallback)
 
 import App.Types exposing (Site(..))
-import Json.Decode exposing (Decoder, andThen, string, succeed)
+import Backend.ScoreboardMenu.Model exposing (..)
+import Json.Decode exposing (Decoder, andThen, oneOf, string, succeed)
+import Json.Decode.Pipeline exposing (required)
 
 
 decodeSite : Decoder Site
@@ -21,3 +23,8 @@ siteFromString str =
 
         _ ->
             SiteUnknown
+
+
+decodeWithFallback : a -> Decoder a -> Decoder a
+decodeWithFallback fallback decoder =
+    oneOf [ decoder, succeed fallback ]

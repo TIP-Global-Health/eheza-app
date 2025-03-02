@@ -7,10 +7,11 @@ import Gizra.Html exposing (emptyNode)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
+import Pages.Components.Model exposing (DemographicsSelection)
+import Pages.Components.Types exposing (PopulationSelectionOption(..))
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
 import Pages.Components.View exposing (viewDemographicsSelection, viewDemographicsSelectionActionButton)
 import Pages.ReportsMenu.Model exposing (..)
-import Pages.ReportsMenu.Types exposing (..)
-import Pages.ReportsMenu.Utils exposing (populationSelectionOptionToString)
 import Pages.Utils
     exposing
         ( generateReportsHeaderImage
@@ -82,7 +83,7 @@ viewMenu language themePath data model =
                                     String.fromInt
                                     SetHealthCenter
                                     "select-input"
-                                    True
+                                    (Just "")
                                     |> wrapSelectListInput language Translate.HealthCenter False
                               ]
                             , Maybe.map

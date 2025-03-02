@@ -39,6 +39,7 @@ features[field_instance][] = node-tuberculosis_dot-field_shards
 features[field_instance][] = node-tuberculosis_dot-field_tuberculosis_encounter
 features[field_instance][] = node-tuberculosis_dot-field_uuid
 features[field_instance][] = node-tuberculosis_encounter-field_individual_participant
+features[field_instance][] = node-tuberculosis_encounter-field_reports_data
 features[field_instance][] = node-tuberculosis_encounter-field_scheduled_date
 features[field_instance][] = node-tuberculosis_encounter-field_shards
 features[field_instance][] = node-tuberculosis_encounter-field_uuid
