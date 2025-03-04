@@ -42,7 +42,7 @@ $count = $count_query->count()->execute();
 
 if ($count == 0) {
   drush_print("There are no nodes of type $type in DB.");
-  exit;
+  return;
 }
 
 $total = 0;
