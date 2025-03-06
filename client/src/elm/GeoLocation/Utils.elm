@@ -2867,7 +2867,7 @@ getGeoVillagesForBurundi =
         , ( toEntityId 11, GeoLocation "Mirango" (Just <| toEntityId 10) )
         , ( toEntityId 16, GeoLocation "Kabwayi" (Just <| toEntityId 15) )
         , ( toEntityId 20, GeoLocation "Kigutu" (Just <| toEntityId 19) )
-        , ( toEntityId 23, GeoLocation "Kirungu" (Just <| toEntityId 21) )
+        , ( toEntityId 22, GeoLocation "Kirungu" (Just <| toEntityId 21) )
         , ( toEntityId 25, GeoLocation "Migera" (Just <| toEntityId 24) )
         , ( toEntityId 28, GeoLocation "Karirimvya" (Just <| toEntityId 27) )
         , ( toEntityId 34, GeoLocation "Nyakuguma" (Just <| toEntityId 33) )
