@@ -4,7 +4,6 @@ import Backend.ResilienceMessage.Model exposing (..)
 import Backend.ResilienceMessage.Utils exposing (..)
 import Gizra.TimePosix exposing (encodePosixAsSeconds)
 import Json.Encode exposing (..)
-import Restful.Endpoint exposing (encodeEntityUuid)
 import Utils.Json exposing (encodeNullable)
 
 

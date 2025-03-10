@@ -1,6 +1,6 @@
 module Pages.People.Model exposing (Model, Msg(..), emptyModel)
 
-import Components.PatientsSearchForm.Model exposing (..)
+import Components.PatientsSearchForm.Model
 import Pages.Page exposing (Page)
 
 
