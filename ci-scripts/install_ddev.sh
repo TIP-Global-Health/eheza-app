@@ -13,7 +13,7 @@ then
 fi
 
 echo "Install ddev."
-curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash -s v1.23.2
+curl -s -L https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash -s v1.24.3
 
 echo "Configuring ddev."
 mkdir ~/.ddev
