@@ -143,11 +143,12 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/api/sync/" ++ currentZipper.uuid)
+                                        HttpBuilder.get (device.backendUrl ++ "/DataSyncManagerHealthCenter")
                                             |> withQueryParams
-                                                [ ( "access_token", device.accessToken )
+                                                [ ( "healthCenterId", currentZipper.uuid)
+                                                , ( "accessToken", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
-                                                , ( "base_revision", String.fromInt currentZipper.lastFetchedRevisionId )
+                                                , ( "serial", String.fromInt currentZipper.lastFetchedRevisionId )
                                                 , ( "stats_cache_hash", currentZipper.statsCacheHash )
                                                 ]
                                             |> withExpectJson decodeDownloadSyncResponseAuthority
@@ -687,11 +688,11 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
-                                HttpBuilder.get (device.backendUrl ++ "/api/sync")
+                                HttpBuilder.get (device.backendUrl ++ "/DataSyncManager")
                                     |> withQueryParams
-                                        [ ( "access_token", device.accessToken )
+                                        [ ( "accessToken", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
-                                        , ( "base_revision", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
+                                        , ( "serial", String.fromInt model.syncInfoGeneral.lastFetchedRevisionId )
                                         ]
                                     |> withExpectJson decodeDownloadSyncResponseGeneral
                                     |> HttpBuilder.send (RemoteData.fromResult >> BackendGeneralFetchHandle)

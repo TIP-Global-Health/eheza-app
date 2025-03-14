@@ -295,15 +295,14 @@ decodeIndexDbQueryDeferredPhotoResult =
 
 decodeDownloadSyncResponseGeneral : Decoder (DownloadSyncResponse BackendGeneralEntity)
 decodeDownloadSyncResponseGeneral =
-    field "data"
-        (succeed DownloadSyncResponse
+        succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendGeneralEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> optional "device_name" string ""
             |> optional "rollbar_token" string ""
             |> optional "site" decodeSite SiteRwanda
             |> optional "features" decodeSiteFeatures EverySet.empty
-        )
+
 
 
 
@@ -377,15 +376,14 @@ decodeSiteFeatures =
 
 decodeDownloadSyncResponseAuthority : Decoder (DownloadSyncResponse BackendAuthorityEntity)
 decodeDownloadSyncResponseAuthority =
-    field "data"
-        (succeed DownloadSyncResponse
+        succeed DownloadSyncResponse
             |> required "batch" (list <| decodeBackendAuthorityEntity (required "uuid" string) (required "vid" decodeInt))
             |> required "revision_count" decodeInt
             |> hardcoded ""
             |> hardcoded ""
             |> hardcoded SiteUnknown
             |> hardcoded EverySet.empty
-        )
+
 
 
 decodeDownloadSyncResponseAuthorityStats : Decoder (DownloadSyncResponse BackendAuthorityEntity)
