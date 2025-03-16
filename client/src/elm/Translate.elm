@@ -25355,6 +25355,21 @@ translateActivePage page =
             , kirundi = Just "Inimero kabanga"
             }
 
+        MessagingCenterPage ->
+            { english = "Messaging Center"
+            , kinyarwanda = Nothing
+            , kirundi = Just "Igihande c'ubutumwa"
+            }
+
+        MessagingGuide ->
+            translationSet GuideMessage
+
+        WellbeingPage ->
+            { english = "Wellbeing"
+            , kinyarwanda = Just "Gubwa neza"
+            , kirundi = Just "Imibereho myiza"
+            }
+
         PageNotFound _ ->
             { english = "Missing"
             , kinyarwanda = Just "Ibibura"
@@ -25731,21 +25746,6 @@ translateActivePage page =
                     { english = "Labs History"
                     , kinyarwanda = Just "Amakuru ku Bizamini byafashwe"
                     , kirundi = Just "Akahise k'ibipimo vy'ingwara"
-                    }
-
-                MessagingCenterPage ->
-                    { english = "Messaging Center"
-                    , kinyarwanda = Nothing
-                    , kirundi = Just "Igihande c'ubutumwa"
-                    }
-
-                MessagingGuide ->
-                    translationSet GuideMessage
-
-                WellbeingPage ->
-                    { english = "Wellbeing"
-                    , kinyarwanda = Just "Gubwa neza"
-                    , kirundi = Just "Imibereho myiza"
                     }
 
                 StockManagementPage ->
