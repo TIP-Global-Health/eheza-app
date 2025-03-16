@@ -92,6 +92,10 @@ function hedley_stats_node_update($node) {
  * @throws \EntityMetadataWrapperException
  */
 function hedley_stats_trigger_stats_recalculation($node) {
+  if (drupal_is_cli()) {
+    return;
+  }
+
   $cache_type_for_recalculation = hedley_stats_requires_statistics_recalculation($node);
 
   if ($cache_type_for_recalculation === FALSE) {
