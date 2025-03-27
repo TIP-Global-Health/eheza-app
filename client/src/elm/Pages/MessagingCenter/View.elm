@@ -12,7 +12,6 @@ import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), Resilie
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
-import Debug as Date
 import EverySet
 import Gizra.Html exposing (emptyNode)
 import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY, fromLocalDateTime)
