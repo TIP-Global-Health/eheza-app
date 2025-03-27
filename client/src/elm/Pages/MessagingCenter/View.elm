@@ -86,17 +86,9 @@ view language currentTime nurseId nurse db model =
 
                                 filterCondition survey =
                                     let
-                                        -- Log the program start date
-                                        _ =
-                                            Debug.log "Program Start Date" (Date.toString programStartDate)
-
                                         -- Calculate the days since the program started
                                         daysSinceProgramStart =
                                             Date.diff Days programStartDate currentDate + 1
-
-                                        -- Log the days since the program started
-                                        _ =
-                                            Debug.log "Days Since Program Start" daysSinceProgramStart
                                     in
                                     if surveyCount == 0 then
                                         -- First survey should always run at the start of the program
