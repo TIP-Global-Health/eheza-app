@@ -681,8 +681,7 @@ viewAcuteIllnessPhysicalExam language currentDate site id isChw assembled data =
             assembled.measurements
 
         tasks =
-            [ PhysicalExamVitals, PhysicalExamCoreExam, PhysicalExamMuac, PhysicalExamNutrition, PhysicalExamAcuteFindings ]
-                |> List.filter (expectPhysicalExamTask currentDate person isChw assembled.initialEncounter)
+            List.filter (expectPhysicalExamTask currentDate person isChw assembled.initialEncounter) physicalExamTasks
 
         activeTask =
             resolveActiveTask tasks data.activeTask

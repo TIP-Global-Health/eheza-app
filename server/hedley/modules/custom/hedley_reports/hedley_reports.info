@@ -18,6 +18,7 @@ features[features_api][] = api:2
 features[field_base][] = field_data_file
 features[field_base][] = field_data_scope
 features[field_base][] = field_report_variant
+features[field_instance][] = node-nutrition_encounter-field_reports_data
 features[field_instance][] = node-report_data-field_cell
 features[field_instance][] = node-report_data-field_data_file
 features[field_instance][] = node-report_data-field_data_scope

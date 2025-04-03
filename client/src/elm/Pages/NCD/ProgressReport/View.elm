@@ -487,7 +487,7 @@ viewMedicalDiagnosisPane language currentDate assembled =
 
         content =
             List.map (Translate.MedicalCondition >> translate language >> text >> List.singleton >> li []) coMorbidities
-                ++ dignoses
+                ++ diganoses
                 |> ul []
                 |> List.singleton
 
@@ -515,7 +515,7 @@ viewMedicalDiagnosisPane language currentDate assembled =
                     )
                 |> Pages.Utils.unique
 
-        dignoses =
+        diganoses =
             List.concatMap
                 (\data ->
                     let
