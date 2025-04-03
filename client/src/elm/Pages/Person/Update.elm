@@ -4,7 +4,7 @@ import App.Model
 import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Model exposing (ModelIndexedDb)
-import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, nationalIdNumber, validatePerson)
+import Backend.Person.Form exposing (PersonForm, applyDefaultValuesForPerson, birthDate, validatePerson)
 import Backend.Person.Model exposing (ParticipantDirectoryOperation(..), PatchPersonInitator(..), Person)
 import Backend.Village.Utils exposing (getVillageById)
 import Date
@@ -139,7 +139,7 @@ update currentDate site reverseGeoInfo selectedHealthCenter maybeVillageId isChw
                                         -- we always have the ID of person being edited.
                                         |> Maybe.withDefault ( [], [] )
 
-                        Form.Input nationalIdNumber _ (Form.Field.String value) ->
+                        Form.Input _ _ (Form.Field.String value) ->
                             if String.length value > 13 then
                                 ( [ Backend.Model.FetchPeopleByNationalId value
                                         |> App.Model.MsgIndexedDb

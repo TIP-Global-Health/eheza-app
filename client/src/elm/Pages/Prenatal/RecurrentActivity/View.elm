@@ -13,7 +13,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, InvokationModule(..), LaboratoryTask(..), VitalsForm, VitalsFormMode(..))
+import Measurement.Model exposing (ContentAndTasksLaboratoryResultConfig, LaboratoryTask(..), VitalsForm)
 import Measurement.Utils
     exposing
         ( bloodGpRsResultFormAndTasks
@@ -316,10 +316,6 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -332,6 +328,10 @@ viewLabResultsContent language currentDate isLabTech assembled model =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks
@@ -578,16 +578,21 @@ viewExaminationContent language currentDate assembled data =
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task, examinationTasksCompletedFromTotal currentDate assembled data task )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
-            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+            Maybe.andThen
+                (\task ->
+                    let
+                        tasksCompletedFromTotalDict =
+                            List.map
+                                (\task_ ->
+                                    ( task_, examinationTasksCompletedFromTotal currentDate assembled data task_ )
+                                )
+                                tasks
+                                |> Dict.fromList
+                    in
+                    Dict.get task tasksCompletedFromTotalDict
+                )
+                activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
         viewForm =
@@ -752,10 +757,6 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -768,6 +769,10 @@ viewLabResultFollowUpsContent language currentDate isLabTech assembled model =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks
