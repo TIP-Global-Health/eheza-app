@@ -13,8 +13,8 @@ decodeIndividualEncounterParticipant =
     succeed IndividualEncounterParticipant
         |> required "person" decodeEntityUuid
         |> required "encounter_type" decodeIndividualEncounterType
-        |> requiredAt [ "expected", "value" ] decodeYYYYMMDD
-        |> optionalAt [ "expected", "value2" ] (nullable decodeYYYYMMDD) Nothing
+        |> required "start_date" decodeYYYYMMDD
+        |> optional "end_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "expected_date_concluded" (nullable decodeYYYYMMDD) Nothing
         |> optional "date_concluded" (nullable decodeYYYYMMDD) Nothing
         |> optional "outcome" (nullable decodeIndividualEncounterParticipantOutcome) Nothing
