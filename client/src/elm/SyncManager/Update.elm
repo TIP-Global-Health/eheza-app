@@ -143,9 +143,9 @@ update currentDate currentTime activePage dbVersion device msg model =
                                             ( Just zipperUpdated, sendSyncInfoAuthoritiesCmd zipperUpdated )
 
                                     cmd =
-                                        HttpBuilder.get (device.backendUrl ++ "/DataSyncManagerHealthCenter")
+                                        HttpBuilder.get (device.backendUrl ++ "/ShowSyncManagerHealthCenter")
                                             |> withQueryParams
-                                                [ ( "healthCenterId", currentZipper.uuid)
+                                                [ ( "healthCenterId", currentZipper.uuid )
                                                 , ( "accessToken", device.accessToken )
                                                 , ( "db_version", String.fromInt dbVersion )
                                                 , ( "serial", String.fromInt currentZipper.lastFetchedRevisionId )
@@ -688,7 +688,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     sendSyncInfoGeneralCmd syncInfoGeneral
 
                             cmd =
-                                HttpBuilder.get (device.backendUrl ++ "/DataSyncManager")
+                                HttpBuilder.get (device.backendUrl ++ "/ShowSyncManager")
                                     |> withQueryParams
                                         [ ( "accessToken", device.accessToken )
                                         , ( "db_version", String.fromInt dbVersion )
