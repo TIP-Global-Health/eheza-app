@@ -1197,7 +1197,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
-                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                    , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManagerHealthCenter")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
@@ -1389,7 +1389,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                 else
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
-                                    , HttpBuilder.post (device.backendUrl ++ "/api/sync")
+                                    , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManager")
                                         |> withQueryParams [ ( "access_token", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
