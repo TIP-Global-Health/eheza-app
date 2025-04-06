@@ -1198,7 +1198,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
                                     , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManagerHealthCenter")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withQueryParams [ ( "accessToken", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadAuthorityResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
@@ -1390,7 +1390,7 @@ update currentDate currentTime activePage dbVersion device msg model =
                                     ( RemoteData.Loading
                                     , RemoteData.Success (Just result)
                                     , HttpBuilder.post (device.backendUrl ++ "/CreateSyncManager")
-                                        |> withQueryParams [ ( "access_token", device.accessToken ) ]
+                                        |> withQueryParams [ ( "accessToken", device.accessToken ) ]
                                         |> withJsonBody (Json.Encode.object <| SyncManager.Encoder.encodeIndexDbQueryUploadGeneralResultRecord dbVersion result)
                                         -- We don't need to decode anything, as we just want to have
                                         -- the browser download it.
