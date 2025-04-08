@@ -84,33 +84,26 @@ view language currentTime nurseId nurse db model =
                                     List.length filteredSurveys
 
                                 filterCondition survey =
+                                    let
+                                        -- Calculate the days since the program started
+                                        daysSinceProgramStart =
+                                            Date.diff Days programStartDate currentDate
+                                    in
                                     if surveyCount == 0 then
-                                        -- We need to have at least one survey completed.
+                                        -- First survey should always run at the start of the program
                                         True
 
-                                    else if surveyCount >= 3 then
-                                        -- There can be up to 3 surveys during program which lasts
-                                        -- 6 months. At the begining, after 3 months and at the end.
-                                        -- So, if we have 3 surveys already, there's no need to another one,
-                                        False
+                                    else if surveyCount == 1 then
+                                        -- Second survey should run at 106 days
+                                        daysSinceProgramStart >= 105
+
+                                    else if surveyCount == 2 then
+                                        -- Final survey should run at 201 days
+                                        daysSinceProgramStart >= 200
 
                                     else
-                                        let
-                                            diffMonthsProgramStartLastSurvey =
-                                                Date.diff Months programStartDate survey.dateMeasured
-                                        in
-                                        if diffMonthsProgramStartLastSurvey >= 6 then
-                                            -- Last survey run after 6 months from programstart date.
-                                            -- It means that program has alreqady ended there.
-                                            -- No need to run another one.
-                                            False
-
-                                        else
-                                            let
-                                                diffMonthsLastSurveyCurrent =
-                                                    Date.diff Months survey.dateMeasured currentDate
-                                            in
-                                            diffMonthsLastSurveyCurrent >= 3
+                                        -- No more surveys after 3 have been completed
+                                        False
                             in
                             List.head filteredSurveys
                                 |> Maybe.map filterCondition
