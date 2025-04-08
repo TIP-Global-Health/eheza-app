@@ -13,12 +13,8 @@ encodeIndividualEncounterParticipant : IndividualEncounterParticipant -> List ( 
 encodeIndividualEncounterParticipant data =
     [ ( "person", encodeEntityUuid data.person )
     , ( "encounter_type", encodeIndividualEncounterType data.encounterType )
-    , ( "expected"
-      , object
-            [ ( "value", encodeYYYYMMDD data.startDate )
-            , ( "value2", maybe encodeYYYYMMDD data.endDate )
-            ]
-      )
+    , ( "start_date", encodeYYYYMMDD data.startDate )
+    , ( "end_date", maybe encodeYYYYMMDD data.endDate )
     , ( "expected_date_concluded", maybe encodeYYYYMMDD data.eddDate )
     , ( "date_concluded", maybe encodeYYYYMMDD data.dateConcluded )
     , ( "outcome", maybe encodeIndividualEncounterParticipantOutcome data.outcome )
