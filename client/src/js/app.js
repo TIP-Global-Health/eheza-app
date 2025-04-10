@@ -740,7 +740,6 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
 
               const changes = {
-                'uuid': json.uuid,
                 'fileId': parseInt(json.serial),
                 'remoteFileName': json.signed_url,
                 'isSynced': 1,
