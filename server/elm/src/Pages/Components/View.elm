@@ -8,9 +8,12 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (isJust)
 import Pages.Components.Model exposing (DemographicsSelection)
+import Pages.Components.Utils exposing (populationSelectionOptionToString)
+import Pages.Model exposing (MetricsResultsTableData)
 import Pages.Utils
     exposing
-        ( viewGeoLocationSelectListInput
+        ( viewCustomLabel
+        , viewGeoLocationSelectListInput
         , viewMenuActionButton
         )
 import Translate exposing (TranslationId)
@@ -212,3 +215,51 @@ viewDemographicsSelectionActionButton language site pathPrefix label selectionMa
                 ++ villagePart
     in
     viewMenuActionButton language path label selectionMadeMsg
+
+
+
+-- Table
+
+
+viewMetricsResultsTable : MetricsResultsTableData -> List (Html any)
+viewMetricsResultsTable data =
+    let
+        captionsRow =
+            div [ class "row" ] <|
+                viewCustomCells "row-label" "heading" data.captions
+
+        viewRow cells =
+            div [ class "row" ] <|
+                viewCustomCells "row-label" "value" cells
+    in
+    [ div [ class "section heading" ] [ text data.heading ]
+    , div [ class "table wide" ] <|
+        captionsRow
+            :: List.map viewRow data.rows
+    ]
+
+
+viewStandardRow : List String -> Html any
+viewStandardRow =
+    viewStandardCells
+        >> div [ class "row" ]
+
+
+viewStandardCells : List String -> List (Html any)
+viewStandardCells =
+    viewCustomCells "label" "value"
+
+
+viewCustomCells : String -> String -> List String -> List (Html any)
+viewCustomCells labelClass valueClass =
+    List.indexedMap
+        (\index cellText ->
+            div
+                [ classList
+                    [ ( "item", True )
+                    , ( labelClass, index == 0 )
+                    , ( valueClass, index /= 0 )
+                    ]
+                ]
+                [ text cellText ]
+        )

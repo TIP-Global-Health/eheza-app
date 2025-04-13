@@ -1,4 +1,4 @@
-module Pages.ReportsMenu.Types exposing (..)
+module Pages.Components.Types exposing (..)
 
 
 type PopulationSelectionOption

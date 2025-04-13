@@ -32,7 +32,7 @@ RUN chmod +x /usr/bin/elm
 # gulp for the client compilation.
 RUN npm install -g gulp
 # For Elm Unit tests
-RUN npm -g config set user root
+ENV NPM_CONFIG_UNSAFE_PERM=true
 RUN npm install -g elm-test@0.19.1-revision6
 # Install svg2elm.
 RUN npm install -g svg2elm

@@ -47,6 +47,7 @@ features[field_instance][] = node-child_scoreboard_dtp_sa_iz-field_person
 features[field_instance][] = node-child_scoreboard_dtp_sa_iz-field_shards
 features[field_instance][] = node-child_scoreboard_dtp_sa_iz-field_uuid
 features[field_instance][] = node-child_scoreboard_encounter-field_individual_participant
+features[field_instance][] = node-child_scoreboard_encounter-field_reports_data
 features[field_instance][] = node-child_scoreboard_encounter-field_scheduled_date
 features[field_instance][] = node-child_scoreboard_encounter-field_shards
 features[field_instance][] = node-child_scoreboard_encounter-field_uuid
