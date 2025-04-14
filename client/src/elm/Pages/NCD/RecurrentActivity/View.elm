@@ -209,10 +209,6 @@ viewLabResultsContent language currentDate assembled model =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -225,6 +221,10 @@ viewLabResultsContent language currentDate assembled model =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks

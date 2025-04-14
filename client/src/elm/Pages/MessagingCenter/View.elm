@@ -1577,7 +1577,7 @@ messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
                     ]
                 ]
 
-        MessageOptionsStateReminder ( messageId, message ) ->
+        MessageOptionsStateReminder ( messageId, _ ) ->
             let
                 buttonForView hours =
                     button

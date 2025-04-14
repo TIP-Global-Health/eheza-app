@@ -8,7 +8,6 @@ import Backend.Measurement.Model
         )
 import Backend.Measurement.Utils exposing (getMeasurementValueFunc, mapMeasurementData)
 import Gizra.NominalDate exposing (NominalDate)
-import Maybe.Extra exposing (isJust)
 import Measurement.Model exposing (..)
 import Measurement.Utils
     exposing
@@ -25,7 +24,7 @@ import Measurement.View
         , sendToFacilityInputsAndTasks
         )
 import Pages.NextSteps.Model exposing (..)
-import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
+import Pages.Utils exposing (resolveTasksCompletedFromTotal)
 import Translate.Model exposing (Language(..))
 
 
