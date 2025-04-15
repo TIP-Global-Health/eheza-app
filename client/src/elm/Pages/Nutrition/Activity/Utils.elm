@@ -138,7 +138,7 @@ decide if to show Next Steps activity, or not.
 allMandatoryActivities : Bool -> List NutritionActivity
 allMandatoryActivities isChw =
     if isChw then
-        [ Muac, Nutrition, Weight ]
+        [ Muac, Nutrition ]
 
     else
         [ Height, Muac, Nutrition, Weight ]
