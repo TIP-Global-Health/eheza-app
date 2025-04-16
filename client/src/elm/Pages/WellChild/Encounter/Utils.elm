@@ -140,6 +140,13 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                     [] ->
                         True
 
+                    [ WellChildDangerSigns ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+
                     [ WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
                             False
@@ -147,12 +154,13 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                         else
                             mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
-                    [ WellChildDangerSigns ] ->
+                    [ WellChildDangerSigns, WellChildNutritionAssessment ] ->
                         if assembled.encounter.encounterType == PediatricCare then
-                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                            False
 
                         else
-                            True
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
                     _ ->
                         False
