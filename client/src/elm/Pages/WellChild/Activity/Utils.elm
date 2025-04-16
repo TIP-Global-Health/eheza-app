@@ -389,22 +389,26 @@ expectNutritionAssessmentTask currentDate assembled task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
-    resolveMandatoryNutritionAssessmentTasks currentDate assembled
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate site assembled =
+    resolveMandatoryNutritionAssessmentTasks currentDate site assembled
         |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
 
-resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
-resolveMandatoryNutritionAssessmentTasks currentDate assembled =
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> Site -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate site assembled =
     List.filter (expectNutritionAssessmentTask currentDate assembled) <|
         case assembled.encounter.encounterType of
             PediatricCare ->
                 [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
             _ ->
-                -- Height is optional for CHW.
-                [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
+                if site == SiteBurundi then
+                    -- Height is optional for CHW.
+                    [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
+
+                else
+                    [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
@@ -764,20 +768,23 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
-mandatoryDangerSignsTasksCompleted : NominalDate -> AssembledData -> Bool
-mandatoryDangerSignsTasksCompleted currentDate assembled =
-    resolvedMandatoryDangerSignsTasksCompleted assembled
+mandatoryDangerSignsTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryDangerSignsTasksCompleted currentDate site assembled =
+    resolvedMandatoryDangerSignsTasksCompleted site assembled
         |> List.all (dangerSignsTaskCompleted currentDate assembled)
 
 
-resolvedMandatoryDangerSignsTasksCompleted : AssembledData -> List DangerSignsTask
-resolvedMandatoryDangerSignsTasksCompleted assembled =
-    case assembled.encounter.encounterType of
-        PediatricCare ->
+resolvedMandatoryDangerSignsTasksCompleted : Site -> AssembledData -> List DangerSignsTask
+resolvedMandatoryDangerSignsTasksCompleted site assembled =
+    case ( site, assembled.encounter.encounterType ) of
+        ( _, PediatricCare ) ->
             [ TaskSymptomsReview, TaskVitals ]
 
-        _ ->
+        ( SiteBurundi, _ ) ->
             [ TaskSymptomsReview ]
+
+        _ ->
+            [ TaskSymptomsReview, TaskVitals ]
 
 
 symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -1679,7 +1686,7 @@ expectNextStepsTask :
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate site assembled then
                 -- Any assesment requires Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty

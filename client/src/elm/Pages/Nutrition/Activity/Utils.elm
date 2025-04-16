@@ -33,7 +33,7 @@ import Measurement.View
 import Pages.Nutrition.Activity.Model exposing (..)
 import Pages.Nutrition.Encounter.Model exposing (AssembledData)
 import Pages.Utils exposing (resolveTasksCompletedFromTotal, taskCompleted)
-import SyncManager.Model exposing (SiteFeature)
+import SyncManager.Model exposing (Site(..), SiteFeature)
 import Translate.Model exposing (Language(..))
 import ZScore.Model
 
@@ -62,8 +62,8 @@ generateNutritionAssessment currentDate zscores db assembled =
     Backend.NutritionEncounter.Utils.generateNutritionAssessment currentDate zscores assembled.participant.person muacValue nutritionValue weightValue True db
 
 
-expectActivity : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-expectActivity currentDate zscores features isChw assembled db activity =
+expectActivity : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+expectActivity currentDate site zscores features isChw assembled db activity =
     case activity of
         -- Show for children that are at least 6 months old.
         Muac ->
@@ -76,7 +76,7 @@ expectActivity currentDate zscores features isChw assembled db activity =
             expectNCDAActivity currentDate features isChw assembled.person
 
         NextSteps ->
-            if mandatoryActivitiesCompleted currentDate zscores features assembled.person isChw assembled db then
+            if mandatoryActivitiesCompleted currentDate site zscores features assembled.person isChw assembled db then
                 -- Any assesment require sending to HC.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
@@ -90,19 +90,19 @@ expectActivity currentDate zscores features isChw assembled db activity =
             True
 
 
-activityCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
-activityCompleted currentDate zscores features isChw assembled db activity =
+activityCompleted : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Bool -> AssembledData -> ModelIndexedDb -> NutritionActivity -> Bool
+activityCompleted currentDate site zscores features isChw assembled db activity =
     let
         measurements =
             assembled.measurements
     in
     case activity of
         Height ->
-            (not <| expectActivity currentDate zscores features isChw assembled db Height)
+            (not <| expectActivity currentDate site zscores features isChw assembled db Height)
                 || isJust measurements.height
 
         Muac ->
-            (not <| expectActivity currentDate zscores features isChw assembled db Muac)
+            (not <| expectActivity currentDate site zscores features isChw assembled db Muac)
                 || isJust measurements.muac
 
         Nutrition ->
@@ -118,7 +118,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
             isJust measurements.ncda
 
         NextSteps ->
-            (not <| expectActivity currentDate zscores features isChw assembled db NextSteps)
+            (not <| expectActivity currentDate site zscores features isChw assembled db NextSteps)
                 || (isJust measurements.sendToHC
                         && isJust measurements.healthEducation
                         && isJust measurements.contributingFactors
@@ -126,19 +126,23 @@ activityCompleted currentDate zscores features isChw assembled db activity =
                    )
 
 
-mandatoryActivitiesCompleted : NominalDate -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
-mandatoryActivitiesCompleted currentDate zscores features child isChw assembled db =
-    allMandatoryActivities isChw
-        |> List.all (activityCompleted currentDate zscores features isChw assembled db)
+mandatoryActivitiesCompleted : NominalDate -> Site -> ZScore.Model.Model -> EverySet SiteFeature -> Person -> Bool -> AssembledData -> ModelIndexedDb -> Bool
+mandatoryActivitiesCompleted currentDate site zscores features child isChw assembled db =
+    allMandatoryActivities site isChw
+        |> List.all (activityCompleted currentDate site zscores features isChw assembled db)
 
 
 {-| List of activities that need to be completed, in order to
 decide if to show Next Steps activity, or not.
 -}
-allMandatoryActivities : Bool -> List NutritionActivity
-allMandatoryActivities isChw =
+allMandatoryActivities : Site -> Bool -> List NutritionActivity
+allMandatoryActivities site isChw =
     if isChw then
-        [ Muac, Nutrition ]
+        if site == SiteBurundi then
+            [ Muac, Nutrition ]
+
+        else
+            [ Muac, Nutrition, Weight ]
 
     else
         [ Height, Muac, Nutrition, Weight ]
