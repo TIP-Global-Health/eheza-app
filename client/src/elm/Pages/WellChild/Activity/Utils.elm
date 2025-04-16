@@ -392,8 +392,7 @@ expectNutritionAssessmentTask currentDate assembled task =
 mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
 mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
     resolveMandatoryNutritionAssessmentTasks currentDate assembled
-        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
-        |> List.isEmpty
+        |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
 
 resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
@@ -768,8 +767,7 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
 mandatoryDangerSignsTasksCompleted : NominalDate -> AssembledData -> Bool
 mandatoryDangerSignsTasksCompleted currentDate assembled =
     resolvedMandatoryDangerSignsTasksCompleted assembled
-        |> List.filter (not << dangerSignsTaskCompleted currentDate assembled)
-        |> List.isEmpty
+        |> List.all (dangerSignsTaskCompleted currentDate assembled)
 
 
 resolvedMandatoryDangerSignsTasksCompleted : AssembledData -> List DangerSignsTask
