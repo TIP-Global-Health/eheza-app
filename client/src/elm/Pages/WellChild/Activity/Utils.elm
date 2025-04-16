@@ -405,7 +405,7 @@ resolveMandatoryNutritionAssessmentTasks currentDate assembled =
 
             _ ->
                 -- Height is optional for CHW.
-                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
