@@ -726,6 +726,20 @@ toHeadCircumferenceValue form =
         |> andMap notes
 
 
+dangerSignsTaskCompleted : NominalDate -> AssembledData -> DangerSignsTask -> Bool
+dangerSignsTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+    in
+    case task of
+        TaskSymptomsReview ->
+            isJust measurements.symptomsReview
+
+        TaskVitals ->
+            isJust measurements.vitals
+
+
 dangerSignsTasksCompletedFromTotal : NominalDate -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
 dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     let
@@ -749,6 +763,23 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
                         |> vitalsFormInputsAndTasks English currentDate formConfig
     in
     resolveTasksCompletedFromTotal tasks
+
+
+mandatoryDangerSignsTasksCompleted : NominalDate -> AssembledData -> Bool
+mandatoryDangerSignsTasksCompleted currentDate assembled =
+    resolvedMandatoryDangerSignsTasksCompleted assembled
+        |> List.filter (not << dangerSignsTaskCompleted currentDate assembled)
+        |> List.isEmpty
+
+
+resolvedMandatoryDangerSignsTasksCompleted : AssembledData -> List DangerSignsTask
+resolvedMandatoryDangerSignsTasksCompleted assembled =
+    case assembled.encounter.encounterType of
+        PediatricCare ->
+            [ TaskSymptomsReview, TaskVitals ]
+
+        _ ->
+            [ TaskSymptomsReview ]
 
 
 symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )

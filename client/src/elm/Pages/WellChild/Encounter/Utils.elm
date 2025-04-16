@@ -6,8 +6,9 @@ import Backend.WellChildActivity.Model exposing (WellChildActivity(..))
 import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), WellChildEncounterType(..))
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
+import Maybe.Extra exposing (isJust)
 import Measurement.Utils
-import Pages.WellChild.Activity.Utils exposing (mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChild.Activity.Utils exposing (mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
@@ -145,6 +146,13 @@ allowEndingEncounter currentDate pendingActivities assembled =
 
                         else
                             mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+
+                    [ WellChildDangerSigns ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            mandatoryDangerSignsTasksCompleted currentDate assembled
+
+                        else
+                            True
 
                     _ ->
                         False
