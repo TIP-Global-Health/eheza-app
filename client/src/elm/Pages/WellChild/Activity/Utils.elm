@@ -397,18 +397,17 @@ mandatoryNutritionAssessmentTasksCompleted currentDate site assembled =
 
 resolveMandatoryNutritionAssessmentTasks : NominalDate -> Site -> AssembledData -> List NutritionAssessmentTask
 resolveMandatoryNutritionAssessmentTasks currentDate site assembled =
-    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
-        case assembled.encounter.encounterType of
-            PediatricCare ->
-                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+    case ( site, assembled.encounter.encounterType ) of
+        ( _, PediatricCare ) ->
+            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
-            _ ->
-                if site == SiteBurundi then
-                    -- Height is optional for CHW.
-                    [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
+        -- Height is optional for CHW.
+        ( SiteBurundi, _ ) ->
+            -- Weight is optional for CHW in Burundi.
+            [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
 
-                else
-                    [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+        _ ->
+            [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask

@@ -138,6 +138,7 @@ decide if to show Next Steps activity, or not.
 allMandatoryActivities : Site -> Bool -> List NutritionActivity
 allMandatoryActivities site isChw =
     if isChw then
+        --Weight is optional for CHW in Burundi.
         if site == SiteBurundi then
             [ Muac, Nutrition ]
 

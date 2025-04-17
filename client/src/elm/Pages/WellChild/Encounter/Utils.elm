@@ -162,6 +162,14 @@ allowEndingEncounter currentDate site pendingActivities assembled =
                             mandatoryDangerSignsTasksCompleted currentDate site assembled
                                 && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
 
+                    [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
+                        if assembled.encounter.encounterType == PediatricCare then
+                            False
+
+                        else
+                            mandatoryDangerSignsTasksCompleted currentDate site assembled
+                                && mandatoryNutritionAssessmentTasksCompleted currentDate site assembled
+
                     _ ->
                         False
            )
