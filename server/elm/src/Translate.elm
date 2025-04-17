@@ -170,6 +170,8 @@ type TranslationId
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | OutsideCare
+    | PatientsWith3OrMoreVisitsPercentage
+    | PatientsWith4OrMoreVisitsPercentage
     | Photo
     | PleaseWaitMessage
     | PMTCT
@@ -1326,7 +1328,7 @@ translationSet transId =
                 , kirundi = Nothing
                 }
 
-            else if number > 5 then
+            else if number > 4 then
                 { english = "5+ visits"
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
@@ -1472,6 +1474,18 @@ translationSet transId =
 
         OutsideCare ->
             { english = "Outside Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith3OrMoreVisitsPercentage ->
+            { english = "3+ visits (%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith4OrMoreVisitsPercentage ->
+            { english = "4+ visits (%)"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

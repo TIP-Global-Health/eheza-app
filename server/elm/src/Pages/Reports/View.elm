@@ -30,7 +30,8 @@ import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( generateReportsHeaderImage
+        ( calcualtePercentage
+        , generateReportsHeaderImage
         , launchDate
         , viewCustomLabel
         , viewSelectListInput
@@ -1464,7 +1465,7 @@ generatePrenatalReportData language limitDate records =
                 (\countedVisits ( nurseDict, chwDict ) ->
                     let
                         resolveKeyForValue value =
-                            if value > 5 then
+                            if value > 4 then
                                 -1
 
                             else
@@ -1507,9 +1508,6 @@ generatePrenatalReportData language limitDate records =
         activeNurseVisits4 =
             resolveValueFromDict 4 partitionedVisitsForActiveNurse
 
-        activeNurseVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForActiveNurse
-
         activeNurseVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForActiveNurse
 
@@ -1525,9 +1523,6 @@ generatePrenatalReportData language limitDate records =
         activeChwVisits4 =
             resolveValueFromDict 4 partitionedVisitsForActiveChw
 
-        activeChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForActiveChw
-
         activeChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForActiveChw
 
@@ -1542,9 +1537,6 @@ generatePrenatalReportData language limitDate records =
 
         completedNurseVisits4 =
             resolveValueFromDict 4 partitionedVisitsForCompletedNurse
-
-        completedNurseVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompletedNurse
 
         completedNurseVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompletedNurse
@@ -1567,7 +1559,7 @@ generatePrenatalReportData language limitDate records =
         completedChwVisits5AndMore =
             resolveValueFromDict -1 partitionedVisitsForCompletedChw
 
-        generateTableData heading values =
+        generateTableData heading rows values =
             let
                 generateRowData labelTransId valueChw valueNurse =
                     [ translate language labelTransId
@@ -1575,41 +1567,131 @@ generatePrenatalReportData language limitDate records =
                     , String.fromInt valueNurse
                     , String.fromInt <| valueChw + valueNurse
                     ]
+
+                visitsRows =
+                    List.indexedMap
+                        (\index ( chwValue, nurseValue ) ->
+                            generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                        )
+                        rows
+
+                totalsRow =
+                    generateRowData Translate.Total values.chwVisitsTotal values.nurseVisitsTotal
             in
             { heading = translate language heading ++ ":"
-            , captions = List.map (translate language) [ Translate.NumberOfVisitsLabel, Translate.CHW, Translate.HC, Translate.All ]
+            , captions =
+                List.map (translate language)
+                    [ Translate.NumberOfVisitsLabel
+                    , Translate.CHW
+                    , Translate.HC
+                    , Translate.All
+                    ]
             , rows =
-                List.indexedMap
-                    (\index ( chwValue, nurseValue ) ->
-                        generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
-                    )
-                    values
+                visitsRows
+                    ++ [ totalsRow ]
+                    ++ [ [ translate language Translate.PatientsWith3OrMoreVisitsPercentage
+                         , calcualtePercentage values.chwVisits3OrMore values.chwVisitsTotal
+                         , calcualtePercentage values.nurseVisits3OrMore values.nurseVisitsTotal
+                         , calcualtePercentage (values.chwVisits3OrMore + values.nurseVisits3OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         ]
+                       , [ translate language Translate.PatientsWith4OrMoreVisitsPercentage
+                         , calcualtePercentage values.chwVisits4OrMore values.chwVisitsTotal
+                         , calcualtePercentage values.nurseVisits4OrMore values.nurseVisitsTotal
+                         , calcualtePercentage (values.chwVisits4OrMore + values.nurseVisits4OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         ]
+                       ]
             }
+
+        activeChwVisitsTotal =
+            activeChwVisits1
+                + activeChwVisits2
+                + activeChwVisits3
+                + activeChwVisits4
+                + activeChwVisits5AndMore
+
+        completedChwVisitsTotal =
+            completedChwVisits1
+                + completedChwVisits2
+                + completedChwVisits3
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+
+        activeNurseVisitsTotal =
+            activeNurseVisits1
+                + activeNurseVisits2
+                + activeNurseVisits3
+                + activeNurseVisits4
+                + activeNurseVisits5AndMore
+
+        completedNurseVisitsTotal =
+            completedNurseVisits1
+                + completedNurseVisits2
+                + completedNurseVisits3
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
     in
     [ generateTableData Translate.PregnanciesAll
         [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
         , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
         , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
         , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
-        , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
         , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
         ]
+        { chwVisits3OrMore =
+            activeChwVisits3
+                + activeChwVisits4
+                + activeChwVisits5AndMore
+                + completedChwVisits3
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+        , nurseVisits3OrMore =
+            activeNurseVisits3
+                + activeNurseVisits4
+                + activeNurseVisits5AndMore
+                + completedNurseVisits3
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
+        , chwVisits4OrMore =
+            activeChwVisits4
+                + activeChwVisits5AndMore
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+        , nurseVisits4OrMore =
+            activeNurseVisits4
+                + activeNurseVisits5AndMore
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
+        , chwVisitsTotal = activeChwVisitsTotal + completedChwVisitsTotal
+        , nurseVisitsTotal = activeNurseVisitsTotal + completedNurseVisitsTotal
+        }
     , generateTableData Translate.PregnanciesActive
         [ ( activeChwVisits1, activeNurseVisits1 )
         , ( activeChwVisits2, activeNurseVisits2 )
         , ( activeChwVisits3, activeNurseVisits3 )
         , ( activeChwVisits4, activeNurseVisits4 )
-        , ( activeChwVisits5, activeNurseVisits5 )
         , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
         ]
+        { chwVisits3OrMore = activeChwVisits3 + activeChwVisits4 + activeChwVisits5AndMore
+        , nurseVisits3OrMore = activeNurseVisits3 + activeNurseVisits4 + activeNurseVisits5AndMore
+        , chwVisits4OrMore = activeChwVisits4 + activeChwVisits5AndMore
+        , nurseVisits4OrMore = activeNurseVisits4 + activeNurseVisits5AndMore
+        , chwVisitsTotal = activeChwVisitsTotal
+        , nurseVisitsTotal = activeNurseVisitsTotal
+        }
     , generateTableData Translate.PregnanciesCompleted
         [ ( completedChwVisits1, completedNurseVisits1 )
         , ( completedChwVisits2, completedNurseVisits2 )
         , ( completedChwVisits3, completedNurseVisits3 )
         , ( completedChwVisits4, completedNurseVisits4 )
-        , ( completedChwVisits5, completedNurseVisits5 )
         , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
         ]
+        { chwVisits3OrMore = completedChwVisits3 + completedChwVisits4 + completedChwVisits5AndMore
+        , nurseVisits3OrMore = completedNurseVisits3 + completedNurseVisits4 + completedNurseVisits5AndMore
+        , chwVisits4OrMore = completedChwVisits4 + completedChwVisits5AndMore
+        , nurseVisits4OrMore = completedNurseVisits4 + completedNurseVisits5AndMore
+        , chwVisitsTotal = completedChwVisitsTotal
+        , nurseVisitsTotal = completedNurseVisitsTotal
+        }
     ]
 
 
