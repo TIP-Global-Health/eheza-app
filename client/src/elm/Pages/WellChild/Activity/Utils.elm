@@ -397,17 +397,18 @@ mandatoryNutritionAssessmentTasksCompleted currentDate site assembled =
 
 resolveMandatoryNutritionAssessmentTasks : NominalDate -> Site -> AssembledData -> List NutritionAssessmentTask
 resolveMandatoryNutritionAssessmentTasks currentDate site assembled =
-    case ( site, assembled.encounter.encounterType ) of
-        ( _, PediatricCare ) ->
+    case assembled.encounter.encounterType of
+        PediatricCare ->
             [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
-        -- Height is optional for CHW.
-        ( SiteBurundi, _ ) ->
-            -- Weight is optional for CHW in Burundi.
-            [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
-
         _ ->
-            [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            if site == SiteBurundi then
+                --Weight is optional for CHW in Burundi
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
+
+            else
+                --Height is optional for CHW
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
@@ -775,15 +776,17 @@ mandatoryDangerSignsTasksCompleted currentDate site assembled =
 
 resolvedMandatoryDangerSignsTasksCompleted : Site -> AssembledData -> List DangerSignsTask
 resolvedMandatoryDangerSignsTasksCompleted site assembled =
-    case ( site, assembled.encounter.encounterType ) of
-        ( _, PediatricCare ) ->
+    case assembled.encounter.encounterType of
+        PediatricCare ->
             [ TaskSymptomsReview, TaskVitals ]
-
-        ( SiteBurundi, _ ) ->
-            [ TaskSymptomsReview ]
 
         _ ->
-            [ TaskSymptomsReview, TaskVitals ]
+            if site == SiteBurundi then
+                --Vitals are optional for CHW in Burundi
+                [ TaskSymptomsReview ]
+
+            else
+                [ TaskSymptomsReview, TaskVitals ]
 
 
 symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
