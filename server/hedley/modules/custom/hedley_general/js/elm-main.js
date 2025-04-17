@@ -8997,10 +8997,67 @@ var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
 		return $elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData');
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalParticipantData = F4(
-	function (created, eddDate, dateConcluded, encounters) {
-		return {created: created, dateConcluded: dateConcluded, eddDate: eddDate, encounters: encounters};
+var $author$project$Backend$Reports$Model$PrenatalParticipantData = F6(
+	function (created, eddDate, dateConcluded, outcome, deliveryLocation, encounters) {
+		return {created: created, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, eddDate: eddDate, encounters: encounters, outcome: outcome};
 	});
+var $author$project$Backend$Reports$Model$FacilityDelivery = {$: 'FacilityDelivery'};
+var $author$project$Backend$Reports$Model$HomeDelivery = {$: 'HomeDelivery'};
+var $author$project$Backend$Reports$Decoder$deliveryLocationFromString = function (location) {
+	switch (location) {
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$FacilityDelivery);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$HomeDelivery);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeDeliveryLocation = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized DeliveryLocation'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$deliveryLocationFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$OutcomeAbortions = {$: 'OutcomeAbortions'};
+var $author$project$Backend$Reports$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeLivePreTerm = {$: 'OutcomeLivePreTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillAtTerm = {$: 'OutcomeStillAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillPreTerm = {$: 'OutcomeStillPreTerm'};
+var $author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString = function (outcome) {
+	switch (outcome) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeAbortions);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized PregnancyOutcome'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
 var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
 	function (startDate, encounterType) {
@@ -9102,19 +9159,29 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData),
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'dc',
-		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		'ol',
+		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeDeliveryLocation),
 		$elm$core$Maybe$Nothing,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'edd',
-			$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			'o',
+			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodePregnancyOutcome),
 			$elm$core$Maybe$Nothing,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'created',
-				$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))));
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'dc',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'edd',
+					$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'created',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
