@@ -18,7 +18,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
+import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDate, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -1629,6 +1629,55 @@ generatePrenatalReportData language limitDate records =
                 + completedNurseVisits3
                 + completedNurseVisits4
                 + completedNurseVisits5AndMore
+
+        -- First visit stats.
+        totalPregnancies =
+            List.length filtered
+
+        trimestersDict =
+            List.foldl
+                (\participantData accumDict ->
+                    List.sortWith (sortByDate .startDate) participantData.encounters
+                        |> List.head
+                        |> Maybe.andThen
+                            (\firstEncounter ->
+                                resolvePregnancyTrimester firstEncounter.startDate participantData.eddDate
+                            )
+                        |> Maybe.map
+                            (\trimester ->
+                                let
+                                    updated =
+                                        Dict.get trimester accumDict
+                                            |> Maybe.map ((+) 1)
+                                            |> Maybe.withDefault 1
+                                in
+                                Dict.insert trimester updated accumDict
+                            )
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                filtered
+
+        firstVisitTable =
+            { heading = translate language Translate.FirstVisit ++ ":"
+            , captions = List.map (translate language) [ Translate.Trimester, Translate.EmptyString ]
+            , rows =
+                List.map
+                    (\trimester ->
+                        let
+                            occurances =
+                                Dict.get trimester trimestersDict
+                                    |> Maybe.withDefault 0
+                        in
+                        [ translate language <| Translate.PregnancyTrimester trimester
+                        , calcualtePercentage occurances totalPregnancies
+                        ]
+                    )
+                    [ FirstTrimester
+                    , SecondTrimester
+                    , ThirdTrimester
+                    ]
+            }
     in
     [ generateTableData Translate.PregnanciesAll
         [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
@@ -1693,6 +1742,7 @@ generatePrenatalReportData language limitDate records =
         , nurseVisitsTotal = completedNurseVisitsTotal
         }
     ]
+        ++ [ firstVisitTable ]
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg

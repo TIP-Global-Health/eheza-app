@@ -3,11 +3,35 @@ module Pages.Reports.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (..)
 import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
 import Pages.Reports.Model exposing (..)
 import Set
+
+
+eddToLmpDate : NominalDate -> NominalDate
+eddToLmpDate eddDate =
+    Date.add Days -280 eddDate
+
+
+resolvePregnancyTrimester : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester
+resolvePregnancyTrimester date =
+    Maybe.map
+        (\lmpDate ->
+            let
+                diffInWeeks =
+                    diffDays lmpDate date // 7
+            in
+            if diffInWeeks < 13 then
+                FirstTrimester
+
+            else if diffInWeeks < 28 then
+                SecondTrimester
+
+            else
+                ThirdTrimester
+        )
 
 
 reportTypeToString : ReportType -> String

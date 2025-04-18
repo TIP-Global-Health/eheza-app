@@ -10975,6 +10975,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Global':
 				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'FirstVisit':
+				return {english: 'First Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FollowUp':
 				return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FoodSecurity':
@@ -11510,6 +11512,28 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyTest':
 				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnancyTrimester':
+				var trimester = transId.a;
+				switch (trimester.$) {
+					case 'FirstTrimester':
+						return {
+							english: 'First Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya mbere'),
+							kirundi: $elm$core$Maybe$Just('Igice ca mbere')
+						};
+					case 'SecondTrimester':
+						return {
+							english: 'Second Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya kabiri'),
+							kirundi: $elm$core$Maybe$Just('Igice ca kabiri')
+						};
+					default:
+						return {
+							english: 'Third Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya gatatu'),
+							kirundi: $elm$core$Maybe$Just('Igice ca 3')
+						};
+				}
 			case 'PrenatalActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11810,6 +11834,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Trimester':
+				return {english: 'Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Tuberculosis':
 				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TuberculosisActivity':
@@ -17937,6 +17963,9 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
+var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
+var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};
 var $author$project$Translate$NumberOfVisits = function (a) {
 	return {$: 'NumberOfVisits', a: a};
@@ -17947,6 +17976,30 @@ var $author$project$Translate$PatientsWith4OrMoreVisitsPercentage = {$: 'Patient
 var $author$project$Translate$PregnanciesActive = {$: 'PregnanciesActive'};
 var $author$project$Translate$PregnanciesAll = {$: 'PregnanciesAll'};
 var $author$project$Translate$PregnanciesCompleted = {$: 'PregnanciesCompleted'};
+var $author$project$Translate$PregnancyTrimester = function (a) {
+	return {$: 'PregnancyTrimester', a: a};
+};
+var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
+var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
+var $author$project$Translate$Trimester = {$: 'Trimester'};
+var $author$project$Gizra$NominalDate$diffDays = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
+	});
+var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = function (date) {
+	return $elm$core$Maybe$map(
+		function (lmpDate) {
+			var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
+			return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
+		});
+};
+var $author$project$Gizra$NominalDate$sortByDate = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity1),
+			getDateFunc(entity2));
+	});
 var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
 		var resolveValueFromDict = function (key) {
@@ -18073,6 +18126,68 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 							return $.prenatalData;
 						},
 						records))));
+		var totalPregnancies = $elm$core$List$length(filtered);
+		var trimestersDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
+						A2(
+							$elm$core$Maybe$map,
+							function (trimester) {
+								var updated = A2(
+									$elm$core$Maybe$withDefault,
+									1,
+									A2(
+										$elm$core$Maybe$map,
+										$elm$core$Basics$add(1),
+										A2($pzp1997$assoc_list$AssocList$get, trimester, accumDict)));
+								return A3($pzp1997$assoc_list$AssocList$insert, trimester, updated, accumDict);
+							},
+							A2(
+								$elm$core$Maybe$andThen,
+								function (firstEncounter) {
+									return A2($author$project$Pages$Reports$Utils$resolvePregnancyTrimester, firstEncounter.startDate, participantData.eddDate);
+								},
+								$elm$core$List$head(
+									A2(
+										$elm$core$List$sortWith,
+										$author$project$Gizra$NominalDate$sortByDate(
+											function ($) {
+												return $.startDate;
+											}),
+										participantData.encounters)))));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			filtered);
+		var firstVisitTable = {
+			captions: A2(
+				$elm$core$List$map,
+				$author$project$Translate$translate(language),
+				_List_fromArray(
+					[$author$project$Translate$Trimester, $author$project$Translate$EmptyString])),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$FirstVisit) + ':',
+			rows: A2(
+				$elm$core$List$map,
+				function (trimester) {
+					var occurances = A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, trimester, trimestersDict));
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$PregnancyTrimester(trimester)),
+							A2($author$project$Pages$Utils$calcualtePercentage, occurances, totalPregnancies)
+						]);
+				},
+				_List_fromArray(
+					[$author$project$Pages$Reports$Model$FirstTrimester, $author$project$Pages$Reports$Model$SecondTrimester, $author$project$Pages$Reports$Model$ThirdTrimester]))
+		};
 		var countVisitsByType = function (data) {
 			return A2(
 				$elm$core$List$map,
@@ -18146,45 +18261,48 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
 		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
-		return _List_fromArray(
-			[
-				A3(
-				generateTableData,
-				$author$project$Translate$PregnanciesAll,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
-					]),
-				{chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
-				A3(
-				generateTableData,
-				$author$project$Translate$PregnanciesActive,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
-					]),
-				{chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
-				A3(
-				generateTableData,
-				$author$project$Translate$PregnanciesCompleted,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
-						_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
-						_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
-						_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
-						_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
-					]),
-				{chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
-			]);
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesAll,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
+							_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
+							_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
+							_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
+							_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesActive,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
+							_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
+							_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
+							_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
+							_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesCompleted,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
+							_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
+							_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
+							_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
+							_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
+				]),
+			_List_fromArray(
+				[firstVisitTable]));
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
@@ -37849,7 +37967,6 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (
 	return $author$project$Translate$Province;
 };
 var $author$project$Translate$Commune = {$: 'Commune'};
-var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2 = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':

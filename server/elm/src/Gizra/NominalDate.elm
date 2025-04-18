@@ -366,6 +366,11 @@ yearYYNumber date =
     modBy 100 (Date.year date)
 
 
+sortByDate : (a -> NominalDate) -> a -> a -> Order
+sortByDate getDateFunc entity1 entity2 =
+    Date.compare (getDateFunc entity1) (getDateFunc entity2)
+
+
 sortByDateDesc : (a -> NominalDate) -> a -> a -> Order
 sortByDateDesc getDateFunc entity1 entity2 =
     Date.compare (getDateFunc entity2) (getDateFunc entity1)

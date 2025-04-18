@@ -89,6 +89,12 @@ emptyNutritionMetricsResults =
     }
 
 
+type PregnancyTrimester
+    = FirstTrimester
+    | SecondTrimester
+    | ThirdTrimester
+
+
 type Msg
     = SetReportType String
     | SetStartDate Date
