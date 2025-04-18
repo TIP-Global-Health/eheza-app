@@ -1637,22 +1637,26 @@ generatePrenatalReportData language limitDate records =
         trimestersDict =
             List.foldl
                 (\participantData accumDict ->
-                    List.sortWith (sortByDate .startDate) participantData.encounters
-                        |> List.head
-                        |> Maybe.andThen
-                            (\firstEncounter ->
-                                resolvePregnancyTrimester firstEncounter.startDate participantData.eddDate
-                            )
-                        |> Maybe.map
-                            (\trimester ->
-                                let
-                                    updated =
-                                        Dict.get trimester accumDict
-                                            |> Maybe.map ((+) 1)
-                                            |> Maybe.withDefault 1
-                                in
-                                Dict.insert trimester updated accumDict
-                            )
+                    Maybe.andThen
+                        (\eddDate ->
+                            List.sortWith (sortByDate .startDate) participantData.encounters
+                                |> List.head
+                                |> Maybe.map
+                                    (\firstEncounter ->
+                                        let
+                                            trimester =
+                                                eddToLmpDate eddDate
+                                                    |> resolvePregnancyTrimester firstEncounter.startDate
+
+                                            updated =
+                                                Dict.get trimester accumDict
+                                                    |> Maybe.map ((+) 1)
+                                                    |> Maybe.withDefault 1
+                                        in
+                                        Dict.insert trimester updated accumDict
+                                    )
+                        )
+                        participantData.eddDate
                         |> Maybe.withDefault accumDict
                 )
                 Dict.empty

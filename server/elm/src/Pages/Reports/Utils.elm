@@ -15,23 +15,20 @@ eddToLmpDate eddDate =
     Date.add Days -280 eddDate
 
 
-resolvePregnancyTrimester : NominalDate -> Maybe NominalDate -> Maybe PregnancyTrimester
-resolvePregnancyTrimester date =
-    Maybe.map
-        (\lmpDate ->
-            let
-                diffInWeeks =
-                    diffDays lmpDate date // 7
-            in
-            if diffInWeeks < 13 then
-                FirstTrimester
+resolvePregnancyTrimester : NominalDate -> NominalDate -> PregnancyTrimester
+resolvePregnancyTrimester date lmpDate =
+    let
+        diffInWeeks =
+            diffDays lmpDate date // 7
+    in
+    if diffInWeeks < 13 then
+        FirstTrimester
 
-            else if diffInWeeks < 28 then
-                SecondTrimester
+    else if diffInWeeks < 28 then
+        SecondTrimester
 
-            else
-                ThirdTrimester
-        )
+    else
+        ThirdTrimester
 
 
 reportTypeToString : ReportType -> String

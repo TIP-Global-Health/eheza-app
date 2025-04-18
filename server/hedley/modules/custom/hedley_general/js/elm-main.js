@@ -17982,17 +17982,18 @@ var $author$project$Translate$PregnancyTrimester = function (a) {
 var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
 var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
 var $author$project$Translate$Trimester = {$: 'Trimester'};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
 	});
-var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = function (date) {
-	return $elm$core$Maybe$map(
-		function (lmpDate) {
-			var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
-			return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
-		});
-};
+var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = F2(
+	function (date, lmpDate) {
+		var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
+		return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
+	});
 var $author$project$Gizra$NominalDate$sortByDate = F3(
 	function (getDateFunc, entity1, entity2) {
 		return A2(
@@ -18135,30 +18136,34 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 						$elm$core$Maybe$withDefault,
 						accumDict,
 						A2(
-							$elm$core$Maybe$map,
-							function (trimester) {
-								var updated = A2(
-									$elm$core$Maybe$withDefault,
-									1,
-									A2(
-										$elm$core$Maybe$map,
-										$elm$core$Basics$add(1),
-										A2($pzp1997$assoc_list$AssocList$get, trimester, accumDict)));
-								return A3($pzp1997$assoc_list$AssocList$insert, trimester, updated, accumDict);
+							$elm$core$Maybe$andThen,
+							function (eddDate) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										var trimester = A2(
+											$author$project$Pages$Reports$Utils$resolvePregnancyTrimester,
+											firstEncounter.startDate,
+											$author$project$Pages$Reports$Utils$eddToLmpDate(eddDate));
+										var updated = A2(
+											$elm$core$Maybe$withDefault,
+											1,
+											A2(
+												$elm$core$Maybe$map,
+												$elm$core$Basics$add(1),
+												A2($pzp1997$assoc_list$AssocList$get, trimester, accumDict)));
+										return A3($pzp1997$assoc_list$AssocList$insert, trimester, updated, accumDict);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											participantData.encounters)));
 							},
-							A2(
-								$elm$core$Maybe$andThen,
-								function (firstEncounter) {
-									return A2($author$project$Pages$Reports$Utils$resolvePregnancyTrimester, firstEncounter.startDate, participantData.eddDate);
-								},
-								$elm$core$List$head(
-									A2(
-										$elm$core$List$sortWith,
-										$author$project$Gizra$NominalDate$sortByDate(
-											function ($) {
-												return $.startDate;
-											}),
-										participantData.encounters)))));
+							participantData.eddDate));
 				}),
 			$pzp1997$assoc_list$AssocList$empty,
 			filtered);
