@@ -90,8 +90,23 @@ type alias PrenatalParticipantData =
     { created : NominalDate
     , eddDate : Maybe NominalDate
     , dateConcluded : Maybe NominalDate
+    , outcome : Maybe PregnancyOutcome
+    , deliveryLocation : Maybe DeliveryLocation
     , encounters : List PrenatalEncounterData
     }
+
+
+type PregnancyOutcome
+    = OutcomeLiveAtTerm
+    | OutcomeLivePreTerm
+    | OutcomeStillAtTerm
+    | OutcomeStillPreTerm
+    | OutcomeAbortions
+
+
+type DeliveryLocation
+    = FacilityDelivery
+    | HomeDelivery
 
 
 type alias PrenatalEncounterData =

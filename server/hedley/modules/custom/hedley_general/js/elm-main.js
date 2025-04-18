@@ -8997,10 +8997,67 @@ var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
 		return $elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData');
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalParticipantData = F4(
-	function (created, eddDate, dateConcluded, encounters) {
-		return {created: created, dateConcluded: dateConcluded, eddDate: eddDate, encounters: encounters};
+var $author$project$Backend$Reports$Model$PrenatalParticipantData = F6(
+	function (created, eddDate, dateConcluded, outcome, deliveryLocation, encounters) {
+		return {created: created, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, eddDate: eddDate, encounters: encounters, outcome: outcome};
 	});
+var $author$project$Backend$Reports$Model$FacilityDelivery = {$: 'FacilityDelivery'};
+var $author$project$Backend$Reports$Model$HomeDelivery = {$: 'HomeDelivery'};
+var $author$project$Backend$Reports$Decoder$deliveryLocationFromString = function (location) {
+	switch (location) {
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$FacilityDelivery);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$HomeDelivery);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeDeliveryLocation = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized DeliveryLocation'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$deliveryLocationFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$OutcomeAbortions = {$: 'OutcomeAbortions'};
+var $author$project$Backend$Reports$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeLivePreTerm = {$: 'OutcomeLivePreTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillAtTerm = {$: 'OutcomeStillAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillPreTerm = {$: 'OutcomeStillPreTerm'};
+var $author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString = function (outcome) {
+	switch (outcome) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeAbortions);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized PregnancyOutcome'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
 var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
 	function (startDate, encounterType) {
@@ -9102,19 +9159,29 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData),
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'dc',
-		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		'ol',
+		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeDeliveryLocation),
 		$elm$core$Maybe$Nothing,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'edd',
-			$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			'o',
+			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodePregnancyOutcome),
 			$elm$core$Maybe$Nothing,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'created',
-				$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))));
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'dc',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'edd',
+					$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'created',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -10908,6 +10975,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Global':
 				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'FirstVisit':
+				return {english: 'First Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FollowUp':
 				return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FoodSecurity':
@@ -11312,7 +11381,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				};
 			case 'NumberOfVisits':
 				var number = transId.a;
-				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 5) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
+				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 4) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
 					english: $elm$core$String$fromInt(number) + ' visits',
 					kinyarwanda: $elm$core$Maybe$Nothing,
 					kirundi: $elm$core$Maybe$Nothing
@@ -11415,6 +11484,10 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'OutsideCare':
 				return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PatientsWith3OrMoreVisitsPercentage':
+				return {english: '3+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PatientsWith4OrMoreVisitsPercentage':
+				return {english: '4+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Photo':
 				return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
@@ -11439,6 +11512,28 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyTest':
 				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnancyTrimester':
+				var trimester = transId.a;
+				switch (trimester.$) {
+					case 'FirstTrimester':
+						return {
+							english: 'First Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya mbere'),
+							kirundi: $elm$core$Maybe$Just('Igice ca mbere')
+						};
+					case 'SecondTrimester':
+						return {
+							english: 'Second Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya kabiri'),
+							kirundi: $elm$core$Maybe$Just('Igice ca kabiri')
+						};
+					default:
+						return {
+							english: 'Third Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya gatatu'),
+							kirundi: $elm$core$Maybe$Just('Igice ca 3')
+						};
+				}
 			case 'PrenatalActivity':
 				var activity = transId.a;
 				switch (activity.$) {
@@ -11739,6 +11834,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Trimester':
+				return {english: 'Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Tuberculosis':
 				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TuberculosisActivity':
@@ -13086,7 +13183,7 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Completion$View$calcualtePercentage = F2(
+var $author$project$Pages$Utils$calcualtePercentage = F2(
 	function (nominator, total) {
 		return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 2, (nominator / total) * 100) + '%');
 	});
@@ -13153,7 +13250,7 @@ var $author$project$Pages$Completion$View$generateAcuteIllnessReportData = F2(
 							$author$project$Translate$AcuteIllnessActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allAcuteIllnessActivities)
@@ -14236,7 +14333,7 @@ var $author$project$Pages$Completion$View$generateChildScoreboardReportData = F3
 							$author$project$Translate$ChildScoreboardActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14408,7 +14505,7 @@ var $author$project$Pages$Completion$View$generateHIVReportData = F2(
 							$author$project$Translate$HIVActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHIVActivities)
@@ -14478,7 +14575,7 @@ var $author$project$Pages$Completion$View$generateHomeVisitReportData = F2(
 							$author$project$Translate$HomeVisitActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHomeVisitActivities)
@@ -14570,7 +14667,7 @@ var $author$project$Pages$Completion$View$generateNCDReportData = F2(
 							$author$project$Translate$NCDActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNCDActivities)
@@ -14660,7 +14757,7 @@ var $author$project$Pages$Completion$View$generateWellChildReportData = F4(
 							$author$project$Translate$WellChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14738,7 +14835,7 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 								activityTransId(activity)),
 								$elm$core$String$fromInt(expected),
 								$elm$core$String$fromInt(completed),
-								A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+								A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 							]);
 					});
 			});
@@ -14811,7 +14908,7 @@ var $author$project$Pages$Completion$View$generateNutritionIndividualReportData 
 							$author$project$Translate$NutritionChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNutritionIndividualActivities)
@@ -14881,7 +14978,7 @@ var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 							$author$project$Translate$PrenatalActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allPrenatalActivities)
@@ -15012,7 +15109,7 @@ var $author$project$Pages$Completion$View$generateTuberculosisReportData = F2(
 							$author$project$Translate$TuberculosisActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allTuberculosisActivities)
@@ -17866,14 +17963,44 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
+var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
+var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};
 var $author$project$Translate$NumberOfVisits = function (a) {
 	return {$: 'NumberOfVisits', a: a};
 };
 var $author$project$Translate$NumberOfVisitsLabel = {$: 'NumberOfVisitsLabel'};
+var $author$project$Translate$PatientsWith3OrMoreVisitsPercentage = {$: 'PatientsWith3OrMoreVisitsPercentage'};
+var $author$project$Translate$PatientsWith4OrMoreVisitsPercentage = {$: 'PatientsWith4OrMoreVisitsPercentage'};
 var $author$project$Translate$PregnanciesActive = {$: 'PregnanciesActive'};
 var $author$project$Translate$PregnanciesAll = {$: 'PregnanciesAll'};
 var $author$project$Translate$PregnanciesCompleted = {$: 'PregnanciesCompleted'};
+var $author$project$Translate$PregnancyTrimester = function (a) {
+	return {$: 'PregnancyTrimester', a: a};
+};
+var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
+var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
+var $author$project$Translate$Trimester = {$: 'Trimester'};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
+var $author$project$Gizra$NominalDate$diffDays = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
+	});
+var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = F2(
+	function (date, lmpDate) {
+		var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
+		return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
+	});
+var $author$project$Gizra$NominalDate$sortByDate = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity1),
+			getDateFunc(entity2));
+	});
 var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
 		var resolveValueFromDict = function (key) {
@@ -17889,7 +18016,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 					var nurseDict = _v4.a;
 					var chwDict = _v4.b;
 					var resolveKeyForValue = function (value) {
-						return (value > 5) ? (-1) : value;
+						return (value > 4) ? (-1) : value;
 					};
 					var updateDict = F2(
 						function (value, dict) {
@@ -17913,8 +18040,8 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 						A2(updateDict, countedVisits.chw, chwDict));
 				}),
 			_Utils_Tuple2($pzp1997$assoc_list$AssocList$empty, $pzp1997$assoc_list$AssocList$empty));
-		var generateTableData = F2(
-			function (heading, values) {
+		var generateTableData = F3(
+			function (heading, rows, values) {
 				var generateRowData = F3(
 					function (labelTransId, valueChw, valueNurse) {
 						return _List_fromArray(
@@ -17925,6 +18052,20 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 								$elm$core$String$fromInt(valueChw + valueNurse)
 							]);
 					});
+				var totalsRow = A3(generateRowData, $author$project$Translate$Total, values.chwVisitsTotal, values.nurseVisitsTotal);
+				var visitsRows = A2(
+					$elm$core$List$indexedMap,
+					F2(
+						function (index, _v3) {
+							var chwValue = _v3.a;
+							var nurseValue = _v3.b;
+							return A3(
+								generateRowData,
+								$author$project$Translate$NumberOfVisits(index + 1),
+								chwValue,
+								nurseValue);
+						}),
+					rows);
 				return {
 					captions: A2(
 						$elm$core$List$map,
@@ -17932,19 +18073,28 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 						_List_fromArray(
 							[$author$project$Translate$NumberOfVisitsLabel, $author$project$Translate$CHW, $author$project$Translate$HC, $author$project$Translate$All])),
 					heading: A2($author$project$Translate$translate, language, heading) + ':',
-					rows: A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (index, _v3) {
-								var chwValue = _v3.a;
-								var nurseValue = _v3.b;
-								return A3(
-									generateRowData,
-									$author$project$Translate$NumberOfVisits(index + 1),
-									chwValue,
-									nurseValue);
-							}),
-						values)
+					rows: _Utils_ap(
+						visitsRows,
+						_Utils_ap(
+							_List_fromArray(
+								[totalsRow]),
+							_List_fromArray(
+								[
+									_List_fromArray(
+									[
+										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith3OrMoreVisitsPercentage),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits3OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.nurseVisits3OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits3OrMore + values.nurseVisits3OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+									]),
+									_List_fromArray(
+									[
+										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith4OrMoreVisitsPercentage),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits4OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.nurseVisits4OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits4OrMore + values.nurseVisits4OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+									])
+								])))
 				};
 			});
 		var filtered = A2(
@@ -17977,6 +18127,72 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 							return $.prenatalData;
 						},
 						records))));
+		var totalPregnancies = $elm$core$List$length(filtered);
+		var trimestersDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
+						A2(
+							$elm$core$Maybe$andThen,
+							function (eddDate) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										var trimester = A2(
+											$author$project$Pages$Reports$Utils$resolvePregnancyTrimester,
+											firstEncounter.startDate,
+											$author$project$Pages$Reports$Utils$eddToLmpDate(eddDate));
+										var updated = A2(
+											$elm$core$Maybe$withDefault,
+											1,
+											A2(
+												$elm$core$Maybe$map,
+												$elm$core$Basics$add(1),
+												A2($pzp1997$assoc_list$AssocList$get, trimester, accumDict)));
+										return A3($pzp1997$assoc_list$AssocList$insert, trimester, updated, accumDict);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											participantData.encounters)));
+							},
+							participantData.eddDate));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			filtered);
+		var firstVisitTable = {
+			captions: A2(
+				$elm$core$List$map,
+				$author$project$Translate$translate(language),
+				_List_fromArray(
+					[$author$project$Translate$Trimester, $author$project$Translate$EmptyString])),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$FirstVisit) + ':',
+			rows: A2(
+				$elm$core$List$map,
+				function (trimester) {
+					var occurances = A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, trimester, trimestersDict));
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$PregnancyTrimester(trimester)),
+							A2($author$project$Pages$Utils$calcualtePercentage, occurances, totalPregnancies)
+						]);
+				},
+				_List_fromArray(
+					[$author$project$Pages$Reports$Model$FirstTrimester, $author$project$Pages$Reports$Model$SecondTrimester, $author$project$Pages$Reports$Model$ThirdTrimester]))
+		};
 		var countVisitsByType = function (data) {
 			return A2(
 				$elm$core$List$map,
@@ -18025,14 +18241,14 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var activeChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveChw);
 		var activeChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveChw);
 		var activeChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveChw);
-		var activeChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForActiveChw);
 		var activeChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveChw);
+		var activeChwVisitsTotal = (((activeChwVisits1 + activeChwVisits2) + activeChwVisits3) + activeChwVisits4) + activeChwVisits5AndMore;
 		var activeNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActiveNurse);
 		var activeNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveNurse);
 		var activeNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveNurse);
 		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveNurse);
-		var activeNurseVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForActiveNurse);
 		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveNurse);
+		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
 		var _v2 = partitionByNumberOfVisits(
 			countVisitsByType(completed));
 		var partitionedVisitsForCompletedNurse = _v2.a;
@@ -18043,51 +18259,55 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedChw);
 		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedChw);
 		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedChw);
+		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
 		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
-		return _List_fromArray(
-			[
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesAll,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5),
-						_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
-					])),
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesActive,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5, activeNurseVisits5),
-						_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
-					])),
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesCompleted,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
-						_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
-						_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
-						_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
-						_Utils_Tuple2(completedChwVisits5, completedNurseVisits5),
-						_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
-					]))
-			]);
+		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesAll,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
+							_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
+							_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
+							_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
+							_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesActive,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
+							_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
+							_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
+							_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
+							_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesCompleted,
+					_List_fromArray(
+						[
+							_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
+							_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
+							_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
+							_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
+							_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
+						]),
+					{chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
+				]),
+			_List_fromArray(
+				[firstVisitTable]));
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
@@ -37752,7 +37972,6 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (
 	return $author$project$Translate$Province;
 };
 var $author$project$Translate$Commune = {$: 'Commune'};
-var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2 = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':

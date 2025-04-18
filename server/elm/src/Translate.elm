@@ -24,7 +24,7 @@ import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (ReportType(..))
+import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
@@ -105,6 +105,7 @@ type TranslationId
     | FBF
     | Feeding
     | Female
+    | FirstVisit
     | FollowUp
     | FoodSecurity
     | GenerateReport
@@ -170,6 +171,8 @@ type TranslationId
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
     | OutsideCare
+    | PatientsWith3OrMoreVisitsPercentage
+    | PatientsWith4OrMoreVisitsPercentage
     | Photo
     | PleaseWaitMessage
     | PMTCT
@@ -178,6 +181,7 @@ type TranslationId
     | PregnanciesAll
     | PregnanciesCompleted
     | PregnancyTest
+    | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
@@ -213,6 +217,7 @@ type TranslationId
     | TargetedInterventions
     | Total
     | TreatmentReview
+    | Trimester
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
@@ -723,6 +728,12 @@ translationSet transId =
 
         Global ->
             { english = "Global"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FirstVisit ->
+            { english = "First Visit"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1326,7 +1337,7 @@ translationSet transId =
                 , kirundi = Nothing
                 }
 
-            else if number > 5 then
+            else if number > 4 then
                 { english = "5+ visits"
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
@@ -1476,6 +1487,18 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PatientsWith3OrMoreVisitsPercentage ->
+            { english = "3+ visits (%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith4OrMoreVisitsPercentage ->
+            { english = "4+ visits (%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Photo ->
             { english = "Photo"
             , kinyarwanda = Nothing
@@ -1537,6 +1560,26 @@ translationSet transId =
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        PregnancyTrimester trimester ->
+            case trimester of
+                FirstTrimester ->
+                    { english = "First Trimester"
+                    , kinyarwanda = Just "Igihembwe cya mbere"
+                    , kirundi = Just "Igice ca mbere"
+                    }
+
+                SecondTrimester ->
+                    { english = "Second Trimester"
+                    , kinyarwanda = Just "Igihembwe cya kabiri"
+                    , kirundi = Just "Igice ca kabiri"
+                    }
+
+                ThirdTrimester ->
+                    { english = "Third Trimester"
+                    , kinyarwanda = Just "Igihembwe cya gatatu"
+                    , kirundi = Just "Igice ca 3"
+                    }
 
         PrenatalActivity activity ->
             case activity of
@@ -2048,6 +2091,12 @@ translationSet transId =
 
         TreatmentReview ->
             { english = "Treatment Review"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Trimester ->
+            { english = "Trimester"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

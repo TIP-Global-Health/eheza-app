@@ -27,7 +27,7 @@ import Backend.Model exposing (ModelBackend)
 import Date exposing (Interval(..), Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
+import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -37,9 +37,8 @@ import Pages.Completion.Model exposing (..)
 import Pages.Completion.Utils exposing (..)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Utils exposing (launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (calcualtePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
-import Round
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.Html exposing (viewModal)
@@ -749,12 +748,3 @@ generateCaptionsList language =
 countOccurrences resolveFunc activity data =
     List.filter (resolveFunc >> List.member activity) data
         |> List.length
-
-
-calcualtePercentage : Int -> Int -> String
-calcualtePercentage nominator total =
-    if total == 0 then
-        "0"
-
-    else
-        Round.round 2 ((toFloat nominator / toFloat total) * 100) ++ "%"
