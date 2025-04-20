@@ -630,6 +630,16 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
   return TRUE;
 }
 
+/**
+ * Returns a mapping of pregnancy outcome types to corresponding code values.
+ *
+ * This function provides the standard mapping between human-readable pregnancy
+ * outcome types and their single-character code representations used in the
+ * system.
+ *
+ * @return array
+ *   An associative array mapping outcome type strings to code characters.
+ */
 function hedley_reports_pregnancy_outcome_mapping() {
   return [
     'live-at-term' => 'a',

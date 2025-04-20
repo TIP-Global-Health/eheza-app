@@ -10,6 +10,7 @@ import Backend.Reports.Model
         , Gender(..)
         , NutritionReportTableType(..)
         , PatientData
+        , PregnancyOutcome(..)
         , PrenatalEncounterType(..)
         , ReportsData
         , SelectedEntity(..)
@@ -1442,7 +1443,7 @@ generatePrenatalReportData language limitDate records =
             countVisitsByType completed
                 |> partitionByNumberOfVisits
 
-        countVisitsByType data =
+        countVisitsByType =
             List.map
                 (\participantData ->
                     let
@@ -1458,7 +1459,6 @@ generatePrenatalReportData language limitDate records =
                     , chw = totalEncounters - nurseEncounters
                     }
                 )
-                data
 
         partitionByNumberOfVisits =
             List.foldl
@@ -1682,6 +1682,52 @@ generatePrenatalReportData language limitDate records =
                     , ThirdTrimester
                     ]
             }
+
+        _ =
+            Debug.log "" outcomesDict
+
+        -- Pregnanc outcome stats.
+        outcomesDict =
+            List.foldl
+                (\participantData accumDict ->
+                    Maybe.map
+                        (\outcome ->
+                            let
+                                updated =
+                                    Dict.get outcome accumDict
+                                        |> Maybe.map ((+) 1)
+                                        |> Maybe.withDefault 1
+                            in
+                            Dict.insert outcome updated accumDict
+                        )
+                        participantData.outcome
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                completed
+
+        outcomesTable =
+            { heading = translate language Translate.OutcomesTableHeading ++ ":"
+            , captions = List.map (translate language) [ Translate.PregnancyOutcomeLabel, Translate.EmptyString ]
+            , rows =
+                List.map
+                    (\outcome ->
+                        let
+                            occurances =
+                                Dict.get outcome outcomesDict
+                                    |> Maybe.withDefault 0
+                        in
+                        [ translate language <| Translate.PregnancyOutcome outcome
+                        , String.fromInt occurances
+                        ]
+                    )
+                    [ OutcomeLiveAtTerm
+                    , OutcomeLivePreTerm
+                    , OutcomeStillAtTerm
+                    , OutcomeStillPreTerm
+                    , OutcomeAbortions
+                    ]
+            }
     in
     [ generateTableData Translate.PregnanciesAll
         [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
@@ -1746,7 +1792,7 @@ generatePrenatalReportData language limitDate records =
         , nurseVisitsTotal = completedNurseVisitsTotal
         }
     ]
-        ++ [ firstVisitTable ]
+        ++ [ firstVisitTable, outcomesTable ]
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg

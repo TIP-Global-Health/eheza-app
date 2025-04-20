@@ -19,7 +19,12 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
+import Backend.Reports.Model
+    exposing
+        ( AcuteIllnessDiagnosis(..)
+        , NutritionReportTableType(..)
+        , PregnancyOutcome(..)
+        )
 import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
@@ -170,6 +175,7 @@ type TranslationId
     | NutritionGroup
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
+    | OutcomesTableHeading
     | OutsideCare
     | PatientsWith3OrMoreVisitsPercentage
     | PatientsWith4OrMoreVisitsPercentage
@@ -180,6 +186,8 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnancyOutcome PregnancyOutcome
+    | PregnancyOutcomeLabel
     | PregnancyTest
     | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
@@ -1481,6 +1489,12 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        OutcomesTableHeading ->
+            { english = "Outcomes of completed pregnancies (anything 30 days beyond EDD)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         OutsideCare ->
             { english = "Outside Care"
             , kinyarwanda = Nothing
@@ -1551,6 +1565,44 @@ translationSet transId =
 
         PregnanciesCompleted ->
             { english = "Completed Pregnancies"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z'imbanyi canke zirenga)"
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Kubyara mwana udashyitse (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Imbanyi ivutse imbere y'ikiringo (mbere y'indwi 38)"
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Kuvyarira ku gihe (Indwi 38 - AGE (z'Igihe co Kwibungenga Caharuwe ) canke zirenga)"
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Kuvyara imbere yuko igihe kigera (imbere y'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)"
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Just "Kuvanamo inda (mbere y'ibyumweru 24)"
+                    , kirundi = Just "Ugukoroka kw'imbanyi (imbere y'indwi 24 ugereranije nigihe imbanyi imaze)"
+                    }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1770,10 +1822,7 @@ translationSet transId =
                     }
 
                 PrenatalPregnancyOutcome ->
-                    { english = "Pregnancy Outcome"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet PregnancyOutcomeLabel
 
                 PrenatalPregnancyTesting ->
                     { english = "Pregnancy Testing"
