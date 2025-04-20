@@ -18087,9 +18087,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var partitionByNumberOfVisits = A2(
 			$elm$core$List$foldl,
 			F2(
-				function (countedVisits, _v4) {
-					var nurseDict = _v4.a;
-					var chwDict = _v4.b;
+				function (countedVisits, accum) {
 					var resolveKeyForValue = function (value) {
 						return (value > 4) ? (-1) : value;
 					};
@@ -18110,35 +18108,41 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 										A2($pzp1997$assoc_list$AssocList$get, key, dict)));
 							}
 						});
-					return _Utils_Tuple2(
-						A2(updateDict, countedVisits.nurse, nurseDict),
-						A2(updateDict, countedVisits.chw, chwDict));
+					return _Utils_update(
+						accum,
+						{
+							all: A2(updateDict, countedVisits.all, accum.all),
+							chw: A2(updateDict, countedVisits.chw, accum.chw),
+							nurse: A2(updateDict, countedVisits.nurse, accum.nurse)
+						});
 				}),
-			_Utils_Tuple2($pzp1997$assoc_list$AssocList$empty, $pzp1997$assoc_list$AssocList$empty));
+			{all: $pzp1997$assoc_list$AssocList$empty, chw: $pzp1997$assoc_list$AssocList$empty, nurse: $pzp1997$assoc_list$AssocList$empty});
 		var generateTableData = F3(
 			function (heading, rows, values) {
-				var generateRowData = F3(
-					function (labelTransId, valueChw, valueNurse) {
+				var generateRowData = F4(
+					function (labelTransId, valueChw, valueNurse, allValue) {
 						return _List_fromArray(
 							[
 								A2($author$project$Translate$translate, language, labelTransId),
 								$elm$core$String$fromInt(valueChw),
 								$elm$core$String$fromInt(valueNurse),
-								$elm$core$String$fromInt(valueChw + valueNurse)
+								$elm$core$String$fromInt(allValue)
 							]);
 					});
-				var totalsRow = A3(generateRowData, $author$project$Translate$Total, values.chwVisitsTotal, values.nurseVisitsTotal);
+				var totalsRow = A4(generateRowData, $author$project$Translate$Total, values.chwVisitsTotal, values.nurseVisitsTotal, values.allVisitsTotal);
 				var visitsRows = A2(
 					$elm$core$List$indexedMap,
 					F2(
-						function (index, _v3) {
-							var chwValue = _v3.a;
-							var nurseValue = _v3.b;
-							return A3(
+						function (index, _v1) {
+							var chwValue = _v1.a;
+							var nurseValue = _v1.b;
+							var allValue = _v1.c;
+							return A4(
 								generateRowData,
 								$author$project$Translate$NumberOfVisits(index + 1),
 								chwValue,
-								nurseValue);
+								nurseValue,
+								allValue);
 						}),
 					rows);
 				return {
@@ -18281,7 +18285,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 							},
 							$elm$core$Basics$eq($author$project$Backend$Reports$Model$NurseEncounter)),
 						participantData.encounters));
-				return {chw: totalEncounters - nurseEncounters, nurse: nurseEncounters};
+				return {all: totalEncounters, chw: totalEncounters - nurseEncounters, nurse: nurseEncounters};
 			});
 		var _v0 = A2(
 			$elm$core$List$partition,
@@ -18304,39 +18308,26 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 			filtered);
 		var completed = _v0.a;
 		var active = _v0.b;
-		var _v1 = partitionByNumberOfVisits(
+		var partitionedVisitsForActive = partitionByNumberOfVisits(
 			countVisitsByType(active));
-		var partitionedVisitsForActiveNurse = _v1.a;
-		var partitionedVisitsForActiveChw = _v1.b;
-		var activeChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActiveChw);
-		var activeChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveChw);
-		var activeChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveChw);
-		var activeChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveChw);
-		var activeChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveChw);
+		var activeAllVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.all);
+		var activeAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.all);
+		var activeAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.all);
+		var activeAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.all);
+		var activeAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.all);
+		var activeAllVisitsTotal = (((activeAllVisits1 + activeAllVisits2) + activeAllVisits3) + activeAllVisits4) + activeAllVisits5AndMore;
+		var activeChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.chw);
+		var activeChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.chw);
+		var activeChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.chw);
+		var activeChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.chw);
+		var activeChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.chw);
 		var activeChwVisitsTotal = (((activeChwVisits1 + activeChwVisits2) + activeChwVisits3) + activeChwVisits4) + activeChwVisits5AndMore;
-		var activeNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActiveNurse);
-		var activeNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveNurse);
-		var activeNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveNurse);
-		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveNurse);
-		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveNurse);
+		var activeNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.nurse);
+		var activeNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.nurse);
+		var activeNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.nurse);
+		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.nurse);
+		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.nurse);
 		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
-		var _v2 = partitionByNumberOfVisits(
-			countVisitsByType(completed));
-		var partitionedVisitsForCompletedNurse = _v2.a;
-		var partitionedVisitsForCompletedChw = _v2.b;
-		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompletedChw);
-		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompletedChw);
-		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompletedChw);
-		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedChw);
-		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedChw);
-		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedChw);
-		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
-		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
-		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
 		var deliveryLocationsDict = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -18458,6 +18449,28 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 				_List_fromArray(
 					[$author$project$Backend$Reports$Model$OutcomeLiveAtTerm, $author$project$Backend$Reports$Model$OutcomeLivePreTerm, $author$project$Backend$Reports$Model$OutcomeStillAtTerm, $author$project$Backend$Reports$Model$OutcomeStillPreTerm, $author$project$Backend$Reports$Model$OutcomeAbortions]))
 		};
+		var partitionedVisitsForCompleted = partitionByNumberOfVisits(
+			countVisitsByType(completed));
+		var completedAllVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.all);
+		var completedAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.all);
+		var completedAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.all);
+		var completedAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.all);
+		var completedAllVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.all);
+		var completedAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.all);
+		var completedAllVisitsTotal = (((completedAllVisits1 + completedAllVisits2) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore;
+		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.chw);
+		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.chw);
+		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.chw);
+		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.chw);
+		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.chw);
+		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.chw);
+		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
+		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
 		return _Utils_ap(
 			_List_fromArray(
 				[
@@ -18466,37 +18479,37 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 					$author$project$Translate$PregnanciesAll,
 					_List_fromArray(
 						[
-							_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
-							_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
-							_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
-							_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
-							_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
+							_Utils_Tuple3(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1, activeAllVisits1 + completedAllVisits1),
+							_Utils_Tuple3(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2, activeAllVisits2 + completedAllVisits2),
+							_Utils_Tuple3(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3, activeAllVisits3 + completedAllVisits3),
+							_Utils_Tuple3(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4, activeAllVisits4 + completedAllVisits4),
+							_Utils_Tuple3(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore, activeAllVisits5AndMore + completedAllVisits5AndMore)
 						]),
-					{chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
+					{allVisits3OrMore: ((((activeAllVisits3 + activeAllVisits4) + activeAllVisits5AndMore) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore, allVisits4OrMore: ((activeAllVisits4 + activeAllVisits5AndMore) + completedAllVisits4) + completedAllVisits5AndMore, allVisitsTotal: activeAllVisitsTotal + completedAllVisitsTotal, chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
 					A3(
 					generateTableData,
 					$author$project$Translate$PregnanciesActive,
 					_List_fromArray(
 						[
-							_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
-							_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
-							_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
-							_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
-							_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
+							_Utils_Tuple3(activeChwVisits1, activeNurseVisits1, activeAllVisits1),
+							_Utils_Tuple3(activeChwVisits2, activeNurseVisits2, activeAllVisits2),
+							_Utils_Tuple3(activeChwVisits3, activeNurseVisits3, activeAllVisits3),
+							_Utils_Tuple3(activeChwVisits4, activeNurseVisits4, activeAllVisits4),
+							_Utils_Tuple3(activeChwVisits5AndMore, activeNurseVisits5AndMore, activeAllVisits5AndMore)
 						]),
-					{chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
+					{allVisits3OrMore: (activeAllVisits3 + activeAllVisits4) + activeAllVisits5AndMore, allVisits4OrMore: activeAllVisits4 + activeAllVisits5AndMore, allVisitsTotal: activeAllVisitsTotal, chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
 					A3(
 					generateTableData,
 					$author$project$Translate$PregnanciesCompleted,
 					_List_fromArray(
 						[
-							_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
-							_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
-							_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
-							_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
-							_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
+							_Utils_Tuple3(completedChwVisits1, completedNurseVisits1, completedAllVisits1),
+							_Utils_Tuple3(completedChwVisits2, completedNurseVisits2, completedAllVisits2),
+							_Utils_Tuple3(completedChwVisits3, completedNurseVisits3, completedAllVisits3),
+							_Utils_Tuple3(completedChwVisits4, completedNurseVisits4, completedAllVisits4),
+							_Utils_Tuple3(completedChwVisits5AndMore, completedNurseVisits5AndMore, completedAllVisits5AndMore)
 						]),
-					{chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
+					{allVisits3OrMore: (completedAllVisits3 + completedAllVisits4) + completedAllVisits5AndMore, allVisits4OrMore: completedAllVisits4 + completedAllVisits5AndMore, allVisitsTotal: completedAllVisitsTotal, chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
 				]),
 			_List_fromArray(
 				[firstVisitTable, outcomesTable, deliveryLocationsTable]));
