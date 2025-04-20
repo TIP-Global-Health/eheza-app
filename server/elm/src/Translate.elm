@@ -2008,6 +2008,12 @@ translationSet transId =
                 ReportPrenatal ->
                     translationSet Antenatal
 
+                ReportPrenatalDiagnoses ->
+                    { english = "ANC Diagnoses"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         ReportTypeLabel ->
             { english = "Report Type"
             , kinyarwanda = Nothing

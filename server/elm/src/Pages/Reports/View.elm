@@ -295,6 +295,10 @@ viewReportsData language currentDate themePath data model =
 
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
+
+                            ReportPrenatalDiagnoses ->
+                                -- @todo
+                                viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
                     )
                     model.reportType
                     startDateByReportType
@@ -315,6 +319,7 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 [ ReportAcuteIllness
                 , ReportPrenatal
+                , ReportPrenatalDiagnoses
                 , ReportDemographics
                 , ReportNutrition
                 ]

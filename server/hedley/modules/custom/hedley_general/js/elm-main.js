@@ -6637,6 +6637,7 @@ var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIll
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
+var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
 		case 'acute-illness':
@@ -6647,6 +6648,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
 		case 'prenatal':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
+		case 'prenatal-diagnoses':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -9062,7 +9065,6 @@ var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
 	function (startDate, encounterType, diagnoses) {
 		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
 	});
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
 var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
 var $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis = {$: 'DiagnosisDeepVeinThrombosis'};
@@ -9280,7 +9282,6 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 								$elm$core$List$map,
 								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
 								A2($elm$core$String$split, ',', third)));
-						var _v3 = A2($elm$core$Debug$log, '', second);
 						return $elm$json$Json$Decode$succeed(
 							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
 					},
@@ -11921,10 +11922,12 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
 						continue translationSet;
-					default:
+					case 'ReportPrenatal':
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
+					default:
+						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'ReportTypeLabel':
 				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -15877,8 +15880,10 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'demographics';
 		case 'ReportNutrition':
 			return 'nutrition';
-		default:
+		case 'ReportPrenatal':
 			return 'prenatal';
+		default:
+			return 'prenatal-diagnoses';
 	}
 };
 var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
@@ -19019,6 +19024,8 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
+							case 'ReportPrenatal':
+								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							default:
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
@@ -19054,7 +19061,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,

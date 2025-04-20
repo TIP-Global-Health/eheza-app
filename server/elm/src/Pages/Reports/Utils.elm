@@ -46,6 +46,9 @@ reportTypeToString reportType =
         ReportPrenatal ->
             "prenatal"
 
+        ReportPrenatalDiagnoses ->
+            "prenatal-diagnoses"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
@@ -61,6 +64,9 @@ reportTypeFromString reportType =
 
         "prenatal" ->
             Just ReportPrenatal
+
+        "prenatal-diagnoses" ->
+            Just ReportPrenatalDiagnoses
 
         _ ->
             Nothing

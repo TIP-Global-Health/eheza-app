@@ -267,9 +267,6 @@ decodePrenatalEncounterData =
                                         encounterType =
                                             prenatalEncounterTypeFromString second
 
-                                        _ =
-                                            Debug.log "" second
-
                                         diagnoses =
                                             if String.isEmpty third then
                                                 []
