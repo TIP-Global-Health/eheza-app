@@ -537,15 +537,15 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
           $mapped_diagnoses = [];
           if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
             foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
-              if (!empty($prenatal_diagnosis_mapping[$diagnosis])) {
-                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis];
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis['value']])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis['value']];
               }
             }
           }
           if (!empty($encounter->field_past_prenatal_diagnoses) && !empty($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE])) {
             foreach ($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
-              if (!empty($prenatal_diagnosis_mapping[$diagnosis])) {
-                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis];
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis['value']])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis['value']];
               }
             }
           }
