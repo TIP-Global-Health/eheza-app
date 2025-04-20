@@ -18164,14 +18164,14 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith3OrMoreVisitsPercentage),
 										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits3OrMore, values.chwVisitsTotal),
 										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits3OrMore, values.nurseVisitsTotal),
-										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits3OrMore + values.nurseVisits3OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+										A2($author$project$Pages$Utils$calculatePercentage, values.allVisits3OrMore, values.allVisitsTotal)
 									]),
 									_List_fromArray(
 									[
 										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith4OrMoreVisitsPercentage),
 										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits4OrMore, values.chwVisitsTotal),
 										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits4OrMore, values.nurseVisitsTotal),
-										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits4OrMore + values.nurseVisits4OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+										A2($author$project$Pages$Utils$calculatePercentage, values.allVisits4OrMore, values.allVisitsTotal)
 									])
 								])))
 				};

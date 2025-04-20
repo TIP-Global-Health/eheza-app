@@ -1632,12 +1632,12 @@ generatePrenatalReportData language limitDate records =
                     ++ [ [ translate language Translate.PatientsWith3OrMoreVisitsPercentage
                          , calculatePercentage values.chwVisits3OrMore values.chwVisitsTotal
                          , calculatePercentage values.nurseVisits3OrMore values.nurseVisitsTotal
-                         , calculatePercentage (values.chwVisits3OrMore + values.nurseVisits3OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         , calculatePercentage values.allVisits3OrMore values.allVisitsTotal
                          ]
                        , [ translate language Translate.PatientsWith4OrMoreVisitsPercentage
                          , calculatePercentage values.chwVisits4OrMore values.chwVisitsTotal
                          , calculatePercentage values.nurseVisits4OrMore values.nurseVisitsTotal
-                         , calculatePercentage (values.chwVisits4OrMore + values.nurseVisits4OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         , calculatePercentage values.allVisits4OrMore values.allVisitsTotal
                          ]
                        ]
             }
