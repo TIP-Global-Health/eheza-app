@@ -9058,47 +9058,201 @@ var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
 				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
-	function (startDate, encounterType) {
-		return {encounterType: encounterType, startDate: startDate};
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
+	function (startDate, encounterType, diagnoses) {
+		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
 	});
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
+var $elm$core$Debug$log = _Debug_log;
+var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
+var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis = {$: 'DiagnosisDeepVeinThrombosis'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible = {$: 'DiagnosisDepressionHighlyPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely = {$: 'DiagnosisDepressionNotLikely'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionPossible = {$: 'DiagnosisDepressionPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionProbable = {$: 'DiagnosisDepressionProbable'};
+var $author$project$Backend$Reports$Model$DiagnosisDiabetes = {$: 'DiagnosisDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership = {$: 'DiagnosisDiscordantPartnership'};
+var $author$project$Backend$Reports$Model$DiagnosisEclampsia = {$: 'DiagnosisEclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy = {$: 'DiagnosisEctopicPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes = {$: 'DiagnosisGestationalDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension = {$: 'DiagnosisGestationalHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisGonorrhea = {$: 'DiagnosisGonorrhea'};
+var $author$project$Backend$Reports$Model$DiagnosisHIV = {$: 'DiagnosisHIV'};
+var $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad = {$: 'DiagnosisHIVDetectableViralLoad'};
+var $author$project$Backend$Reports$Model$DiagnosisHeartburn = {$: 'DiagnosisHeartburn'};
+var $author$project$Backend$Reports$Model$DiagnosisHepatitisB = {$: 'DiagnosisHepatitisB'};
+var $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum = {$: 'DiagnosisHyperemesisGravidum'};
+var $author$project$Backend$Reports$Model$DiagnosisImminentDelivery = {$: 'DiagnosisImminentDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisInfection = {$: 'DiagnosisInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery = {$: 'DiagnosisLaborAndDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisMalaria = {$: 'DiagnosisMalaria'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia = {$: 'DiagnosisMalariaWithAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia = {$: 'DiagnosisMalariaWithSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: 'DiagnosisMaternalComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
+var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsiaEGA37Plus = {$: 'DiagnosisModeratePreeclampsiaEGA37Plus'};
+var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
+var $author$project$Backend$Reports$Model$DiagnosisOther = {$: 'DiagnosisOther'};
+var $author$project$Backend$Reports$Model$DiagnosisPPROM = {$: 'DiagnosisPPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPROM = {$: 'DiagnosisPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense = {$: 'DiagnosisPelvicPainIntense'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia = {$: 'DiagnosisPlacentaPrevia'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption = {$: 'DiagnosisPlacentalAbruption'};
+var $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis = {$: 'DiagnosisPostAbortionSepsis'};
+var $author$project$Backend$Reports$Model$DiagnosisPyelonephritis = {$: 'DiagnosisPyelonephritis'};
+var $author$project$Backend$Reports$Model$DiagnosisRhesusNegative = {$: 'DiagnosisRhesusNegative'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemia = {$: 'DiagnosisSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications = {$: 'DiagnosisSevereAnemiaWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia = {$: 'DiagnosisSeverePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsiaEGA37Plus = {$: 'DiagnosisSeverePreeclampsiaEGA37Plus'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereVomiting = {$: 'DiagnosisSevereVomiting'};
+var $author$project$Backend$Reports$Model$DiagnosisSuicideRisk = {$: 'DiagnosisSuicideRisk'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilis = {$: 'DiagnosisSyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications = {$: 'DiagnosisSyphilisWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis = {$: 'DiagnosisTrichomonasOrBacterialVaginosis'};
+var $author$project$Backend$Reports$Model$DiagnosisTuberculosis = {$: 'DiagnosisTuberculosis'};
+var $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection = {$: 'DiagnosisUrinaryTractInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisUterineRupture = {$: 'DiagnosisUterineRupture'};
+var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisChronicHypertension);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalHypertension);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsiaEGA37Plus);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia);
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsiaEGA37Plus);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEclampsia);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIV);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilis);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisNeurosyphilis);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHepatitisB);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalaria);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModerateAnemia);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemia);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMiscarriage);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMolarPregnancy);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUterineRupture);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisObstructedLabor);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPROM);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPPROM);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum);
+		case 'f1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereVomiting);
+		case 'g1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMaternalComplications);
+		case 'h1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisInfection);
+		case 'i1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisImminentDelivery);
+		case 'j1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery);
+		case 'k1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHeartburn);
+		case 'l1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis);
+		case 'm1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense);
+		case 'n1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection);
+		case 'o1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPyelonephritis);
+		case 'p1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCandidiasis);
+		case 'q1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGonorrhea);
+		case 'r1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis);
+		case 's1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosis);
+		case 't1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiabetes);
+		case 'u1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes);
+		case 'v1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRhesusNegative);
+		case 'w1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely);
+		case 'x1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionPossible);
+		case 'y1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible);
+		case 'z1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionProbable);
+		case 'a2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSuicideRisk);
+		case 'b2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisOther);
+		default:
 			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
-	});
+	}
+};
 var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
 var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
 var $author$project$Backend$Reports$Model$ChwSecondEncounter = {$: 'ChwSecondEncounter'};
 var $author$project$Backend$Reports$Model$ChwThirdPlusEncounter = {$: 'ChwThirdPlusEncounter'};
+var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
 var $author$project$Backend$Reports$Model$NursePostpartumEncounter = {$: 'NursePostpartumEncounter'};
 var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = function (encounterType) {
 	switch (encounterType) {
 		case 'nurse':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$NurseEncounter);
+			return $author$project$Backend$Reports$Model$NurseEncounter;
 		case 'nurse-postpartum':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$NursePostpartumEncounter);
+			return $author$project$Backend$Reports$Model$NursePostpartumEncounter;
 		case 'chw-1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwFirstEncounter);
+			return $author$project$Backend$Reports$Model$ChwFirstEncounter;
 		case 'chw-2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwSecondEncounter);
+			return $author$project$Backend$Reports$Model$ChwSecondEncounter;
 		case 'chw-3':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwThirdPlusEncounter);
+			return $author$project$Backend$Reports$Model$ChwThirdPlusEncounter;
 		case 'chw-postpartum':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwPostpartumEncounter);
+			return $author$project$Backend$Reports$Model$ChwPostpartumEncounter;
 		default:
-			return $elm$core$Maybe$Nothing;
+			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
 var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
@@ -9106,51 +9260,35 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 	function (s) {
 		var _v0 = A2(
 			$elm$core$String$split,
-			' ',
+			'|',
 			$elm$core$String$trim(s));
-		_v0$2:
-		while (true) {
-			if (_v0.b) {
-				if (!_v0.b.b) {
-					var first = _v0.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
-						A2(
-							$elm$core$Maybe$map,
-							function (startDate) {
-								return $elm$json$Json$Decode$succeed(
-									A2($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, $author$project$Backend$Reports$Model$NurseEncounter));
-							},
-							$elm$core$Result$toMaybe(
-								$justinmimbs$date$Date$fromIsoString(first))));
-				} else {
-					if (!_v0.b.b.b) {
-						var first = _v0.a;
-						var _v1 = _v0.b;
-						var second = _v1.a;
-						return A2(
-							$elm$core$Maybe$withDefault,
-							$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
-							A3(
-								$elm$core$Maybe$map2,
-								F2(
-									function (startDate, encounterType) {
-										return $elm$json$Json$Decode$succeed(
-											A2($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType));
-									}),
-								$elm$core$Result$toMaybe(
-									$justinmimbs$date$Date$fromIsoString(first)),
-								$author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second)));
-					} else {
-						break _v0$2;
-					}
-				}
-			} else {
-				break _v0$2;
-			}
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
+						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
+								A2($elm$core$String$split, ',', third)));
+						var _v3 = A2($elm$core$Debug$log, '', second);
+						return $elm$json$Json$Decode$succeed(
+							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 		}
-		return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 	},
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
@@ -16674,6 +16812,21 @@ var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
 var $author$project$Translate$Year = function (a) {
 	return {$: 'Year', a: a};
 };
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
 var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateToMetricsResultsTableData = F2(
 	function (language, backendTableData) {
 		var translateCaption = function (caption) {

@@ -9,6 +9,7 @@ import Gizra.Json exposing (decodeFloat, decodeInt)
 import Gizra.NominalDate exposing (NominalDate, decodeYYYYMMDD, diffMonths)
 import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, oneOf, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required)
+import Maybe.Extra
 
 
 decodeReportsData : Decoder ReportsData
@@ -256,23 +257,30 @@ decodePrenatalEncounterData =
     string
         |> andThen
             (\s ->
-                case String.split " " (String.trim s) of
-                    [ first ] ->
+                case String.split "|" (String.trim s) of
+                    [ first, second, third ] ->
                         Date.fromIsoString first
                             |> Result.toMaybe
                             |> Maybe.map
                                 (\startDate ->
-                                    succeed (PrenatalEncounterData startDate NurseEncounter)
-                                )
-                            |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
+                                    let
+                                        encounterType =
+                                            prenatalEncounterTypeFromString second
 
-                    [ first, second ] ->
-                        Maybe.map2
-                            (\startDate encounterType ->
-                                succeed (PrenatalEncounterData startDate encounterType)
-                            )
-                            (Date.fromIsoString first |> Result.toMaybe)
-                            (prenatalEncounterTypeFromString second)
+                                        _ =
+                                            Debug.log "" second
+
+                                        diagnoses =
+                                            if String.isEmpty third then
+                                                []
+
+                                            else
+                                                String.split "," third
+                                                    |> List.map prenatalDiagnosisFromMapping
+                                                    |> Maybe.Extra.values
+                                    in
+                                    succeed (PrenatalEncounterData startDate encounterType diagnoses)
+                                )
                             |> Maybe.withDefault (fail "Failed to decode PrenatalEncounterData")
 
                     _ ->
@@ -280,26 +288,196 @@ decodePrenatalEncounterData =
             )
 
 
-prenatalEncounterTypeFromString : String -> Maybe PrenatalEncounterType
+prenatalEncounterTypeFromString : String -> PrenatalEncounterType
 prenatalEncounterTypeFromString encounterType =
     case encounterType of
         "nurse" ->
-            Just NurseEncounter
+            NurseEncounter
 
         "nurse-postpartum" ->
-            Just NursePostpartumEncounter
+            NursePostpartumEncounter
 
         "chw-1" ->
-            Just ChwFirstEncounter
+            ChwFirstEncounter
 
         "chw-2" ->
-            Just ChwSecondEncounter
+            ChwSecondEncounter
 
         "chw-3" ->
-            Just ChwThirdPlusEncounter
+            ChwThirdPlusEncounter
 
         "chw-postpartum" ->
-            Just ChwPostpartumEncounter
+            ChwPostpartumEncounter
+
+        _ ->
+            -- Fallback.
+            NurseEncounter
+
+
+prenatalDiagnosisFromMapping : String -> Maybe PrenatalDiagnosis
+prenatalDiagnosisFromMapping s =
+    case s of
+        "a" ->
+            Just DiagnosisChronicHypertension
+
+        "b" ->
+            Just DiagnosisGestationalHypertension
+
+        "c" ->
+            Just DiagnosisModeratePreeclampsia
+
+        "d" ->
+            Just DiagnosisModeratePreeclampsiaEGA37Plus
+
+        "e" ->
+            Just DiagnosisSeverePreeclampsia
+
+        "f" ->
+            Just DiagnosisSeverePreeclampsiaEGA37Plus
+
+        "g" ->
+            Just DiagnosisEclampsia
+
+        "h" ->
+            Just DiagnosisHIV
+
+        "i" ->
+            Just DiagnosisHIVDetectableViralLoad
+
+        "j" ->
+            Just DiagnosisDiscordantPartnership
+
+        "k" ->
+            Just DiagnosisSyphilis
+
+        "l" ->
+            Just DiagnosisSyphilisWithComplications
+
+        "m" ->
+            Just DiagnosisNeurosyphilis
+
+        "n" ->
+            Just DiagnosisHepatitisB
+
+        "o" ->
+            Just DiagnosisMalaria
+
+        "p" ->
+            Just DiagnosisMalariaWithAnemia
+
+        "q" ->
+            Just DiagnosisMalariaWithSevereAnemia
+
+        "r" ->
+            Just DiagnosisModerateAnemia
+
+        "s" ->
+            Just DiagnosisSevereAnemia
+
+        "t" ->
+            Just DiagnosisSevereAnemiaWithComplications
+
+        "u" ->
+            Just DiagnosisMiscarriage
+
+        "v" ->
+            Just DiagnosisMolarPregnancy
+
+        "w" ->
+            Just DiagnosisPlacentaPrevia
+
+        "x" ->
+            Just DiagnosisPlacentalAbruption
+
+        "y" ->
+            Just DiagnosisUterineRupture
+
+        "z" ->
+            Just DiagnosisObstructedLabor
+
+        "a1" ->
+            Just DiagnosisPostAbortionSepsis
+
+        "b1" ->
+            Just DiagnosisEctopicPregnancy
+
+        "c1" ->
+            Just DiagnosisPROM
+
+        "d1" ->
+            Just DiagnosisPPROM
+
+        "e1" ->
+            Just DiagnosisHyperemesisGravidum
+
+        "f1" ->
+            Just DiagnosisSevereVomiting
+
+        "g1" ->
+            Just DiagnosisMaternalComplications
+
+        "h1" ->
+            Just DiagnosisInfection
+
+        "i1" ->
+            Just DiagnosisImminentDelivery
+
+        "j1" ->
+            Just DiagnosisLaborAndDelivery
+
+        "k1" ->
+            Just DiagnosisHeartburn
+
+        "l1" ->
+            Just DiagnosisDeepVeinThrombosis
+
+        "m1" ->
+            Just DiagnosisPelvicPainIntense
+
+        "n1" ->
+            Just DiagnosisUrinaryTractInfection
+
+        "o1" ->
+            Just DiagnosisPyelonephritis
+
+        "p1" ->
+            Just DiagnosisCandidiasis
+
+        "q1" ->
+            Just DiagnosisGonorrhea
+
+        "r1" ->
+            Just DiagnosisTrichomonasOrBacterialVaginosis
+
+        "s1" ->
+            Just DiagnosisTuberculosis
+
+        "t1" ->
+            Just DiagnosisDiabetes
+
+        "u1" ->
+            Just DiagnosisGestationalDiabetes
+
+        "v1" ->
+            Just DiagnosisRhesusNegative
+
+        "w1" ->
+            Just DiagnosisDepressionNotLikely
+
+        "x1" ->
+            Just DiagnosisDepressionPossible
+
+        "y1" ->
+            Just DiagnosisDepressionHighlyPossible
+
+        "z1" ->
+            Just DiagnosisDepressionProbable
+
+        "a2" ->
+            Just DiagnosisSuicideRisk
+
+        "b2" ->
+            Just DiagnosisOther
 
         _ ->
             Nothing
