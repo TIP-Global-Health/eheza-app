@@ -22,6 +22,7 @@ import Backend.Completion.Model
 import Backend.Reports.Model
     exposing
         ( AcuteIllnessDiagnosis(..)
+        , DeliveryLocation(..)
         , NutritionReportTableType(..)
         , PregnancyOutcome(..)
         )
@@ -97,10 +98,14 @@ type TranslationId
     | CompletionReportType Pages.Completion.Model.ReportType
     | CoreExam
     | DangerSigns
+    | DeliveryLocation DeliveryLocation
+    | DeliveryLocationsTableHeading
+    | DeliveryLocationsTablePercentage
+    | DeliveryLocationsTableTotals
+    | Demographics
     | Diagnosis
     | Diagnostics
     | District
-    | Demographics
     | DownloadCSV
     | EmptyString
     | Encounters
@@ -144,6 +149,7 @@ type TranslationId
     | Individual
     | InfrastructureEnvironmentWash
     | LoadData
+    | Location
     | Male
     | Medication
     | MedicationDistribution
@@ -662,6 +668,44 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        DeliveryLocation location ->
+            case location of
+                FacilityDelivery ->
+                    { english = "Facility"
+                    , kinyarwanda = Just "Ivuriro"
+                    , kirundi = Just "Ikigo"
+                    }
+
+                HomeDelivery ->
+                    { english = "Home"
+                    , kinyarwanda = Just "Mu rugo"
+                    , kirundi = Just "Muhira"
+                    }
+
+        DeliveryLocationsTableHeading ->
+            { english = "Outcome Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTablePercentage ->
+            { english = "Percentage of completed pregnancies reported"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTableTotals ->
+            { english = "Total # delivery outcomes documented"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Demographics ->
+            { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Diagnostics ->
             { english = "Diagnostics"
             , kinyarwanda = Nothing
@@ -670,12 +714,6 @@ translationSet transId =
 
         District ->
             { english = "District"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        Demographics ->
-            { english = "Demographics"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -956,6 +994,12 @@ translationSet transId =
 
         LoadData ->
             { english = "Load Data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Location ->
+            { english = "Location"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

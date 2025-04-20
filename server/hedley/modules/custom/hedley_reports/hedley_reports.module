@@ -343,6 +343,7 @@ function hedley_reports_trigger_recalculation_by_edited_content($node) {
     case HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE:
       $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
       break;
+
     case HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE:
       if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
         $participant_id = $node->nid;

@@ -10950,12 +10950,33 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
 				return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocation':
+				var location = transId.a;
+				if (location.$ === 'FacilityDelivery') {
+					return {
+						english: 'Facility',
+						kinyarwanda: $elm$core$Maybe$Just('Ivuriro'),
+						kirundi: $elm$core$Maybe$Just('Ikigo')
+					};
+				} else {
+					return {
+						english: 'Home',
+						kinyarwanda: $elm$core$Maybe$Just('Mu rugo'),
+						kirundi: $elm$core$Maybe$Just('Muhira')
+					};
+				}
+			case 'DeliveryLocationsTableHeading':
+				return {english: 'Outcome Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocationsTablePercentage':
+				return {english: 'Percentage of completed pregnancies reported', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocationsTableTotals':
+				return {english: 'Total # delivery outcomes documented', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Demographics':
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Diagnostics':
 				return {english: 'Diagnostics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'District':
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'Demographics':
-				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DownloadCSV':
 				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
@@ -11091,6 +11112,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'LoadData':
 				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Location':
+				return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Male':
 				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Medication':
@@ -13224,7 +13247,7 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Utils$calcualtePercentage = F2(
+var $author$project$Pages$Utils$calculatePercentage = F2(
 	function (nominator, total) {
 		return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 2, (nominator / total) * 100) + '%');
 	});
@@ -13291,7 +13314,7 @@ var $author$project$Pages$Completion$View$generateAcuteIllnessReportData = F2(
 							$author$project$Translate$AcuteIllnessActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allAcuteIllnessActivities)
@@ -14374,7 +14397,7 @@ var $author$project$Pages$Completion$View$generateChildScoreboardReportData = F3
 							$author$project$Translate$ChildScoreboardActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14546,7 +14569,7 @@ var $author$project$Pages$Completion$View$generateHIVReportData = F2(
 							$author$project$Translate$HIVActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHIVActivities)
@@ -14616,7 +14639,7 @@ var $author$project$Pages$Completion$View$generateHomeVisitReportData = F2(
 							$author$project$Translate$HomeVisitActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHomeVisitActivities)
@@ -14708,7 +14731,7 @@ var $author$project$Pages$Completion$View$generateNCDReportData = F2(
 							$author$project$Translate$NCDActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNCDActivities)
@@ -14798,7 +14821,7 @@ var $author$project$Pages$Completion$View$generateWellChildReportData = F4(
 							$author$project$Translate$WellChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14876,7 +14899,7 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 								activityTransId(activity)),
 								$elm$core$String$fromInt(expected),
 								$elm$core$String$fromInt(completed),
-								A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+								A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 							]);
 					});
 			});
@@ -14949,7 +14972,7 @@ var $author$project$Pages$Completion$View$generateNutritionIndividualReportData 
 							$author$project$Translate$NutritionChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNutritionIndividualActivities)
@@ -15019,7 +15042,7 @@ var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 							$author$project$Translate$PrenatalActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allPrenatalActivities)
@@ -15150,7 +15173,7 @@ var $author$project$Pages$Completion$View$generateTuberculosisReportData = F2(
 							$author$project$Translate$TuberculosisActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Utils$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allTuberculosisActivities)
@@ -17526,33 +17549,33 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
 			$elm$core$Set$fromList(previousPeriodStuntingModerateSevere));
-		var calcualtePercentage = F2(
+		var calculatePercentage = F2(
 			function (nominator, total) {
 				return $elm$core$Set$isEmpty(total) ? 0 : (($elm$core$Set$size(nominator) / $elm$core$Set$size(total)) * 100);
 			});
 		return {
 			stuntingModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, stuntingModerateTestedInPreviousPeriod, stuntingModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodStuntingTotal),
 			stuntingSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, stuntingSevereTestedInPreviousPeriod, stuntingSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodStuntingTotal),
 			underweightModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, underweightModerateTestedInPreviousPeriod, underweightModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodUnderweightTotal),
 			underweightSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, underweightSevereTestedInPreviousPeriod, underweightSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodUnderweightTotal),
 			wastingModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, wastingModerateTestedInPreviousPeriod, wastingModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodWastingTotal),
 			wastingSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, wastingSevereTestedInPreviousPeriod, wastingSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodWastingTotal)
 		};
@@ -17720,17 +17743,17 @@ var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResult
 		_Utils_ap(
 			metrics.stuntingModerate,
 			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
-	var calcualtePercentage = F2(
+	var calculatePercentage = F2(
 		function (nominator, total) {
 			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
 		});
 	return {
-		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
-		stuntingSevere: A2(calcualtePercentage, metrics.stuntingSevere, stuntingTotal),
-		underweightModerate: A2(calcualtePercentage, metrics.underweightModerate, underweightTotal),
-		underweightSevere: A2(calcualtePercentage, metrics.underweightSevere, underweightTotal),
-		wastingModerate: A2(calcualtePercentage, metrics.wastingModerate, wastingTotal),
-		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
+		stuntingModerate: A2(calculatePercentage, metrics.stuntingModerate, stuntingTotal),
+		stuntingSevere: A2(calculatePercentage, metrics.stuntingSevere, stuntingTotal),
+		underweightModerate: A2(calculatePercentage, metrics.underweightModerate, underweightTotal),
+		underweightSevere: A2(calculatePercentage, metrics.underweightSevere, underweightTotal),
+		wastingModerate: A2(calculatePercentage, metrics.wastingModerate, wastingTotal),
+		wastingSevere: A2(calculatePercentage, metrics.wastingSevere, wastingTotal)
 	};
 };
 var $author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData = F4(
@@ -18004,10 +18027,17 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Translate$DeliveryLocation = function (a) {
+	return {$: 'DeliveryLocation', a: a};
+};
+var $author$project$Translate$DeliveryLocationsTableHeading = {$: 'DeliveryLocationsTableHeading'};
+var $author$project$Translate$DeliveryLocationsTablePercentage = {$: 'DeliveryLocationsTablePercentage'};
+var $author$project$Translate$DeliveryLocationsTableTotals = {$: 'DeliveryLocationsTableTotals'};
 var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
 var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};
+var $author$project$Translate$Location = {$: 'Location'};
 var $author$project$Translate$NumberOfVisits = function (a) {
 	return {$: 'NumberOfVisits', a: a};
 };
@@ -18030,7 +18060,6 @@ var $author$project$Translate$Trimester = {$: 'Trimester'};
 var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
 	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
 };
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$Gizra$NominalDate$diffDays = F2(
 	function (low, high) {
 		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
@@ -18058,9 +18087,9 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var partitionByNumberOfVisits = A2(
 			$elm$core$List$foldl,
 			F2(
-				function (countedVisits, _v5) {
-					var nurseDict = _v5.a;
-					var chwDict = _v5.b;
+				function (countedVisits, _v4) {
+					var nurseDict = _v4.a;
+					var chwDict = _v4.b;
 					var resolveKeyForValue = function (value) {
 						return (value > 4) ? (-1) : value;
 					};
@@ -18102,9 +18131,9 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 				var visitsRows = A2(
 					$elm$core$List$indexedMap,
 					F2(
-						function (index, _v4) {
-							var chwValue = _v4.a;
-							var nurseValue = _v4.b;
+						function (index, _v3) {
+							var chwValue = _v3.a;
+							var nurseValue = _v3.b;
 							return A3(
 								generateRowData,
 								$author$project$Translate$NumberOfVisits(index + 1),
@@ -18129,16 +18158,16 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 									_List_fromArray(
 									[
 										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith3OrMoreVisitsPercentage),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits3OrMore, values.chwVisitsTotal),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.nurseVisits3OrMore, values.nurseVisitsTotal),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits3OrMore + values.nurseVisits3OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits3OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits3OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits3OrMore + values.nurseVisits3OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
 									]),
 									_List_fromArray(
 									[
 										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith4OrMoreVisitsPercentage),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits4OrMore, values.chwVisitsTotal),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.nurseVisits4OrMore, values.nurseVisitsTotal),
-										A2($author$project$Pages$Utils$calcualtePercentage, values.chwVisits4OrMore + values.nurseVisits4OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits4OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits4OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits4OrMore + values.nurseVisits4OrMore, values.chwVisitsTotal + values.nurseVisitsTotal)
 									])
 								])))
 				};
@@ -18233,7 +18262,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 							$author$project$Translate$translate,
 							language,
 							$author$project$Translate$PregnancyTrimester(trimester)),
-							A2($author$project$Pages$Utils$calcualtePercentage, occurances, totalPregnancies)
+							A2($author$project$Pages$Utils$calculatePercentage, occurances, totalPregnancies)
 						]);
 				},
 				_List_fromArray(
@@ -18308,6 +18337,78 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
 		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
 		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
+		var deliveryLocationsDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
+						A2(
+							$elm$core$Maybe$map,
+							function (location) {
+								var updated = A2(
+									$elm$core$Maybe$withDefault,
+									1,
+									A2(
+										$elm$core$Maybe$map,
+										$elm$core$Basics$add(1),
+										A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
+								return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
+							},
+							participantData.deliveryLocation));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			completed);
+		var deliveryLocationsTable = function () {
+			var totalCompletedPregnancies = $elm$core$List$length(completed);
+			var homeDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
+			var facilityDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$FacilityDelivery, deliveryLocationsDict));
+			var totalDeliveries = facilityDeliveries + homeDeliveries;
+			return {
+				captions: A2(
+					$elm$core$List$map,
+					$author$project$Translate$translate(language),
+					_List_fromArray(
+						[$author$project$Translate$Location, $author$project$Translate$EmptyString])),
+				heading: A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTableHeading) + ':',
+				rows: _List_fromArray(
+					[
+						_List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$DeliveryLocation($author$project$Backend$Reports$Model$FacilityDelivery)),
+							$elm$core$String$fromInt(facilityDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$DeliveryLocation($author$project$Backend$Reports$Model$HomeDelivery)),
+							$elm$core$String$fromInt(homeDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTableTotals),
+							$elm$core$String$fromInt(totalDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTablePercentage),
+							A2($author$project$Pages$Utils$calculatePercentage, totalDeliveries, totalCompletedPregnancies)
+						])
+					])
+			};
+		}();
 		var outcomesDict = A3(
 			$elm$core$List$foldl,
 			F2(
@@ -18357,7 +18458,6 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 				_List_fromArray(
 					[$author$project$Backend$Reports$Model$OutcomeLiveAtTerm, $author$project$Backend$Reports$Model$OutcomeLivePreTerm, $author$project$Backend$Reports$Model$OutcomeStillAtTerm, $author$project$Backend$Reports$Model$OutcomeStillPreTerm, $author$project$Backend$Reports$Model$OutcomeAbortions]))
 		};
-		var _v3 = A2($elm$core$Debug$log, '', outcomesDict);
 		return _Utils_ap(
 			_List_fromArray(
 				[
@@ -18399,7 +18499,7 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 					{chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
 				]),
 			_List_fromArray(
-				[firstVisitTable, outcomesTable]));
+				[firstVisitTable, outcomesTable, deliveryLocationsTable]));
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {

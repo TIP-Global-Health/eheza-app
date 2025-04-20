@@ -37,7 +37,7 @@ import Pages.Completion.Model exposing (..)
 import Pages.Completion.Utils exposing (..)
 import Pages.Components.View exposing (viewMetricsResultsTable)
 import Pages.Model exposing (MetricsResultsTableData)
-import Pages.Utils exposing (calcualtePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
+import Pages.Utils exposing (calculatePercentage, launchDate, viewCustomSelectListInput, viewSelectListInput, wrapSelectListInput)
 import RemoteData exposing (RemoteData(..))
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
@@ -191,7 +191,7 @@ viewCompletionData language currentDate themePath data model =
                 isJust model.startDateSelectorPopupState
                     || isJust model.limitDateSelectorPopupState
             then
-                -- Date selector is open, so no need to calcualte
+                -- Date selector is open, so no need to calculate
                 -- intermediate results.
                 emptyNode
 
@@ -464,7 +464,7 @@ generateNutritionIndividualReportData language records =
                 [ translate language <| Translate.NutritionChildActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allNutritionIndividualActivities
@@ -497,7 +497,7 @@ generateNutritionGroupReportData language records =
                     [ translate language <| activityTransId activity
                     , String.fromInt expected
                     , String.fromInt completed
-                    , calcualtePercentage completed expected
+                    , calculatePercentage completed expected
                     ]
                 )
 
@@ -533,7 +533,7 @@ generateAcuteIllnessReportData language records =
                 [ translate language <| Translate.AcuteIllnessActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allAcuteIllnessActivities
@@ -562,7 +562,7 @@ generateWellChildReportData language labelTransId activities records =
                 [ translate language <| Translate.WellChildActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             activities
@@ -589,7 +589,7 @@ generateHomeVisitReportData language records =
                 [ translate language <| Translate.HomeVisitActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allHomeVisitActivities
@@ -617,7 +617,7 @@ generateChildScoreboardReportData language activities records =
                 [ translate language <| Translate.ChildScoreboardActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             activities
@@ -644,7 +644,7 @@ generateNCDReportData language records =
                 [ translate language <| Translate.NCDActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allNCDActivities
@@ -671,7 +671,7 @@ generateHIVReportData language records =
                 [ translate language <| Translate.HIVActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allHIVActivities
@@ -698,7 +698,7 @@ generateTuberculosisReportData language records =
                 [ translate language <| Translate.TuberculosisActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allTuberculosisActivities
@@ -725,7 +725,7 @@ generatePrenatalReportData language records =
                 [ translate language <| Translate.PrenatalActivity activity
                 , String.fromInt expected
                 , String.fromInt completed
-                , calcualtePercentage completed expected
+                , calculatePercentage completed expected
                 ]
             )
             allPrenatalActivities

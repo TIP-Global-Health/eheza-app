@@ -16,8 +16,8 @@ import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
 
 
-calcualtePercentage : Int -> Int -> String
-calcualtePercentage nominator total =
+calculatePercentage : Int -> Int -> String
+calculatePercentage nominator total =
     if total == 0 then
         "0"
 

@@ -7,6 +7,7 @@ import Backend.Reports.Model
     exposing
         ( AcuteIllnessEncounterType(..)
         , BackendGeneratedNutritionReportTableDate
+        , DeliveryLocation(..)
         , Gender(..)
         , NutritionReportTableType(..)
         , PatientData
@@ -31,7 +32,7 @@ import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( calcualtePercentage
+        ( calculatePercentage
         , generateReportsHeaderImage
         , launchDate
         , viewCustomLabel
@@ -164,7 +165,7 @@ viewReportsData language currentDate themePath data model =
                 isJust model.startDateSelectorPopupState
                     || isJust model.limitDateSelectorPopupState
             then
-                -- Date selector is open, so no need to calcualte
+                -- Date selector is open, so no need to calculate
                 -- intermediate results.
                 emptyNode
 
@@ -1590,14 +1591,14 @@ generatePrenatalReportData language limitDate records =
                 visitsRows
                     ++ [ totalsRow ]
                     ++ [ [ translate language Translate.PatientsWith3OrMoreVisitsPercentage
-                         , calcualtePercentage values.chwVisits3OrMore values.chwVisitsTotal
-                         , calcualtePercentage values.nurseVisits3OrMore values.nurseVisitsTotal
-                         , calcualtePercentage (values.chwVisits3OrMore + values.nurseVisits3OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         , calculatePercentage values.chwVisits3OrMore values.chwVisitsTotal
+                         , calculatePercentage values.nurseVisits3OrMore values.nurseVisitsTotal
+                         , calculatePercentage (values.chwVisits3OrMore + values.nurseVisits3OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
                          ]
                        , [ translate language Translate.PatientsWith4OrMoreVisitsPercentage
-                         , calcualtePercentage values.chwVisits4OrMore values.chwVisitsTotal
-                         , calcualtePercentage values.nurseVisits4OrMore values.nurseVisitsTotal
-                         , calcualtePercentage (values.chwVisits4OrMore + values.nurseVisits4OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
+                         , calculatePercentage values.chwVisits4OrMore values.chwVisitsTotal
+                         , calculatePercentage values.nurseVisits4OrMore values.nurseVisitsTotal
+                         , calculatePercentage (values.chwVisits4OrMore + values.nurseVisits4OrMore) (values.chwVisitsTotal + values.nurseVisitsTotal)
                          ]
                        ]
             }
@@ -1674,7 +1675,7 @@ generatePrenatalReportData language limitDate records =
                                     |> Maybe.withDefault 0
                         in
                         [ translate language <| Translate.PregnancyTrimester trimester
-                        , calcualtePercentage occurances totalPregnancies
+                        , calculatePercentage occurances totalPregnancies
                         ]
                     )
                     [ FirstTrimester
@@ -1682,9 +1683,6 @@ generatePrenatalReportData language limitDate records =
                     , ThirdTrimester
                     ]
             }
-
-        _ =
-            Debug.log "" outcomesDict
 
         -- Pregnanc outcome stats.
         outcomesDict =
@@ -1727,6 +1725,60 @@ generatePrenatalReportData language limitDate records =
                     , OutcomeStillPreTerm
                     , OutcomeAbortions
                     ]
+            }
+
+        -- Pregnancy delivery locations stats.
+        deliveryLocationsDict =
+            List.foldl
+                (\participantData accumDict ->
+                    Maybe.map
+                        (\location ->
+                            let
+                                updated =
+                                    Dict.get location accumDict
+                                        |> Maybe.map ((+) 1)
+                                        |> Maybe.withDefault 1
+                            in
+                            Dict.insert location updated accumDict
+                        )
+                        participantData.deliveryLocation
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                completed
+
+        deliveryLocationsTable =
+            let
+                facilityDeliveries =
+                    Dict.get FacilityDelivery deliveryLocationsDict
+                        |> Maybe.withDefault 0
+
+                homeDeliveries =
+                    Dict.get HomeDelivery deliveryLocationsDict
+                        |> Maybe.withDefault 0
+
+                totalDeliveries =
+                    facilityDeliveries + homeDeliveries
+
+                totalCompletedPregnancies =
+                    List.length completed
+            in
+            { heading = translate language Translate.DeliveryLocationsTableHeading ++ ":"
+            , captions = List.map (translate language) [ Translate.Location, Translate.EmptyString ]
+            , rows =
+                [ [ translate language <| Translate.DeliveryLocation FacilityDelivery
+                  , String.fromInt facilityDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocation HomeDelivery
+                  , String.fromInt homeDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocationsTableTotals
+                  , String.fromInt totalDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocationsTablePercentage
+                  , calculatePercentage totalDeliveries totalCompletedPregnancies
+                  ]
+                ]
             }
     in
     [ generateTableData Translate.PregnanciesAll
@@ -1792,7 +1844,7 @@ generatePrenatalReportData language limitDate records =
         , nurseVisitsTotal = completedNurseVisitsTotal
         }
     ]
-        ++ [ firstVisitTable, outcomesTable ]
+        ++ [ firstVisitTable, outcomesTable, deliveryLocationsTable ]
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
