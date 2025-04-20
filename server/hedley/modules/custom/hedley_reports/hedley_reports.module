@@ -501,6 +501,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
+  $prenatal_diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
   $encounter_types_to_load = [
     HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
     HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
@@ -533,7 +534,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
         case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
           $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
-          $encounter_data = "$encounter_date $encounter_type";
+          $mapped_diagnoses = [];
+          if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+            foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis];
+              }
+            }
+          }
+          if (!empty($encounter->field_past_prenatal_diagnoses) && !empty($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE])) {
+            foreach ($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis];
+              }
+            }
+          }
+          $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses";
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
@@ -1173,7 +1190,7 @@ function hedley_reports_gz_compress_file($data, $file_path) {
 }
 
 /**
- * Provides a mapping for AI diagnosis codes.
+ * Provides a mapping for Acute Illness diagnosis codes.
  *
  * This function returns an associative array where the keys are diagnosis
  * identifiers and the values are corresponding codes.
@@ -1199,6 +1216,96 @@ function hedley_reports_ai_diagnosis_mapping() {
     'undetermined' => 'n',
     'tuberculosis-suspect' => 'o',
     'none' => 'z',
+  ];
+}
+
+/**
+ * Provides a mapping for Prenatal diagnosis codes.
+ *
+ * This function returns an associative array where the keys are diagnosis
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping diagnosis identifiers to their codes.
+ */
+function hedley_reports_prenatal_diagnosis_mapping() {
+  return [
+    'chronic-hypertension-immediate' => 'a',
+    'chronic-hypertension-recheck' => 'a',
+    'gestational-hypertension-immediate' => 'b',
+    'gestational-hypertension-recheck' => 'b',
+    'moderate-preeclampsia-initial' => 'c',
+    'moderate-preeclampsia-recurrent' => 'c',
+    'moderate-preeclampsia-initial-ega-37+' => 'd',
+    'moderate-preeclampsia-recurrent-ega-37+' => 'd',
+    'severe-preeclampsia-initial' => 'e',
+    'severe-preeclampsia-initial-ega-37+' => 'e',
+    'severe-preeclampsia-recurrent' => 'f',
+    'severe-preeclampsia-recurrent-ega-37+' => 'f',
+    'eclampsia' => 'g',
+    'hiv' => 'h',
+    'hiv-recurrent' => 'h',
+    'hiv-detectable-viral-load-initial' => 'i',
+    'hiv-detectable-viral-load' => 'i',
+    'partner-hiv' => 'j',
+    'partner-hiv-recurrent' => 'j',
+    'syphilis-initial' => 'k',
+    'syphilis' => 'k',
+    'syphilis-complications-initial' => 'l',
+    'syphilis-complications' => 'l',
+    'neurosyphilis-initial' => 'm',
+    'neurosyphilis' => 'm',
+    'hepatitis-b-initial' => 'n',
+    'hepatitis-b' => 'n',
+    'malaria' => 'o',
+    'malaria-recurrent' => 'o',
+    'malaria-anemia' => 'p',
+    'malaria-anemia-recurrent' => 'p',
+    'malaria-severe-anemia' => 'q',
+    'malaria-severe-anemia-recurrent' => 'q',
+    'anemia-initial' => 'r',
+    'anemia' => 'r',
+    'severe-anemia-initial' => 's',
+    'severe-anemia' => 's',
+    'severe-anemia-complications-initial' => 't',
+    'severe-anemia-complications' => 't',
+    'miscarriage' => 'u',
+    'molar-pregnancy' => 'v',
+    'placenta-previa' => 'w',
+    'placental-abruption' => 'x',
+    'uterine-rupture' => 'y',
+    'obstructed-labor' => 'z',
+    'post-abortion-sepsis' => 'a1',
+    'ectopic-pregnancy' => 'b1',
+    'prom' => 'c1',
+    'pprom' => 'd1',
+    'hyperemesis-gravidum' => 'e1',
+    'severe-vomiting' => 'f1',
+    'maternal-complications' => 'g1',
+    'infection' => 'h1',
+    'imminent-delivery' => 'i1',
+    'labor' => 'j1',
+    'heartburn' => 'k1',
+    'dvt' => 'l1',
+    'pelvic-pain-intense' => 'm1',
+    'urinary-tract-infection' => 'n1',
+    'pyelonephritis' => 'o1',
+    'candidiasis' => 'p1',
+    'gonorrhea' => 'q1',
+    'trichomonas-or-bv' => 'r1',
+    'tuberculosis' => 's1',
+    'diabetes-initial' => 't1',
+    'diabetes' => 't1',
+    'gestational-diabetes-initial' => 'u1',
+    'gestational-diabetes' => 'u1',
+    'rhesus-negative-initial' => 'v1',
+    'rhesus-negative' => 'v1',
+    'depression-not-likely' => 'w1',
+    'depression-possible' => 'x1',
+    'depression-highly-possible' => 'y1',
+    'depression-probable' => 'z1',
+    'suicide-risk' => 'a2',
+    'other' => 'b2',
   ];
 }
 
