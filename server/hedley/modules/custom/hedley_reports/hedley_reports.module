@@ -2351,7 +2351,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     'children' => [],
   ];
 
-  // Loading all measurements that were taken for mother and children.
+  // Loading all measurements taken for mother and children.
   $session_measurements_types = array_merge(array_keys($mapping_mother), array_keys($mapping_child));
   $query = new EntityFieldQuery();
   $result = $query
