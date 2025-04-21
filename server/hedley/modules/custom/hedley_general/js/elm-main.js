@@ -18650,6 +18650,11 @@ var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
 			},
 			$author$project$Backend$Reports$Utils$allPrenatalDiagnoses);
+		var totalsRow = A2(
+			generateRow,
+			$author$project$Translate$Total,
+			$elm$core$List$sum(
+				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
 		return {
 			captions: _List_fromArray(
 				[
@@ -18657,7 +18662,10 @@ var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
 					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
 				]),
 			heading: '',
-			rows: rows
+			rows: _Utils_ap(
+				rows,
+				_List_fromArray(
+					[totalsRow]))
 		};
 	});
 var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(

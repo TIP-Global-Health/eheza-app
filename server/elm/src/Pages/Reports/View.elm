@@ -2126,6 +2126,11 @@ generatePrenatalDiagnosesReportData language limitDate records =
                 )
                 allPrenatalDiagnoses
 
+        totalsRow =
+            Dict.values diagnosesCountDict
+                |> List.sum
+                |> generateRow Translate.Total
+
         generateRow label value =
             [ translate language label
             , String.fromInt value
@@ -2136,7 +2141,7 @@ generatePrenatalDiagnosesReportData language limitDate records =
         [ translate language Translate.Diagnosis
         , translate language Translate.Total
         ]
-    , rows = rows
+    , rows = rows ++ [ totalsRow ]
     }
 
 
