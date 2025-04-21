@@ -129,9 +129,7 @@ type PrenatalDiagnosis
     = DiagnosisChronicHypertension
     | DiagnosisGestationalHypertension
     | DiagnosisModeratePreeclampsia
-    | DiagnosisModeratePreeclampsiaEGA37Plus
     | DiagnosisSeverePreeclampsia
-    | DiagnosisSeverePreeclampsiaEGA37Plus
     | DiagnosisEclampsia
     | DiagnosisHIV
     | DiagnosisHIVDetectableViralLoad
@@ -180,6 +178,18 @@ type PrenatalDiagnosis
     | DiagnosisDepressionProbable
     | DiagnosisSuicideRisk
     | DiagnosisOther
+      -- For Postpartum only:
+    | DiagnosisPostpartumAbdominalPain
+    | DiagnosisPostpartumUrinaryIncontinence
+    | DiagnosisPostpartumHeadache
+    | DiagnosisPostpartumFatigue
+    | DiagnosisPostpartumFever
+    | DiagnosisPostpartumPerinealPainOrDischarge
+    | DiagnosisPostpartumInfection
+    | DiagnosisPostpartumExcessiveBleeding
+    | DiagnosisPostpartumEarlyMastitisOrEngorgment
+    | DiagnosisPostpartumMastitis
+    | NoPrenatalDiagnosis
 
 
 type alias NutritionEncounterData =

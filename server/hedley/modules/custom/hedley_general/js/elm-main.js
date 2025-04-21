@@ -9094,7 +9094,6 @@ var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: '
 var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
 var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
 var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
-var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsiaEGA37Plus = {$: 'DiagnosisModeratePreeclampsiaEGA37Plus'};
 var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
 var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
 var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
@@ -9105,12 +9104,21 @@ var $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense = {$: 'Diag
 var $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia = {$: 'DiagnosisPlacentaPrevia'};
 var $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption = {$: 'DiagnosisPlacentalAbruption'};
 var $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis = {$: 'DiagnosisPostAbortionSepsis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain = {$: 'DiagnosisPostpartumAbdominalPain'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment = {$: 'DiagnosisPostpartumEarlyMastitisOrEngorgment'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding = {$: 'DiagnosisPostpartumExcessiveBleeding'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue = {$: 'DiagnosisPostpartumFatigue'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFever = {$: 'DiagnosisPostpartumFever'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache = {$: 'DiagnosisPostpartumHeadache'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection = {$: 'DiagnosisPostpartumInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis = {$: 'DiagnosisPostpartumMastitis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge = {$: 'DiagnosisPostpartumPerinealPainOrDischarge'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence = {$: 'DiagnosisPostpartumUrinaryIncontinence'};
 var $author$project$Backend$Reports$Model$DiagnosisPyelonephritis = {$: 'DiagnosisPyelonephritis'};
 var $author$project$Backend$Reports$Model$DiagnosisRhesusNegative = {$: 'DiagnosisRhesusNegative'};
 var $author$project$Backend$Reports$Model$DiagnosisSevereAnemia = {$: 'DiagnosisSevereAnemia'};
 var $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications = {$: 'DiagnosisSevereAnemiaWithComplications'};
 var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia = {$: 'DiagnosisSeverePreeclampsia'};
-var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsiaEGA37Plus = {$: 'DiagnosisSeverePreeclampsiaEGA37Plus'};
 var $author$project$Backend$Reports$Model$DiagnosisSevereVomiting = {$: 'DiagnosisSevereVomiting'};
 var $author$project$Backend$Reports$Model$DiagnosisSuicideRisk = {$: 'DiagnosisSuicideRisk'};
 var $author$project$Backend$Reports$Model$DiagnosisSyphilis = {$: 'DiagnosisSyphilis'};
@@ -9128,11 +9136,7 @@ var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = funct
 		case 'c':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia);
 		case 'd':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsiaEGA37Plus);
-		case 'e':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia);
-		case 'f':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsiaEGA37Plus);
 		case 'g':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEclampsia);
 		case 'h':
@@ -9229,6 +9233,26 @@ var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSuicideRisk);
 		case 'b2':
 			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisOther);
+		case 'c2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain);
+		case 'd2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence);
+		case 'e2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache);
+		case 'f2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue);
+		case 'g2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFever);
+		case 'h2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge);
+		case 'i2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumInfection);
+		case 'j2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding);
+		case 'k2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment);
+		case 'l2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -11884,6 +11908,384 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					default:
 						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				}
+			case 'PrenatalDiagnosis':
+				var diagnosis = transId.a;
+				switch (diagnosis.$) {
+					case 'DiagnosisChronicHypertension':
+						return {
+							english: 'Chronic Hypertension',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'Umuvuduko w\'Amaraso Imaze Igihe Kirekire'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\'amaraso wamaho')
+						};
+					case 'DiagnosisGestationalHypertension':
+						return {
+							english: 'Pregnancy-Induced Hypertension',
+							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\'amaraso watewe no gutwita'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso utewe n\'imbanyi')
+						};
+					case 'DiagnosisModeratePreeclampsia':
+						return {
+							english: 'Mild to Moderate Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Yoroheje'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso mu gihe c\'imbanyi woroshe')
+						};
+					case 'DiagnosisSeverePreeclampsia':
+						return {
+							english: 'Severe Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Ikabije'),
+							kirundi: $elm$core$Maybe$Just('Severe Preeclampsia')
+						};
+					case 'DiagnosisEclampsia':
+						return {
+							english: 'Eclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Ekalampusi'),
+							kirundi: $elm$core$Maybe$Just('Éclampsie')
+						};
+					case 'DiagnosisHIV':
+						return {
+							english: 'HIV',
+							kinyarwanda: $elm$core$Maybe$Just('Virusi itera SIDA'),
+							kirundi: $elm$core$Maybe$Just('Umugera wa SIDA')
+						};
+					case 'DiagnosisHIVDetectableViralLoad':
+						return {
+							english: 'Detectable HIV Viral Load',
+							kinyarwanda: $elm$core$Maybe$Just('Agaragaza udukoko dutera virusi ya SIDA mu maraso'),
+							kirundi: $elm$core$Maybe$Just('Afise umugera wa SIDA ugaragara')
+						};
+					case 'DiagnosisDiscordantPartnership':
+						return {
+							english: 'Discordant Partnership',
+							kinyarwanda: $elm$core$Maybe$Just('Umwe mubo babana afite ubwandu'),
+							kirundi: $elm$core$Maybe$Just('Umwe afise umugera wa SIDA kandi uwundi atawafise')
+						};
+					case 'DiagnosisSyphilis':
+						return {
+							english: 'Syphilis',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+						};
+					case 'DiagnosisSyphilisWithComplications':
+						return {
+							english: 'Syphilis with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu n\'ibibazo bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\'ingorane')
+						};
+					case 'DiagnosisNeurosyphilis':
+						return {
+							english: 'Neurosyphilis',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu yageze mu bwonko'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo m\'ubwonko')
+						};
+					case 'DiagnosisHepatitisB':
+						return {
+							english: 'Hepatitis B',
+							kinyarwanda: $elm$core$Maybe$Just('Umwijima wo mu bwoko bwa B'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'igitigu')
+						};
+					case 'DiagnosisMalaria':
+						return {
+							english: 'Malaria',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya'),
+							kirundi: $elm$core$Maybe$Just('Malariya')
+						};
+					case 'DiagnosisMalariaWithAnemia':
+						return {
+							english: 'Malaria with Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye'),
+							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\'igabanuka ry\'amaraso m\'umubiri')
+						};
+					case 'DiagnosisMalariaWithSevereAnemia':
+						return {
+							english: 'Malaria with Severe Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye Cyane'),
+							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\'igabanuka ry\'amaraso m\'umubiri ridasanzwe')
+						};
+					case 'DiagnosisModerateAnemia':
+						return {
+							english: 'Mild to Moderate Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye byoroheje'),
+							kirundi: $elm$core$Maybe$Just('Igabanuka ry\'amaraso kuva bisanzwe')
+						};
+					case 'DiagnosisSevereAnemia':
+						return {
+							english: 'Severe Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze')
+						};
+					case 'DiagnosisSevereAnemiaWithComplications':
+						return {
+							english: 'Severe Anemia with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane n\'Ibibazo Bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze hamwe n\'ingorane bijanye')
+						};
+					case 'DiagnosisMiscarriage':
+						return {
+							english: 'Miscarriage',
+							kinyarwanda: $elm$core$Maybe$Just('Inda yavuyemo'),
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi')
+						};
+					case 'DiagnosisMolarPregnancy':
+						return {
+							english: 'Molar Pregnancy',
+							kinyarwanda: $elm$core$Maybe$Just('Atwite amahuri'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi idakomeye')
+						};
+					case 'DiagnosisPlacentaPrevia':
+						return {
+							english: 'Placenta Previa',
+							kinyarwanda: $elm$core$Maybe$Just('Ingobyi iri hasi ku nkondo y\'umura'),
+							kirundi: $elm$core$Maybe$Just('Igitereko cugaye isohokera')
+						};
+					case 'DiagnosisPlacentalAbruption':
+						return {
+							english: 'Placental Abruption',
+							kinyarwanda: $elm$core$Maybe$Just('Ingobyi yomotse hakiri kare'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'igitereko')
+						};
+					case 'DiagnosisUterineRupture':
+						return {
+							english: 'Uterine Rupture',
+							kinyarwanda: $elm$core$Maybe$Just('Nyababyeyi yaturitse'),
+							kirundi: $elm$core$Maybe$Just('uguturika kw\'igitereko')
+						};
+					case 'DiagnosisObstructedLabor':
+						return {
+							english: 'Obstructed Labor',
+							kinyarwanda: $elm$core$Maybe$Just('Inda yanze kuvuka '),
+							kirundi: $elm$core$Maybe$Just('Igikorwa cabujijwe')
+						};
+					case 'DiagnosisPostAbortionSepsis':
+						return {
+							english: 'Post Abortion Sepsis',
+							kinyarwanda: $elm$core$Maybe$Just('Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda'),
+							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\'igitereko izamwo')
+						};
+					case 'DiagnosisEctopicPregnancy':
+						return {
+							english: 'Ectopic Pregnancy',
+							kinyarwanda: $elm$core$Maybe$Just('Yasamiye hanze y\'umura'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\'Igitereko')
+						};
+					case 'DiagnosisPROM':
+						return {
+							english: 'Premature Rupture of Membranes (PROM)',
+							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo/igihe cayo')
+						};
+					case 'DiagnosisPPROM':
+						return {
+							english: 'Preterm Premature Rupture of Membranes (PPROM)',
+							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare inda itarageza igihe'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo')
+						};
+					case 'DiagnosisHyperemesisGravidum':
+						return {
+							english: 'Hyperemesis Gravidum',
+							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije k\'umugore utwite'),
+							kirundi: $elm$core$Maybe$Just('Hyperémèse gravidique')
+						};
+					case 'DiagnosisSevereVomiting':
+						return {
+							english: 'Severe Vomiting',
+							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije'),
+							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze')
+						};
+					case 'DiagnosisMaternalComplications':
+						return {
+							english: 'Maternal Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Ibibazo bishobora kwibasira umugore utwite'),
+							kirundi: $elm$core$Maybe$Just('Ingorane z\'abavyeyi')
+						};
+					case 'DiagnosisInfection':
+						return {
+							english: 'Infection',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara iterwa n\'udukoko tutabonwa n\'amaso (Microbes)'),
+							kirundi: $elm$core$Maybe$Just('Ivyanduza')
+						};
+					case 'DiagnosisImminentDelivery':
+						return {
+							english: 'Imminent Delivery',
+							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi'),
+							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/')
+						};
+					case 'DiagnosisLaborAndDelivery':
+						return {
+							english: 'Labor + Delivery',
+							kinyarwanda: $elm$core$Maybe$Just('Kujya ku nda + Kubyara'),
+							kirundi: $elm$core$Maybe$Just('Ibise + Kuvyara')
+						};
+					case 'DiagnosisHeartburn':
+						return {
+							english: 'Heartburn',
+							kinyarwanda: $elm$core$Maybe$Just('Ikirungurira'),
+							kirundi: $elm$core$Maybe$Just('Ugusha k\'umutima')
+						};
+					case 'DiagnosisDeepVeinThrombosis':
+						return {
+							english: 'Deep Vein Thrombosis',
+							kinyarwanda: $elm$core$Maybe$Just('Gufatana(Kuvura) gukabije kw\'amaraso'),
+							kirundi: $elm$core$Maybe$Just('Umutsi w\'indani ufise Thrombose')
+						};
+					case 'DiagnosisPelvicPainIntense':
+						return {
+							english: 'Intense Pelvic Pain',
+							kinyarwanda: $elm$core$Maybe$Just('Ububabare bukabije mu kiziba cy\'inda'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bukomeye bwo mu nda yo hepfo')
+						};
+					case 'DiagnosisUrinaryTractInfection':
+						return {
+							english: 'Urinary Tract Infection',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubwandu bw\'umuyoboro w\'inkari'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\'umukoyo')
+						};
+					case 'DiagnosisPyelonephritis':
+						return {
+							english: 'Pyelonephritis',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara yo kubyimba impyiko'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'Amafyigo')
+						};
+					case 'DiagnosisCandidiasis':
+						return {
+							english: 'Candidiasis',
+							kinyarwanda: $elm$core$Maybe$Just('Kandidoze'),
+							kirundi: $elm$core$Maybe$Just('Candidose')
+						};
+					case 'DiagnosisGonorrhea':
+						return {
+							english: 'Gonorrhea',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'umutezi'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+						};
+					case 'DiagnosisTrichomonasOrBacterialVaginosis':
+						return {
+							english: 'Trichomonas or Bacterial Vaginosis',
+							kinyarwanda: $elm$core$Maybe$Just('Tirikomonasi cyangwa Mikorobe zo mu nda ibyara'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka igaragazwa kenshi no kuhiyagaza')
+						};
+					case 'DiagnosisTuberculosis':
+						return {
+							english: 'Tuberculosis',
+							kinyarwanda: $elm$core$Maybe$Just('Igituntu'),
+							kirundi: $elm$core$Maybe$Just('Igituntu')
+						};
+					case 'DiagnosisDiabetes':
+						return {
+							english: 'Diabetes',
+							kinyarwanda: $elm$core$Maybe$Just('Diyabete (Indwara y\'igisukari)'),
+							kirundi: $elm$core$Maybe$Just('Diyabete')
+						};
+					case 'DiagnosisGestationalDiabetes':
+						return {
+							english: 'Gestational Diabetes',
+							kinyarwanda: $elm$core$Maybe$Just('Diyabete iterwa no gutwita'),
+							kirundi: $elm$core$Maybe$Just('Diyabete y\'imbanyi')
+						};
+					case 'DiagnosisRhesusNegative':
+						return {
+							english: 'RH Factor Negative',
+							kinyarwanda: $elm$core$Maybe$Just('Rezisi Negatifu'),
+							kirundi: $elm$core$Maybe$Just('Rhesus negatif')
+						};
+					case 'DiagnosisDepressionNotLikely':
+						return {
+							english: 'Depression not Likely',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko adafite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Kwihebura ntibishoboka')
+						};
+					case 'DiagnosisDepressionPossible':
+						return {
+							english: 'Depression Possible',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko yagira indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Kwihebura birashoboka')
+						};
+					case 'DiagnosisDepressionHighlyPossible':
+						return {
+							english: 'Fairly High Possibility of Depression',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka cyane ko afite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Birashoboka cane kwihebura')
+						};
+					case 'DiagnosisDepressionProbable':
+						return {
+							english: 'Probable Depression',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko afite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Ukwihebura gushoboka')
+						};
+					case 'DiagnosisSuicideRisk':
+						return {
+							english: 'Suicide Risk',
+							kinyarwanda: $elm$core$Maybe$Just('Afite ibyago byo kwiyahura'),
+							kirundi: $elm$core$Maybe$Just('Ingorane zimutuma ashobora kwiyahura')
+						};
+					case 'DiagnosisOther':
+						return {
+							english: 'Other',
+							kinyarwanda: $elm$core$Maybe$Just('Ibindi'),
+							kirundi: $elm$core$Maybe$Just('Ibindi')
+						};
+					case 'DiagnosisPostpartumAbdominalPain':
+						return {
+							english: 'Abdominal Pain',
+							kinyarwanda: $elm$core$Maybe$Just('Kubabara mu nda'),
+							kirundi: $elm$core$Maybe$Just('Ukubabara mu nda')
+						};
+					case 'DiagnosisPostpartumUrinaryIncontinence':
+						return {
+							english: 'Urinary Incontinence',
+							kinyarwanda: $elm$core$Maybe$Just('Ntabasha kunyara'),
+							kirundi: $elm$core$Maybe$Nothing
+						};
+					case 'DiagnosisPostpartumHeadache':
+						return {
+							english: 'Headache',
+							kinyarwanda: $elm$core$Maybe$Just('Kubabara umutwe'),
+							kirundi: $elm$core$Maybe$Just('Kumeneka umutwe')
+						};
+					case 'DiagnosisPostpartumFatigue':
+						return {
+							english: 'Fatigue',
+							kinyarwanda: $elm$core$Maybe$Just('umunaniro'),
+							kirundi: $elm$core$Maybe$Just('Uburuhe')
+						};
+					case 'DiagnosisPostpartumFever':
+						return {
+							english: 'Fever',
+							kinyarwanda: $elm$core$Maybe$Just('Umuriro'),
+							kirundi: $elm$core$Maybe$Just('Ubushuhe')
+						};
+					case 'DiagnosisPostpartumPerinealPainOrDischarge':
+						return {
+							english: 'Perineal Pain or Discharge',
+							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bw\'umugongo hepfo')
+						};
+					case 'DiagnosisPostpartumInfection':
+						return {english: 'Infection (Postpartum)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'DiagnosisPostpartumExcessiveBleeding':
+						return {
+							english: 'Excessive Bleeding',
+							kinyarwanda: $elm$core$Maybe$Just('Kuva cyane'),
+							kirundi: $elm$core$Maybe$Just('Kuva amaraso cane')
+						};
+					case 'DiagnosisPostpartumEarlyMastitisOrEngorgment':
+						return {
+							english: 'Early Mastitis or Engorgement',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwo kubyimba amabere bwaje kare cyane'),
+							kirundi: $elm$core$Maybe$Just('Iyuzura ry\'amaberebere (Mastite précoce)')
+						};
+					case 'DiagnosisPostpartumMastitis':
+						return {
+							english: 'Mastitis',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bw\'amabere'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'imoko ituma amaberebere adasohoka')
+						};
+					default:
+						return {
+							english: 'None',
+							kinyarwanda: $elm$core$Maybe$Just('Ntabyo'),
+							kirundi: $elm$core$Maybe$Just('Nta na kimwe')
+						};
 				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -18185,6 +18587,113 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
+var $author$project$Translate$PrenatalDiagnosis = function (a) {
+	return {$: 'PrenatalDiagnosis', a: a};
+};
+var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
+var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
+	function (language, limitDate, records) {
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var allDiagnoses = A2(
+			$elm$core$List$concatMap,
+			function (encounter) {
+				return $elm$core$List$isEmpty(encounter.diagnoses) ? _List_fromArray(
+					[$author$project$Backend$Reports$Model$NoPrenatalDiagnosis]) : encounter.diagnoses;
+			},
+			A2(
+				$elm$core$List$concatMap,
+				function ($) {
+					return $.encounters;
+				},
+				$elm$core$List$concat(
+					$elm_community$maybe_extra$Maybe$Extra$values(
+						A2(
+							$elm$core$List$map,
+							function ($) {
+								return $.prenatalData;
+							},
+							records)))));
+		var diagnosesCountDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (diagnosis, accum) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A3($pzp1997$assoc_list$AssocList$insert, diagnosis, 1, accum),
+						A2(
+							$elm$core$Maybe$map,
+							function (value) {
+								return A3($pzp1997$assoc_list$AssocList$insert, diagnosis, value + 1, accum);
+							},
+							A2($pzp1997$assoc_list$AssocList$get, diagnosis, accum)));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			allDiagnoses);
+		var rows = A2(
+			$elm$core$List$map,
+			function (diagnosis) {
+				return A2(
+					generateRow,
+					$author$project$Translate$PrenatalDiagnosis(diagnosis),
+					A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
+			},
+			$author$project$Backend$Reports$Utils$allPrenatalDiagnoses);
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: rows
+		};
+	});
+var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, limitDate, records);
+		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal-diagnoses')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
 var $author$project$Translate$DeliveryLocation = function (a) {
 	return {$: 'DeliveryLocation', a: a};
 };
@@ -19027,7 +19536,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							case 'ReportPrenatal':
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 							default:
-								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
 					}),
 				model.reportType,

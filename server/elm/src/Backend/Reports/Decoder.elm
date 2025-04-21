@@ -324,13 +324,7 @@ prenatalDiagnosisFromMapping s =
             Just DiagnosisModeratePreeclampsia
 
         "d" ->
-            Just DiagnosisModeratePreeclampsiaEGA37Plus
-
-        "e" ->
             Just DiagnosisSeverePreeclampsia
-
-        "f" ->
-            Just DiagnosisSeverePreeclampsiaEGA37Plus
 
         "g" ->
             Just DiagnosisEclampsia
@@ -475,6 +469,36 @@ prenatalDiagnosisFromMapping s =
 
         "b2" ->
             Just DiagnosisOther
+
+        "c2" ->
+            Just DiagnosisPostpartumAbdominalPain
+
+        "d2" ->
+            Just DiagnosisPostpartumUrinaryIncontinence
+
+        "e2" ->
+            Just DiagnosisPostpartumHeadache
+
+        "f2" ->
+            Just DiagnosisPostpartumFatigue
+
+        "g2" ->
+            Just DiagnosisPostpartumFever
+
+        "h2" ->
+            Just DiagnosisPostpartumPerinealPainOrDischarge
+
+        "i2" ->
+            Just DiagnosisPostpartumInfection
+
+        "j2" ->
+            Just DiagnosisPostpartumExcessiveBleeding
+
+        "k2" ->
+            Just DiagnosisPostpartumEarlyMastitisOrEngorgment
+
+        "l2" ->
+            Just DiagnosisPostpartumMastitis
 
         _ ->
             Nothing
