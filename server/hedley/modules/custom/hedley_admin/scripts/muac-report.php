@@ -17,7 +17,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 // Resolve all Health Centers (associate ID to name).
 $query = db_select('node', 'n');

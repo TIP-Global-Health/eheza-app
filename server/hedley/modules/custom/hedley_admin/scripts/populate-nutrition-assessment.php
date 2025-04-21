@@ -19,7 +19,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $config = [
   // Group Encounter.

@@ -22,7 +22,7 @@ $nid = drush_get_option('nid', 0);
 $batch = drush_get_option('batch', 50);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 
 $base_query = db_select('field_data_field_photo', 'photos')

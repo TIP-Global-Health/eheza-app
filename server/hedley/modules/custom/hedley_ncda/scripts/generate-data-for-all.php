@@ -26,7 +26,7 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 $birthdate_from = drush_get_option('birthdate_from', "2016-01-01");
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 240);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $type = 'person';
 $base_query = new EntityFieldQuery();
