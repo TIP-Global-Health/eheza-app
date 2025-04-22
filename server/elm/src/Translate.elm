@@ -2190,8 +2190,8 @@ translationSet transId =
 
         Trimester ->
             { english = "Trimester"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
+            , kinyarwanda = "Igihembwe"
+            , kirundi = "Igice"
             }
 
         Tuberculosis ->
