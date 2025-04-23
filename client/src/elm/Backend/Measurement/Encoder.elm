@@ -1329,6 +1329,7 @@ encodeLastMenstrualPeriodValue value =
     , ( "type", string "last_menstrual_period" )
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
+        ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
