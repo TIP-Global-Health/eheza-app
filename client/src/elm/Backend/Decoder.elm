@@ -387,11 +387,17 @@ decodeRevision =
                     "prenatal_breastfeeding" ->
                         decodeWithUuid PrenatalBreastfeedingRevision decodePrenatalBreastfeeding
 
+                    "prenatal_calcium" ->
+                        decodeWithUuid PrenatalCalciumRevision decodePrenatalCalcium
+
                     "prenatal_encounter" ->
                         decodeWithUuid PrenatalEncounterRevision decodePrenatalEncounter
 
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
+
+                    "prenatal_folate" ->
+                        decodeWithUuid PrenatalFolateRevision decodePrenatalFolate
 
                     "prenatal_follow_up" ->
                         decodeWithUuid PrenatalFollowUpRevision decodePrenatalFollowUp
@@ -414,6 +420,9 @@ decodeRevision =
                     "prenatal_hiv_pcr_test" ->
                         decodeWithUuid PrenatalHIVPCRTestRevision decodePrenatalHIVPCRTest
 
+                    "prenatal_iron" ->
+                        decodeWithUuid PrenatalIronRevision decodePrenatalIron
+
                     "prenatal_labs_results" ->
                         decodeWithUuid PrenatalLabsResultsRevision decodePrenatalLabsResults
 
@@ -425,6 +434,9 @@ decodeRevision =
 
                     "prenatal_medication_distribution" ->
                         decodeWithUuid PrenatalMedicationDistributionRevision decodePrenatalMedicationDistribution
+
+                    "prenatal_mms" ->
+                        decodeWithUuid PrenatalMMSRevision decodePrenatalMMS
 
                     "prenatal_nutrition" ->
                         decodeWithUuid PrenatalNutritionRevision decodePrenatalNutrition

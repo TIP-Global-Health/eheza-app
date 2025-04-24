@@ -5983,6 +5983,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalCalciumRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | calcium = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
@@ -6002,6 +6010,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalFolateRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | folate = Just ( uuid, data ) })
                 model
             , recalc
             )
@@ -6069,6 +6085,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             , recalc
             )
 
+        PrenatalIronRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | iron = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
         PrenatalLabsResultsRevision uuid data ->
             let
                 modelWithMappedFollowUp =
@@ -6104,6 +6128,14 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             ( mapPrenatalMeasurements
                 data.encounterId
                 (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                model
+            , recalc
+            )
+
+        PrenatalMMSRevision uuid data ->
+            ( mapPrenatalMeasurements
+                data.encounterId
+                (\measurements -> { measurements | mms = Just ( uuid, data ) })
                 model
             , recalc
             )
