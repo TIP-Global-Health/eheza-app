@@ -1736,6 +1736,22 @@ type alias PartnerHIVTestValue =
     }
 
 
+type alias PrenatalCalcium =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFolate =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalIron =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMMS =
+    PrenatalMeasurement AdministrationNote
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -3319,6 +3335,10 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , calcium : Maybe ( PrenatalCalciumId, PrenatalCalcium )
+    , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
+    , iron : Maybe ( PrenatalIronId, PrenatalIron )
+    , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
     }
 
 
@@ -3364,6 +3384,10 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , calcium = Nothing
+    , folate = Nothing
+    , iron = Nothing
+    , mms = Nothing
     }
 
 
