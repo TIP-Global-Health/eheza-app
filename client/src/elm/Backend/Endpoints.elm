@@ -1088,6 +1088,30 @@ prenatalSpecialityCareEndpoint =
         |> withValueEncoder (object << encodePrenatalSpecialityCare)
 
 
+prenatalCalciumEndpoint : ReadWriteEndPoint Error PrenatalCalciumId PrenatalCalcium PrenatalCalcium ()
+prenatalCalciumEndpoint =
+    swEndpoint "nodes/prenatal_calcium" decodePrenatalCalcium
+        |> withValueEncoder (object << encodePrenatalCalcium)
+
+
+prenatalFolateEndpoint : ReadWriteEndPoint Error PrenatalFolateId PrenatalFolate PrenatalFolate ()
+prenatalFolateEndpoint =
+    swEndpoint "nodes/prenatal_folate" decodePrenatalFolate
+        |> withValueEncoder (object << encodePrenatalFolate)
+
+
+prenatalIronEndpoint : ReadWriteEndPoint Error PrenatalIronId PrenatalIron PrenatalIron ()
+prenatalIronEndpoint =
+    swEndpoint "nodes/prenatal_iron" decodePrenatalIron
+        |> withValueEncoder (object << encodePrenatalIron)
+
+
+prenatalMMSEndpoint : ReadWriteEndPoint Error PrenatalMMSId PrenatalMMS PrenatalMMS ()
+prenatalMMSEndpoint =
+    swEndpoint "nodes/prenatal_mms" decodePrenatalMMS
+        |> withValueEncoder (object << encodePrenatalMMS)
+
+
 ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)
 ncdEncounterEndpoint =
     swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
