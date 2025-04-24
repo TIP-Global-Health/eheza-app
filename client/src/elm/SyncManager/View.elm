@@ -653,8 +653,14 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalBreastfeeding identifier ->
                 viewMeasurement identifier "Prenatal Breastfeeding"
 
+            BackendAuthorityPrenatalCalcium identifier ->
+                viewMeasurement identifier "Prenatal Calcium"
+
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalFolate identifier ->
+                viewMeasurement identifier "Prenatal Folate"
 
             BackendAuthorityPrenatalFollowUp identifier ->
                 viewMeasurement identifier "Prenatal Follow Up"
@@ -677,6 +683,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalHIVPCRTest identifier ->
                 viewMeasurement identifier "Prenatal HIV PCR Test"
 
+            BackendAuthorityPrenatalIron identifier ->
+                viewMeasurement identifier "Prenatal Iron"
+
             BackendAuthorityPrenatalLabsResults identifier ->
                 viewMeasurement identifier "Prenatal Labs Results"
 
@@ -688,6 +697,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityPrenatalMentalHealth identifier ->
                 viewMeasurement identifier "Prenatal Mental Health"
+
+            BackendAuthorityPrenatalMMS identifier ->
+                viewMeasurement identifier "Prenatal MMS"
 
             BackendAuthorityPrenatalNutrition identifier ->
                 viewMeasurement identifier "Prenatal Nutrition"

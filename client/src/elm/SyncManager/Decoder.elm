@@ -979,6 +979,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalBreastfeeding
                             BackendAuthorityPrenatalBreastfeeding
 
+                    "prenatal_calcium" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalCalcium
+                            BackendAuthorityPrenatalCalcium
+
                     "prenatal_encounter" ->
                         doDecode
                             Backend.PrenatalEncounter.Decoder.decodePrenatalEncounter
@@ -988,6 +993,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
                             BackendAuthorityPrenatalFamilyPlanning
+
+                    "prenatal_folate" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFolate
+                            BackendAuthorityPrenatalFolate
 
                     "prenatal_follow_up" ->
                         doDecode
@@ -1024,6 +1034,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalHIVPCRTest
                             BackendAuthorityPrenatalHIVPCRTest
 
+                    "prenatal_iron" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalIron
+                            BackendAuthorityPrenatalIron
+
                     "prenatal_labs_results" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalLabsResults
@@ -1043,6 +1058,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalMentalHealth
                             BackendAuthorityPrenatalMentalHealth
+
+                    "prenatal_mms" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMMS
+                            BackendAuthorityPrenatalMMS
 
                     "prenatal_nutrition" ->
                         doDecode
