@@ -41,6 +41,26 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_calcium content'.
+  $permissions['create prenatal_calcium content'] = array(
+    'name' => 'create prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_folate content'.
+  $permissions['create prenatal_folate content'] = array(
+    'name' => 'create prenatal_folate content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_follow_up content'.
   $permissions['create prenatal_follow_up content'] = array(
     'name' => 'create prenatal_follow_up content',
@@ -101,6 +121,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_iron content'.
+  $permissions['create prenatal_iron content'] = array(
+    'name' => 'create prenatal_iron content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_labs_results content'.
   $permissions['create prenatal_labs_results content'] = array(
     'name' => 'create prenatal_labs_results content',
@@ -134,6 +164,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'create prenatal_mental_health content'.
   $permissions['create prenatal_mental_health content'] = array(
     'name' => 'create prenatal_mental_health content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_mms content'.
+  $permissions['create prenatal_mms content'] = array(
+    'name' => 'create prenatal_mms content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -258,6 +298,24 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_calcium content'.
+  $permissions['delete any prenatal_calcium content'] = array(
+    'name' => 'delete any prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_folate content'.
+  $permissions['delete any prenatal_folate content'] = array(
+    'name' => 'delete any prenatal_folate content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_follow_up content'.
   $permissions['delete any prenatal_follow_up content'] = array(
     'name' => 'delete any prenatal_follow_up content',
@@ -312,6 +370,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_iron content'.
+  $permissions['delete any prenatal_iron content'] = array(
+    'name' => 'delete any prenatal_iron content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_labs_results content'.
   $permissions['delete any prenatal_labs_results content'] = array(
     'name' => 'delete any prenatal_labs_results content',
@@ -342,6 +409,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete any prenatal_mental_health content'.
   $permissions['delete any prenatal_mental_health content'] = array(
     'name' => 'delete any prenatal_mental_health content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_mms content'.
+  $permissions['delete any prenatal_mms content'] = array(
+    'name' => 'delete any prenatal_mms content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -456,6 +532,24 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_calcium content'.
+  $permissions['delete own prenatal_calcium content'] = array(
+    'name' => 'delete own prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_folate content'.
+  $permissions['delete own prenatal_folate content'] = array(
+    'name' => 'delete own prenatal_folate content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_follow_up content'.
   $permissions['delete own prenatal_follow_up content'] = array(
     'name' => 'delete own prenatal_follow_up content',
@@ -510,6 +604,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_iron content'.
+  $permissions['delete own prenatal_iron content'] = array(
+    'name' => 'delete own prenatal_iron content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_labs_results content'.
   $permissions['delete own prenatal_labs_results content'] = array(
     'name' => 'delete own prenatal_labs_results content',
@@ -540,6 +643,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_mental_health content'.
   $permissions['delete own prenatal_mental_health content'] = array(
     'name' => 'delete own prenatal_mental_health content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_mms content'.
+  $permissions['delete own prenatal_mms content'] = array(
+    'name' => 'delete own prenatal_mms content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -657,6 +769,26 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_calcium content'.
+  $permissions['edit any prenatal_calcium content'] = array(
+    'name' => 'edit any prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_folate content'.
+  $permissions['edit any prenatal_folate content'] = array(
+    'name' => 'edit any prenatal_folate content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_follow_up content'.
   $permissions['edit any prenatal_follow_up content'] = array(
     'name' => 'edit any prenatal_follow_up content',
@@ -717,6 +849,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_iron content'.
+  $permissions['edit any prenatal_iron content'] = array(
+    'name' => 'edit any prenatal_iron content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_labs_results content'.
   $permissions['edit any prenatal_labs_results content'] = array(
     'name' => 'edit any prenatal_labs_results content',
@@ -750,6 +892,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_mental_health content'.
   $permissions['edit any prenatal_mental_health content'] = array(
     'name' => 'edit any prenatal_mental_health content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_mms content'.
+  $permissions['edit any prenatal_mms content'] = array(
+    'name' => 'edit any prenatal_mms content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -877,6 +1029,26 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own prenatal_calcium content'.
+  $permissions['edit own prenatal_calcium content'] = array(
+    'name' => 'edit own prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_folate content'.
+  $permissions['edit own prenatal_folate content'] = array(
+    'name' => 'edit own prenatal_folate content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own prenatal_follow_up content'.
   $permissions['edit own prenatal_follow_up content'] = array(
     'name' => 'edit own prenatal_follow_up content',
@@ -937,6 +1109,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own prenatal_iron content'.
+  $permissions['edit own prenatal_iron content'] = array(
+    'name' => 'edit own prenatal_iron content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own prenatal_labs_results content'.
   $permissions['edit own prenatal_labs_results content'] = array(
     'name' => 'edit own prenatal_labs_results content',
@@ -970,6 +1152,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_mental_health content'.
   $permissions['edit own prenatal_mental_health content'] = array(
     'name' => 'edit own prenatal_mental_health content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_mms content'.
+  $permissions['edit own prenatal_mms content'] = array(
+    'name' => 'edit own prenatal_mms content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
