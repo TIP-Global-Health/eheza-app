@@ -1304,6 +1304,8 @@ type TranslationId
     | PrenatalUltrasoundHeader
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
+    | PrePregnancyWeight
+    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -10014,15 +10016,15 @@ translationSet trans =
             }
 
         LmpDateConfirmationLabel ->
-            { english = "Please confirm the last menstrual period submitted by the CHW"
-            , kinyarwanda = Just "Emeza itariki aherukira mu mihango yujujwe n' umujyanama w'ubuzima"
-            , kirundi = Just "Muraraba mwemeze igihe ca nyuma co kuja mu kwezi/m'ubutinyanka catanzwe n'abaremeshakiyago"
+            { english = "Please confirm the data submitted by the CHW"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfirmationQuestion ->
-            { english = "Do you want to confirm the above LMP"
-            , kinyarwanda = Just "Urashaka kwemeza itariki uherukira mu mihango yavuzwe hejuru"
-            , kirundi = Just "Mbega urashobora kwemeza Igihe canyuma co kuja mu kwezi cavuzwe aho hejuru"
+            { english = "Do you want to confirm the above data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfidentHeader ->
@@ -17414,6 +17416,18 @@ translationSet trans =
                     , kinyarwanda = Just "Agakwega"
                     , kirundi = Just "Rudadaza"
                     }
+
+        PrePregnancyWeight ->
+            { english = "Pre-pregnancy Weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrePregnancyWeightQuestion ->
+            { english = "What is the patient's baseline (pre-pregnancy) weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         PreTerm ->
             { english = "Pre Term"
