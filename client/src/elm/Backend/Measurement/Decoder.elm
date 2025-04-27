@@ -3484,6 +3484,12 @@ decodeMedicationDistributionSign =
                     "metronidazole" ->
                         succeed Metronidazole
 
+                    "calcium" ->
+                        succeed Calcium
+
+                    "mms" ->
+                        succeed MMS
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 

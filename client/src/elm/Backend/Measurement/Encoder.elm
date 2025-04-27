@@ -2815,6 +2815,12 @@ encodeMedicationDistributionSign sign =
             VitaminA ->
                 "vitamina"
 
+            Calcium ->
+                "calcium"
+
+            MMS ->
+                "mms"
+
             NoMedicationDistributionSigns ->
                 "none"
 

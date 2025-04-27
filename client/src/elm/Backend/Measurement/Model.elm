@@ -2044,9 +2044,12 @@ type MedicationDistributionSign
     | Lamivudine
     | Dolutegravir
     | TDF3TC
-      -- Anemia medication
+      -- Anemia medication and pregnancy supplements.
     | Iron
     | FolicAcid
+      -- Pregnancy supplements - in addition to Iron and Folic acid.
+    | Calcium
+    | MMS
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
