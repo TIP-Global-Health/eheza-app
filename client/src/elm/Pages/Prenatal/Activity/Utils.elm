@@ -27,12 +27,21 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( InvokationModule(..)
+        , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
+        , VitalsFormConfig
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , getNextVaccineDose
         , isTestResultValid
+        , medicationAdministrationFormInputsAndTasks
+        , medicationAdministrationFormWithDefault
         , resolveLabTestDate
         , testPerformedByExecutionNote
         , vaccinationFormWithDefault
@@ -6082,3 +6091,82 @@ resolveWarningPopupContentForUrgentDiagnoses language urgentDiagnoses =
       else
         translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
     )
+
+
+medicationTasksCompletedFromTotal : NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal currentDate assembled data task =
+    let
+        measurements =
+            assembled.measurements
+
+        ( _, tasks ) =
+            case task of
+                TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
+
+                TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+calciumAdministrationFormConfig =
+    { medication = Calcium
+    , setMedicationAdministeredMsg = SetCalciumAdministered
+    , setReasonForNonAdministration = SetCalciumReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+folateAdministrationFormConfig =
+    { medication = FolicAcid
+    , setMedicationAdministeredMsg = SetFolateAdministered
+    , setReasonForNonAdministration = SetFolateReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+ironAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+ironAdministrationFormConfig =
+    { medication = Iron
+    , setMedicationAdministeredMsg = SetIronAdministered
+    , setReasonForNonAdministration = SetIronReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+mmsAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+mmsAdministrationFormConfig =
+    { medication = MMS
+    , setMedicationAdministeredMsg = SetMMSAdministered
+    , setReasonForNonAdministration = SetMMSReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }

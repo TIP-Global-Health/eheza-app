@@ -34,6 +34,7 @@ import Measurement.Model
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VitalsForm
@@ -52,6 +53,7 @@ import Measurement.Utils
         , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
+        , medicationAdministrationFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
@@ -75,6 +77,7 @@ import Measurement.View
     exposing
         ( viewFamilyPlanningForm
         , viewFamilyPlanningInput
+        , viewMedicationAdministrationForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -1082,41 +1085,143 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
-        form =
-            assembled.measurements.medication
-                |> getMeasurementValueFunc
-                |> medicationFormWithDefault data.form
+        measurements =
+            assembled.measurements
+
+        tasks =
+            medicationTasks
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                ( iconClass, isCompleted ) =
+                    case task of
+                        TaskCalcium ->
+                            ( "calcium"
+                            , isJust measurements.calcium
+                            )
+
+                        TaskFolate ->
+                            ( "folate"
+                            , isJust measurements.folate
+                            )
+
+                        TaskIron ->
+                            ( "iron"
+                            , isJust measurements.iron
+                            )
+
+                        TaskMMS ->
+                            ( "mms"
+                            , isJust measurements.mms
+                            )
+
+                isActive =
+                    activeTask == Just task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate assembled data task )) tasks
+                |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            let
-                displayMebendazoleQuestion =
-                    showMebendazoleQuestion currentDate assembled
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
 
-                tasks =
-                    [ ( form.receivedIronFolicAcid, True )
-                    , ( form.receivedMebendazole, displayMebendazoleQuestion )
-                    ]
-                        |> List.filterMap
-                            (\( task, showTask ) ->
-                                if showTask then
-                                    Just task
+        viewForm =
+            case activeTask of
+                Just TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
 
-                                else
-                                    Nothing
-                            )
-            in
-            ( List.map taskCompleted tasks
-                |> List.sum
-            , List.length tasks
-            )
+                Just TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                Just TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                Just TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+
+                Nothing ->
+                    []
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
+                        saveMsg =
+                            case task of
+                                TaskCalcium ->
+                                    SaveCalcium personId measurements.calcium nextTask
+
+                                TaskFolate ->
+                                    SaveFolate personId measurements.folate nextTask
+
+                                TaskIron ->
+                                    SaveIron personId measurements.iron nextTask
+
+                                TaskMMS ->
+                                    SaveMMS personId measurements.mms nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
-    [ viewTasksCount language tasksCompleted totalTasks
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
-        , viewSaveAction language
-            (SaveMedication assembled.participant.person assembled.measurements.medication)
-            (tasksCompleted /= totalTasks)
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 
