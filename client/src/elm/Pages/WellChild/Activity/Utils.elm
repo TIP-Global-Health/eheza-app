@@ -1430,48 +1430,51 @@ medicationTasksCompletedFromTotal currentDate site assembled data task =
         ( _, tasks ) =
             case task of
                 TaskAlbendazole ->
-                    let
-                        config =
-                            { medication = Albendazole
-                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
-                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
-                            , helper = Translate.AdministerAlbendazoleHelper
-                            }
-                    in
                     getMeasurementValueFunc measurements.albendazole
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled albendazoleAdministrationFormConfig
 
                 TaskMebendezole ->
-                    let
-                        config =
-                            { medication = Mebendezole
-                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
-                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
-                            , helper = Translate.AdministerMebendezoleHelper
-                            }
-                    in
                     getMeasurementValueFunc measurements.mebendezole
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled mebendezoleAdministrationFormConfig
 
                 TaskVitaminA ->
-                    let
-                        config =
-                            { medication = VitaminA
-                            , setMedicationAdministeredMsg = SetVitaminAAdministered
-                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
-                            , helper = Translate.AdministerVitaminAHelperWellChild
-                            }
-                    in
                     getMeasurementValueFunc measurements.vitaminA
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled vitaminAAdministrationFormConfig
     in
     resolveTasksCompletedFromTotal tasks
+
+
+albendazoleAdministrationFormConfig : MedicationAdministrationFormConfig
+albendazoleAdministrationFormConfig =
+    { medication = Albendazole
+    , setMedicationAdministeredMsg = SetAlbendazoleAdministered
+    , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
+    , helper = Translate.AdministerAlbendazoleHelper
+    }
+
+
+mebendezoleAdministrationFormConfig : MedicationAdministrationFormConfig
+mebendezoleAdministrationFormConfig =
+    { medication = Mebendezole
+    , setMedicationAdministeredMsg = SetMebendezoleAdministered
+    , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
+    , helper = Translate.AdministerMebendezoleHelper
+    }
+
+
+vitaminAAdministrationFormConfig : MedicationAdministrationFormConfig
+vitaminAAdministrationFormConfig =
+    { medication = VitaminA
+    , setMedicationAdministeredMsg = SetVitaminAAdministered
+    , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
+    , helper = Translate.AdministerVitaminAHelperWellChild
+    }
 
 
 medicationAdministrationFormInputsAndTasks :

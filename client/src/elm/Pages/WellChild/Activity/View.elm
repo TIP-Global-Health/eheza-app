@@ -30,6 +30,7 @@ import Measurement.Model
     exposing
         ( ImmunisationTask(..)
         , InvokationModule(..)
+        , MedicationAdministrationForm
         , NCDAData
         , PhotoForm
         , VaccinationFormViewMode(..)
@@ -1770,49 +1771,22 @@ viewMedicationContent language currentDate site isChw assembled data =
         viewForm =
             case activeTask of
                 Just TaskAlbendazole ->
-                    let
-                        config =
-                            { medication = Albendazole
-                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
-                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
-                            , helper = Translate.AdministerAlbendazoleHelper
-                            }
-                    in
                     measurements.albendazole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled albendazoleAdministrationFormConfig
 
                 Just TaskMebendezole ->
-                    let
-                        config =
-                            { medication = Mebendezole
-                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
-                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
-                            , helper = Translate.AdministerMebendezoleHelper
-                            }
-                    in
                     measurements.mebendezole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled mebendezoleAdministrationFormConfig
 
                 Just TaskVitaminA ->
-                    let
-                        config =
-                            { medication = VitaminA
-                            , setMedicationAdministeredMsg = SetVitaminAAdministered
-                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
-                            , helper = Translate.AdministerVitaminAHelperWellChild
-                            }
-                    in
                     measurements.vitaminA
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language currentDate site assembled vitaminAAdministrationFormConfig
 
                 Nothing ->
                     []
