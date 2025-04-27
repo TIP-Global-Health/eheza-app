@@ -35,6 +35,20 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_prenatal_calcium';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_prenatal_calcium'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_prenatal_folate';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_prenatal_folate'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_prenatal_follow_up';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_prenatal_follow_up'] = $strongarm;
@@ -77,6 +91,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_prenatal_iron';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_prenatal_iron'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_node_prenatal_labs_results';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_prenatal_labs_results'] = $strongarm;
@@ -101,6 +122,13 @@ function hedley_prenatal_strongarm() {
   $strongarm->name = 'auto_entitylabel_node_prenatal_mental_health';
   $strongarm->value = '1';
   $export['auto_entitylabel_node_prenatal_mental_health'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_node_prenatal_mms';
+  $strongarm->value = '1';
+  $export['auto_entitylabel_node_prenatal_mms'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -189,6 +217,20 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_calcium';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
+  $export['auto_entitylabel_pattern_node_prenatal_calcium'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_folate';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
+  $export['auto_entitylabel_pattern_node_prenatal_folate'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_follow_up';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d]';
   $export['auto_entitylabel_pattern_node_prenatal_follow_up'] = $strongarm;
@@ -231,6 +273,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_iron';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
+  $export['auto_entitylabel_pattern_node_prenatal_iron'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_labs_results';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_prenatal_labs_results'] = $strongarm;
@@ -255,6 +304,13 @@ function hedley_prenatal_strongarm() {
   $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_mental_health';
   $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
   $export['auto_entitylabel_pattern_node_prenatal_mental_health'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_pattern_node_prenatal_mms';
+  $strongarm->value = '[node:content-type] - [node:field-person:title] - [node:field-date-measured:custom:Y-m-d] ';
+  $export['auto_entitylabel_pattern_node_prenatal_mms'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
@@ -343,6 +399,20 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_prenatal_calcium';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_prenatal_calcium'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_prenatal_folate';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_prenatal_folate'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_php_node_prenatal_follow_up';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_prenatal_follow_up'] = $strongarm;
@@ -385,6 +455,13 @@ function hedley_prenatal_strongarm() {
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
   $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_prenatal_iron';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_prenatal_iron'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
   $strongarm->name = 'auto_entitylabel_php_node_prenatal_labs_results';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_prenatal_labs_results'] = $strongarm;
@@ -409,6 +486,13 @@ function hedley_prenatal_strongarm() {
   $strongarm->name = 'auto_entitylabel_php_node_prenatal_mental_health';
   $strongarm->value = 0;
   $export['auto_entitylabel_php_node_prenatal_mental_health'] = $strongarm;
+
+  $strongarm = new stdClass();
+  $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
+  $strongarm->api_version = 1;
+  $strongarm->name = 'auto_entitylabel_php_node_prenatal_mms';
+  $strongarm->value = 0;
+  $export['auto_entitylabel_php_node_prenatal_mms'] = $strongarm;
 
   $strongarm = new stdClass();
   $strongarm->disabled = FALSE; /* Edit this to true to make a default strongarm disabled initially */
