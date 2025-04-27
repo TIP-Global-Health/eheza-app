@@ -857,7 +857,7 @@ encodePrenatalMMS =
 
 encodePrenatalMMSValue : AdministrationNote -> List ( String, Value )
 encodePrenatalMMSValue note =
-    encodePrenatalMedicationValue "prenatal_mmsc" note
+    encodePrenatalMedicationValue "prenatal_mms" note
 
 
 encodePrenatalMedicationValue : String -> AdministrationNote -> List ( String, Value )
