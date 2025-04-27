@@ -308,7 +308,10 @@ activityCompleted currentDate site assembled activity =
             isJust assembled.measurements.malariaPrevention
 
         Backend.PrenatalActivity.Model.Medication ->
-            isJust assembled.measurements.medication
+            isJust assembled.measurements.calcium
+                && isJust assembled.measurements.folate
+                && isJust assembled.measurements.iron
+                && isJust assembled.measurements.mms
 
         DangerSigns ->
             isJust assembled.measurements.dangerSigns
