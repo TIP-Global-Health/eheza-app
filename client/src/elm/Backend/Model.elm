@@ -673,6 +673,7 @@ type Revision
     | PrenatalIronRevision PrenatalIronId PrenatalIron
     | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalMebendazoleRevision PrenatalMebendazoleId PrenatalMebendazole
     | PrenatalMentalHealthRevision PrenatalMentalHealthId PrenatalMentalHealth
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
     | PrenatalMMSRevision PrenatalMMSId PrenatalMMS
