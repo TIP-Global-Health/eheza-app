@@ -1215,6 +1215,14 @@ type PrenatalMMSUuidType
     = PrenatalMMSUuidType
 
 
+type alias PrenatalMebendazoleId =
+    EntityUuid PrenatalMebendazoleUuidType
+
+
+type PrenatalMebendazoleUuidType
+    = PrenatalMebendazoleUuidType
+
+
 type alias NCDEncounterId =
     EntityUuid NCDEncounterUuidType
 
