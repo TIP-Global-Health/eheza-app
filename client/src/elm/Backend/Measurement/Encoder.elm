@@ -860,6 +860,16 @@ encodePrenatalMMSValue note =
     encodePrenatalMedicationValue "prenatal_mms" note
 
 
+encodePrenatalMebendazole : PrenatalMebendazole -> List ( String, Value )
+encodePrenatalMebendazole =
+    encodePrenatalMeasurement encodePrenatalMebendazoleValue
+
+
+encodePrenatalMebendazoleValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMebendazoleValue note =
+    encodePrenatalMedicationValue "prenatal_mebendazole" note
+
+
 encodePrenatalMedicationValue : String -> AdministrationNote -> List ( String, Value )
 encodePrenatalMedicationValue type_ note =
     [ ( "administration_note", encodeAdministrationNote note )

@@ -165,6 +165,7 @@ decodePrenatalMeasurements =
         |> optional "prenatal_folate" (decodeHead decodePrenatalFolate) Nothing
         |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
         |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
+        |> optional "prenatal_mebendazole" (decodeHead decodePrenatalMebendazole) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -4989,6 +4990,11 @@ decodePrenatalIron =
 
 decodePrenatalMMS : Decoder PrenatalMMS
 decodePrenatalMMS =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalMebendazole : Decoder PrenatalMebendazole
+decodePrenatalMebendazole =
     decodePrenatalMeasurement decodeAdministrationNoteField
 
 
