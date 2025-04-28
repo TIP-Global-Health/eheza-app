@@ -169,6 +169,7 @@ var tableForType = {
     prenatal_iron: 'shards',
     prenatal_labs_results: 'shards',
     prenatal_malaria_test: 'shards',
+    prenatal_mebendazole: 'shards',
     prenatal_medication_distribution: 'shards',
     prenatal_mental_health: 'shards',
     prenatal_mms: 'shards',
