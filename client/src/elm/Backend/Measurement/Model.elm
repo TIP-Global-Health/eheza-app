@@ -1753,6 +1753,10 @@ type alias PrenatalMMS =
     PrenatalMeasurement AdministrationNote
 
 
+type alias PrenatalMebendazole =
+    PrenatalMeasurement AdministrationNote
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -3343,6 +3347,7 @@ type alias PrenatalMeasurements =
     , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
     , iron : Maybe ( PrenatalIronId, PrenatalIron )
     , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
+    , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
     }
 
 
@@ -3392,6 +3397,7 @@ emptyPrenatalMeasurements =
     , folate = Nothing
     , iron = Nothing
     , mms = Nothing
+    , mebendazole = Nothing
     }
 
 
