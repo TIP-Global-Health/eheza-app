@@ -1112,6 +1112,12 @@ prenatalMMSEndpoint =
         |> withValueEncoder (object << encodePrenatalMMS)
 
 
+prenatalMebendazoleEndpoint : ReadWriteEndPoint Error PrenatalMebendazoleId PrenatalMebendazole PrenatalMebendazole ()
+prenatalMebendazoleEndpoint =
+    swEndpoint "nodes/prenatal_mebendazole" decodePrenatalMebendazole
+        |> withValueEncoder (object << encodePrenatalMebendazole)
+
+
 ncdEncounterEndpoint : ReadWriteEndPoint Error NCDEncounterId NCDEncounter NCDEncounter (List IndividualEncounterParticipantId)
 ncdEncounterEndpoint =
     swEndpoint "nodes/ncd_encounter" decodeNCDEncounter
