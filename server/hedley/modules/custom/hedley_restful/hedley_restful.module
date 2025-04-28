@@ -168,6 +168,7 @@ const HEDLEY_RESTFUL_SHARDED = [
   'prenatal_iron' => 'prenatal-iron',
   'prenatal_labs_results' => 'prenatal-labs-results',
   'prenatal_malaria_test' => 'prenatal-malaria-test',
+  'prenatal_mebendazole' => 'prenatal-mebendazole',
   'prenatal_medication_distribution' => 'prenatal-medication-distribution',
   'prenatal_mental_health' => 'prenatal-mental-health',
   'prenatal_mms' => 'prenatal-mms',
