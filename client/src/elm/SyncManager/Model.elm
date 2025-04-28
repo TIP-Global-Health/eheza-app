@@ -185,6 +185,7 @@ type BackendAuthorityEntity
     | BackendAuthorityPrenatalIron (BackendEntity PrenatalIron)
     | BackendAuthorityPrenatalLabsResults (BackendEntity PrenatalLabsResults)
     | BackendAuthorityPrenatalMalariaTest (BackendEntity PrenatalMalariaTest)
+    | BackendAuthorityPrenatalMebendazole (BackendEntity PrenatalMebendazole)
     | BackendAuthorityPrenatalMedicationDistribution (BackendEntity PrenatalMedicationDistribution)
     | BackendAuthorityPrenatalMentalHealth (BackendEntity PrenatalMentalHealth)
     | BackendAuthorityPrenatalMMS (BackendEntity PrenatalMMS)

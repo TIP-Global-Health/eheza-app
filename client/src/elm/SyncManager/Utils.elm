@@ -830,6 +830,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPrenatalMalariaTest identifier ->
             getIdentifier identifier "prenatal_malaria_test"
 
+        BackendAuthorityPrenatalMebendazole identifier ->
+            getIdentifier identifier "prenatal_mebendazole"
+
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             getIdentifier identifier "prenatal_medication_distribution"
 
@@ -1606,6 +1609,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityPrenatalMalariaTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalMalariaTest identifier
+
+        BackendAuthorityPrenatalMebendazole identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalMebendazole identifier
 
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalMedicationDistribution identifier
@@ -2449,6 +2455,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalMalariaTest identifier ->
             PrenatalMalariaTestRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalMebendazole identifier ->
+            PrenatalMebendazoleRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalMedicationDistribution identifier ->
             PrenatalMedicationDistributionRevision (toEntityUuid identifier.uuid) identifier.entity

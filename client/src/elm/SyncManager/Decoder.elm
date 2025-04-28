@@ -1049,6 +1049,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePrenatalMalariaTest
                             BackendAuthorityPrenatalMalariaTest
 
+                    "prenatal_mebendazole" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalMebendazole
+                            BackendAuthorityPrenatalMebendazole
+
                     "prenatal_medication_distribution" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalMedicationDistribution
