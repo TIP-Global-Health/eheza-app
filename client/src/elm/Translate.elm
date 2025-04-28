@@ -8979,6 +8979,12 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                TaskMebendazole ->
+                    { english = "Mebendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         LabsEntryState isLabTech state ->
             case state of
                 LabsEntryPending ->

@@ -175,6 +175,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveMebendazole personId valueId value ->
+            ( { model | saveMebendazole = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMebendazoleEndpoint HandleSavedMebendazole
+            , []
+            )
+
+        HandleSavedMebendazole data ->
+            ( { model | saveMebendazole = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveObstetricalExam personId valueId value ->
             ( { model | saveObstetricalExam = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value obstetricalExamEndpoint HandleSavedObstetricalExam

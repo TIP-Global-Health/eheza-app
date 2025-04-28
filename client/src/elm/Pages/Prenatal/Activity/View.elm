@@ -1104,37 +1104,35 @@ viewMedicationContent language currentDate assembled data =
             assembled.measurements
 
         tasks =
-            medicationTasks
+            resolveMedicationTasks currentDate assembled
 
         activeTask =
             resolveActiveTask tasks data.activeTask
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         TaskCalcium ->
-                            ( "calcium"
-                            , isJust measurements.calcium
-                            )
+                            "calcium"
 
                         TaskFolate ->
-                            ( "folate"
-                            , isJust measurements.folate
-                            )
+                            "folate"
 
                         TaskIron ->
-                            ( "iron"
-                            , isJust measurements.iron
-                            )
+                            "iron"
 
                         TaskMMS ->
-                            ( "mms"
-                            , isJust measurements.mms
-                            )
+                            "mms"
+
+                        TaskMebendazole ->
+                            "mebendezole"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    medicationTaskCompleted assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -1194,6 +1192,14 @@ viewMedicationContent language currentDate assembled data =
                             assembled.person
                             mmsAdministrationFormConfig
 
+                Just TaskMebendazole ->
+                    getMeasurementValueFunc measurements.mebendazole
+                        |> medicationAdministrationFormWithDefault data.mebendazoleForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mebendazoleAdministrationFormConfig
+
                 Nothing ->
                     []
 
@@ -1220,6 +1226,9 @@ viewMedicationContent language currentDate assembled data =
 
                                 TaskMMS ->
                                     SaveMMS personId measurements.mms nextTask
+
+                                TaskMebendazole ->
+                                    SaveMebendazole personId measurements.mebendazole nextTask
 
                         disabled =
                             tasksCompleted /= totalTasks

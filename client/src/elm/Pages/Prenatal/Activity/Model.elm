@@ -150,6 +150,9 @@ type Msg
     | SetMMSAdministered Bool
     | SetMMSReasonForNonAdministration AdministrationNote
     | SaveMMS PersonId (Maybe ( PrenatalMMSId, PrenatalMMS )) (Maybe MedicationTask)
+    | SetMebendazoleAdministered Bool
+    | SetMebendazoleReasonForNonAdministration AdministrationNote
+    | SaveMebendazole PersonId (Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )) (Maybe MedicationTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -413,6 +416,7 @@ type alias MedicationData =
     , folateForm : MedicationAdministrationForm
     , ironForm : MedicationAdministrationForm
     , mmsForm : MedicationAdministrationForm
+    , mebendazoleForm : MedicationAdministrationForm
     , activeTask : Maybe MedicationTask
     }
 
@@ -423,13 +427,9 @@ emptyMedicationData =
     , folateForm = emptyMedicationAdministrationForm
     , ironForm = emptyMedicationAdministrationForm
     , mmsForm = emptyMedicationAdministrationForm
+    , mebendazoleForm = emptyMedicationAdministrationForm
     , activeTask = Nothing
     }
-
-
-medicationTasks : List MedicationTask
-medicationTasks =
-    [ TaskCalcium, TaskFolate, TaskIron, TaskMMS ]
 
 
 type alias MedicationForm =

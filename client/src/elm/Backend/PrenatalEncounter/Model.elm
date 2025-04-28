@@ -116,6 +116,7 @@ type alias Model =
     , saveFolate : WebData ()
     , saveIron : WebData ()
     , saveMMS : WebData ()
+    , saveMebendazole : WebData ()
     }
 
 
@@ -166,6 +167,7 @@ emptyModel =
     , saveFolate = NotAsked
     , saveIron = NotAsked
     , saveMMS = NotAsked
+    , saveMebendazole = NotAsked
     }
 
 
@@ -195,6 +197,8 @@ type Msg
     | HandleSavedIron (WebData ())
     | SaveMMS PersonId (Maybe PrenatalMMSId) AdministrationNote
     | HandleSavedMMS (WebData ())
+    | SaveMebendazole PersonId (Maybe PrenatalMebendazoleId) AdministrationNote
+    | HandleSavedMebendazole (WebData ())
     | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())
     | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue

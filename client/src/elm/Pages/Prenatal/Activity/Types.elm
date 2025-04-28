@@ -64,3 +64,4 @@ type MedicationTask
     | TaskFolate
     | TaskIron
     | TaskMMS
+    | TaskMebendazole

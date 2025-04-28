@@ -1744,6 +1744,64 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SetMebendazoleAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendazoleForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetMebendazoleReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.mebendazoleForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | mebendazoleForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveMebendazole personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    model.medicationData.mebendazoleForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveMebendazole personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
         SetMalariaPreventionBoolInput formUpdateFunc value ->
             let
                 updatedForm =
