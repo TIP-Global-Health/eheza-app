@@ -1425,6 +1425,102 @@ resolveMeasuredHeight assembled =
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
 
 
+resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight assembled =
+    let
+        resolveWeight measurements =
+            getMeasurementValueFunc measurements.lastMenstrualPeriod
+                |> Maybe.andThen .prePregnancyWeight
+
+        byCurrent =
+            resolveWeight assembled.measurements
+
+        byNurse =
+            List.filterMap (.measurements >> resolveWeight)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveWeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or byNurse byCHW
+        |> Maybe.Extra.or byCurrent
+
+
+bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
+bmiToPrePregnancyClassification bmi =
+    if bmi < 18.5 then
+        PrePregnancyUnderWeight
+
+    else if bmi < 25 then
+        PrePregnancyNormal
+
+    else if bmi < 30 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeight currentWeight assembled =
+    Maybe.map
+        (\lmpDate ->
+            let
+                egaInWeeks =
+                    calculateEGAWeeks currentDate lmpDate
+
+                actualWeightGain =
+                    currentWeight - prePregnancyWeight
+
+                expectedWeightGain =
+                    let
+                        weeksAfterFirstTrimester =
+                            egaInWeeks - 13
+
+                        ( forFirstTrimester, perWeek ) =
+                            case prePregnancyClassification of
+                                PrePregnancyUnderWeight ->
+                                    ( 2, 0.51 )
+
+                                PrePregnancyNormal ->
+                                    ( 2, 0.42 )
+
+                                PrePregnancyOverweight ->
+                                    ( 1, 0.28 )
+
+                                PrePregnancyObesity ->
+                                    ( 0.5, 0.22 )
+                    in
+                    if weeksAfterFirstTrimester <= 0 then
+                        forFirstTrimester
+
+                    else
+                        forFirstTrimester + toFloat weeksAfterFirstTrimester * perWeek
+
+                relation =
+                    actualWeightGain / expectedWeightGain
+            in
+            if relation < 0.7 then
+                GWGSeverelyInadequate
+
+            else if relation < 0.9 then
+                GWGInadequate
+
+            else if relation <= 1.25 then
+                GWGAdequate
+
+            else
+                GWGExcessive
+        )
+        assembled.globalLmpDate
+
+
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
 generatePrenatalAssesmentForChw assembled =
     if noDangerSigns assembled then

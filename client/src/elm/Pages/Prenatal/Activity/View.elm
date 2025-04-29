@@ -957,6 +957,7 @@ viewExaminationContent language currentDate assembled data =
 
         measuredHeight =
             resolveMeasuredHeight assembled
+                |> Maybe.map getHeightValue
 
         ( obstetricalExamInputs, obstetricalExamTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricalExam
@@ -983,13 +984,14 @@ viewExaminationContent language currentDate assembled data =
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         formWithMeasuredHeight =
-                            Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                            Maybe.map (\height -> { form | height = Just height }) measuredHeight
                                 |> Maybe.withDefault form
 
-                        hideHeightInput =
-                            isJust measuredHeight
+                        prePregnancyWeight =
+                            resolvePrePregnancyWeight assembled
+                                |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight hideHeightInput
+                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight measuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -1031,7 +1033,7 @@ viewExaminationContent language currentDate assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition (Maybe.map getHeightValue measuredHeight) nextTask
+                                    SaveNutritionAssessment personId measurements.nutrition measuredHeight nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
@@ -3064,9 +3066,12 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
+viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate assembled form heightValue prePregnancyWeight =
     let
+        hideHeightInput =
+            isJust heightValue
+
         heightUpdateFunc value form_ =
             { form_ | height = value, heightDirty = True }
 
@@ -3098,6 +3103,15 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
         calculatedBmi =
             calculateBmi form.height form.weight
                 |> Maybe.map (Round.roundNum 1)
+
+        gwgIndicator =
+            Maybe.map3
+                (\prePregnancyClassification baselineWeight currentWeight ->
+                    resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                )
+                (calculateBmi form.height prePregnancyWeight |> Maybe.map bmiToPrePregnancyClassification)
+                prePregnancyWeight
+                form.weight
 
         heightSection =
             if not hideHeightInput then
