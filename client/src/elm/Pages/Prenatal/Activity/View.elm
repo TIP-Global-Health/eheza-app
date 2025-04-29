@@ -20,7 +20,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -131,22 +131,24 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
-view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate site isChw activity db model assembled
+        , viewContent language currentDate zscores site isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -179,11 +181,11 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate site isChw activity assembled db model
+            ++ viewActivity language currentDate zscores site isChw activity assembled db model
 
 
 warningPopup :
@@ -302,8 +304,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -312,7 +314,7 @@ viewActivity language currentDate site isChw activity assembled db model =
             viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate assembled model.examinationData
+            viewExaminationContent language currentDate zscores assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
@@ -868,8 +870,8 @@ viewHistoryContent language currentDate assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -993,7 +995,7 @@ viewExaminationContent language currentDate assembled data =
                             resolvePrePregnancyWeight assembled
                                 |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight measuredHeight prePregnancyWeight
+                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight measuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -3068,8 +3070,8 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form heightValue prePregnancyWeight =
+viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate zscores assembled form heightValue prePregnancyWeight =
     let
         hideHeightInput =
             isJust heightValue
@@ -3114,6 +3116,35 @@ viewNutritionAssessmentForm language currentDate assembled form heightValue preP
                 form.weight
                 weightPreviousValue
 
+        baselineClassification =
+            Maybe.Extra.andThen2
+                (\lmpDate birthDate ->
+                    let
+                        ageInYearsOnLMP =
+                            diffYears birthDate lmpDate
+                    in
+                    if ageInYearsOnLMP < 19 then
+                        let
+                            ageInDaysOnLMP =
+                                diffDays birthDate lmpDate
+                        in
+                        Maybe.andThen
+                            (\baselineBmi ->
+                                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI baselineBmi)
+                                    |> Maybe.andThen (viewZScore >> String.toFloat)
+                                    |> Maybe.map zscoreToPrePregnancyClassification
+                            )
+                            prePregnancyBmi
+
+                    else
+                        Maybe.map bmiToPrePregnancyClassification prePregnancyBmi
+                )
+                assembled.globalLmpDate
+                assembled.person.birthDate
+
+        prePregnancyBmi =
+            calculateBmi form.height prePregnancyWeight
+
         gwgIndicator =
             Maybe.Extra.andThen3
                 (\prePregnancyClassification baselineWeight currentWeight ->
@@ -3134,7 +3165,7 @@ viewNutritionAssessmentForm language currentDate assembled form heightValue preP
                                 p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
                             )
                 )
-                (calculateBmi form.height prePregnancyWeight |> Maybe.map bmiToPrePregnancyClassification)
+                baselineClassification
                 prePregnancyWeight
                 form.weight
 

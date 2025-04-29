@@ -1452,6 +1452,25 @@ resolvePrePregnancyWeight assembled =
         |> Maybe.Extra.or byCurrent
 
 
+{-| Used for patients bellow 19 years of age.
+-}
+zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
+zscoreToPrePregnancyClassification zscore =
+    if zscore < -2 then
+        PrePregnancyUnderWeight
+
+    else if zscore < 2 then
+        PrePregnancyNormal
+
+    else if zscore < 3 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+{-| Used for patients of 19 years of age and above.
+-}
 bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
 bmiToPrePregnancyClassification bmi =
     if bmi < 18.5 then
