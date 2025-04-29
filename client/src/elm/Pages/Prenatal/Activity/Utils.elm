@@ -893,11 +893,8 @@ skipObstetricHistorySecondStep obstetricHistoryValue =
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
 resolveExaminationTasks assembled =
-    let
-        tasks =
-            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
-    in
-    List.filter (expectExaminationTask assembled) tasks
+    List.filter (expectExaminationTask assembled)
+        [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
 
 
 expectExaminationTask : AssembledData -> ExaminationTask -> Bool

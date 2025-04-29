@@ -10358,12 +10358,14 @@ medicationAdministrationFormInputsAndTasks language currentDate person config fo
             config.resolveDosageAndIconFunc language currentDate person
                 |> Maybe.map
                     (\( dosage, icon, helper ) ->
-                        div [ class "instructions" ]
+                        [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
+                        , div [ class "instructions" ]
                             [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon "" dosage Nothing
                             , div [ class "prescription" ] [ text <| helper ++ "." ]
                             ]
+                        ]
                     )
-                |> Maybe.withDefault emptyNode
+                |> Maybe.withDefault []
 
         questions =
             concatInputsAndTasksSections
@@ -10397,9 +10399,7 @@ medicationAdministrationFormInputsAndTasks language currentDate person config fo
                 ( [], [] )
     in
     concatInputsAndTasksSections
-        [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-            , instructions
-            ]
+        [ ( instructions
           , []
           )
         , questions
