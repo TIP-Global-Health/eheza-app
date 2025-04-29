@@ -437,6 +437,8 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BaselineWeight Float
+    | BaselineWeightNotFound
     | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
@@ -3565,6 +3567,18 @@ translationSet trans =
         Balance ->
             { english = "Balance"
             , kinyarwanda = Just "Ibisigaye"
+            , kirundi = Nothing
+            }
+
+        BaselineWeight value ->
+            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        BaselineWeightNotFound ->
+            { english = "No pre-pregnancy baseline weight on record"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 

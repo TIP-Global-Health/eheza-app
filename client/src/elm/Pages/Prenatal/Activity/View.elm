@@ -117,6 +117,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
+        , viewPreviousMeasurementCustom
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
@@ -3180,6 +3181,11 @@ viewNutritionAssessmentForm language currentDate assembled form heightValue preP
                         [ showMaybe gwgIndicator ]
                     ]
                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+               , viewPreviousMeasurementCustom language
+                    prePregnancyWeight
+                    Translate.BaselineWeight
+                    Translate.BaselineWeightNotFound
+                    Translate.KilogramShorthand
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
