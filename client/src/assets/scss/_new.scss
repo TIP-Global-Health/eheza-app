@@ -467,6 +467,10 @@ div.page-pincode {
   .wrap-cards {
     padding: 0;
 
+    .ui.four.cards {
+      justify-content: center;
+    }
+
     .card {
       margin: 0.75rem 0.75rem 0.75rem 0;
 

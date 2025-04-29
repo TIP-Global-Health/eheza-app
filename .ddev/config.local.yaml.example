@@ -54,11 +54,17 @@ hooks:
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/person.csv"
     - exec: "cd .. && rm -f hedley/modules/custom/hedley_migrate/csv/village.csv"
     # Enabling features:
+    - exec: drush vset hedley_admin_feature_acute_illness_enabled 1
+    - exec: drush vset hedley_admin_feature_antenatal_enabled 1
+    - exec: drush vset hedley_admin_feature_gps_coordinates_enabled 1
+    - exec: drush vset hedley_admin_feature_group_education_enabled 1
+    - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
+    - exec: drush vset hedley_admin_feature_ncd_enabled 1
     - exec: drush vset hedley_admin_feature_ncda_enabled 1
+    - exec: drush vset hedley_admin_feature_nutrition_group_enabled 1
+    - exec: drush vset hedley_admin_feature_nutrition_individual_enabled 1
+    - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
     - exec: drush vset hedley_admin_feature_stock_management_enabled 1
     - exec: drush vset hedley_admin_feature_tuberculosis_management_enabled 1
-    - exec: drush vset hedley_admin_feature_group_education_enabled 1
-    - exec: drush vset hedley_admin_feature_report_to_whatsapp_enabled 1
-    - exec: drush vset hedley_admin_feature_hiv_management_enabled 1
-    - exec: drush vset hedley_admin_feature_gps_coordinates_enabled 1
+    - exec: drush vset hedley_admin_feature_well_child_enabled 1
     - exec: drush uli
