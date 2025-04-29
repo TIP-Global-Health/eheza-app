@@ -2203,6 +2203,8 @@ div.page-activity.prenatal {
 
     .full.content {
 
+      @include ncda-vaccination;
+
       .form.medication {
 
         .label.header {
@@ -2299,8 +2301,6 @@ div.page-activity.prenatal {
         margin-bottom: 20px;
       }
 
-      @include ncda-vaccination;
-
       .ui.form.labs-history {
 
         .instructions,
@@ -2339,6 +2339,32 @@ div.page-activity.prenatal {
             font-size: 17px;
             padding: 0 20px;
             text-transform: uppercase;
+          }
+        }
+      }
+
+      .ui.form.examination.nutrition-assessment {
+
+        .gwg-label .label {
+          font-size: 20px;
+          text-align: center;
+        }
+
+        .gwg-value {
+          font-weight: 700;
+          margin-top: 10px;
+          text-align: center;
+
+          p.red {
+            color: $color-red-alert;
+          }
+
+          p.yellow {
+            color: $color-orange;
+          }
+
+          p.green {
+            color: $color-green;
           }
         }
       }
