@@ -116,6 +116,7 @@ import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderTyp
 import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
+        , GWGClassification(..)
         , HistoryTask(..)
         , MedicationTask(..)
         , TreatmentReviewTask(..)
@@ -730,6 +731,8 @@ type TranslationId
     | GroupOfFoods GroupOfFoods
     | Growth
     | GuideMessage
+    | GWGClassification GWGClassification
+    | GWGClassificationLabel
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -6742,6 +6745,38 @@ translationSet trans =
         GuideMessage ->
             { english = "Guide Message"
             , kinyarwanda = Just "Ifashayobora"
+            , kirundi = Nothing
+            }
+
+        GWGClassification value ->
+            case value of
+                GWGSeverelyInadequate ->
+                    { english = "Severely Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGInadequate ->
+                    { english = "Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGAdequate ->
+                    { english = "Adequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGExcessive ->
+                    { english = "Excessive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        GWGClassificationLabel ->
+            { english = "GWG Classification"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 

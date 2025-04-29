@@ -65,3 +65,17 @@ type MedicationTask
     | TaskIron
     | TaskMMS
     | TaskMebendazole
+
+
+type PrePregnancyClassification
+    = PrePregnancyUnderWeight
+    | PrePregnancyNormal
+    | PrePregnancyOverweight
+    | PrePregnancyObesity
+
+
+type GWGClassification
+    = GWGSeverelyInadequate
+    | GWGInadequate
+    | GWGAdequate
+    | GWGExcessive

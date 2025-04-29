@@ -339,20 +339,6 @@ emptyModel =
     }
 
 
-type PrePregnancyClassification
-    = PrePregnancyUnderWeight
-    | PrePregnancyNormal
-    | PrePregnancyOverweight
-    | PrePregnancyObesity
-
-
-type GWGClassification
-    = GWGSeverelyInadequate
-    | GWGInadequate
-    | GWGAdequate
-    | GWGExcessive
-
-
 
 -- DATA
 

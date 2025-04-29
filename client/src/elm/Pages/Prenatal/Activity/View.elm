@@ -77,6 +77,7 @@ import Measurement.View
     exposing
         ( viewFamilyPlanningForm
         , viewFamilyPlanningInput
+        , viewMeasurementFloatDiff
         , viewMedicationAdministrationForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
@@ -3104,10 +3105,33 @@ viewNutritionAssessmentForm language currentDate assembled form heightValue preP
             calculateBmi form.height form.weight
                 |> Maybe.map (Round.roundNum 1)
 
+        weightDiff =
+            Maybe.map2
+                (\currentWeight previousWeight ->
+                    viewMeasurementFloatDiff language Translate.KilogramShorthand currentWeight previousWeight
+                )
+                form.weight
+                weightPreviousValue
+
         gwgIndicator =
-            Maybe.map3
+            Maybe.Extra.andThen3
                 (\prePregnancyClassification baselineWeight currentWeight ->
                     resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                        |> Maybe.map
+                            (\classification ->
+                                let
+                                    color =
+                                        if classification == GWGSeverelyInadequate then
+                                            "red"
+
+                                        else if classification == GWGAdequate then
+                                            "green"
+
+                                        else
+                                            "yellow"
+                                in
+                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                            )
                 )
                 (calculateBmi form.height prePregnancyWeight |> Maybe.map bmiToPrePregnancyClassification)
                 prePregnancyWeight
@@ -3136,16 +3160,25 @@ viewNutritionAssessmentForm language currentDate assembled form heightValue preP
     div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
             ++ [ div [ class "ui grid" ]
-                    [ div [ class "eleven wide column" ]
+                    [ div [ class "twelve wide column" ]
                         [ viewLabel language Translate.Weight ]
-                    , viewWarning language Nothing
+                    , div [ class "four wide column gwg-label" ]
+                        [ viewLabel language Translate.GWGClassificationLabel |> showIf (isJust gwgIndicator) ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.weight
-                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
-                    "weight"
-                    Translate.KilogramShorthand
+               , div [ class "ui grid" ]
+                    [ div [ class "eight wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.weight
+                            (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                            "weight"
+                            Translate.KilogramShorthand
+                        ]
+                    , div [ class "four wide column" ]
+                        [ showMaybe weightDiff ]
+                    , div [ class "four wide column gwg-value" ]
+                        [ showMaybe gwgIndicator ]
+                    ]
                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
