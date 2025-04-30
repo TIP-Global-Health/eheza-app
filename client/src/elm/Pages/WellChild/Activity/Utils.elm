@@ -40,7 +40,6 @@ import Measurement.View
         , vitalsFormInputsAndTasks
         , weightFormAndTasks
         )
-import Pages.AcuteIllness.Activity.Utils exposing (viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
 import Pages.Utils
     exposing
         ( concatInputsAndTasksSections
@@ -1430,212 +1429,120 @@ medicationTasksCompletedFromTotal currentDate site assembled data task =
         ( _, tasks ) =
             case task of
                 TaskAlbendazole ->
-                    let
-                        config =
-                            { medication = Albendazole
-                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
-                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
-                            , helper = Translate.AdministerAlbendazoleHelper
-                            }
-                    in
                     getMeasurementValueFunc measurements.albendazole
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            (albendazoleAdministrationFormConfig site)
 
                 TaskMebendezole ->
-                    let
-                        config =
-                            { medication = Mebendezole
-                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
-                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
-                            , helper = Translate.AdministerMebendezoleHelper
-                            }
-                    in
                     getMeasurementValueFunc measurements.mebendezole
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            (mebendezoleAdministrationFormConfig site)
 
                 TaskVitaminA ->
-                    let
-                        config =
-                            { medication = VitaminA
-                            , setMedicationAdministeredMsg = SetVitaminAAdministered
-                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
-                            , helper = Translate.AdministerVitaminAHelperWellChild
-                            }
-                    in
                     getMeasurementValueFunc measurements.vitaminA
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> medicationAdministrationFormInputsAndTasks English currentDate site assembled config
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            (vitaminAAdministrationFormConfig site)
     in
     resolveTasksCompletedFromTotal tasks
 
 
-medicationAdministrationFormInputsAndTasks :
-    Language
-    -> NominalDate
-    -> Site
-    -> AssembledData
-    -> MedicationAdministrationFormConfig
-    -> MedicationAdministrationForm
-    -> ( List (Html Msg), List (Maybe Bool) )
-medicationAdministrationFormInputsAndTasks language currentDate site assembled config form =
-    let
-        instructions =
-            config.resolveDosageAndIconFunc currentDate site assembled.person
-                |> Maybe.map
-                    (\( dosage, icon ) ->
-                        div [ class "instructions" ]
-                            [ viewAdministeredMedicationLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon dosage
-                            , div [ class "prescription" ] [ text <| translate language config.helper ++ "." ]
-                            ]
-                    )
-                |> Maybe.withDefault emptyNode
-
-        questions =
-            concatInputsAndTasksSections
-                [ ( [ viewAdministeredMedicationQuestion language (Translate.MedicationDistributionSign config.medication)
-                    , viewBoolInput
-                        language
-                        form.medicationAdministered
-                        config.setMedicationAdministeredMsg
-                        ""
-                        Nothing
-                    ]
-                  , [ form.medicationAdministered ]
-                  )
-                , derivedQuestion
-                ]
-
-        derivedQuestion =
-            if form.medicationAdministered == Just False then
-                ( [ viewQuestionLabel language Translate.WhyNot
-                  , viewCheckBoxSelectInput language
-                        [ NonAdministrationLackOfStock, NonAdministrationKnownAllergy, NonAdministrationPatientUnableToAfford ]
-                        [ NonAdministrationPatientDeclined, NonAdministrationOther ]
-                        form.reasonForNonAdministration
-                        config.setReasonForNonAdministration
-                        Translate.AdministrationNote
-                  ]
-                , [ maybeToBoolTask form.reasonForNonAdministration ]
-                )
-
-            else
-                ( [], [] )
-    in
-    concatInputsAndTasksSections
-        [ ( [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
-            , instructions
-            ]
-          , []
-          )
-        , questions
-        ]
-
-
-viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> String -> Html any
-viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass dosage =
-    viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass dosage Nothing
-
-
-fromAdministrationNote : Maybe AdministrationNote -> MedicationAdministrationForm
-fromAdministrationNote saved =
-    Maybe.map
-        (\administrationNote ->
-            let
-                ( medicationAdministered, reasonForNonAdministration ) =
-                    if administrationNote == AdministeredToday then
-                        ( Just True, Nothing )
-
-                    else
-                        ( Just False, Just administrationNote )
-            in
-            MedicationAdministrationForm medicationAdministered reasonForNonAdministration
-        )
-        saved
-        |> Maybe.withDefault emptyMedicationAdministrationForm
-
-
-medicationAdministrationFormWithDefault : MedicationAdministrationForm -> Maybe AdministrationNote -> MedicationAdministrationForm
-medicationAdministrationFormWithDefault form saved =
-    let
-        fromSavedForm =
-            fromAdministrationNote saved
-    in
-    { medicationAdministered = or form.medicationAdministered fromSavedForm.medicationAdministered
-    , reasonForNonAdministration = or form.reasonForNonAdministration fromSavedForm.reasonForNonAdministration
+albendazoleAdministrationFormConfig : Site -> MedicationAdministrationFormConfig Msg
+albendazoleAdministrationFormConfig site =
+    { medication = Albendazole
+    , setMedicationAdministeredMsg = SetAlbendazoleAdministered
+    , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon site
     }
 
 
-toAdministrationNoteWithDefault : Maybe AdministrationNote -> MedicationAdministrationForm -> Maybe AdministrationNote
-toAdministrationNoteWithDefault saved form =
-    medicationAdministrationFormWithDefault form saved
-        |> toAdministrationNote
+mebendezoleAdministrationFormConfig : Site -> MedicationAdministrationFormConfig Msg
+mebendezoleAdministrationFormConfig site =
+    { medication = Mebendezole
+    , setMedicationAdministeredMsg = SetMebendezoleAdministered
+    , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon site
+    }
 
 
-toAdministrationNote : MedicationAdministrationForm -> Maybe AdministrationNote
-toAdministrationNote form =
-    form.medicationAdministered
-        |> Maybe.andThen
-            (\medicationAdministered ->
-                if medicationAdministered then
-                    Just AdministeredToday
-
-                else
-                    form.reasonForNonAdministration
-            )
+vitaminAAdministrationFormConfig : Site -> MedicationAdministrationFormConfig Msg
+vitaminAAdministrationFormConfig site =
+    { medication = VitaminA
+    , setMedicationAdministeredMsg = SetVitaminAAdministered
+    , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon site
+    }
 
 
-resolveAlbendazoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
-resolveAlbendazoleDosageAndIcon currentDate site person =
+resolveAlbendazoleDosageAndIcon : Site -> Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveAlbendazoleDosageAndIcon site language currentDate person =
+    let
+        helper =
+            translate language Translate.AdministerAlbendazoleHelper
+    in
     case site of
         SiteBurundi ->
             ageInMonths currentDate person
                 |> Maybe.map
                     (\ageMonths ->
                         if ageMonths < 24 then
-                            ( "200 mg", "icon-pills" )
+                            ( "200 mg", "icon-pills", helper )
 
                         else
-                            ( "400 mg", "icon-pills" )
+                            ( "400 mg", "icon-pills", helper )
                     )
 
         _ ->
-            Just ( "400 mg", "icon-pills" )
+            Just ( "400 mg", "icon-pills", helper )
 
 
-resolveMebendezoleDosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
-resolveMebendezoleDosageAndIcon currentDate site person =
+resolveMebendezoleDosageAndIcon : Site -> Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMebendezoleDosageAndIcon site language currentDate person =
     case site of
         SiteBurundi ->
             Nothing
 
         _ ->
-            Just ( "500 mg", "icon-pills" )
+            Just ( "500 mg", "icon-pills", translate language Translate.AdministerMebendezoleHelper )
 
 
-resolveVitaminADosageAndIcon : NominalDate -> Site -> Person -> Maybe ( String, String )
-resolveVitaminADosageAndIcon currentDate site person =
+resolveVitaminADosageAndIcon : Site -> Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveVitaminADosageAndIcon site language currentDate person =
     ageInMonths currentDate person
         |> Maybe.map
             (\ageMonths ->
+                let
+                    helper =
+                        translate language Translate.AdministerVitaminAHelperPrenatal
+
+                    bluePill =
+                        ( "100,000 IU", "icon-capsule blue", helper )
+
+                    redPill =
+                        ( "200,000 IU", "icon-capsule red", helper )
+                in
                 case site of
                     SiteBurundi ->
                         if ageMonths < 12 then
-                            ( "100,000 IU", "icon-capsule blue" )
+                            bluePill
 
                         else
-                            ( "200,000 IU", "icon-capsule red" )
+                            redPill
 
                     _ ->
                         if ageMonths < 18 then
-                            ( "100,000 IU", "icon-capsule blue" )
+                            bluePill
 
                         else
-                            ( "200,000 IU", "icon-capsule red" )
+                            redPill
             )
 
 
