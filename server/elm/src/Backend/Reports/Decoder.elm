@@ -189,7 +189,66 @@ decodePrenatalParticipantData =
         |> required "created" decodeYYYYMMDD
         |> optional "edd" (nullable decodeYYYYMMDD) Nothing
         |> optional "dc" (nullable decodeYYYYMMDD) Nothing
+        |> optional "o" (nullable decodePregnancyOutcome) Nothing
+        |> optional "ol" (nullable decodeDeliveryLocation) Nothing
         |> required "encounters" (list decodePrenatalEncounterData)
+
+
+decodeDeliveryLocation : Decoder DeliveryLocation
+decodeDeliveryLocation =
+    string
+        |> andThen
+            (\s ->
+                deliveryLocationFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized DeliveryLocation" |> fail)
+            )
+
+
+deliveryLocationFromString : String -> Maybe DeliveryLocation
+deliveryLocationFromString location =
+    case location of
+        "f" ->
+            Just FacilityDelivery
+
+        "h" ->
+            Just HomeDelivery
+
+        _ ->
+            Nothing
+
+
+decodePregnancyOutcome : Decoder PregnancyOutcome
+decodePregnancyOutcome =
+    string
+        |> andThen
+            (\s ->
+                pregnancyOutcomeFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized PregnancyOutcome" |> fail)
+            )
+
+
+pregnancyOutcomeFromString : String -> Maybe PregnancyOutcome
+pregnancyOutcomeFromString outcome =
+    case outcome of
+        "a" ->
+            Just OutcomeLiveAtTerm
+
+        "b" ->
+            Just OutcomeLivePreTerm
+
+        "c" ->
+            Just OutcomeStillAtTerm
+
+        "d" ->
+            Just OutcomeStillPreTerm
+
+        "e" ->
+            Just OutcomeAbortions
+
+        _ ->
+            Nothing
 
 
 decodePrenatalEncounterData : Decoder PrenatalEncounterData

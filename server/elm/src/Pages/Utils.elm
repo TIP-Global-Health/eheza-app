@@ -9,10 +9,20 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Icons
+import Round
 import Svg.Attributes
 import Time exposing (Month(..))
 import Translate exposing (TranslationId, translate)
 import Utils.GeoLocation exposing (..)
+
+
+calculatePercentage : Int -> Int -> String
+calculatePercentage nominator total =
+    if total == 0 then
+        "0"
+
+    else
+        Round.round 2 ((toFloat nominator / toFloat total) * 100) ++ "%"
 
 
 viewYearSelector : NominalDate -> Int -> (Int -> msg) -> Html msg

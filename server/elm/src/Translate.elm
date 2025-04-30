@@ -19,12 +19,18 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
+import Backend.Reports.Model
+    exposing
+        ( AcuteIllnessDiagnosis(..)
+        , DeliveryLocation(..)
+        , NutritionReportTableType(..)
+        , PregnancyOutcome(..)
+        )
 import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (ReportType(..))
+import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
@@ -92,10 +98,14 @@ type TranslationId
     | CompletionReportType Pages.Completion.Model.ReportType
     | CoreExam
     | DangerSigns
+    | DeliveryLocation DeliveryLocation
+    | DeliveryLocationsTableHeading
+    | DeliveryLocationsTablePercentage
+    | DeliveryLocationsTableTotals
+    | Demographics
     | Diagnosis
     | Diagnostics
     | District
-    | Demographics
     | DownloadCSV
     | EmptyString
     | Encounters
@@ -105,6 +115,7 @@ type TranslationId
     | FBF
     | Feeding
     | Female
+    | FirstVisit
     | FollowUp
     | FoodSecurity
     | GenerateReport
@@ -138,6 +149,7 @@ type TranslationId
     | Individual
     | InfrastructureEnvironmentWash
     | LoadData
+    | Location
     | Male
     | Medication
     | MedicationDistribution
@@ -169,7 +181,10 @@ type TranslationId
     | NutritionGroup
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
+    | OutcomesTableHeading
     | OutsideCare
+    | PatientsWith3OrMoreVisitsPercentage
+    | PatientsWith4OrMoreVisitsPercentage
     | Photo
     | PleaseWaitMessage
     | PMTCT
@@ -177,7 +192,10 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnancyOutcome PregnancyOutcome
+    | PregnancyOutcomeLabel
     | PregnancyTest
+    | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
@@ -213,6 +231,7 @@ type TranslationId
     | TargetedInterventions
     | Total
     | TreatmentReview
+    | Trimester
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
@@ -649,6 +668,44 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        DeliveryLocation location ->
+            case location of
+                FacilityDelivery ->
+                    { english = "Facility"
+                    , kinyarwanda = Just "Ivuriro"
+                    , kirundi = Just "Ikigo"
+                    }
+
+                HomeDelivery ->
+                    { english = "Home"
+                    , kinyarwanda = Just "Mu rugo"
+                    , kirundi = Just "Muhira"
+                    }
+
+        DeliveryLocationsTableHeading ->
+            { english = "Outcome Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTablePercentage ->
+            { english = "Percentage of completed pregnancies reported"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTableTotals ->
+            { english = "Total # delivery outcomes documented"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Demographics ->
+            { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Diagnostics ->
             { english = "Diagnostics"
             , kinyarwanda = Nothing
@@ -657,12 +714,6 @@ translationSet transId =
 
         District ->
             { english = "District"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        Demographics ->
-            { english = "Demographics"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -723,6 +774,12 @@ translationSet transId =
 
         Global ->
             { english = "Global"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FirstVisit ->
+            { english = "First Visit"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -937,6 +994,12 @@ translationSet transId =
 
         LoadData ->
             { english = "Load Data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Location ->
+            { english = "Location"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1326,7 +1389,7 @@ translationSet transId =
                 , kirundi = Nothing
                 }
 
-            else if number > 5 then
+            else if number > 4 then
                 { english = "5+ visits"
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
@@ -1470,8 +1533,26 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        OutcomesTableHeading ->
+            { english = "Outcomes of completed pregnancies (anything 30 days beyond EDD)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         OutsideCare ->
             { english = "Outside Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith3OrMoreVisitsPercentage ->
+            { english = "3+ visits (%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith4OrMoreVisitsPercentage ->
+            { english = "4+ visits (%)"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1532,11 +1613,69 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z'imbanyi canke zirenga)"
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Kubyara mwana udashyitse (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Imbanyi ivutse imbere y'ikiringo (mbere y'indwi 38)"
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Kuvyarira ku gihe (Indwi 38 - AGE (z'Igihe co Kwibungenga Caharuwe ) canke zirenga)"
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Kuvyara imbere yuko igihe kigera (imbere y'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)"
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Just "Kuvanamo inda (mbere y'ibyumweru 24)"
+                    , kirundi = Just "Ugukoroka kw'imbanyi (imbere y'indwi 24 ugereranije nigihe imbanyi imaze)"
+                    }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PregnancyTest ->
             { english = "Pregnancy Test"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
+
+        PregnancyTrimester trimester ->
+            case trimester of
+                FirstTrimester ->
+                    { english = "First Trimester"
+                    , kinyarwanda = Just "Igihembwe cya mbere"
+                    , kirundi = Just "Igice ca mbere"
+                    }
+
+                SecondTrimester ->
+                    { english = "Second Trimester"
+                    , kinyarwanda = Just "Igihembwe cya kabiri"
+                    , kirundi = Just "Igice ca kabiri"
+                    }
+
+                ThirdTrimester ->
+                    { english = "Third Trimester"
+                    , kinyarwanda = Just "Igihembwe cya gatatu"
+                    , kirundi = Just "Igice ca 3"
+                    }
 
         PrenatalActivity activity ->
             case activity of
@@ -1727,10 +1866,7 @@ translationSet transId =
                     }
 
                 PrenatalPregnancyOutcome ->
-                    { english = "Pregnancy Outcome"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet PregnancyOutcomeLabel
 
                 PrenatalPregnancyTesting ->
                     { english = "Pregnancy Testing"
@@ -2050,6 +2186,12 @@ translationSet transId =
             { english = "Treatment Review"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        Trimester ->
+            { english = "Trimester"
+            , kinyarwanda = "Igihembwe"
+            , kirundi = "Igice"
             }
 
         Tuberculosis ->

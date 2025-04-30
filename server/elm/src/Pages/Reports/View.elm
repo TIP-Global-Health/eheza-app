@@ -7,9 +7,11 @@ import Backend.Reports.Model
     exposing
         ( AcuteIllnessEncounterType(..)
         , BackendGeneratedNutritionReportTableDate
+        , DeliveryLocation(..)
         , Gender(..)
         , NutritionReportTableType(..)
         , PatientData
+        , PregnancyOutcome(..)
         , PrenatalEncounterType(..)
         , ReportsData
         , SelectedEntity(..)
@@ -18,7 +20,7 @@ import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDateDesc)
+import Gizra.NominalDate exposing (NominalDate, customFormatDDMMYYYY, formatDDMMYYYY, sortByDate, sortByDateDesc)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
@@ -30,7 +32,8 @@ import Pages.Reports.Model exposing (..)
 import Pages.Reports.Utils exposing (..)
 import Pages.Utils
     exposing
-        ( generateReportsHeaderImage
+        ( calculatePercentage
+        , generateReportsHeaderImage
         , launchDate
         , viewCustomLabel
         , viewSelectListInput
@@ -162,7 +165,7 @@ viewReportsData language currentDate themePath data model =
                 isJust model.startDateSelectorPopupState
                     || isJust model.limitDateSelectorPopupState
             then
-                -- Date selector is open, so no need to calcualte
+                -- Date selector is open, so no need to calculate
                 -- intermediate results.
                 emptyNode
 
@@ -1433,15 +1436,15 @@ generatePrenatalReportData language limitDate records =
                 )
                 filtered
 
-        ( partitionedVisitsForActiveNurse, partitionedVisitsForActiveChw ) =
+        partitionedVisitsForActive =
             countVisitsByType active
                 |> partitionByNumberOfVisits
 
-        ( partitionedVisitsForCompletedNurse, partitionedVisitsForCompletedChw ) =
+        partitionedVisitsForCompleted =
             countVisitsByType completed
                 |> partitionByNumberOfVisits
 
-        countVisitsByType data =
+        countVisitsByType =
             List.map
                 (\participantData ->
                     let
@@ -1455,16 +1458,16 @@ generatePrenatalReportData language limitDate records =
                     in
                     { nurse = nurseEncounters
                     , chw = totalEncounters - nurseEncounters
+                    , all = totalEncounters
                     }
                 )
-                data
 
         partitionByNumberOfVisits =
             List.foldl
-                (\countedVisits ( nurseDict, chwDict ) ->
+                (\countedVisits accum ->
                     let
                         resolveKeyForValue value =
-                            if value > 5 then
+                            if value > 4 then
                                 -1
 
                             else
@@ -1486,131 +1489,459 @@ generatePrenatalReportData language limitDate records =
                                         )
                                     |> Maybe.withDefault (Dict.insert key 1 dict)
                     in
-                    ( updateDict countedVisits.nurse nurseDict
-                    , updateDict countedVisits.chw chwDict
-                    )
+                    { accum
+                        | nurse = updateDict countedVisits.nurse accum.nurse
+                        , chw = updateDict countedVisits.chw accum.chw
+                        , all = updateDict countedVisits.all accum.all
+                    }
                 )
-                ( Dict.empty, Dict.empty )
+                { nurse = Dict.empty
+                , chw = Dict.empty
+                , all = Dict.empty
+                }
 
         resolveValueFromDict key =
             Dict.get key >> Maybe.withDefault 0
 
         activeNurseVisits1 =
-            resolveValueFromDict 1 partitionedVisitsForActiveNurse
+            resolveValueFromDict 1 partitionedVisitsForActive.nurse
 
         activeNurseVisits2 =
-            resolveValueFromDict 2 partitionedVisitsForActiveNurse
+            resolveValueFromDict 2 partitionedVisitsForActive.nurse
 
         activeNurseVisits3 =
-            resolveValueFromDict 3 partitionedVisitsForActiveNurse
+            resolveValueFromDict 3 partitionedVisitsForActive.nurse
 
         activeNurseVisits4 =
-            resolveValueFromDict 4 partitionedVisitsForActiveNurse
-
-        activeNurseVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForActiveNurse
+            resolveValueFromDict 4 partitionedVisitsForActive.nurse
 
         activeNurseVisits5AndMore =
-            resolveValueFromDict -1 partitionedVisitsForActiveNurse
+            resolveValueFromDict -1 partitionedVisitsForActive.nurse
 
         activeChwVisits1 =
-            resolveValueFromDict 1 partitionedVisitsForActiveChw
+            resolveValueFromDict 1 partitionedVisitsForActive.chw
 
         activeChwVisits2 =
-            resolveValueFromDict 2 partitionedVisitsForActiveChw
+            resolveValueFromDict 2 partitionedVisitsForActive.chw
 
         activeChwVisits3 =
-            resolveValueFromDict 3 partitionedVisitsForActiveChw
+            resolveValueFromDict 3 partitionedVisitsForActive.chw
 
         activeChwVisits4 =
-            resolveValueFromDict 4 partitionedVisitsForActiveChw
-
-        activeChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForActiveChw
+            resolveValueFromDict 4 partitionedVisitsForActive.chw
 
         activeChwVisits5AndMore =
-            resolveValueFromDict -1 partitionedVisitsForActiveChw
+            resolveValueFromDict -1 partitionedVisitsForActive.chw
+
+        activeAllVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForActive.all
+
+        activeAllVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForActive.all
+
+        activeAllVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForActive.all
+
+        activeAllVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForActive.all
+
+        activeAllVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForActive.all
 
         completedNurseVisits1 =
-            resolveValueFromDict 1 partitionedVisitsForCompletedNurse
+            resolveValueFromDict 1 partitionedVisitsForCompleted.nurse
 
         completedNurseVisits2 =
-            resolveValueFromDict 2 partitionedVisitsForCompletedNurse
+            resolveValueFromDict 2 partitionedVisitsForCompleted.nurse
 
         completedNurseVisits3 =
-            resolveValueFromDict 3 partitionedVisitsForCompletedNurse
+            resolveValueFromDict 3 partitionedVisitsForCompleted.nurse
 
         completedNurseVisits4 =
-            resolveValueFromDict 4 partitionedVisitsForCompletedNurse
-
-        completedNurseVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompletedNurse
+            resolveValueFromDict 4 partitionedVisitsForCompleted.nurse
 
         completedNurseVisits5AndMore =
-            resolveValueFromDict -1 partitionedVisitsForCompletedNurse
+            resolveValueFromDict -1 partitionedVisitsForCompleted.nurse
 
         completedChwVisits1 =
-            resolveValueFromDict 1 partitionedVisitsForCompletedChw
+            resolveValueFromDict 1 partitionedVisitsForCompleted.chw
 
         completedChwVisits2 =
-            resolveValueFromDict 2 partitionedVisitsForCompletedChw
+            resolveValueFromDict 2 partitionedVisitsForCompleted.chw
 
         completedChwVisits3 =
-            resolveValueFromDict 3 partitionedVisitsForCompletedChw
+            resolveValueFromDict 3 partitionedVisitsForCompleted.chw
 
         completedChwVisits4 =
-            resolveValueFromDict 4 partitionedVisitsForCompletedChw
+            resolveValueFromDict 4 partitionedVisitsForCompleted.chw
 
         completedChwVisits5 =
-            resolveValueFromDict 5 partitionedVisitsForCompletedChw
+            resolveValueFromDict 5 partitionedVisitsForCompleted.chw
 
         completedChwVisits5AndMore =
-            resolveValueFromDict -1 partitionedVisitsForCompletedChw
+            resolveValueFromDict -1 partitionedVisitsForCompleted.chw
 
-        generateTableData heading values =
+        completedAllVisits1 =
+            resolveValueFromDict 1 partitionedVisitsForCompleted.all
+
+        completedAllVisits2 =
+            resolveValueFromDict 2 partitionedVisitsForCompleted.all
+
+        completedAllVisits3 =
+            resolveValueFromDict 3 partitionedVisitsForCompleted.all
+
+        completedAllVisits4 =
+            resolveValueFromDict 4 partitionedVisitsForCompleted.all
+
+        completedAllVisits5 =
+            resolveValueFromDict 5 partitionedVisitsForCompleted.all
+
+        completedAllVisits5AndMore =
+            resolveValueFromDict -1 partitionedVisitsForCompleted.all
+
+        generateTableData heading rows values =
             let
-                generateRowData labelTransId valueChw valueNurse =
+                generateRowData labelTransId valueChw valueNurse allValue =
                     [ translate language labelTransId
                     , String.fromInt valueChw
                     , String.fromInt valueNurse
-                    , String.fromInt <| valueChw + valueNurse
+                    , String.fromInt allValue
                     ]
+
+                visitsRows =
+                    List.indexedMap
+                        (\index ( chwValue, nurseValue, allValue ) ->
+                            generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue allValue
+                        )
+                        rows
+
+                totalsRow =
+                    generateRowData Translate.Total values.chwVisitsTotal values.nurseVisitsTotal values.allVisitsTotal
             in
             { heading = translate language heading ++ ":"
-            , captions = List.map (translate language) [ Translate.NumberOfVisitsLabel, Translate.CHW, Translate.HC, Translate.All ]
+            , captions =
+                List.map (translate language)
+                    [ Translate.NumberOfVisitsLabel
+                    , Translate.CHW
+                    , Translate.HC
+                    , Translate.All
+                    ]
             , rows =
-                List.indexedMap
-                    (\index ( chwValue, nurseValue ) ->
-                        generateRowData (Translate.NumberOfVisits (index + 1)) chwValue nurseValue
+                visitsRows
+                    ++ [ totalsRow ]
+                    ++ [ [ translate language Translate.PatientsWith3OrMoreVisitsPercentage
+                         , calculatePercentage values.chwVisits3OrMore values.chwVisitsTotal
+                         , calculatePercentage values.nurseVisits3OrMore values.nurseVisitsTotal
+                         , calculatePercentage values.allVisits3OrMore values.allVisitsTotal
+                         ]
+                       , [ translate language Translate.PatientsWith4OrMoreVisitsPercentage
+                         , calculatePercentage values.chwVisits4OrMore values.chwVisitsTotal
+                         , calculatePercentage values.nurseVisits4OrMore values.nurseVisitsTotal
+                         , calculatePercentage values.allVisits4OrMore values.allVisitsTotal
+                         ]
+                       ]
+            }
+
+        activeChwVisitsTotal =
+            activeChwVisits1
+                + activeChwVisits2
+                + activeChwVisits3
+                + activeChwVisits4
+                + activeChwVisits5AndMore
+
+        completedChwVisitsTotal =
+            completedChwVisits1
+                + completedChwVisits2
+                + completedChwVisits3
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+
+        activeNurseVisitsTotal =
+            activeNurseVisits1
+                + activeNurseVisits2
+                + activeNurseVisits3
+                + activeNurseVisits4
+                + activeNurseVisits5AndMore
+
+        completedNurseVisitsTotal =
+            completedNurseVisits1
+                + completedNurseVisits2
+                + completedNurseVisits3
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
+
+        activeAllVisitsTotal =
+            activeAllVisits1
+                + activeAllVisits2
+                + activeAllVisits3
+                + activeAllVisits4
+                + activeAllVisits5AndMore
+
+        completedAllVisitsTotal =
+            completedAllVisits1
+                + completedAllVisits2
+                + completedAllVisits3
+                + completedAllVisits4
+                + completedAllVisits5AndMore
+
+        -- First visit stats.
+        totalPregnancies =
+            List.length filtered
+
+        trimestersDict =
+            List.foldl
+                (\participantData accumDict ->
+                    Maybe.andThen
+                        (\eddDate ->
+                            List.sortWith (sortByDate .startDate) participantData.encounters
+                                |> List.head
+                                |> Maybe.map
+                                    (\firstEncounter ->
+                                        let
+                                            trimester =
+                                                eddToLmpDate eddDate
+                                                    |> resolvePregnancyTrimester firstEncounter.startDate
+
+                                            updated =
+                                                Dict.get trimester accumDict
+                                                    |> Maybe.map ((+) 1)
+                                                    |> Maybe.withDefault 1
+                                        in
+                                        Dict.insert trimester updated accumDict
+                                    )
+                        )
+                        participantData.eddDate
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                filtered
+
+        firstVisitTable =
+            { heading = translate language Translate.FirstVisit ++ ":"
+            , captions = List.map (translate language) [ Translate.Trimester, Translate.EmptyString ]
+            , rows =
+                List.map
+                    (\trimester ->
+                        let
+                            occurances =
+                                Dict.get trimester trimestersDict
+                                    |> Maybe.withDefault 0
+                        in
+                        [ translate language <| Translate.PregnancyTrimester trimester
+                        , calculatePercentage occurances totalPregnancies
+                        ]
                     )
-                    values
+                    [ FirstTrimester
+                    , SecondTrimester
+                    , ThirdTrimester
+                    ]
+            }
+
+        -- Pregnanc outcome stats.
+        outcomesDict =
+            List.foldl
+                (\participantData accumDict ->
+                    Maybe.map
+                        (\outcome ->
+                            let
+                                updated =
+                                    Dict.get outcome accumDict
+                                        |> Maybe.map ((+) 1)
+                                        |> Maybe.withDefault 1
+                            in
+                            Dict.insert outcome updated accumDict
+                        )
+                        participantData.outcome
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                completed
+
+        outcomesTable =
+            { heading = translate language Translate.OutcomesTableHeading ++ ":"
+            , captions = List.map (translate language) [ Translate.PregnancyOutcomeLabel, Translate.EmptyString ]
+            , rows =
+                List.map
+                    (\outcome ->
+                        let
+                            occurances =
+                                Dict.get outcome outcomesDict
+                                    |> Maybe.withDefault 0
+                        in
+                        [ translate language <| Translate.PregnancyOutcome outcome
+                        , String.fromInt occurances
+                        ]
+                    )
+                    [ OutcomeLiveAtTerm
+                    , OutcomeLivePreTerm
+                    , OutcomeStillAtTerm
+                    , OutcomeStillPreTerm
+                    , OutcomeAbortions
+                    ]
+            }
+
+        -- Pregnancy delivery locations stats.
+        deliveryLocationsDict =
+            List.foldl
+                (\participantData accumDict ->
+                    Maybe.map
+                        (\location ->
+                            let
+                                updated =
+                                    Dict.get location accumDict
+                                        |> Maybe.map ((+) 1)
+                                        |> Maybe.withDefault 1
+                            in
+                            Dict.insert location updated accumDict
+                        )
+                        participantData.deliveryLocation
+                        |> Maybe.withDefault accumDict
+                )
+                Dict.empty
+                completed
+
+        deliveryLocationsTable =
+            let
+                facilityDeliveries =
+                    Dict.get FacilityDelivery deliveryLocationsDict
+                        |> Maybe.withDefault 0
+
+                homeDeliveries =
+                    Dict.get HomeDelivery deliveryLocationsDict
+                        |> Maybe.withDefault 0
+
+                totalDeliveries =
+                    facilityDeliveries + homeDeliveries
+
+                totalCompletedPregnancies =
+                    List.length completed
+            in
+            { heading = translate language Translate.DeliveryLocationsTableHeading ++ ":"
+            , captions = List.map (translate language) [ Translate.Location, Translate.EmptyString ]
+            , rows =
+                [ [ translate language <| Translate.DeliveryLocation FacilityDelivery
+                  , String.fromInt facilityDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocation HomeDelivery
+                  , String.fromInt homeDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocationsTableTotals
+                  , String.fromInt totalDeliveries
+                  ]
+                , [ translate language <| Translate.DeliveryLocationsTablePercentage
+                  , calculatePercentage totalDeliveries totalCompletedPregnancies
+                  ]
+                ]
             }
     in
     [ generateTableData Translate.PregnanciesAll
-        [ ( activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1 )
-        , ( activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2 )
-        , ( activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3 )
-        , ( activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4 )
-        , ( activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5 )
-        , ( activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore )
+        [ ( activeChwVisits1 + completedChwVisits1
+          , activeNurseVisits1 + completedNurseVisits1
+          , activeAllVisits1 + completedAllVisits1
+          )
+        , ( activeChwVisits2 + completedChwVisits2
+          , activeNurseVisits2 + completedNurseVisits2
+          , activeAllVisits2 + completedAllVisits2
+          )
+        , ( activeChwVisits3 + completedChwVisits3
+          , activeNurseVisits3 + completedNurseVisits3
+          , activeAllVisits3 + completedAllVisits3
+          )
+        , ( activeChwVisits4 + completedChwVisits4
+          , activeNurseVisits4 + completedNurseVisits4
+          , activeAllVisits4 + completedAllVisits4
+          )
+        , ( activeChwVisits5AndMore + completedChwVisits5AndMore
+          , activeNurseVisits5AndMore + completedNurseVisits5AndMore
+          , activeAllVisits5AndMore + completedAllVisits5AndMore
+          )
         ]
+        { chwVisits3OrMore =
+            activeChwVisits3
+                + activeChwVisits4
+                + activeChwVisits5AndMore
+                + completedChwVisits3
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+        , nurseVisits3OrMore =
+            activeNurseVisits3
+                + activeNurseVisits4
+                + activeNurseVisits5AndMore
+                + completedNurseVisits3
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
+        , allVisits3OrMore =
+            activeAllVisits3
+                + activeAllVisits4
+                + activeAllVisits5AndMore
+                + completedAllVisits3
+                + completedAllVisits4
+                + completedAllVisits5AndMore
+        , chwVisits4OrMore =
+            activeChwVisits4
+                + activeChwVisits5AndMore
+                + completedChwVisits4
+                + completedChwVisits5AndMore
+        , nurseVisits4OrMore =
+            activeNurseVisits4
+                + activeNurseVisits5AndMore
+                + completedNurseVisits4
+                + completedNurseVisits5AndMore
+        , allVisits4OrMore =
+            activeAllVisits4
+                + activeAllVisits5AndMore
+                + completedAllVisits4
+                + completedAllVisits5AndMore
+        , chwVisitsTotal = activeChwVisitsTotal + completedChwVisitsTotal
+        , nurseVisitsTotal = activeNurseVisitsTotal + completedNurseVisitsTotal
+        , allVisitsTotal = activeAllVisitsTotal + completedAllVisitsTotal
+        }
     , generateTableData Translate.PregnanciesActive
-        [ ( activeChwVisits1, activeNurseVisits1 )
-        , ( activeChwVisits2, activeNurseVisits2 )
-        , ( activeChwVisits3, activeNurseVisits3 )
-        , ( activeChwVisits4, activeNurseVisits4 )
-        , ( activeChwVisits5, activeNurseVisits5 )
-        , ( activeChwVisits5AndMore, activeNurseVisits5AndMore )
+        [ ( activeChwVisits1, activeNurseVisits1, activeAllVisits1 )
+        , ( activeChwVisits2, activeNurseVisits2, activeAllVisits2 )
+        , ( activeChwVisits3, activeNurseVisits3, activeAllVisits3 )
+        , ( activeChwVisits4, activeNurseVisits4, activeAllVisits4 )
+        , ( activeChwVisits5AndMore, activeNurseVisits5AndMore, activeAllVisits5AndMore )
         ]
+        { chwVisits3OrMore = activeChwVisits3 + activeChwVisits4 + activeChwVisits5AndMore
+        , nurseVisits3OrMore = activeNurseVisits3 + activeNurseVisits4 + activeNurseVisits5AndMore
+        , allVisits3OrMore =
+            activeAllVisits3
+                + activeAllVisits4
+                + activeAllVisits5AndMore
+        , chwVisits4OrMore = activeChwVisits4 + activeChwVisits5AndMore
+        , nurseVisits4OrMore = activeNurseVisits4 + activeNurseVisits5AndMore
+        , allVisits4OrMore =
+            activeAllVisits4
+                + activeAllVisits5AndMore
+        , chwVisitsTotal = activeChwVisitsTotal
+        , nurseVisitsTotal = activeNurseVisitsTotal
+        , allVisitsTotal = activeAllVisitsTotal
+        }
     , generateTableData Translate.PregnanciesCompleted
-        [ ( completedChwVisits1, completedNurseVisits1 )
-        , ( completedChwVisits2, completedNurseVisits2 )
-        , ( completedChwVisits3, completedNurseVisits3 )
-        , ( completedChwVisits4, completedNurseVisits4 )
-        , ( completedChwVisits5, completedNurseVisits5 )
-        , ( completedChwVisits5AndMore, completedNurseVisits5AndMore )
+        [ ( completedChwVisits1, completedNurseVisits1, completedAllVisits1 )
+        , ( completedChwVisits2, completedNurseVisits2, completedAllVisits2 )
+        , ( completedChwVisits3, completedNurseVisits3, completedAllVisits3 )
+        , ( completedChwVisits4, completedNurseVisits4, completedAllVisits4 )
+        , ( completedChwVisits5AndMore, completedNurseVisits5AndMore, completedAllVisits5AndMore )
         ]
+        { chwVisits3OrMore = completedChwVisits3 + completedChwVisits4 + completedChwVisits5AndMore
+        , nurseVisits3OrMore = completedNurseVisits3 + completedNurseVisits4 + completedNurseVisits5AndMore
+        , allVisits3OrMore =
+            completedAllVisits3
+                + completedAllVisits4
+                + completedAllVisits5AndMore
+        , chwVisits4OrMore = completedChwVisits4 + completedChwVisits5AndMore
+        , nurseVisits4OrMore = completedNurseVisits4 + completedNurseVisits5AndMore
+        , allVisits4OrMore =
+            completedAllVisits4
+                + completedAllVisits5AndMore
+        , chwVisitsTotal = completedChwVisitsTotal
+        , nurseVisitsTotal = completedNurseVisitsTotal
+        , allVisitsTotal = completedAllVisitsTotal
+        }
     ]
+        ++ [ firstVisitTable, outcomesTable, deliveryLocationsTable ]
 
 
 viewAcuteIllnessReport : Language -> NominalDate -> NominalDate -> String -> List PatientData -> Html Msg
