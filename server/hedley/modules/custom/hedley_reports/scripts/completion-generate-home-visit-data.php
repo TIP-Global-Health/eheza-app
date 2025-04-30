@@ -23,7 +23,7 @@ $batch = drush_get_option('batch', 50);
 $exclude_set = drush_get_option('exclude_set', FALSE);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $type = 'home_visit_encounter';
 $base_query = new EntityFieldQuery();

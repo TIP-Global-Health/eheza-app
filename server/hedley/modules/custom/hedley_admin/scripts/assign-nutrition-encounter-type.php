@@ -20,7 +20,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 500);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 200);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 // Load IDs of all health workers with role 'nurse'.
 $query = db_select('field_data_field_role', 'r')

@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
+    | ReportPrenatalDiagnoses
 
 
 type alias NutritionReportData =

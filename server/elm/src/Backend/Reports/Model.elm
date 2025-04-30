@@ -112,6 +112,7 @@ type DeliveryLocation
 type alias PrenatalEncounterData =
     { startDate : NominalDate
     , encounterType : PrenatalEncounterType
+    , diagnoses : List PrenatalDiagnosis
     }
 
 
@@ -122,6 +123,73 @@ type PrenatalEncounterType
     | ChwSecondEncounter
     | ChwThirdPlusEncounter
     | ChwPostpartumEncounter
+
+
+type PrenatalDiagnosis
+    = DiagnosisChronicHypertension
+    | DiagnosisGestationalHypertension
+    | DiagnosisModeratePreeclampsia
+    | DiagnosisSeverePreeclampsia
+    | DiagnosisEclampsia
+    | DiagnosisHIV
+    | DiagnosisHIVDetectableViralLoad
+    | DiagnosisDiscordantPartnership
+    | DiagnosisSyphilis
+    | DiagnosisSyphilisWithComplications
+    | DiagnosisNeurosyphilis
+    | DiagnosisHepatitisB
+    | DiagnosisMalaria
+    | DiagnosisMalariaWithAnemia
+    | DiagnosisMalariaWithSevereAnemia
+    | DiagnosisModerateAnemia
+    | DiagnosisSevereAnemia
+    | DiagnosisSevereAnemiaWithComplications
+    | DiagnosisMiscarriage
+    | DiagnosisMolarPregnancy
+    | DiagnosisPlacentaPrevia
+    | DiagnosisPlacentalAbruption
+    | DiagnosisUterineRupture
+    | DiagnosisObstructedLabor
+    | DiagnosisPostAbortionSepsis
+    | DiagnosisEctopicPregnancy
+    | DiagnosisPROM
+    | DiagnosisPPROM
+    | DiagnosisHyperemesisGravidum
+    | DiagnosisSevereVomiting
+    | DiagnosisMaternalComplications
+    | DiagnosisInfection
+    | DiagnosisImminentDelivery
+    | DiagnosisLaborAndDelivery
+    | DiagnosisHeartburn
+    | DiagnosisDeepVeinThrombosis
+    | DiagnosisPelvicPainIntense
+    | DiagnosisUrinaryTractInfection
+    | DiagnosisPyelonephritis
+    | DiagnosisCandidiasis
+    | DiagnosisGonorrhea
+    | DiagnosisTrichomonasOrBacterialVaginosis
+    | DiagnosisTuberculosis
+    | DiagnosisDiabetes
+    | DiagnosisGestationalDiabetes
+    | DiagnosisRhesusNegative
+    | DiagnosisDepressionNotLikely
+    | DiagnosisDepressionPossible
+    | DiagnosisDepressionHighlyPossible
+    | DiagnosisDepressionProbable
+    | DiagnosisSuicideRisk
+    | DiagnosisOther
+      -- For Postpartum only:
+    | DiagnosisPostpartumAbdominalPain
+    | DiagnosisPostpartumUrinaryIncontinence
+    | DiagnosisPostpartumHeadache
+    | DiagnosisPostpartumFatigue
+    | DiagnosisPostpartumFever
+    | DiagnosisPostpartumPerinealPainOrDischarge
+    | DiagnosisPostpartumInfection
+    | DiagnosisPostpartumExcessiveBleeding
+    | DiagnosisPostpartumEarlyMastitisOrEngorgment
+    | DiagnosisPostpartumMastitis
+    | NoPrenatalDiagnosis
 
 
 type alias NutritionEncounterData =

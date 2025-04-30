@@ -12,11 +12,12 @@ import Backend.Reports.Model
         , NutritionReportTableType(..)
         , PatientData
         , PregnancyOutcome(..)
+        , PrenatalDiagnosis(..)
         , PrenatalEncounterType(..)
         , ReportsData
         , SelectedEntity(..)
         )
-import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses)
+import Backend.Reports.Utils exposing (allAcuteIllnessDiagnoses, allPrenatalDiagnoses)
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import Gizra.Html exposing (emptyNode)
@@ -295,6 +296,9 @@ viewReportsData language currentDate themePath data model =
 
                             ReportPrenatal ->
                                 viewPrenatalReport language limitDate scopeLabel recordsTillLimitDate
+
+                            ReportPrenatalDiagnoses ->
+                                viewPrenatalDiagnosesReport language limitDate scopeLabel recordsTillLimitDate
                     )
                     model.reportType
                     startDateByReportType
@@ -315,6 +319,7 @@ viewReportsData language currentDate themePath data model =
                 model.reportType
                 [ ReportAcuteIllness
                 , ReportPrenatal
+                , ReportPrenatalDiagnoses
                 , ReportDemographics
                 , ReportNutrition
                 ]
@@ -2047,6 +2052,96 @@ generateAcuteIllnessReportData language startDate records =
         , translate language Translate.Total
         ]
     , rows = rows ++ [ totalsRow, noneRow ]
+    }
+
+
+viewPrenatalDiagnosesReport : Language -> NominalDate -> String -> List PatientData -> Html Msg
+viewPrenatalDiagnosesReport language limitDate scopeLabel records =
+    let
+        data =
+            generatePrenatalDiagnosesReportData language limitDate records
+
+        captionsRow =
+            viewStandardCells data.captions
+                |> div [ class "row captions" ]
+
+        csvFileName =
+            "anc-diagnoses-report-"
+                ++ (String.toLower <| String.replace " " "-" scopeLabel)
+                ++ "-"
+                ++ customFormatDDMMYYYY "-" limitDate
+                ++ ".csv"
+
+        csvContent =
+            reportTableDataToCSV data
+    in
+    div [ class "report prenatal-diagnoses" ] <|
+        [ div [ class "table" ] <|
+            captionsRow
+                :: List.map viewStandardRow data.rows
+        , viewDownloadCSVButton language csvFileName csvContent
+        ]
+
+
+generatePrenatalDiagnosesReportData :
+    Language
+    -> NominalDate
+    -> List PatientData
+    -> MetricsResultsTableData
+generatePrenatalDiagnosesReportData language limitDate records =
+    let
+        allDiagnoses =
+            List.map .prenatalData records
+                |> Maybe.Extra.values
+                |> List.concat
+                |> List.concatMap .encounters
+                |> List.concatMap
+                    (\encounter ->
+                        if List.isEmpty encounter.diagnoses then
+                            [ NoPrenatalDiagnosis ]
+
+                        else
+                            encounter.diagnoses
+                    )
+
+        diagnosesCountDict =
+            List.foldl
+                (\diagnosis accum ->
+                    Dict.get diagnosis accum
+                        |> Maybe.map
+                            (\value ->
+                                Dict.insert diagnosis (value + 1) accum
+                            )
+                        |> Maybe.withDefault (Dict.insert diagnosis 1 accum)
+                )
+                Dict.empty
+                allDiagnoses
+
+        rows =
+            List.map
+                (\diagnosis ->
+                    Dict.get diagnosis diagnosesCountDict
+                        |> Maybe.withDefault 0
+                        |> generateRow (Translate.PrenatalDiagnosis diagnosis)
+                )
+                allPrenatalDiagnoses
+
+        totalsRow =
+            Dict.values diagnosesCountDict
+                |> List.sum
+                |> generateRow Translate.Total
+
+        generateRow label value =
+            [ translate language label
+            , String.fromInt value
+            ]
+    in
+    { heading = ""
+    , captions =
+        [ translate language Translate.Diagnosis
+        , translate language Translate.Total
+        ]
+    , rows = rows ++ [ totalsRow ]
     }
 
 
