@@ -788,7 +788,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
     $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
   }
   else {
-    list($data['results'], $data['additional']) = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1657,7 +1657,7 @@ function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $enco
   // Calculate the selected date by subtracting months.
   $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
 
-  list($year, $quarter) = hedley_reports_resolve_quarter_date_info($selected_date);
+  [$year, $quarter] = hedley_reports_resolve_quarter_date_info($selected_date);
 
   $months = hedley_reports_quarter_to_months($quarter);
 
@@ -1774,9 +1774,9 @@ function hedley_reports_calculate_year_difference($fromDateString, $toDateString
  *   An array containing categorized nutritional metrics.
  */
 function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
-  list($stunting_normal, $stunting_moderate, $stunting_severe) = hedley_reports_categorize_z_score($data['stunting'], $person_id);
-  list($wasting_normal, $wasting_moderate, $wasting_severe) = hedley_reports_categorize_z_score($data['wasting'], $person_id);
-  list($underweight_normal, $underweight_moderate, $underweight_severe) = hedley_reports_categorize_z_score($data['underweight'], $person_id);
+  [$stunting_normal, $stunting_moderate, $stunting_severe] = hedley_reports_categorize_z_score($data['stunting'], $person_id);
+  [$wasting_normal, $wasting_moderate, $wasting_severe] = hedley_reports_categorize_z_score($data['wasting'], $person_id);
+  [$underweight_normal, $underweight_moderate, $underweight_severe] = hedley_reports_categorize_z_score($data['underweight'], $person_id);
 
   return [
     'stunting_normal' => $stunting_normal,
@@ -1978,7 +1978,7 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
 
   $data['site'] = variable_get('hedley_general_site_name', '');
 
-  list($data['results'], $data['additional']) = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
+  [$data['results'], $data['additional']] = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
 
   return hedley_general_build_elm_app('completion-results', $data);
 }
@@ -3423,7 +3423,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-    list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+    [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.
@@ -6110,6 +6110,11 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'prenatal_random_blood_sugar_test_result' => '3+',
     'prenatal_syphilis_test_result' => '7+',
     'prenatal_urine_dipstick_test_result' => '9+',
+    'prenatal_calcium' => 'a1',
+    'prenatal_folate' => 'b1',
+    'prenatal_iron' => 'c1',
+    'prenatal_mms' => 'd1',
+    'prenatal_mebendazole' => 'e1',
   ];
 
   // Load all encounters of current participant.
@@ -6364,7 +6369,36 @@ function hedley_reports_prenatal_generate_expected_initial_activities(array $enc
   }
 
   if ($encounter_type == 'nurse' && empty($previous_nurse_encounters_data)) {
-    $expected[] = 'medication';
+    // Medications were changed - from single medication activity,
+    // to 5 activities for each of medication types.
+    $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
+    if (!$change_date) {
+      $expected[] = 'medication';
+    }
+    else {
+      $change_date_obj = new DateTime($change_date);
+      if ($encounter_data['start_date_obj'] >= $change_date_obj) {
+        // Encounter has started after the change.
+        $expected[] = 'prenatal_calcium';
+        $expected[] = 'prenatal_folate';
+        $expected[] = 'prenatal_iron';
+        $expected[] = 'prenatal_mms';
+
+        // Mebendazole activity is expected from EGA 24.
+        $lmp_date = $encounter_data['lmp_date'];
+        if (!empty($lmp_date)) {
+          $lmp_date_obj = new DateTime($lmp_date);
+          $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
+          if ($ega_in_weeks >= 24) {
+            $expected[] = 'prenatal_mebendazole';
+          }
+        }
+      }
+      else {
+        // Encounter has started before the change.
+        $expected[] = 'medication';
+      }
+    }
   }
 
   if ($encounter_type == 'nurse') {
