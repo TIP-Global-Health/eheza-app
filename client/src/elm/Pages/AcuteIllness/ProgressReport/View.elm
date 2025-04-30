@@ -18,8 +18,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import Maybe.Extra exposing (isJust, isNothing)
-import Measurement.Utils exposing (renderDatePart)
-import Measurement.View exposing (viewActionTakenLabel)
+import Measurement.View exposing (renderDatePart, viewActionTakenLabel)
 import Pages.AcuteIllness.Activity.Utils
     exposing
         ( resolveAmoxicillinDosage

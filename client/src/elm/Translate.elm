@@ -117,7 +117,6 @@ import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
-        , MedicationTask(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -1279,7 +1278,6 @@ type TranslationId
     | PrenatalImmunizationHistory PrenatalVaccineType
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
-    | PrenatalMedicationTask Pages.Prenatal.Activity.Types.MedicationTask
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -8953,38 +8951,6 @@ translationSet trans =
             , kirundi = Just "Ugusubiramwo ivyangombwa"
             }
 
-        PrenatalMedicationTask task ->
-            case task of
-                TaskCalcium ->
-                    { english = "Calcium"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                TaskFolate ->
-                    { english = "Folate"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                TaskIron ->
-                    { english = "Iron"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                TaskMMS ->
-                    { english = "MMS"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                TaskMebendazole ->
-                    { english = "Mebendazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
         LabsEntryState isLabTech state ->
             case state of
                 LabsEntryPending ->
@@ -11024,18 +10990,6 @@ translationSet trans =
 
                 Metronidazole ->
                     { english = "Metronidazole"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                Calcium ->
-                    { english = "Calcium"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                MMS ->
-                    { english = "MMS"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

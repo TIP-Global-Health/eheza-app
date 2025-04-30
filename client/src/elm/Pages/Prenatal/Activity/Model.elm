@@ -19,7 +19,6 @@ import Measurement.Model
         , HepatitisBTestForm
         , LaboratoryTask
         , MalariaTestForm
-        , MedicationAdministrationForm
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
@@ -37,7 +36,6 @@ import Measurement.Model
         , emptyHemoglobinTestForm
         , emptyHepatitisBTestForm
         , emptyMalariaTestForm
-        , emptyMedicationAdministrationForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarTestUniversalForm
@@ -137,22 +135,8 @@ type Msg
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- MedicationMsgs
-    | SetActiveMedicationTask MedicationTask
-    | SetCalciumAdministered Bool
-    | SetCalciumReasonForNonAdministration AdministrationNote
-    | SaveCalcium PersonId (Maybe ( PrenatalCalciumId, PrenatalCalcium )) (Maybe MedicationTask)
-    | SetFolateAdministered Bool
-    | SetFolateReasonForNonAdministration AdministrationNote
-    | SaveFolate PersonId (Maybe ( PrenatalFolateId, PrenatalFolate )) (Maybe MedicationTask)
-    | SetIronAdministered Bool
-    | SetIronReasonForNonAdministration AdministrationNote
-    | SaveIron PersonId (Maybe ( PrenatalIronId, PrenatalIron )) (Maybe MedicationTask)
-    | SetMMSAdministered Bool
-    | SetMMSReasonForNonAdministration AdministrationNote
-    | SaveMMS PersonId (Maybe ( PrenatalMMSId, PrenatalMMS )) (Maybe MedicationTask)
-    | SetMebendazoleAdministered Bool
-    | SetMebendazoleReasonForNonAdministration AdministrationNote
-    | SaveMebendazole PersonId (Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )) (Maybe MedicationTask)
+    | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
+    | SaveMedication PersonId (Maybe ( MedicationId, Medication ))
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -412,23 +396,13 @@ emptyFamilyPlanningData =
 
 
 type alias MedicationData =
-    { calciumForm : MedicationAdministrationForm
-    , folateForm : MedicationAdministrationForm
-    , ironForm : MedicationAdministrationForm
-    , mmsForm : MedicationAdministrationForm
-    , mebendazoleForm : MedicationAdministrationForm
-    , activeTask : Maybe MedicationTask
+    { form : MedicationForm
     }
 
 
 emptyMedicationData : MedicationData
 emptyMedicationData =
-    { calciumForm = emptyMedicationAdministrationForm
-    , folateForm = emptyMedicationAdministrationForm
-    , ironForm = emptyMedicationAdministrationForm
-    , mmsForm = emptyMedicationAdministrationForm
-    , mebendazoleForm = emptyMedicationAdministrationForm
-    , activeTask = Nothing
+    { form = emptyMedicationForm
     }
 
 
@@ -1029,7 +1003,7 @@ type alias PostpartumTreatmentReviewData =
     }
 
 
-emptyPostpartumTreatmentReviewData : PostpartumTreatmentReviewData
+emptyPostpartumTreatmentReviewData : MedicationData
 emptyPostpartumTreatmentReviewData =
     { form = emptyMedicationForm
     }

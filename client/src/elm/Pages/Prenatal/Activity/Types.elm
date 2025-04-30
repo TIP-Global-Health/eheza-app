@@ -57,11 +57,3 @@ type WarningPopupType msg
 type ObstetricHistoryStep
     = ObstetricHistoryFirstStep
     | ObstetricHistorySecondStep
-
-
-type MedicationTask
-    = TaskCalcium
-    | TaskFolate
-    | TaskIron
-    | TaskMMS
-    | TaskMebendazole
