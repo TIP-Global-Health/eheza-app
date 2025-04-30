@@ -22,7 +22,7 @@ $fid = drush_get_option('fid', 0);
 $batch = drush_get_option('batch', 100);
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 200);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $base_query = db_select('file_managed', 'fm')
   ->fields('fm', ['fid', 'timestamp'])
