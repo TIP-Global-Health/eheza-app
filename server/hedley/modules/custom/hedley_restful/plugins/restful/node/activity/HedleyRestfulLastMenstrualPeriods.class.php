@@ -15,7 +15,6 @@ class HedleyRestfulLastMenstrualPeriods extends HedleyRestfulPrenatalActivityBas
    */
   protected $fields = [
     'field_last_menstrual_period',
-    'field_weight',
     'field_confident',
     'field_not_confident_reason',
     'field_confirmation',
