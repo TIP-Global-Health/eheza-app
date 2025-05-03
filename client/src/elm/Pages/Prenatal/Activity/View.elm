@@ -375,18 +375,6 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
-        chwLmpConfirmationSection lmpValueByChw =
-            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
-            , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY lmpValueByChw.date ]
-            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
-            , viewBoolInput language
-                form.chwLmpConfirmation
-                (SetConfirmLmpDate lmpValueByChw)
-                "confirm-lmp"
-                Nothing
-            ]
-
         ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
             let
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -408,8 +396,7 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                     else
                         ( [], 0, 0 )
-            in
-            ( let
+
                 lmpDateInput =
                     let
                         dateSelectorConfig =
@@ -429,9 +416,16 @@ viewPregnancyDatingContent language currentDate assembled data =
                         , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text lmpdDateForView ]
-              in
-              [ viewLabel language Translate.LmpDateHeader
+            in
+            ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
+              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
+              , viewMeasurementInput
+                    language
+                    form.prePregnancyWeight
+                    SetPrePregnancyWeight
+                    "weight"
+                    Translate.KilogramShorthand
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
               , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -439,8 +433,9 @@ viewPregnancyDatingContent language currentDate assembled data =
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
+                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 2 + derivedTasksTotal
+            , 3 + derivedTasksTotal
             )
 
         ( inputs, tasksCompleted, totalTasks ) =
@@ -458,6 +453,26 @@ viewPregnancyDatingContent language currentDate assembled data =
                         let
                             chwLmpConfirmationTasksCompleted =
                                 taskCompleted form.chwLmpConfirmation
+
+                            chwLmpConfirmationSection value =
+                                let
+                                    prePregnancyWeight =
+                                        Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
+                                            value.prePregnancyWeight
+                                            |> Maybe.withDefault "Not Set"
+                                in
+                                [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+                                , viewLabel language Translate.LmpLabel
+                                , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY value.date ]
+                                , viewLabel language Translate.PrePregnancyWeight
+                                , p [ class "chw-lmp" ] [ text prePregnancyWeight ]
+                                , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+                                , viewBoolInput language
+                                    form.chwLmpConfirmation
+                                    (SetConfirmLmpDate value)
+                                    "confirm-lmp"
+                                    Nothing
+                                ]
                         in
                         if form.chwLmpConfirmation == Just False then
                             ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection

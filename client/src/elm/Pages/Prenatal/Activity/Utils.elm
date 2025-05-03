@@ -72,6 +72,10 @@ import Utils.Html exposing (viewModal)
 
 expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate site assembled activity =
+    let
+        noNurseEncounters =
+            nurseEncounterNotPerformed assembled
+    in
     case assembled.encounter.encounterType of
         -- Note that for nurse it's always used after
         -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
@@ -80,7 +84,7 @@ expectActivity currentDate site assembled activity =
         NurseEncounter ->
             case activity of
                 PregnancyDating ->
-                    True
+                    noNurseEncounters
 
                 History ->
                     resolveHistoryTasks assembled
@@ -97,7 +101,7 @@ expectActivity currentDate site assembled activity =
                     expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
-                    True
+                    noNurseEncounters
 
                 DangerSigns ->
                     True
@@ -121,9 +125,7 @@ expectActivity currentDate site assembled activity =
                     True
 
                 PrenatalTreatmentReview ->
-                    -- There will always be at least the Prenatal Medication
-                    -- task to complete.
-                    True
+                    not noNurseEncounters
 
                 MaternalMentalHealth ->
                     -- From 28 weeks EGA and not done already.
@@ -204,11 +206,11 @@ expectActivity currentDate site assembled activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    nurseEncounterNotPerformed assembled
+                    noNurseEncounters
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    nurseEncounterNotPerformed assembled
+                    noNurseEncounters
 
                 DangerSigns ->
                     True
@@ -3368,6 +3370,7 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpDate = or form.lmpDate (Just value.date)
+                , prePregnancyWeight = or form.prePregnancyWeight (Maybe.map weightValueFunc value.prePregnancyWeight)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
@@ -3389,6 +3392,7 @@ toLastMenstrualPeriodValue form =
             Maybe.withDefault False form.chwLmpConfirmation
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
+        |> andMap (Just <| Maybe.map WeightInKg form.prePregnancyWeight)
         |> andMap form.lmpDateConfident
         |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
