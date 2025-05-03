@@ -305,11 +305,9 @@ allPrenatalActivities =
     , PrenatalBloodGprsTestResult
     , PrenatalBreastExam
     , PrenatalBreastfeeding
-    , PrenatalCalcium
     , PrenatalCorePhysicalExam
     , PrenatalDangerSigns
     , PrenatalFamilyPlanning
-    , PrenatalFolate
     , PrenatalFollowUp
     , PrenatalGuExam
     , PrenatalHealthEducation
@@ -321,16 +319,13 @@ allPrenatalActivities =
     , PrenatalHIVPCRTestResult
     , PrenatalHIVTest
     , PrenatalHIVTestResult
-    , PrenatalIron
     , PrenatalLastMenstrualPeriod
     , PrenatalMalariaTest
     , PrenatalMalariaTestResult
-    , PrenatalMebendazole
     , PrenatalMedicalHistory
     , PrenatalMedication
     , PrenatalMedicationDistribution
     , PrenatalMentalHealth
-    , PrenatalMMS
     , PrenatalNutrition
     , PrenatalObstetricalExam
     , PrenatalObstetricHistory

@@ -24,14 +24,11 @@ import Measurement.Utils
         , healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
-        , renderDatePart
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
-        , viewAdministeredMedicationCustomLabel
-        , viewAdministeredMedicationQuestion
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
+import Measurement.View exposing (renderDatePart, sendToFacilityInputsAndTasks, vitalsFormInputsAndTasks)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Encounter.Model exposing (AssembledData)
@@ -1169,9 +1166,37 @@ viewParacetamolAdministrationInstructions language maybeDate isAdult =
     ]
 
 
+viewAdministeredMedicationQuestion : Language -> TranslationId -> Html any
+viewAdministeredMedicationQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.AdministeredMedicationQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ " "
+                ++ translate language Translate.ToThePatient
+                ++ "?"
+        ]
+
+
 viewAdministeredMedicationLabel : Language -> TranslationId -> TranslationId -> String -> Maybe NominalDate -> Html any
 viewAdministeredMedicationLabel language administerTranslationId medicineTranslationId iconClass maybeDate =
     viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId "" iconClass "." maybeDate
+
+
+viewAdministeredMedicationCustomLabel : Language -> TranslationId -> TranslationId -> String -> String -> String -> Maybe NominalDate -> Html any
+viewAdministeredMedicationCustomLabel language administerTranslationId medicineTranslationId medicineSuffix iconClass suffix maybeDate =
+    let
+        message =
+            div [] <|
+                [ text <| translate language administerTranslationId
+                , text ": "
+                , span [ class "medicine" ] [ text <| translate language medicineTranslationId ++ medicineSuffix ]
+                ]
+                    ++ renderDatePart language maybeDate
+                    ++ [ text <| " " ++ suffix ]
+    in
+    viewInstructionsLabel iconClass message
 
 
 viewTabletsPrescription : Language -> String -> TranslationId -> Html any

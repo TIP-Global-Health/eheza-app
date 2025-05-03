@@ -161,11 +161,6 @@ decodePrenatalMeasurements =
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
         |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
-        |> optional "prenatal_calcium" (decodeHead decodePrenatalCalcium) Nothing
-        |> optional "prenatal_folate" (decodeHead decodePrenatalFolate) Nothing
-        |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
-        |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
-        |> optional "prenatal_mebendazole" (decodeHead decodePrenatalMebendazole) Nothing
 
 
 decodeNutritionMeasurements : Decoder NutritionMeasurements
@@ -3486,12 +3481,6 @@ decodeMedicationDistributionSign =
                     "metronidazole" ->
                         succeed Metronidazole
 
-                    "calcium" ->
-                        succeed Calcium
-
-                    "mms" ->
-                        succeed MMS
-
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -4652,21 +4641,21 @@ decodeVaccineDose =
 
 decodeWellChildAlbendazole : Decoder WellChildAlbendazole
 decodeWellChildAlbendazole =
-    decodeWellChildMeasurement decodeAdministrationNoteField
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildMebendezole : Decoder WellChildMebendezole
 decodeWellChildMebendezole =
-    decodeWellChildMeasurement decodeAdministrationNoteField
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
 decodeWellChildVitaminA : Decoder WellChildVitaminA
 decodeWellChildVitaminA =
-    decodeWellChildMeasurement decodeAdministrationNoteField
+    decodeWellChildMeasurement decodeWellChildMedication
 
 
-decodeAdministrationNoteField : Decoder AdministrationNote
-decodeAdministrationNoteField =
+decodeWellChildMedication : Decoder AdministrationNote
+decodeWellChildMedication =
     decodeAdministrationNote
         |> field "administration_note"
 
@@ -4971,31 +4960,6 @@ decodeOutsideCareMedication =
                     |> Maybe.map succeed
                     |> Maybe.withDefault (fail <| s ++ " is not a recognized OutsideCareMedication")
             )
-
-
-decodePrenatalCalcium : Decoder PrenatalCalcium
-decodePrenatalCalcium =
-    decodePrenatalMeasurement decodeAdministrationNoteField
-
-
-decodePrenatalFolate : Decoder PrenatalFolate
-decodePrenatalFolate =
-    decodePrenatalMeasurement decodeAdministrationNoteField
-
-
-decodePrenatalIron : Decoder PrenatalIron
-decodePrenatalIron =
-    decodePrenatalMeasurement decodeAdministrationNoteField
-
-
-decodePrenatalMMS : Decoder PrenatalMMS
-decodePrenatalMMS =
-    decodePrenatalMeasurement decodeAdministrationNoteField
-
-
-decodePrenatalMebendazole : Decoder PrenatalMebendazole
-decodePrenatalMebendazole =
-    decodePrenatalMeasurement decodeAdministrationNoteField
 
 
 decodeNCDCoMorbidities : Decoder NCDCoMorbidities

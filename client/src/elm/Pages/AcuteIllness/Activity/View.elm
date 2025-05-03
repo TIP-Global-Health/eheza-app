@@ -39,13 +39,11 @@ import Measurement.Utils
         ( healthEducationFormWithDefault
         , muacFormWithDefault
         , ongoingTreatmentReviewFormWithDefault
-        , renderDatePart
         , sendToHCFormWithDefault
         , treatmentReviewInputsAndTasks
-        , viewAdministeredMedicationCustomLabel
         , vitalsFormWithDefault
         )
-import Measurement.View exposing (viewSendToHealthCenterForm, viewSendToHospitalForm)
+import Measurement.View exposing (renderDatePart, viewSendToHealthCenterForm, viewSendToHospitalForm)
 import Pages.AcuteIllness.Activity.Model exposing (..)
 import Pages.AcuteIllness.Activity.Types exposing (..)
 import Pages.AcuteIllness.Activity.Utils exposing (..)

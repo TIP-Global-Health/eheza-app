@@ -1737,6 +1737,13 @@ viewActionTakenLabel language actionTranslationId iconClass maybeDate =
         ]
 
 
+renderDatePart : Language -> Maybe NominalDate -> List (Html any)
+renderDatePart language maybeDate =
+    maybeDate
+        |> Maybe.map (\date -> [ span [ class "date" ] [ text <| " (" ++ renderDate language date ++ ")" ] ])
+        |> Maybe.withDefault []
+
+
 type alias MotherMeasurementData =
     { previous : MotherMeasurements
     , current : MotherMeasurements
@@ -4519,20 +4526,3 @@ weightFormAndTasks language currentDate zscores person heightValue previousValue
       ]
     , [ maybeToBoolTask form.weight ]
     )
-
-
-viewMedicationAdministrationForm :
-    Language
-    -> NominalDate
-    -> Person
-    -> MedicationAdministrationFormConfig msg
-    -> MedicationAdministrationForm
-    -> List (Html msg)
-viewMedicationAdministrationForm language currentDate person config form =
-    let
-        ( inputs, _ ) =
-            medicationAdministrationFormInputsAndTasks language currentDate person config form
-    in
-    [ div [ class "ui form medication-administration" ]
-        inputs
-    ]

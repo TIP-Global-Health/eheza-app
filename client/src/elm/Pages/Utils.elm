@@ -373,12 +373,6 @@ nonAdministrationReasonToSign sign reason =
         LemonJuiceOrHoney ->
             NoMedicationNonAdministrationSigns
 
-        Calcium ->
-            NoMedicationNonAdministrationSigns
-
-        MMS ->
-            NoMedicationNonAdministrationSigns
-
         NoMedicationDistributionSigns ->
             NoMedicationNonAdministrationSigns
 
