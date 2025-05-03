@@ -820,6 +820,64 @@ encodeSpecialityCareSign sign =
                 "none"
 
 
+encodePrenatalCalcium : PrenatalCalcium -> List ( String, Value )
+encodePrenatalCalcium =
+    encodePrenatalMeasurement encodePrenatalCalciumValue
+
+
+encodePrenatalCalciumValue : AdministrationNote -> List ( String, Value )
+encodePrenatalCalciumValue note =
+    encodePrenatalMedicationValue "prenatal_calcium" note
+
+
+encodePrenatalFolate : PrenatalFolate -> List ( String, Value )
+encodePrenatalFolate =
+    encodePrenatalMeasurement encodePrenatalFolateValue
+
+
+encodePrenatalFolateValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFolateValue note =
+    encodePrenatalMedicationValue "prenatal_folate" note
+
+
+encodePrenatalIron : PrenatalIron -> List ( String, Value )
+encodePrenatalIron =
+    encodePrenatalMeasurement encodePrenatalIronValue
+
+
+encodePrenatalIronValue : AdministrationNote -> List ( String, Value )
+encodePrenatalIronValue note =
+    encodePrenatalMedicationValue "prenatal_iron" note
+
+
+encodePrenatalMMS : PrenatalMMS -> List ( String, Value )
+encodePrenatalMMS =
+    encodePrenatalMeasurement encodePrenatalMMSValue
+
+
+encodePrenatalMMSValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMMSValue note =
+    encodePrenatalMedicationValue "prenatal_mms" note
+
+
+encodePrenatalMebendazole : PrenatalMebendazole -> List ( String, Value )
+encodePrenatalMebendazole =
+    encodePrenatalMeasurement encodePrenatalMebendazoleValue
+
+
+encodePrenatalMebendazoleValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMebendazoleValue note =
+    encodePrenatalMedicationValue "prenatal_mebendazole" note
+
+
+encodePrenatalMedicationValue : String -> AdministrationNote -> List ( String, Value )
+encodePrenatalMedicationValue type_ note =
+    [ ( "administration_note", encodeAdministrationNote note )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -2767,6 +2825,12 @@ encodeMedicationDistributionSign sign =
 
             VitaminA ->
                 "vitamina"
+
+            Calcium ->
+                "calcium"
+
+            MMS ->
+                "mms"
 
             NoMedicationDistributionSigns ->
                 "none"
