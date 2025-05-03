@@ -139,6 +139,8 @@ function hedley_reports_node_update($node) {
   if ($node->type == 'person') {
     hedley_reports_trigger_recalculation_for_edited_person($node);
   }
+
+  hedley_reports_trigger_recalculation_by_edited_content($node);
 }
 
 /**
@@ -280,10 +282,10 @@ function hedley_reports_trigger_recalculation_for_edited_person($node) {
 }
 
 /**
- * Triggers recalculation of person's NCDA data based on it's measurement node.
+ * Trigger recalculation of person NCDA data per created node.
  *
  * @param object $node
- *   The node object of a measurement.
+ *   Newly created node object.
  *
  * @throws EntityMetadataWrapperException
  */
@@ -321,6 +323,39 @@ function hedley_reports_trigger_recalculation_by_new_content($node) {
     return;
   }
 
+  $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
+  // Trigger recalculation using AQ.
+  hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
+    'person_id' => $person_id,
+  ]);
+}
+
+/**
+ * Trigger recalculation of person NCDA data per edited node.
+ *
+ * @param object $node
+ *   The edited node object.
+ *
+ * @throws EntityMetadataWrapperException
+ */
+function hedley_reports_trigger_recalculation_by_edited_content($node) {
+  switch ($node->type) {
+    case HEDLEY_ACTIVITY_PRENATAL_ENCOUNTER_CONTENT_TYPE:
+      $participant_id = $node->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+      break;
+
+    case HEDLEY_ACTIVITY_INDIVIDUAL_PARTICIPANT_CONTENT_TYPE:
+      if ($node->field_encounter_type[LANGUAGE_NONE][0]['value'] == 'antenatal') {
+        $participant_id = $node->nid;
+      }
+      break;
+  }
+
+  if (empty($participant_id)) {
+    // Can't resolve to which participant encounter belongs.
+    return;
+  }
+  $wrapper = entity_metadata_wrapper('node', $participant_id);
   $person_id = $wrapper->field_person->value(['identifier' => TRUE]);
   // Trigger recalculation using AQ.
   hedley_general_add_task_to_advanced_queue_by_id(HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA, $person_id, [
@@ -466,6 +501,7 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
   $encounters_data = [];
   $ai_diagnosis_mapping = hedley_reports_ai_diagnosis_mapping();
+  $prenatal_diagnosis_mapping = hedley_reports_prenatal_diagnosis_mapping();
   $encounter_types_to_load = [
     HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE,
     HEDLEY_STATS_ACUTE_ILLNESS_ENCOUNTER_TYPE,
@@ -498,7 +534,23 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 
         case HEDLEY_STATS_PRENATAL_ENCOUNTER_TYPE:
           $encounter_type = $encounter->field_prenatal_encounter_type[LANGUAGE_NONE][0]['value'];
-          $encounter_data = "$encounter_date $encounter_type";
+          $mapped_diagnoses = [];
+          if (!empty($encounter->field_prenatal_diagnoses) && !empty($encounter->field_prenatal_diagnoses[LANGUAGE_NONE])) {
+            foreach ($encounter->field_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis['value']])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis['value']];
+              }
+            }
+          }
+          if (!empty($encounter->field_past_prenatal_diagnoses) && !empty($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE])) {
+            foreach ($encounter->field_past_prenatal_diagnoses[LANGUAGE_NONE] as $diagnosis) {
+              if (!empty($prenatal_diagnosis_mapping[$diagnosis['value']])) {
+                $mapped_diagnoses[] = $prenatal_diagnosis_mapping[$diagnosis['value']];
+              }
+            }
+          }
+          $mapped_diagnoses = implode(",", array_unique($mapped_diagnoses));
+          $encounter_data = "$encounter_date|$encounter_type|$mapped_diagnoses";
           break;
 
         case HEDLEY_STATS_NUTRITION_ENCOUNTER_TYPE:
@@ -532,6 +584,17 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
       $date_concluded = $individual_participant->field_date_concluded[LANGUAGE_NONE][0]['value'];
       if (!empty($date_concluded)) {
         $participant_data['dc'] = date("Y-m-d", strtotime($date_concluded));
+      }
+      $outcome = $individual_participant->field_outcome[LANGUAGE_NONE][0]['value'];
+      if (!empty($outcome)) {
+        $mapping = hedley_reports_pregnancy_outcome_mapping();
+        if (in_array($outcome, array_keys($mapping))) {
+          $participant_data['o'] = $mapping[$outcome];
+        }
+      }
+      $outcome_location = $individual_participant->field_outcome_location[LANGUAGE_NONE][0]['value'];
+      if (!empty($outcome_location)) {
+        $participant_data['ol'] = ($outcome_location == 'home') ? 'h' : 'f';
       }
       $participant_data['encounters'] = $encounters_data[$participant_type][$individual_participant->nid];
       $encounters_data[$participant_type][$individual_participant->nid] = $participant_data;
@@ -586,11 +649,31 @@ function hedley_reports_calculate_aggregated_data_for_person($person) {
 }
 
 /**
+ * Returns a mapping of pregnancy outcome types to corresponding code values.
+ *
+ * This function provides the standard mapping between human-readable pregnancy
+ * outcome types and their single-character code representations used in the
+ * system.
+ *
+ * @return array
+ *   An associative array mapping outcome type strings to code characters.
+ */
+function hedley_reports_pregnancy_outcome_mapping() {
+  return [
+    'live-at-term' => 'a',
+    'live-pre-term' => 'b',
+    'still-at-term' => 'c',
+    'still-pre-term' => 'd',
+    'abortions' => 'e',
+  ];
+}
+
+/**
  * Converts nutrition metrics values to a comma-separated string.
  *
  * This function takes an associative array of nutrition metrics and
  * converts it into a string where the values are separated by commas.
- * The keys for the array should be 's' for stunting, 'w' for wasting,
+ * The keys of the array should be 's' for stunting, 'w' for wasting,
  * and 'u' for underweight. If a key is missing or its value is empty,
  * an empty string is used in its place.
  *
@@ -788,7 +871,7 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
     $data['results'] = hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center);
   }
   else {
-    list($data['results'], $data['additional']) = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
+    [$data['results'], $data['additional']] = hedley_reports_load_results_data('statistical-query', $data['entity_type'], $province, $district, $health_center);
   }
 
   return hedley_general_build_elm_app('reports-results', $data);
@@ -1107,7 +1190,7 @@ function hedley_reports_gz_compress_file($data, $file_path) {
 }
 
 /**
- * Provides a mapping for AI diagnosis codes.
+ * Provides a mapping for Acute Illness diagnosis codes.
  *
  * This function returns an associative array where the keys are diagnosis
  * identifiers and the values are corresponding codes.
@@ -1133,6 +1216,106 @@ function hedley_reports_ai_diagnosis_mapping() {
     'undetermined' => 'n',
     'tuberculosis-suspect' => 'o',
     'none' => 'z',
+  ];
+}
+
+/**
+ * Provides a mapping for Prenatal diagnosis codes.
+ *
+ * This function returns an associative array where the keys are diagnosis
+ * identifiers and the values are corresponding codes.
+ *
+ * @return array
+ *   An associative array mapping diagnosis identifiers to their codes.
+ */
+function hedley_reports_prenatal_diagnosis_mapping() {
+  return [
+    'chronic-hypertension-immediate' => 'a',
+    'chronic-hypertension-recheck' => 'a',
+    'gestational-hypertension-immediate' => 'b',
+    'gestational-hypertension-recheck' => 'b',
+    'moderate-preeclampsia-initial' => 'c',
+    'moderate-preeclampsia-recurrent' => 'c',
+    'moderate-preeclampsia-initial-ega-37+' => 'c',
+    'moderate-preeclampsia-recurrent-ega-37+' => 'c',
+    'severe-preeclampsia-initial' => 'd',
+    'severe-preeclampsia-recurrent' => 'd',
+    'severe-preeclampsia-initial-ega-37+' => 'd',
+    'severe-preeclampsia-recurrent-ega-37+' => 'd',
+    'eclampsia' => 'g',
+    'hiv' => 'h',
+    'hiv-recurrent' => 'h',
+    'hiv-detectable-viral-load-initial' => 'i',
+    'hiv-detectable-viral-load' => 'i',
+    'partner-hiv' => 'j',
+    'partner-hiv-recurrent' => 'j',
+    'syphilis-initial' => 'k',
+    'syphilis' => 'k',
+    'syphilis-complications-initial' => 'l',
+    'syphilis-complications' => 'l',
+    'neurosyphilis-initial' => 'm',
+    'neurosyphilis' => 'm',
+    'hepatitis-b-initial' => 'n',
+    'hepatitis-b' => 'n',
+    'malaria' => 'o',
+    'malaria-recurrent' => 'o',
+    'malaria-anemia' => 'p',
+    'malaria-anemia-recurrent' => 'p',
+    'malaria-severe-anemia' => 'q',
+    'malaria-severe-anemia-recurrent' => 'q',
+    'anemia-initial' => 'r',
+    'anemia' => 'r',
+    'severe-anemia-initial' => 's',
+    'severe-anemia' => 's',
+    'severe-anemia-complications-initial' => 't',
+    'severe-anemia-complications' => 't',
+    'miscarriage' => 'u',
+    'molar-pregnancy' => 'v',
+    'placenta-previa' => 'w',
+    'placental-abruption' => 'x',
+    'uterine-rupture' => 'y',
+    'obstructed-labor' => 'z',
+    'post-abortion-sepsis' => 'a1',
+    'ectopic-pregnancy' => 'b1',
+    'prom' => 'c1',
+    'pprom' => 'd1',
+    'hyperemesis-gravidum' => 'e1',
+    'severe-vomiting' => 'f1',
+    'maternal-complications' => 'g1',
+    'infection' => 'h1',
+    'imminent-delivery' => 'i1',
+    'labor' => 'j1',
+    'heartburn' => 'k1',
+    'dvt' => 'l1',
+    'pelvic-pain-intense' => 'm1',
+    'urinary-tract-infection' => 'n1',
+    'pyelonephritis' => 'o1',
+    'candidiasis' => 'p1',
+    'gonorrhea' => 'q1',
+    'trichomonas-or-bv' => 'r1',
+    'tuberculosis' => 's1',
+    'diabetes-initial' => 't1',
+    'diabetes' => 't1',
+    'gestational-diabetes-initial' => 'u1',
+    'gestational-diabetes' => 'u1',
+    'rhesus-negative-initial' => 'v1',
+    'rhesus-negative' => 'v1',
+    'depression-not-likely' => 'w1',
+    'depression-possible' => 'x1',
+    'depression-highly-possible' => 'y1',
+    'depression-probable' => 'z1',
+    'suicide-risk' => 'a2',
+    'other' => 'b2',
+    'postpartum-abdominal-pain' => 'c2',
+    'postpartum-urinary-incontinence' => 'd2',
+    'postpartum-headache' => 'e2',
+    'postpartum-fatigue' => 'f2',
+    'postpartum-fever' => 'g2',
+    'postpartum-perineal-pain-discharge' => 'h2',
+    'postpartum-infection' => 'i2',
+    'postpartum-excessive-bleeding' => 'j2',
+    'postpartum-early-mastitis-engorgment' => 'k2',
+    'postpartum-mastitis' => 'l2',
   ];
 }
 
@@ -1657,7 +1840,7 @@ function hedley_reports_resolve_data_set_for_quarter($quarter_index, array $enco
   // Calculate the selected date by subtracting months.
   $selected_date = strtotime("-" . (3 * ($quarter_index - 1)) . " months", time());
 
-  list($year, $quarter) = hedley_reports_resolve_quarter_date_info($selected_date);
+  [$year, $quarter] = hedley_reports_resolve_quarter_date_info($selected_date);
 
   $months = hedley_reports_quarter_to_months($quarter);
 
@@ -1774,9 +1957,9 @@ function hedley_reports_calculate_year_difference($fromDateString, $toDateString
  *   An array containing categorized nutritional metrics.
  */
 function hedley_reports_nutrition_encounter_data_to_nutrition_metrics($person_id, array $data) {
-  list($stunting_normal, $stunting_moderate, $stunting_severe) = hedley_reports_categorize_z_score($data['stunting'], $person_id);
-  list($wasting_normal, $wasting_moderate, $wasting_severe) = hedley_reports_categorize_z_score($data['wasting'], $person_id);
-  list($underweight_normal, $underweight_moderate, $underweight_severe) = hedley_reports_categorize_z_score($data['underweight'], $person_id);
+  [$stunting_normal, $stunting_moderate, $stunting_severe] = hedley_reports_categorize_z_score($data['stunting'], $person_id);
+  [$wasting_normal, $wasting_moderate, $wasting_severe] = hedley_reports_categorize_z_score($data['wasting'], $person_id);
+  [$underweight_normal, $underweight_moderate, $underweight_severe] = hedley_reports_categorize_z_score($data['underweight'], $person_id);
 
   return [
     'stunting_normal' => $stunting_normal,
@@ -1978,7 +2161,7 @@ function hedley_reports_build_completion_results_app($health_center = NULL) {
 
   $data['site'] = variable_get('hedley_general_site_name', '');
 
-  list($data['results'], $data['additional']) = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
+  [$data['results'], $data['additional']] = hedley_reports_load_results_data('completion', $data['entity_type'], NULL, NULL, $health_center);
 
   return hedley_general_build_elm_app('completion-results', $data);
 }
@@ -2168,7 +2351,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
     'children' => [],
   ];
 
-  // Loading all measurements that were taken for mother and children.
+  // Loading all measurements taken for mother and children.
   $session_measurements_types = array_merge(array_keys($mapping_mother), array_keys($mapping_child));
   $query = new EntityFieldQuery();
   $result = $query
@@ -3423,7 +3606,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
     $encounter_data['age_in_months'] = hedley_reports_resolve_age_in_months_for_individual_encounter($encounter, $start_date_obj);
     $encounter_data['previous_encounters_data'] = array_slice($encounters_data, 0, $index);
 
-    list($encounter_data['vaccination_history'], $encounter_data['vaccination_progress']) = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
+    [$encounter_data['vaccination_history'], $encounter_data['vaccination_progress']] = hedley_reports_well_child_generate_vaccination_progress_data($person_id, $encounter_data);
 
     // So far we were constructing data structures to resolve encounter data.
     // Now we have enough info to determine which activities were expected.

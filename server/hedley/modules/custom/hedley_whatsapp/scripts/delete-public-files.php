@@ -23,7 +23,7 @@ $fid = drush_get_option('fid', 0);
 $batch = drush_get_option('batch', 10);
 
 // Get the allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 250);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $hour_ago = strtotime('-1 hours');
 

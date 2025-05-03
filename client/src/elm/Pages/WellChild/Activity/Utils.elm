@@ -389,22 +389,25 @@ expectNutritionAssessmentTask currentDate assembled task =
             True
 
 
-mandatoryNutritionAssessmentTasksCompleted : NominalDate -> AssembledData -> Bool
-mandatoryNutritionAssessmentTasksCompleted currentDate assembled =
-    resolveMandatoryNutritionAssessmentTasks currentDate assembled
-        |> List.filter (not << nutritionAssessmentTaskCompleted currentDate assembled)
-        |> List.isEmpty
+mandatoryNutritionAssessmentTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryNutritionAssessmentTasksCompleted currentDate site assembled =
+    resolveMandatoryNutritionAssessmentTasks currentDate site assembled
+        |> List.all (nutritionAssessmentTaskCompleted currentDate assembled)
 
 
-resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List NutritionAssessmentTask
-resolveMandatoryNutritionAssessmentTasks currentDate assembled =
-    List.filter (expectNutritionAssessmentTask currentDate assembled) <|
-        case assembled.encounter.encounterType of
-            PediatricCare ->
-                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+resolveMandatoryNutritionAssessmentTasks : NominalDate -> Site -> AssembledData -> List NutritionAssessmentTask
+resolveMandatoryNutritionAssessmentTasks currentDate site assembled =
+    case assembled.encounter.encounterType of
+        PediatricCare ->
+            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
-            _ ->
-                -- Height is optional for CHW.
+        _ ->
+            if site == SiteBurundi then
+                --Weight is optional for CHW in Burundi
+                [ TaskHeadCircumference, TaskMuac, TaskNutrition ]
+
+            else
+                --Height is optional for CHW
                 [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
@@ -726,6 +729,20 @@ toHeadCircumferenceValue form =
         |> andMap notes
 
 
+dangerSignsTaskCompleted : NominalDate -> AssembledData -> DangerSignsTask -> Bool
+dangerSignsTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+    in
+    case task of
+        TaskSymptomsReview ->
+            isJust measurements.symptomsReview
+
+        TaskVitals ->
+            isJust measurements.vitals
+
+
 dangerSignsTasksCompletedFromTotal : NominalDate -> AssembledData -> DangerSignsData -> DangerSignsTask -> ( Int, Int )
 dangerSignsTasksCompletedFromTotal currentDate assembled data task =
     let
@@ -749,6 +766,27 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
                         |> vitalsFormInputsAndTasks English currentDate formConfig
     in
     resolveTasksCompletedFromTotal tasks
+
+
+mandatoryDangerSignsTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryDangerSignsTasksCompleted currentDate site assembled =
+    resolvedMandatoryDangerSignsTasksCompleted site assembled
+        |> List.all (dangerSignsTaskCompleted currentDate assembled)
+
+
+resolvedMandatoryDangerSignsTasksCompleted : Site -> AssembledData -> List DangerSignsTask
+resolvedMandatoryDangerSignsTasksCompleted site assembled =
+    case assembled.encounter.encounterType of
+        PediatricCare ->
+            [ TaskSymptomsReview, TaskVitals ]
+
+        _ ->
+            if site == SiteBurundi then
+                --Vitals are optional for CHW in Burundi
+                [ TaskSymptomsReview ]
+
+            else
+                [ TaskSymptomsReview, TaskVitals ]
 
 
 symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
@@ -1650,7 +1688,7 @@ expectNextStepsTask :
 expectNextStepsTask currentDate zscores site features isChw assembled db task =
     case task of
         TaskContributingFactors ->
-            if mandatoryNutritionAssessmentTasksCompleted currentDate assembled then
+            if mandatoryNutritionAssessmentTasksCompleted currentDate site assembled then
                 -- Any assesment requires Next Steps tasks.
                 generateNutritionAssessment currentDate zscores db assembled
                     |> List.isEmpty
