@@ -1832,6 +1832,7 @@ viewMedicationContent language currentDate site isChw assembled data =
         ]
     ]
 
+
 viewNextStepsContent :
     Language
     -> NominalDate
