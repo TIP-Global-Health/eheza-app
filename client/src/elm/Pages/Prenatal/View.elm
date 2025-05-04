@@ -6,7 +6,6 @@ import Backend.Measurement.Utils exposing (getMeasurementValueFunc)
 import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (..)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -19,7 +18,7 @@ import Pages.Utils
         , viewSaveAction
         , viewTasksCount
         )
-import Translate exposing (Language, translate)
+import Translate exposing (Language)
 
 
 viewMedicationDistributionForm :
