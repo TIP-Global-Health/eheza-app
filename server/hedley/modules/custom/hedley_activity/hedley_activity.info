@@ -245,6 +245,7 @@ features[field_instance][] = node-last_menstrual_period-field_person
 features[field_instance][] = node-last_menstrual_period-field_prenatal_encounter
 features[field_instance][] = node-last_menstrual_period-field_shards
 features[field_instance][] = node-last_menstrual_period-field_uuid
+features[field_instance][] = node-last_menstrual_period-field_weight
 features[field_instance][] = node-medical_history-field_date_measured
 features[field_instance][] = node-medical_history-field_infectious_disease_history
 features[field_instance][] = node-medical_history-field_medical_history

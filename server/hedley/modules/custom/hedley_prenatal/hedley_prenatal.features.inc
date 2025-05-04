@@ -43,6 +43,22 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_calcium' => array(
+      'name' => t('Prenatal Calcium'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'prenatal_folate' => array(
+      'name' => t('Prenatal Folate'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_follow_up' => array(
       'name' => t('Prenatal Follow Up'),
       'base' => 'node_content',
@@ -91,6 +107,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_iron' => array(
+      'name' => t('Prenatal Iron'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_labs_results' => array(
       'name' => t('Prenatal Labs Results'),
       'base' => 'node_content',
@@ -107,6 +131,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_mebendazole' => array(
+      'name' => t('Prenatal Mebendazole'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_medication_distribution' => array(
       'name' => t('Prenatal Medication Distribution'),
       'base' => 'node_content',
@@ -117,6 +149,14 @@ function hedley_prenatal_node_info() {
     ),
     'prenatal_mental_health' => array(
       'name' => t('Prenatal Mental Health'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'prenatal_mms' => array(
+      'name' => t('Prenatal MMS'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',

@@ -33,6 +33,7 @@ import Measurement.Model
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
         , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VitalsForm
@@ -50,6 +51,7 @@ import Measurement.Utils
         , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
+        , medicationAdministrationFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
@@ -73,6 +75,7 @@ import Measurement.View
     exposing
         ( viewFamilyPlanningForm
         , viewFamilyPlanningInput
+        , viewMedicationAdministrationForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -372,18 +375,6 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
-        chwLmpConfirmationSection lmpValueByChw =
-            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
-            , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY lmpValueByChw.date ]
-            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
-            , viewBoolInput language
-                form.chwLmpConfirmation
-                (SetConfirmLmpDate lmpValueByChw)
-                "confirm-lmp"
-                Nothing
-            ]
-
         ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
             let
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -405,8 +396,7 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                     else
                         ( [], 0, 0 )
-            in
-            ( let
+
                 lmpDateInput =
                     let
                         dateSelectorConfig =
@@ -426,9 +416,16 @@ viewPregnancyDatingContent language currentDate assembled data =
                         , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text lmpdDateForView ]
-              in
-              [ viewLabel language Translate.LmpDateHeader
+            in
+            ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
+              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
+              , viewMeasurementInput
+                    language
+                    form.prePregnancyWeight
+                    SetPrePregnancyWeight
+                    "weight"
+                    Translate.KilogramShorthand
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
               , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -436,8 +433,9 @@ viewPregnancyDatingContent language currentDate assembled data =
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
+                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 2 + derivedTasksTotal
+            , 3 + derivedTasksTotal
             )
 
         ( inputs, tasksCompleted, totalTasks ) =
@@ -455,6 +453,26 @@ viewPregnancyDatingContent language currentDate assembled data =
                         let
                             chwLmpConfirmationTasksCompleted =
                                 taskCompleted form.chwLmpConfirmation
+
+                            chwLmpConfirmationSection value =
+                                let
+                                    prePregnancyWeight =
+                                        Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
+                                            value.prePregnancyWeight
+                                            |> Maybe.withDefault "Not Set"
+                                in
+                                [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+                                , viewLabel language Translate.LmpLabel
+                                , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY value.date ]
+                                , viewLabel language Translate.PrePregnancyWeight
+                                , p [ class "chw-lmp" ] [ text prePregnancyWeight ]
+                                , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+                                , viewBoolInput language
+                                    form.chwLmpConfirmation
+                                    (SetConfirmLmpDate value)
+                                    "confirm-lmp"
+                                    Nothing
+                                ]
                         in
                         if form.chwLmpConfirmation == Just False then
                             ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection
@@ -1079,41 +1097,152 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
-        form =
-            assembled.measurements.medication
-                |> getMeasurementValueFunc
-                |> medicationFormWithDefault data.form
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveMedicationTasks currentDate assembled
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskCalcium ->
+                            "calcium"
+
+                        TaskFolate ->
+                            "folate"
+
+                        TaskIron ->
+                            "iron"
+
+                        TaskMMS ->
+                            "mms"
+
+                        TaskMebendazole ->
+                            "mebendezole"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    medicationTaskCompleted assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate assembled data task )) tasks
+                |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            let
-                displayMebendazoleQuestion =
-                    showMebendazoleQuestion currentDate assembled
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
 
-                tasks =
-                    [ ( form.receivedIronFolicAcid, True )
-                    , ( form.receivedMebendazole, displayMebendazoleQuestion )
-                    ]
-                        |> List.filterMap
-                            (\( task, showTask ) ->
-                                if showTask then
-                                    Just task
+        viewForm =
+            case activeTask of
+                Just TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
 
-                                else
-                                    Nothing
-                            )
-            in
-            ( List.map taskCompleted tasks
-                |> List.sum
-            , List.length tasks
-            )
+                Just TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                Just TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                Just TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+
+                Just TaskMebendazole ->
+                    getMeasurementValueFunc measurements.mebendazole
+                        |> medicationAdministrationFormWithDefault data.mebendazoleForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mebendazoleAdministrationFormConfig
+
+                Nothing ->
+                    []
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
+                        saveMsg =
+                            case task of
+                                TaskCalcium ->
+                                    SaveCalcium personId measurements.calcium nextTask
+
+                                TaskFolate ->
+                                    SaveFolate personId measurements.folate nextTask
+
+                                TaskIron ->
+                                    SaveIron personId measurements.iron nextTask
+
+                                TaskMMS ->
+                                    SaveMMS personId measurements.mms nextTask
+
+                                TaskMebendazole ->
+                                    SaveMebendazole personId measurements.mebendazole nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
-    [ viewTasksCount language tasksCompleted totalTasks
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
-        , viewSaveAction language
-            (SaveMedication assembled.participant.person assembled.measurements.medication)
-            (tasksCompleted /= totalTasks)
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 

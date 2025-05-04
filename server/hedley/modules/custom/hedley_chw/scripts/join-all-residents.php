@@ -17,7 +17,7 @@ if (!drupal_is_cli()) {
 }
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 500);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 // Get all villages.
 $query = new EntityFieldQuery();

@@ -46,6 +46,7 @@ import Measurement.View
         , viewContributingFactorsForm
         , viewHealthEducationForm
         , viewHeightForm
+        , viewMedicationAdministrationForm
         , viewMuacForm
         , viewNutritionFollowUpForm
         , viewNutritionForm
@@ -1762,49 +1763,31 @@ viewMedicationContent language currentDate site isChw assembled data =
         viewForm =
             case activeTask of
                 Just TaskAlbendazole ->
-                    let
-                        config =
-                            { medication = Albendazole
-                            , setMedicationAdministeredMsg = SetAlbendazoleAdministered
-                            , setReasonForNonAdministration = SetAlbendazoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveAlbendazoleDosageAndIcon
-                            , helper = Translate.AdministerAlbendazoleHelper
-                            }
-                    in
                     measurements.albendazole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.albendazoleForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            (albendazoleAdministrationFormConfig site)
 
                 Just TaskMebendezole ->
-                    let
-                        config =
-                            { medication = Mebendezole
-                            , setMedicationAdministeredMsg = SetMebendezoleAdministered
-                            , setReasonForNonAdministration = SetMebendezoleReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
-                            , helper = Translate.AdministerMebendezoleHelper
-                            }
-                    in
                     measurements.mebendezole
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.mebendezoleForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            (mebendezoleAdministrationFormConfig site)
 
                 Just TaskVitaminA ->
-                    let
-                        config =
-                            { medication = VitaminA
-                            , setMedicationAdministeredMsg = SetVitaminAAdministered
-                            , setReasonForNonAdministration = SetVitaminAReasonForNonAdministration
-                            , resolveDosageAndIconFunc = resolveVitaminADosageAndIcon
-                            , helper = Translate.AdministerVitaminAHelperWellChild
-                            }
-                    in
                     measurements.vitaminA
                         |> getMeasurementValueFunc
                         |> medicationAdministrationFormWithDefault data.vitaminAForm
-                        |> viewMedicationAdministrationForm language currentDate site assembled config
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            (vitaminAAdministrationFormConfig site)
 
                 Nothing ->
                     []
@@ -1848,25 +1831,6 @@ viewMedicationContent language currentDate site isChw assembled data =
             (viewForm ++ [ actions ])
         ]
     ]
-
-
-viewMedicationAdministrationForm :
-    Language
-    -> NominalDate
-    -> Site
-    -> AssembledData
-    -> MedicationAdministrationFormConfig
-    -> MedicationAdministrationForm
-    -> List (Html Msg)
-viewMedicationAdministrationForm language currentDate site assembled config form =
-    let
-        ( inputs, _ ) =
-            medicationAdministrationFormInputsAndTasks language currentDate site assembled config form
-    in
-    [ div [ class "ui form medication-administration" ]
-        inputs
-    ]
-
 
 viewNextStepsContent :
     Language

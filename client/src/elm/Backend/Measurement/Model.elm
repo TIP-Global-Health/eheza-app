@@ -653,6 +653,7 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
+    , prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
@@ -1736,6 +1737,26 @@ type alias PartnerHIVTestValue =
     }
 
 
+type alias PrenatalCalcium =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFolate =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalIron =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMMS =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMebendazole =
+    PrenatalMeasurement AdministrationNote
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2028,9 +2049,12 @@ type MedicationDistributionSign
     | Lamivudine
     | Dolutegravir
     | TDF3TC
-      -- Anemia medication
+      -- Anemia medication and pregnancy supplements.
     | Iron
     | FolicAcid
+      -- Pregnancy supplements - in addition to Iron and Folic acid.
+    | Calcium
+    | MMS
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
@@ -3319,6 +3343,11 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , calcium : Maybe ( PrenatalCalciumId, PrenatalCalcium )
+    , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
+    , iron : Maybe ( PrenatalIronId, PrenatalIron )
+    , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
+    , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
     }
 
 
@@ -3364,6 +3393,11 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , calcium = Nothing
+    , folate = Nothing
+    , iron = Nothing
+    , mms = Nothing
+    , mebendazole = Nothing
     }
 
 

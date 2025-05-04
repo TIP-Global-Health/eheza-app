@@ -19,6 +19,7 @@ import Measurement.Model
         , HepatitisBTestForm
         , LaboratoryTask
         , MalariaTestForm
+        , MedicationAdministrationForm
         , OutsideCareForm
         , OutsideCareStep
         , PartnerHIVTestForm
@@ -36,6 +37,7 @@ import Measurement.Model
         , emptyHemoglobinTestForm
         , emptyHepatitisBTestForm
         , emptyMalariaTestForm
+        , emptyMedicationAdministrationForm
         , emptyOutsideCareForm
         , emptyPartnerHIVTestForm
         , emptyRandomBloodSugarTestUniversalForm
@@ -61,6 +63,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
+    | SetPrePregnancyWeight String
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
     | SetActiveHistoryTask HistoryTask
@@ -134,8 +137,22 @@ type Msg
     | SetFamilyPlanningSign FamilyPlanningSign
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- MedicationMsgs
-    | SetMedicationBoolInput (Bool -> MedicationForm -> MedicationForm) Bool
-    | SaveMedication PersonId (Maybe ( MedicationId, Medication ))
+    | SetActiveMedicationTask MedicationTask
+    | SetCalciumAdministered Bool
+    | SetCalciumReasonForNonAdministration AdministrationNote
+    | SaveCalcium PersonId (Maybe ( PrenatalCalciumId, PrenatalCalcium )) (Maybe MedicationTask)
+    | SetFolateAdministered Bool
+    | SetFolateReasonForNonAdministration AdministrationNote
+    | SaveFolate PersonId (Maybe ( PrenatalFolateId, PrenatalFolate )) (Maybe MedicationTask)
+    | SetIronAdministered Bool
+    | SetIronReasonForNonAdministration AdministrationNote
+    | SaveIron PersonId (Maybe ( PrenatalIronId, PrenatalIron )) (Maybe MedicationTask)
+    | SetMMSAdministered Bool
+    | SetMMSReasonForNonAdministration AdministrationNote
+    | SaveMMS PersonId (Maybe ( PrenatalMMSId, PrenatalMMS )) (Maybe MedicationTask)
+    | SetMebendazoleAdministered Bool
+    | SetMebendazoleReasonForNonAdministration AdministrationNote
+    | SaveMebendazole PersonId (Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )) (Maybe MedicationTask)
       -- MalariaPreventionMsgs
     | SetMalariaPreventionBoolInput (Bool -> MalariaPreventionForm -> MalariaPreventionForm) Bool
     | SaveMalariaPrevention PersonId (Maybe ( MalariaPreventionId, MalariaPrevention ))
@@ -395,13 +412,23 @@ emptyFamilyPlanningData =
 
 
 type alias MedicationData =
-    { form : MedicationForm
+    { calciumForm : MedicationAdministrationForm
+    , folateForm : MedicationAdministrationForm
+    , ironForm : MedicationAdministrationForm
+    , mmsForm : MedicationAdministrationForm
+    , mebendazoleForm : MedicationAdministrationForm
+    , activeTask : Maybe MedicationTask
     }
 
 
 emptyMedicationData : MedicationData
 emptyMedicationData =
-    { form = emptyMedicationForm
+    { calciumForm = emptyMedicationAdministrationForm
+    , folateForm = emptyMedicationAdministrationForm
+    , ironForm = emptyMedicationAdministrationForm
+    , mmsForm = emptyMedicationAdministrationForm
+    , mebendazoleForm = emptyMedicationAdministrationForm
+    , activeTask = Nothing
     }
 
 
@@ -712,6 +739,7 @@ emptyNextStepsData =
 
 type alias PregnancyDatingForm =
     { lmpDate : Maybe Date
+    , prePregnancyWeight : Maybe Float
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
@@ -721,7 +749,7 @@ type alias PregnancyDatingForm =
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing
+    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =
@@ -1001,7 +1029,7 @@ type alias PostpartumTreatmentReviewData =
     }
 
 
-emptyPostpartumTreatmentReviewData : MedicationData
+emptyPostpartumTreatmentReviewData : PostpartumTreatmentReviewData
 emptyPostpartumTreatmentReviewData =
     { form = emptyMedicationForm
     }

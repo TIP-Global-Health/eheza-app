@@ -3,11 +3,32 @@ module Pages.Reports.Utils exposing (..)
 import AssocList as Dict exposing (Dict)
 import Backend.Reports.Model exposing (..)
 import Date exposing (Unit(..))
-import Gizra.NominalDate exposing (NominalDate)
+import Gizra.NominalDate exposing (NominalDate, diffDays)
 import List.Extra exposing (unique)
 import Maybe.Extra
 import Pages.Reports.Model exposing (..)
 import Set
+
+
+eddToLmpDate : NominalDate -> NominalDate
+eddToLmpDate eddDate =
+    Date.add Days -280 eddDate
+
+
+resolvePregnancyTrimester : NominalDate -> NominalDate -> PregnancyTrimester
+resolvePregnancyTrimester date lmpDate =
+    let
+        diffInWeeks =
+            diffDays lmpDate date // 7
+    in
+    if diffInWeeks < 13 then
+        FirstTrimester
+
+    else if diffInWeeks < 28 then
+        SecondTrimester
+
+    else
+        ThirdTrimester
 
 
 reportTypeToString : ReportType -> String
@@ -25,6 +46,9 @@ reportTypeToString reportType =
         ReportPrenatal ->
             "prenatal"
 
+        ReportPrenatalDiagnoses ->
+            "prenatal-diagnoses"
+
 
 reportTypeFromString : String -> Maybe ReportType
 reportTypeFromString reportType =
@@ -40,6 +64,9 @@ reportTypeFromString reportType =
 
         "prenatal" ->
             Just ReportPrenatal
+
+        "prenatal-diagnoses" ->
+            Just ReportPrenatalDiagnoses
 
         _ ->
             Nothing
@@ -144,7 +171,7 @@ nutritionEncounterDataToNutritionMetrics personId =
 generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
 generatePrevalenceNutritionMetricsResults metrics =
     let
-        calcualtePercentage nominator total =
+        calculatePercentage nominator total =
             if List.isEmpty total then
                 0
 
@@ -169,19 +196,19 @@ generatePrevalenceNutritionMetricsResults metrics =
                 ++ metrics.underweightNormal
                 |> unique
     in
-    { stuntingModerate = calcualtePercentage metrics.stuntingModerate stuntingTotal
-    , stuntingSevere = calcualtePercentage metrics.stuntingSevere stuntingTotal
-    , wastingModerate = calcualtePercentage metrics.wastingModerate wastingTotal
-    , wastingSevere = calcualtePercentage metrics.wastingSevere wastingTotal
-    , underweightModerate = calcualtePercentage metrics.underweightModerate underweightTotal
-    , underweightSevere = calcualtePercentage metrics.underweightSevere underweightTotal
+    { stuntingModerate = calculatePercentage metrics.stuntingModerate stuntingTotal
+    , stuntingSevere = calculatePercentage metrics.stuntingSevere stuntingTotal
+    , wastingModerate = calculatePercentage metrics.wastingModerate wastingTotal
+    , wastingSevere = calculatePercentage metrics.wastingSevere wastingTotal
+    , underweightModerate = calculatePercentage metrics.underweightModerate underweightTotal
+    , underweightSevere = calculatePercentage metrics.underweightSevere underweightTotal
     }
 
 
 generateIncidenceNutritionMetricsResults : NutritionMetrics -> NutritionMetrics -> NutritionMetricsResults
 generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetric =
     let
-        calcualtePercentage nominator total =
+        calculatePercentage nominator total =
             if Set.isEmpty total then
                 0
 
@@ -258,27 +285,27 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
             Set.diff (Set.fromList currentPeriodMetric.underweightSevere) (Set.fromList previousPeriodMetric.underweightSevere)
     in
     { stuntingModerate =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect stuntingModerateTestedInPreviousPeriod stuntingModerateNotIdentifiedInPreviousPeriod)
             previousPeriodStuntingTotal
     , stuntingSevere =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect stuntingSevereTestedInPreviousPeriod stuntingSevereNotIdentifiedInPreviousPeriod)
             previousPeriodStuntingTotal
     , wastingModerate =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect wastingModerateTestedInPreviousPeriod wastingModerateNotIdentifiedInPreviousPeriod)
             previousPeriodWastingTotal
     , wastingSevere =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect wastingSevereTestedInPreviousPeriod wastingSevereNotIdentifiedInPreviousPeriod)
             previousPeriodWastingTotal
     , underweightModerate =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect underweightModerateTestedInPreviousPeriod underweightModerateNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
     , underweightSevere =
-        calcualtePercentage
+        calculatePercentage
             (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
             previousPeriodUnderweightTotal
     }
