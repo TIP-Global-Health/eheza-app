@@ -1454,13 +1454,16 @@ resolvePrePregnancyWeight assembled =
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
 zscoreToPrePregnancyClassification zscore =
-    if zscore < -2 then
+    if zscore < -3 then
+        PrePregnancySevereUnderWeight
+
+    else if zscore < -2 then
         PrePregnancyUnderWeight
 
-    else if zscore < 2 then
+    else if zscore <= 1 then
         PrePregnancyNormal
 
-    else if zscore < 3 then
+    else if zscore <= 2 then
         PrePregnancyOverweight
 
     else
@@ -1471,7 +1474,11 @@ zscoreToPrePregnancyClassification zscore =
 -}
 bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
 bmiToPrePregnancyClassification bmi =
-    if bmi < 18.5 then
+    -- @todo: update value
+    if bmi < 16 then
+        PrePregnancySevereUnderWeight
+
+    else if bmi < 18.5 then
         PrePregnancyUnderWeight
 
     else if bmi < 25 then
@@ -1502,6 +1509,10 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
 
                         ( forFirstTrimester, perWeek ) =
                             case prePregnancyClassification of
+                                PrePregnancySevereUnderWeight ->
+                                    -- @todo: update values
+                                    ( 3, 0.6 )
+
                                 PrePregnancyUnderWeight ->
                                     ( 2, 0.51 )
 
