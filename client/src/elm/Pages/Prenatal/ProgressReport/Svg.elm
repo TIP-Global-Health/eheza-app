@@ -1,4 +1,9 @@
-module Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+module Pages.Prenatal.ProgressReport.Svg exposing
+    ( viewBMIForEGA
+    , viewFundalHeightForEGA
+    , viewMarkers
+    , viewWeightGainForEGA
+    )
 
 import Html exposing (Html)
 import Pages.Report.Svg exposing (..)
@@ -142,6 +147,120 @@ viewBMIForEGA language points =
             , drawPolyline measurements "data"
             ]
                 ++ drawPoints "#06B9FF" measurements
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
+          )
+            |> g []
+        , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
+        ]
+
+
+viewWeightGainForEGA : Language -> List ( Int, Float ) -> Html any
+viewWeightGainForEGA language points =
+    let
+        verticalParts =
+            13
+
+        verticalMin =
+            0
+
+        verticalMax =
+            26
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            42
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
+
+        -- bottomRedPoints =
+        --     [ ( dimensionsPx.left, dimensionsPx.bottom )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom )
+        --     ]
+        --
+        -- greenPoints =
+        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
+        --     ]
+        --
+        -- yellowPoints =
+        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
+        --     ]
+        --
+        -- topRedPoints =
+        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.top )
+        --     , ( dimensionsPx.right, dimensionsPx.top )
+        --     , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+        --     , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
+        --     ]
+        --
+        -- measurements =
+        --     points
+        --         |> List.filterMap
+        --             (\( egaDays, bmi ) ->
+        --                 if
+        --                     withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+        --                         && withinRange bmi verticalMin verticalMax
+        --                 then
+        --                     let
+        --                         egaGap =
+        --                             toFloat egaDays / 7 - horizontalMin
+        --
+        --                         bmiGap =
+        --                             bmi - verticalMin
+        --                     in
+        --                     Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+        --
+        --                 else
+        --                     Nothing
+        --             )
+    in
+    svg
+        [ class "z-score boys"
+        , x "0px"
+        , y "0px"
+        , viewBox "25 25 841.9 595.3"
+        ]
+        [ frame
+        , g []
+            [ text_
+                [ transform "matrix(1 0 0 1 373 541)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.EgaWeeks ]
+            , text_
+                [ transform "matrix(0 -1 1 0 81 350)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.WeightGain ]
+            ]
+
+        -- , g [] <|
+        --     [ drawPolygon topRedPoints "red-area"
+        --     , drawPolygon yellowPoints "yellow-area"
+        --     , drawPolygon greenPoints "green-area"
+        --     , drawPolygon bottomRedPoints "red-area"
+        --     , drawPolyline measurements "data"
+        --     ]
+        --         ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)

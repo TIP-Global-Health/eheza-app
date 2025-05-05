@@ -79,7 +79,7 @@ import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
 import Pages.Prenatal.Model exposing (AssembledData, VaccinationProgressDict)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
-import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
 import Pages.Prenatal.RecurrentActivity.Utils
 import Pages.Prenatal.RecurrentEncounter.Utils
@@ -1796,6 +1796,11 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
                     [ viewChartHeading Translate.BMI
                     , heightWeightBMITable language currentDate assembled.globalLmpDate allNurseEncountersData
                     , viewBMIForEGA language egaBmiValues
+                    , illustrativePurposes language
+                    ]
+                , div [ class "weight-gain-info" ]
+                    [ viewChartHeading Translate.WeightGain
+                    , viewWeightGainForEGA language []
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]
