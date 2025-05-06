@@ -2077,7 +2077,7 @@ weightGainTable language currentDate maybeLmpDate baselineWeight allMeasurements
                                             >> weightValueFunc
                                             >> (\weight ->
                                                     [ text <|
-                                                        String.fromFloat
+                                                        Round.round 1
                                                             (weight - baselineWeight)
                                                             ++ translate language Translate.KilogramShorthand
                                                     ]
