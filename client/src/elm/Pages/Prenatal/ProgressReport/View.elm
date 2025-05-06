@@ -1800,7 +1800,7 @@ viewPatientProgressPane language currentDate isChw globalLmpValue assembled =
                     ]
                 , div [ class "weight-gain-info" ]
                     [ viewChartHeading Translate.WeightGain
-                    , viewWeightGainForEGA language []
+                    , viewWeightGainForEGA language ( 2, 0.51 ) []
                     , illustrativePurposes language
                     ]
                 , div [ class "fundal-height-info" ]

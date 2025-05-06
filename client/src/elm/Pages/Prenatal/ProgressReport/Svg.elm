@@ -156,8 +156,8 @@ viewBMIForEGA language points =
         ]
 
 
-viewWeightGainForEGA : Language -> List ( Int, Float ) -> Html any
-viewWeightGainForEGA language points =
+viewWeightGainForEGA : Language -> ( Float, Float ) -> List ( Int, Float ) -> Html any
+viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
     let
         verticalParts =
             13
@@ -180,14 +180,70 @@ viewWeightGainForEGA language points =
         horizontalStep =
             widthPx / toFloat (horizontalMax - horizontalMin)
 
-        -- bottomRedPoints =
-        --     [ ( dimensionsPx.left, dimensionsPx.bottom )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom )
-        --     ]
-        --
+        firstTrimesterBottomRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            ]
+
+        firstTrimesterYellowPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        firstTrimesterGreenPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        firstTrimesterTopRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersBottomRedPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.7 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            ]
+
+        remianingTrimestersYellowPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.9 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.7 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersGreenPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 1.25 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.9 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersTopRedPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 1.25 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            ]
+
         -- greenPoints =
         --     [ ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
         --     , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
@@ -252,14 +308,19 @@ viewWeightGainForEGA language points =
                 ]
                 [ text <| translate language Translate.WeightGain ]
             ]
+        , g [] <|
+            [ drawPolygon firstTrimesterBottomRedPoints "red-area"
+            , drawPolygon firstTrimesterYellowPoints "yellow-area"
+            , drawPolygon firstTrimesterGreenPoints "green-area"
+            , drawPolygon firstTrimesterTopRedPoints "red-area"
+            , drawPolygon remianingTrimestersBottomRedPoints "red-area"
+            , drawPolygon remianingTrimestersYellowPoints "yellow-area"
+            , drawPolygon remianingTrimestersGreenPoints "green-area"
+            , drawPolygon remianingTrimestersTopRedPoints "red-area"
 
-        -- , g [] <|
-        --     [ drawPolygon topRedPoints "red-area"
-        --     , drawPolygon yellowPoints "yellow-area"
-        --     , drawPolygon greenPoints "green-area"
-        --     , drawPolygon bottomRedPoints "red-area"
-        --     , drawPolyline measurements "data"
-        --     ]
+            -- , drawPolyline measurements "data"
+            ]
+
         --         ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)

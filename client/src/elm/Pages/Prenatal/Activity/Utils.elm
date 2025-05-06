@@ -1508,22 +1508,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                             egaInWeeks - 13
 
                         ( forFirstTrimester, perWeek ) =
-                            case prePregnancyClassification of
-                                PrePregnancySevereUnderWeight ->
-                                    -- @todo: update values
-                                    ( 3, 0.6 )
-
-                                PrePregnancyUnderWeight ->
-                                    ( 2, 0.51 )
-
-                                PrePregnancyNormal ->
-                                    ( 2, 0.42 )
-
-                                PrePregnancyOverweight ->
-                                    ( 1, 0.28 )
-
-                                PrePregnancyObesity ->
-                                    ( 0.5, 0.22 )
+                            weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
                     in
                     if weeksAfterFirstTrimester <= 0 then
                         forFirstTrimester
@@ -1547,6 +1532,26 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                 GWGExcessive
         )
         assembled.globalLmpDate
+
+
+weightGainStandardsPerPrePregnancyClassification : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
+    case prePregnancyClassification of
+        PrePregnancySevereUnderWeight ->
+            -- @todo: update values
+            ( 3, 0.6 )
+
+        PrePregnancyUnderWeight ->
+            ( 2, 0.51 )
+
+        PrePregnancyNormal ->
+            ( 2, 0.42 )
+
+        PrePregnancyOverweight ->
+            ( 1, 0.28 )
+
+        PrePregnancyObesity ->
+            ( 0.5, 0.22 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
