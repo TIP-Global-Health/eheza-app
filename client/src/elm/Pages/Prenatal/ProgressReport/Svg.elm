@@ -121,7 +121,7 @@ viewBMIForEGA language points =
                     )
     in
     svg
-        [ class "z-score boys"
+        [ class "z-score"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
@@ -244,53 +244,29 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
             ]
 
-        -- greenPoints =
-        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (18.5 - verticalMin) * verticalStep )
-        --     ]
-        --
-        -- yellowPoints =
-        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (25 - verticalMin) * verticalStep )
-        --     ]
-        --
-        -- topRedPoints =
-        --     [ ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.top )
-        --     , ( dimensionsPx.right, dimensionsPx.top )
-        --     , ( dimensionsPx.right, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
-        --     , ( dimensionsPx.left, dimensionsPx.bottom - (30 - verticalMin) * verticalStep )
-        --     ]
-        --
-        -- measurements =
-        --     points
-        --         |> List.filterMap
-        --             (\( egaDays, bmi ) ->
-        --                 if
-        --                     withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
-        --                         && withinRange bmi verticalMin verticalMax
-        --                 then
-        --                     let
-        --                         egaGap =
-        --                             toFloat egaDays / 7 - horizontalMin
-        --
-        --                         bmiGap =
-        --                             bmi - verticalMin
-        --                     in
-        --                     Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
-        --
-        --                 else
-        --                     Nothing
-        --             )
+        measurements =
+            List.filterMap
+                (\( egaDays, bmi ) ->
+                    if
+                        withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+                            && withinRange bmi verticalMin verticalMax
+                    then
+                        let
+                            egaGap =
+                                toFloat egaDays / 7 - horizontalMin
+
+                            bmiGap =
+                                bmi - verticalMin
+                        in
+                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+
+                    else
+                        Nothing
+                )
+                points
     in
     svg
-        [ class "z-score boys"
+        [ class "z-score"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
@@ -303,7 +279,7 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
                 ]
                 [ text <| translate language Translate.EgaWeeks ]
             , text_
-                [ transform "matrix(0 -1 1 0 81 350)"
+                [ transform "matrix(0 -1 1 0 81 380)"
                 , class "z-score-semibold chart-label"
                 ]
                 [ text <| translate language Translate.WeightGain ]
@@ -317,11 +293,9 @@ viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
             , drawPolygon remianingTrimestersYellowPoints "yellow-area"
             , drawPolygon remianingTrimestersGreenPoints "green-area"
             , drawPolygon remianingTrimestersTopRedPoints "red-area"
-
-            -- , drawPolyline measurements "data"
+            , drawPolyline measurements "data"
             ]
-
-        --         ++ drawPoints "#06B9FF" measurements
+                ++ drawPoints "#06B9FF" measurements
         , (referenceVerticalLines verticalParts
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
             ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
@@ -419,7 +393,7 @@ viewFundalHeightForEGA language points =
                     )
     in
     svg
-        [ class "z-score boys"
+        [ class "z-score"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
