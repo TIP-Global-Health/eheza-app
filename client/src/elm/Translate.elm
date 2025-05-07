@@ -17651,7 +17651,7 @@ translationSet trans =
             , kirundi = Just "Tanga inyigisho yerekeye amagara y'abantu kandi ubabwire kwiyugaranira ahantu hawenyene muhira "
             }
 
-        ProvideNutritionalSupplement  ->
+        ProvideNutritionalSupplement ->
             { english = "Provide Nutritional Supplement"
             , kinyarwanda = Nothing
             , kirundi = Nothing
