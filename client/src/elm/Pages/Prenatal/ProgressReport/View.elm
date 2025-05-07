@@ -1717,38 +1717,38 @@ viewPatientProgressPane language currentDate zscores isChw globalLmpValue assemb
                 ]
 
         egaBmiValues =
-            allNurseEncountersData
-                |> List.filterMap
-                    (\( date, measurements ) ->
-                        assembled.globalLmpDate
-                            |> Maybe.map
-                                (\lmpDate ->
-                                    let
-                                        bmi =
-                                            measurements.nutrition
-                                                |> Maybe.map
-                                                    (\measurement ->
-                                                        let
-                                                            height =
-                                                                Tuple.second measurement
-                                                                    |> .value
-                                                                    |> .height
-                                                                    |> (\(Backend.Measurement.Model.HeightInCm cm) -> cm)
+            List.filterMap
+                (\( date, measurements ) ->
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                bmi =
+                                    Maybe.map
+                                        (\measurement ->
+                                            let
+                                                height =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .height
+                                                        |> getHeightValue
 
-                                                            weight =
-                                                                Tuple.second measurement
-                                                                    |> .value
-                                                                    |> .weight
-                                                                    |> (\(Backend.Measurement.Model.WeightInKg kg) -> kg)
-                                                        in
-                                                        calculateBmi (Just height) (Just weight)
-                                                            |> Maybe.withDefault 0
-                                                    )
+                                                weight =
+                                                    Tuple.second measurement
+                                                        |> .value
+                                                        |> .weight
+                                                        |> weightValueFunc
+                                            in
+                                            calculateBmi (Just height) (Just weight)
                                                 |> Maybe.withDefault 0
-                                    in
-                                    ( diffDays lmpDate date, bmi )
-                                )
-                    )
+                                        )
+                                        measurements.nutrition
+                                        |> Maybe.withDefault 0
+                            in
+                            ( diffDays lmpDate date, bmi )
+                        )
+                        assembled.globalLmpDate
+                )
+                allNurseEncountersData
 
         egaFundalHeightValues =
             Maybe.map
