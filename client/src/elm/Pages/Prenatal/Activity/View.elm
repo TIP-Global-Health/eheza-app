@@ -3188,6 +3188,19 @@ viewNutritionAssessmentForm language currentDate zscores assembled form heightVa
 
             else
                 []
+
+        viewGestationalWeightGain =
+            Maybe.map2
+                (\currentWeight baselineWeight ->
+                    viewPreviousMeasurementCustom language
+                        (Just <| currentWeight - baselineWeight)
+                        Translate.GestationalWeightGain
+                        Translate.EmptyString
+                        Translate.KilogramShorthand
+                )
+                form.weight
+                prePregnancyWeight
+                |> Maybe.withDefault emptyNode
     in
     div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
@@ -3217,6 +3230,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form heightVa
                     Translate.BaselineWeight
                     Translate.BaselineWeightNotFound
                     Translate.KilogramShorthand
+               , viewGestationalWeightGain
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
