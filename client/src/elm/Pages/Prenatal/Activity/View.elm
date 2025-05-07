@@ -3163,6 +3163,18 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
 
             else
                 []
+
+        nutritionalSupplementAlert =
+            Maybe.map
+                (\muac ->
+                    if muac < 23 then
+                        p [ class "nutritional-supplement-alert" ] [ text <| translate language Translate.ProvideNutritionalSupplement ]
+
+                    else
+                        emptyNode
+                )
+                form.muac
+                |> Maybe.withDefault emptyNode
     in
     div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
@@ -3220,12 +3232,19 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                             [ [ (<=) 18.5, (>) 22 ] ]
                         ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.muac
-                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
-                    "muac"
-                    Translate.UnitCentimeter
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.muac
+                            (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                            "muac"
+                            Translate.UnitCentimeter
+                        ]
+                    , div [ class "four wide column" ]
+                        [ nutritionalSupplementAlert
+                        ]
+                    ]
                , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
 

@@ -1332,6 +1332,7 @@ type TranslationId
     | ProgressTrends
     | ProphylaxisMedications
     | ProvideHealthEducationAndInstructToIsolate
+    | ProvideNutritionalSupplement
     | PreTermPregnancy
     | PriorDiagnosis
     | ProvideHealthEducation
@@ -17648,6 +17649,12 @@ translationSet trans =
             { english = "Provide health education and instruct them to self isolate at home"
             , kinyarwanda = Nothing
             , kirundi = Just "Tanga inyigisho yerekeye amagara y'abantu kandi ubabwire kwiyugaranira ahantu hawenyene muhira "
+            }
+
+        ProvideNutritionalSupplement  ->
+            { english = "Provide Nutritional Supplement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PreTermPregnancy ->
