@@ -159,6 +159,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAUniversalInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
+import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
@@ -719,6 +720,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetes
+    | GestationalWeightGain Float
     | Glass String
     | GoHome
     | GotResultsPreviouslyQuestion
@@ -6631,6 +6633,12 @@ translationSet trans =
             { english = "Gestational Diabetes"
             , kinyarwanda = Just "Diyabete iterwa no gutwita"
             , kirundi = Just "Diyabete y'imbanyi"
+            }
+
+        GestationalWeightGain value ->
+            { english = "Gestational weight gain: " ++ Round.round 1 value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         Glass value ->
