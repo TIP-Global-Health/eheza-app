@@ -15,7 +15,7 @@ import Pages.Nutrition.Encounter.Model exposing (..)
 import Pages.Nutrition.Encounter.Utils exposing (generateAssembledData)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (viewConfirmationDialog, viewEndEncounterButton, viewPersonDetails, viewReportLink, viewSkipNCDADialog)
-import SyncManager.Model exposing (Site, SiteFeature)
+import SyncManager.Model exposing (SiteFeature)
 import Translate exposing (Language, translate)
 import Utils.Html exposing (activityCard, tabItem, viewModal)
 import Utils.WebData exposing (viewWebData)
@@ -25,7 +25,6 @@ import ZScore.Model
 view :
     Language
     -> NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> NutritionEncounterId
@@ -33,18 +32,17 @@ view :
     -> ModelIndexedDb
     -> Model
     -> Html Msg
-view language currentDate site zscores features id isChw db model =
+view language currentDate zscores features id isChw db model =
     let
         data =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site zscores features id isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores features id isChw db model) identity data
 
 
 viewHeaderAndContent :
     Language
     -> NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> NutritionEncounterId
@@ -53,13 +51,13 @@ viewHeaderAndContent :
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate site zscores features id isChw db model data =
+viewHeaderAndContent language currentDate zscores features id isChw db model data =
     let
         header =
             viewHeader language isChw data
 
         content =
-            viewContent language currentDate site zscores features id isChw db model data
+            viewContent language currentDate zscores features id isChw db model data
 
         dialog =
             Maybe.map
@@ -110,7 +108,6 @@ viewHeader language isChw data =
 viewContent :
     Language
     -> NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> NutritionEncounterId
@@ -119,9 +116,9 @@ viewContent :
     -> Model
     -> AssembledData
     -> Html Msg
-viewContent language currentDate site zscores features id isChw db model data =
+viewContent language currentDate zscores features id isChw db model data =
     ((viewPersonDetails language currentDate data.person Nothing |> div [ class "item" ])
-        :: viewMainPageContent language currentDate site zscores features id isChw db data model
+        :: viewMainPageContent language currentDate zscores features id isChw db data model
     )
         |> div [ class "ui unstackable items" ]
 
@@ -129,7 +126,6 @@ viewContent language currentDate site zscores features id isChw db model data =
 viewMainPageContent :
     Language
     -> NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> NutritionEncounterId
@@ -138,10 +134,10 @@ viewMainPageContent :
     -> AssembledData
     -> Model
     -> List (Html Msg)
-viewMainPageContent language currentDate site zscores features id isChw db data model =
+viewMainPageContent language currentDate zscores features id isChw db data model =
     let
         ( completedActivities, pendingActivities ) =
-            partitionActivitiesConsideringSkipped currentDate site zscores features isChw db data model.skippedActivities
+            partitionActivitiesConsideringSkipped currentDate zscores features isChw db data model.skippedActivities
 
         pendingTabTitle =
             translate language <| Translate.ActivitiesToComplete <| List.length pendingActivities
@@ -209,7 +205,7 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
                 action
 
         allowEndEncounter =
-            allowEndingEncounter site isChw pendingActivities
+            allowEndingEncounter isChw pendingActivities
 
         content =
             div [ class "ui full segment" ]
@@ -224,20 +220,18 @@ viewMainPageContent language currentDate site zscores features id isChw db data 
 
 partitionActivities :
     NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
     -> ModelIndexedDb
     -> AssembledData
     -> ( List NutritionActivity, List NutritionActivity )
-partitionActivities currentDate site zscores features isChw db assembled =
-    partitionActivitiesConsideringSkipped currentDate site zscores features isChw db assembled EverySet.empty
+partitionActivities currentDate zscores features isChw db assembled =
+    partitionActivitiesConsideringSkipped currentDate zscores features isChw db assembled EverySet.empty
 
 
 partitionActivitiesConsideringSkipped :
     NominalDate
-    -> Site
     -> ZScore.Model.Model
     -> EverySet SiteFeature
     -> Bool
@@ -245,17 +239,17 @@ partitionActivitiesConsideringSkipped :
     -> AssembledData
     -> EverySet NutritionActivity
     -> ( List NutritionActivity, List NutritionActivity )
-partitionActivitiesConsideringSkipped currentDate site zscores features isChw db assembled skipped =
+partitionActivitiesConsideringSkipped currentDate zscores features isChw db assembled skipped =
     List.filter (\activity -> EverySet.member activity skipped |> not) allActivities
-        |> List.filter (expectActivity currentDate site zscores features isChw assembled db)
-        |> List.partition (activityCompleted currentDate site zscores features isChw assembled db)
+        |> List.filter (expectActivity currentDate zscores features isChw assembled db)
+        |> List.partition (activityCompleted currentDate zscores features isChw assembled db)
 
 
-allowEndingEncounter : Site -> Bool -> List NutritionActivity -> Bool
-allowEndingEncounter site isChw pendingActivities =
+allowEndingEncounter : Bool -> List NutritionActivity -> Bool
+allowEndingEncounter isChw pendingActivities =
     let
         mandatoryActivities =
-            allMandatoryActivities site isChw
+            allMandatoryActivities isChw
     in
     List.all
         (\activity ->
