@@ -55,8 +55,8 @@ generateNutritionAssessment currentDate zscores childId db offlineSession =
 
 {-| Used for URL etc., not for display in the normal UI (since we'd translatefor that).
 -}
-encodeActivityAsString : Activity -> String
-encodeActivityAsString activity =
+activityToString : Activity -> String
+activityToString activity =
     case activity of
         ChildActivity childActivity ->
             case childActivity of
@@ -112,8 +112,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe Activity
-decodeActivityFromString s =
+activityFromString : String -> Maybe Activity
+activityFromString s =
     case s of
         "child-fbf" ->
             Just <| ChildActivity ChildFbf

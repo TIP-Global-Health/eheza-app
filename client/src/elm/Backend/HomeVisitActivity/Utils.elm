@@ -10,8 +10,8 @@ import Backend.HomeVisitActivity.Model exposing (..)
 {-| Used for URL etc., not for display in the normal UI (since we'd use translate
 for that).
 -}
-encodeActivityAsString : HomeVisitActivity -> String
-encodeActivityAsString activity =
+activityToString : HomeVisitActivity -> String
+activityToString activity =
     case activity of
         Feeding ->
             "home-visit-feeding"
@@ -28,8 +28,8 @@ encodeActivityAsString activity =
 
 {-| The inverse of encodeActivityTypeAsString
 -}
-decodeActivityFromString : String -> Maybe HomeVisitActivity
-decodeActivityFromString s =
+activityFromString : String -> Maybe HomeVisitActivity
+activityFromString s =
     case s of
         "home-visit-feeding" ->
             Just Feeding
