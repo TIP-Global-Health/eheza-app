@@ -24123,7 +24123,7 @@ translationSet trans =
 
                 NoUbudehe ->
                     translationSet EmptyString
-                    
+
         UnableToTakeMeasurement ->
             { english = "Unable to take measurement"
             , kinyarwanda = Nothing

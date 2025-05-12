@@ -483,10 +483,12 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
             getInputConstraintsWeight
 
         disabled =
-            (tasksCompleted /= totalTasks)
-                || (form.weight
-                        |> Maybe.map (withinConstraints constraints >> not)
-                        |> Maybe.withDefault True
+            (form.measurementNotTaken /= Just True)
+                && ((tasksCompleted /= totalTasks)
+                        || (form.weight
+                                |> Maybe.map (withinConstraints constraints >> not)
+                                |> Maybe.withDefault True
+                           )
                    )
     in
     [ viewTasksCount language tasksCompleted totalTasks
