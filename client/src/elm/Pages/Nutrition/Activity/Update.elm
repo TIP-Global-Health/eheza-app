@@ -68,7 +68,7 @@ update currentDate site id db msg model =
                         updatedForm =
                             model.heightData.form
                                 |> (\form ->
-                                        { form | height = String.toFloat string, heightDirty = True, measurementNotTaken = Nothing }
+                                        { form | height = String.toFloat string, heightDirty = True }
                                    )
                     in
                     model.heightData
@@ -79,27 +79,14 @@ update currentDate site id db msg model =
             , []
             )
 
-        ToggleHeightNotTaken ->
+        SetHeightNotTaken value ->
             let
                 updatedData =
                     let
                         updatedForm =
                             model.heightData.form
                                 |> (\form ->
-                                        let
-                                            notTaken =
-                                                Maybe.map
-                                                    (\measurementNotTaken ->
-                                                        if measurementNotTaken then
-                                                            Nothing
-
-                                                        else
-                                                            Just True
-                                                    )
-                                                    form.measurementNotTaken
-                                                    |> Maybe.withDefault (Just True)
-                                        in
-                                        { form | height = Nothing, heightDirty = True, measurementNotTaken = notTaken }
+                                        { form | height = Nothing, heightDirty = True, measurementNotTaken = Just value }
                                    )
                     in
                     model.heightData

@@ -14,14 +14,6 @@ import Utils.Json exposing (encodeEverySet, encodeIfSet)
 -}
 encodeNutritionEncounter : NutritionEncounter -> List ( String, Value )
 encodeNutritionEncounter encounter =
-    let
-        skippedForms =
-            if EverySet.isEmpty encounter.skippedForms then
-                []
-
-            else
-                [ ( "skipped_forms", encodeEverySet encodeSkippedForm encounter.skippedForms ) ]
-    in
     [ ( "scheduled_date"
       , object
             [ ( "value", encodeYYYYMMDD encounter.startDate )
@@ -30,10 +22,10 @@ encodeNutritionEncounter encounter =
       )
     , ( "individual_participant", encodeEntityUuid encounter.participant )
     , ( "nutrition_encounter_type", encodeNutritionEncounterType encounter.encounterType )
+    , ( "skipped_forms", encodeEverySet encodeSkippedForm encounter.skippedForms )
     , ( "deleted", bool False )
     , ( "type", string "nutrition_encounter" )
     ]
-        ++ skippedForms
         ++ encodeIfSet "shard" encounter.shard encodeEntityUuid
 
 

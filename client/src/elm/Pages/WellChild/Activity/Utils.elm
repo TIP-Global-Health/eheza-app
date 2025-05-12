@@ -444,7 +444,7 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores isChw assembled d
                             assembled.person
                             Nothing
                             SetHeight
-                            ToggleHeightNotTaken
+                            SetHeightNotTaken
 
                 TaskHeadCircumference ->
                     getMeasurementValueFunc measurements.headCircumference

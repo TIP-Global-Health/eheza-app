@@ -36,7 +36,7 @@ type Msg
       -- NUTRITION ASSESMENT
     | SetActiveNutritionAssessmentTask NutritionAssessmentTask
     | SetHeight String
-    | ToggleHeightNotTaken
+    | SetHeightNotTaken Bool
     | SaveHeight PersonId (Maybe ( WellChildHeightId, WellChildHeight )) (Maybe NutritionAssessmentTask)
     | SetHeadCircumference String
     | ToggleHeadCircumferenceNotTaken

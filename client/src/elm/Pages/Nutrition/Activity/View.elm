@@ -42,10 +42,10 @@ import Measurement.Model
 import Measurement.Utils exposing (..)
 import Measurement.View
     exposing
-        ( viewColorAlertIndication
+        ( heightFormAndTasks
+        , viewColorAlertIndication
         , viewContributingFactorsForm
         , viewHealthEducationForm
-        , viewHeightForm
         , viewMeasurementFloatDiff
         , viewNutritionFollowUpForm
         , viewNutritionForm
@@ -259,11 +259,15 @@ viewHeightContent language currentDate zscores isChw assembled data previousValu
             getMeasurementValueFunc assembled.measurements.height
                 |> heightFormWithDefault assembled.encounter.skippedForms data.form
 
+        ( formForView, tasks ) =
+            heightFormAndTasks language currentDate zscores isChw assembled.person previousValue SetHeight SetHeightNotTaken form
+
         totalTasks =
-            1
+            List.length tasks
 
         tasksCompleted =
-            taskCompleted form.height + taskCompleted form.measurementNotTaken
+            List.map taskCompleted tasks
+                |> List.sum
 
         constraints =
             getInputConstraintsHeight
@@ -278,8 +282,8 @@ viewHeightContent language currentDate zscores isChw assembled data previousValu
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            viewHeightForm language currentDate zscores isChw assembled.person previousValue SetHeight ToggleHeightNotTaken form
+        [ div [ class "full content" ]
+            formForView
         , viewSaveAction language
             (SaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
             disabled

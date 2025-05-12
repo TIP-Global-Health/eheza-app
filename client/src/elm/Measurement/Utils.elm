@@ -334,7 +334,9 @@ heightFormWithDefault : EverySet SkippedForm -> HeightForm -> Maybe HeightInCm -
 heightFormWithDefault skippedForms form saved =
     let
         isSkipped =
-            EverySet.member SkippedHeight skippedForms
+            Maybe.withDefault
+                (EverySet.member SkippedHeight skippedForms)
+                form.measurementNotTaken
     in
     if isSkipped then
         { height = Nothing
@@ -347,7 +349,7 @@ heightFormWithDefault skippedForms form saved =
             (\value ->
                 { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> getHeightValue)
                 , heightDirty = form.heightDirty
-                , measurementNotTaken = form.measurementNotTaken
+                , measurementNotTaken = Just False
                 }
             )
             saved

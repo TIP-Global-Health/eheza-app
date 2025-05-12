@@ -854,7 +854,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                             assembled.person
                             previousValuesSet.height
                             SetHeight
-                            ToggleHeightNotTaken
+                            SetHeightNotTaken
 
                 Just TaskHeadCircumference ->
                     viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm

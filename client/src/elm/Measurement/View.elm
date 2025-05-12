@@ -4237,13 +4237,13 @@ viewHeightForm :
     -> Person
     -> Maybe Float
     -> (String -> msg)
-    -> msg
+    -> (Bool -> msg)
     -> HeightForm
     -> List (Html msg)
-viewHeightForm language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form =
+viewHeightForm language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form =
     let
         ( formForView, _ ) =
-            heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form
+            heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form
     in
     formForView
 
@@ -4256,10 +4256,10 @@ heightFormAndTasks :
     -> Person
     -> Maybe Float
     -> (String -> msg)
-    -> msg
+    -> (Bool -> msg)
     -> HeightForm
     -> ( List (Html msg), List (Maybe Bool) )
-heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form =
+heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg setHeightNotTakenMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Height
@@ -4321,7 +4321,7 @@ heightFormAndTasks language currentDate zscores isChw person previousValue setHe
             if isChw then
                 div
                     [ class "ui checkbox activity"
-                    , onClick toggleHeightNotTakenMsg
+                    , onClick <| setHeightNotTakenMsg <| not measurementNotTakenChecked
                     ]
                     [ input
                         [ type_ "checkbox"
@@ -4342,7 +4342,12 @@ heightFormAndTasks language currentDate zscores isChw person previousValue setHe
                 ++ inputsSection
       , checkboxSection
       ]
-    , [ maybeToBoolTask form.height, maybeToBoolTask form.measurementNotTaken ]
+    , [ if measurementNotTakenChecked then
+            maybeToBoolTask form.measurementNotTaken
+
+        else
+            maybeToBoolTask form.height
+      ]
     )
 
 

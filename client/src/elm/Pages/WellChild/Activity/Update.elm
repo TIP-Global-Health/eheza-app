@@ -354,7 +354,7 @@ update currentDate site isChw id db msg model =
             , []
             )
 
-        ToggleHeightNotTaken ->
+        SetHeightNotTaken value ->
             ( model
             , Cmd.none
             , []

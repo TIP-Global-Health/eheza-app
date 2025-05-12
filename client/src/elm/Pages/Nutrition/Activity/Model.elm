@@ -13,7 +13,7 @@ type Msg
     | SetActivePage Page
     | SetWarningPopupState (List NutritionAssessment)
     | SetHeight String
-    | ToggleHeightNotTaken
+    | SetHeightNotTaken Bool
     | SaveHeight (EverySet SkippedForm) PersonId (Maybe ( NutritionHeightId, NutritionHeight ))
     | SetMuac String
     | SaveMuac PersonId (Maybe ( NutritionMuacId, NutritionMuac ))
