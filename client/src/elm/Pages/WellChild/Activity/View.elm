@@ -805,6 +805,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                     ( task
                     , nutritionAssessmentTasksCompletedFromTotal currentDate
                         zscores
+                        site
                         isChw
                         assembled
                         data
@@ -878,8 +879,18 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                             assembled.encounter.encounterType /= NewbornExam
                     in
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
+                        |> weightFormWithDefault EverySet.empty data.weightForm
+                        |> viewWeightForm language
+                            currentDate
+                            zscores
+                            site
+                            isChw
+                            assembled.person
+                            heightValue
+                            previousValuesSet.weight
+                            showWeightForHeightZScore
+                            SetWeight
+                            SetWeightNotTaken
 
                 Nothing ->
                     []

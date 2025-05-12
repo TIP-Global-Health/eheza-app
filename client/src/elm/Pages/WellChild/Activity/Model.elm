@@ -48,6 +48,7 @@ type Msg
     | SetNutritionSign ChildNutritionSign
     | SaveNutrition PersonId (Maybe ( WellChildNutritionId, WellChildNutrition )) (EverySet NutritionAssessment) (Maybe NutritionAssessmentTask)
     | SetWeight String
+    | SetWeightNotTaken Bool
     | SaveWeight PersonId (Maybe ( WellChildWeightId, WellChildWeight )) (Maybe NutritionAssessmentTask)
       -- IMMUNISATION
     | SetActiveImmunisationTask ImmunisationTask

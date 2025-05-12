@@ -422,12 +422,13 @@ resolveNutritionAssessmentTasks assembled =
 nutritionAssessmentTasksCompletedFromTotal :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
     -> Bool
     -> AssembledData
     -> NutritionAssessmentData
     -> NutritionAssessmentTask
     -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal currentDate zscores isChw assembled data task =
+nutritionAssessmentTasksCompletedFromTotal currentDate zscores site isChw assembled data task =
     let
         measurements =
             assembled.measurements
@@ -474,15 +475,18 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores isChw assembled d
 
                 TaskWeight ->
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
+                        |> weightFormWithDefault EverySet.empty data.weightForm
                         |> weightFormAndTasks English
                             currentDate
                             zscores
+                            site
+                            isChw
                             assembled.person
                             Nothing
                             Nothing
                             False
                             Pages.WellChild.Activity.Model.SetWeight
+                            Pages.WellChild.Activity.Model.SetWeightNotTaken
     in
     resolveTasksCompletedFromTotal tasks
 

@@ -347,7 +347,7 @@ heightFormWithDefault skippedForms form saved =
     else
         Maybe.map
             (\value ->
-                { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> getHeightValue)
+                { height = valueConsideringIsDirtyField form.heightDirty form.height (getHeightValue value)
                 , heightDirty = form.heightDirty
                 , measurementNotTaken = Just False
                 }
@@ -432,22 +432,35 @@ toNutritionValue form =
         |> andMap form.assesment
 
 
-weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
-weightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
+weightFormWithDefault : EverySet SkippedForm -> WeightForm -> Maybe WeightInKg -> WeightForm
+weightFormWithDefault skippedForms form saved =
+    let
+        isSkipped =
+            Maybe.withDefault
+                (EverySet.member SkippedWeight skippedForms)
+                form.measurementNotTaken
+    in
+    if isSkipped then
+        { weight = Nothing
+        , weightDirty = False
+        , measurementNotTaken = Just True
+        }
+
+    else
+        Maybe.map
             (\value ->
                 { weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value)
                 , weightDirty = form.weightDirty
-                , measurementNotTaken = form.measurementNotTaken
+                , measurementNotTaken = Just False
                 }
             )
+            saved
+            |> Maybe.withDefault form
 
 
-toWeightValueWithDefault : Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
-toWeightValueWithDefault saved form =
-    weightFormWithDefault form saved
+toWeightValueWithDefault : EverySet SkippedForm -> Maybe WeightInKg -> WeightForm -> Maybe WeightInKg
+toWeightValueWithDefault skippedForms saved form =
+    weightFormWithDefault skippedForms form saved
         |> toWeightValue
 
 

@@ -115,7 +115,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
 
         Weight ->
             isJust measurements.weight
-                || EverySet.member SkipppedWeight assembled.encounter.skippedForms
+                || EverySet.member SkippedWeight assembled.encounter.skippedForms
 
         NCDA ->
             isJust measurements.ncda

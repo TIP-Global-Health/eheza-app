@@ -286,7 +286,25 @@ update currentDate site id db msg model =
             , []
             )
 
-        SaveWeight personId saved ->
+        SetWeightNotTaken value ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.weightData.form
+                                |> (\form ->
+                                        { form | weight = Nothing, weightDirty = True, measurementNotTaken = Just value }
+                                   )
+                    in
+                    model.weightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | weightData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveWeight skippedForms personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -294,18 +312,39 @@ update currentDate site id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
-                appMsgs =
+                form_ =
                     model.weightData.form
-                        |> toWeightValueWithDefault measurement
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
-                                    |> Backend.Model.MsgNutritionEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
-                                ]
-                            )
+
+                appMsgs =
+                    if form_.measurementNotTaken == Just True then
+                        let
+                            updateSkippedFormsMsg =
+                                if EverySet.member SkippedWeight skippedForms then
+                                    []
+
+                                else
+                                    [ Backend.NutritionEncounter.Model.AddSkippedForm SkippedWeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        in
+                        updateSkippedFormsMsg
+                            ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+
+                    else
+                        toWeightValueWithDefault skippedForms measurement form_
+                            |> unwrap
+                                []
+                                (\value ->
+                                    [ Backend.NutritionEncounter.Model.SaveWeight personId measurementId value
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , Backend.NutritionEncounter.Model.RemoveSkippedForm SkippedWeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                    ]
+                                )
             in
             ( model
             , Cmd.none

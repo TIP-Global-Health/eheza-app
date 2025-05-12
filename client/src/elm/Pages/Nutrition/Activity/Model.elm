@@ -22,7 +22,8 @@ type Msg
     | DropZoneComplete DropZoneFile
     | SavePhoto PersonId (Maybe NutritionPhotoId) ImageUrl
     | SetWeight String
-    | SaveWeight PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
+    | SetWeightNotTaken Bool
+    | SaveWeight (EverySet SkippedForm) PersonId (Maybe ( NutritionWeightId, NutritionWeight ))
     | SetUpdateANCVisits Bool
     | ToggleANCVisitDate NominalDate
     | SetNCDABoolInput (Bool -> NCDAForm -> NCDAForm) Bool

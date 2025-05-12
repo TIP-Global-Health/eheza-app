@@ -3700,4 +3700,4 @@ type alias PreviousMeasurementsSet =
 
 type SkippedForm
     = SkippedHeight
-    | SkipppedWeight
+    | SkippedWeight

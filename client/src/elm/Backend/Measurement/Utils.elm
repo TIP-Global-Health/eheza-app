@@ -4754,7 +4754,7 @@ skippedFormToString skipped =
         SkippedHeight ->
             "height"
 
-        SkipppedWeight ->
+        SkippedWeight ->
             "weight"
 
 
@@ -4765,7 +4765,7 @@ skippedFormFromString skipped =
             Just SkippedHeight
 
         "weight" ->
-            Just SkipppedWeight
+            Just SkippedWeight
 
         _ ->
             Nothing

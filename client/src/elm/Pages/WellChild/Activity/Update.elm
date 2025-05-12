@@ -654,6 +654,12 @@ update currentDate site isChw id db msg model =
             , []
             )
 
+        SetWeightNotTaken value ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SaveWeight personId saved nextTask ->
             let
                 measurementId =
@@ -665,9 +671,12 @@ update currentDate site isChw id db msg model =
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask
 
+                skippedForms =
+                    EverySet.empty
+
                 appMsgs =
                     model.nutritionAssessmentData.weightForm
-                        |> toWeightValueWithDefault measurement
+                        |> toWeightValueWithDefault skippedForms measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveWeight personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id

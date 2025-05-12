@@ -50,7 +50,7 @@ import Measurement.View
         , viewNutritionFollowUpForm
         , viewNutritionForm
         , viewSendToHealthCenterForm
-        , viewWeightForm
+        , weightFormAndTasks
         , zScoreForHeightOrLength
         )
 import Pages.Nutrition.Activity.Model exposing (..)
@@ -243,7 +243,7 @@ viewActivity language currentDate zscores site id activity isChw assembled db mo
             viewPhotoContent language currentDate ( assembled.participant.person, assembled.measurements ) model.photoData
 
         Weight ->
-            viewWeightContent language currentDate zscores assembled model.weightData previousValuesSet.weight
+            viewWeightContent language currentDate zscores site isChw assembled model.weightData previousValuesSet.weight
 
         NCDA ->
             viewNCDAContent language currentDate zscores site id assembled model.ncdaData db
@@ -439,18 +439,42 @@ viewPhotoForm language currentDate displayPhoto dropZoneCompleteMsg =
     ]
 
 
-viewWeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> WeightData -> Maybe Float -> List (Html Msg)
-viewWeightContent language currentDate zscores assembled data previousValue =
+viewWeightContent :
+    Language
+    -> NominalDate
+    -> ZScore.Model.Model
+    -> Site
+    -> Bool
+    -> AssembledData
+    -> WeightData
+    -> Maybe Float
+    -> List (Html Msg)
+viewWeightContent language currentDate zscores site isChw assembled data previousValue =
     let
         form =
             getMeasurementValueFunc assembled.measurements.weight
-                |> weightFormWithDefault data.form
+                |> weightFormWithDefault assembled.encounter.skippedForms data.form
+
+        ( formForView, tasks ) =
+            weightFormAndTasks language
+                currentDate
+                zscores
+                site
+                isChw
+                assembled.person
+                heightValue
+                previousValue
+                True
+                SetWeight
+                SetWeightNotTaken
+                form
 
         totalTasks =
-            1
+            List.length tasks
 
         tasksCompleted =
-            taskCompleted form.weight
+            List.map taskCompleted tasks
+                |> List.sum
 
         heightValue =
             getMeasurementValueFunc assembled.measurements.height
@@ -467,10 +491,10 @@ viewWeightContent language currentDate zscores assembled data previousValue =
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ] <|
-            viewWeightForm language currentDate zscores assembled.person heightValue previousValue True SetWeight form
+        [ div [ class "full content" ]
+            formForView
         , viewSaveAction language
-            (SaveWeight assembled.participant.person assembled.measurements.weight)
+            (SaveWeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.weight)
             disabled
         ]
     ]
