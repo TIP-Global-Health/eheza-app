@@ -27,6 +27,7 @@ class HedleyRestfulWellChildEncounter extends HedleyRestfulIndividualEncounter {
   protected $multiFields = [
     'field_encounter_notes',
     'field_encounter_warnings',
+    'field_skipped_forms',
   ];
 
 }
