@@ -706,7 +706,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
 
               const uploadUrl = [
                 backendUrl,
-                '/api/file-upload?access_token=',
+                '/CreateUploadFile' +
+                '?accessToken=',
                 accessToken,
               ].join('');
 
@@ -739,8 +740,8 @@ elmApp.ports.askFromIndexDb.subscribe(function(info) {
               }
 
               const changes = {
-                'fileId': parseInt(json.data[0].id),
-                'remoteFileName': json.data[0].label,
+                'fileId': parseInt(json.serial),
+                'remoteFileName': json.signed_url,
                 'isSynced': 1,
               }
 

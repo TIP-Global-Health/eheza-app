@@ -6,7 +6,9 @@ import Config.Model exposing (Model)
 
 local : Model
 local =
-    { backendUrl = "https://eheza-app.ddev.site:4443"
+    { backendUrl = "http://localhost:8000"
+
+    -- backendUrl = "https://eheza-app.ddev.site:4443"
     , name = "local"
     , debug = True
     , sandbox = False
