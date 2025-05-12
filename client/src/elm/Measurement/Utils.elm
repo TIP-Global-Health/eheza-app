@@ -330,28 +330,33 @@ resolveIndividualWellChildValue measurementsWithDates measurementFunc valueFunc 
         |> List.head
 
 
-fromHeightValue : Maybe HeightInCm -> HeightForm
-fromHeightValue saved =
-    { height = Maybe.map getHeightValue saved
-    , heightDirty = False
-    }
+heightFormWithDefault : EverySet SkippedForm -> HeightForm -> Maybe HeightInCm -> HeightForm
+heightFormWithDefault skippedForms form saved =
+    let
+        isSkipped =
+            EverySet.member SkippedHeight skippedForms
+    in
+    if isSkipped then
+        { height = Nothing
+        , heightDirty = False
+        , measurementNotTaken = Just True
+        }
 
-
-heightFormWithDefault : HeightForm -> Maybe HeightInCm -> HeightForm
-heightFormWithDefault form saved =
-    saved
-        |> unwrap
-            form
+    else
+        Maybe.map
             (\value ->
                 { height = valueConsideringIsDirtyField form.heightDirty form.height (value |> getHeightValue)
                 , heightDirty = form.heightDirty
+                , measurementNotTaken = form.measurementNotTaken
                 }
             )
+            saved
+            |> Maybe.withDefault form
 
 
-toHeightValueWithDefault : Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
-toHeightValueWithDefault saved form =
-    heightFormWithDefault form saved
+toHeightValueWithDefault : EverySet SkippedForm -> Maybe HeightInCm -> HeightForm -> Maybe HeightInCm
+toHeightValueWithDefault skippedForms saved form =
+    heightFormWithDefault skippedForms form saved
         |> toHeightValue
 
 
@@ -425,13 +430,6 @@ toNutritionValue form =
         |> andMap form.assesment
 
 
-fromWeightValue : Maybe WeightInKg -> WeightForm
-fromWeightValue saved =
-    { weight = Maybe.map weightValueFunc saved
-    , weightDirty = False
-    }
-
-
 weightFormWithDefault : WeightForm -> Maybe WeightInKg -> WeightForm
 weightFormWithDefault form saved =
     saved
@@ -440,6 +438,7 @@ weightFormWithDefault form saved =
             (\value ->
                 { weight = valueConsideringIsDirtyField form.weightDirty form.weight (weightValueFunc value)
                 , weightDirty = form.weightDirty
+                , measurementNotTaken = form.measurementNotTaken
                 }
             )
 

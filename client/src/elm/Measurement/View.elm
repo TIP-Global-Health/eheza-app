@@ -4233,15 +4233,17 @@ viewHeightForm :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Bool
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> msg
     -> HeightForm
     -> List (Html msg)
-viewHeightForm language currentDate zscores person previousValue setHeightMsg form =
+viewHeightForm language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form =
     let
         ( formForView, _ ) =
-            heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form
+            heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form
     in
     formForView
 
@@ -4250,64 +4252,97 @@ heightFormAndTasks :
     Language
     -> NominalDate
     -> ZScore.Model.Model
+    -> Bool
     -> Person
     -> Maybe Float
     -> (String -> msg)
+    -> msg
     -> HeightForm
     -> ( List (Html msg), List (Maybe Bool) )
-heightFormAndTasks language currentDate zscores person previousValue setHeightMsg form =
+heightFormAndTasks language currentDate zscores isChw person previousValue setHeightMsg toggleHeightNotTakenMsg form =
     let
         activity =
             Backend.NutritionActivity.Model.Height
 
-        zScoreText =
-            Maybe.andThen
-                (\height ->
-                    Maybe.map
-                        (\birthDate -> diffDays birthDate currentDate)
-                        person.birthDate
-                        |> Maybe.andThen
-                            (\ageInDays ->
-                                zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
-                            )
-                )
-                form.height
-                |> Maybe.map viewZScore
-                |> Maybe.withDefault (translate language Translate.NotAvailable)
+        measurementNotTakenChecked =
+            form.measurementNotTaken == Just True
 
-        constraints =
-            getInputConstraintsHeight
-    in
-    ( [ div [ class "ui form height" ]
-            [ viewLabel language <| Translate.NutritionActivityTitle activity
-            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
-            , p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
-            , div [ class "ui grid" ]
-                [ div [ class "eleven wide column" ]
-                    [ viewMeasurementInput
-                        language
-                        form.height
-                        setHeightMsg
-                        "height"
-                        Translate.UnitCentimeter
-                    ]
-                , div
-                    [ class "five wide column" ]
-                    [ showMaybe <|
-                        Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+        inputsSection =
+            if measurementNotTakenChecked then
+                []
+
+            else
+                let
+                    zScoreText =
+                        Maybe.andThen
+                            (\height ->
+                                Maybe.map
+                                    (\birthDate -> diffDays birthDate currentDate)
+                                    person.birthDate
+                                    |> Maybe.andThen
+                                        (\ageInDays ->
+                                            zScoreLengthHeightForAge zscores ageInDays person.gender (Centimetres height)
+                                        )
+                            )
                             form.height
-                            previousValue
+                            |> Maybe.map viewZScore
+                            |> Maybe.withDefault (translate language Translate.NotAvailable)
+
+                    constraints =
+                        getInputConstraintsHeight
+                in
+                [ p [ class "range-helper" ] [ text <| translate language (Translate.AllowedValuesRangeHelper constraints) ]
+                , div [ class "ui grid" ]
+                    [ div [ class "eleven wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.height
+                            setHeightMsg
+                            "height"
+                            Translate.UnitCentimeter
+                        ]
+                    , div
+                        [ class "five wide column" ]
+                        [ showMaybe <|
+                            Maybe.map2 (viewMeasurementFloatDiff language Translate.UnitCentimeter)
+                                form.height
+                                previousValue
+                        ]
+                    ]
+                , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+                , div [ class "ui large header z-score age" ]
+                    [ text <| translate language Translate.ZScoreHeightForAge
+                    , span [ class "sub header" ]
+                        [ text zScoreText ]
                     ]
                 ]
-            , Pages.Utils.viewPreviousMeasurement language previousValue Translate.UnitCentimeter
+
+        checkboxSection =
+            if isChw then
+                div
+                    [ class "ui checkbox activity"
+                    , onClick toggleHeightNotTakenMsg
+                    ]
+                    [ input
+                        [ type_ "checkbox"
+                        , checked measurementNotTakenChecked
+                        , classList [ ( "checked", measurementNotTakenChecked ) ]
+                        ]
+                        []
+                    , label [] [ text <| translate language Translate.HeadCircumferenceNotTakenLabel ]
+                    ]
+
+            else
+                emptyNode
+    in
+    ( [ div [ class "ui form height" ] <|
+            [ viewLabel language <| Translate.NutritionActivityTitle activity
+            , p [ class "activity-helper" ] [ text <| translate language <| Translate.NutritionActivityHelper activity ]
             ]
-      , div [ class "ui large header z-score age" ]
-            [ text <| translate language Translate.ZScoreHeightForAge
-            , span [ class "sub header" ]
-                [ text zScoreText ]
-            ]
+                ++ inputsSection
+      , checkboxSection
       ]
-    , [ maybeToBoolTask form.height ]
+    , [ maybeToBoolTask form.height, maybeToBoolTask form.measurementNotTaken ]
     )
 
 

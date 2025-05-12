@@ -4697,3 +4697,8 @@ encodeHIVSymptom =
 encodeHIVTreatmentReview : HIVTreatmentReview -> List ( String, Value )
 encodeHIVTreatmentReview =
     encodeHIVMeasurement (encodeTreatmentOngoingValueWithType "hiv_treatment_review")
+
+
+encodeSkippedForm : SkippedForm -> Value
+encodeSkippedForm =
+    skippedFormToString >> string

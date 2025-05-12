@@ -422,11 +422,12 @@ resolveNutritionAssessmentTasks assembled =
 nutritionAssessmentTasksCompletedFromTotal :
     NominalDate
     -> ZScore.Model.Model
+    -> Bool
     -> AssembledData
     -> NutritionAssessmentData
     -> NutritionAssessmentTask
     -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task =
+nutritionAssessmentTasksCompletedFromTotal currentDate zscores isChw assembled data task =
     let
         measurements =
             assembled.measurements
@@ -435,13 +436,15 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
             case task of
                 TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
+                        |> heightFormWithDefault EverySet.empty data.heightForm
                         |> heightFormAndTasks English
                             currentDate
                             zscores
+                            isChw
                             assembled.person
                             Nothing
                             SetHeight
+                            ToggleHeightNotTaken
 
                 TaskHeadCircumference ->
                     getMeasurementValueFunc measurements.headCircumference

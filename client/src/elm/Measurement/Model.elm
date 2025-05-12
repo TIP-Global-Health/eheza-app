@@ -322,12 +322,13 @@ type NextStepsTask
 type alias HeightForm =
     { height : Maybe Float
     , heightDirty : Bool
+    , measurementNotTaken : Maybe Bool
     }
 
 
 emptyHeightForm : HeightForm
 emptyHeightForm =
-    HeightForm Nothing False
+    HeightForm Nothing False Nothing
 
 
 type alias MuacForm =
@@ -367,12 +368,13 @@ emptyPhotoForm =
 type alias WeightForm =
     { weight : Maybe Float
     , weightDirty : Bool
+    , measurementNotTaken : Maybe Bool
     }
 
 
 emptyWeightForm : WeightForm
 emptyWeightForm =
-    WeightForm Nothing False
+    WeightForm Nothing False Nothing
 
 
 type alias VitalsForm =

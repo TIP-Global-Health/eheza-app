@@ -354,6 +354,12 @@ update currentDate site isChw id db msg model =
             , []
             )
 
+        ToggleHeightNotTaken ->
+            ( model
+            , Cmd.none
+            , []
+            )
+
         SaveHeight personId saved nextTask ->
             let
                 measurementId =
@@ -367,7 +373,7 @@ update currentDate site isChw id db msg model =
 
                 appMsgs =
                     model.nutritionAssessmentData.heightForm
-                        |> toHeightValueWithDefault measurement
+                        |> toHeightValueWithDefault EverySet.empty measurement
                         |> Maybe.map
                             (Backend.WellChildEncounter.Model.SaveHeight personId measurementId
                                 >> Backend.Model.MsgWellChildEncounter id

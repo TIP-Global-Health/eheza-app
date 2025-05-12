@@ -9,6 +9,7 @@ import Backend.Measurement.Model
         , ContributingFactorsSign(..)
         , ImageUrl(..)
         , MuacInCm(..)
+        , SkippedForm(..)
         , WeightInGrm(..)
         , WeightInKg(..)
         )
@@ -67,7 +68,7 @@ update currentDate site id db msg model =
                         updatedForm =
                             model.heightData.form
                                 |> (\form ->
-                                        { form | height = String.toFloat string, heightDirty = True }
+                                        { form | height = String.toFloat string, heightDirty = True, measurementNotTaken = Nothing }
                                    )
                     in
                     model.heightData
@@ -78,7 +79,38 @@ update currentDate site id db msg model =
             , []
             )
 
-        SaveHeight personId saved ->
+        ToggleHeightNotTaken ->
+            let
+                updatedData =
+                    let
+                        updatedForm =
+                            model.heightData.form
+                                |> (\form ->
+                                        let
+                                            notTaken =
+                                                Maybe.map
+                                                    (\measurementNotTaken ->
+                                                        if measurementNotTaken then
+                                                            Nothing
+
+                                                        else
+                                                            Just True
+                                                    )
+                                                    form.measurementNotTaken
+                                                    |> Maybe.withDefault (Just True)
+                                        in
+                                        { form | height = Nothing, heightDirty = True, measurementNotTaken = notTaken }
+                                   )
+                    in
+                    model.heightData
+                        |> (\data -> { data | form = updatedForm })
+            in
+            ( { model | heightData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveHeight skippedForms personId saved ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -86,17 +118,39 @@ update currentDate site id db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                form_ =
+                    model.heightData.form
+
                 appMsgs =
-                    toHeightValueWithDefault measurement model.heightData.form
-                        |> unwrap
-                            []
-                            (\value ->
-                                [ Backend.NutritionEncounter.Model.SaveHeight personId measurementId value
-                                    |> Backend.Model.MsgNutritionEncounter id
-                                    |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
-                                ]
-                            )
+                    if form_.measurementNotTaken == Just True then
+                        let
+                            updateSkippedFormsMsg =
+                                if EverySet.member SkippedHeight skippedForms then
+                                    []
+
+                                else
+                                    [ Backend.NutritionEncounter.Model.AddSkippedForm SkippedHeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    ]
+                        in
+                        updateSkippedFormsMsg
+                            ++ [ App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id ]
+
+                    else
+                        toHeightValueWithDefault skippedForms measurement form_
+                            |> unwrap
+                                []
+                                (\value ->
+                                    [ Backend.NutritionEncounter.Model.SaveHeight personId measurementId value
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , Backend.NutritionEncounter.Model.RemoveSkippedForm SkippedHeight
+                                        |> Backend.Model.MsgNutritionEncounter id
+                                        |> App.Model.MsgIndexedDb
+                                    , App.Model.SetActivePage <| UserPage <| NutritionEncounterPage id
+                                    ]
+                                )
             in
             ( model
             , Cmd.none

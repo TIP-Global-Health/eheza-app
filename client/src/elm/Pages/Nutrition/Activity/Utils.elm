@@ -5,6 +5,7 @@ import Backend.Measurement.Model
         ( NutritionAssessment
         , NutritionMeasurements
         , ReferralFacility(..)
+        , SkippedForm(..)
         )
 import Backend.Measurement.Utils exposing (expectNCDAActivity, getMeasurementValueFunc, weightValueFunc)
 import Backend.Model exposing (ModelIndexedDb)
@@ -100,6 +101,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
         Height ->
             (not <| expectActivity currentDate zscores features isChw assembled db Height)
                 || isJust measurements.height
+                || EverySet.member SkippedHeight assembled.encounter.skippedForms
 
         Muac ->
             (not <| expectActivity currentDate zscores features isChw assembled db Muac)
@@ -113,6 +115,7 @@ activityCompleted currentDate zscores features isChw assembled db activity =
 
         Weight ->
             isJust measurements.weight
+                || EverySet.member SkipppedWeight assembled.encounter.skippedForms
 
         NCDA ->
             isJust measurements.ncda
@@ -137,11 +140,9 @@ decide if to show Next Steps activity, or not.
 -}
 allMandatoryActivities : Bool -> List NutritionActivity
 allMandatoryActivities isChw =
-    if isChw then
-        [ Muac, Nutrition, Weight ]
-
-    else
-        [ Height, Muac, Nutrition, Weight ]
+    -- Height can be skipped for Burundi and Rwanda CHW.
+    -- Weight cab be skipped only for Burundi CHW.
+    [ Height, Muac, Nutrition, Weight ]
 
 
 nextStepsTasksCompletedFromTotal : NominalDate -> NutritionMeasurements -> NextStepsData -> NextStepsTask -> ( Int, Int )

@@ -95,10 +95,10 @@ view :
     -> Html Msg
 view language currentDate zscores site id activity isChw db model =
     let
-        data =
+        assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate zscores site id activity isChw db model) identity data
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id activity isChw db model) identity assembled
 
 
 viewHeaderAndContent :
@@ -113,13 +113,13 @@ viewHeaderAndContent :
     -> Model
     -> AssembledData
     -> Html Msg
-viewHeaderAndContent language currentDate zscores site id activity isChw db model data =
+viewHeaderAndContent language currentDate zscores site id activity isChw db model assembled =
     let
         header =
             viewHeader language id activity
 
         content =
-            viewContent language currentDate zscores site id activity isChw db model data
+            viewContent language currentDate zscores site id activity isChw db model assembled
     in
     div [ class "page-activity nutrition" ]
         [ header
@@ -231,7 +231,7 @@ viewActivity language currentDate zscores site id activity isChw assembled db mo
     in
     case activity of
         Height ->
-            viewHeightContent language currentDate zscores assembled model.heightData previousValuesSet.height
+            viewHeightContent language currentDate zscores isChw assembled model.heightData previousValuesSet.height
 
         Muac ->
             viewMuacContent language currentDate site assembled model.muacData previousValuesSet.muac
@@ -252,34 +252,36 @@ viewActivity language currentDate zscores site id activity isChw assembled db mo
             viewNextStepsContent language currentDate zscores id assembled db model.nextStepsData
 
 
-viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> HeightData -> Maybe Float -> List (Html Msg)
-viewHeightContent language currentDate zscores assembled data previousValue =
+viewHeightContent : Language -> NominalDate -> ZScore.Model.Model -> Bool -> AssembledData -> HeightData -> Maybe Float -> List (Html Msg)
+viewHeightContent language currentDate zscores isChw assembled data previousValue =
     let
         form =
             getMeasurementValueFunc assembled.measurements.height
-                |> heightFormWithDefault data.form
+                |> heightFormWithDefault assembled.encounter.skippedForms data.form
 
         totalTasks =
             1
 
         tasksCompleted =
-            taskCompleted form.height
+            taskCompleted form.height + taskCompleted form.measurementNotTaken
 
         constraints =
             getInputConstraintsHeight
 
         disabled =
-            (tasksCompleted /= totalTasks)
-                || (Maybe.map (withinConstraints constraints >> not) form.height
-                        |> Maybe.withDefault True
+            (form.measurementNotTaken /= Just True)
+                && ((tasksCompleted /= totalTasks)
+                        || (Maybe.map (withinConstraints constraints >> not) form.height
+                                |> Maybe.withDefault True
+                           )
                    )
     in
     [ viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
         [ div [ class "full content" ] <|
-            viewHeightForm language currentDate zscores assembled.person previousValue SetHeight form
+            viewHeightForm language currentDate zscores isChw assembled.person previousValue SetHeight ToggleHeightNotTaken form
         , viewSaveAction language
-            (SaveHeight assembled.participant.person assembled.measurements.height)
+            (SaveHeight assembled.encounter.skippedForms assembled.participant.person assembled.measurements.height)
             disabled
         ]
     ]

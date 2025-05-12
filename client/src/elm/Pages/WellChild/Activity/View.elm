@@ -800,7 +800,18 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task )) tasks
+            List.map
+                (\task ->
+                    ( task
+                    , nutritionAssessmentTasksCompletedFromTotal currentDate
+                        zscores
+                        isChw
+                        assembled
+                        data
+                        task
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -835,8 +846,15 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             case activeTask of
                 Just TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
-                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+                        |> heightFormWithDefault EverySet.empty data.heightForm
+                        |> viewHeightForm language
+                            currentDate
+                            zscores
+                            isChw
+                            assembled.person
+                            previousValuesSet.height
+                            SetHeight
+                            ToggleHeightNotTaken
 
                 Just TaskHeadCircumference ->
                     viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
