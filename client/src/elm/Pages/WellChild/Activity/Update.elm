@@ -355,12 +355,23 @@ update currentDate site isChw id db msg model =
             )
 
         SetHeightNotTaken value ->
-            ( model
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.heightForm
+                        |> (\form ->
+                                { form | height = Nothing, heightDirty = True, measurementNotTaken = Just value }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | heightForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveHeight personId saved nextTask ->
+        SaveHeight skippedForms personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -371,16 +382,34 @@ update currentDate site isChw id db msg model =
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask
 
-                appMsgs =
+                form_ =
                     model.nutritionAssessmentData.heightForm
-                        |> toHeightValueWithDefault EverySet.empty measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveHeight personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
+
+                appMsgs =
+                    if form_.measurementNotTaken == Just True then
+                        if EverySet.member SkippedHeight skippedForms then
+                            []
+
+                        else
+                            [ Backend.WellChildEncounter.Model.AddSkippedForm SkippedHeight
+                                |> Backend.Model.MsgWellChildEncounter id
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                    else
+                        toHeightValueWithDefault skippedForms measurement form_
+                            |> Maybe.map
+                                (Backend.WellChildEncounter.Model.SaveHeight personId measurementId
+                                    >> Backend.Model.MsgWellChildEncounter id
+                                    >> App.Model.MsgIndexedDb
+                                    >> List.singleton
+                                    >> List.append
+                                        [ Backend.WellChildEncounter.Model.RemoveSkippedForm SkippedHeight
+                                            |> Backend.Model.MsgWellChildEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                        ]
+                                )
+                            |> Maybe.withDefault []
             in
             ( model
             , Cmd.none
@@ -655,12 +684,23 @@ update currentDate site isChw id db msg model =
             )
 
         SetWeightNotTaken value ->
-            ( model
+            let
+                updatedForm =
+                    model.nutritionAssessmentData.weightForm
+                        |> (\form ->
+                                { form | weight = Nothing, weightDirty = True, measurementNotTaken = Just value }
+                           )
+
+                updatedData =
+                    model.nutritionAssessmentData
+                        |> (\data -> { data | weightForm = updatedForm })
+            in
+            ( { model | nutritionAssessmentData = updatedData }
             , Cmd.none
             , []
             )
 
-        SaveWeight personId saved nextTask ->
+        SaveWeight skippedForms personId saved nextTask ->
             let
                 measurementId =
                     Maybe.map Tuple.first saved
@@ -671,19 +711,34 @@ update currentDate site isChw id db msg model =
                 extraMsgs =
                     generateNutritionAssessmentMsgs nextTask
 
-                skippedForms =
-                    EverySet.empty
+                form_ =
+                    model.nutritionAssessmentData.weightForm
 
                 appMsgs =
-                    model.nutritionAssessmentData.weightForm
-                        |> toWeightValueWithDefault skippedForms measurement
-                        |> Maybe.map
-                            (Backend.WellChildEncounter.Model.SaveWeight personId measurementId
-                                >> Backend.Model.MsgWellChildEncounter id
-                                >> App.Model.MsgIndexedDb
-                                >> List.singleton
-                            )
-                        |> Maybe.withDefault []
+                    if form_.measurementNotTaken == Just True then
+                        if EverySet.member SkippedWeight skippedForms then
+                            []
+
+                        else
+                            [ Backend.WellChildEncounter.Model.AddSkippedForm SkippedWeight
+                                |> Backend.Model.MsgWellChildEncounter id
+                                |> App.Model.MsgIndexedDb
+                            ]
+
+                    else
+                        toWeightValueWithDefault skippedForms measurement form_
+                            |> Maybe.map
+                                (Backend.WellChildEncounter.Model.SaveWeight personId measurementId
+                                    >> Backend.Model.MsgWellChildEncounter id
+                                    >> App.Model.MsgIndexedDb
+                                    >> List.singleton
+                                    >> List.append
+                                        [ Backend.WellChildEncounter.Model.RemoveSkippedForm SkippedWeight
+                                            |> Backend.Model.MsgWellChildEncounter id
+                                            |> App.Model.MsgIndexedDb
+                                        ]
+                                )
+                            |> Maybe.withDefault []
             in
             ( model
             , Cmd.none

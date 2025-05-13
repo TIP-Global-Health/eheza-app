@@ -847,7 +847,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             case activeTask of
                 Just TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault EverySet.empty data.heightForm
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
                         |> viewHeightForm language
                             currentDate
                             zscores
@@ -879,7 +879,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                             assembled.encounter.encounterType /= NewbornExam
                     in
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault EverySet.empty data.weightForm
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
                         |> viewWeightForm language
                             currentDate
                             zscores
@@ -908,7 +908,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                         saveMsg =
                             case task of
                                 TaskHeight ->
-                                    SaveHeight personId measurements.height nextTask
+                                    SaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
 
                                 TaskHeadCircumference ->
                                     PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
@@ -925,7 +925,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                                     SaveNutrition personId measurements.nutrition assessment nextTask
 
                                 TaskWeight ->
-                                    SaveWeight personId measurements.weight nextTask
+                                    SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
                             tasksCompleted /= totalTasks

@@ -14,6 +14,7 @@ type alias WellChildEncounter =
     , encounterType : WellChildEncounterType
     , encounterNote : EncounterNote
     , encounterWarnings : EverySet EncounterWarning
+    , skippedForms : EverySet SkippedForm
     , shard : Maybe HealthCenterId
     }
 
@@ -31,6 +32,7 @@ emptyWellChildEncounter participant startDate encounterType shard =
     , encounterType = encounterType
     , encounterNote = NoEncounterNotes
     , encounterWarnings = EverySet.singleton NoEncounterWarnings
+    , skippedForms = EverySet.empty
     , shard = shard
     }
 
@@ -183,6 +185,8 @@ emptyModel =
 
 type Msg
     = CloseWellChildEncounter
+    | AddSkippedForm SkippedForm
+    | RemoveSkippedForm SkippedForm
     | HandleUpdatedWellChildEncounter (WebData ())
     | SetWellChildEncounterNote EncounterNote
     | SetWellChildEncounterWarning EncounterWarning

@@ -485,8 +485,7 @@ viewWeightContent language currentDate zscores site isChw assembled data previou
         disabled =
             (form.measurementNotTaken /= Just True)
                 && ((tasksCompleted /= totalTasks)
-                        || (form.weight
-                                |> Maybe.map (withinConstraints constraints >> not)
+                        || (Maybe.map (withinConstraints constraints >> not) form.weight
                                 |> Maybe.withDefault True
                            )
                    )

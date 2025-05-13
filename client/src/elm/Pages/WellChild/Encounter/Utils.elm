@@ -7,7 +7,7 @@ import Backend.WellChildEncounter.Model exposing (PediatricCareMilestone(..), We
 import Date exposing (Unit(..))
 import Gizra.NominalDate exposing (NominalDate)
 import Measurement.Utils
-import Pages.WellChild.Activity.Utils exposing (mandatoryNutritionAssessmentTasksCompleted)
+import Pages.WellChild.Activity.Utils exposing (mandatoryDangerSignsTasksCompleted, mandatoryNutritionAssessmentTasksCompleted)
 import Pages.WellChild.Encounter.Model exposing (..)
 import RemoteData exposing (WebData)
 import SyncManager.Model exposing (Site)
@@ -131,20 +131,32 @@ pediatricCareMilestoneToComparable milestone =
             10
 
 
-allowEndingEncounter : NominalDate -> List WellChildActivity -> AssembledData -> Bool
-allowEndingEncounter currentDate pendingActivities assembled =
+allowEndingEncounter : NominalDate -> Site -> List WellChildActivity -> AssembledData -> Bool
+allowEndingEncounter currentDate site pendingActivities assembled =
     List.filter (\activity -> not <| List.member activity [ WellChildNCDA, WellChildPhoto ]) pendingActivities
         |> (\pending ->
+                let
+                    nutritionAssessmentCondition =
+                        mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+
+                    dangerSignsCondition =
+                        mandatoryDangerSignsTasksCompleted currentDate site assembled
+                in
                 case pending of
                     [] ->
                         True
 
                     [ WellChildNutritionAssessment ] ->
-                        if assembled.encounter.encounterType == PediatricCare then
-                            False
+                        nutritionAssessmentCondition
 
-                        else
-                            mandatoryNutritionAssessmentTasksCompleted currentDate assembled
+                    [ WellChildDangerSigns ] ->
+                        dangerSignsCondition
+
+                    [ WellChildNutritionAssessment, WellChildDangerSigns ] ->
+                        nutritionAssessmentCondition && dangerSignsCondition
+
+                    [ WellChildDangerSigns, WellChildNutritionAssessment ] ->
+                        nutritionAssessmentCondition && dangerSignsCondition
 
                     _ ->
                         False

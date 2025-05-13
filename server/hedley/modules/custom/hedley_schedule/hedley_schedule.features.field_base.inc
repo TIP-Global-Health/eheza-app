@@ -616,7 +616,6 @@ function hedley_schedule_field_default_field_bases() {
       'allowed_values' => array(
         'height' => 'Height',
         'weight' => 'Weight',
-        'vitals' => 'Vitals',
       ),
       'allowed_values_function' => '',
     ),
