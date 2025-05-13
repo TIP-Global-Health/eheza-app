@@ -535,7 +535,7 @@ decodeNutritionEncounterData =
 nutritionDataFromString : String -> Maybe NutritionData
 nutritionDataFromString s =
     case String.split "," s of
-        [ stunting, wasting, underweight ] ->
+        [ stunting, underweight, wasting ] ->
             Just <| NutritionData (String.toFloat stunting) (String.toFloat wasting) (String.toFloat underweight)
 
         _ ->

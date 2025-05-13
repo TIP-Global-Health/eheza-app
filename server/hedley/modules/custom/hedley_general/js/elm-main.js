@@ -8934,9 +8934,9 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
-		var wasting = _v1.a;
+		var underweight = _v1.a;
 		var _v2 = _v1.b;
-		var underweight = _v2.a;
+		var wasting = _v2.a;
 		return $elm$core$Maybe$Just(
 			A3(
 				$author$project$Backend$Reports$Model$NutritionData,
@@ -12442,7 +12442,11 @@ var $author$project$Translate$translationSet = function (transId) {
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Trimester':
-				return {english: 'Trimester', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+				return {
+					english: 'Trimester',
+					kinyarwanda: $elm$core$Maybe$Just('Igihembwe'),
+					kirundi: $elm$core$Maybe$Just('Igice')
+				};
 			case 'Tuberculosis':
 				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TuberculosisActivity':
