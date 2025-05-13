@@ -141,7 +141,7 @@ decide if to show Next Steps activity, or not.
 allMandatoryActivities : Bool -> List NutritionActivity
 allMandatoryActivities isChw =
     -- Height can be skipped for Burundi and Rwanda CHW.
-    -- Weight cab be skipped only for Burundi CHW.
+    -- Weight can be skipped only for Burundi CHW.
     [ Height, Muac, Nutrition, Weight ]
 
 
