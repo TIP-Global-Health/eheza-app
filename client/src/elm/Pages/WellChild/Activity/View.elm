@@ -753,35 +753,28 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         TaskHeight ->
-                            ( "height"
-                            , isJust measurements.height
-                            )
+                            "height"
 
                         TaskHeadCircumference ->
-                            ( "head-circumference"
-                            , isJust measurements.headCircumference
-                            )
+                            "head-circumference"
 
                         TaskMuac ->
-                            ( "muac"
-                            , isJust measurements.muac
-                            )
+                            "muac"
 
                         TaskNutrition ->
-                            ( "nutrition"
-                            , isJust measurements.nutrition
-                            )
+                            "nutrition"
 
                         TaskWeight ->
-                            ( "weight"
-                            , isJust measurements.weight
-                            )
+                            "weight"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nutritionAssessmentTaskCompleted currentDate assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
