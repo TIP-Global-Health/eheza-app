@@ -1472,8 +1472,8 @@ function hedley_reports_generate_nutrition_report_data(array $data) {
       $encounter_zscores = explode(',', $parts[1]);
       $nutrition_data = [
         'stunting' => ($encounter_zscores[0] === '') ? NULL : (float) $encounter_zscores[0],
-        'wasting' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
-        'underweight' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
+        'underweight' => ($encounter_zscores[1] === '') ? NULL : (float) $encounter_zscores[1],
+        'wasting' => ($encounter_zscores[2] === '') ? NULL : (float) $encounter_zscores[2],
       ];
 
       $encounter_metrics = hedley_reports_nutrition_encounter_data_to_nutrition_metrics($nutrition_data_item['id'], $nutrition_data);
