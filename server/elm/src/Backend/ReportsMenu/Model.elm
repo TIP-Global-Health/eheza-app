@@ -1,7 +1,7 @@
 module Backend.ReportsMenu.Model exposing (..)
 
 import App.Types exposing (Site)
-import Backend.Components.Model exposing (HealthCenterData)
+import Backend.Components.Model exposing (HealthCenterData, MenuScope)
 import Json.Encode exposing (Value)
 
 
@@ -10,10 +10,6 @@ type alias MenuData =
     , healthCenters : List HealthCenterData
     , scope : Maybe MenuScope
     }
-
-
-type MenuScope
-    = ScopeHealthCenters
 
 
 type Msg

@@ -8633,9 +8633,9 @@ var $author$project$Backend$Completion$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$CompletionMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
+var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
@@ -8668,15 +8668,43 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		'id',
 		$author$project$Gizra$Json$decodeInt,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData)));
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
 var $author$project$Backend$CompletionMenu$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -9559,29 +9587,10 @@ var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
 	function (site, healthCenters, scope) {
 		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
-var $author$project$Backend$ReportsMenu$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuScope = A2(
-	$elm$json$Json$Decode$andThen,
-	function (scope) {
-		if (scope === 'health_centers') {
-			return $elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$ScopeHealthCenters);
-		} else {
-			return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
-		}
-	},
-	$elm$json$Json$Decode$string);
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
 	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
 	'scope',
-	$elm$json$Json$Decode$maybe($author$project$Backend$ReportsMenu$Decoder$decodeMenuScope),
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
 	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
@@ -16162,21 +16171,30 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	});
 var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$CompletionMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$CompletionMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
@@ -39226,21 +39244,30 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$ReportsMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
