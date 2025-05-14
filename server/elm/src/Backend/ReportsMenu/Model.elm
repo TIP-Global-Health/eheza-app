@@ -8,7 +8,12 @@ import Json.Encode exposing (Value)
 type alias MenuData =
     { site : Site
     , healthCenters : List HealthCenterData
+    , scope : Maybe MenuScope
     }
+
+
+type MenuScope
+    = ScopeHealthCenters
 
 
 type Msg
