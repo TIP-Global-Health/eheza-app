@@ -404,17 +404,6 @@ emptyMedicationData =
     }
 
 
-type alias MedicationAdministrationForm =
-    { medicationAdministered : Maybe Bool
-    , reasonForNonAdministration : Maybe AdministrationNote
-    }
-
-
-emptyMedicationAdministrationForm : MedicationAdministrationForm
-emptyMedicationAdministrationForm =
-    MedicationAdministrationForm Nothing Nothing
-
-
 medicationTasks : List MedicationTask
 medicationTasks =
     [ TaskAlbendazole, TaskMebendezole, TaskVitaminA ]
@@ -470,13 +459,4 @@ emptyHomeVisitData =
     , foodSecurityForm = emptyNutritionFoodSecurityForm
     , caringForm = emptyNutritionCaringForm
     , activeTask = Nothing
-    }
-
-
-type alias MedicationAdministrationFormConfig =
-    { medication : MedicationDistributionSign
-    , setMedicationAdministeredMsg : Bool -> Msg
-    , setReasonForNonAdministration : AdministrationNote -> Msg
-    , resolveDosageAndIconFunc : NominalDate -> Site -> Person -> Maybe ( String, String )
-    , helper : TranslationId
     }

@@ -2137,7 +2137,21 @@ div.page-activity.home-visit {
       .form.pregnancy-dating .chw-lmp {
         font-size: 25px;
         font-weight: 300;
+        margin-bottom: 10px;
         margin-left: 40px;
+      }
+
+      .form.pregnancy-dating .measurement.weight {
+        margin-bottom: 30px;
+
+        input {
+          border: 2px solid $color-light-gray;
+          color: $color-text;
+          height: 2em;
+          padding: 5px;
+          text-align: center;
+          width: 50%;
+        }
       }
 
       .form.laboratory {

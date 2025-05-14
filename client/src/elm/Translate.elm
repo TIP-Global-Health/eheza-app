@@ -117,6 +117,7 @@ import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
         , HistoryTask(..)
+        , MedicationTask(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -1278,6 +1279,7 @@ type TranslationId
     | PrenatalImmunizationHistory PrenatalVaccineType
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
+    | PrenatalMedicationTask Pages.Prenatal.Activity.Types.MedicationTask
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -1302,6 +1304,8 @@ type TranslationId
     | PrenatalUltrasoundHeader
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
+    | PrePregnancyWeight
+    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -8949,6 +8953,38 @@ translationSet trans =
             , kirundi = Just "Ugusubiramwo ivyangombwa"
             }
 
+        PrenatalMedicationTask task ->
+            case task of
+                TaskCalcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskFolate ->
+                    { english = "Folate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskIron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskMMS ->
+                    { english = "MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskMebendazole ->
+                    { english = "Mebendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         LabsEntryState isLabTech state ->
             case state of
                 LabsEntryPending ->
@@ -9986,15 +10022,15 @@ translationSet trans =
             }
 
         LmpDateConfirmationLabel ->
-            { english = "Please confirm the last menstrual period submitted by the CHW"
-            , kinyarwanda = Just "Emeza itariki aherukira mu mihango yujujwe n' umujyanama w'ubuzima"
-            , kirundi = Just "Muraraba mwemeze igihe ca nyuma co kuja mu kwezi/m'ubutinyanka catanzwe n'abaremeshakiyago"
+            { english = "Please confirm the data submitted by the CHW"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfirmationQuestion ->
-            { english = "Do you want to confirm the above LMP"
-            , kinyarwanda = Just "Urashaka kwemeza itariki uherukira mu mihango yavuzwe hejuru"
-            , kirundi = Just "Mbega urashobora kwemeza Igihe canyuma co kuja mu kwezi cavuzwe aho hejuru"
+            { english = "Do you want to confirm the above data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfidentHeader ->
@@ -10988,6 +11024,18 @@ translationSet trans =
 
                 Metronidazole ->
                     { english = "Metronidazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Calcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MMS ->
+                    { english = "MMS"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -17374,6 +17422,18 @@ translationSet trans =
                     , kinyarwanda = Just "Agakwega"
                     , kirundi = Just "Rudadaza"
                     }
+
+        PrePregnancyWeight ->
+            { english = "Pre-pregnancy Weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrePregnancyWeightQuestion ->
+            { english = "What is the patient's baseline (pre-pregnancy) weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
 
         PreTerm ->
             { english = "Pre Term"
