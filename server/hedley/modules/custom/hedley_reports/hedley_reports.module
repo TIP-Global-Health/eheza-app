@@ -216,15 +216,32 @@ function hedley_reports_statistical_queries_report_callback_menu() {
  * @param string $page
  *   The page identifier used to build the Elm app.
  *
- * @return array
- *   A renderable array containing the Elm app with site name
- *   and health centers data.
+ * @return string
+ *   The HTML markup for the Elm application.
  */
 function hedley_reports_callback_menu_by_page($page) {
-  $site = variable_get('hedley_general_site_name', '');
+
+  $data = [
+    'site' => variable_get('hedley_general_site_name', ''),
+  ];
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+
+  // At reports, users with 'Statistical Queries Manager' role, may be
+  // restricted to predefined list of health centers.
+  if ($page == 'reports-menu') {
+    global $user;
+    $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+    if (user_has_role($statistical_queries_manager_role->rid, $user)) {
+      $account = user_load($user);
+      $allowed_health_centers = $account->field_health_centers_for_reports->value(['identifier' => TRUE]);
+      if (!empty($allowed_health_centers)) {
+        $health_center_ids = $allowed_health_centers;
+        $data['scope'] = 'health_centers';
+      }
+    }
+  }
 
   $health_centers_data = [];
-  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
   $nodes = node_load_multiple($health_center_ids);
   foreach ($nodes as $node) {
     $health_centers_data[] = [
@@ -233,10 +250,9 @@ function hedley_reports_callback_menu_by_page($page) {
     ];
   }
 
-  return hedley_general_build_elm_app($page, [
-    'site' => $site,
-    'health_centers' => $health_centers_data,
-  ]);
+  $data['health_centers'] = $health_centers_data;
+
+  return hedley_general_build_elm_app($page, $data);
 }
 
 /**
