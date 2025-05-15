@@ -2367,6 +2367,13 @@ div.page-activity.prenatal {
             color: $color-green;
           }
         }
+
+        .nutritional-supplement-alert {
+          color: $color-red-alert;
+          font-size: 16px;
+          font-weight: 700;
+          text-align: center;
+        }
       }
 
       .ui.form.examination.obstetrical-exam {
