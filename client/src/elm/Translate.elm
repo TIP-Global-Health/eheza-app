@@ -2104,6 +2104,7 @@ type TranslationId
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
+    | WeightGain
     | WeightLossLabel
     | WeightLossQuestion
     | WelcomeUser String
@@ -24575,6 +24576,12 @@ translationSet trans =
             { english = "Weight"
             , kinyarwanda = Just "Ibiro"
             , kirundi = Just "Uburemere"
+            }
+
+        WeightGain ->
+            { english = "Weight gain"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         WeightLossLabel ->

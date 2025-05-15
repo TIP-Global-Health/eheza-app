@@ -21,7 +21,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -51,7 +51,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -77,6 +77,8 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
 expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
@@ -1403,6 +1405,16 @@ getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
 resolveMeasuredHeight : AssembledData -> Maybe HeightInCm
 resolveMeasuredHeight assembled =
     let
+        byCurrent =
+            getMeasurementValueFunc assembled.measurements.nutrition
+                |> Maybe.map .height
+    in
+    Maybe.Extra.or byCurrent (resolvePreviouslyMeasuredHeight assembled)
+
+
+resolvePreviouslyMeasuredHeight : AssembledData -> Maybe HeightInCm
+resolvePreviouslyMeasuredHeight assembled =
+    let
         resolveHeight measurements =
             getMeasurementValueFunc measurements.nutrition
                 |> Maybe.map .height
@@ -1454,10 +1466,7 @@ resolvePrePregnancyWeight assembled =
 -}
 zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
 zscoreToPrePregnancyClassification zscore =
-    if zscore < -3 then
-        PrePregnancySevereUnderWeight
-
-    else if zscore < -2 then
+    if zscore < -2 then
         PrePregnancyUnderWeight
 
     else if zscore <= 1 then
@@ -1474,11 +1483,7 @@ zscoreToPrePregnancyClassification zscore =
 -}
 bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
 bmiToPrePregnancyClassification bmi =
-    -- @todo: update value
-    if bmi < 16 then
-        PrePregnancySevereUnderWeight
-
-    else if bmi < 18.5 then
+    if bmi < 18.5 then
         PrePregnancyUnderWeight
 
     else if bmi < 25 then
@@ -1489,6 +1494,31 @@ bmiToPrePregnancyClassification bmi =
 
     else
         PrePregnancyObesity
+
+
+resolvePrePregnancyClassification : ZScore.Model.Model -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
+resolvePrePregnancyClassification zscores assembled prePregnancyBmi =
+    Maybe.Extra.andThen3
+        (\bmi lmpDate birthDate ->
+            let
+                ageInYearsOnLMP =
+                    diffYears birthDate lmpDate
+            in
+            if ageInYearsOnLMP < 19 then
+                let
+                    ageInDaysOnLMP =
+                        diffDays birthDate lmpDate
+                in
+                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
+                    |> Maybe.andThen (viewZScore >> String.toFloat)
+                    |> Maybe.map zscoreToPrePregnancyClassification
+
+            else
+                Just <| bmiToPrePregnancyClassification bmi
+        )
+        prePregnancyBmi
+        assembled.globalLmpDate
+        assembled.person.birthDate
 
 
 resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
@@ -1508,22 +1538,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                             egaInWeeks - 13
 
                         ( forFirstTrimester, perWeek ) =
-                            case prePregnancyClassification of
-                                PrePregnancySevereUnderWeight ->
-                                    -- @todo: update values
-                                    ( 3, 0.6 )
-
-                                PrePregnancyUnderWeight ->
-                                    ( 2, 0.51 )
-
-                                PrePregnancyNormal ->
-                                    ( 2, 0.42 )
-
-                                PrePregnancyOverweight ->
-                                    ( 1, 0.28 )
-
-                                PrePregnancyObesity ->
-                                    ( 0.5, 0.22 )
+                            weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
                     in
                     if weeksAfterFirstTrimester <= 0 then
                         forFirstTrimester
@@ -1547,6 +1562,22 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                 GWGExcessive
         )
         assembled.globalLmpDate
+
+
+weightGainStandardsPerPrePregnancyClassification : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
+    case prePregnancyClassification of
+        PrePregnancyUnderWeight ->
+            ( 2, 0.51 )
+
+        PrePregnancyNormal ->
+            ( 2, 0.42 )
+
+        PrePregnancyOverweight ->
+            ( 1, 0.28 )
+
+        PrePregnancyObesity ->
+            ( 0.5, 0.22 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -4490,7 +4521,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
         NutritionAssessment ->
             let
                 measuredHeight =
-                    resolveMeasuredHeight assembled
+                    resolvePreviouslyMeasuredHeight assembled
 
                 hideHeightInput =
                     isJust measuredHeight

@@ -977,8 +977,7 @@ update language currentDate id isLabTech db msg model =
                     model.examinationData.nutritionAssessmentForm
 
                 form =
-                    maybeHeight
-                        |> Maybe.map (\height -> { form_ | height = Just height })
+                    Maybe.map (\height -> { form_ | height = Just height }) maybeHeight
                         |> Maybe.withDefault form_
 
                 appMsgs =
