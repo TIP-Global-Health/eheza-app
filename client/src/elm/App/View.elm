@@ -617,6 +617,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Prenatal.Activity.View.view model.language
                             currentDate
+                            model.zscores
                             site
                             id
                             isChw
