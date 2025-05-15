@@ -4,7 +4,8 @@ import AssocList as Dict
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model
     exposing
-        ( DangerSign(..)
+        ( AdministrationNote(..)
+        , DangerSign(..)
         , EyesCPESign(..)
         , FetalPresentation(..)
         , HandsCPESign(..)
@@ -85,7 +86,7 @@ import Pages.Prenatal.Activity.Utils
         )
 import Pages.Prenatal.Encounter.Utils exposing (..)
 import Pages.Prenatal.Encounter.View exposing (viewActionButton)
-import Pages.Prenatal.Model exposing (AssembledData, VaccinationProgressDict)
+import Pages.Prenatal.Model exposing (AssembledData, PreviousEncounterData, VaccinationProgressDict)
 import Pages.Prenatal.ProgressReport.Model exposing (..)
 import Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers, viewWeightGainForEGA)
 import Pages.Prenatal.ProgressReport.Utils exposing (..)
@@ -549,6 +550,8 @@ viewContent language currentDate zscores site features isChw isLabTech isResults
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicalDiagnosis)
                     , viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalObstetricalDiagnosis)
+                    , viewMedicationHistoryPane language currentDate isChw assembled
+                        |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalMedicationHistory)
                     , viewVaccinationHistoryPane language currentDate assembled
                         |> showIf (showComponent Components.ReportToWhatsAppDialog.Model.ComponentAntenatalImmunizationHistory)
                     , viewChwActivityPane language currentDate isChw assembled
@@ -843,18 +846,7 @@ viewMedicalDiagnosisPane : Language -> NominalDate -> Bool -> PrenatalMeasuremen
 viewMedicalDiagnosisPane language currentDate isChw firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
-            assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ { startDate = assembled.encounter.startDate
-                          , diagnoses = assembled.encounter.diagnoses
-                          , pastDiagnoses = assembled.encounter.pastDiagnoses
-                          , measurements = assembled.measurements
-                          }
-                        ]
-                   )
+            generateAllNurseEncountersData isChw assembled
                 |> List.sortWith (sortByDateDesc .startDate)
 
         diganoses =
@@ -1043,18 +1035,7 @@ viewObstetricalDiagnosisPane : Language -> NominalDate -> Bool -> Maybe LastMens
 viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurseEncounterMeasurements assembled =
     let
         allNurseEncountersData =
-            assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ { startDate = assembled.encounter.startDate
-                          , diagnoses = assembled.encounter.diagnoses
-                          , pastDiagnoses = assembled.encounter.pastDiagnoses
-                          , measurements = assembled.measurements
-                          }
-                        ]
-                   )
+            generateAllNurseEncountersData isChw assembled
                 |> List.sortWith (sortByDateDesc .startDate)
 
         initialHealthEducationOccurances =
@@ -1227,6 +1208,62 @@ viewObstetricalDiagnosisPane language currentDate isChw globalLmpValue firstNurs
         ]
 
 
+viewMedicationHistoryPane : Language -> NominalDate -> Bool -> AssembledData -> Html any
+viewMedicationHistoryPane language currentDate isChw assembled =
+    let
+        allNurseEncountersData =
+            generateAllNurseEncountersData isChw assembled
+                |> List.sortWith (sortByDateDesc .startDate)
+
+        resolveMedicationAdministrationDate measurementFunc =
+            List.map (.measurements >> measurementFunc) allNurseEncountersData
+                |> List.filterMap
+                    (Maybe.andThen
+                        (\( _, measurement ) ->
+                            if measurement.value == AdministeredToday then
+                                Just measurement.dateMeasured
+
+                            else
+                                Nothing
+                        )
+                    )
+                |> List.head
+
+        entriesHeading =
+            div [ class "heading medication" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Medication ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                ]
+
+        viewEntry medicationType administrationDate =
+            let
+                dateForView =
+                    Maybe.map formatDDMMYYYY administrationDate
+                        |> Maybe.withDefault "--"
+            in
+            div [ class "entry medication" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.MedicationDistributionSign medicationType ]
+                , div [ class "cell date" ] [ p [] [ text dateForView ] ]
+                ]
+    in
+    div [ class "medication-history" ] <|
+        [ viewItemHeading language Translate.MedicationHistory "blue"
+        , div [ class "pane-content" ]
+            [ entriesHeading
+            , resolveMedicationAdministrationDate .calcium
+                |> viewEntry Calcium
+            , resolveMedicationAdministrationDate .folate
+                |> viewEntry FolicAcid
+            , resolveMedicationAdministrationDate .iron
+                |> viewEntry Iron
+            , resolveMedicationAdministrationDate .mms
+                |> viewEntry MMS
+            , resolveMedicationAdministrationDate .mebendazole
+                |> viewEntry Mebendezole
+            ]
+        ]
+
+
 viewVaccinationHistoryPane : Language -> NominalDate -> AssembledData -> Html any
 viewVaccinationHistoryPane language currentDate assembled =
     div [ class "vaccination-history" ] <|
@@ -1395,13 +1432,8 @@ viewPatientProgressPane : Language -> NominalDate -> ZScore.Model.Model -> Bool 
 viewPatientProgressPane language currentDate zscores isChw globalLmpValue assembled =
     let
         allNurseEncountersData =
-            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ ( currentDate, assembled.measurements ) ]
-                   )
+            generateAllNurseEncountersData isChw assembled
+                |> List.map (\data -> ( data.startDate, data.measurements ))
 
         encountersTrimestersData =
             allNurseEncountersData
@@ -2147,13 +2179,8 @@ viewProgressPhotosPane : Language -> NominalDate -> Bool -> AssembledData -> Htm
 viewProgressPhotosPane language currentDate isChw assembled =
     let
         allNurseEncountersData =
-            List.map (\data -> ( data.startDate, data.measurements )) assembled.nursePreviousEncountersData
-                ++ (if isChw then
-                        []
-
-                    else
-                        [ ( currentDate, assembled.measurements ) ]
-                   )
+            generateAllNurseEncountersData isChw assembled
+                |> List.map (\data -> ( data.startDate, data.measurements ))
 
         content =
             allNurseEncountersData
@@ -3319,3 +3346,19 @@ viewTreatmentForPastDiagnosis language date diagnosis =
         ++ (String.toLower <| translate language Translate.PastDiagnosisReportReason)
         ++ "."
         |> wrapWithLI
+
+
+generateAllNurseEncountersData : Bool -> AssembledData -> List PreviousEncounterData
+generateAllNurseEncountersData isChw assembled =
+    assembled.nursePreviousEncountersData
+        ++ (if isChw then
+                []
+
+            else
+                [ { startDate = assembled.encounter.startDate
+                  , diagnoses = assembled.encounter.diagnoses
+                  , pastDiagnoses = assembled.encounter.pastDiagnoses
+                  , measurements = assembled.measurements
+                  }
+                ]
+           )
