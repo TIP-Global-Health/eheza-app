@@ -68,8 +68,7 @@ type MedicationTask
 
 
 type PrePregnancyClassification
-    = PrePregnancySevereUnderWeight
-    | PrePregnancyUnderWeight
+    = PrePregnancyUnderWeight
     | PrePregnancyNormal
     | PrePregnancyOverweight
     | PrePregnancyObesity
