@@ -553,7 +553,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             case operation of
                                 -- When creating without relation, allow full dates range.
                                 CreatePerson Nothing ->
-                                    ( Date.add Years -60 currentDate, currentDate )
+                                    ( Date.add Years -100 currentDate, currentDate )
 
                                 _ ->
                                     case expectedAge of
@@ -561,10 +561,10 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                             ( Date.add Years -13 currentDate, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -100 currentDate, Date.add Years -13 currentDate )
 
                                         ExpectAdultOrChild ->
-                                            ( Date.add Years -60 currentDate, currentDate )
+                                            ( Date.add Years -100 currentDate, currentDate )
                     in
                     { goBackPage = goBackPage
                     , expectedAge = expectedAge
@@ -580,7 +580,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AcuteIllnessEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -589,7 +589,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage AntenatalEncounter)
                             , expectedAge = ExpectAdult
                             , expectedGender = ExpectFemale
-                            , birthDateSelectorFrom = Date.add Years -50 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = Date.add Years -13 today
                             , title = Translate.People
                             }
@@ -607,7 +607,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage HIVEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -619,7 +619,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = PinCodePage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -60 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -628,7 +628,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage NCDEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -90 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = Date.add Years -12 today
                             , title = Translate.People
                             }
@@ -646,7 +646,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = UserPage (IndividualEncounterParticipantsPage TuberculosisEncounter)
                             , expectedAge = expectedAgeByForm currentDate personForm operation
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -120 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -666,7 +666,7 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                             { goBackPage = PinCodePage
                             , expectedAge = ExpectAdultOrChild
                             , expectedGender = ExpectMaleOrFemale
-                            , birthDateSelectorFrom = Date.add Years -60 today
+                            , birthDateSelectorFrom = Date.add Years -100 today
                             , birthDateSelectorTo = today
                             , title = Translate.People
                             }
@@ -708,13 +708,13 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
                                             ( maximalAge, currentDate )
 
                                         ExpectAdult ->
-                                            ( Date.add Years -60 currentDate, Date.add Years -13 currentDate )
+                                            ( Date.add Years -100 currentDate, Date.add Years -13 currentDate )
 
                                         ExpectAdultOrChild ->
-                                            ( Date.add Years -60 currentDate, currentDate )
+                                            ( Date.add Years -100 currentDate, currentDate )
 
                                 _ ->
-                                    ( Date.add Years -60 currentDate, currentDate )
+                                    ( Date.add Years -100 currentDate, currentDate )
                     in
                     { goBackPage = UserPage (PersonsPage personId initiator)
                     , expectedAge = expectedAge

@@ -2148,7 +2148,44 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 5,
+      'weight' => 6,
+    ),
+  );
+
+  // Exported field_instance: 'node-nutrition_encounter-field_skipped_forms'.
+  $field_instances['node-nutrition_encounter-field_skipped_forms'] = array(
+    'bundle' => 'nutrition_encounter',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 6,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_skipped_forms',
+    'label' => 'Skipped Forms',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 4,
     ),
   );
 
@@ -2188,7 +2225,7 @@ Used to track location where pregnancies were completed.',
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 4,
+      'weight' => 5,
     ),
   );
 
@@ -3133,6 +3170,7 @@ Used to track outcome of pregnancies.');
   t('Prenatal Encounter Type');
   t('Scheduled Date');
   t('Shards');
+  t('Skipped Forms');
   t('The child who is participating in PMTCT child activities.');
   t('The date on which the encounter occurs. (The end date tracks the date on which data entry for this encounter was closed).');
   t('The dates the session was active.');
