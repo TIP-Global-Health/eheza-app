@@ -35,6 +35,9 @@ selectLanguage lang set =
         Kirundi ->
             optinal .kirundi
 
+        Somali ->
+            optinal .somali
+
 
 languageToString : Language -> String
 languageToString language =
@@ -48,6 +51,9 @@ languageToString language =
         Kirundi ->
             "Kirundi"
 
+        Somali ->
+            "Somali"
+
 
 languageFromCode : String -> Result String Language
 languageFromCode str =
@@ -60,6 +66,9 @@ languageFromCode str =
 
         "bu" ->
             Ok Kirundi
+
+        "so" ->
+            Ok Somali
 
         _ ->
             Err "Not a language"
@@ -76,6 +85,9 @@ languageToCode lang =
 
         Kirundi ->
             "bu"
+
+        Somali ->
+            "so"
 
 
 decodeLanguage : Decoder Language
