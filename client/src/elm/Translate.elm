@@ -1004,6 +1004,7 @@ type TranslationId
     | MedicationDosesMissedQuestion
     | MedicationForFeverPast6Hours
     | MedicationHelpedEnding Bool
+    | MedicationHistory
     | MedicationFeelBetterAfterTakingQuestion
     | MedicationForMalariaToday
     | MedicationForMalariaPastMonth
@@ -11141,6 +11142,12 @@ translationSet trans =
                 , kirundi = Just "Ariko ntaguterimbere"
                 }
 
+        MedicationHistory ->
+            { english = "Medication History"
+            , kinyarwanda = Just "Amakuru ku miti yafashe"
+            , kirundi = Nothing
+            }
+
         MedicationFeelBetterAfterTakingQuestion ->
             { english = "Do you feel better after taking medications"
             , kinyarwanda = Just "Wumva umeze neza nyuma yo gufata imiti"
@@ -12284,10 +12291,7 @@ translationSet trans =
                     }
 
                 TaskMedicationHistory ->
-                    { english = "Medication History"
-                    , kinyarwanda = Just "Amakuru ku miti yafashe"
-                    , kirundi = Just "Medication History"
-                    }
+                    translationSet MedicationHistory
 
                 TaskSocialHistory ->
                     { english = "Social History"
@@ -18932,6 +18936,9 @@ translationSet trans =
 
                 ComponentAntenatalObstetricalDiagnosis ->
                     translationSet ObstetricalDiagnosis
+
+                ComponentAntenatalMedicationHistory ->
+                    translationSet MedicationHistory
 
                 ComponentAntenatalImmunizationHistory ->
                     translationSet ImmunizationHistory
