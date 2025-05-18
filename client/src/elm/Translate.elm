@@ -116,6 +116,7 @@ import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderTyp
 import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
+        , GWGClassification(..)
         , HistoryTask(..)
         , MedicationTask(..)
         , TreatmentReviewTask(..)
@@ -158,6 +159,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAUniversalInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
+import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
@@ -436,6 +438,8 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BaselineWeight Float
+    | BaselineWeightNotFound
     | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
@@ -716,6 +720,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetes
+    | GestationalWeightGain Float
     | Glass String
     | GoHome
     | GotResultsPreviouslyQuestion
@@ -730,6 +735,8 @@ type TranslationId
     | GroupOfFoods GroupOfFoods
     | Growth
     | GuideMessage
+    | GWGClassification GWGClassification
+    | GWGClassificationLabel
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -3562,6 +3569,18 @@ translationSet trans =
         Balance ->
             { english = "Balance"
             , kinyarwanda = Just "Ibisigaye"
+            , kirundi = Nothing
+            }
+
+        BaselineWeight value ->
+            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        BaselineWeightNotFound ->
+            { english = "No pre-pregnancy baseline weight on record"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -6615,6 +6634,12 @@ translationSet trans =
             , kirundi = Just "Diyabete y'imbanyi"
             }
 
+        GestationalWeightGain value ->
+            { english = "Gestational weight gain: " ++ Round.round 1 value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Glass value ->
             { english = value ++ " Glass"
             , kinyarwanda = Just <| "Ikirahuri " ++ value
@@ -6742,6 +6767,38 @@ translationSet trans =
         GuideMessage ->
             { english = "Guide Message"
             , kinyarwanda = Just "Ifashayobora"
+            , kirundi = Nothing
+            }
+
+        GWGClassification value ->
+            case value of
+                GWGSeverelyInadequate ->
+                    { english = "Severely Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGInadequate ->
+                    { english = "Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGAdequate ->
+                    { english = "Adequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGExcessive ->
+                    { english = "Excessive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        GWGClassificationLabel ->
+            { english = "GWG Classification"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
