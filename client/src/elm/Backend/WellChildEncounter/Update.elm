@@ -27,6 +27,24 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         CloseWellChildEncounter ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
+        AddSkippedForm skippedForm ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter | skippedForms = EverySet.insert skippedForm encounter.skippedForms }
+                )
+                model
+
+        RemoveSkippedForm skippedForm ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter | skippedForms = EverySet.remove skippedForm encounter.skippedForms }
+                )
+                model
+
         SetWellChildEncounterNote note ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | encounterNote = note }) model
 

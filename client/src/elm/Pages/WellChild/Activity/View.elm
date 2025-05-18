@@ -753,35 +753,28 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
 
         viewTask task =
             let
-                ( iconClass, isCompleted ) =
+                iconClass =
                     case task of
                         TaskHeight ->
-                            ( "height"
-                            , isJust measurements.height
-                            )
+                            "height"
 
                         TaskHeadCircumference ->
-                            ( "head-circumference"
-                            , isJust measurements.headCircumference
-                            )
+                            "head-circumference"
 
                         TaskMuac ->
-                            ( "muac"
-                            , isJust measurements.muac
-                            )
+                            "muac"
 
                         TaskNutrition ->
-                            ( "nutrition"
-                            , isJust measurements.nutrition
-                            )
+                            "nutrition"
 
                         TaskWeight ->
-                            ( "weight"
-                            , isJust measurements.weight
-                            )
+                            "weight"
 
                 isActive =
                     activeTask == Just task
+
+                isCompleted =
+                    nutritionAssessmentTaskCompleted currentDate assembled task
 
                 attributes =
                     classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
@@ -800,7 +793,19 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                 ]
 
         tasksCompletedFromTotalDict =
-            List.map (\task -> ( task, nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task )) tasks
+            List.map
+                (\task ->
+                    ( task
+                    , nutritionAssessmentTasksCompletedFromTotal currentDate
+                        zscores
+                        site
+                        isChw
+                        assembled
+                        data
+                        task
+                    )
+                )
+                tasks
                 |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
@@ -835,8 +840,15 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
             case activeTask of
                 Just TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
-                        |> viewHeightForm language currentDate zscores assembled.person previousValuesSet.height SetHeight
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
+                        |> viewHeightForm language
+                            currentDate
+                            zscores
+                            isChw
+                            assembled.person
+                            previousValuesSet.height
+                            SetHeight
+                            SetHeightNotTaken
 
                 Just TaskHeadCircumference ->
                     viewHeadCircumferenceForm language currentDate assembled.person headCircumferenceZScore previousValuesSet.headCircumference headCircumferenceForm
@@ -860,8 +872,18 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                             assembled.encounter.encounterType /= NewbornExam
                     in
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
-                        |> viewWeightForm language currentDate zscores assembled.person heightValue previousValuesSet.weight showWeightForHeightZScore SetWeight
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
+                        |> viewWeightForm language
+                            currentDate
+                            zscores
+                            site
+                            isChw
+                            assembled.person
+                            heightValue
+                            previousValuesSet.weight
+                            showWeightForHeightZScore
+                            SetWeight
+                            SetWeightNotTaken
 
                 Nothing ->
                     []
@@ -879,7 +901,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                         saveMsg =
                             case task of
                                 TaskHeight ->
-                                    SaveHeight personId measurements.height nextTask
+                                    SaveHeight assembled.encounter.skippedForms personId measurements.height nextTask
 
                                 TaskHeadCircumference ->
                                     PreSaveHeadCircumference personId headCircumferenceZScore measurements.headCircumference nextTask
@@ -896,7 +918,7 @@ viewNutritionAssessmenContent language currentDate site zscores id isChw assembl
                                     SaveNutrition personId measurements.nutrition assessment nextTask
 
                                 TaskWeight ->
-                                    SaveWeight personId measurements.weight nextTask
+                                    SaveWeight assembled.encounter.skippedForms personId measurements.weight nextTask
 
                         disabled =
                             tasksCompleted /= totalTasks

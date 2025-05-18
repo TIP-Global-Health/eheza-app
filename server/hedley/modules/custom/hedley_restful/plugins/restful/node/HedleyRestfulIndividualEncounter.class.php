@@ -11,6 +11,20 @@
 class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
 
   /**
+   * A list of fields that are assigned single value.
+   *
+   * @var array
+   */
+  protected $fields = [];
+
+  /**
+   * A list of fields that are assigned multiple values.
+   *
+   * @var array
+   */
+  protected $multiFields = [];
+
+  /**
    * {@inheritdoc}
    */
   public function publicFieldsInfo() {
@@ -27,6 +41,14 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       'property' => 'field_individual_participant',
       'sub_property' => 'field_uuid',
     ];
+
+    foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
+      $public_name = str_replace('field_', '', $field_name);
+
+      $public_fields[$public_name] = [
+        'property' => $field_name,
+      ];
+    }
 
     // The label is decorative only.
     unset($public_fields['label']);
@@ -51,6 +73,16 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
     // Get the UUIDs of the Individual participant.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_individual_participant.field_individual_participant_target_id", 'uuid_individual_participant');
 
+    foreach (array_merge($this->fields, $this->multiFields) as $field_name) {
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
+    foreach ($this->multiFields as $field_name) {
+      $query->addExpression("GROUP_CONCAT(DISTINCT $field_name.{$field_name}_value)", $field_name);
+    }
+
+    $query->groupBy('node.nid');
+
     return $query;
   }
 
@@ -70,6 +102,11 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       ];
       $item->scheduled_date = $this->renderDate($date);
       unset($item->field_scheduled_date_field_scheduled_date_value2);
+
+      foreach ($this->multiFields as $field_name) {
+        $public_name = str_replace('field_', '', $field_name);
+        $item->{$public_name} = explode(',', $item->{$public_name});
+      }
 
       unset($item->label);
     }

@@ -353,7 +353,9 @@ nutritionAssessmentTaskCompleted currentDate assembled task =
     in
     case task of
         TaskHeight ->
-            (not <| taskExpected TaskHeight) || isJust measurements.height
+            (not <| taskExpected TaskHeight)
+                || isJust measurements.height
+                || EverySet.member SkippedHeight assembled.encounter.skippedForms
 
         TaskHeadCircumference ->
             (not <| taskExpected TaskHeadCircumference) || isJust measurements.headCircumference
@@ -365,7 +367,9 @@ nutritionAssessmentTaskCompleted currentDate assembled task =
             (not <| taskExpected TaskNutrition) || isJust measurements.nutrition
 
         TaskWeight ->
-            (not <| taskExpected TaskWeight) || isJust measurements.weight
+            (not <| taskExpected TaskWeight)
+                || isJust measurements.weight
+                || EverySet.member SkippedWeight assembled.encounter.skippedForms
 
 
 expectNutritionAssessmentTask : NominalDate -> AssembledData -> NutritionAssessmentTask -> Bool
@@ -399,12 +403,11 @@ resolveMandatoryNutritionAssessmentTasks : NominalDate -> AssembledData -> List 
 resolveMandatoryNutritionAssessmentTasks currentDate assembled =
     List.filter (expectNutritionAssessmentTask currentDate assembled) <|
         case assembled.encounter.encounterType of
-            PediatricCare ->
-                [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            NewbornExam ->
+                [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
             _ ->
-                -- Height is optional for CHW.
-                [ TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+                allNutritionAssessmentTasks
 
 
 resolveNutritionAssessmentTasks : AssembledData -> List NutritionAssessmentTask
@@ -416,17 +419,24 @@ resolveNutritionAssessmentTasks assembled =
             [ TaskHeadCircumference, TaskNutrition, TaskWeight ]
 
         _ ->
-            [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
+            allNutritionAssessmentTasks
+
+
+allNutritionAssessmentTasks : List NutritionAssessmentTask
+allNutritionAssessmentTasks =
+    [ TaskHeight, TaskHeadCircumference, TaskMuac, TaskNutrition, TaskWeight ]
 
 
 nutritionAssessmentTasksCompletedFromTotal :
     NominalDate
     -> ZScore.Model.Model
+    -> Site
+    -> Bool
     -> AssembledData
     -> NutritionAssessmentData
     -> NutritionAssessmentTask
     -> ( Int, Int )
-nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data task =
+nutritionAssessmentTasksCompletedFromTotal currentDate zscores site isChw assembled data task =
     let
         measurements =
             assembled.measurements
@@ -435,13 +445,15 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
             case task of
                 TaskHeight ->
                     getMeasurementValueFunc measurements.height
-                        |> heightFormWithDefault data.heightForm
+                        |> heightFormWithDefault assembled.encounter.skippedForms data.heightForm
                         |> heightFormAndTasks English
                             currentDate
                             zscores
+                            isChw
                             assembled.person
                             Nothing
                             SetHeight
+                            SetHeightNotTaken
 
                 TaskHeadCircumference ->
                     getMeasurementValueFunc measurements.headCircumference
@@ -471,15 +483,18 @@ nutritionAssessmentTasksCompletedFromTotal currentDate zscores assembled data ta
 
                 TaskWeight ->
                     getMeasurementValueFunc measurements.weight
-                        |> weightFormWithDefault data.weightForm
+                        |> weightFormWithDefault assembled.encounter.skippedForms data.weightForm
                         |> weightFormAndTasks English
                             currentDate
                             zscores
+                            site
+                            isChw
                             assembled.person
                             Nothing
                             Nothing
                             False
                             Pages.WellChild.Activity.Model.SetWeight
+                            Pages.WellChild.Activity.Model.SetWeightNotTaken
     in
     resolveTasksCompletedFromTotal tasks
 
@@ -748,6 +763,42 @@ dangerSignsTasksCompletedFromTotal currentDate assembled data task =
                         |> vitalsFormInputsAndTasks English currentDate formConfig
     in
     resolveTasksCompletedFromTotal tasks
+
+
+dangerSignsTaskCompleted : NominalDate -> AssembledData -> DangerSignsTask -> Bool
+dangerSignsTaskCompleted currentDate assembled task =
+    let
+        measurements =
+            assembled.measurements
+    in
+    case task of
+        TaskSymptomsReview ->
+            isJust measurements.symptomsReview
+
+        TaskVitals ->
+            isJust measurements.vitals
+
+
+mandatoryDangerSignsTasksCompleted : NominalDate -> Site -> AssembledData -> Bool
+mandatoryDangerSignsTasksCompleted currentDate site assembled =
+    resolvedMandatoryDangerSignsTasksCompleted site assembled
+        |> List.all (dangerSignsTaskCompleted currentDate assembled)
+
+
+resolvedMandatoryDangerSignsTasksCompleted : Site -> AssembledData -> List DangerSignsTask
+resolvedMandatoryDangerSignsTasksCompleted site assembled =
+    case assembled.encounter.encounterType of
+        PediatricCare ->
+            [ TaskSymptomsReview, TaskVitals ]
+
+        -- CHW encounter types.
+        _ ->
+            if site == SiteBurundi then
+                -- Vitals are optional for CHW in Burundi.
+                [ TaskSymptomsReview ]
+
+            else
+                [ TaskSymptomsReview, TaskVitals ]
 
 
 symptomsReviewFormInputsAndTasks : Language -> NominalDate -> SymptomsReviewForm -> ( List (Html Msg), List (Maybe Bool) )
