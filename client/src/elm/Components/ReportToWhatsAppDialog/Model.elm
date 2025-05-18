@@ -83,6 +83,7 @@ type ReportComponentAntenatal
     | ComponentAntenatalMedicalHistory
     | ComponentAntenatalMedicalDiagnosis
     | ComponentAntenatalObstetricalDiagnosis
+    | ComponentAntenatalMedicationHistory
     | ComponentAntenatalImmunizationHistory
     | ComponentAntenatalCHWActivity
     | ComponentAntenatalPatientProgress
