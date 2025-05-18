@@ -959,8 +959,8 @@ viewExaminationContent language currentDate zscores assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        measuredHeight =
-            resolveMeasuredHeight assembled
+        previouslyMeasuredHeight =
+            resolvePreviouslyMeasuredHeight assembled
                 |> Maybe.map getHeightValue
 
         ( obstetricalExamInputs, obstetricalExamTasks ) =
@@ -988,14 +988,14 @@ viewExaminationContent language currentDate zscores assembled data =
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         formWithMeasuredHeight =
-                            Maybe.map (\height -> { form | height = Just height }) measuredHeight
+                            Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
                                 |> Maybe.withDefault form
 
                         prePregnancyWeight =
                             resolvePrePregnancyWeight assembled
                                 |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight measuredHeight prePregnancyWeight
+                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -1037,7 +1037,7 @@ viewExaminationContent language currentDate zscores assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition measuredHeight nextTask
+                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
@@ -3071,10 +3071,10 @@ viewVitalsForm language currentDate assembled form =
 
 
 viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
-viewNutritionAssessmentForm language currentDate zscores assembled form heightValue prePregnancyWeight =
+viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
         hideHeightInput =
-            isJust heightValue
+            isJust previouslyMeasuredHeight
 
         heightUpdateFunc value form_ =
             { form_ | height = value, heightDirty = True }
@@ -3117,33 +3117,8 @@ viewNutritionAssessmentForm language currentDate zscores assembled form heightVa
                 weightPreviousValue
 
         baselineClassification =
-            Maybe.Extra.andThen2
-                (\lmpDate birthDate ->
-                    let
-                        ageInYearsOnLMP =
-                            diffYears birthDate lmpDate
-                    in
-                    if ageInYearsOnLMP < 19 then
-                        let
-                            ageInDaysOnLMP =
-                                diffDays birthDate lmpDate
-                        in
-                        Maybe.andThen
-                            (\baselineBmi ->
-                                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI baselineBmi)
-                                    |> Maybe.andThen (viewZScore >> String.toFloat)
-                                    |> Maybe.map zscoreToPrePregnancyClassification
-                            )
-                            prePregnancyBmi
-
-                    else
-                        Maybe.map bmiToPrePregnancyClassification prePregnancyBmi
-                )
-                assembled.globalLmpDate
-                assembled.person.birthDate
-
-        prePregnancyBmi =
             calculateBmi form.height prePregnancyWeight
+                |> resolvePrePregnancyClassification zscores assembled
 
         gwgIndicator =
             Maybe.Extra.andThen3
