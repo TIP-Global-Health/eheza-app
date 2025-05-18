@@ -116,7 +116,9 @@ import Pages.PinCode.Model exposing (MainMenuActivity(..), ResilienceReminderTyp
 import Pages.Prenatal.Activity.Types
     exposing
         ( ExaminationTask(..)
+        , GWGClassification(..)
         , HistoryTask(..)
+        , MedicationTask(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -157,6 +159,7 @@ import Pages.WellChild.ProgressReport.Model
         , NCDAUniversalInterventionsItem(..)
         )
 import Restful.Endpoint exposing (fromEntityUuid)
+import Round
 import SyncManager.Model exposing (Site(..))
 import Time exposing (Month(..))
 import Translate.Model exposing (TranslationSet)
@@ -435,6 +438,8 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BaselineWeight Float
+    | BaselineWeightNotFound
     | BatchNumberAbbrev
     | BreastfeedingSignQuestion BreastfeedingSign
     | BeatsPerMinuteUnitLabel
@@ -715,6 +720,7 @@ type TranslationId
     | Gender Gender
     | GenderLabel
     | GestationalDiabetes
+    | GestationalWeightGain Float
     | Glass String
     | GoHome
     | GotResultsPreviouslyQuestion
@@ -729,6 +735,8 @@ type TranslationId
     | GroupOfFoods GroupOfFoods
     | Growth
     | GuideMessage
+    | GWGClassification GWGClassification
+    | GWGClassificationLabel
     | HalfOfDosage String
     | HandedReferralFormQuestion
     | HandPallor
@@ -996,6 +1004,7 @@ type TranslationId
     | MedicationDosesMissedQuestion
     | MedicationForFeverPast6Hours
     | MedicationHelpedEnding Bool
+    | MedicationHistory
     | MedicationFeelBetterAfterTakingQuestion
     | MedicationForMalariaToday
     | MedicationForMalariaPastMonth
@@ -1278,6 +1287,7 @@ type TranslationId
     | PrenatalImmunizationHistory PrenatalVaccineType
     | PrenatalLabsCaseManagementEntryTypeResults
     | PrenatalLabsCaseManagementEntryTypeVitals
+    | PrenatalMedicationTask Pages.Prenatal.Activity.Types.MedicationTask
     | PrenatalMentalHealthQuestion PrenatalMentalHealthQuestion
     | PrenatalMentalHealthOptionForQuestion PrenatalMentalHealthQuestion PrenatalMentalHealthQuestionOption
     | PrenatalMentalHealthSpecialistHelper
@@ -1302,6 +1312,8 @@ type TranslationId
     | PrenatalUltrasoundHeader
     | PrenatalUltrasoundInstructions
     | PrenatalVaccineLabel PrenatalVaccineType
+    | PrePregnancyWeight
+    | PrePregnancyWeightQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -1323,6 +1335,7 @@ type TranslationId
     | ProgressTrends
     | ProphylaxisMedications
     | ProvideHealthEducationAndInstructToIsolate
+    | ProvideNutritionalSupplement
     | PreTermPregnancy
     | PriorDiagnosis
     | ProvideHealthEducation
@@ -2093,6 +2106,7 @@ type TranslationId
     | WasFbfDistirbuted Activity
     | WeekSinglePlural Int
     | Weight
+    | WeightGain
     | WeightLossLabel
     | WeightLossQuestion
     | WelcomeUser String
@@ -3558,6 +3572,18 @@ translationSet trans =
         Balance ->
             { english = "Balance"
             , kinyarwanda = Just "Ibisigaye"
+            , kirundi = Nothing
+            }
+
+        BaselineWeight value ->
+            { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        BaselineWeightNotFound ->
+            { english = "No pre-pregnancy baseline weight on record"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -6611,6 +6637,12 @@ translationSet trans =
             , kirundi = Just "Diyabete y'imbanyi"
             }
 
+        GestationalWeightGain value ->
+            { english = "Gestational weight gain: " ++ Round.round 1 value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Glass value ->
             { english = value ++ " Glass"
             , kinyarwanda = Just <| "Ikirahuri " ++ value
@@ -6738,6 +6770,38 @@ translationSet trans =
         GuideMessage ->
             { english = "Guide Message"
             , kinyarwanda = Just "Ifashayobora"
+            , kirundi = Nothing
+            }
+
+        GWGClassification value ->
+            case value of
+                GWGSeverelyInadequate ->
+                    { english = "Severely Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGInadequate ->
+                    { english = "Inadequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGAdequate ->
+                    { english = "Adequate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                GWGExcessive ->
+                    { english = "Excessive"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+        GWGClassificationLabel ->
+            { english = "GWG Classification"
+            , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
@@ -8949,6 +9013,38 @@ translationSet trans =
             , kirundi = Just "Ugusubiramwo ivyangombwa"
             }
 
+        PrenatalMedicationTask task ->
+            case task of
+                TaskCalcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskFolate ->
+                    { english = "Folate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskIron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskMMS ->
+                    { english = "MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                TaskMebendazole ->
+                    { english = "Mebendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
         LabsEntryState isLabTech state ->
             case state of
                 LabsEntryPending ->
@@ -9986,15 +10082,15 @@ translationSet trans =
             }
 
         LmpDateConfirmationLabel ->
-            { english = "Please confirm the last menstrual period submitted by the CHW"
-            , kinyarwanda = Just "Emeza itariki aherukira mu mihango yujujwe n' umujyanama w'ubuzima"
-            , kirundi = Just "Muraraba mwemeze igihe ca nyuma co kuja mu kwezi/m'ubutinyanka catanzwe n'abaremeshakiyago"
+            { english = "Please confirm the data submitted by the CHW"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfirmationQuestion ->
-            { english = "Do you want to confirm the above LMP"
-            , kinyarwanda = Just "Urashaka kwemeza itariki uherukira mu mihango yavuzwe hejuru"
-            , kirundi = Just "Mbega urashobora kwemeza Igihe canyuma co kuja mu kwezi cavuzwe aho hejuru"
+            { english = "Do you want to confirm the above data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         LmpDateConfidentHeader ->
@@ -10992,6 +11088,18 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                Calcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                MMS ->
+                    { english = "MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoMedicationDistributionSigns ->
                     translationSet EmptyString
 
@@ -11033,6 +11141,12 @@ translationSet trans =
                 , kinyarwanda = Just "ariko ntiyorohewe"
                 , kirundi = Just "Ariko ntaguterimbere"
                 }
+
+        MedicationHistory ->
+            { english = "Medication History"
+            , kinyarwanda = Just "Amakuru ku miti yafashe"
+            , kirundi = Nothing
+            }
 
         MedicationFeelBetterAfterTakingQuestion ->
             { english = "Do you feel better after taking medications"
@@ -12177,10 +12291,7 @@ translationSet trans =
                     }
 
                 TaskMedicationHistory ->
-                    { english = "Medication History"
-                    , kinyarwanda = Just "Amakuru ku miti yafashe"
-                    , kirundi = Just "Medication History"
-                    }
+                    translationSet MedicationHistory
 
                 TaskSocialHistory ->
                     { english = "Social History"
@@ -17375,6 +17486,18 @@ translationSet trans =
                     , kirundi = Just "Rudadaza"
                     }
 
+        PrePregnancyWeight ->
+            { english = "Pre-pregnancy Weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrePregnancyWeightQuestion ->
+            { english = "What is the patient's baseline (pre-pregnancy) weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PreTerm ->
             { english = "Pre Term"
             , kinyarwanda = Just "Inda itaragera igihe"
@@ -17538,6 +17661,12 @@ translationSet trans =
             { english = "Provide health education and instruct them to self isolate at home"
             , kinyarwanda = Nothing
             , kirundi = Just "Tanga inyigisho yerekeye amagara y'abantu kandi ubabwire kwiyugaranira ahantu hawenyene muhira "
+            }
+
+        ProvideNutritionalSupplement ->
+            { english = "Provide Nutritional Supplement"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         PreTermPregnancy ->
@@ -18807,6 +18936,9 @@ translationSet trans =
 
                 ComponentAntenatalObstetricalDiagnosis ->
                     translationSet ObstetricalDiagnosis
+
+                ComponentAntenatalMedicationHistory ->
+                    translationSet MedicationHistory
 
                 ComponentAntenatalImmunizationHistory ->
                     translationSet ImmunizationHistory
@@ -24458,6 +24590,12 @@ translationSet trans =
             { english = "Weight"
             , kinyarwanda = Just "Ibiro"
             , kirundi = Just "Uburemere"
+            }
+
+        WeightGain ->
+            { english = "Weight gain"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         WeightLossLabel ->

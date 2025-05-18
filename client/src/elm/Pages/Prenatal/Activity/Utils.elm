@@ -21,18 +21,27 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 import List.Extra
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Model exposing (InvokationModule(..), LaboratoryTask(..), VitalsFormConfig, VitalsFormMode(..))
+import Measurement.Model
+    exposing
+        ( InvokationModule(..)
+        , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
+        , VitalsFormConfig
+        , VitalsFormMode(..)
+        )
 import Measurement.Utils
     exposing
         ( corePhysicalExamFormWithDefault
         , getNextVaccineDose
         , isTestResultValid
+        , medicationAdministrationFormInputsAndTasks
+        , medicationAdministrationFormWithDefault
         , resolveLabTestDate
         , testPerformedByExecutionNote
         , vaccinationFormWithDefault
@@ -42,7 +51,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -68,10 +77,16 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
 expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
 expectActivity currentDate site assembled activity =
+    let
+        noNurseEncounters =
+            nurseEncounterNotPerformed assembled
+    in
     case assembled.encounter.encounterType of
         -- Note that for nurse it's always used after
         -- Pages.Prenatal.Encounter.Utils.getAllActivities, which supplies
@@ -80,7 +95,7 @@ expectActivity currentDate site assembled activity =
         NurseEncounter ->
             case activity of
                 PregnancyDating ->
-                    True
+                    noNurseEncounters
 
                 History ->
                     resolveHistoryTasks assembled
@@ -97,7 +112,7 @@ expectActivity currentDate site assembled activity =
                     expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
-                    True
+                    noNurseEncounters
 
                 DangerSigns ->
                     True
@@ -121,9 +136,7 @@ expectActivity currentDate site assembled activity =
                     True
 
                 PrenatalTreatmentReview ->
-                    -- There will always be at least the Prenatal Medication
-                    -- task to complete.
-                    True
+                    not noNurseEncounters
 
                 MaternalMentalHealth ->
                     -- From 28 weeks EGA and not done already.
@@ -204,11 +217,11 @@ expectActivity currentDate site assembled activity =
             case activity of
                 PregnancyDating ->
                     -- Do not show, if patient already visited health center.
-                    nurseEncounterNotPerformed assembled
+                    noNurseEncounters
 
                 Laboratory ->
                     -- Do not show, if patient already visited health center.
-                    nurseEncounterNotPerformed assembled
+                    noNurseEncounters
 
                 DangerSigns ->
                     True
@@ -297,7 +310,8 @@ activityCompleted currentDate site assembled activity =
             isJust assembled.measurements.malariaPrevention
 
         Backend.PrenatalActivity.Model.Medication ->
-            isJust assembled.measurements.medication
+            resolveMedicationTasks currentDate assembled
+                |> List.all (medicationTaskCompleted assembled)
 
         DangerSigns ->
             isJust assembled.measurements.dangerSigns
@@ -529,37 +543,6 @@ expectNextStepsTask currentDate assembled task =
                    )
 
 
-continuousHypertensionTreatmentRequired : AssembledData -> Bool
-continuousHypertensionTreatmentRequired assembled =
-    (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
-     (updateHypertensionTreatmentWithMedication assembled
-        && (-- Hypertension / Moderate Preeclamsia treatment
-            -- did not cause an adverse event.
-            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
-           )
-        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
-            -- in referral to hospital.
-            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
-           )
-     )
-        || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
-           -- at current encounter does not indicate a need for hospitalization.
-           (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
-                && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
-           )
-    )
-        && (-- If Preeclampsia was diagnosed at current
-            -- encounter, there's no need to medicate, because
-            -- patient is sent to hospital anyway.
-            not <|
-                diagnosedAnyOf
-                    [ DiagnosisModeratePreeclampsiaInitialPhase
-                    , DiagnosisSeverePreeclampsiaInitialPhase
-                    ]
-                    assembled
-           )
-
-
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
 nextStepsTaskCompleted currentDate assembled task =
     case task of
@@ -674,19 +657,101 @@ nextStepsTaskCompleted currentDate assembled task =
                 |> Maybe.withDefault False
 
 
+continuousHypertensionTreatmentRequired : AssembledData -> Bool
+continuousHypertensionTreatmentRequired assembled =
+    (-- Given treatment to Hypertension / Moderate Preeclampsia, which needs updating.
+     (updateHypertensionTreatmentWithMedication assembled
+        && (-- Hypertension / Moderate Preeclamsia treatment
+            -- did not cause an adverse event.
+            not <| referToHospitalDueToAdverseEventForHypertensionTreatment assembled
+           )
+        && (-- Moderate Preeclamsia not diagnosed at current encounter, since it results
+            -- in referral to hospital.
+            not <| diagnosedAnyOf moderatePreeclampsiaDiagnoses assembled
+           )
+     )
+        || -- Diagnosed with Moderate Preeclampsia at previous encounter, and BP taken
+           -- at current encounter does not indicate a need for hospitalization.
+           (moderatePreeclampsiaAsPreviousHypertensionlikeDiagnosis assembled
+                && (not <| bloodPressureAtHypertensionTreatmentRequiresHospitalization assembled)
+           )
+    )
+        && (-- If Preeclampsia was diagnosed at current
+            -- encounter, there's no need to medicate, because
+            -- patient is sent to hospital anyway.
+            not <|
+                diagnosedAnyOf
+                    [ DiagnosisModeratePreeclampsiaInitialPhase
+                    , DiagnosisSeverePreeclampsiaInitialPhase
+                    ]
+                    assembled
+           )
+
+
+resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
+resolveMedicationTasks currentDate assembled =
+    List.filter (expectMedicationTask currentDate assembled)
+        [ TaskCalcium, TaskFolate, TaskIron, TaskMMS, TaskMebendazole ]
+
+
+expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
+expectMedicationTask currentDate assembled task =
+    case task of
+        TaskCalcium ->
+            True
+
+        TaskFolate ->
+            True
+
+        TaskIron ->
+            True
+
+        TaskMMS ->
+            True
+
+        TaskMebendazole ->
+            -- From 24 weeks EGA.
+            Maybe.map
+                (\lmpDate ->
+                    let
+                        egaInWeeks =
+                            calculateEGAWeeks currentDate lmpDate
+                    in
+                    egaInWeeks >= 24
+                )
+                assembled.globalLmpDate
+                |> Maybe.withDefault False
+
+
+medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
+medicationTaskCompleted assembled task =
+    case task of
+        TaskCalcium ->
+            isJust assembled.measurements.calcium
+
+        TaskFolate ->
+            isJust assembled.measurements.folate
+
+        TaskIron ->
+            isJust assembled.measurements.iron
+
+        TaskMMS ->
+            isJust assembled.measurements.mms
+
+        TaskMebendazole ->
+            isJust assembled.measurements.mebendazole
+
+
 resolveTreatmentReviewTasks : AssembledData -> List TreatmentReviewTask
 resolveTreatmentReviewTasks assembled =
-    let
-        tasks =
-            [ TreatmentReviewPrenatalMedication
-            , TreatmentReviewHIV
-            , TreatmentReviewHypertension
-            , TreatmentReviewMalaria
-            , TreatmentReviewAnemia
-            , TreatmentReviewSyphilis
-            ]
-    in
-    List.filter (expectTreatmentReviewTask assembled) tasks
+    List.filter (expectTreatmentReviewTask assembled)
+        [ TreatmentReviewPrenatalMedication
+        , TreatmentReviewHIV
+        , TreatmentReviewHypertension
+        , TreatmentReviewMalaria
+        , TreatmentReviewAnemia
+        , TreatmentReviewSyphilis
+        ]
 
 
 expectTreatmentReviewTask : AssembledData -> TreatmentReviewTask -> Bool
@@ -828,11 +893,8 @@ skipObstetricHistorySecondStep obstetricHistoryValue =
 
 resolveExaminationTasks : AssembledData -> List ExaminationTask
 resolveExaminationTasks assembled =
-    let
-        tasks =
-            [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
-    in
-    List.filter (expectExaminationTask assembled) tasks
+    List.filter (expectExaminationTask assembled)
+        [ Vitals, NutritionAssessment, CorePhysicalExam, ObstetricalExam, BreastExam, GUExam ]
 
 
 expectExaminationTask : AssembledData -> ExaminationTask -> Bool
@@ -1343,6 +1405,16 @@ getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
 resolveMeasuredHeight : AssembledData -> Maybe HeightInCm
 resolveMeasuredHeight assembled =
     let
+        byCurrent =
+            getMeasurementValueFunc assembled.measurements.nutrition
+                |> Maybe.map .height
+    in
+    Maybe.Extra.or byCurrent (resolvePreviouslyMeasuredHeight assembled)
+
+
+resolvePreviouslyMeasuredHeight : AssembledData -> Maybe HeightInCm
+resolvePreviouslyMeasuredHeight assembled =
+    let
         resolveHeight measurements =
             getMeasurementValueFunc measurements.nutrition
                 |> Maybe.map .height
@@ -1361,6 +1433,151 @@ resolveMeasuredHeight assembled =
                 |> List.head
     in
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
+
+
+resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight assembled =
+    let
+        resolveWeight measurements =
+            getMeasurementValueFunc measurements.lastMenstrualPeriod
+                |> Maybe.andThen .prePregnancyWeight
+
+        byCurrent =
+            resolveWeight assembled.measurements
+
+        byNurse =
+            List.filterMap (.measurements >> resolveWeight)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveWeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or byNurse byCHW
+        |> Maybe.Extra.or byCurrent
+
+
+{-| Used for patients bellow 19 years of age.
+-}
+zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
+zscoreToPrePregnancyClassification zscore =
+    if zscore < -2 then
+        PrePregnancyUnderWeight
+
+    else if zscore <= 1 then
+        PrePregnancyNormal
+
+    else if zscore <= 2 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+{-| Used for patients of 19 years of age and above.
+-}
+bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
+bmiToPrePregnancyClassification bmi =
+    if bmi < 18.5 then
+        PrePregnancyUnderWeight
+
+    else if bmi < 25 then
+        PrePregnancyNormal
+
+    else if bmi < 30 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+resolvePrePregnancyClassification : ZScore.Model.Model -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
+resolvePrePregnancyClassification zscores assembled prePregnancyBmi =
+    Maybe.Extra.andThen3
+        (\bmi lmpDate birthDate ->
+            let
+                ageInYearsOnLMP =
+                    diffYears birthDate lmpDate
+            in
+            if ageInYearsOnLMP < 19 then
+                let
+                    ageInDaysOnLMP =
+                        diffDays birthDate lmpDate
+                in
+                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
+                    |> Maybe.andThen (viewZScore >> String.toFloat)
+                    |> Maybe.map zscoreToPrePregnancyClassification
+
+            else
+                Just <| bmiToPrePregnancyClassification bmi
+        )
+        prePregnancyBmi
+        assembled.globalLmpDate
+        assembled.person.birthDate
+
+
+resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeight currentWeight assembled =
+    Maybe.map
+        (\lmpDate ->
+            let
+                egaInWeeks =
+                    calculateEGAWeeks currentDate lmpDate
+
+                actualWeightGain =
+                    currentWeight - prePregnancyWeight
+
+                expectedWeightGain =
+                    let
+                        weeksAfterFirstTrimester =
+                            egaInWeeks - 13
+
+                        ( forFirstTrimester, perWeek ) =
+                            weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
+                    in
+                    if weeksAfterFirstTrimester <= 0 then
+                        forFirstTrimester
+
+                    else
+                        forFirstTrimester + toFloat weeksAfterFirstTrimester * perWeek
+
+                relation =
+                    actualWeightGain / expectedWeightGain
+            in
+            if relation < 0.7 then
+                GWGSeverelyInadequate
+
+            else if relation < 0.9 then
+                GWGInadequate
+
+            else if relation <= 1.25 then
+                GWGAdequate
+
+            else
+                GWGExcessive
+        )
+        assembled.globalLmpDate
+
+
+weightGainStandardsPerPrePregnancyClassification : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
+    case prePregnancyClassification of
+        PrePregnancyUnderWeight ->
+            ( 2, 0.51 )
+
+        PrePregnancyNormal ->
+            ( 2, 0.42 )
+
+        PrePregnancyOverweight ->
+            ( 1, 0.28 )
+
+        PrePregnancyObesity ->
+            ( 0.5, 0.22 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -3368,6 +3585,7 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpDate = or form.lmpDate (Just value.date)
+                , prePregnancyWeight = or form.prePregnancyWeight (Maybe.map weightValueFunc value.prePregnancyWeight)
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
@@ -3389,6 +3607,7 @@ toLastMenstrualPeriodValue form =
             Maybe.withDefault False form.chwLmpConfirmation
     in
     Maybe.map LastMenstrualPeriodValue form.lmpDate
+        |> andMap (Just <| Maybe.map WeightInKg form.prePregnancyWeight)
         |> andMap form.lmpDateConfident
         |> andMap (Just form.lmpDateNotConfidentReason)
         |> andMap (Just chwLmpConfirmation)
@@ -4302,7 +4521,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
         NutritionAssessment ->
             let
                 measuredHeight =
-                    resolveMeasuredHeight assembled
+                    resolvePreviouslyMeasuredHeight assembled
 
                 hideHeightInput =
                     isJust measuredHeight
@@ -6082,3 +6301,99 @@ resolveWarningPopupContentForUrgentDiagnoses language urgentDiagnoses =
       else
         translate language Translate.EmergencyReferralHelperReferToHospitalImmediately
     )
+
+
+medicationTasksCompletedFromTotal : NominalDate -> AssembledData -> MedicationData -> MedicationTask -> ( Int, Int )
+medicationTasksCompletedFromTotal currentDate assembled data task =
+    let
+        measurements =
+            assembled.measurements
+
+        ( _, tasks ) =
+            case task of
+                TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
+
+                TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+
+                TaskMebendazole ->
+                    getMeasurementValueFunc measurements.mebendazole
+                        |> medicationAdministrationFormWithDefault data.mebendazoleForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            mebendazoleAdministrationFormConfig
+    in
+    resolveTasksCompletedFromTotal tasks
+
+
+calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+calciumAdministrationFormConfig =
+    { medication = Calcium
+    , setMedicationAdministeredMsg = SetCalciumAdministered
+    , setReasonForNonAdministration = SetCalciumReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+folateAdministrationFormConfig =
+    { medication = FolicAcid
+    , setMedicationAdministeredMsg = SetFolateAdministered
+    , setReasonForNonAdministration = SetFolateReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+ironAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+ironAdministrationFormConfig =
+    { medication = Iron
+    , setMedicationAdministeredMsg = SetIronAdministered
+    , setReasonForNonAdministration = SetIronReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+mmsAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+mmsAdministrationFormConfig =
+    { medication = MMS
+    , setMedicationAdministeredMsg = SetMMSAdministered
+    , setReasonForNonAdministration = SetMMSReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+mebendazoleAdministrationFormConfig =
+    { medication = Mebendezole
+    , setMedicationAdministeredMsg = SetMebendazoleAdministered
+    , setReasonForNonAdministration = SetMebendazoleReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
