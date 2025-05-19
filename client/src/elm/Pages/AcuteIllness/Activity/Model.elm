@@ -5,7 +5,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (AcuteIllnessDiagnosis)
 import Backend.Entities exposing (..)
 import Backend.Measurement.Model exposing (..)
 import Backend.Person.Form
-import Components.PatientsSearchForm.Model exposing (..)
+import Components.PatientsSearchForm.Model
 import Date exposing (Date)
 import DateSelector.Model exposing (DateSelectorConfig)
 import EverySet exposing (EverySet)
