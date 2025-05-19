@@ -2076,6 +2076,8 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_date_measured_value']['table'] = 'field_data_field_date_measured';
   $handler->display->display_options['filters']['field_date_measured_value']['field'] = 'field_date_measured_value';
   $handler->display->display_options['filters']['field_date_measured_value']['operator'] = 'between';
+  $handler->display->display_options['filters']['field_date_measured_value']['value']['min'] = '2025-04-01';
+  $handler->display->display_options['filters']['field_date_measured_value']['value']['max'] = '2025-12-31';
   $handler->display->display_options['filters']['field_date_measured_value']['exposed'] = TRUE;
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['operator_id'] = 'field_date_measured_value_op';
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['label'] = 'Date Measured';
@@ -2083,9 +2085,6 @@ function hedley_admin_views_default_views() {
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['identifier'] = 'field_date_measured_value';
   $handler->display->display_options['filters']['field_date_measured_value']['expose']['remember_roles'] = array(
     2 => '2',
-    1 => 0,
-    3 => 0,
-    4 => 0,
   );
 
   /* Display: Historical Child */
