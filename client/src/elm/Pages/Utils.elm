@@ -716,14 +716,22 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
 
 viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
 viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    viewPreviousMeasurementCustom language
+        maybePreviousValue
+        Translate.PreviousFloatMeasurement
+        Translate.PreviousMeasurementNotFound
+        unitTranslationId
+
+
+viewPreviousMeasurementCustom : Language -> Maybe Float -> (Float -> TranslationId) -> TranslationId -> TranslationId -> Html any
+viewPreviousMeasurementCustom language maybePreviousValue foundTranslationId notFoundTranslationId unitTranslationId =
     let
         message =
             maybePreviousValue
                 |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
+                    (translate language notFoundTranslationId)
                     (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
+                        (foundTranslationId previousValue
                             |> translate language
                         )
                             ++ " "
