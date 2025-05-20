@@ -1913,6 +1913,9 @@ siteToString site =
         SiteBurundi ->
             "burundi"
 
+        SiteSomalia ->
+            "somalia"
+
         SiteUnknown ->
             ""
 

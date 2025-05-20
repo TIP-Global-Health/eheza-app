@@ -15,6 +15,7 @@ decodeCounselingTopic =
         |> required "label" string
         |> required "kinyarwanda_title" (maybe string)
         |> hardcoded Nothing
+        |> hardcoded Nothing
 
 
 decodeCounselingTiming : Decoder CounselingTiming
