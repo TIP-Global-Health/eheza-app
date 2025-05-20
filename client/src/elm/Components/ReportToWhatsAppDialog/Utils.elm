@@ -73,6 +73,9 @@ countryCodeFromString code =
         "972" ->
             Just CountryCodeIsrael
 
+        "252" ->
+            Just CountryCodeSomalia
+
         _ ->
             Nothing
 
@@ -104,6 +107,9 @@ countryCodeToString code =
         CountryCodeIsrael ->
             "972"
 
+        CountryCodeSomalia ->
+            "252"
+
 
 siteToCountryCode : Site -> CountryCode
 siteToCountryCode site =
@@ -113,6 +119,9 @@ siteToCountryCode site =
 
         SiteBurundi ->
             CountryCodeBurundi
+
+        SiteSomalia ->
+            CountryCodeSomalia
 
         -- We should never get here, as the should always
         -- be info of the site at which device operate.
@@ -147,6 +156,7 @@ allCountryCodes =
     , CountryCodeTanzania
     , CountryCodeBurundi
     , CountryCodeUSACanada
+    , CountryCodeSomalia
     ]
 
 
