@@ -70,12 +70,15 @@ emptyNutritionMetrics =
 
 
 type alias NutritionMetricsResults =
-    { stuntingModerate : Float
-    , stuntingSevere : Float
-    , wastingModerate : Float
-    , wastingSevere : Float
-    , underweightModerate : Float
-    , underweightSevere : Float
+    { stuntingModerate : Int
+    , stuntingSevere : Int
+    , stuntingTotal : Int
+    , wastingModerate : Int
+    , wastingSevere : Int
+    , wastingTotal : Int
+    , underweightModerate : Int
+    , underweightSevere : Int
+    , underweightTotal : Int
     }
 
 
@@ -83,10 +86,13 @@ emptyNutritionMetricsResults : NutritionMetricsResults
 emptyNutritionMetricsResults =
     { stuntingModerate = 0
     , stuntingSevere = 0
+    , stuntingTotal = 0
     , wastingModerate = 0
     , wastingSevere = 0
+    , wastingTotal = 0
     , underweightModerate = 0
     , underweightSevere = 0
+    , underweightTotal = 0
     }
 
 
