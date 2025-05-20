@@ -171,13 +171,6 @@ nutritionEncounterDataToNutritionMetrics personId =
 generatePrevalenceNutritionMetricsResults : NutritionMetrics -> NutritionMetricsResults
 generatePrevalenceNutritionMetricsResults metrics =
     let
-        calculatePercentage nominator total =
-            if List.isEmpty total then
-                0
-
-            else
-                (toFloat (List.length nominator) / toFloat (List.length total)) * 100
-
         stuntingTotal =
             metrics.stuntingModerate
                 ++ metrics.stuntingSevere
@@ -196,25 +189,21 @@ generatePrevalenceNutritionMetricsResults metrics =
                 ++ metrics.underweightNormal
                 |> unique
     in
-    { stuntingModerate = calculatePercentage metrics.stuntingModerate stuntingTotal
-    , stuntingSevere = calculatePercentage metrics.stuntingSevere stuntingTotal
-    , wastingModerate = calculatePercentage metrics.wastingModerate wastingTotal
-    , wastingSevere = calculatePercentage metrics.wastingSevere wastingTotal
-    , underweightModerate = calculatePercentage metrics.underweightModerate underweightTotal
-    , underweightSevere = calculatePercentage metrics.underweightSevere underweightTotal
+    { stuntingModerate = List.length metrics.stuntingModerate
+    , stuntingSevere = List.length metrics.stuntingSevere
+    , stuntingTotal = List.length stuntingTotal
+    , wastingModerate = List.length metrics.wastingModerate
+    , wastingSevere = List.length metrics.wastingSevere
+    , wastingTotal = List.length wastingTotal
+    , underweightModerate = List.length metrics.underweightModerate
+    , underweightSevere = List.length metrics.underweightSevere
+    , underweightTotal = List.length underweightTotal
     }
 
 
 generateIncidenceNutritionMetricsResults : NutritionMetrics -> NutritionMetrics -> NutritionMetricsResults
 generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetric =
     let
-        calculatePercentage nominator total =
-            if Set.isEmpty total then
-                0
-
-            else
-                (toFloat (Set.size nominator) / toFloat (Set.size total)) * 100
-
         -- STUNTING
         previousPeriodStuntingModerateSevere =
             previousPeriodMetric.stuntingModerate
@@ -285,29 +274,26 @@ generateIncidenceNutritionMetricsResults currentPeriodMetric previousPeriodMetri
             Set.diff (Set.fromList currentPeriodMetric.underweightSevere) (Set.fromList previousPeriodMetric.underweightSevere)
     in
     { stuntingModerate =
-        calculatePercentage
-            (Set.intersect stuntingModerateTestedInPreviousPeriod stuntingModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodStuntingTotal
+        Set.intersect stuntingModerateTestedInPreviousPeriod stuntingModerateNotIdentifiedInPreviousPeriod
+            |> Set.size
     , stuntingSevere =
-        calculatePercentage
-            (Set.intersect stuntingSevereTestedInPreviousPeriod stuntingSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodStuntingTotal
+        Set.intersect stuntingSevereTestedInPreviousPeriod stuntingSevereNotIdentifiedInPreviousPeriod
+            |> Set.size
+    , stuntingTotal = Set.size previousPeriodStuntingTotal
     , wastingModerate =
-        calculatePercentage
-            (Set.intersect wastingModerateTestedInPreviousPeriod wastingModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodWastingTotal
+        Set.intersect wastingModerateTestedInPreviousPeriod wastingModerateNotIdentifiedInPreviousPeriod
+            |> Set.size
     , wastingSevere =
-        calculatePercentage
-            (Set.intersect wastingSevereTestedInPreviousPeriod wastingSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodWastingTotal
+        Set.intersect wastingSevereTestedInPreviousPeriod wastingSevereNotIdentifiedInPreviousPeriod
+            |> Set.size
+    , wastingTotal = Set.size previousPeriodWastingTotal
     , underweightModerate =
-        calculatePercentage
-            (Set.intersect underweightModerateTestedInPreviousPeriod underweightModerateNotIdentifiedInPreviousPeriod)
-            previousPeriodUnderweightTotal
+        Set.intersect underweightModerateTestedInPreviousPeriod underweightModerateNotIdentifiedInPreviousPeriod
+            |> Set.size
     , underweightSevere =
-        calculatePercentage
-            (Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod)
-            previousPeriodUnderweightTotal
+        Set.intersect underweightSevereTestedInPreviousPeriod underweightSevereNotIdentifiedInPreviousPeriod
+            |> Set.size
+    , underweightTotal = Set.size previousPeriodUnderweightTotal
     }
 
 
