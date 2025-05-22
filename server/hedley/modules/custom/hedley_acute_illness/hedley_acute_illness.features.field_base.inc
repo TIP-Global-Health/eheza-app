@@ -82,6 +82,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_abnormal_discharge_period'.
+  $field_bases['field_abnormal_discharge_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_abnormal_discharge_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_acute_illness_danger_signs'.
   $field_bases['field_acute_illness_danger_signs'] = array(
     'active' => 1,
@@ -253,6 +269,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_c_b_d_urine_period'.
+  $field_bases['field_c_b_d_urine_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_c_b_d_urine_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_chills_period'.
   $field_bases['field_chills_period'] = array(
     'active' => 1,
@@ -260,6 +292,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_chills_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_cloudy_appearance_period'.
+  $field_bases['field_cloudy_appearance_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_cloudy_appearance_period',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
@@ -367,6 +415,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_difficult_swallow_period'.
+  $field_bases['field_difficult_swallow_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_difficult_swallow_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_dry_mouth_period'.
   $field_bases['field_dry_mouth_period'] = array(
     'active' => 1,
@@ -374,6 +438,54 @@ function hedley_acute_illness_field_default_field_bases() {
     'deleted' => 0,
     'entity_types' => array(),
     'field_name' => 'field_dry_mouth_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_dysuria_period'.
+  $field_bases['field_dysuria_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_dysuria_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_ear_pain_period'.
+  $field_bases['field_ear_pain_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ear_pain_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_ear_pus_discharge_period'.
+  $field_bases['field_ear_pus_discharge_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_ear_pus_discharge_period',
     'indexes' => array(),
     'locked' => 0,
     'module' => 'number',
@@ -405,6 +517,22 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_eye_irritation_period'.
+  $field_bases['field_eye_irritation_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_eye_irritation_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_fever_period'.
@@ -477,6 +605,38 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_frequent_urination_period'.
+  $field_bases['field_frequent_urination_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_frequent_urination_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_genital_itching_period'.
+  $field_bases['field_genital_itching_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_genital_itching_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_hc_contact'.
@@ -748,6 +908,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_mouth_ulcer_period'.
+  $field_bases['field_mouth_ulcer_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_mouth_ulcer_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_nasal_congestion_period'.
   $field_bases['field_nasal_congestion_period'] = array(
     'active' => 1,
@@ -970,6 +1146,22 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_pus_from_eye_period'.
+  $field_bases['field_pus_from_eye_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_pus_from_eye_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_rapid_test_result'.
   $field_bases['field_rapid_test_result'] = array(
     'active' => 1,
@@ -1112,6 +1304,22 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_red_eyes_period'.
+  $field_bases['field_red_eyes_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_red_eyes_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_referred_person'.
@@ -1298,6 +1506,38 @@ function hedley_acute_illness_field_default_field_bases() {
     'type' => 'number_integer',
   );
 
+  // Exported field_base: 'field_swollen_eyes_period'.
+  $field_bases['field_swollen_eyes_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_swollen_eyes_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
+  // Exported field_base: 'field_swollen_gums_period'.
+  $field_bases['field_swollen_gums_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_swollen_gums_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
+  );
+
   // Exported field_base: 'field_symptoms_general'.
   $field_bases['field_symptoms_general'] = array(
     'active' => 1,
@@ -1421,6 +1661,22 @@ function hedley_acute_illness_field_default_field_bases() {
     ),
     'translatable' => 0,
     'type' => 'list_text',
+  );
+
+  // Exported field_base: 'field_toothache_period'.
+  $field_bases['field_toothache_period'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_toothache_period',
+    'indexes' => array(),
+    'locked' => 0,
+    'module' => 'number',
+    'settings' => array(),
+    'translatable' => 0,
+    'type' => 'number_integer',
   );
 
   // Exported field_base: 'field_trace_outcome'.

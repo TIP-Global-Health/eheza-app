@@ -189,6 +189,10 @@ decodeAcuteIllnessMeasurements =
         |> optional "symptoms_general" (decodeHead decodeSymptomsGeneral) Nothing
         |> optional "symptoms_respiratory" (decodeHead decodeSymptomsRespiratory) Nothing
         |> optional "symptoms_gi" (decodeHead decodeSymptomsGI) Nothing
+        |> optional "acute_illness_ent" (decodeHead decodeAcuteIllnessENT) Nothing
+        |> optional "acute_illness_eyes" (decodeHead decodeAcuteIllnessEyes) Nothing
+        |> optional "acute_illness_gu" (decodeHead decodeAcuteIllnessGU) Nothing
+        |> optional "acute_illness_oral" (decodeHead decodeAcuteIllnessOral) Nothing
         |> optional "acute_illness_vitals" (decodeHead decodeAcuteIllnessVitals) Nothing
         |> optional "acute_findings" (decodeHead decodeAcuteFindings) Nothing
         |> optional "malaria_testing" (decodeHead decodeMalariaTesting) Nothing
@@ -2876,15 +2880,7 @@ symptomsGeneralToDict value =
     , ( SymptomsGeneralConvulsions, value.convulsions )
     , ( SpontaneousBleeding, value.spontaneousBleeding )
     ]
-        |> List.filter (Tuple.second >> (/=) 0)
-        |> (\list ->
-                if List.isEmpty list then
-                    [ ( NoSymptomsGeneral, 0 ) ]
-
-                else
-                    list
-           )
-        |> Dict.fromList
+        |> symptomsListToDict NoSymptomsGeneral
 
 
 decodeSymptomsRespiratory : Decoder SymptomsRespiratory
@@ -2910,15 +2906,7 @@ symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum 
     , ( LossOfSmell, lossOfSmell )
     , ( StabbingChestPain, stabbingChestPain )
     ]
-        |> List.filter (Tuple.second >> (/=) 0)
-        |> (\list ->
-                if List.isEmpty list then
-                    [ ( NoSymptomsRespiratory, 0 ) ]
-
-                else
-                    list
-           )
-        |> Dict.fromList
+        |> symptomsListToDict NoSymptomsRespiratory
 
 
 decodeSymptomsGI : Decoder SymptomsGI
@@ -2947,15 +2935,7 @@ symptomsGIToDict bloodyDiarrhea nonBloodyDiarrhea nausea vomiting abdominalPain 
     , ( Vomiting, vomiting )
     , ( SymptomGIAbdominalPain, abdominalPain )
     ]
-        |> List.filter (Tuple.second >> (/=) 0)
-        |> (\list ->
-                if List.isEmpty list then
-                    [ ( NoSymptomsGI, 0 ) ]
-
-                else
-                    list
-           )
-        |> Dict.fromList
+        |> symptomsListToDict NoSymptomsGI
 
 
 decodeSymptomsGIDerivedSign : Decoder SymptomsGIDerivedSign
@@ -2975,6 +2955,105 @@ decodeSymptomsGIDerivedSign =
                             sign
                                 ++ " is not a recognized SymptomsGIDerivedSign"
             )
+
+
+decodeAcuteIllnessENT : Decoder AcuteIllnessENT
+decodeAcuteIllnessENT =
+    decodeAcuteIllnessMeasurement <|
+        map4 symptomsENTToDict
+            (field "ear_pain_period" decodeInt)
+            (field "ear_pus_discharge_period" decodeInt)
+            (field "sore_throat_period" decodeInt)
+            (field "difficult_swallow_period" decodeInt)
+
+
+symptomsENTToDict : Int -> Int -> Int -> Int -> Dict SymptomsENTSign Int
+symptomsENTToDict earPain earPusDischarge soreThroat difficultSwallowing =
+    [ ( EarPain, earPain )
+    , ( EarPusDischarge, earPusDischarge )
+    , ( SoreThroat_, soreThroat )
+    , ( DifficultSwallowing, difficultSwallowing )
+    ]
+        |> symptomsListToDict NoSymptomsENT
+
+
+decodeAcuteIllnessEyes : Decoder AcuteIllnessEyes
+decodeAcuteIllnessEyes =
+    decodeAcuteIllnessMeasurement <|
+        map6 symptomsEyesToDict
+            (field "pus_from_eye_period" decodeInt)
+            (field "swollen_eyes_period" decodeInt)
+            (field "yellow_eyes_period" decodeInt)
+            (field "red_eyes_period" decodeInt)
+            (field "cloudy_appearance_period" decodeInt)
+            (field "eye_irritation_period" decodeInt)
+
+
+symptomsEyesToDict : Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsEyesSign Int
+symptomsEyesToDict eyePusDischarge swollenEyes yellowEyes redEyes cloudyAppearance eyeIrritation =
+    [ ( EyePusDischarge, eyePusDischarge )
+    , ( SwollenEyes, swollenEyes )
+    , ( YellowEyes_, yellowEyes )
+    , ( RedEyes, redEyes )
+    , ( CloudyAppearance, cloudyAppearance )
+    , ( EyeIrritation, eyeIrritation )
+    ]
+        |> symptomsListToDict NoSymptomsEyes
+
+
+decodeAcuteIllnessGU : Decoder AcuteIllnessGU
+decodeAcuteIllnessGU =
+    decodeAcuteIllnessMeasurement <|
+        map6 symptomsGUToDict
+            (field "coke_colored_urine_period" decodeInt)
+            (field "frequent_urination_period" decodeInt)
+            (field "dysuria_period" decodeInt)
+            (field "c_b_d_urine_period" decodeInt)
+            (field "abnormal_discharge_period" decodeInt)
+            (field "genital_itching_period" decodeInt)
+
+
+symptomsGUToDict : Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsGUSign Int
+symptomsGUToDict cokeColoredUrine frequentUrination dysuria cbdUrine abnormalDischarge genitalItching =
+    [ ( CokeColoredUrine_, cokeColoredUrine )
+    , ( FrequentUrination, frequentUrination )
+    , ( Dysuria, dysuria )
+    , ( CBDUrine, cbdUrine )
+    , ( AbnormalDischarge, abnormalDischarge )
+    , ( GenitalItching, genitalItching )
+    ]
+        |> symptomsListToDict NoSymptomsGU
+
+
+decodeAcuteIllnessOral : Decoder AcuteIllnessOral
+decodeAcuteIllnessOral =
+    decodeAcuteIllnessMeasurement <|
+        map3 symptomsOralToDict
+            (field "mouth_ulcer_period" decodeInt)
+            (field "toothache_period" decodeInt)
+            (field "swollen_gums_period" decodeInt)
+
+
+symptomsOralToDict : Int -> Int -> Int -> Dict SymptomsOralSign Int
+symptomsOralToDict mouthUlcer toothache swollenGums =
+    [ ( MouthUlcer, mouthUlcer )
+    , ( Toothache, toothache )
+    , ( SwollenGums, swollenGums )
+    ]
+        |> symptomsListToDict NoSymptomsOral
+
+
+symptomsListToDict : symptom -> List ( symptom, Int ) -> Dict symptom Int
+symptomsListToDict noneSign =
+    List.filter (Tuple.second >> (/=) 0)
+        >> (\list ->
+                if List.isEmpty list then
+                    [ ( noneSign, 0 ) ]
+
+                else
+                    list
+           )
+        >> Dict.fromList
 
 
 decodeAcuteIllnessVitals : Decoder AcuteIllnessVitals
