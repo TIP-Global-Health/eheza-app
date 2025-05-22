@@ -332,14 +332,26 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityAcuteIllnessEncounter identifier ->
                 text ("Acute Illness Encounter for participant ID " ++ fromEntityUuid identifier.entity.participant)
 
+            BackendAuthorityAcuteIllnessENT identifier ->
+                viewMeasurement identifier "Acute Illness ENT"
+
+            BackendAuthorityAcuteIllnessEyes identifier ->
+                viewMeasurement identifier "Acute Illness Eyes"
+
             BackendAuthorityAcuteIllnessFollowUp identifier ->
                 viewMeasurement identifier "Acute Illness Follow Up"
+
+            BackendAuthorityAcuteIllnessGU identifier ->
+                viewMeasurement identifier "Acute Illness GU"
 
             BackendAuthorityAcuteIllnessMuac identifier ->
                 viewMeasurement identifier "Acute Illness Muac"
 
             BackendAuthorityAcuteIllnessNutrition identifier ->
                 viewMeasurement identifier "Acute Illness Nutrition"
+
+            BackendAuthorityAcuteIllnessOral identifier ->
+                viewMeasurement identifier "Acute Illness Oral"
 
             BackendAuthorityAcuteIllnessTraceContact identifier ->
                 viewMeasurement identifier "Acute Illness Trace Contact"
