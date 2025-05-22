@@ -1533,3 +1533,27 @@ hivTreatmentReviewEndpoint : ReadWriteEndPoint Error HIVTreatmentReviewId HIVTre
 hivTreatmentReviewEndpoint =
     swEndpoint "nodes/hiv_treatment_review" decodeHIVTreatmentReview
         |> withValueEncoder (object << encodeHIVTreatmentReview)
+
+
+acuteIllnessENTEndpoint : ReadWriteEndPoint Error AcuteIllnessENTId AcuteIllnessENT AcuteIllnessENT ()
+acuteIllnessENTEndpoint =
+    swEndpoint "nodes/acute_illness_ent" decodeAcuteIllnessENT
+        |> withValueEncoder (object << encodeAcuteIllnessENT)
+
+
+acuteIllnessEyesEndpoint : ReadWriteEndPoint Error AcuteIllnessEyesId AcuteIllnessEyes AcuteIllnessEyes ()
+acuteIllnessEyesEndpoint =
+    swEndpoint "nodes/acute_illness_eyes" decodeAcuteIllnessEyes
+        |> withValueEncoder (object << encodeAcuteIllnessEyes)
+
+
+acuteIllnessGUEndpoint : ReadWriteEndPoint Error AcuteIllnessGUId AcuteIllnessGU AcuteIllnessGU ()
+acuteIllnessGUEndpoint =
+    swEndpoint "nodes/acute_illness_gu" decodeAcuteIllnessGU
+        |> withValueEncoder (object << encodeAcuteIllnessGU)
+
+
+acuteIllnessOralEndpoint : ReadWriteEndPoint Error AcuteIllnessOralId AcuteIllnessOral AcuteIllnessOral ()
+acuteIllnessOralEndpoint =
+    swEndpoint "nodes/acute_illness_oral" decodeAcuteIllnessOral
+        |> withValueEncoder (object << encodeAcuteIllnessOral)
