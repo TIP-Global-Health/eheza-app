@@ -1844,6 +1844,57 @@ type alias SymptomsGI =
     AcuteIllnessMeasurement SymptomsGIValue
 
 
+type SymptomsENTSign
+    = EarPain
+    | EarPusDischarge
+    | SoreThroat_
+    | DifficultSwallowing
+    | NoSymptomsENT
+
+
+type alias AcuteIllnessENT =
+    AcuteIllnessMeasurement (Dict SymptomsENTSign Int)
+
+
+type SymptomsEyesSign
+    = EyePusDischarge
+    | SwollenEyes
+    | YellowEyes_
+    | RedEyes
+    | CloudyAppearance
+    | EyeIrritation
+    | NoSymptomsEyes
+
+
+type alias AcuteIllnessEyes =
+    AcuteIllnessMeasurement (Dict SymptomsEyesSign Int)
+
+
+type SymptomsGUSign
+    = CokeColoredUrine_
+    | FrequentUrination
+    | Dysuria
+    | CBDUrine
+    | AbnormalDischarge
+    | GenitalItching
+    | NoSymptomsGU
+
+
+type alias AcuteIllnessGU =
+    AcuteIllnessMeasurement (Dict SymptomsGUSign Int)
+
+
+type SymptomsOralSign
+    = MouthUlcer
+    | Toothache
+    | SwollenGums
+    | NoSymptomsOral
+
+
+type alias AcuteIllnessOral =
+    AcuteIllnessMeasurement (Dict SymptomsOralSign Int)
+
+
 type alias AcuteIllnessVitals =
     AcuteIllnessMeasurement VitalsValue
 
@@ -3423,6 +3474,10 @@ type alias AcuteIllnessMeasurements =
     { symptomsGeneral : Maybe ( SymptomsGeneralId, SymptomsGeneral )
     , symptomsRespiratory : Maybe ( SymptomsRespiratoryId, SymptomsRespiratory )
     , symptomsGI : Maybe ( SymptomsGIId, SymptomsGI )
+    , symptomsENT : Maybe ( AcuteIllnessENTId, AcuteIllnessENT )
+    , symptomsEyes : Maybe ( AcuteIllnessEyesId, AcuteIllnessEyes )
+    , symptomsGU : Maybe ( AcuteIllnessGUId, AcuteIllnessGU )
+    , symptomsOral : Maybe ( AcuteIllnessOralId, AcuteIllnessOral )
     , vitals : Maybe ( AcuteIllnessVitalsId, AcuteIllnessVitals )
     , acuteFindings : Maybe ( AcuteFindingsId, AcuteFindings )
     , malariaTesting : Maybe ( MalariaTestingId, MalariaTesting )

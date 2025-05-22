@@ -2076,6 +2076,134 @@ encodeSymptomsGIDerivedSigns sign =
                 "none"
 
 
+encodeAcuteIllnessENT : AcuteIllnessENT -> List ( String, Value )
+encodeAcuteIllnessENT =
+    encodeAcuteIllnessMeasurement encodeSymptomsENTValue
+
+
+encodeSymptomsENTValue : Dict SymptomsENTSign Int -> List ( String, Value )
+encodeSymptomsENTValue signs =
+    let
+        earPain =
+            Dict.get EarPain signs |> Maybe.withDefault 0
+
+        earPusDischarge =
+            Dict.get EarPusDischarge signs |> Maybe.withDefault 0
+
+        soreThroat =
+            Dict.get SoreThroat_ signs |> Maybe.withDefault 0
+
+        difficultSwallowing =
+            Dict.get DifficultSwallowing signs |> Maybe.withDefault 0
+    in
+    [ ( "ear_pain_period", int earPain )
+    , ( "ear_pus_discharge_period", int earPusDischarge )
+    , ( "sore_throat_period", int soreThroat )
+    , ( "nasal_congestion_period", int difficultSwallowing )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_ent" )
+    ]
+
+
+encodeAcuteIllnessEyes : AcuteIllnessEyes -> List ( String, Value )
+encodeAcuteIllnessEyes =
+    encodeAcuteIllnessMeasurement encodeSymptomsEyesValue
+
+
+encodeSymptomsEyesValue : Dict SymptomsEyesSign Int -> List ( String, Value )
+encodeSymptomsEyesValue signs =
+    let
+        eyePusDischarge =
+            Dict.get EyePusDischarge signs |> Maybe.withDefault 0
+
+        swollenEyes =
+            Dict.get SwollenEyes signs |> Maybe.withDefault 0
+
+        yellowEyes =
+            Dict.get YellowEyes_ signs |> Maybe.withDefault 0
+
+        redEyes =
+            Dict.get RedEyes signs |> Maybe.withDefault 0
+
+        cloudyAppearance =
+            Dict.get CloudyAppearance signs |> Maybe.withDefault 0
+
+        eyeIrritation =
+            Dict.get EyeIrritation signs |> Maybe.withDefault 0
+    in
+    [ ( "pus_from_eye_period", int eyePusDischarge )
+    , ( "swollen_eyes_period", int swollenEyes )
+    , ( "yellow_eyes_period", int yellowEyes )
+    , ( "red_eyes_period", int redEyes )
+    , ( "cloudy_appearance_period", int cloudyAppearance )
+    , ( "eye_irritation_period", int eyeIrritation )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_eyes" )
+    ]
+
+
+encodeAcuteIllnessGU : AcuteIllnessGU -> List ( String, Value )
+encodeAcuteIllnessGU =
+    encodeAcuteIllnessMeasurement encodeSymptomsGUValue
+
+
+encodeSymptomsGUValue : Dict SymptomsGUSign Int -> List ( String, Value )
+encodeSymptomsGUValue signs =
+    let
+        cokeColoredUrine =
+            Dict.get CokeColoredUrine_ signs |> Maybe.withDefault 0
+
+        frequentUrination =
+            Dict.get FrequentUrination signs |> Maybe.withDefault 0
+
+        dysuria =
+            Dict.get Dysuria signs |> Maybe.withDefault 0
+
+        cbdUrine =
+            Dict.get CBDUrine signs |> Maybe.withDefault 0
+
+        abnormalDischarge =
+            Dict.get AbnormalDischarge signs |> Maybe.withDefault 0
+
+        genitalItching =
+            Dict.get GenitalItching signs |> Maybe.withDefault 0
+    in
+    [ ( "coke_colored_urine_period", int cokeColoredUrine )
+    , ( "frequent_urination_period", int frequentUrination )
+    , ( "dysuria_period", int dysuria )
+    , ( "c_b_d_urine_period", int cbdUrine )
+    , ( "abnormal_discharge_period", int abnormalDischarge )
+    , ( "genital_itching_period", int genitalItching )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_gu" )
+    ]
+
+
+encodeAcuteIllnessOral : AcuteIllnessOral -> List ( String, Value )
+encodeAcuteIllnessOral =
+    encodeAcuteIllnessMeasurement encodeSymptomsOralValue
+
+
+encodeSymptomsOralValue : Dict SymptomsOralSign Int -> List ( String, Value )
+encodeSymptomsOralValue signs =
+    let
+        mouthUlcer =
+            Dict.get MouthUlcer signs |> Maybe.withDefault 0
+
+        toothache =
+            Dict.get Toothache signs |> Maybe.withDefault 0
+
+        swollenGums =
+            Dict.get SwollenGums signs |> Maybe.withDefault 0
+    in
+    [ ( "mouth_ulcer_period", int mouthUlcer )
+    , ( "toothache_period", int toothache )
+    , ( "swollen_gums_period", int swollenGums )
+    , ( "deleted", bool False )
+    , ( "type", string "acute_illness_oral" )
+    ]
+
+
 encodeAcuteIllnessVitals : AcuteIllnessVitals -> List ( String, Value )
 encodeAcuteIllnessVitals =
     encodeAcuteIllnessMeasurement (encodeVitalsValueWithType "acute_illness_vitals")
