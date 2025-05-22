@@ -2099,7 +2099,7 @@ encodeSymptomsENTValue signs =
     [ ( "ear_pain_period", int earPain )
     , ( "ear_pus_discharge_period", int earPusDischarge )
     , ( "sore_throat_period", int soreThroat )
-    , ( "nasal_congestion_period", int difficultSwallowing )
+    , ( "difficult_swallow_period", int difficultSwallowing )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_ent" )
     ]
