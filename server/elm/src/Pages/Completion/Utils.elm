@@ -121,6 +121,10 @@ allAcuteIllnessActivities =
     , AcuteIllnessTravelHistory
     , AcuteIllnessPriorTreatment
     , AcuteIllnessOngoingTreatment
+    , AcuteIllnessENT
+    , AcuteIllnessEyes
+    , AcuteIllnessGU
+    , AcuteIllnessOral
     ]
 
 

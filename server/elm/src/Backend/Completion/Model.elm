@@ -87,6 +87,10 @@ type AcuteIllnessActivity
     | AcuteIllnessTravelHistory
     | AcuteIllnessPriorTreatment
     | AcuteIllnessOngoingTreatment
+    | AcuteIllnessENT
+    | AcuteIllnessEyes
+    | AcuteIllnessGU
+    | AcuteIllnessOral
 
 
 type ChildScoreboardActivity
