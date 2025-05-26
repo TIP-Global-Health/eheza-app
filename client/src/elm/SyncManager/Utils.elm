@@ -1929,6 +1929,9 @@ siteFromString str =
         "burundi" ->
             SiteBurundi
 
+        "somalia" ->
+            SiteSomalia
+
         _ ->
             SiteUnknown
 

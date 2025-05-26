@@ -589,6 +589,9 @@ getGeoVillages site =
         SiteBurundi ->
             getGeoVillagesForBurundi
 
+        SiteSomalia ->
+            getGeoVillagesForRwanda
+
         _ ->
             Dict.empty
 

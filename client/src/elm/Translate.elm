@@ -2387,7 +2387,7 @@ translationSet trans =
             { english = "Acute Illness"
             , kinyarwanda = Just "Uburwayi butunguranye"
             , kirundi = Just "Ingwara ikaze"
-            , somali = Nothing
+            , somali = Just "Xanuun soo Bood ah"
             }
 
         AcuteIllnessAdverseEventKindsQuestion ->
@@ -3589,7 +3589,7 @@ translationSet trans =
             { english = "Antenatal Care"
             , kinyarwanda = Just "Isuzuma ku mugore utwite"
             , kirundi = Just "Gukurikirana umukenyezi wibungenze"
-            , somali = Nothing
+            , somali = Just "Daryeelka Uurreyda"
             }
 
         AntenatalProgressReport ->
@@ -3652,7 +3652,7 @@ translationSet trans =
             { english = "E-Heza System"
             , kinyarwanda = Just "E-heza sisiteme"
             , kirundi = Just "Ubuhinga bwa E-Heza"
-            , somali = Nothing
+            , somali = Just "Test E-heza"
             }
 
         AppointmentConfirmation ->
