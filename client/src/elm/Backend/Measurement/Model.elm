@@ -1810,9 +1810,12 @@ type SymptomsRespiratorySign
     | Cough
     | NasalCongestion
     | ShortnessOfBreath
-    | SoreThroat
+    | -- Moved to SymptomsENTSign, but still keeping it
+      -- to support prevoiusly created content.
+      SoreThroat
     | LossOfSmell
     | StabbingChestPain
+    | SymptomDifficultyBreathing
     | NoSymptomsRespiratory
 
 

@@ -10603,7 +10603,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 11,
+      'weight' => 4,
     ),
   );
 
@@ -10650,7 +10650,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 5,
+      'weight' => 10,
     ),
   );
 
@@ -10696,7 +10696,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 2,
+      'weight' => 7,
     ),
   );
 
@@ -10752,7 +10752,54 @@ function hedley_acute_illness_field_default_field_instances() {
         'year_range' => '-3:+3',
       ),
       'type' => 'date_select',
-      'weight' => 9,
+      'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-symptoms_respiratory-field_dificulty_breathing_period'.
+  $field_instances['node-symptoms_respiratory-field_dificulty_breathing_period'] = array(
+    'bundle' => 'symptoms_respiratory',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'number',
+        'settings' => array(
+          'decimal_separator' => '.',
+          'prefix_suffix' => TRUE,
+          'scale' => 0,
+          'thousand_separator' => '',
+        ),
+        'type' => 'number_integer',
+        'weight' => 14,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_dificulty_breathing_period',
+    'label' => 'Difficulty Breathing Period',
+    'required' => 0,
+    'settings' => array(
+      'max' => '',
+      'min' => '',
+      'prefix' => '',
+      'suffix' => '',
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 0,
+      'module' => 'number',
+      'settings' => array(),
+      'type' => 'number',
+      'weight' => 15,
     ),
   );
 
@@ -10799,7 +10846,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 7,
+      'weight' => 12,
     ),
   );
 
@@ -10846,7 +10893,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 4,
+      'weight' => 9,
     ),
   );
 
@@ -10891,7 +10938,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 10,
+      'weight' => 3,
     ),
   );
 
@@ -10981,7 +11028,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 13,
+      'weight' => 6,
     ),
   );
 
@@ -11028,7 +11075,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 3,
+      'weight' => 8,
     ),
   );
 
@@ -11075,7 +11122,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 6,
+      'weight' => 11,
     ),
   );
 
@@ -11122,7 +11169,7 @@ function hedley_acute_illness_field_default_field_instances() {
       'module' => 'number',
       'settings' => array(),
       'type' => 'number',
-      'weight' => 8,
+      'weight' => 13,
     ),
   );
 
@@ -11162,7 +11209,7 @@ function hedley_acute_illness_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 12,
+      'weight' => 5,
     ),
   );
 
@@ -12260,6 +12307,7 @@ function hedley_acute_illness_field_default_field_instances() {
   t('Date concluded');
   t('Dia');
   t('Difficult swallow period');
+  t('Difficulty Breathing Period');
   t('Dry Mouth Period');
   t('Dysuria period');
   t('Ear pain period');

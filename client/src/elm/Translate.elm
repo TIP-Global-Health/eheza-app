@@ -23377,6 +23377,9 @@ translationSet trans =
                     , kirundi = Just "Ububabare nk'umusonga mu gikiriza (umengo bagucumise imbugita)"
                     }
 
+                SymptomDifficultyBreathing ->
+                    translationSet DifficultyBreathingLabel
+
                 NoSymptomsRespiratory ->
                     translationSet NoneOfTheAbove
 

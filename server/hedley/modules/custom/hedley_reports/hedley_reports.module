@@ -3434,6 +3434,7 @@ function hedley_reports_count_acute_illness_symptoms_respiratory($measurement) {
     'field_sore_throat_period',
     'field_loss_of_smell_period',
     'field_stabbing_chest_pain_period',
+    'field_dificulty_breathing_period',
   ];
 
   return hedley_reports_count_acute_illness_symptoms($measurement, $fields);

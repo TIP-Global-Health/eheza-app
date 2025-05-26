@@ -2018,6 +2018,9 @@ encodeSymptomsRespiratoryValue signs =
 
         stabbingChestPain =
             Dict.get StabbingChestPain signs |> Maybe.withDefault 0
+
+        difficultyBreathing =
+            Dict.get SymptomDifficultyBreathing signs |> Maybe.withDefault 0
     in
     [ ( "cough_period", int cough )
     , ( "shortness_of_breath_period", int shortnessOfBreath )
@@ -2026,6 +2029,7 @@ encodeSymptomsRespiratoryValue signs =
     , ( "sore_throat_period", int soreThroat )
     , ( "loss_of_smell_period", int lossOfSmell )
     , ( "stabbing_chest_pain_period", int stabbingChestPain )
+    , ( "dificulty_breathing_period", int difficultyBreathing )
     , ( "deleted", bool False )
     , ( "type", string "symptoms_respiratory" )
     ]

@@ -2886,7 +2886,7 @@ symptomsGeneralToDict value =
 decodeSymptomsRespiratory : Decoder SymptomsRespiratory
 decodeSymptomsRespiratory =
     decodeAcuteIllnessMeasurement <|
-        map7 symptomsRespiratoryToDict
+        map8 symptomsRespiratoryToDict
             (field "cough_period" decodeInt)
             (field "shortness_of_breath_period" decodeInt)
             (field "nasal_congestion_period" decodeInt)
@@ -2894,10 +2894,11 @@ decodeSymptomsRespiratory =
             (field "sore_throat_period" decodeInt)
             (field "loss_of_smell_period" decodeInt)
             (field "stabbing_chest_pain_period" decodeInt)
+            (field "dificulty_breathing_period" decodeInt)
 
 
-symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
-symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat lossOfSmell stabbingChestPain =
+symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
+symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum soreThroat lossOfSmell stabbingChestPain difficultyBreathing =
     [ ( Cough, cough )
     , ( ShortnessOfBreath, shortnessOfBreath )
     , ( NasalCongestion, nasalCongestion )
@@ -2905,6 +2906,7 @@ symptomsRespiratoryToDict cough shortnessOfBreath nasalCongestion bloodInSputum 
     , ( SoreThroat, soreThroat )
     , ( LossOfSmell, lossOfSmell )
     , ( StabbingChestPain, stabbingChestPain )
+    , ( SymptomDifficultyBreathing, difficultyBreathing )
     ]
         |> symptomsListToDict NoSymptomsRespiratory
 

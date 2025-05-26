@@ -221,6 +221,7 @@ allSymptomsRespiratorySigns =
       , SoreThroat
       , LossOfSmell
       , StabbingChestPain
+      , SymptomDifficultyBreathing
       ]
     , NoSymptomsRespiratory
     )
