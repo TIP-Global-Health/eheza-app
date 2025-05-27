@@ -2894,7 +2894,7 @@ decodeSymptomsRespiratory =
             (field "sore_throat_period" decodeInt)
             (field "loss_of_smell_period" decodeInt)
             (field "stabbing_chest_pain_period" decodeInt)
-            (field "dificulty_breathing_period" decodeInt)
+            (field "dificulty_breathing_period" (decodeWithFallback 0 decodeInt))
 
 
 symptomsRespiratoryToDict : Int -> Int -> Int -> Int -> Int -> Int -> Int -> Int -> Dict SymptomsRespiratorySign Int
