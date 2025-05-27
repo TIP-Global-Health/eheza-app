@@ -192,8 +192,6 @@ symptomsGeneralDangerSigns =
     , IncreasedThirst
     , DryMouth
     , SevereWeakness
-    , YellowEyes
-    , CokeColoredUrine
     , SymptomsGeneralConvulsions
     , SpontaneousBleeding
     ]
@@ -218,7 +216,6 @@ allSymptomsRespiratorySigns =
       , ShortnessOfBreath
       , NasalCongestion
       , BloodInSputum
-      , SoreThroat
       , LossOfSmell
       , StabbingChestPain
       , SymptomDifficultyBreathing
@@ -3425,8 +3422,8 @@ malariaRapidTestResult measurements =
 
 malariaDangerSignsPresent : AcuteIllnessMeasurements -> Bool
 malariaDangerSignsPresent measurements =
-    Maybe.map3
-        (\symptomsGeneral symptomsGI acuteFindings ->
+    Maybe.map4
+        (\symptomsGeneral symptomsGI symptomsGU acuteFindings ->
             let
                 symptomsGeneralDict =
                     Tuple.second symptomsGeneral |> .value
@@ -3436,6 +3433,9 @@ malariaDangerSignsPresent measurements =
 
                 symptomsGISet =
                     Tuple.second symptomsGI |> .value |> .derivedSigns
+
+                symptomsGUDict =
+                    Tuple.second symptomsGU |> .value
 
                 acuteFindingsValue =
                     Tuple.second acuteFindings |> .value
@@ -3458,7 +3458,7 @@ malariaDangerSignsPresent measurements =
                     symptomAppearsAtSymptomsDict SevereWeakness symptomsGeneralDict
 
                 cokeColoredUrine =
-                    symptomAppearsAtSymptomsDict CokeColoredUrine symptomsGeneralDict
+                    symptomAppearsAtSymptomsDict CokeColoredUrine_ symptomsGUDict
 
                 convulsions =
                     symptomAppearsAtSymptomsDict SymptomsGeneralConvulsions symptomsGeneralDict
@@ -3518,6 +3518,7 @@ malariaDangerSignsPresent measurements =
         )
         measurements.symptomsGeneral
         measurements.symptomsGI
+        measurements.symptomsGU
         measurements.acuteFindings
         |> Maybe.withDefault False
 
