@@ -183,6 +183,19 @@ physicalExamTasks =
     ]
 
 
+allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
+allSymptomsGeneralSigns =
+    ( [ SymptomGeneralFever
+      , Chills
+      , NightSweats
+      , BodyAches
+      , Headache
+      ]
+        ++ symptomsGeneralDangerSigns
+    , NoSymptomsGeneral
+    )
+
+
 symptomsGeneralDangerSigns : List SymptomsGeneralSign
 symptomsGeneralDangerSigns =
     [ Lethargy
@@ -197,17 +210,22 @@ symptomsGeneralDangerSigns =
     ]
 
 
-allSymptomsGeneralSigns : ( List SymptomsGeneralSign, SymptomsGeneralSign )
-allSymptomsGeneralSigns =
+allSymptomsGeneralSignsForTraceContact : ( List SymptomsGeneralSign, SymptomsGeneralSign )
+allSymptomsGeneralSignsForTraceContact =
     ( [ SymptomGeneralFever
       , Chills
       , NightSweats
       , BodyAches
       , Headache
       ]
-        ++ symptomsGeneralDangerSigns
+        ++ symptomsGeneralDangerSignsForTraceContact
     , NoSymptomsGeneral
     )
+
+
+symptomsGeneralDangerSignsForTraceContact : List SymptomsGeneralSign
+symptomsGeneralDangerSignsForTraceContact =
+    symptomsGeneralDangerSigns ++ [ YellowEyes, CokeColoredUrine ]
 
 
 allSymptomsRespiratorySigns : ( List SymptomsRespiratorySign, SymptomsRespiratorySign )

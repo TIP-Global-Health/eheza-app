@@ -12,7 +12,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
-import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSigns, allSymptomsRespiratorySigns)
+import Pages.AcuteIllness.Activity.Utils exposing (allSymptomsGISigns, allSymptomsGeneralSignsForTraceContact, allSymptomsRespiratorySigns)
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.TraceContact.Model exposing (..)
 import Pages.Utils
@@ -344,7 +344,7 @@ viewSymptomsGeneralForm : Language -> NominalDate -> SymptomsGeneralForm -> Html
 viewSymptomsGeneralForm language currentDate form =
     let
         signs =
-            Tuple.first allSymptomsGeneralSigns ++ [ Tuple.second allSymptomsGeneralSigns ]
+            Tuple.first allSymptomsGeneralSignsForTraceContact ++ [ Tuple.second allSymptomsGeneralSignsForTraceContact ]
     in
     div [ class "symptoms-form general" ]
         [ viewQuestionLabel language Translate.PatientGotAnySymptoms
