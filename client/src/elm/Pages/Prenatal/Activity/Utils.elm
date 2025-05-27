@@ -1535,7 +1535,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                 expectedWeightGain =
                     let
                         weeksAfterFirstTrimester =
-                            egaInWeeks - 13
+                            egaInWeeks - 12
 
                         ( forFirstTrimester, perWeek ) =
                             weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
