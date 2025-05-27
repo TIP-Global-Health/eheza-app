@@ -23087,9 +23087,6 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
-                SoreThroat_ ->
-                    translationSet SoreThroatLabel
-
                 DifficultSwallowing ->
                     { english = "Difficult swallowing"
                     , kinyarwanda = Nothing

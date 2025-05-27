@@ -2094,15 +2094,11 @@ encodeSymptomsENTValue signs =
         earPusDischarge =
             Dict.get EarPusDischarge signs |> Maybe.withDefault 0
 
-        soreThroat =
-            Dict.get SoreThroat_ signs |> Maybe.withDefault 0
-
         difficultSwallowing =
             Dict.get DifficultSwallowing signs |> Maybe.withDefault 0
     in
     [ ( "ear_pain_period", int earPain )
     , ( "ear_pus_discharge_period", int earPusDischarge )
-    , ( "sore_throat_period", int soreThroat )
     , ( "difficult_swallow_period", int difficultSwallowing )
     , ( "deleted", bool False )
     , ( "type", string "acute_illness_ent" )

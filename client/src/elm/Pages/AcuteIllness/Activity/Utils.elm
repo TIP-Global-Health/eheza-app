@@ -216,6 +216,7 @@ allSymptomsRespiratorySigns =
       , ShortnessOfBreath
       , NasalCongestion
       , BloodInSputum
+      , SoreThroat
       , LossOfSmell
       , StabbingChestPain
       , SymptomDifficultyBreathing
@@ -240,7 +241,6 @@ allSymptomsENTSigns : ( List SymptomsENTSign, SymptomsENTSign )
 allSymptomsENTSigns =
     ( [ EarPain
       , EarPusDischarge
-      , SoreThroat_
       , DifficultSwallowing
       ]
     , NoSymptomsENT

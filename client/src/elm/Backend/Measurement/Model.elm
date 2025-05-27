@@ -1810,9 +1810,7 @@ type SymptomsRespiratorySign
     | Cough
     | NasalCongestion
     | ShortnessOfBreath
-    | -- Moved to SymptomsENTSign, but still keeping it
-      -- to support prevoiusly created content.
-      SoreThroat
+    | SoreThroat
     | LossOfSmell
     | StabbingChestPain
     | SymptomDifficultyBreathing
@@ -1850,7 +1848,6 @@ type alias SymptomsGI =
 type SymptomsENTSign
     = EarPain
     | EarPusDischarge
-    | SoreThroat_
     | DifficultSwallowing
     | NoSymptomsENT
 

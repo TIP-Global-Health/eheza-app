@@ -2973,7 +2973,6 @@ symptomsENTToDict : Int -> Int -> Int -> Int -> Dict SymptomsENTSign Int
 symptomsENTToDict earPain earPusDischarge soreThroat difficultSwallowing =
     [ ( EarPain, earPain )
     , ( EarPusDischarge, earPusDischarge )
-    , ( SoreThroat_, soreThroat )
     , ( DifficultSwallowing, difficultSwallowing )
     ]
         |> symptomsListToDict NoSymptomsENT

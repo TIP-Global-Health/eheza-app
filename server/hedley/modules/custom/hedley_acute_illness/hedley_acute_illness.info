@@ -143,7 +143,6 @@ features[field_instance][] = node-acute_illness_ent-field_ear_pus_discharge_peri
 features[field_instance][] = node-acute_illness_ent-field_nurse
 features[field_instance][] = node-acute_illness_ent-field_person
 features[field_instance][] = node-acute_illness_ent-field_shards
-features[field_instance][] = node-acute_illness_ent-field_sore_throat_period
 features[field_instance][] = node-acute_illness_ent-field_uuid
 features[field_instance][] = node-acute_illness_eyes-field_acute_illness_encounter
 features[field_instance][] = node-acute_illness_eyes-field_cloudy_appearance_period
