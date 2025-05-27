@@ -185,6 +185,9 @@ resolveGeoSructureLabelLevel4 site =
         SiteBurundi ->
             Translate.Colline
 
+        SiteSomalia ->
+            Translate.Cell
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -197,6 +200,9 @@ resolveGeoSructureLabelLevel5 site =
 
         SiteBurundi ->
             Translate.CollineSub
+
+        SiteSomalia ->
+                    Translate.Village
 
         SiteUnknown ->
             Translate.EmptyString
@@ -294,7 +300,10 @@ getGeoCells site =
             getGeoCellsForRwanda
 
         SiteBurundi ->
-            getGeoCellsForBurundi
+            getGeoCellsForBurundiite
+
+        SiteSomalia ->
+             getGeoCellsForRwanda
 
         _ ->
             Dict.empty

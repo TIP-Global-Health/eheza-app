@@ -589,6 +589,9 @@ getGeoVillages site =
         SiteBurundi ->
             getGeoVillagesForBurundi
 
+        SiteSomalia ->
+            getGeoVillagesForRwanda
+
         _ ->
             Dict.empty
 
@@ -2999,6 +3002,10 @@ resolveGeoSructureLabelLevel2 site =
         SiteBurundi ->
             Translate.Commune
 
+        SiteSomalia ->
+            --@todo
+            Translate.EmptyString
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3011,6 +3018,10 @@ resolveGeoSructureLabelLevel3 site =
 
         SiteBurundi ->
             Translate.Zone
+
+        SiteSomalia ->
+            --@todo
+            Translate.EmptyString
 
         SiteUnknown ->
             Translate.EmptyString
@@ -3025,6 +3036,10 @@ resolveGeoSructureLabelLevel4 site =
         SiteBurundi ->
             Translate.Colline
 
+        SiteSomalia ->
+            --@todo
+            Translate.EmptyString
+
         SiteUnknown ->
             Translate.EmptyString
 
@@ -3037,6 +3052,10 @@ resolveGeoSructureLabelLevel5 site =
 
         SiteBurundi ->
             Translate.CollineSub
+
+        SiteSomalia ->
+            --@todo
+            Translate.EmptyString
 
         SiteUnknown ->
             Translate.EmptyString
