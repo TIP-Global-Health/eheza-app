@@ -300,7 +300,7 @@ update language currentDate id isLabTech db msg model =
             let
                 updatedForm =
                     model.pregnancyDatingData.form
-                        |> (\form -> { form | prePregnancyWeight = String.toFloat value })
+                        |> (\form -> { form | prePregnancyWeight = String.toFloat value, prePregnancyWeightDirty = True })
 
                 updatedData =
                     model.pregnancyDatingData
