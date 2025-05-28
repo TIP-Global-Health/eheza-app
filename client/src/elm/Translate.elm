@@ -24238,6 +24238,7 @@ translationSet trans =
             { english = "Unable to take measurement"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
 
         Underweight ->
             { english = "Underweight"
