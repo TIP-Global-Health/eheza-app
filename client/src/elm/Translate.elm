@@ -119,6 +119,7 @@ import Pages.Prenatal.Activity.Types
         , GWGClassification(..)
         , HistoryTask(..)
         , MedicationTask(..)
+        , PrePregnancyClassification(..)
         , TreatmentReviewTask(..)
         )
 import Pages.Prenatal.Model exposing (HypertensionTreatementUpdateOption(..))
@@ -438,6 +439,7 @@ type TranslationId
     | Back
     | BackendError
     | Balance
+    | BaselineBMI Float
     | BaselineWeight Float
     | BaselineWeightNotFound
     | BatchNumberAbbrev
@@ -461,6 +463,7 @@ type TranslationId
     | BloodInSputumQuestion
     | BMI
     | BMIHelper
+    | BMIUnit
     | BodyTemperature
     | BornUnderweight
     | BoughtClothesQuestion
@@ -1178,6 +1181,7 @@ type TranslationId
     | OnTrack
     | Or
     | OutsideCareLabel
+    | Overweight
     | Overview
     | PackagesPerMonth
     | Page
@@ -1318,8 +1322,10 @@ type TranslationId
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
     | PregnancyOutcome PregnancyOutcome
+    | PrePregnancyClassification PrePregnancyClassification
     | PrescribedMedicationsChangedQuestion
     | PrescribedMedicationsTakenQuestion
+    | PreTermPregnancy
     | PreviousCSectionScar
     | PreviousDelivery
     | PreviousDeliveryPeriods PreviousDeliveryPeriod
@@ -1336,7 +1342,6 @@ type TranslationId
     | ProphylaxisMedications
     | ProvideHealthEducationAndInstructToIsolate
     | ProvideNutritionalSupplement
-    | PreTermPregnancy
     | PriorDiagnosis
     | ProvideHealthEducation
     | ProvideHealthEducationShort
@@ -2061,6 +2066,7 @@ type TranslationId
     | Type
     | UbudeheLabel
     | UbudeheNumber Ubudehe
+    | Underweight
     | UndeterminedDiagnoses
     | UndeterminedDiagnosisMessage
     | UnitCopiesPerMM3
@@ -3575,6 +3581,12 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        BaselineBMI value ->
+            { english = "Pre-pregnancy baseline BMI: " ++ Round.round 1 value
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         BaselineWeight value ->
             { english = "Pre-pregnancy baseline weight: " ++ String.fromFloat value
             , kinyarwanda = Nothing
@@ -3863,6 +3875,12 @@ translationSet trans =
             { english = "Calculated based on Height and Weight"
             , kinyarwanda = Just "Byabazwe hashingiwe ku burebure n'ibiro"
             , kirundi = Just "Uguharura ukurikije uburebure hamwe n'uburemere"
+            }
+
+        BMIUnit ->
+            { english = "kg/m²"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         BodyTemperature ->
@@ -13534,10 +13552,7 @@ translationSet trans =
                     }
 
                 DiagnosisOverweight ->
-                    { english = "Overweight"
-                    , kinyarwanda = Just "Aftie ibiro byinshi"
-                    , kirundi = Just "Ubunini burenzeko"
-                    }
+                    translationSet Overweight
 
                 DiagnosisObese ->
                     { english = "Obese"
@@ -13730,6 +13745,12 @@ translationSet trans =
             { english = "or"
             , kinyarwanda = Just "cyangwa"
             , kirundi = Just "Canke"
+            }
+
+        Overweight ->
+            { english = "Overweight"
+            , kinyarwanda = Just "Aftie ibiro byinshi"
+            , kirundi = Just "Ubunini burenzeko"
             }
 
         OutsideCareLabel ->
@@ -17546,6 +17567,23 @@ translationSet trans =
                     { english = "Abortions (before 24 weeks EGA)"
                     , kinyarwanda = Just "Kuvanamo inda (mbere y'ibyumweru 24)"
                     , kirundi = Just "Ugukoroka kw'imbanyi (imbere y'indwi 24 ugereranije nigihe imbanyi imaze)"
+                    }
+
+        PrePregnancyClassification classification ->
+            case classification of
+                PrePregnancyUnderWeight ->
+                    translationSet Underweight
+
+                PrePregnancyNormal ->
+                    translationSet Normal
+
+                PrePregnancyOverweight ->
+                    translationSet Overweight
+
+                PrePregnancyObesity ->
+                    { english = "Obesity"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         PrescribedMedicationsChangedQuestion ->
@@ -24195,6 +24233,12 @@ translationSet trans =
                 NoUbudehe ->
                     translationSet EmptyString
 
+        Underweight ->
+            { english = "Underweight"
+            , kinyarwanda = Just "Ibiro bidahagije"
+            , kirundi = Just "Ibiro bikeya cane"
+            }
+
         UndeterminedDiagnoses ->
             { english = "Undetermined Diagnoses"
             , kinyarwanda = Just "Uburwayi ntibusobanutse"
@@ -24487,10 +24531,7 @@ translationSet trans =
                     }
 
                 NormalVaginalExam ->
-                    { english = "Normal"
-                    , kinyarwanda = Just "Bisanzwe"
-                    , kirundi = Just "Bisanzwe"
-                    }
+                    translationSet Normal
 
         ValidationErrors ->
             { english = "Validation Errors"
@@ -26293,11 +26334,8 @@ translateDashboard trans =
                     , kirundi = Just "Ugucererwa mu gukura"
                     }
 
-                Underweight ->
-                    { english = "Underweight"
-                    , kinyarwanda = Just "Ibiro bidahagije"
-                    , kirundi = Just "Ibiro bikeya cane"
-                    }
+                Dashboard.Underweight ->
+                    translationSet Underweight
 
                 Wasting ->
                     { english = "Wasting"
