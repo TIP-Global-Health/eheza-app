@@ -3180,7 +3180,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
         nutritionalSupplementAlert =
             Maybe.map
                 (\muac ->
-                    if muac < 23 then
+                    if muac < 22 then
                         p [ class "nutritional-supplement-alert" ] [ text <| translate language Translate.ProvideNutritionalSupplement ]
 
                     else
