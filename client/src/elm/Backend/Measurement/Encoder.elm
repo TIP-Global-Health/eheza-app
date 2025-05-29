@@ -897,7 +897,6 @@ encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value 
 encodeNutritionValueWithType type_ value =
     [ ( "nutrition_signs", encodeEverySet encodeNutritionSign value.signs )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
-    , ( "deleted", bool value.deleted )
     , ( "type", string type_ )
     ]
 
@@ -1030,6 +1029,7 @@ encodeMeasurement encounterTag encoder measurement =
           , ( "date_measured", Gizra.NominalDate.encodeYYYYMMDD measurement.dateMeasured )
           , ( "nurse", maybe encodeEntityUuid measurement.nurse )
           , ( "health_center", maybe encodeEntityUuid measurement.healthCenter )
+          , ( "deleted", bool measurement.deleted )
           ]
         , encoder measurement.value
         ]
