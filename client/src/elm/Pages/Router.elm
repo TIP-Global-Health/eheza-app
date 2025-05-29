@@ -229,7 +229,7 @@ pageToFragment current =
                                     "/activities"
 
                                 ActivityPage activity ->
-                                    "/activity/" ++ Activity.Utils.encodeActivityAsString activity
+                                    "/activity/" ++ Activity.Utils.activityToString activity
 
                                 AttendancePage ->
                                     ""
@@ -241,7 +241,7 @@ pageToFragment current =
                                     "/mother/" ++ fromEntityUuid id
 
                                 NextStepsPage id activity ->
-                                    "/next-steps/" ++ fromEntityUuid id ++ "/" ++ Activity.Utils.encodeActivityAsString activity
+                                    "/next-steps/" ++ fromEntityUuid id ++ "/" ++ Activity.Utils.activityToString activity
 
                                 ParticipantsPage ->
                                     "/participants"
@@ -288,7 +288,7 @@ pageToFragment current =
                     Just <| "nutrition-encounter/" ++ fromEntityUuid id
 
                 NutritionActivityPage id activity ->
-                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NutritionActivity.Utils.encodeActivityAsString activity
+                    Just <| "nutrition-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.NutritionActivity.Utils.activityToString activity
 
                 NutritionProgressReportPage encounterId ->
                     Just <| "nutrition-progress-report/" ++ fromEntityUuid encounterId
@@ -297,7 +297,7 @@ pageToFragment current =
                     Just <| "acute-illness-encounter/" ++ fromEntityUuid id
 
                 AcuteIllnessActivityPage id activity ->
-                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.AcuteIllnessActivity.Utils.encodeActivityAsString activity
+                    Just <| "acute-illness-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.AcuteIllnessActivity.Utils.activityToString activity
 
                 AcuteIllnessProgressReportPage initiator id ->
                     Just <|
@@ -313,13 +313,13 @@ pageToFragment current =
                     Just <| "home-visit-encounter/" ++ fromEntityUuid id
 
                 HomeVisitActivityPage id activity ->
-                    Just <| "home-visit-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HomeVisitActivity.Utils.encodeActivityAsString activity
+                    Just <| "home-visit-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.HomeVisitActivity.Utils.activityToString activity
 
                 WellChildEncounterPage id ->
                     Just <| "well-child-encounter/" ++ fromEntityUuid id
 
                 WellChildActivityPage id activity ->
-                    Just <| "well-child-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.WellChildActivity.Utils.encodeActivityAsString activity
+                    Just <| "well-child-activity/" ++ fromEntityUuid id ++ "/" ++ Backend.WellChildActivity.Utils.activityToString activity
 
                 WellChildProgressReportPage id ->
                     Just <| "well-child-progress-report/" ++ fromEntityUuid id
@@ -507,7 +507,7 @@ parseUuid =
 
 parseActivity : Parser (Activity -> c) c
 parseActivity =
-    custom "Activity" Activity.Utils.decodeActivityFromString
+    custom "Activity" Activity.Utils.activityFromString
 
 
 parsePrenatalActivity : Parser (PrenatalActivity -> c) c
@@ -527,22 +527,22 @@ parseLaboratoryTest =
 
 parseNutritionActivity : Parser (NutritionActivity -> c) c
 parseNutritionActivity =
-    custom "NutritionActivity" Backend.NutritionActivity.Utils.decodeActivityFromString
+    custom "NutritionActivity" Backend.NutritionActivity.Utils.activityFromString
 
 
 parseAcuteIllnessActivity : Parser (AcuteIllnessActivity -> c) c
 parseAcuteIllnessActivity =
-    custom "AcuteIllnessActivity" Backend.AcuteIllnessActivity.Utils.decodeActivityFromString
+    custom "AcuteIllnessActivity" Backend.AcuteIllnessActivity.Utils.activityFromString
 
 
 parseHomeVisitActivity : Parser (HomeVisitActivity -> c) c
 parseHomeVisitActivity =
-    custom "HomeVisitActivity" Backend.HomeVisitActivity.Utils.decodeActivityFromString
+    custom "HomeVisitActivity" Backend.HomeVisitActivity.Utils.activityFromString
 
 
 parseWellChildActivity : Parser (WellChildActivity -> c) c
 parseWellChildActivity =
-    custom "WellChildActivity" Backend.WellChildActivity.Utils.decodeActivityFromString
+    custom "WellChildActivity" Backend.WellChildActivity.Utils.activityFromString
 
 
 parseNCDActivity : Parser (NCDActivity -> c) c

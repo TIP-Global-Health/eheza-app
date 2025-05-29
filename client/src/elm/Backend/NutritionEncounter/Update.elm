@@ -6,6 +6,7 @@ import Backend.Endpoints exposing (..)
 import Backend.Entities exposing (..)
 import Backend.NutritionEncounter.Model exposing (..)
 import Backend.Utils exposing (saveMeasurementCmd, sw)
+import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (NominalDate)
 import Maybe.Extra exposing (unwrap)
 import RemoteData exposing (RemoteData(..))
@@ -24,20 +25,28 @@ update :
 update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
     case msg of
         CloseNutritionEncounter ->
-            maybeEncounter
-                |> unwrap ( model, Cmd.none, [] )
-                    (\encounter ->
-                        ( { model | closeNutritionEncounter = Loading }
-                        , { encounter | endDate = Just currentDate }
-                            |> sw.patchFull nutritionEncounterEndpoint encounterId
-                            |> withoutDecoder
-                            |> toCmd (RemoteData.fromResult >> HandleClosedNutritionEncounter)
-                        , []
-                        )
-                    )
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | endDate = Just currentDate }) model
 
-        HandleClosedNutritionEncounter data ->
-            ( { model | closeNutritionEncounter = data }
+        AddSkippedForm skippedForm ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter | skippedForms = EverySet.insert skippedForm encounter.skippedForms }
+                )
+                model
+
+        RemoveSkippedForm skippedForm ->
+            updateEncounter currentDate
+                encounterId
+                maybeEncounter
+                (\encounter ->
+                    { encounter | skippedForms = EverySet.remove skippedForm encounter.skippedForms }
+                )
+                model
+
+        HandleUpdatedNutritionEncounter data ->
+            ( { model | editNutritionEncounter = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
@@ -160,4 +169,25 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             ( { model | saveFollowUp = data }
             , Cmd.none
             , triggerRollbarOnFailure data
+            )
+
+
+updateEncounter :
+    NominalDate
+    -> NutritionEncounterId
+    -> Maybe NutritionEncounter
+    -> (NutritionEncounter -> NutritionEncounter)
+    -> Model
+    -> ( Model, Cmd Msg, List App.Model.Msg )
+updateEncounter currentDate encounterId maybeEncounter updateFunc model =
+    maybeEncounter
+        |> unwrap ( model, Cmd.none, [] )
+            (\encounter ->
+                ( { model | editNutritionEncounter = Loading }
+                , updateFunc encounter
+                    |> sw.patchFull nutritionEncounterEndpoint encounterId
+                    |> withoutDecoder
+                    |> toCmd (RemoteData.fromResult >> HandleUpdatedNutritionEncounter)
+                , []
+                )
             )
