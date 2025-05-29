@@ -423,6 +423,7 @@ toNutritionValue form =
     in
     Maybe.map NutritionValue signs
         |> andMap form.assesment
+        |> andMap (Just False)
 
 
 fromWeightValue : Maybe WeightInKg -> WeightForm

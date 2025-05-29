@@ -897,7 +897,7 @@ encodeNutritionValueWithType : String -> NutritionValue -> List ( String, Value 
 encodeNutritionValueWithType type_ value =
     [ ( "nutrition_signs", encodeEverySet encodeNutritionSign value.signs )
     , ( "nutrition_assesment", encodeEverySet encodeNutritionAssessment value.assesment )
-    , ( "deleted", bool False )
+    , ( "deleted", bool value.deleted )
     , ( "type", string type_ )
     ]
 
