@@ -80,7 +80,7 @@ decodeMeasurement encounterTag valueDecoder =
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
-        |> optional "deleted" bool False
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
 
