@@ -48,7 +48,11 @@ import Utils.Html exposing (viewModal)
 
 
 view : Language -> NominalDate -> String -> ModelBackend -> Model -> Html Msg
-view language currentDate themePath modelBackend model =
+view language currentDate_ themePath modelBackend model =
+    let
+        currentDate =
+            Date.add Days -139 currentDate_
+    in
     case modelBackend.reportsData of
         Just (Ok data) ->
             viewReportsData language currentDate themePath data model
@@ -1008,9 +1012,11 @@ demographicsReportEncountersDataToCSV data =
 viewNutritionReport : Language -> NominalDate -> String -> Maybe (List BackendGeneratedNutritionReportTableDate) -> RemoteData String NutritionReportData -> Html Msg
 viewNutritionReport language currentDate scopeLabel mBackendGeneratedData reportData =
     let
+        -- generatedData =
+        --     Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
+        --         |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
         generatedData =
-            Maybe.map (generareNutritionReportDataFromBackendGeneratedData language currentDate) mBackendGeneratedData
-                |> Maybe.withDefault (generareNutritionReportDataFromRawData language currentDate reportData)
+            generareNutritionReportDataFromRawData language currentDate reportData
 
         csvFileName =
             "nutrition-report-"
@@ -1340,25 +1346,33 @@ toMetricsResultsTableData language heading data =
 
         generateRow label =
             List.map
-                (\value ->
-                    Round.round 3 value ++ "%"
+                (\( nominator, denominator ) ->
+                    let
+                        value =
+                            if denominator == 0 then
+                                0
+
+                            else
+                                (toFloat nominator / toFloat denominator) * 100
+                    in
+                    Round.round 3 value ++ "%   [ " ++ String.fromInt nominator ++ " / " ++ String.fromInt denominator ++ " ]"
                 )
                 >> List.append [ translate language label ]
     in
     { heading = translate language heading ++ ":"
     , captions = captions
     , rows =
-        [ List.map (Tuple.second >> .stuntingModerate) data
+        [ List.map (Tuple.second >> (\info -> ( info.stuntingModerate, info.stuntingTotal ))) data
             |> generateRow Translate.StuntingModerate
-        , List.map (Tuple.second >> .stuntingSevere) data
+        , List.map (Tuple.second >> (\info -> ( info.stuntingSevere, info.stuntingTotal ))) data
             |> generateRow Translate.StuntingSevere
-        , List.map (Tuple.second >> .wastingModerate) data
+        , List.map (Tuple.second >> (\info -> ( info.wastingModerate, info.wastingTotal ))) data
             |> generateRow Translate.WastingModerate
-        , List.map (Tuple.second >> .wastingSevere) data
+        , List.map (Tuple.second >> (\info -> ( info.wastingSevere, info.wastingTotal ))) data
             |> generateRow Translate.WastingSevere
-        , List.map (Tuple.second >> .underweightModerate) data
+        , List.map (Tuple.second >> (\info -> ( info.underweightModerate, info.underweightTotal ))) data
             |> generateRow Translate.UnderweightModerate
-        , List.map (Tuple.second >> .underweightSevere) data
+        , List.map (Tuple.second >> (\info -> ( info.underweightSevere, info.underweightTotal ))) data
             |> generateRow Translate.UnderweightSevere
         ]
     }
