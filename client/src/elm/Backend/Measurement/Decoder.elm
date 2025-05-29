@@ -1296,6 +1296,7 @@ decodeNutritionValue =
     succeed NutritionValue
         |> required "nutrition_signs" (decodeEverySet decodeChildNutritionSign)
         |> custom (decodeWithFallback (EverySet.fromList [ NoNutritionAssessment ]) decodeNutritionAssessment)
+        |> optional "deleted" bool False
 
 
 decodePhoto : Decoder Photo

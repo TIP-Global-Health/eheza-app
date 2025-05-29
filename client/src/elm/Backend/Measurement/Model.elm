@@ -211,6 +211,7 @@ type alias ChildNutrition =
 type alias NutritionValue =
     { signs : EverySet ChildNutritionSign
     , assesment : EverySet NutritionAssessment
+    , deleted : Bool
     }
 
 
@@ -218,6 +219,7 @@ emptyNutritionValue : NutritionValue
 emptyNutritionValue =
     { signs = EverySet.empty
     , assesment = EverySet.empty
+    , deleted = False
     }
 
 
