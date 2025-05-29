@@ -1571,7 +1571,7 @@ weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
             ( 2, 0.51 )
 
         PrePregnancyNormal ->
-            ( 2, 0.42 )
+            ( 1, 0.42 )
 
         PrePregnancyOverweight ->
             ( 1, 0.28 )
