@@ -80,6 +80,7 @@ decodeMeasurement encounterTag valueDecoder =
         |> optional "nurse" (nullable decodeEntityUuid) Nothing
         |> optional "health_center" (nullable decodeEntityUuid) Nothing
         |> required "person" decodeEntityUuid
+        |> optional "deleted" bool False
         |> optional encounterTag (nullable decodeEntityUuid) Nothing
         |> custom valueDecoder
 
@@ -1296,7 +1297,6 @@ decodeNutritionValue =
     succeed NutritionValue
         |> required "nutrition_signs" (decodeEverySet decodeChildNutritionSign)
         |> custom (decodeWithFallback (EverySet.fromList [ NoNutritionAssessment ]) decodeNutritionAssessment)
-        |> optional "deleted" bool False
 
 
 decodePhoto : Decoder Photo
