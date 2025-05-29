@@ -6293,6 +6293,11 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'prenatal_random_blood_sugar_test_result' => '3+',
     'prenatal_syphilis_test_result' => '7+',
     'prenatal_urine_dipstick_test_result' => '9+',
+    'prenatal_calcium' => 'a1',
+    'prenatal_folate' => 'b1',
+    'prenatal_iron' => 'c1',
+    'prenatal_mms' => 'd1',
+    'prenatal_mebendazole' => 'e1',
   ];
 
   // Load all encounters of current participant.
@@ -6547,7 +6552,36 @@ function hedley_reports_prenatal_generate_expected_initial_activities(array $enc
   }
 
   if ($encounter_type == 'nurse' && empty($previous_nurse_encounters_data)) {
-    $expected[] = 'medication';
+    // Medications were changed - from single medication activity,
+    // to 5 activities for each of medication types.
+    $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
+    if (!$change_date) {
+      $expected[] = 'medication';
+    }
+    else {
+      $change_date_obj = new DateTime($change_date);
+      if ($encounter_data['start_date_obj'] >= $change_date_obj) {
+        // Encounter has started after the change.
+        $expected[] = 'prenatal_calcium';
+        $expected[] = 'prenatal_folate';
+        $expected[] = 'prenatal_iron';
+        $expected[] = 'prenatal_mms';
+
+        // Mebendazole activity is expected from EGA 24.
+        $lmp_date = $encounter_data['lmp_date'];
+        if (!empty($lmp_date)) {
+          $lmp_date_obj = new DateTime($lmp_date);
+          $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
+          if ($ega_in_weeks >= 24) {
+            $expected[] = 'prenatal_mebendazole';
+          }
+        }
+      }
+      else {
+        // Encounter has started before the change.
+        $expected[] = 'medication';
+      }
+    }
   }
 
   if ($encounter_type == 'nurse') {

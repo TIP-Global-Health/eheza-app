@@ -20,7 +20,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (divKeyed, emptyNode, keyed, keyedDivKeyed, showIf, showMaybe)
-import Gizra.NominalDate exposing (NominalDate, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -34,6 +34,7 @@ import Measurement.Model
         , CorePhysicalExamForm
         , InvokationModule(..)
         , LaboratoryTask(..)
+        , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VitalsForm
@@ -52,6 +53,7 @@ import Measurement.Utils
         , hivTestUniversalFormWithDefault
         , laboratoryTaskIconClass
         , malariaTestFormWithDefault
+        , medicationAdministrationFormWithDefault
         , outsideCareFormInputsAndTasks
         , outsideCareFormWithDefault
         , partnerHIVTestFormWithDefault
@@ -75,6 +77,8 @@ import Measurement.View
     exposing
         ( viewFamilyPlanningForm
         , viewFamilyPlanningInput
+        , viewMeasurementFloatDiff
+        , viewMedicationAdministrationForm
         )
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Prenatal.Activity.Model exposing (..)
@@ -113,6 +117,7 @@ import Pages.Utils
         , viewMeasurementInput
         , viewPhotoThumbFromImageUrl
         , viewPreviousMeasurement
+        , viewPreviousMeasurementCustom
         , viewQuestionLabel
         , viewRedAlertForBool
         , viewRedAlertForSelect
@@ -126,22 +131,24 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (Language, TranslationId, translate)
 import Utils.Html exposing (viewModal)
 import Utils.WebData exposing (viewWebData)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
-view : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
-view language currentDate site id isChw activity db model =
+view : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> Html Msg
+view language currentDate zscores site id isChw activity db model =
     let
         assembled =
             generateAssembledData id db
     in
-    viewWebData language (viewHeaderAndContent language currentDate site id isChw activity db model) identity assembled
+    viewWebData language (viewHeaderAndContent language currentDate zscores site id isChw activity db model) identity assembled
 
 
-viewHeaderAndContent : Language -> NominalDate -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewHeaderAndContent language currentDate site id isChw activity db model assembled =
+viewHeaderAndContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> PrenatalEncounterId -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewHeaderAndContent language currentDate zscores site id isChw activity db model assembled =
     div [ class "page-activity prenatal" ] <|
         [ viewHeader language id activity assembled
-        , viewContent language currentDate site isChw activity db model assembled
+        , viewContent language currentDate zscores site isChw activity db model assembled
         , viewModal <|
             warningPopup language currentDate isChw assembled.encounter.diagnoses SetWarningPopupState model.warningPopupState
         ]
@@ -174,11 +181,11 @@ viewHeader language id activity assembled =
         ]
 
 
-viewContent : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
-viewContent language currentDate site isChw activity db model assembled =
+viewContent : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> ModelIndexedDb -> Model -> AssembledData -> Html Msg
+viewContent language currentDate zscores site isChw activity db model assembled =
     div [ class "ui unstackable items" ] <|
         viewMotherAndMeasurements language currentDate isChw assembled (Just ( model.showAlertsDialog, SetAlertsDialogState ))
-            ++ viewActivity language currentDate site isChw activity assembled db model
+            ++ viewActivity language currentDate zscores site isChw activity assembled db model
 
 
 warningPopup :
@@ -297,8 +304,8 @@ warningPopup language currentDate isChw encounterDiagnoses setStateMsg state =
         state
 
 
-viewActivity : Language -> NominalDate -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
-viewActivity language currentDate site isChw activity assembled db model =
+viewActivity : Language -> NominalDate -> ZScore.Model.Model -> Site -> Bool -> PrenatalActivity -> AssembledData -> ModelIndexedDb -> Model -> List (Html Msg)
+viewActivity language currentDate zscores site isChw activity assembled db model =
     case activity of
         PregnancyDating ->
             viewPregnancyDatingContent language currentDate assembled model.pregnancyDatingData
@@ -307,7 +314,7 @@ viewActivity language currentDate site isChw activity assembled db model =
             viewHistoryContent language currentDate assembled model.historyData
 
         Examination ->
-            viewExaminationContent language currentDate assembled model.examinationData
+            viewExaminationContent language currentDate zscores assembled model.examinationData
 
         FamilyPlanning ->
             viewFamilyPlanningContent language currentDate assembled model.familyPlanningData
@@ -375,18 +382,6 @@ viewPregnancyDatingContent language currentDate assembled data =
                 |> getMeasurementValueFunc
                 |> lastMenstrualPeriodFormWithDefault data.form
 
-        chwLmpConfirmationSection lmpValueByChw =
-            [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
-            , viewLabel language Translate.LmpLabel
-            , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY lmpValueByChw.date ]
-            , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
-            , viewBoolInput language
-                form.chwLmpConfirmation
-                (SetConfirmLmpDate lmpValueByChw)
-                "confirm-lmp"
-                Nothing
-            ]
-
         ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
             let
                 ( derivedSection, derivedTasksCompleted, derivedTasksTotal ) =
@@ -408,8 +403,7 @@ viewPregnancyDatingContent language currentDate assembled data =
 
                     else
                         ( [], 0, 0 )
-            in
-            ( let
+
                 lmpDateInput =
                     let
                         dateSelectorConfig =
@@ -429,9 +423,16 @@ viewPregnancyDatingContent language currentDate assembled data =
                         , onClick <| SetLmpDateSelectorState (Just dateSelectorConfig)
                         ]
                         [ text lmpdDateForView ]
-              in
-              [ viewLabel language Translate.LmpDateHeader
+            in
+            ( [ viewLabel language Translate.LmpDateHeader
               , lmpDateInput
+              , viewQuestionLabel language Translate.PrePregnancyWeightQuestion
+              , viewMeasurementInput
+                    language
+                    form.prePregnancyWeight
+                    SetPrePregnancyWeight
+                    "weight"
+                    Translate.KilogramShorthand
               , viewQuestionLabel language Translate.LmpDateConfidentHeader
               , viewBoolInput language form.lmpDateConfident SetLmpDateConfident "is-confident" Nothing
               , viewModal <| viewCalendarPopup language form.dateSelectorPopupState form.lmpDate
@@ -439,8 +440,9 @@ viewPregnancyDatingContent language currentDate assembled data =
                 ++ derivedSection
             , taskCompleted form.lmpDate
                 + taskCompleted form.lmpDateConfident
+                + taskCompleted form.prePregnancyWeight
                 + derivedTasksCompleted
-            , 2 + derivedTasksTotal
+            , 3 + derivedTasksTotal
             )
 
         ( inputs, tasksCompleted, totalTasks ) =
@@ -458,6 +460,26 @@ viewPregnancyDatingContent language currentDate assembled data =
                         let
                             chwLmpConfirmationTasksCompleted =
                                 taskCompleted form.chwLmpConfirmation
+
+                            chwLmpConfirmationSection value =
+                                let
+                                    prePregnancyWeight =
+                                        Maybe.map (\(WeightInKg weight) -> String.fromFloat weight ++ "kg")
+                                            value.prePregnancyWeight
+                                            |> Maybe.withDefault "Not Set"
+                                in
+                                [ viewCustomLabel language Translate.LmpDateConfirmationLabel "." "label"
+                                , viewLabel language Translate.LmpLabel
+                                , p [ class "chw-lmp" ] [ text <| formatDDMMYYYY value.date ]
+                                , viewLabel language Translate.PrePregnancyWeight
+                                , p [ class "chw-lmp" ] [ text prePregnancyWeight ]
+                                , viewQuestionLabel language Translate.LmpDateConfirmationQuestion
+                                , viewBoolInput language
+                                    form.chwLmpConfirmation
+                                    (SetConfirmLmpDate value)
+                                    "confirm-lmp"
+                                    Nothing
+                                ]
                         in
                         if form.chwLmpConfirmation == Just False then
                             ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection
@@ -848,8 +870,8 @@ viewHistoryContent language currentDate assembled data =
     ]
 
 
-viewExaminationContent : Language -> NominalDate -> AssembledData -> ExaminationData -> List (Html Msg)
-viewExaminationContent language currentDate assembled data =
+viewExaminationContent : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> ExaminationData -> List (Html Msg)
+viewExaminationContent language currentDate zscores assembled data =
     let
         tasks =
             resolveExaminationTasks assembled
@@ -937,8 +959,9 @@ viewExaminationContent language currentDate assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
-        measuredHeight =
-            resolveMeasuredHeight assembled
+        previouslyMeasuredHeight =
+            resolvePreviouslyMeasuredHeight assembled
+                |> Maybe.map getHeightValue
 
         ( obstetricalExamInputs, obstetricalExamTasks ) =
             getMeasurementValueFunc assembled.measurements.obstetricalExam
@@ -960,18 +983,18 @@ viewExaminationContent language currentDate assembled data =
                 Just NutritionAssessment ->
                     let
                         form =
-                            assembled.measurements.nutrition
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.nutrition
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         formWithMeasuredHeight =
-                            Maybe.map (\(HeightInCm height) -> { form | height = Just height }) measuredHeight
+                            Maybe.map (\height -> { form | height = Just height }) previouslyMeasuredHeight
                                 |> Maybe.withDefault form
 
-                        hideHeightInput =
-                            isJust measuredHeight
+                        prePregnancyWeight =
+                            resolvePrePregnancyWeight assembled
+                                |> Maybe.map weightValueFunc
                     in
-                    viewNutritionAssessmentForm language currentDate assembled formWithMeasuredHeight hideHeightInput
+                    viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
 
                 Just CorePhysicalExam ->
                     getMeasurementValueFunc assembled.measurements.corePhysicalExam
@@ -1013,7 +1036,7 @@ viewExaminationContent language currentDate assembled data =
                                     SaveVitals personId measurements.vitals nextTask
 
                                 NutritionAssessment ->
-                                    SaveNutritionAssessment personId measurements.nutrition (Maybe.map getHeightValue measuredHeight) nextTask
+                                    SaveNutritionAssessment personId measurements.nutrition previouslyMeasuredHeight nextTask
 
                                 CorePhysicalExam ->
                                     SaveCorePhysicalExam personId measurements.corePhysicalExam nextTask
@@ -1082,41 +1105,152 @@ viewFamilyPlanningContent language currentDate assembled data =
 viewMedicationContent : Language -> NominalDate -> AssembledData -> MedicationData -> List (Html Msg)
 viewMedicationContent language currentDate assembled data =
     let
-        form =
-            assembled.measurements.medication
-                |> getMeasurementValueFunc
-                |> medicationFormWithDefault data.form
+        measurements =
+            assembled.measurements
+
+        tasks =
+            resolveMedicationTasks currentDate assembled
+
+        activeTask =
+            resolveActiveTask tasks data.activeTask
+
+        viewTask task =
+            let
+                iconClass =
+                    case task of
+                        TaskCalcium ->
+                            "calcium"
+
+                        TaskFolate ->
+                            "folate"
+
+                        TaskIron ->
+                            "iron"
+
+                        TaskMMS ->
+                            "mms"
+
+                        TaskMebendazole ->
+                            "mebendezole"
+
+                isActive =
+                    activeTask == Just task
+
+                isCompleted =
+                    medicationTaskCompleted assembled task
+
+                attributes =
+                    classList [ ( "link-section", True ), ( "active", isActive ), ( "completed", not isActive && isCompleted ) ]
+                        :: (if isActive then
+                                []
+
+                            else
+                                [ onClick <| SetActiveMedicationTask task ]
+                           )
+            in
+            div [ class "column" ]
+                [ div attributes
+                    [ span [ class <| "icon-activity-task icon-" ++ iconClass ] []
+                    , text <| translate language (Translate.PrenatalMedicationTask task)
+                    ]
+                ]
+
+        tasksCompletedFromTotalDict =
+            List.map (\task -> ( task, medicationTasksCompletedFromTotal currentDate assembled data task )) tasks
+                |> Dict.fromList
 
         ( tasksCompleted, totalTasks ) =
-            let
-                displayMebendazoleQuestion =
-                    showMebendazoleQuestion currentDate assembled
+            Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
+                |> Maybe.withDefault ( 0, 0 )
 
-                tasks =
-                    [ ( form.receivedIronFolicAcid, True )
-                    , ( form.receivedMebendazole, displayMebendazoleQuestion )
-                    ]
-                        |> List.filterMap
-                            (\( task, showTask ) ->
-                                if showTask then
-                                    Just task
+        viewForm =
+            case activeTask of
+                Just TaskCalcium ->
+                    getMeasurementValueFunc measurements.calcium
+                        |> medicationAdministrationFormWithDefault data.calciumForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            calciumAdministrationFormConfig
 
-                                else
-                                    Nothing
-                            )
-            in
-            ( List.map taskCompleted tasks
-                |> List.sum
-            , List.length tasks
-            )
+                Just TaskFolate ->
+                    getMeasurementValueFunc measurements.folate
+                        |> medicationAdministrationFormWithDefault data.folateForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            folateAdministrationFormConfig
+
+                Just TaskIron ->
+                    getMeasurementValueFunc measurements.iron
+                        |> medicationAdministrationFormWithDefault data.ironForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            ironAdministrationFormConfig
+
+                Just TaskMMS ->
+                    getMeasurementValueFunc measurements.mms
+                        |> medicationAdministrationFormWithDefault data.mmsForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mmsAdministrationFormConfig
+
+                Just TaskMebendazole ->
+                    getMeasurementValueFunc measurements.mebendazole
+                        |> medicationAdministrationFormWithDefault data.mebendazoleForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            mebendazoleAdministrationFormConfig
+
+                Nothing ->
+                    []
+
+        actions =
+            Maybe.map
+                (\task ->
+                    let
+                        personId =
+                            assembled.participant.person
+
+                        nextTask =
+                            resolveNextTask task tasksCompletedFromTotalDict tasks
+
+                        saveMsg =
+                            case task of
+                                TaskCalcium ->
+                                    SaveCalcium personId measurements.calcium nextTask
+
+                                TaskFolate ->
+                                    SaveFolate personId measurements.folate nextTask
+
+                                TaskIron ->
+                                    SaveIron personId measurements.iron nextTask
+
+                                TaskMMS ->
+                                    SaveMMS personId measurements.mms nextTask
+
+                                TaskMebendazole ->
+                                    SaveMebendazole personId measurements.mebendazole nextTask
+
+                        disabled =
+                            tasksCompleted /= totalTasks
+                    in
+                    viewSaveAction language saveMsg disabled
+                )
+                activeTask
+                |> Maybe.withDefault emptyNode
     in
-    [ viewTasksCount language tasksCompleted totalTasks
+    [ div [ class "ui task segment blue" ]
+        [ div [ class "ui four column grid" ] <|
+            List.map viewTask tasks
+        ]
+    , viewTasksCount language tasksCompleted totalTasks
     , div [ class "ui full segment" ]
-        [ div [ class "full content" ]
-            [ viewPrenatalMedicationForm language currentDate SetMedicationBoolInput assembled form ]
-        , viewSaveAction language
-            (SaveMedication assembled.participant.person assembled.measurements.medication)
-            (tasksCompleted /= totalTasks)
+        [ div [ class "full content" ] <|
+            (viewForm ++ [ actions ])
         ]
     ]
 
@@ -2935,9 +3069,12 @@ viewVitalsForm language currentDate assembled form =
     Measurement.View.viewVitalsForm language currentDate formConfig form
 
 
-viewNutritionAssessmentForm : Language -> NominalDate -> AssembledData -> NutritionAssessmentForm -> Bool -> Html Msg
-viewNutritionAssessmentForm language currentDate assembled form hideHeightInput =
+viewNutritionAssessmentForm : Language -> NominalDate -> ZScore.Model.Model -> AssembledData -> NutritionAssessmentForm -> Maybe Float -> Maybe Float -> Html Msg
+viewNutritionAssessmentForm language currentDate zscores assembled form previouslyMeasuredHeight prePregnancyWeight =
     let
+        hideHeightInput =
+            isJust previouslyMeasuredHeight
+
         heightUpdateFunc value form_ =
             { form_ | height = value, heightDirty = True }
 
@@ -2970,6 +3107,60 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
             calculateBmi form.height form.weight
                 |> Maybe.map (Round.roundNum 1)
 
+        weightDiff =
+            Maybe.map2
+                (\currentWeight previousWeight ->
+                    viewMeasurementFloatDiff language Translate.KilogramShorthand currentWeight previousWeight
+                )
+                form.weight
+                weightPreviousValue
+
+        baselineClassification =
+            resolvePrePregnancyClassification zscores assembled baselineBmi
+
+        baselineBmi =
+            calculateBmi form.height prePregnancyWeight
+
+        viewBaselineBmi =
+            Maybe.map2
+                (\bmi classification ->
+                    let
+                        message =
+                            (translate language <| Translate.BaselineBMI bmi)
+                                ++ " "
+                                ++ translate language Translate.BMIUnit
+                                ++ " - "
+                                ++ (translate language <| Translate.PrePregnancyClassification classification)
+                    in
+                    div [ class "previous-value" ] [ text message ]
+                )
+                baselineBmi
+                baselineClassification
+
+        gwgIndicator =
+            Maybe.Extra.andThen3
+                (\prePregnancyClassification baselineWeight currentWeight ->
+                    resolveGWGClassification currentDate prePregnancyClassification baselineWeight currentWeight assembled
+                        |> Maybe.map
+                            (\classification ->
+                                let
+                                    color =
+                                        if classification == GWGSeverelyInadequate then
+                                            "red"
+
+                                        else if classification == GWGAdequate then
+                                            "green"
+
+                                        else
+                                            "yellow"
+                                in
+                                p [ class color ] [ text <| translate language <| Translate.GWGClassification classification ]
+                            )
+                )
+                baselineClassification
+                prePregnancyWeight
+                form.weight
+
         heightSection =
             if not hideHeightInput then
                 [ div [ class "ui grid" ]
@@ -2989,21 +3180,61 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
 
             else
                 []
+
+        viewGestationalWeightGain =
+            Maybe.map2
+                (\currentWeight baselineWeight ->
+                    viewPreviousMeasurementCustom language
+                        (Just <| currentWeight - baselineWeight)
+                        Translate.GestationalWeightGain
+                        Translate.EmptyString
+                        Translate.KilogramShorthand
+                )
+                form.weight
+                prePregnancyWeight
+                |> Maybe.withDefault emptyNode
+
+        nutritionalSupplementAlert =
+            Maybe.map
+                (\muac ->
+                    if muac < 22 then
+                        p [ class "nutritional-supplement-alert" ] [ text <| translate language Translate.ProvideNutritionalSupplement ]
+
+                    else
+                        emptyNode
+                )
+                form.muac
+                |> Maybe.withDefault emptyNode
     in
     div [ class "ui form examination nutrition-assessment" ] <|
         heightSection
             ++ [ div [ class "ui grid" ]
-                    [ div [ class "eleven wide column" ]
+                    [ div [ class "twelve wide column" ]
                         [ viewLabel language Translate.Weight ]
-                    , viewWarning language Nothing
+                    , div [ class "four wide column gwg-label" ]
+                        [ viewLabel language Translate.GWGClassificationLabel |> showIf (isJust gwgIndicator) ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.weight
-                    (SetNutritionAssessmentMeasurement weightUpdateFunc)
-                    "weight"
-                    Translate.KilogramShorthand
+               , div [ class "ui grid" ]
+                    [ div [ class "eight wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.weight
+                            (SetNutritionAssessmentMeasurement weightUpdateFunc)
+                            "weight"
+                            Translate.KilogramShorthand
+                        ]
+                    , div [ class "four wide column" ]
+                        [ showMaybe weightDiff ]
+                    , div [ class "four wide column gwg-value" ]
+                        [ showMaybe gwgIndicator ]
+                    ]
                , viewPreviousMeasurement language weightPreviousValue Translate.KilogramShorthand
+               , viewPreviousMeasurementCustom language
+                    prePregnancyWeight
+                    Translate.BaselineWeight
+                    Translate.BaselineWeightNotFound
+                    Translate.KilogramShorthand
+               , viewGestationalWeightGain
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3020,8 +3251,9 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                     calculatedBmi
                     (SetNutritionAssessmentMeasurement bmiUpdateFunc)
                     "bmi disabled"
-                    Translate.EmptyString
+                    Translate.BMIUnit
                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+               , showMaybe viewBaselineBmi
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]
@@ -3032,12 +3264,19 @@ viewNutritionAssessmentForm language currentDate assembled form hideHeightInput 
                             [ [ (<=) 18.5, (>) 22 ] ]
                         ]
                     ]
-               , viewMeasurementInput
-                    language
-                    form.muac
-                    (SetNutritionAssessmentMeasurement muacUpdateFunc)
-                    "muac"
-                    Translate.UnitCentimeter
+               , div [ class "ui grid" ]
+                    [ div [ class "twelve wide column" ]
+                        [ viewMeasurementInput
+                            language
+                            form.muac
+                            (SetNutritionAssessmentMeasurement muacUpdateFunc)
+                            "muac"
+                            Translate.UnitCentimeter
+                        ]
+                    , div [ class "four wide column" ]
+                        [ nutritionalSupplementAlert
+                        ]
+                    ]
                , viewPreviousMeasurement language muacPreviousValue Translate.UnitCentimeter
                ]
 

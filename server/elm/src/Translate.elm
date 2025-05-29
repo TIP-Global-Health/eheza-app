@@ -1711,6 +1711,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalCalcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalBreastfeeding ->
                     { english = "Breastfeeding"
                     , kinyarwanda = Nothing
@@ -1728,6 +1734,12 @@ translationSet transId =
 
                 PrenatalFamilyPlanning ->
                     translationSet FamilyPlanning
+
+                PrenatalFolate ->
+                    { english = "Folate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 PrenatalFollowUp ->
                     translationSet FollowUp
@@ -1786,6 +1798,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalIron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalLastMenstrualPeriod ->
                     { english = "Last Menstrual Period"
                     , kinyarwanda = Nothing
@@ -1804,6 +1822,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalMebendazole ->
+                    { english = "Mebendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalMedicalHistory ->
                     { english = "Medical History"
                     , kinyarwanda = Nothing
@@ -1818,6 +1842,12 @@ translationSet transId =
 
                 PrenatalMentalHealth ->
                     { english = "Mental Health"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMMS ->
+                    { english = "MMS"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

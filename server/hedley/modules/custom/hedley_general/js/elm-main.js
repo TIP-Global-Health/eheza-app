@@ -8335,9 +8335,11 @@ var $author$project$Backend$Completion$Model$PrenatalBloodGprsTest = {$: 'Prenat
 var $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult = {$: 'PrenatalBloodGprsTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalBreastExam = {$: 'PrenatalBreastExam'};
 var $author$project$Backend$Completion$Model$PrenatalBreastfeeding = {$: 'PrenatalBreastfeeding'};
+var $author$project$Backend$Completion$Model$PrenatalCalcium = {$: 'PrenatalCalcium'};
 var $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam = {$: 'PrenatalCorePhysicalExam'};
 var $author$project$Backend$Completion$Model$PrenatalDangerSigns = {$: 'PrenatalDangerSigns'};
 var $author$project$Backend$Completion$Model$PrenatalFamilyPlanning = {$: 'PrenatalFamilyPlanning'};
+var $author$project$Backend$Completion$Model$PrenatalFolate = {$: 'PrenatalFolate'};
 var $author$project$Backend$Completion$Model$PrenatalFollowUp = {$: 'PrenatalFollowUp'};
 var $author$project$Backend$Completion$Model$PrenatalGuExam = {$: 'PrenatalGuExam'};
 var $author$project$Backend$Completion$Model$PrenatalHIVPCRTest = {$: 'PrenatalHIVPCRTest'};
@@ -8349,9 +8351,12 @@ var $author$project$Backend$Completion$Model$PrenatalHemoglobinTest = {$: 'Prena
 var $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult = {$: 'PrenatalHemoglobinTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTest = {$: 'PrenatalHepatitisBTest'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult = {$: 'PrenatalHepatitisBTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalIron = {$: 'PrenatalIron'};
 var $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod = {$: 'PrenatalLastMenstrualPeriod'};
+var $author$project$Backend$Completion$Model$PrenatalMMS = {$: 'PrenatalMMS'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTest = {$: 'PrenatalMalariaTest'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTestResult = {$: 'PrenatalMalariaTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalMebendazole = {$: 'PrenatalMebendazole'};
 var $author$project$Backend$Completion$Model$PrenatalMedicalHistory = {$: 'PrenatalMedicalHistory'};
 var $author$project$Backend$Completion$Model$PrenatalMedication = {$: 'PrenatalMedication'};
 var $author$project$Backend$Completion$Model$PrenatalMedicationDistribution = {$: 'PrenatalMedicationDistribution'};
@@ -8490,6 +8495,16 @@ var $author$project$Backend$Completion$Utils$prenatalActivityFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSyphilisTestResult);
 		case '9+':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalCalcium);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFolate);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalIron);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMebendazole);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMMS);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -11772,6 +11787,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastExam':
 						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalCalcium':
+						return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastfeeding':
 						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalCorePhysicalExam':
@@ -11784,6 +11801,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$FamilyPlanning;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'PrenatalFolate':
+						return {english: 'Folate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -11812,12 +11831,16 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalHIVTestResult':
 						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalIron':
+						return {english: 'Iron', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalLastMenstrualPeriod':
 						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTest':
 						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTestResult':
 						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMebendazole':
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedicalHistory':
 						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedication':
@@ -11830,6 +11853,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalMentalHealth':
 						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMMS':
+						return {english: 'MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -15548,7 +15573,7 @@ var $author$project$Translate$PrenatalActivity = function (a) {
 	return {$: 'PrenatalActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
+	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCalcium, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFolate, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalIron, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMebendazole, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalMMS, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
 var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 	function (language, records) {
 		return {
@@ -19693,6 +19718,13 @@ var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_lis
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(3)))),
 			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(21),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirungu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(24),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
@@ -22667,35 +22699,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(5),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitega',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(6),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mparaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(7),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gako',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(8),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mibaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(9),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gatandu',
+				'Mushishi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(4)))),
 			_Utils_Tuple2(
@@ -22706,45 +22710,10 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(10)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(12),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kiziba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(13),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Migezi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(14),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(16),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mugano',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(17),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kabuye',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(18),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentonga',
+				'Kabwayi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(15)))),
 			_Utils_Tuple2(
@@ -22755,19 +22724,12 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(19)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(21),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentambwe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(22),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitsinda',
+				'Kirungu',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
+					$author$project$Backend$Entities$toEntityId(21)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(25),
 			A2(
@@ -22776,21 +22738,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(24)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(26),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kaganza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(24)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(28),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(27)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(29),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Karirimvya',
@@ -22800,280 +22748,49 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(34),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(35),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kanyiriri',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(36),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(37),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(38),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitaza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(39),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kompanyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(40),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma ii',
+				'Nyakuguma',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(33)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(42),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakamba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(43),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(44),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruranga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(45),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde ii',
+				'Kanenge',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(41)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(47),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo a',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(48),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(49),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo c & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(50),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b',
+				'Mayengo',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(46)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(52),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ngongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(53),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasangu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(54),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirerama',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(55),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kinindo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(56),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giheta',
+				'Cabara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(58),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanirra',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(59),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(60),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buganga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(61),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanira',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(62),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamahongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(63),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Yerusalemu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(64),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo ii',
+				'Gashasha',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(57)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(67),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(68),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Makombe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(69),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(70),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gahore',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(71),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayange',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(72),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(73),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara ii',
+				'Mutambara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(66)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(75),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giharo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(76),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gatete',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(77),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafunzo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(78),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasenyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(79),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Moderne',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(80),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gisagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(74)))),
 			_Utils_Tuple2(
@@ -23084,143 +22801,24 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(81)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(83),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kibanga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(84),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buhinda',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(85),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(86),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayabazi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(87),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mahoro',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(89),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruremba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(90),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Soko',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(91),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Muhuta',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(92),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamiyaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(93),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kavyiru',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(94),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakuyo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(95),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rera',
+				'Mugara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(88)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(98),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruhongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(99),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Musovu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(100),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(101),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabiraba',
+				'Gitwe',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(97)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(103),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mwagu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(104),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafumbe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(105),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mambi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(106),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabigonzi',
+				'Karagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(102))))
 		]));
