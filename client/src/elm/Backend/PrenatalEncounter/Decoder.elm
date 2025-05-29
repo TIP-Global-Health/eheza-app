@@ -4,7 +4,7 @@ import Backend.PrenatalEncounter.Model exposing (..)
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Utils.Json exposing (decodeEverySet, decodeWithFallback)
@@ -33,7 +33,7 @@ decodePrenatalEncounter =
         |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "past_prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "prenatal_indicators" (decodeEverySet decodePrenatalIndicator) EverySet.empty
-        |> optional "next_visit_date" (nullable decodeYYYYMMDD) Nothing
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 
