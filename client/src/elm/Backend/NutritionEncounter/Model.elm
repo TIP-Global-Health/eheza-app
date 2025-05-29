@@ -12,6 +12,7 @@ type alias NutritionEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , encounterType : NutritionEncounterType
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -22,6 +23,7 @@ emptyNutritionEncounter participant startDate encounterType shard =
     , startDate = startDate
     , endDate = Nothing
     , encounterType = encounterType
+    , deleted = False
     , shard = shard
     }
 
