@@ -105,6 +105,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_albendazole-field_deleted'.
+  $field_instances['node-well_child_albendazole-field_deleted'] = array(
+    'bundle' => 'well_child_albendazole',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_albendazole-field_nurse'.
   $field_instances['node-well_child_albendazole-field_nurse'] = array(
     'bundle' => 'well_child_albendazole',
@@ -516,6 +559,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_bcg_immunisation-field_deleted'.
+  $field_instances['node-well_child_bcg_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_bcg_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_bcg_immunisation-field_nurse'.
   $field_instances['node-well_child_bcg_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_bcg_immunisation',
@@ -828,6 +914,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_caring-field_deleted'.
+  $field_instances['node-well_child_caring-field_deleted'] = array(
+    'bundle' => 'well_child_caring',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1182,6 +1311,50 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_contributing_factors-field_deleted'.
+  $field_instances['node-well_child_contributing_factors-field_deleted'] = array(
+    'bundle' => 'well_child_contributing_factors',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -1599,6 +1772,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_dtp_immunisation-field_deleted'.
+  $field_instances['node-well_child_dtp_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_dtp_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_dtp_immunisation-field_nurse'.
   $field_instances['node-well_child_dtp_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_dtp_immunisation',
@@ -2009,6 +2225,50 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-well_child_dtp_sa_immunisation-field_deleted'.
+  $field_instances['node-well_child_dtp_sa_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_dtp_sa_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_dtp_sa_immunisation-field_nurse'.
   $field_instances['node-well_child_dtp_sa_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_dtp_sa_immunisation',
@@ -2288,6 +2548,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_ecd-field_deleted'.
+  $field_instances['node-well_child_ecd-field_deleted'] = array(
+    'bundle' => 'well_child_ecd',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_ecd-field_ecd_signs'.
   $field_instances['node-well_child_ecd-field_ecd_signs'] = array(
     'bundle' => 'well_child_ecd',
@@ -2542,6 +2845,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_encounter-field_deleted'.
+  $field_instances['node-well_child_encounter-field_deleted'] = array(
+    'bundle' => 'well_child_encounter',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -2938,6 +3284,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_feeding-field_deleted'.
+  $field_instances['node-well_child_feeding-field_deleted'] = array(
+    'bundle' => 'well_child_feeding',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -3395,6 +3784,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_follow_up-field_deleted'.
+  $field_instances['node-well_child_follow_up-field_deleted'] = array(
+    'bundle' => 'well_child_follow_up',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-well_child_follow_up-field_follow_up_options'.
   $field_instances['node-well_child_follow_up-field_follow_up_options'] = array(
@@ -3786,6 +4218,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_food_security-field_deleted'.
+  $field_instances['node-well_child_food_security-field_deleted'] = array(
+    'bundle' => 'well_child_food_security',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-well_child_food_security-field_food_security_signs'.
   $field_instances['node-well_child_food_security-field_food_security_signs'] = array(
@@ -4137,6 +4612,50 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-well_child_head_circumference-field_deleted'.
+  $field_instances['node-well_child_head_circumference-field_deleted'] = array(
+    'bundle' => 'well_child_head_circumference',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -4550,6 +5069,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_health_education-field_deleted'.
+  $field_instances['node-well_child_health_education-field_deleted'] = array(
+    'bundle' => 'well_child_health_education',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-well_child_health_education-field_health_education_signs'.
   $field_instances['node-well_child_health_education-field_health_education_signs'] = array(
@@ -4900,6 +5462,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_height-field_deleted'.
+  $field_instances['node-well_child_height-field_deleted'] = array(
+    'bundle' => 'well_child_height',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -5406,6 +6011,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_hpv_immunisation-field_deleted'.
+  $field_instances['node-well_child_hpv_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_hpv_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_hpv_immunisation-field_nurse'.
   $field_instances['node-well_child_hpv_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_hpv_immunisation',
@@ -5680,6 +6328,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_hygiene-field_deleted'.
+  $field_instances['node-well_child_hygiene-field_deleted'] = array(
+    'bundle' => 'well_child_hygiene',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -6207,6 +6898,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_ipv_immunisation-field_deleted'.
+  $field_instances['node-well_child_ipv_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_ipv_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_ipv_immunisation-field_nurse'.
   $field_instances['node-well_child_ipv_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_ipv_immunisation',
@@ -6519,6 +7253,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_mebendezole-field_deleted'.
+  $field_instances['node-well_child_mebendezole-field_deleted'] = array(
+    'bundle' => 'well_child_mebendezole',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -6933,6 +7710,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_mr_immunisation-field_deleted'.
+  $field_instances['node-well_child_mr_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_mr_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_mr_immunisation-field_nurse'.
   $field_instances['node-well_child_mr_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_mr_immunisation',
@@ -7207,6 +8027,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_muac-field_deleted'.
+  $field_instances['node-well_child_muac-field_deleted'] = array(
+    'bundle' => 'well_child_muac',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -7631,6 +8494,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_ncda-field_deleted'.
+  $field_instances['node-well_child_ncda-field_deleted'] = array(
+    'bundle' => 'well_child_ncda',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -8226,6 +9132,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_next_visit-field_deleted'.
+  $field_instances['node-well_child_next_visit-field_deleted'] = array(
+    'bundle' => 'well_child_next_visit',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance:
   // 'node-well_child_next_visit-field_immunisation_date'.
   $field_instances['node-well_child_next_visit-field_immunisation_date'] = array(
@@ -8614,6 +9563,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_nutrition-field_deleted'.
+  $field_instances['node-well_child_nutrition-field_deleted'] = array(
+    'bundle' => 'well_child_nutrition',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -9103,6 +10095,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_opv_immunisation-field_deleted'.
+  $field_instances['node-well_child_opv_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_opv_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_opv_immunisation-field_nurse'.
   $field_instances['node-well_child_opv_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_opv_immunisation',
@@ -9514,6 +10549,50 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance:
+  // 'node-well_child_pcv13_immunisation-field_deleted'.
+  $field_instances['node-well_child_pcv13_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_pcv13_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_pcv13_immunisation-field_nurse'.
   $field_instances['node-well_child_pcv13_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_pcv13_immunisation',
@@ -9788,6 +10867,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_photo-field_deleted'.
+  $field_instances['node-well_child_photo-field_deleted'] = array(
+    'bundle' => 'well_child_photo',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -10248,6 +11370,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => 2,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_pregnancy_summary-field_deleted'.
+  $field_instances['node-well_child_pregnancy_summary-field_deleted'] = array(
+    'bundle' => 'well_child_pregnancy_summary',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -10888,6 +12053,50 @@ function hedley_well_child_field_default_field_instances() {
   );
 
   // Exported field_instance:
+  // 'node-well_child_rotarix_immunisation-field_deleted'.
+  $field_instances['node-well_child_rotarix_immunisation-field_deleted'] = array(
+    'bundle' => 'well_child_rotarix_immunisation',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
+  // Exported field_instance:
   // 'node-well_child_rotarix_immunisation-field_nurse'.
   $field_instances['node-well_child_rotarix_immunisation-field_nurse'] = array(
     'bundle' => 'well_child_rotarix_immunisation',
@@ -11164,6 +12373,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_send_to_hc-field_deleted'.
+  $field_instances['node-well_child_send_to_hc-field_deleted'] = array(
+    'bundle' => 'well_child_send_to_hc',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -11517,6 +12769,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_symptoms_review-field_deleted'.
+  $field_instances['node-well_child_symptoms_review-field_deleted'] = array(
+    'bundle' => 'well_child_symptoms_review',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -11881,6 +13176,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_vitals-field_deleted'.
+  $field_instances['node-well_child_vitals-field_deleted'] = array(
+    'bundle' => 'well_child_vitals',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_vitals-field_nurse'.
   $field_instances['node-well_child_vitals-field_nurse'] = array(
     'bundle' => 'well_child_vitals',
@@ -12242,6 +13580,49 @@ function hedley_well_child_field_default_field_instances() {
     ),
   );
 
+  // Exported field_instance: 'node-well_child_vitamin_a-field_deleted'.
+  $field_instances['node-well_child_vitamin_a-field_deleted'] = array(
+    'bundle' => 'well_child_vitamin_a',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
+    ),
+  );
+
   // Exported field_instance: 'node-well_child_vitamin_a-field_nurse'.
   $field_instances['node-well_child_vitamin_a-field_nurse'] = array(
     'bundle' => 'well_child_vitamin_a',
@@ -12561,6 +13942,49 @@ function hedley_well_child_field_default_field_instances() {
       ),
       'type' => 'date_select',
       'weight' => -1,
+    ),
+  );
+
+  // Exported field_instance: 'node-well_child_weight-field_deleted'.
+  $field_instances['node-well_child_weight-field_deleted'] = array(
+    'bundle' => 'well_child_weight',
+    'default_value' => array(
+      0 => array(
+        'value' => 0,
+      ),
+    ),
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_key',
+        'weight' => 26,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_deleted',
+    'label' => 'Deleted',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(
+        'display_label' => 1,
+      ),
+      'type' => 'options_onoff',
+      'weight' => 29,
     ),
   );
 
@@ -12988,6 +14412,7 @@ function hedley_well_child_field_default_field_instances() {
   t('Contributing Factors Signs');
   t('Date Measured');
   t('Date concluded');
+  t('Deleted');
   t('Delivery Complications');
   t('ECD Signs');
   t('Encounter notes');

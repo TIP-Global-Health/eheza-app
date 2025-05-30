@@ -32,6 +32,7 @@ type alias Measurement encounter value =
     , nurse : Maybe NurseId
     , healthCenter : Maybe HealthCenterId
     , participantId : PersonId
+    , deleted : Bool
     , encounterId : Maybe encounter
     , value : value
     }
