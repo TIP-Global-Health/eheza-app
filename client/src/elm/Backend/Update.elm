@@ -1864,6 +1864,9 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         HandleRevisions revisions ->
             let
+                _ =
+                    Debug.log "HandleRevisions" revisions
+
                 downloadingContent =
                     case syncManager.syncStatus of
                         SyncManager.Model.SyncDownloadGeneral _ ->
@@ -2711,7 +2714,18 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 [ HeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | height = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId
+                                data.encounterId
+                                (\childMeasurements ->
+                                    { childMeasurements
+                                        | height =
+                                            if data.deleted then
+                                                Nothing
+
+                                            else
+                                                Just ( uuid, data )
+                                    }
+                                )
                     in
                     ( newModel
                     , Cmd.none
@@ -2721,7 +2735,18 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 [ MuacRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | muac = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId
+                                data.encounterId
+                                (\childMeasurements ->
+                                    { childMeasurements
+                                        | muac =
+                                            if data.deleted then
+                                                Nothing
+
+                                            else
+                                                Just ( uuid, data )
+                                    }
+                                )
                     in
                     ( newModel
                     , Cmd.none
@@ -2731,7 +2756,18 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 [ ChildNutritionRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | nutrition = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId
+                                data.encounterId
+                                (\childMeasurements ->
+                                    { childMeasurements
+                                        | nutrition =
+                                            if data.deleted then
+                                                Nothing
+
+                                            else
+                                                Just ( uuid, data )
+                                    }
+                                )
                     in
                     ( newModel
                     , Cmd.none
@@ -2741,7 +2777,18 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                 [ WeightRevision uuid data ] ->
                     let
                         ( newModel, extraMsgs ) =
-                            processRevisionAndAssessNutritionGroup data.participantId data.encounterId (\childMeasurements -> { childMeasurements | weight = Just ( uuid, data ) })
+                            processRevisionAndAssessNutritionGroup data.participantId
+                                data.encounterId
+                                (\childMeasurements ->
+                                    { childMeasurements
+                                        | weight =
+                                            if data.deleted then
+                                                Nothing
+
+                                            else
+                                                Just ( uuid, data )
+                                    }
+                                )
                     in
                     ( newModel
                     , Cmd.none
@@ -4889,11 +4936,35 @@ handleRevision :
     -> ( ModelIndexedDb, Bool )
     -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
+    let
+        encounterAction uuid data =
+            if data.deleted then
+                Dict.remove uuid
+
+            else
+                Dict.update uuid (Maybe.map (always (Success data)))
+
+        measurementActionConsideringDeletedField uuid data =
+            if data.deleted then
+                Dict.remove uuid
+
+            else
+                Dict.insert uuid data
+    in
     case revision of
         AcuteFindingsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | acuteFindings = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | acuteFindings =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4901,7 +4972,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessContactsTracingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contactsTracing = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contactsTracing =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4909,7 +4989,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessCoreExamRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coreExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4917,7 +5006,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessDangerSignsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4925,7 +5023,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.acuteIllnessEncounters
+                    encounterAction uuid data model.acuteIllnessEncounters
 
                 acuteIllnessEncountersByParticipant =
                     Dict.remove data.participant model.acuteIllnessEncountersByParticipant
@@ -4942,12 +5040,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | acuteIllness = Dict.insert uuid data measurements.acuteIllness })
+                        (\measurements -> { measurements | acuteIllness = measurementActionConsideringDeletedField uuid data measurements.acuteIllness })
                         model
             in
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -4955,7 +5062,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessMuacRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4963,7 +5079,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessNutritionRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4973,11 +5098,11 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | traceContacts = Dict.insert uuid data measurements.traceContacts })
+                        (\measurements -> { measurements | traceContacts = measurementActionConsideringDeletedField uuid data measurements.traceContacts })
                         model
 
                 traceContacts =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.traceContacts
+                    encounterAction uuid data model.traceContacts
             in
             ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
@@ -4986,7 +5111,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessVitalsRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -4994,7 +5128,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AppointmentConfirmationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | appointmentConfirmation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | appointmentConfirmation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5002,7 +5145,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AttendanceRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
+                (\measurements -> { measurements | attendances = measurementActionConsideringDeletedField uuid data measurements.attendances })
                 model
             , True
             )
@@ -5010,7 +5153,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         BreastExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | breastExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | breastExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5018,7 +5170,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         BirthPlanRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | birthPlan = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | birthPlan =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5026,7 +5187,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         Call114Revision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | call114 = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | call114 =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5039,7 +5209,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | childFbf = Dict.insert uuid data measurements.childFbf })
+                        (\measurements -> { measurements | childFbf = measurementActionConsideringDeletedField uuid data measurements.childFbf })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -5054,7 +5224,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                (\measurements -> { measurements | fbfs = measurementActionConsideringDeletedField uuid data measurements.fbfs })
                 modelWithMappedStockManagement
             , True
             )
@@ -5062,7 +5232,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildNutritionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | nutritions = Dict.insert uuid data measurements.nutritions })
+                (\measurements -> { measurements | nutritions = measurementActionConsideringDeletedField uuid data measurements.nutritions })
                 model
             , True
             )
@@ -5070,7 +5240,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardEncounterRevision uuid data ->
             let
                 childScoreboardEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.childScoreboardEncounters
+                    encounterAction uuid data model.childScoreboardEncounters
 
                 childScoreboardEncountersByParticipant =
                     Dict.remove data.participant model.childScoreboardEncountersByParticipant
@@ -5085,7 +5255,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardBCGImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bcgImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5093,7 +5272,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardDTPImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5101,7 +5289,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardDTPStandaloneImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpStandaloneImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5109,7 +5306,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardIPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ipvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5117,7 +5323,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardMRImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mrImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5125,7 +5340,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardNCDARevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5133,7 +5357,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardOPVImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | opvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5141,7 +5374,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardPCV13ImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pcv13Immunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5149,7 +5391,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardRotarixImmunisationRevision uuid data ->
             ( mapChildScoreboardMeasurements
                 data.encounterId
-                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | rotarixImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5166,7 +5417,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ContributingFactorsRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | contributingFactors = Dict.insert uuid data measurements.contributingFactors })
+                (\measurements -> { measurements | contributingFactors = measurementActionConsideringDeletedField uuid data measurements.contributingFactors })
                 model
             , True
             )
@@ -5174,7 +5425,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CorePhysicalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | corePhysicalExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | corePhysicalExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5188,7 +5448,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CounselingSessionRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | counselingSessions = Dict.insert uuid data measurements.counselingSessions })
+                (\measurements -> { measurements | counselingSessions = measurementActionConsideringDeletedField uuid data measurements.counselingSessions })
                 model
             , True
             )
@@ -5201,7 +5461,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         CovidTestingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | covidTesting = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | covidTesting =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5209,7 +5478,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         DangerSignsRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5266,7 +5544,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ExposureRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | exposure = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | exposure =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5274,7 +5561,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         FamilyPlanningRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | familyPlannings = Dict.insert uuid data measurements.familyPlannings })
+                (\measurements -> { measurements | familyPlannings = measurementActionConsideringDeletedField uuid data measurements.familyPlannings })
                 model
             , True
             )
@@ -5284,12 +5571,12 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nutritionGroup = Dict.insert uuid data measurements.nutritionGroup })
+                        (\measurements -> { measurements | nutritionGroup = measurementActionConsideringDeletedField uuid data measurements.nutritionGroup })
                         model
             in
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | followUp = Dict.insert uuid data measurements.followUp })
+                (\measurements -> { measurements | followUp = measurementActionConsideringDeletedField uuid data measurements.followUp })
                 modelWithMappedFollowUp
             , True
             )
@@ -5297,7 +5584,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupHealthEducationRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | healthEducation = Dict.insert uuid data measurements.healthEducation })
+                (\measurements -> { measurements | healthEducation = measurementActionConsideringDeletedField uuid data measurements.healthEducation })
                 model
             , True
             )
@@ -5305,7 +5592,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupNCDARevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | ncda = Dict.insert uuid data measurements.ncda })
+                (\measurements -> { measurements | ncda = measurementActionConsideringDeletedField uuid data measurements.ncda })
                 model
             , True
             )
@@ -5313,7 +5600,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         GroupSendToHCRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | sendToHC = Dict.insert uuid data measurements.sendToHC })
+                (\measurements -> { measurements | sendToHC = measurementActionConsideringDeletedField uuid data measurements.sendToHC })
                 model
             , True
             )
@@ -5321,7 +5608,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HCContactRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hcContact = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hcContact =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5338,7 +5634,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HealthEducationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5346,7 +5651,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | heights = Dict.insert uuid data measurements.heights })
+                (\measurements -> { measurements | heights = measurementActionConsideringDeletedField uuid data measurements.heights })
                 model
             , True
             )
@@ -5354,7 +5659,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVDiagnosticsRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | diagnostics =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5362,7 +5676,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVEncounterRevision uuid data ->
             let
                 hivEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.hivEncounters
+                    encounterAction uuid data model.hivEncounters
 
                 hivEncountersByParticipant =
                     Dict.remove data.participant model.hivEncountersByParticipant
@@ -5379,12 +5693,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | hiv = Dict.insert uuid data measurements.hiv })
+                        (\measurements -> { measurements | hiv = measurementActionConsideringDeletedField uuid data measurements.hiv })
                         model
             in
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5392,7 +5715,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVHealthEducationRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5400,7 +5732,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVMedicationRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5408,7 +5749,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVReferralRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5416,7 +5766,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVSymptomReviewRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5424,7 +5783,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVTreatmentReviewRevision uuid data ->
             ( mapHIVMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5432,7 +5800,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HomeVisitEncounterRevision uuid data ->
             let
                 homeVisitEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.homeVisitEncounters
+                    encounterAction uuid data model.homeVisitEncounters
 
                 homeVisitEncountersByParticipant =
                     Dict.remove data.participant model.homeVisitEncountersByParticipant
@@ -5447,7 +5815,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         IsolationRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | isolation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | isolation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5455,7 +5832,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         IndividualEncounterParticipantRevision uuid data ->
             let
                 individualParticipants =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.individualParticipants
+                    encounterAction uuid data model.individualParticipants
 
                 individualParticipantsByPerson =
                     Dict.remove data.person model.individualParticipantsByPerson
@@ -5470,7 +5847,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         LactationRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | lactations = Dict.insert uuid data measurements.lactations })
+                (\measurements -> { measurements | lactations = measurementActionConsideringDeletedField uuid data measurements.lactations })
                 model
             , True
             )
@@ -5478,7 +5855,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         LastMenstrualPeriodRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | lastMenstrualPeriod = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | lastMenstrualPeriod =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5486,7 +5872,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MalariaTestingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaTesting = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaTesting =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5494,7 +5889,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicalHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicalHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicalHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5502,7 +5906,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5510,7 +5923,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MedicationDistributionRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5520,7 +5942,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | motherFbf = Dict.insert uuid data measurements.motherFbf })
+                        (\measurements -> { measurements | motherFbf = measurementActionConsideringDeletedField uuid data measurements.motherFbf })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -5535,7 +5957,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
             in
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | fbfs = Dict.insert uuid data measurements.fbfs })
+                (\measurements -> { measurements | fbfs = measurementActionConsideringDeletedField uuid data measurements.fbfs })
                 modelWithMappedStockManagement
             , True
             )
@@ -5543,7 +5965,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MuacRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | muacs = Dict.insert uuid data measurements.muacs })
+                (\measurements -> { measurements | muacs = measurementActionConsideringDeletedField uuid data measurements.muacs })
                 model
             , True
             )
@@ -5551,7 +5973,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCoMorbiditiesRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coMorbidities = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coMorbidities =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5559,7 +5990,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCoreExamRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | coreExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | coreExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5567,7 +6007,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDCreatinineTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | creatinineTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | creatinineTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5575,7 +6024,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDDangerSignsRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dangerSigns = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dangerSigns =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5583,7 +6041,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDEncounterRevision uuid data ->
             let
                 ncdEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.ncdEncounters
+                    encounterAction uuid data model.ncdEncounters
 
                 ncdEncountersByParticipant =
                     Dict.remove data.participant model.ncdEncountersByParticipant
@@ -5598,7 +6056,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDFamilyHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5606,7 +6073,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDFamilyPlanningRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyPlanning =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5614,7 +6090,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHbA1cTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hba1cTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hba1cTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5622,7 +6107,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHealthEducationRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5630,7 +6124,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDHIVTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5640,12 +6143,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | ncdLabs = Dict.insert uuid data measurements.ncdLabs })
+                        (\measurements -> { measurements | ncdLabs = measurementActionConsideringDeletedField uuid data measurements.ncdLabs })
                         model
             in
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | labsResults =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5653,7 +6165,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDLipidPanelTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | lipidPanelTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | lipidPanelTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5661,7 +6182,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDLiverFunctionTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | liverFunctionTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | liverFunctionTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5669,7 +6199,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDMedicationDistributionRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5677,7 +6216,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDMedicationHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5685,7 +6233,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDOutsideCareRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | outsideCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5693,7 +6250,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDPregnancyTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancyTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5701,7 +6267,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDRandomBloodSugarTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | randomBloodSugarTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5709,7 +6284,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDReferralRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5717,7 +6301,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDSocialHistoryRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | socialHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5725,7 +6318,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDSymptomReviewRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5733,7 +6335,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDUrineDipstickTestRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | urineDipstickTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5741,7 +6352,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDVitalsRevision uuid data ->
             ( mapNCDMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5753,7 +6373,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionCaringRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | caring =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5761,7 +6390,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionContributingFactorsRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contributingFactors =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5769,7 +6407,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionEncounterRevision uuid data ->
             let
                 nutritionEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.nutritionEncounters
+                    encounterAction uuid data model.nutritionEncounters
 
                 nutritionEncountersByParticipant =
                     Dict.remove data.participant model.nutritionEncountersByParticipant
@@ -5784,7 +6422,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionFeedingRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | feeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5794,12 +6441,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nutritionIndividual = Dict.insert uuid data measurements.nutritionIndividual })
+                        (\measurements -> { measurements | nutritionIndividual = measurementActionConsideringDeletedField uuid data measurements.nutritionIndividual })
                         model
             in
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -5807,7 +6463,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionFoodSecurityRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | foodSecurity =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5815,7 +6480,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHealthEducationRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5823,7 +6497,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHeightRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | height =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5831,7 +6514,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionHygieneRevision uuid data ->
             ( mapHomeVisitMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hygiene =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5839,7 +6531,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionMuacRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5847,7 +6548,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionNCDARevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5855,7 +6565,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionNutritionRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5863,7 +6582,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionPhotoRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | photo =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5871,7 +6599,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionSendToHCRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5879,7 +6616,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionWeightRevision uuid data ->
             ( mapNutritionMeasurements
                 data.encounterId
-                (\measurements -> { measurements | weight = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | weight =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5887,7 +6633,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricalExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricalExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricalExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5895,7 +6650,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5903,7 +6667,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ObstetricHistoryStep2Revision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | obstetricHistoryStep2 = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | obstetricHistoryStep2 =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5911,7 +6684,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ParticipantConsentRevision uuid data ->
             ( mapMotherMeasurements
                 data.participantId
-                (\measurements -> { measurements | consents = Dict.insert uuid data measurements.consents })
+                (\measurements -> { measurements | consents = measurementActionConsideringDeletedField uuid data measurements.consents })
                 model
             , True
             )
@@ -5924,7 +6697,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PersonRevision uuid data ->
             let
                 people =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.people
+                    encounterAction uuid data model.people
             in
             ( { model
                 | personSearchesByName = Dict.empty
@@ -5937,7 +6710,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PhotoRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | photos = Dict.insert uuid data measurements.photos })
+                (\measurements -> { measurements | photos = measurementActionConsideringDeletedField uuid data measurements.photos })
                 model
             , True
             )
@@ -5961,7 +6734,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PregnancyTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancyTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancyTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5977,7 +6759,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalBloodGpRsTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bloodGpRsTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bloodGpRsTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5985,7 +6776,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalBreastfeedingRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | breastfeeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | breastfeeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -5993,7 +6793,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalCalciumRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | calcium = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | calcium =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6001,7 +6810,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.prenatalEncounters
+                    encounterAction uuid data model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
                     Dict.remove data.participant model.prenatalEncountersByParticipant
@@ -6016,7 +6825,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalFamilyPlanningRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | familyPlanning = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | familyPlanning =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6032,7 +6850,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalFolateRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | folate = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | folate =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6042,12 +6869,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | prenatal = Dict.insert uuid data measurements.prenatal })
+                        (\measurements -> { measurements | prenatal = measurementActionConsideringDeletedField uuid data measurements.prenatal })
                         model
             in
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6055,7 +6891,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalGUExamRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | guExam = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | guExam =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6063,7 +6908,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHealthEducationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6071,7 +6925,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHemoglobinTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hemoglobinTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hemoglobinTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6079,7 +6942,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHepatitisBTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hepatitisBTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hepatitisBTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6087,7 +6959,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHIVTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6095,7 +6976,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalHIVPCRTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hivPCRTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hivPCRTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6103,7 +6993,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalIronRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | iron = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | iron =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6113,12 +7012,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | prenatalLabs = Dict.insert uuid data measurements.prenatalLabs })
+                        (\measurements -> { measurements | prenatalLabs = measurementActionConsideringDeletedField uuid data measurements.prenatalLabs })
                         model
             in
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | labsResults = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | labsResults =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6126,7 +7034,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMalariaTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6134,7 +7051,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMebendazoleRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mebendazole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mebendazole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6142,7 +7068,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMentalHealthRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mentalHealth = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mentalHealth =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6150,7 +7085,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMedicationDistributionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medicationDistribution = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medicationDistribution =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6158,7 +7102,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalMMSRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mms = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mms =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6166,7 +7119,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalNutritionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6174,7 +7136,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalOutsideCareRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | outsideCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | outsideCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6182,7 +7153,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalPartnerHIVTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | partnerHIVTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | partnerHIVTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6190,7 +7170,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalPhotoRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | prenatalPhoto = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | prenatalPhoto =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6198,7 +7187,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalRandomBloodSugarTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | randomBloodSugarTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | randomBloodSugarTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6206,7 +7204,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSendToHCRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6214,7 +7221,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSpecialityCareRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | specialityCare = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | specialityCare =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6222,7 +7238,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSymptomReviewRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6230,7 +7255,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalSyphilisTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | syphilisTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | syphilisTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6238,7 +7272,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalTetanusImmunisationRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | tetanusImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | tetanusImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6246,7 +7289,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalUrineDipstickTestRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | urineDipstickTest = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | urineDipstickTest =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6281,7 +7333,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         MalariaPreventionRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | malariaPrevention = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | malariaPrevention =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6289,7 +7350,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SendToHCRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6297,18 +7367,28 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SessionRevision uuid data ->
             let
                 -- First, remove the session from all clinics (it might
-                -- previously have been in any). Then, add it in the right
-                -- place.
+                -- previously have been in). Then, add it in the right place.
                 sessionsByClinic =
-                    model.sessionsByClinic
-                        |> Dict.map (always (RemoteData.map (Dict.remove uuid)))
-                        |> Dict.update data.clinicId (Maybe.map (RemoteData.map (Dict.insert uuid data)))
+                    let
+                        cleaned =
+                            Dict.map (always (RemoteData.map (Dict.remove uuid))) model.sessionsByClinic
+                    in
+                    if data.deleted then
+                        cleaned
+
+                    else
+                        Dict.update data.clinicId (Maybe.map (RemoteData.map (Dict.insert uuid data))) cleaned
             in
             ( { model
                 | sessionsByClinic = sessionsByClinic
                 , expectedParticipants = Dict.remove uuid model.expectedParticipants
                 , expectedSessions = Dict.empty
-                , sessions = Dict.insert uuid (Success data) model.sessions
+                , sessions =
+                    if data.deleted then
+                        Dict.remove uuid model.sessions
+
+                    else
+                        Dict.insert uuid (Success data) model.sessions
               }
             , True
             )
@@ -6316,7 +7396,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SocialHistoryRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | socialHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | socialHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6350,7 +7439,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsGeneralRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsGeneral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsGeneral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6358,7 +7456,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsGIRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsGI = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsGI =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6366,7 +7473,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         SymptomsRespiratoryRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsRespiratory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsRespiratory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6374,7 +7490,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TravelHistoryRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | travelHistory = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | travelHistory =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6382,7 +7507,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TreatmentOngoingRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentOngoing = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentOngoing =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6390,7 +7524,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TreatmentReviewRevision uuid data ->
             ( mapAcuteIllnessMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6398,7 +7541,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisDiagnosticsRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | diagnostics = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | diagnostics =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6406,7 +7558,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisDOTRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dot = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dot =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6414,7 +7575,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisEncounterRevision uuid data ->
             let
                 tuberculosisEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.tuberculosisEncounters
+                    encounterAction uuid data model.tuberculosisEncounters
 
                 tuberculosisEncountersByParticipant =
                     Dict.remove data.participant model.tuberculosisEncountersByParticipant
@@ -6431,12 +7592,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | tuberculosis = Dict.insert uuid data measurements.tuberculosis })
+                        (\measurements -> { measurements | tuberculosis = measurementActionConsideringDeletedField uuid data measurements.tuberculosis })
                         model
             in
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6444,7 +7614,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisHealthEducationRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6452,7 +7631,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisMedicationRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | medication = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | medication =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6460,7 +7648,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisReferralRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | referral = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | referral =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6468,7 +7665,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisSymptomReviewRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6476,7 +7682,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisTreatmentReviewRevision uuid data ->
             ( mapTuberculosisMeasurements
                 data.encounterId
-                (\measurements -> { measurements | treatmentReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | treatmentReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6493,7 +7708,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         VitalsRevision uuid data ->
             ( mapPrenatalMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6501,7 +7725,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WeightRevision uuid data ->
             ( mapChildMeasurements
                 data.participantId
-                (\measurements -> { measurements | weights = Dict.insert uuid data measurements.weights })
+                (\measurements -> { measurements | weights = measurementActionConsideringDeletedField uuid data measurements.weights })
                 model
             , True
             )
@@ -6509,7 +7733,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildAlbendazoleRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | albendazole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | albendazole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6517,7 +7750,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildBCGImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | bcgImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | bcgImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6525,7 +7767,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildCaringRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | caring = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | caring =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6533,7 +7784,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildContributingFactorsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | contributingFactors = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | contributingFactors =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6541,7 +7801,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildDTPImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6549,7 +7818,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildDTPStandaloneImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | dtpStandaloneImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | dtpStandaloneImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6557,7 +7835,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildECDRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ecd = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ecd =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6565,7 +7852,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildEncounterRevision uuid data ->
             let
                 wellChildEncounters =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.wellChildEncounters
+                    encounterAction uuid data model.wellChildEncounters
 
                 wellChildEncountersByParticipant =
                     Dict.remove data.participant model.wellChildEncountersByParticipant
@@ -6580,7 +7867,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildFeedingRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | feeding = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | feeding =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6590,12 +7886,21 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | wellChild = Dict.insert uuid data measurements.wellChild })
+                        (\measurements -> { measurements | wellChild = measurementActionConsideringDeletedField uuid data measurements.wellChild })
                         model
             in
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | followUp = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | followUp =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6603,7 +7908,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildFoodSecurityRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | foodSecurity = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | foodSecurity =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6611,7 +7925,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHeadCircumferenceRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | headCircumference = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | headCircumference =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6619,7 +7942,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHealthEducationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | healthEducation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | healthEducation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6627,7 +7959,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHeightRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | height = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | height =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6635,7 +7976,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHygieneRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hygiene = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hygiene =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6643,7 +7993,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildHPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | hpvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | hpvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6651,7 +8010,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildIPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ipvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ipvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6659,7 +8027,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMebendezoleRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mebendezole = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mebendezole =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6667,7 +8044,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMRImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | mrImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | mrImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6675,7 +8061,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildMuacRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | muac = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | muac =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6683,7 +8078,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildNCDARevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | ncda = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | ncda =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6693,12 +8097,23 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedFollowUp =
                     mapFollowUpMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | nextVisit = Dict.insert uuid data measurements.nextVisit })
+                        (\measurements ->
+                            { measurements | nextVisit = measurementActionConsideringDeletedField uuid data measurements.nextVisit }
+                        )
                         model
             in
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nextVisit = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nextVisit =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 modelWithMappedFollowUp
             , recalc
             )
@@ -6706,7 +8121,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildNutritionRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | nutrition = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | nutrition =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6714,7 +8138,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildOPVImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | opvImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | opvImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6722,7 +8155,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPCV13ImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pcv13Immunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pcv13Immunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6730,7 +8172,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPhotoRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | photo = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | photo =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6738,7 +8189,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildPregnancySummaryRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | pregnancySummary = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | pregnancySummary =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6746,7 +8206,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildRotarixImmunisationRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | rotarixImmunisation = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | rotarixImmunisation =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6754,7 +8223,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildSendToHCRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | sendToHC = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | sendToHC =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6762,7 +8240,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildSymptomsReviewRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | symptomsReview = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | symptomsReview =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6770,7 +8257,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildVitalsRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitals = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitals =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6778,7 +8274,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildVitaminARevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | vitaminA = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | vitaminA =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
@@ -6786,7 +8291,16 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildWeightRevision uuid data ->
             ( mapWellChildMeasurements
                 data.encounterId
-                (\measurements -> { measurements | weight = Just ( uuid, data ) })
+                (\measurements ->
+                    { measurements
+                        | weight =
+                            if data.deleted then
+                                Nothing
+
+                            else
+                                Just ( uuid, data )
+                    }
+                )
                 model
             , recalc
             )
