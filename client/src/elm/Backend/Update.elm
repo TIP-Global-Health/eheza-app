@@ -1865,9 +1865,6 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
 
         HandleRevisions revisions ->
             let
-                _ =
-                    Debug.log "HandleRevisions" revisions
-
                 downloadingContent =
                     case syncManager.syncStatus of
                         SyncManager.Model.SyncDownloadGeneral _ ->
@@ -2387,7 +2384,16 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                         newModel =
                             mapMotherMeasurements
                                 data.participantId
-                                (\measurements -> { measurements | attendances = Dict.insert uuid data measurements.attendances })
+                                (\measurements ->
+                                    { measurements
+                                        | attendances =
+                                            if data.deleted then
+                                                Dict.remove uuid measurements.attendances
+
+                                            else
+                                                Dict.insert uuid data measurements.attendances
+                                    }
+                                )
                                 model
 
                         withRecalc =
@@ -2399,22 +2405,27 @@ updateIndexedDb language currentDate currentTime coordinates zscores site featur
                                             |> Maybe.map
                                                 (\editableSession ->
                                                     let
-                                                        updatedOffline =
-                                                            editableSession.offlineSession
-                                                                |> (\offline -> { offline | measurements = LocalData.setRecalculate offline.measurements })
-
-                                                        updatedEditable =
-                                                            Success
-                                                                { editableSession
-                                                                    | update = NotAsked
-                                                                    , offlineSession = updatedOffline
-                                                                    , checkedIn = LocalData.setRecalculate editableSession.checkedIn
-                                                                    , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
-                                                                    , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
-                                                                }
-
                                                         newEditableSessions =
-                                                            Dict.insert sessionId updatedEditable newModel.editableSessions
+                                                            if data.deleted then
+                                                                Dict.remove sessionId newModel.editableSessions
+
+                                                            else
+                                                                let
+                                                                    updatedOffline =
+                                                                        editableSession.offlineSession
+                                                                            |> (\offline -> { offline | measurements = LocalData.setRecalculate offline.measurements })
+
+                                                                    updatedEditable =
+                                                                        Success
+                                                                            { editableSession
+                                                                                | update = NotAsked
+                                                                                , offlineSession = updatedOffline
+                                                                                , checkedIn = LocalData.setRecalculate editableSession.checkedIn
+                                                                                , summaryByParticipant = LocalData.setRecalculate editableSession.summaryByParticipant
+                                                                                , summaryByActivity = LocalData.setRecalculate editableSession.summaryByActivity
+                                                                            }
+                                                                in
+                                                                Dict.insert sessionId updatedEditable newModel.editableSessions
                                                     in
                                                     { newModel | editableSessions = newEditableSessions }
                                                 )
