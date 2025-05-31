@@ -1,13 +1,14 @@
 module Backend.CompletionMenu.Model exposing (..)
 
 import App.Types exposing (Site)
-import Backend.Components.Model exposing (HealthCenterData)
+import Backend.Components.Model exposing (HealthCenterData, MenuScope)
 import Json.Encode exposing (Value)
 
 
 type alias MenuData =
     { site : Site
     , healthCenters : List HealthCenterData
+    , scope : Maybe MenuScope
     }
 
 

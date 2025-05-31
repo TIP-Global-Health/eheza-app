@@ -14,3 +14,8 @@ type alias HealthCenterData =
 
 type alias HealthCenterId =
     Int
+
+
+type MenuScope
+    = ScopeFull
+    | ScopeHealthCenters
