@@ -32,13 +32,11 @@ import Measurement.Model
         ( ContentAndTasksForPerformedLaboratoryUniversalTestConfig
         , ContentAndTasksLaboratoryUniversalTestInitialConfig
         , CorePhysicalExamForm
-        , InvokationModule(..)
         , LaboratoryTask(..)
         , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
         , VitalsForm
-        , VitalsFormMode(..)
         )
 import Measurement.Utils
     exposing
@@ -122,7 +120,6 @@ import Pages.Utils
         , viewRedAlertForBool
         , viewRedAlertForSelect
         , viewSaveAction
-        , viewSelectListInput
         , viewTasksCount
         , viewYellowAlertForSelect
         )
@@ -1650,10 +1647,6 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                 tasks
                 |> Dict.fromList
 
-        tasksCompletedFromTotalDict =
-            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
-                formHtmlAndTasks
-
         ( viewForm, tasksCompleted, totalTasks ) =
             Maybe.andThen
                 (\task -> Dict.get task formHtmlAndTasks)
@@ -1666,6 +1659,10 @@ viewLaboratoryContentForNurse language currentDate assembled data =
                     let
                         personId =
                             assembled.participant.person
+
+                        tasksCompletedFromTotalDict =
+                            Dict.map (\_ ( _, completed, total ) -> ( completed, total ))
+                                formHtmlAndTasks
 
                         nextTask =
                             resolveNextTask task tasksCompletedFromTotalDict tasks
@@ -2499,24 +2496,28 @@ viewImmunisationContent language currentDate site assembled data =
                     ]
                 ]
 
-        tasksCompletedFromTotalDict =
-            List.map
-                (\task ->
-                    ( task
-                    , immunisationTasksCompletedFromTotal language
-                        currentDate
-                        site
-                        assembled
-                        data
-                        task
-                    )
-                )
-                tasks
-                |> Dict.fromList
-
         ( tasksCompleted, totalTasks ) =
             activeTask
-                |> Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict)
+                |> Maybe.andThen
+                    (\task ->
+                        let
+                            tasksCompletedFromTotalDict =
+                                List.map
+                                    (\task_ ->
+                                        ( task_
+                                        , immunisationTasksCompletedFromTotal language
+                                            currentDate
+                                            site
+                                            assembled
+                                            data
+                                            task_
+                                        )
+                                    )
+                                    tasks
+                                    |> Dict.fromList
+                        in
+                        Dict.get task tasksCompletedFromTotalDict
+                    )
                 |> Maybe.withDefault ( 0, 0 )
 
         ( formForView, fullScreen, allowSave ) =
