@@ -46,6 +46,7 @@ function hedley_user_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -130,6 +131,7 @@ function hedley_user_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -429,6 +431,7 @@ function hedley_user_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => FALSE,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
@@ -497,7 +500,7 @@ function hedley_user_field_default_field_instances() {
     'label' => 'Groups',
     'required' => 0,
     'settings' => array(
-      'user_register_form' => 1,
+      'user_register_form' => 0,
     ),
     'widget' => array(
       'active' => 1,
@@ -513,7 +516,8 @@ function hedley_user_field_default_field_instances() {
     'bundle' => 'user',
     'default_value' => NULL,
     'deleted' => 0,
-    'description' => '',
+    'description' => 'Health centers which are synced on the device.
+This info is periodically reported by device.',
     'display' => array(
       'default' => array(
         'label' => 'above',
@@ -528,7 +532,7 @@ function hedley_user_field_default_field_instances() {
     ),
     'entity_type' => 'user',
     'field_name' => 'field_health_centers',
-    'label' => 'Health centers',
+    'label' => 'Synced health centers',
     'required' => 0,
     'settings' => array(
       'user_register_form' => 0,
@@ -537,12 +541,52 @@ function hedley_user_field_default_field_instances() {
       'active' => 1,
       'module' => 'entityreference',
       'settings' => array(
+        'hide_ids' => 0,
         'match_operator' => 'CONTAINS',
         'path' => '',
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
       'weight' => 12,
+    ),
+  );
+
+  // Exported field_instance: 'user-user-field_health_centers_for_reports'.
+  $field_instances['user-user-field_health_centers_for_reports'] = array(
+    'bundle' => 'user',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => 'Defines which health centers are allowed to be presented at statisticall queries reports, for user with \'Statistical Queries Manager\' role.',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'entityreference',
+        'settings' => array(
+          'bypass_access' => FALSE,
+          'link' => FALSE,
+        ),
+        'type' => 'entityreference_label',
+        'weight' => 10,
+      ),
+    ),
+    'entity_type' => 'user',
+    'field_name' => 'field_health_centers_for_reports',
+    'label' => 'Health centers for reports',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => 1,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'entityreference',
+      'settings' => array(
+        'hide_ids' => 0,
+        'match_operator' => 'CONTAINS',
+        'path' => '',
+        'size' => 60,
+      ),
+      'type' => 'entityreference_autocomplete',
+      'weight' => 18,
     ),
   );
 
@@ -756,9 +800,13 @@ function hedley_user_field_default_field_instances() {
   // Included for use with string extractors like potx.
   t('A code which users can provide on devices to identify themselves.');
   t('Code which this nurse can use to login on the frontend, whether online or offline. When creating a new nurse, you can leave this blank -- a PIN code will be randomly generated.');
+  t('Defines which health centers are allowed to be presented at statisticall queries reports, for user with \'Statistical Queries Manager\' role.');
   t('Email');
   t('Groups');
   t('Health centers');
+  t('Health centers for reports');
+  t('Health centers which are synced on the device.
+This info is periodically reported by device.');
   t('Incident details');
   t('PIN code');
   t('Phone');
@@ -768,6 +816,7 @@ function hedley_user_field_default_field_instances() {
   t('Resilience Program');
   t('Role');
   t('Sync phase');
+  t('Synced health centers');
   t('Total to upload');
   t('UUID');
   t('Version');
