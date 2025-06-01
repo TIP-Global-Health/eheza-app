@@ -740,6 +740,7 @@ emptyNextStepsData =
 type alias PregnancyDatingForm =
     { lmpDate : Maybe Date
     , prePregnancyWeight : Maybe Float
+    , prePregnancyWeightDirty : Bool
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
@@ -749,7 +750,7 @@ type alias PregnancyDatingForm =
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing Nothing Nothing Nothing Nothing
+    PregnancyDatingForm Nothing Nothing False Nothing Nothing Nothing Nothing
 
 
 type alias ObstetricFormFirstStep =

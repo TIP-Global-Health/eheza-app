@@ -395,6 +395,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Prenatal.ProgressReport.View.view model.language
                             currentDate
+                            model.zscores
                             site
                             features
                             (Tuple.second loggedInModel.nurse)
@@ -617,6 +618,7 @@ viewUserPage page deviceName site features geoInfo reverseGeoInfo model configur
                         in
                         Pages.Prenatal.Activity.View.view model.language
                             currentDate
+                            model.zscores
                             site
                             id
                             isChw

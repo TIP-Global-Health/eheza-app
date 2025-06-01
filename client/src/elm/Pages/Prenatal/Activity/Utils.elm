@@ -21,7 +21,7 @@ import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
 import EverySet exposing (EverySet)
 import Gizra.Html exposing (emptyNode)
-import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, formatDDMMYYYY)
+import Gizra.NominalDate exposing (NominalDate, diffDays, diffWeeks, diffYears, formatDDMMYYYY)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
@@ -51,7 +51,7 @@ import Measurement.Utils
 import Measurement.View exposing (viewActionTakenLabel, vitalsFormInputsAndTasks)
 import Pages.Prenatal.Activity.Model exposing (..)
 import Pages.Prenatal.Activity.Types exposing (..)
-import Pages.Prenatal.Encounter.Utils exposing (emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
+import Pages.Prenatal.Encounter.Utils exposing (calculateBmi, emergencyReferalRequired, generateGravida, generatePara, getAllActivities)
 import Pages.Prenatal.Model exposing (AssembledData, HealthEducationForm, PrenatalEncounterPhase(..), ReferralForm, VaccinationProgressDict)
 import Pages.Prenatal.Utils exposing (..)
 import Pages.Utils
@@ -77,6 +77,8 @@ import SyncManager.Model exposing (Site)
 import Translate exposing (translate)
 import Translate.Model exposing (Language(..))
 import Utils.Html exposing (viewModal)
+import ZScore.Model
+import ZScore.Utils exposing (viewZScore, zScoreBmiForAge)
 
 
 expectActivity : NominalDate -> Site -> AssembledData -> PrenatalActivity -> Bool
@@ -1403,6 +1405,16 @@ getDangerSignsListForType getFunc mappingFunc noSignsValue measurements =
 resolveMeasuredHeight : AssembledData -> Maybe HeightInCm
 resolveMeasuredHeight assembled =
     let
+        byCurrent =
+            getMeasurementValueFunc assembled.measurements.nutrition
+                |> Maybe.map .height
+    in
+    Maybe.Extra.or byCurrent (resolvePreviouslyMeasuredHeight assembled)
+
+
+resolvePreviouslyMeasuredHeight : AssembledData -> Maybe HeightInCm
+resolvePreviouslyMeasuredHeight assembled =
+    let
         resolveHeight measurements =
             getMeasurementValueFunc measurements.nutrition
                 |> Maybe.map .height
@@ -1421,6 +1433,151 @@ resolveMeasuredHeight assembled =
                 |> List.head
     in
     Maybe.Extra.or heightMeasuredByNurse heightMeasuredByCHW
+
+
+resolvePrePregnancyWeight : AssembledData -> Maybe WeightInKg
+resolvePrePregnancyWeight assembled =
+    let
+        resolveWeight measurements =
+            getMeasurementValueFunc measurements.lastMenstrualPeriod
+                |> Maybe.andThen .prePregnancyWeight
+
+        byCurrent =
+            resolveWeight assembled.measurements
+
+        byNurse =
+            List.filterMap (.measurements >> resolveWeight)
+                assembled.nursePreviousEncountersData
+                |> List.head
+
+        byCHW =
+            List.filterMap
+                (\( _, _, measurements ) ->
+                    resolveWeight measurements
+                )
+                assembled.chwPreviousMeasurementsWithDates
+                |> List.head
+    in
+    Maybe.Extra.or byNurse byCHW
+        |> Maybe.Extra.or byCurrent
+
+
+{-| Used for patients bellow 19 years of age.
+-}
+zscoreToPrePregnancyClassification : Float -> PrePregnancyClassification
+zscoreToPrePregnancyClassification zscore =
+    if zscore < -2 then
+        PrePregnancyUnderWeight
+
+    else if zscore <= 1 then
+        PrePregnancyNormal
+
+    else if zscore <= 2 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+{-| Used for patients of 19 years of age and above.
+-}
+bmiToPrePregnancyClassification : Float -> PrePregnancyClassification
+bmiToPrePregnancyClassification bmi =
+    if bmi < 18.5 then
+        PrePregnancyUnderWeight
+
+    else if bmi < 25 then
+        PrePregnancyNormal
+
+    else if bmi < 30 then
+        PrePregnancyOverweight
+
+    else
+        PrePregnancyObesity
+
+
+resolvePrePregnancyClassification : ZScore.Model.Model -> AssembledData -> Maybe Float -> Maybe PrePregnancyClassification
+resolvePrePregnancyClassification zscores assembled prePregnancyBmi =
+    Maybe.Extra.andThen3
+        (\bmi lmpDate birthDate ->
+            let
+                ageInYearsOnLMP =
+                    diffYears birthDate lmpDate
+            in
+            if ageInYearsOnLMP < 19 then
+                let
+                    ageInDaysOnLMP =
+                        diffDays birthDate lmpDate
+                in
+                zScoreBmiForAge zscores (ZScore.Model.Days ageInDaysOnLMP) assembled.person.gender (ZScore.Model.BMI bmi)
+                    |> Maybe.andThen (viewZScore >> String.toFloat)
+                    |> Maybe.map zscoreToPrePregnancyClassification
+
+            else
+                Just <| bmiToPrePregnancyClassification bmi
+        )
+        prePregnancyBmi
+        assembled.globalLmpDate
+        assembled.person.birthDate
+
+
+resolveGWGClassification : NominalDate -> PrePregnancyClassification -> Float -> Float -> AssembledData -> Maybe GWGClassification
+resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeight currentWeight assembled =
+    Maybe.map
+        (\lmpDate ->
+            let
+                egaInWeeks =
+                    calculateEGAWeeks currentDate lmpDate
+
+                actualWeightGain =
+                    currentWeight - prePregnancyWeight
+
+                expectedWeightGain =
+                    let
+                        weeksAfterFirstTrimester =
+                            egaInWeeks - 12
+
+                        ( forFirstTrimester, perWeek ) =
+                            weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
+                    in
+                    if weeksAfterFirstTrimester <= 0 then
+                        forFirstTrimester
+
+                    else
+                        forFirstTrimester + toFloat weeksAfterFirstTrimester * perWeek
+
+                relation =
+                    actualWeightGain / expectedWeightGain
+            in
+            if relation < 0.7 then
+                GWGSeverelyInadequate
+
+            else if relation < 0.9 then
+                GWGInadequate
+
+            else if relation <= 1.25 then
+                GWGAdequate
+
+            else
+                GWGExcessive
+        )
+        assembled.globalLmpDate
+
+
+weightGainStandardsPerPrePregnancyClassification : PrePregnancyClassification -> ( Float, Float )
+weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
+    case prePregnancyClassification of
+        PrePregnancyUnderWeight ->
+            ( 2, 0.51 )
+
+        PrePregnancyNormal ->
+            ( 1, 0.42 )
+
+        PrePregnancyOverweight ->
+            ( 1, 0.28 )
+
+        PrePregnancyObesity ->
+            ( 0.5, 0.22 )
 
 
 generatePrenatalAssesmentForChw : AssembledData -> PrenatalAssesment
@@ -3428,7 +3585,11 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpDate = or form.lmpDate (Just value.date)
-                , prePregnancyWeight = or form.prePregnancyWeight (Maybe.map weightValueFunc value.prePregnancyWeight)
+                , prePregnancyWeight =
+                    maybeValueConsideringIsDirtyField form.prePregnancyWeightDirty
+                        form.prePregnancyWeight
+                        (Maybe.map weightValueFunc value.prePregnancyWeight)
+                , prePregnancyWeightDirty = form.prePregnancyWeightDirty
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
@@ -4245,17 +4406,6 @@ toObstetricHistoryStep2Value form =
         |> andMap (Maybe.map EverySet.fromList form.signs)
 
 
-fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
-fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> getHeightValue) saved
-    , heightDirty = False
-    , weight = Maybe.map (.weight >> weightValueFunc) saved
-    , weightDirty = False
-    , muac = Maybe.map (.muac >> muacValueFunc) saved
-    , muacDirty = False
-    }
-
-
 prenatalNutritionFormWithDefault : NutritionAssessmentForm -> Maybe PrenatalNutritionValue -> NutritionAssessmentForm
 prenatalNutritionFormWithDefault form saved =
     saved
@@ -4364,7 +4514,7 @@ examinationTasksCompletedFromTotal currentDate assembled data task =
         NutritionAssessment ->
             let
                 measuredHeight =
-                    resolveMeasuredHeight assembled
+                    resolvePreviouslyMeasuredHeight assembled
 
                 hideHeightInput =
                     isJust measuredHeight

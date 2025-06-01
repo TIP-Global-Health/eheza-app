@@ -2203,6 +2203,8 @@ div.page-activity.prenatal {
 
     .full.content {
 
+      @include ncda-vaccination;
+
       .form.medication {
 
         .label.header {
@@ -2299,8 +2301,6 @@ div.page-activity.prenatal {
         margin-bottom: 20px;
       }
 
-      @include ncda-vaccination;
-
       .ui.form.labs-history {
 
         .instructions,
@@ -2340,6 +2340,39 @@ div.page-activity.prenatal {
             padding: 0 20px;
             text-transform: uppercase;
           }
+        }
+      }
+
+      .ui.form.examination.nutrition-assessment {
+
+        .gwg-label .label {
+          font-size: 20px;
+          text-align: center;
+        }
+
+        .gwg-value {
+          font-weight: 700;
+          margin-top: 10px;
+          text-align: center;
+
+          p.red {
+            color: $color-red-alert;
+          }
+
+          p.yellow {
+            color: $color-orange;
+          }
+
+          p.green {
+            color: $color-green;
+          }
+        }
+
+        .nutritional-supplement-alert {
+          color: $color-red-alert;
+          font-size: 16px;
+          font-weight: 700;
+          text-align: center;
         }
       }
 
@@ -3111,7 +3144,8 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
-  .vaccination-history {
+  .vaccination-history,
+  .medication-history {
 
     .pane-content {
       padding-left: 0;
@@ -4128,6 +4162,18 @@ div.page-report.clinical {
     }
   }
 
+  .heading.medication {
+
+    .name {
+      width: 50%;
+    }
+
+    .date {
+      text-align: center;
+      width: 50%;
+    }
+  }
+
   .entry {
     border-bottom: 1px solid $color-text;
     color: $color-dark-gray;
@@ -4189,6 +4235,7 @@ div.page-report.clinical {
   }
 
   .entry.vaccination {
+
     .name {
       width: 35%;
     }
@@ -4206,6 +4253,22 @@ div.page-report.clinical {
 
       &.red {
         color: $color-velvet
+      }
+    }
+  }
+
+  .entry.medication {
+
+    .name {
+      width: 50%;
+    }
+
+    .date {
+      text-align: center;
+      width: 50%;
+
+      p {
+        margin-bottom: 0;
       }
     }
   }
