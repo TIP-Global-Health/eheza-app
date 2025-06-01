@@ -13,6 +13,8 @@ include_once 'hedley_reports.features.inc';
  */
 
 define('HEDLEY_REPORTS_CALCULATE_AGGREGATED_DATA', 'hedley_reports_calculate_reports_data');
+define('HEDLEY_REPORTS_SCOPE_FULL', 'full');
+define('HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS', 'health_centers');
 
 const RDT_POSITIVE_VALUES = ['positive', 'positive-and-pregnant'];
 
@@ -24,14 +26,15 @@ function hedley_reports_menu() {
     'title' => 'Statistical Queries',
     'description' => 'View Statistical Queries',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_menu',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
   );
 
   $items['admin/reports/statistical-queries/all'] = array(
     'title' => 'Entire Population',
     'description' => 'View report for Entire Population',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_global',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3],
   );
 
   $items['admin/reports/statistical-queries/demographics/%'] = array(
@@ -39,7 +42,8 @@ function hedley_reports_menu() {
     'description' => 'View report for province',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_province',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%'] = array(
@@ -47,7 +51,8 @@ function hedley_reports_menu() {
     'description' => 'View report for district',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_district',
     'page arguments' => [4, 5],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%'] = array(
@@ -55,7 +60,8 @@ function hedley_reports_menu() {
     'description' => 'View report for sector',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_sector',
     'page arguments' => [4, 5, 6],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%'] = array(
@@ -63,7 +69,8 @@ function hedley_reports_menu() {
     'description' => 'View report for cell',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_cell',
     'page arguments' => [4, 5, 6, 7],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/demographics/%/%/%/%/%'] = array(
@@ -71,7 +78,8 @@ function hedley_reports_menu() {
     'description' => 'View report for village',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_village',
     'page arguments' => [4, 5, 6, 7, 8],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/statistical-queries/health-center/%'] = array(
@@ -79,21 +87,23 @@ function hedley_reports_menu() {
     'description' => 'View report for health center',
     'page callback' => 'hedley_reports_statistical_queries_report_callback_health_center',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   $items['admin/reports/completion'] = array(
     'title' => 'Completion report',
     'description' => 'View Completion report',
     'page callback' => 'hedley_reports_completion_report_callback_menu',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
   );
 
   $items['admin/reports/completion/all'] = array(
     'title' => 'Entire Population',
     'description' => 'View Completion report for Entire Population',
     'page callback' => 'hedley_reports_completion_report_callback_global',
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3],
   );
 
   $items['admin/reports/completion/health-center/%'] = array(
@@ -101,22 +111,39 @@ function hedley_reports_menu() {
     'description' => 'View Completion report for health center',
     'page callback' => 'hedley_reports_completion_report_callback_health_center',
     'page arguments' => [4],
-    'access callback' => 'hedley_reports_statistical_queries_report_access',
+    'access callback' => 'hedley_reports_menu_access',
+    'access arguments' => [3, 4],
   );
 
   return $items;
 }
 
 /**
- * Grants access to Statistical Queries and Completion Report.
+ * Grants access for Statistical Queries and Completion Report.
+ *
+ * @param string $population
+ *   Selected population scope.
+ *   Possible options: be 'all', 'health-center', 'demographics'.
+ * @param string $main_id
+ *   The ID of top level item from scope from 'health-center'/'demographics'.
  *
  * @return bool
  *   TRUE if the user has access, FALSE otherwise.
  */
-function hedley_reports_statistical_queries_report_access() {
+function hedley_reports_menu_access($population = FALSE, $main_id = FALSE) {
+  $scope_data = hedley_reports_resolve_scope_for_reports_by_current_user();
   $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  $base_condition = user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
 
-  return user_has_role($statistical_queries_manager_role->rid) || hedley_admin_administrators_access();
+  if (empty($population) || $scope_data['scope'] == HEDLEY_REPORTS_SCOPE_FULL) {
+    return $base_condition;
+  }
+
+  if ($scope_data['scope'] == HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS) {
+    return $base_condition && ($population == 'health-center') && in_array($main_id, $scope_data['items']);
+  }
+
+  return FALSE;
 }
 
 /**
@@ -216,15 +243,24 @@ function hedley_reports_statistical_queries_report_callback_menu() {
  * @param string $page
  *   The page identifier used to build the Elm app.
  *
- * @return array
- *   A renderable array containing the Elm app with site name
- *   and health centers data.
+ * @return string
+ *   The HTML markup for the Elm application.
  */
 function hedley_reports_callback_menu_by_page($page) {
-  $site = variable_get('hedley_general_site_name', '');
+  $data = [
+    'site' => variable_get('hedley_general_site_name', ''),
+  ];
+  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
+
+  // At reports, users with 'Statistical Queries Manager' role, may be
+  // restricted to predefined list of health centers.
+  $scope_data = hedley_reports_resolve_scope_for_reports_by_current_user();
+  $data['scope'] = $scope_data['scope'];
+  if (!empty($scope_data['items'])) {
+    $health_center_ids = $scope_data['items'];
+  }
 
   $health_centers_data = [];
-  $health_center_ids = hedley_health_center_get_all_health_centers_ids();
   $nodes = node_load_multiple($health_center_ids);
   foreach ($nodes as $node) {
     $health_centers_data[] = [
@@ -233,10 +269,44 @@ function hedley_reports_callback_menu_by_page($page) {
     ];
   }
 
-  return hedley_general_build_elm_app($page, [
-    'site' => $site,
-    'health_centers' => $health_centers_data,
-  ]);
+  $data['health_centers'] = $health_centers_data;
+
+  return hedley_general_build_elm_app($page, $data);
+}
+
+/**
+ * Resolve scope for accessing reports for current user.
+ *
+ * @return array
+ *   The scope, anf if applicable, items in scope.
+ *
+ * @throws \EntityMetadataWrapperException
+ */
+function hedley_reports_resolve_scope_for_reports_by_current_user() {
+  global $user;
+  $admin_role = user_role_load_by_name('administrator');
+  $return = ['scope' => HEDLEY_REPORTS_SCOPE_FULL];
+  if (user_has_role($admin_role->rid, $user)) {
+    return $return;
+  }
+
+  $statistical_queries_manager_role = user_role_load_by_name('Statistical Queries Manager');
+  if (!user_has_role($statistical_queries_manager_role->rid, $user)) {
+    // This should not happen.
+    return [];
+  }
+
+  $account_wrapper = entity_metadata_wrapper('user', $user);
+  $allowed_health_centers = $account_wrapper->field_health_centers_for_reports->value(['identifier' => TRUE]);
+  if (empty($allowed_health_centers)) {
+    // No restrictions for HC list.
+    return $return;
+  }
+
+  return [
+    'scope' => HEDLEY_REPORTS_SCOPE_HEALTH_CENTERS,
+    'items' => $allowed_health_centers,
+  ];
 }
 
 /**

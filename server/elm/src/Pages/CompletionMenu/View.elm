@@ -3,6 +3,7 @@ module Pages.CompletionMenu.View exposing (view)
 import App.Types exposing (Language)
 import AssocList as Dict
 import Backend.CompletionMenu.Model exposing (MenuData)
+import Backend.Components.Model exposing (MenuScope(..))
 import Backend.Entities exposing (fromEntityId, toEntityId)
 import Backend.Model exposing (ModelBackend)
 import Gizra.Html exposing (emptyNode)
@@ -46,9 +47,26 @@ viewMenu : Language -> String -> MenuData -> Model -> Html Msg
 viewMenu language themePath data model =
     let
         populationSelectionInput =
+            let
+                allOptions =
+                    [ SelectionOptionGlobal, SelectionOptionHealthCenter ]
+
+                options =
+                    Maybe.map
+                        (\scope ->
+                            case scope of
+                                ScopeFull ->
+                                    allOptions
+
+                                ScopeHealthCenters ->
+                                    [ SelectionOptionHealthCenter ]
+                        )
+                        data.scope
+                        |> Maybe.withDefault allOptions
+            in
             viewSelectListInput language
                 model.populationSelection
-                [ SelectionOptionGlobal, SelectionOptionHealthCenter ]
+                options
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption
