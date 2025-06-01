@@ -8618,9 +8618,9 @@ var $author$project$Backend$Completion$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$CompletionMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
+var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
@@ -8653,15 +8653,43 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		'id',
 		$author$project$Gizra$Json$decodeInt,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData)));
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
 var $author$project$Backend$CompletionMenu$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -9540,19 +9568,24 @@ var $author$project$Backend$Reports$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
+var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -10068,14 +10101,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, targetedInterventions: $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData, universalIntervention: $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -16121,21 +16146,30 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	});
 var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$CompletionMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$CompletionMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
@@ -19693,6 +19727,13 @@ var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_lis
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(3)))),
 			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(21),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirungu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(24),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
@@ -22667,35 +22708,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(5),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitega',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(6),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mparaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(7),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gako',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(8),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mibaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(9),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gatandu',
+				'Mushishi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(4)))),
 			_Utils_Tuple2(
@@ -22706,45 +22719,10 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(10)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(12),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kiziba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(13),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Migezi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(14),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(16),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mugano',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(17),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kabuye',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(18),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentonga',
+				'Kabwayi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(15)))),
 			_Utils_Tuple2(
@@ -22755,19 +22733,12 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(19)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(21),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentambwe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(22),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitsinda',
+				'Kirungu',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
+					$author$project$Backend$Entities$toEntityId(21)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(25),
 			A2(
@@ -22776,21 +22747,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(24)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(26),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kaganza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(24)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(28),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(27)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(29),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Karirimvya',
@@ -22800,280 +22757,49 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(34),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(35),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kanyiriri',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(36),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(37),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(38),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitaza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(39),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kompanyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(40),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma ii',
+				'Nyakuguma',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(33)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(42),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakamba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(43),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(44),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruranga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(45),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde ii',
+				'Kanenge',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(41)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(47),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo a',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(48),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(49),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo c & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(50),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b',
+				'Mayengo',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(46)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(52),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ngongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(53),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasangu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(54),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirerama',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(55),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kinindo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(56),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giheta',
+				'Cabara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(58),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanirra',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(59),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(60),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buganga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(61),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanira',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(62),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamahongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(63),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Yerusalemu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(64),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo ii',
+				'Gashasha',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(57)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(67),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(68),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Makombe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(69),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(70),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gahore',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(71),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayange',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(72),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(73),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara ii',
+				'Mutambara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(66)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(75),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giharo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(76),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gatete',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(77),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafunzo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(78),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasenyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(79),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Moderne',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(80),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gisagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(74)))),
 			_Utils_Tuple2(
@@ -23084,143 +22810,24 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(81)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(83),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kibanga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(84),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buhinda',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(85),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(86),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayabazi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(87),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mahoro',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(89),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruremba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(90),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Soko',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(91),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Muhuta',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(92),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamiyaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(93),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kavyiru',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(94),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakuyo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(95),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rera',
+				'Mugara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(88)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(98),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruhongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(99),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Musovu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(100),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(101),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabiraba',
+				'Gitwe',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(97)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(103),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mwagu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(104),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafumbe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(105),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mambi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(106),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabigonzi',
+				'Karagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(102))))
 		]));
@@ -39185,21 +38792,30 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$ReportsMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
