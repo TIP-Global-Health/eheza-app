@@ -983,8 +983,7 @@ viewExaminationContent language currentDate zscores assembled data =
                 Just NutritionAssessment ->
                     let
                         form =
-                            assembled.measurements.nutrition
-                                |> getMeasurementValueFunc
+                            getMeasurementValueFunc assembled.measurements.nutrition
                                 |> prenatalNutritionFormWithDefault data.nutritionAssessmentForm
 
                         formWithMeasuredHeight =
@@ -3117,8 +3116,26 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                 weightPreviousValue
 
         baselineClassification =
+            resolvePrePregnancyClassification zscores assembled baselineBmi
+
+        baselineBmi =
             calculateBmi form.height prePregnancyWeight
-                |> resolvePrePregnancyClassification zscores assembled
+
+        viewBaselineBmi =
+            Maybe.map2
+                (\bmi classification ->
+                    let
+                        message =
+                            (translate language <| Translate.BaselineBMI bmi)
+                                ++ " "
+                                ++ translate language Translate.BMIUnit
+                                ++ " - "
+                                ++ (translate language <| Translate.PrePregnancyClassification classification)
+                    in
+                    div [ class "previous-value" ] [ text message ]
+                )
+                baselineBmi
+                baselineClassification
 
         gwgIndicator =
             Maybe.Extra.andThen3
@@ -3180,7 +3197,7 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
         nutritionalSupplementAlert =
             Maybe.map
                 (\muac ->
-                    if muac < 23 then
+                    if muac < 22 then
                         p [ class "nutritional-supplement-alert" ] [ text <| translate language Translate.ProvideNutritionalSupplement ]
 
                     else
@@ -3234,8 +3251,9 @@ viewNutritionAssessmentForm language currentDate zscores assembled form previous
                     calculatedBmi
                     (SetNutritionAssessmentMeasurement bmiUpdateFunc)
                     "bmi disabled"
-                    Translate.EmptyString
+                    Translate.BMIUnit
                , viewPreviousMeasurement language bmiPreviousValue Translate.EmptyString
+               , showMaybe viewBaselineBmi
                , div [ class "separator" ] []
                , div [ class "ui grid" ]
                     [ div [ class "twelve wide column" ]

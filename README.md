@@ -83,7 +83,7 @@ The Drupal migration creates Devices, Nurses out of the box, so you can
 1. Use `1234` as the PIN code (tied to the Nurse nodes at the Drupal side).
 
 If you have a dump from another source, to be able to work locally, first of all, you need to create a Device and a Nurse.
-1. `ddev drush uli` to login as `admin`
+1. `ddev login` to login as `admin`
 1. Fulfill https://eheza-app.ddev.site:4443/node/add/device , note the Pairing code.
 1. Fulfill https://eheza-app.ddev.site:4443/node/add/nurse , note the PIN code, assign it to group(s) and health center(s).
 1. Visit http://localhost:3000 (that comes from inside DDEV), supply the Pairing code and the PIN.

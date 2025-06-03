@@ -1535,7 +1535,7 @@ resolveGWGClassification currentDate prePregnancyClassification prePregnancyWeig
                 expectedWeightGain =
                     let
                         weeksAfterFirstTrimester =
-                            egaInWeeks - 13
+                            egaInWeeks - 12
 
                         ( forFirstTrimester, perWeek ) =
                             weightGainStandardsPerPrePregnancyClassification prePregnancyClassification
@@ -1571,7 +1571,7 @@ weightGainStandardsPerPrePregnancyClassification prePregnancyClassification =
             ( 2, 0.51 )
 
         PrePregnancyNormal ->
-            ( 2, 0.42 )
+            ( 1, 0.42 )
 
         PrePregnancyOverweight ->
             ( 1, 0.28 )
@@ -3585,7 +3585,11 @@ lastMenstrualPeriodFormWithDefault form saved =
             form
             (\value ->
                 { lmpDate = or form.lmpDate (Just value.date)
-                , prePregnancyWeight = or form.prePregnancyWeight (Maybe.map weightValueFunc value.prePregnancyWeight)
+                , prePregnancyWeight =
+                    maybeValueConsideringIsDirtyField form.prePregnancyWeightDirty
+                        form.prePregnancyWeight
+                        (Maybe.map weightValueFunc value.prePregnancyWeight)
+                , prePregnancyWeightDirty = form.prePregnancyWeightDirty
                 , lmpDateConfident = or form.lmpDateConfident (Just value.confident)
                 , lmpDateNotConfidentReason = or form.lmpDateNotConfidentReason value.notConfidentReason
                 , chwLmpConfirmation = or form.chwLmpConfirmation (Just value.confirmation)
@@ -4400,17 +4404,6 @@ toObstetricHistoryStep2Value form =
         |> andMap (Maybe.map EverySet.singleton form.previousDeliveryPeriod)
         |> andMap (Just <| EverySet.singleton NoObstetricHistorySign)
         |> andMap (Maybe.map EverySet.fromList form.signs)
-
-
-fromPrenatalNutritionValue : Maybe PrenatalNutritionValue -> NutritionAssessmentForm
-fromPrenatalNutritionValue saved =
-    { height = Maybe.map (.height >> getHeightValue) saved
-    , heightDirty = False
-    , weight = Maybe.map (.weight >> weightValueFunc) saved
-    , weightDirty = False
-    , muac = Maybe.map (.muac >> muacValueFunc) saved
-    , muacDirty = False
-    }
 
 
 prenatalNutritionFormWithDefault : NutritionAssessmentForm -> Maybe PrenatalNutritionValue -> NutritionAssessmentForm
