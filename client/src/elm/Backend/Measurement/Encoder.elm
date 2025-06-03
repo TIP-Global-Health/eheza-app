@@ -289,9 +289,7 @@ encodeBloodGpRsTestValue value =
            encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "blood_group" value.bloodGroup encodeBloodGroup
         ++ encodeNullable "rhesus" value.rhesus encodeRhesus
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_blood_gprs_test" )
-           ]
+        ++ [ ( "type", string "prenatal_blood_gprs_test" ) ]
 
 
 encodeBloodGroup : BloodGroup -> Value
@@ -315,9 +313,7 @@ encodeHemoglobinTestValue value =
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
         ++ encodeNullable "hemoglobin_count" value.hemoglobinCount float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hemoglobin_test" )
-           ]
+        ++ [ ( "type", string "prenatal_hemoglobin_test" ) ]
 
 
 encodePrenatalHepatitisBTest : PrenatalHepatitisBTest -> List ( String, Value )
@@ -335,9 +331,7 @@ encodeHepatitisBTestValue value =
            -- Therefore, we use encodeIfSet instead of encodeNullable.
            encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "test_result" value.testResult encodeTestResult
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hepatitis_b_test" )
-           ]
+        ++ [ ( "type", string "prenatal_hepatitis_b_test" ) ]
 
 
 encodePrenatalHIVTest : PrenatalHIVTest -> List ( String, Value )
@@ -381,9 +375,7 @@ encodeHIVPCRTestValue value =
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
         ++ encodeNullable "hiv_viral_load_status" value.hivViralLoadStatus encodeViralLoadStatus
         ++ encodeNullable "hiv_viral_load" value.hivViralLoad float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_hiv_pcr_test" )
-           ]
+        ++ [ ( "type", string "prenatal_hiv_pcr_test" ) ]
 
 
 encodeViralLoadStatus : ViralLoadStatus -> Value
@@ -444,9 +436,7 @@ encodeMalariaTestValue value =
         ++ encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeEverySetNullable "test_prerequisites" value.testPrerequisites encodeTestPrerequisite
         ++ encodeNullable "test_result" value.testResult encodeTestResult
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_malaria_test" )
-           ]
+        ++ [ ( "type", string "prenatal_malaria_test" ) ]
 
 
 encodeBloodSmearResult : BloodSmearResult -> Value
@@ -469,9 +459,7 @@ encodeRandomBloodSugarTestValue type_ value =
            -- Therefore, we use encodeIfSet instead of encodeNullable.
            encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "sugar_count" value.sugarCount float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
-           ]
+        ++ [ ( "type", string type_ ) ]
 
 
 encodeTestPrerequisite : TestPrerequisite -> Value
@@ -504,9 +492,7 @@ encodeSyphilisTestValue value =
            encodeIfSet "originating_encounter" value.originatingEncounter encodeEntityUuid
         ++ encodeNullable "test_result" value.testResult encodeTestResult
         ++ encodeEverySetNullable "illness_symptoms" value.symptoms encodeIllnessSymptom
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_syphilis_test" )
-           ]
+        ++ [ ( "type", string "prenatal_syphilis_test" ) ]
 
 
 encodeIllnessSymptom : IllnessSymptom -> Value
@@ -565,9 +551,7 @@ encodeUrineDipstickTestValue type_ value =
         ++ haemoglobin
         ++ ketone
         ++ bilirubin
-        ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
-           ]
+        ++ [ ( "type", string type_ ) ]
 
 
 encodeTestVariant : TestVariant -> Value
@@ -691,9 +675,7 @@ encodeLabsResultsValue type_ value =
         ++ patientNotified
         ++ encodeEverySetNullable "tests_with_follow_up" value.testsWithFollowUp encodeLaboratoryTest
         ++ encodeNullable "review_state" value.reviewState encodeLabsResultsReviewState
-        ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
-           ]
+        ++ [ ( "type", string type_ ) ]
 
 
 encodeLaboratoryTest : LaboratoryTest -> Value
@@ -1497,9 +1479,7 @@ encodeMedicationValue value =
         ++ encodeEverySetNullable "malaria_treatment" value.malariaTreatment encodeMedicationTreatmentSign
         ++ encodeEverySetNullable "anemia_treatment" value.anemiaTreatment encodeMedicationTreatmentSign
         ++ encodeEverySetNullable "syphilis_treatment" value.syphilisTreatment encodeMedicationTreatmentSign
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "medication" )
-           ]
+        ++ [ ( "type", string "medication" ) ]
 
 
 encodeChildFbf : Fbf -> List ( String, Value )
@@ -1875,9 +1855,7 @@ encodeVitalsValueWithType type_ value =
         ++ encodeIfSet "heart_rate" value.heartRate int
         ++ encodeIfSet "sys_repeated" value.sysRepeated float
         ++ encodeIfSet "dia_repeated" value.diaRepeated float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string type_ )
-           ]
+        ++ [ ( "type", string type_ ) ]
 
 
 encodeSymptomsGeneral : SymptomsGeneral -> List ( String, Value )
@@ -2246,9 +2224,7 @@ encodeCovidTestingValue : CovidTestingValue -> List ( String, Value )
 encodeCovidTestingValue value =
     ( "rapid_test_result", encodeRapidTestResult value.result )
         :: encodeNullable "administration_note" value.administrationNote encodeAdministrationNote
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "covid_testing" )
-           ]
+        ++ [ ( "type", string "covid_testing" ) ]
 
 
 encodeRapidTestResult : RapidTestResult -> Value
@@ -2340,9 +2316,7 @@ encodePrenatalReferralValue value =
         ++ encodeNullable "reason_not_sent_to_hc" value.reasonForNotSendingToHC encodeReasonForNonReferral
         ++ encodeEverySetNullable "referrals" value.referToFacilitySigns encodeReferToFacilitySign
         ++ encodeEverySetNullable "reasons_for_non_referrals" value.facilityNonReferralReasons encodeNonReferralSign
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "prenatal_send_to_hc" )
-           ]
+        ++ [ ( "type", string "prenatal_send_to_hc" ) ]
 
 
 encodeReferToFacilitySign : ReferToFacilitySign -> Value
@@ -3463,9 +3437,7 @@ encodeAcuteIllnessTraceContact =
 encodeAcuteIllnessTraceContactValue : ContactTraceItem -> List ( String, Value )
 encodeAcuteIllnessTraceContactValue item =
     encodeContactTraceItem item
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "acute_illness_trace_contact" )
-           ]
+        ++ [ ( "type", string "acute_illness_trace_contact" ) ]
 
 
 encodeContactTraceItem : ContactTraceItem -> List ( String, Value )
@@ -4135,9 +4107,7 @@ encodeCreatinineTestValue value =
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeNullable "creatinine_result" value.creatinineResult float
         ++ encodeNullable "bun_result" value.bunResult float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_creatinine_test" )
-           ]
+        ++ [ ( "type", string "ncd_creatinine_test" ) ]
 
 
 encodeNCDDangerSigns : NCDDangerSigns -> List ( String, Value )
@@ -4231,9 +4201,7 @@ encodeLiverFunctionTestValue value =
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeNullable "alt_result" value.altResult float
         ++ encodeNullable "ast_result" value.astResult float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_liver_function_test" )
-           ]
+        ++ [ ( "type", string "ncd_liver_function_test" ) ]
 
 
 encodeNCDMedicationDistribution : NCDMedicationDistribution -> List ( String, Value )
@@ -4304,9 +4272,7 @@ encodePregnancyTestValue value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeNullable "test_result" value.testResult encodeTestResult
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_pregnancy_test" )
-           ]
+        ++ [ ( "type", string "ncd_pregnancy_test" ) ]
 
 
 encodeNCDRandomBloodSugarTest : NCDRandomBloodSugarTest -> List ( String, Value )
@@ -4323,9 +4289,7 @@ encodeReferralValue : ReferralValue -> List ( String, Value )
 encodeReferralValue value =
     ( "referrals", encodeEverySet encodeReferToFacilitySign value.referralSigns )
         :: encodeEverySetNullable "reasons_for_non_referrals" value.nonReferralReasons encodeNonReferralSign
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_referral" )
-           ]
+        ++ [ ( "type", string "ncd_referral" ) ]
 
 
 encodeNCDSocialHistory : NCDSocialHistory -> List ( String, Value )
@@ -4454,9 +4418,7 @@ encodeLipidPanelTestValue value =
         ++ encodeNullable "ldl_cholesterol" value.ldlCholesterolResult float
         ++ encodeNullable "hdl_cholesterol" value.hdlCholesterolResult float
         ++ encodeNullable "triglycerides" value.triglyceridesResult float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_lipid_panel_test" )
-           ]
+        ++ [ ( "type", string "ncd_lipid_panel_test" ) ]
 
 
 encodeUnitOfMeasurement : UnitOfMeasurement -> Value
@@ -4474,9 +4436,7 @@ encodeHbA1cTestValue value =
     ( "test_execution_note", encodeTestExecutionNote value.executionNote )
         :: encodeNullable "execution_date" value.executionDate Gizra.NominalDate.encodeYYYYMMDD
         ++ encodeNullable "hba1c_result" value.hba1cResult float
-        ++ [ ( "deleted", bool False )
-           , ( "type", string "ncd_hba1c_test" )
-           ]
+        ++ [ ( "type", string "ncd_hba1c_test" ) ]
 
 
 encodeChildScoreboardBCGImmunisation : ChildScoreboardBCGImmunisation -> List ( String, Value )
