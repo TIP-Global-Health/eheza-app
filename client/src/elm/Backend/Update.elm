@@ -4895,7 +4895,7 @@ handleRevision :
     -> ( ModelIndexedDb, Bool )
 handleRevision currentDate healthCenterId villageId revision (( model, recalc ) as noChange) =
     let
-        encounterAction uuid data =
+        encounterActionConsideringDeletedField uuid data =
             if data.deleted then
                 Dict.remove uuid
 
@@ -4981,7 +4981,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         AcuteIllnessEncounterRevision uuid data ->
             let
                 acuteIllnessEncounters =
-                    encounterAction uuid data model.acuteIllnessEncounters
+                    encounterActionConsideringDeletedField uuid data model.acuteIllnessEncounters
 
                 acuteIllnessEncountersByParticipant =
                     Dict.remove data.participant model.acuteIllnessEncountersByParticipant
@@ -5060,7 +5060,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                         model
 
                 traceContacts =
-                    encounterAction uuid data model.traceContacts
+                    encounterActionConsideringDeletedField uuid data model.traceContacts
             in
             ( { modelWithMappedFollowUp | traceContacts = traceContacts }
             , recalc
@@ -5198,7 +5198,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         ChildScoreboardEncounterRevision uuid data ->
             let
                 childScoreboardEncounters =
-                    encounterAction uuid data model.childScoreboardEncounters
+                    encounterActionConsideringDeletedField uuid data model.childScoreboardEncounters
 
                 childScoreboardEncountersByParticipant =
                     Dict.remove data.participant model.childScoreboardEncountersByParticipant
@@ -5472,7 +5472,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         EducationSessionRevision uuid data ->
             let
                 educationSessions =
-                    Dict.update uuid (Maybe.map (always (Success data))) model.educationSessions
+                    encounterActionConsideringDeletedField uuid data model.educationSessions
 
                 -- For every session participant, we check if it has data at
                 -- educationSessionsByPerson dict. If so, we add the session to
@@ -5487,7 +5487,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                                         (\sessionsDict ->
                                             let
                                                 updatedSessionsDict =
-                                                    Dict.insert uuid data sessionsDict
+                                                    measurementActionConsideringDeletedField uuid data sessionsDict
                                             in
                                             Dict.insert personId (Success updatedSessionsDict) accum
                                         )
@@ -5634,7 +5634,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HIVEncounterRevision uuid data ->
             let
                 hivEncounters =
-                    encounterAction uuid data model.hivEncounters
+                    encounterActionConsideringDeletedField uuid data model.hivEncounters
 
                 hivEncountersByParticipant =
                     Dict.remove data.participant model.hivEncountersByParticipant
@@ -5758,7 +5758,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         HomeVisitEncounterRevision uuid data ->
             let
                 homeVisitEncounters =
-                    encounterAction uuid data model.homeVisitEncounters
+                    encounterActionConsideringDeletedField uuid data model.homeVisitEncounters
 
                 homeVisitEncountersByParticipant =
                     Dict.remove data.participant model.homeVisitEncountersByParticipant
@@ -5790,7 +5790,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         IndividualEncounterParticipantRevision uuid data ->
             let
                 individualParticipants =
-                    encounterAction uuid data model.individualParticipants
+                    encounterActionConsideringDeletedField uuid data model.individualParticipants
 
                 individualParticipantsByPerson =
                     Dict.remove data.person model.individualParticipantsByPerson
@@ -5999,7 +5999,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NCDEncounterRevision uuid data ->
             let
                 ncdEncounters =
-                    encounterAction uuid data model.ncdEncounters
+                    encounterActionConsideringDeletedField uuid data model.ncdEncounters
 
                 ncdEncountersByParticipant =
                     Dict.remove data.participant model.ncdEncountersByParticipant
@@ -6365,7 +6365,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         NutritionEncounterRevision uuid data ->
             let
                 nutritionEncounters =
-                    encounterAction uuid data model.nutritionEncounters
+                    encounterActionConsideringDeletedField uuid data model.nutritionEncounters
 
                 nutritionEncountersByParticipant =
                     Dict.remove data.participant model.nutritionEncountersByParticipant
@@ -6655,7 +6655,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PersonRevision uuid data ->
             let
                 people =
-                    encounterAction uuid data model.people
+                    encounterActionConsideringDeletedField uuid data model.people
             in
             ( { model
                 | personSearchesByName = Dict.empty
@@ -6768,7 +6768,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         PrenatalEncounterRevision uuid data ->
             let
                 prenatalEncounters =
-                    encounterAction uuid data model.prenatalEncounters
+                    encounterActionConsideringDeletedField uuid data model.prenatalEncounters
 
                 prenatalEncountersByParticipant =
                     Dict.remove data.participant model.prenatalEncountersByParticipant
@@ -7373,7 +7373,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
                 modelWithMappedStockManagement =
                     mapStockManagementMeasurements
                         healthCenterId
-                        (\measurements -> { measurements | stockUpdate = Dict.insert uuid data measurements.stockUpdate })
+                        (\measurements -> { measurements | stockUpdate = measurementActionConsideringDeletedField uuid data measurements.stockUpdate })
                         modelWithStockUpdateRecalc
 
                 -- This revision may cause stock management data to become obsolete,
@@ -7533,7 +7533,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         TuberculosisEncounterRevision uuid data ->
             let
                 tuberculosisEncounters =
-                    encounterAction uuid data model.tuberculosisEncounters
+                    encounterActionConsideringDeletedField uuid data model.tuberculosisEncounters
 
                 tuberculosisEncountersByParticipant =
                     Dict.remove data.participant model.tuberculosisEncountersByParticipant
@@ -7810,7 +7810,7 @@ handleRevision currentDate healthCenterId villageId revision (( model, recalc ) 
         WellChildEncounterRevision uuid data ->
             let
                 wellChildEncounters =
-                    encounterAction uuid data model.wellChildEncounters
+                    encounterActionConsideringDeletedField uuid data model.wellChildEncounters
 
                 wellChildEncountersByParticipant =
                     Dict.remove data.participant model.wellChildEncountersByParticipant
