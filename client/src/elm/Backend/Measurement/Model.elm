@@ -3242,6 +3242,7 @@ type alias StockUpdate =
     , notes : Maybe String
     , correctionReason : Maybe StockCorrectionReason
     , healthCenter : HealthCenterId
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     , signature : ImageUrl
     }
