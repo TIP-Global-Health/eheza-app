@@ -745,3 +745,12 @@ function hedley_update_7046() {
   $now = hedley_stats_convert_timestamp_to_nominal(time());
   variable_set('hedley_prenatal_change_medications', $now);
 }
+
+/**
+ * Sets the date on which Acute Illness symptoms change was delivered.
+ */
+function hedley_update_7047() {
+  $now = hedley_stats_convert_timestamp_to_nominal(time());
+  variable_set('hedley_acute_illness_change_symptoms', $now);
+}
+

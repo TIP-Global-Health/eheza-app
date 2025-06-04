@@ -295,6 +295,30 @@ translationSet transId =
                 AcuteIllnessDangerSigns ->
                     translationSet DangerSigns
 
+                AcuteIllnessENT ->
+                    { english = "Symptoms ENT"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessEyes ->
+                    { english = "Symptoms Eyes"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessGU ->
+                    { english = "Symptoms GU"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                AcuteIllnessOral ->
+                    { english = "Symptoms Oral"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 AcuteIllnessFollowUp ->
                     translationSet FollowUp
 

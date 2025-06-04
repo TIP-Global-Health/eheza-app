@@ -545,10 +545,14 @@ type Revision
     | AcuteIllnessContactsTracingRevision AcuteIllnessContactsTracingId AcuteIllnessContactsTracing
     | AcuteIllnessCoreExamRevision AcuteIllnessCoreExamId AcuteIllnessCoreExam
     | AcuteIllnessDangerSignsRevision AcuteIllnessDangerSignsId AcuteIllnessDangerSigns
+    | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessENTRevision AcuteIllnessENTId AcuteIllnessENT
+    | AcuteIllnessEyesRevision AcuteIllnessEyesId AcuteIllnessEyes
     | AcuteIllnessFollowUpRevision AcuteIllnessFollowUpId AcuteIllnessFollowUp
+    | AcuteIllnessGURevision AcuteIllnessGUId AcuteIllnessGU
     | AcuteIllnessMuacRevision AcuteIllnessMuacId AcuteIllnessMuac
     | AcuteIllnessNutritionRevision AcuteIllnessNutritionId AcuteIllnessNutrition
-    | AcuteIllnessEncounterRevision AcuteIllnessEncounterId AcuteIllnessEncounter
+    | AcuteIllnessOralRevision AcuteIllnessOralId AcuteIllnessOral
     | AcuteIllnessTraceContactRevision AcuteIllnessTraceContactId AcuteIllnessTraceContact
     | AcuteIllnessVitalsRevision AcuteIllnessVitalsId AcuteIllnessVitals
     | AppointmentConfirmationRevision PrenatalAppointmentConfirmationId PrenatalAppointmentConfirmation
