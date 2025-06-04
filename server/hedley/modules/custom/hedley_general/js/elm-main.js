@@ -17260,9 +17260,20 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function
 				])),
 		A2($elm$core$List$map, viewTable, data.tables));
 };
-var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
-	function (language, limitDate, scopeLabel, records) {
-		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
+var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
+	function (language, startDate, limitDate, scopeLabel, records) {
+		var demographicsReportPatientsData = A3(
+			$author$project$Pages$Reports$View$generateDemographicsReportPatientsData,
+			language,
+			limitDate,
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return !_Utils_eq(
+						A2($justinmimbs$date$Date$compare, record.created, startDate),
+						$elm$core$Basics$LT);
+				},
+				records));
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
@@ -19487,11 +19498,9 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							$elm$core$Basics$EQ)) ? data.records : A2(
 							$elm$core$List$filterMap,
 							function (record) {
-								if ((!_Utils_eq(
-									A2($justinmimbs$date$Date$compare, record.created, startDate),
-									$elm$core$Basics$LT)) && (!_Utils_eq(
+								if (!_Utils_eq(
 									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$GT))) {
+									$elm$core$Basics$GT)) {
 									var filterPrenatalData = $elm$core$Maybe$map(
 										$elm$core$List$filterMap(
 											function (participantData) {
@@ -19621,7 +19630,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							case 'ReportAcuteIllness':
 								return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportDemographics':
-								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+								return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
 							case 'ReportPrenatal':
