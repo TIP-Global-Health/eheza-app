@@ -597,6 +597,21 @@ prenatalActivityFromMapping mapped =
         "9+" ->
             Just PrenatalUrineDipstickTestResult
 
+        "a1" ->
+            Just PrenatalCalcium
+
+        "b1" ->
+            Just PrenatalFolate
+
+        "c1" ->
+            Just PrenatalIron
+
+        "d1" ->
+            Just PrenatalMebendazole
+
+        "e1" ->
+            Just PrenatalMMS
+
         _ ->
             Nothing
 

@@ -659,8 +659,10 @@ type Revision
     | PregnancyTestRevision PregnancyTestId PregnancyTest
     | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
     | PrenatalBreastfeedingRevision PrenatalBreastfeedingId PrenatalBreastfeeding
+    | PrenatalCalciumRevision PrenatalCalciumId PrenatalCalcium
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalFolateRevision PrenatalFolateId PrenatalFolate
     | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
     | PrenatalGUExamRevision PrenatalGUExamId PrenatalGUExam
     | PrenatalHealthEducationRevision PrenatalHealthEducationId PrenatalHealthEducation
@@ -668,10 +670,13 @@ type Revision
     | PrenatalHepatitisBTestRevision PrenatalHepatitisBTestId PrenatalHepatitisBTest
     | PrenatalHIVTestRevision PrenatalHIVTestId PrenatalHIVTest
     | PrenatalHIVPCRTestRevision PrenatalHIVPCRTestId PrenatalHIVPCRTest
+    | PrenatalIronRevision PrenatalIronId PrenatalIron
     | PrenatalLabsResultsRevision PrenatalLabsResultsId PrenatalLabsResults
     | PrenatalMalariaTestRevision PrenatalMalariaTestId PrenatalMalariaTest
+    | PrenatalMebendazoleRevision PrenatalMebendazoleId PrenatalMebendazole
     | PrenatalMentalHealthRevision PrenatalMentalHealthId PrenatalMentalHealth
     | PrenatalMedicationDistributionRevision PrenatalMedicationDistributionId PrenatalMedicationDistribution
+    | PrenatalMMSRevision PrenatalMMSId PrenatalMMS
     | PrenatalNutritionRevision PrenatalNutritionId PrenatalNutrition
     | PrenatalOutsideCareRevision PrenatalOutsideCareId PrenatalOutsideCare
     | PrenatalPartnerHIVTestRevision PrenatalPartnerHIVTestId PrenatalPartnerHIVTest

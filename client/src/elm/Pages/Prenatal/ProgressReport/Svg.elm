@@ -1,4 +1,9 @@
-module Pages.Prenatal.ProgressReport.Svg exposing (viewBMIForEGA, viewFundalHeightForEGA, viewMarkers)
+module Pages.Prenatal.ProgressReport.Svg exposing
+    ( viewBMIForEGA
+    , viewFundalHeightForEGA
+    , viewMarkers
+    , viewWeightGainForEGA
+    )
 
 import Html exposing (Html)
 import Pages.Report.Svg exposing (..)
@@ -116,7 +121,7 @@ viewBMIForEGA language points =
                     )
     in
     svg
-        [ class "z-score boys"
+        [ class "z-score"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"
@@ -139,6 +144,155 @@ viewBMIForEGA language points =
             , drawPolygon yellowPoints "yellow-area"
             , drawPolygon greenPoints "green-area"
             , drawPolygon bottomRedPoints "red-area"
+            , drawPolyline measurements "data"
+            ]
+                ++ drawPoints "#06B9FF" measurements
+        , (referenceVerticalLines verticalParts
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.left - 17 |> String.fromFloat)
+            ++ referenceVerticalNumbers verticalParts verticalMin 2 (dimensionsPx.right + 7.5 |> String.fromFloat)
+          )
+            |> g []
+        , referenceHorizontalLines 21 ++ referenceHorizontalNumbers 21 0 2 |> g []
+        ]
+
+
+viewWeightGainForEGA : Language -> ( Float, Float ) -> List ( Int, Float ) -> Html any
+viewWeightGainForEGA language ( firstTrimesterTotal, perWeek ) points =
+    let
+        verticalParts =
+            13
+
+        verticalMin =
+            0
+
+        verticalMax =
+            26
+
+        verticalStep =
+            heightPx / toFloat (verticalMax - verticalMin)
+
+        horizontalMin =
+            0
+
+        horizontalMax =
+            42
+
+        horizontalStep =
+            widthPx / toFloat (horizontalMax - horizontalMin)
+
+        firstTrimesterBottomRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left, dimensionsPx.bottom )
+            ]
+
+        firstTrimesterYellowPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        firstTrimesterGreenPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        firstTrimesterTopRedPoints =
+            [ ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersBottomRedPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.7 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom )
+            ]
+
+        remianingTrimestersYellowPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.9 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.7 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.7 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersGreenPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 1.25 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 0.9 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (0.9 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        remianingTrimestersTopRedPoints =
+            [ ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.top )
+            , ( dimensionsPx.right, dimensionsPx.bottom - 1.25 * (firstTrimesterTotal + 29 * perWeek) * verticalStep )
+            , ( dimensionsPx.left + 13 * horizontalStep, dimensionsPx.bottom - (1.25 * firstTrimesterTotal) * verticalStep )
+            ]
+
+        measurements =
+            List.filterMap
+                (\( egaDays, bmi ) ->
+                    if
+                        withinRange (toFloat egaDays / 7) horizontalMin horizontalMax
+                            && withinRange bmi verticalMin verticalMax
+                    then
+                        let
+                            egaGap =
+                                toFloat egaDays / 7 - horizontalMin
+
+                            bmiGap =
+                                bmi - verticalMin
+                        in
+                        Just ( dimensionsPx.left + egaGap * horizontalStep, dimensionsPx.bottom - bmiGap * verticalStep )
+
+                    else
+                        Nothing
+                )
+                points
+    in
+    svg
+        [ class "z-score"
+        , x "0px"
+        , y "0px"
+        , viewBox "25 25 841.9 595.3"
+        ]
+        [ frame
+        , g []
+            [ text_
+                [ transform "matrix(1 0 0 1 373 541)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.EgaWeeks ]
+            , text_
+                [ transform "matrix(0 -1 1 0 81 380)"
+                , class "z-score-semibold chart-label"
+                ]
+                [ text <| translate language Translate.WeightGain ]
+            ]
+        , g [] <|
+            [ drawPolygon firstTrimesterBottomRedPoints "red-area"
+            , drawPolygon firstTrimesterYellowPoints "yellow-area"
+            , drawPolygon firstTrimesterGreenPoints "green-area"
+            , drawPolygon firstTrimesterTopRedPoints "red-area"
+            , drawPolygon remianingTrimestersBottomRedPoints "red-area"
+            , drawPolygon remianingTrimestersYellowPoints "yellow-area"
+            , drawPolygon remianingTrimestersGreenPoints "green-area"
+            , drawPolygon remianingTrimestersTopRedPoints "red-area"
             , drawPolyline measurements "data"
             ]
                 ++ drawPoints "#06B9FF" measurements
@@ -239,7 +393,7 @@ viewFundalHeightForEGA language points =
                     )
     in
     svg
-        [ class "z-score boys"
+        [ class "z-score"
         , x "0px"
         , y "0px"
         , viewBox "25 25 841.9 595.3"

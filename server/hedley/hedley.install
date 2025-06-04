@@ -737,3 +737,11 @@ function hedley_update_7044() {
 function hedley_update_7045() {
   node_type_delete('resilience_message');
 }
+
+/**
+ * Sets the date on which Prenatal medication change was delivered.
+ */
+function hedley_update_7046() {
+  $now = hedley_stats_convert_timestamp_to_nominal(time());
+  variable_set('hedley_prenatal_change_medications', $now);
+}
