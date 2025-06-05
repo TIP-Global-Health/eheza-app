@@ -61,6 +61,10 @@ class HedleyRestfulSyncBase extends \HedleyRestfulEntityBaseNode {
   /**
    * Generates basic query for view the nodes.
    *
+   * We don't use hedley_general_create_db_select_query_excluding_deleted(),
+   * because we want content marked as deleted to be synced to devices.
+   * Otherwise, devices will not be aware that content got deleted on server.
+   *
    * @param array $node_ids
    *   The IDs of nodes to view.
    *
