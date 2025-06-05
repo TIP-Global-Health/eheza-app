@@ -60,7 +60,7 @@ function hedley_health_center_get_clinics_of_health_center($health_center_id, $r
  *   List of IDs of villages that belong to given health center
  */
 function hedley_health_center_get_villages_by_health_center($health_center_id, $range = 200) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'village')
@@ -81,7 +81,7 @@ function hedley_health_center_get_villages_by_health_center($health_center_id, $
  *   an empty array is returned.
  */
 function hedley_health_center_get_all_health_centers_ids() {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query
     ->entityCondition('entity_type', 'node')

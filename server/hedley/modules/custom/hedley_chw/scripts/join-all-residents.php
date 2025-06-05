@@ -20,7 +20,7 @@ if (!drupal_is_cli()) {
 $memory_limit = drush_get_option('memory_limit', 800);
 
 // Get all villages.
-$query = new EntityFieldQuery();
+$query = hedley_general_create_entity_field_query_excluding_deleted();
 $result = $query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', 'village')
@@ -50,14 +50,13 @@ foreach ($villages as $village) {
   $offset = 0;
 
   // A query that loads participation for adult residents of the village.
-  $participations_query = new EntityFieldQuery();
+  $participations_query = hedley_general_create_entity_field_query_excluding_deleted();
   $participations_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'pmtct_participant')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_adult', 'target_id', $residents, 'IN')
-    ->propertyOrderBy('nid', 'ASC')
-    ->addTag('exclude_deleted');
+    ->propertyOrderBy('nid');
 
   $participations_query_count = clone $participations_query;
   $count = $participations_query_count->count()->execute();

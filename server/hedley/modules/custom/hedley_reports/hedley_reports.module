@@ -981,13 +981,12 @@ function hedley_reports_build_statistical_queries_results_app($province = NULL, 
  *   An array of generated data.
  */
 function hedley_reports_generate_results_data($province, $district, $sector, $cell, $village, $health_center) {
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
     ->propertyCondition('status', NODE_PUBLISHED)
-    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL')
-    ->addTag('exclude_deleted');
+    ->fieldCondition('field_reports_data', 'value', NULL, 'IS NOT NULL');
 
   if (!empty($province)) {
     $base_query->fieldCondition('field_province', 'value', $province);
@@ -1197,7 +1196,7 @@ function hedley_reports_create_or_update_results_data_node(array $data, $report_
  *   Report Data node ID, or False, if not found.
  */
 function hedley_reports_load_results_data_node($report_variant, $scope, $province = NULL, $district = NULL, $health_center = NULL) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'report_data')
@@ -2392,14 +2391,13 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
   $session = node_load($session_id);
   $clinic_id = $session->field_clinic[LANGUAGE_NONE][0]['target_id'];
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'pmtct_participant')
     ->propertyCondition('status', NODE_PUBLISHED)
     ->fieldCondition('field_adult', 'target_id', $adult_id)
     ->fieldCondition('field_clinic', 'target_id', $clinic_id)
-    ->addTag('exclude_deleted')
     ->execute();
 
   // Flag that signals that adult is mother to a child (or children),
@@ -2437,7 +2435,7 @@ function hedley_reports_generate_completion_data_for_nutrition_group_encounter($
 
   // Loading all measurements taken for mother and children.
   $session_measurements_types = array_merge(array_keys($mapping_mother), array_keys($mapping_child));
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', $session_measurements_types, 'IN')
@@ -2611,7 +2609,7 @@ function hedley_reports_generate_completion_data_for_acute_illness($participant,
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'acute_illness_encounter')
@@ -3618,7 +3616,7 @@ function hedley_reports_generate_completion_data_for_well_child($participant, $e
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'well_child_encounter')
@@ -3906,14 +3904,13 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     return $return;
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'individual_participant')
     ->fieldCondition('field_encounter_type', 'value', 'child-scoreboard')
     ->fieldCondition('field_person', 'target_id', $person_id)
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->addTag('exclude_deleted');
+    ->propertyCondition('status', NODE_PUBLISHED);
 
   $result = $query
     ->range(0, 1)
@@ -3926,7 +3923,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
 
   $participant_id = key($result['node']);
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'child_scoreboard_encounter')
@@ -3967,7 +3964,7 @@ function hedley_reports_well_child_generate_vaccination_progress_data_by_child_s
     }
 
     // Loading all immunisation activities recorded during the encounter.
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', $immunisation_types, 'IN')
@@ -4996,7 +4993,7 @@ function hedley_reports_generate_completion_data_for_child_scoreboard_encounter(
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'child_scoreboard_encounter')
@@ -5312,14 +5309,13 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
     return $return;
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'individual_participant')
     ->fieldCondition('field_encounter_type', 'value', 'well-child')
     ->fieldCondition('field_person', 'target_id', $person_id)
-    ->propertyCondition('status', NODE_PUBLISHED)
-    ->addTag('exclude_deleted');
+    ->propertyCondition('status', NODE_PUBLISHED);
 
   $result = $query
     ->range(0, 1)
@@ -5332,7 +5328,7 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
 
   $participant_id = key($result['node']);
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'well_child_encounter')
@@ -5373,7 +5369,7 @@ function hedley_reports_child_scoreboard_generate_vaccination_progress_data_by_w
     }
 
     // Loading all immunisation activities recorded during the encounter.
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', $immunisation_types, 'IN')
@@ -5477,7 +5473,7 @@ function hedley_reports_generate_completion_data_for_ncd($participant, $exclude_
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'ncd_encounter')
@@ -6025,7 +6021,7 @@ function hedley_reports_generate_completion_data_for_hiv($participant, $exclude_
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'hiv_encounter')
@@ -6176,7 +6172,7 @@ function hedley_reports_generate_completion_data_for_tuberculosis($participant, 
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'tuberculosis_encounter')
@@ -6387,7 +6383,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
   ];
 
   // Load all encounters of current participant.
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $result = $query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'prenatal_encounter')
