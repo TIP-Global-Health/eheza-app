@@ -4,7 +4,7 @@ import Backend.NCDEncounter.Model exposing (..)
 import Backend.NCDEncounter.Types exposing (..)
 import EverySet
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, list, map, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, list, map, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Utils.Json exposing (decodeWithFallback)
@@ -30,6 +30,7 @@ decodeNCDEncounter =
         |> requiredAt [ "scheduled_date", "value" ] decodeYYYYMMDD
         |> optionalAt [ "scheduled_date", "value2" ] (nullable decodeYYYYMMDD) Nothing
         |> optional "ncd_diagnoses" decodeDiagnoses (EverySet.singleton NoNCDDiagnosis)
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 

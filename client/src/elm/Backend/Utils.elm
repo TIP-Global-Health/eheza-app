@@ -202,6 +202,7 @@ saveMeasurementCmd date encounter person nurse healthCenter savedValueId savedVa
             , encounterId = Just encounter
             , nurse = nurse
             , healthCenter = healthCenter
+            , deleted = False
             , value = savedValue
             }
 

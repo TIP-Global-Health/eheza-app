@@ -480,7 +480,9 @@
         // UUID may be multiple list of UUIDs, so we split by it.
         var uuids = uuid.split(',');
 
-        var query = dbSync.shards.where(key).anyOf(uuids);
+        var query = dbSync.shards.where(key).anyOf(uuids).and(function (item) {
+          return (item.deleted !== true);
+        });
 
         // Build an empty list of measurements, so we return some value, even
         // if no measurements were ever taken.
@@ -614,7 +616,7 @@
         // that belong to provided healh center.
         var typesToLoad = followUpMeasurementsTypes.concat(hivTestTypes);
         var query = dbSync.shards.where('type').anyOf(typesToLoad).and(function (item) {
-          return item.shard === shard;
+          return (item.deleted !== true && item.shard === shard);
         });
 
         // Build an empty list of measurements, so we return some value, even
@@ -763,7 +765,7 @@
     function viewStockManagementMeasurements (shard) {
         // Load all types of follow up measurements that belong to provided healh center.
         var query = dbSync.shards.where('type').anyOf(stockManagementMeasurementsTypes).and(function (item) {
-          return item.shard === shard;
+          return (item.deleted !== true && item.shard === shard);
         });
 
         // Build an empty list of measurements, so we return some value, even

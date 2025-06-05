@@ -20,7 +20,7 @@ if (!drupal_is_cli()) {
 $batch = drush_get_option('batch', 50);
 
 // Pull all prenatal participants that got NULl at EDD.
-$query = db_select('node', 'n');
+$query = hedley_general_create_db_select_query_excluding_deleted();
 $query->addField('n', 'nid');
 $query->leftJoin('field_data_field_expected_date_concluded', 'edd', 'edd.entity_id = n.nid');
 $query->leftJoin('field_data_field_encounter_type', 'et', 'et.entity_id = n.nid');
@@ -52,7 +52,7 @@ foreach ($chunks as $ids) {
     }
 
     // Pull most recent LMP measurement.
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'last_menstrual_period')
