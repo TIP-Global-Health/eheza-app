@@ -19,8 +19,8 @@ include_once 'hedley_health_center.features.inc';
  *   Array of clinic type, each holding an array of that type clinic Node IDs.
  */
 function hedley_health_center_get_clinics_of_health_center($health_center_id, $range = 100) {
-  $query = db_select('node', 'n')
-    ->condition('n.type', 'clinic')
+  $query = hedley_general_create_db_select_query_excluding_deleted();
+  $query->condition('n.type', 'clinic')
     ->condition('n.status', NODE_PUBLISHED);
 
   $query->join('field_data_field_health_center', 'hc', 'n.nid = hc.entity_id');
