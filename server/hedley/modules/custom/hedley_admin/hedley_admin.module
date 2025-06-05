@@ -444,7 +444,8 @@ function hedley_admin_resilience_survey_results_table(array $form, array &$form_
     $header["question_$i"] = t('Q@number', ['@number' => $i]);
   }
 
-  $base_query = (new EntityFieldQuery())->entityCondition('entity_type', 'node')
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
+  $base_query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'resilience_survey')
     ->propertyCondition('status', 1);
 

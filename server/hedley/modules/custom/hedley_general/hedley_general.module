@@ -290,6 +290,15 @@ function hedley_general_get_content_type_fields($type) {
 }
 
 /**
+ * Creates an EntityFieldQuery with the exclude_deleted tag pre-applied.
+ */
+function hedley_general_create_entity_field_query_excluding_deleted() {
+  $query = new EntityFieldQuery();
+  $query->addTag('exclude_deleted');
+  return $query;
+}
+
+/**
  * Implements hook_query_TAG_alter().
  *
  * Adds a condition to select entities that have field_deleted set

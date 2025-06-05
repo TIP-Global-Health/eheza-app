@@ -73,7 +73,7 @@ class HedleyRestfulPairingCode extends \RestfulTokenAuthenticationBase {
    */
   public function pairingCode($code) {
     // Check if there is a published device with this code.
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $results = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'device')
@@ -102,7 +102,7 @@ class HedleyRestfulPairingCode extends \RestfulTokenAuthenticationBase {
     $wrapper->field_pairing_code->set('');
     $wrapper->save();
 
-    // Delete existing access tokens and refresh tokens for the robot.  We're
+    // Delete existing access tokens and refresh tokens for the robot. We're
     // about to create new ones!
     $query = new EntityFieldQuery();
     $result = $query

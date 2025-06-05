@@ -1044,7 +1044,7 @@ function hedley_person_resolve_adult_for_child($adult_national_id, $adult_name) 
  *   Node ID. Null, if not found.
  */
 function hedley_person_resolve_content_by_name($type, $health_center) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $type)
@@ -1069,7 +1069,7 @@ function hedley_person_resolve_content_by_name($type, $health_center) {
  *   Node ID. Null, if not found.
  */
 function hedley_person_resolve_person_by_name($name) {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
@@ -1098,7 +1098,7 @@ function hedley_person_resolve_person_by_national_id($national_id) {
     return NULL;
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'person')
@@ -1138,7 +1138,7 @@ function hedley_person_import_form_callback(array $form, array $form_state) {
  *   Node IDs if they exist or empty array if no nodes exist.
  */
 function hedley_person_get_child_relationships($child_id, $relation_type = 'parent') {
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
   $query
     ->entityCondition('entity_type', 'node')
     ->propertyCondition('type', 'relationship')

@@ -325,7 +325,7 @@ function hedley_ncda_build_results_app($province, $district, $sector = NULL, $ce
  */
 function hedley_ncda_generate_results_data($province, $district, $sector, $cell, $village) {
   $three_years_ago = date('Y-m-d', strtotime('-3 years'));
-  $base_query = new EntityFieldQuery();
+  $base_query = hedley_general_create_entity_field_query_excluding_deleted();
   $base_query
     ->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'person')
@@ -337,8 +337,7 @@ function hedley_ncda_generate_results_data($province, $district, $sector, $cell,
     ->fieldCondition('field_birth_date', 'value', $three_years_ago, '>')
     ->fieldCondition('field_province', 'value', $province)
     ->fieldCondition('field_district', 'value', $district)
-    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL')
-    ->addTag('exclude_deleted');
+    ->fieldCondition('field_ncda_data', 'value', NULL, 'IS NOT NULL');
 
   if (!empty($sector)) {
     $base_query->fieldCondition('field_sector', 'value', $sector);

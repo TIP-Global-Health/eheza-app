@@ -52,7 +52,7 @@ foreach ($chunks as $ids) {
     }
 
     // Pull most recent LMP measurement.
-    $query = new EntityFieldQuery();
+    $query = hedley_general_create_entity_field_query_excluding_deleted();
     $result = $query
       ->entityCondition('entity_type', 'node')
       ->entityCondition('bundle', 'last_menstrual_period')
