@@ -171,7 +171,7 @@ function hedley_general_get_person_measurements($person_id, array $measurement_t
 
   $query = db_select('field_data_field_person', 't');
   $query->addField('t', 'entity_id');
-  $query->condition('bundle', $measurement_types, 'IN');
+  $query->condition('t.bundle', $measurement_types, 'IN');
   $query->condition('field_person_target_id', $person_id);
   // Join with node table first.
   $query->join('node', 'n', 't.entity_id = n.nid');
