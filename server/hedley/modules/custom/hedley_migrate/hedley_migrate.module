@@ -657,7 +657,7 @@ function hedley_migrate_resolve_for_export($type, $field, array $values) {
     return [];
   }
 
-  $query = new EntityFieldQuery();
+  $query = hedley_general_create_entity_field_query_excluding_deleted();
 
   $result = $query->entityCondition('entity_type', 'node')
     ->propertyCondition('type', $type)

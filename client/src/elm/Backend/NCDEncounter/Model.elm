@@ -13,6 +13,7 @@ type alias NCDEncounter =
     , startDate : NominalDate
     , endDate : Maybe NominalDate
     , diagnoses : EverySet NCDDiagnosis
+    , deleted : Bool
     , shard : Maybe HealthCenterId
     }
 
@@ -23,6 +24,7 @@ emptyNCDEncounter participant startDate shard =
     , startDate = startDate
     , endDate = Nothing
     , diagnoses = EverySet.empty
+    , deleted = False
     , shard = shard
     }
 

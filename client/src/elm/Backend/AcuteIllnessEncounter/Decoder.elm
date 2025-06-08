@@ -5,7 +5,7 @@ import Backend.AcuteIllnessEncounter.Types exposing (..)
 import Backend.AcuteIllnessEncounter.Utils exposing (acuteIllnessDiagnosisFromString)
 import Gizra.Json exposing (decodeInt)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
-import Json.Decode exposing (Decoder, andThen, fail, nullable, string, succeed)
+import Json.Decode exposing (Decoder, andThen, bool, fail, nullable, string, succeed)
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
 import Restful.Endpoint exposing (decodeEntityUuid)
 import Utils.Json exposing (decodeWithFallback)
@@ -20,6 +20,7 @@ decodeAcuteIllnessEncounter =
         |> optional "sequence_number" decodeInt 1
         |> optional "ai_encounter_type" (decodeWithFallback AcuteIllnessEncounterCHW decodeAcuteIllnessEncounterType) AcuteIllnessEncounterCHW
         |> required "acute_illness_diagnosis" decodeAcuteIllnessDiagnosis
+        |> required "deleted" (decodeWithFallback False bool)
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 

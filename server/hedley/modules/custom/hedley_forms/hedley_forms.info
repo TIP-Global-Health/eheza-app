@@ -21,6 +21,7 @@ features[field_base][] = field_kinyarwanda_body
 features[field_base][] = field_language
 features[field_base][] = field_participant_form
 features[field_instance][] = node-participant_consent-field_date_measured
+features[field_instance][] = node-participant_consent-field_deleted
 features[field_instance][] = node-participant_consent-field_language
 features[field_instance][] = node-participant_consent-field_nurse
 features[field_instance][] = node-participant_consent-field_participant_form

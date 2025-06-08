@@ -40,6 +40,7 @@ type alias Session =
     , endDate : Maybe NominalDate
     , clinicId : ClinicId
     , clinicType : ClinicType
+    , deleted : Bool
     }
 
 

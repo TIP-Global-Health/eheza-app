@@ -28,6 +28,10 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
       'sub_property' => 'field_uuid',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -40,6 +44,7 @@ class HedleyRestfulIndividualEncounter extends HedleyRestfulSyncBase {
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
     $field_names = [
       'field_individual_participant',
+      'field_deleted',
     ];
 
     foreach ($field_names as $field_name) {
