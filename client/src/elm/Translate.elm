@@ -1409,6 +1409,7 @@ type TranslationId
     | Reports
     | ReportCompleted { pending : Int, completed : Int }
     | ResilienceCategory ResilienceCategory
+    | ResilienceConsentTitle
     | ResilienceMessage
     | ResilienceMessageIntroduction1Title
     | ResilienceMessageIntroduction1Paragraph1 String
@@ -19163,6 +19164,12 @@ translationSet trans =
                     , kinyarwanda = Just "Gusoza ukwezi kwa mbere"
                     , kirundi = Nothing
                     }
+
+        ResilienceConsentTitle ->
+            { english = "INFORMED CONSENT AND DECLARATION OF CONSENT"
+            , kinyarwanda = Just "KWEMERA KUMENYESHEJWE NO GUTANGA UBURENGANZIRA KU BUSHAKE"
+            , kirundi = Nothing
+            }
 
         ResilienceMessage ->
             { english = "Resilience Message"

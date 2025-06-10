@@ -27,6 +27,7 @@ type alias Model =
     , kickOffForm : KickOffForm
     , surveyForm : SurveyForm
     , surveyScoreDialogState : Maybe SurveyScoreDialogState
+    , hasGivenConsent : Bool
     }
 
 
@@ -39,6 +40,7 @@ emptyModel =
     , kickOffForm = emptyKickOffForm
     , surveyForm = emptySurveyForm
     , surveyScoreDialogState = Nothing
+    , hasGivenConsent = False
     }
 
 

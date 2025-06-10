@@ -61,87 +61,92 @@ view language currentTime nurseId nurse db model =
                     ]
                     [ span [ class "icon-back" ] [] ]
                 ]
+    in
+    if not model.hasGivenConsent then
+        viewConsentForm language currentDate
 
-        content =
-            Maybe.map
-                (\programStartDate ->
-                    let
-                        surveys =
-                            Dict.get nurseId db.resilienceSurveysByNurse
-                                |> Maybe.andThen RemoteData.toMaybe
-                                |> Maybe.map Dict.values
-                                |> Maybe.withDefault []
+    else
+        let
+            content =
+                Maybe.map
+                    (\programStartDate ->
+                        let
+                            surveys =
+                                Dict.get nurseId db.resilienceSurveysByNurse
+                                    |> Maybe.andThen RemoteData.toMaybe
+                                    |> Maybe.map Dict.values
+                                    |> Maybe.withDefault []
 
-                        surveysSorted =
-                            List.sortWith (sortByDateDesc .dateMeasured) surveys
+                            surveysSorted =
+                                List.sortWith (sortByDateDesc .dateMeasured) surveys
 
-                        runSurvey surveyType =
-                            let
-                                filteredSurveys =
-                                    List.filter (.surveyType >> (==) surveyType) surveysSorted
+                            runSurvey surveyType =
+                                let
+                                    filteredSurveys =
+                                        List.filter (.surveyType >> (==) surveyType) surveysSorted
 
-                                surveyCount =
-                                    List.length filteredSurveys
+                                    surveyCount =
+                                        List.length filteredSurveys
 
-                                filterCondition survey =
-                                    if surveyCount == 0 then
-                                        -- We need to have at least one survey completed.
-                                        True
+                                    filterCondition survey =
+                                        if surveyCount == 0 then
+                                            -- We need to have at least one survey completed.
+                                            True
 
-                                    else if surveyCount >= 3 then
-                                        -- There can be up to 3 surveys during program which lasts
-                                        -- 6 months. At the begining, after 3 months and at the end.
-                                        -- So, if we have 3 surveys already, there's no need to another one,
-                                        False
-
-                                    else
-                                        let
-                                            diffMonthsProgramStartLastSurvey =
-                                                Date.diff Months programStartDate survey.dateMeasured
-                                        in
-                                        if diffMonthsProgramStartLastSurvey >= 6 then
-                                            -- Last survey run after 6 months from programstart date.
-                                            -- It means that program has alreqady ended there.
-                                            -- No need to run another one.
+                                        else if surveyCount >= 3 then
+                                            -- There can be up to 3 surveys during program which lasts
+                                            -- 6 months. At the begining, after 3 months and at the end.
+                                            -- So, if we have 3 surveys already, there's no need to another one,
                                             False
 
                                         else
                                             let
-                                                diffMonthsLastSurveyCurrent =
-                                                    Date.diff Months survey.dateMeasured currentDate
+                                                diffMonthsProgramStartLastSurvey =
+                                                    Date.diff Months programStartDate survey.dateMeasured
                                             in
-                                            diffMonthsLastSurveyCurrent >= 3
-                            in
-                            List.head filteredSurveys
-                                |> Maybe.map filterCondition
-                                |> Maybe.withDefault True
+                                            if diffMonthsProgramStartLastSurvey >= 6 then
+                                                -- Last survey run after 6 months from programstart date.
+                                                -- It means that program has alreqady ended there.
+                                                -- No need to run another one.
+                                                False
 
-                        runQuarterlySurvey =
-                            runSurvey ResilienceSurveyQuarterly
-                    in
-                    if runQuarterlySurvey then
-                        viewQuarterlySurvey language currentDate nurseId model.surveyForm
+                                            else
+                                                let
+                                                    diffMonthsLastSurveyCurrent =
+                                                        Date.diff Months survey.dateMeasured currentDate
+                                                in
+                                                diffMonthsLastSurveyCurrent >= 3
+                                in
+                                List.head filteredSurveys
+                                    |> Maybe.map filterCondition
+                                    |> Maybe.withDefault True
 
-                    else
-                        let
-                            runAdoptionSurvey =
-                                runSurvey ResilienceSurveyAdoption
+                            runQuarterlySurvey =
+                                runSurvey ResilienceSurveyQuarterly
                         in
-                        if runAdoptionSurvey then
-                            viewAdoptionSurvey language currentDate nurseId model.surveyForm
+                        if runQuarterlySurvey then
+                            viewQuarterlySurvey language currentDate nurseId model.surveyForm
 
                         else
-                            viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
-                )
-                nurse.resilienceProgramStartDate
-                |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
-    in
-    div [ class "page-activity messaging-center" ]
-        [ header
-        , content
-        , viewModal <|
-            surveyScoreDialog language model.surveyScoreDialogState
-        ]
+                            let
+                                runAdoptionSurvey =
+                                    runSurvey ResilienceSurveyAdoption
+                            in
+                            if runAdoptionSurvey then
+                                viewAdoptionSurvey language currentDate nurseId model.surveyForm
+
+                            else
+                                viewMessagingCenter language currentTime currentDate programStartDate nurseId nurse db model
+                    )
+                    nurse.resilienceProgramStartDate
+                    |> Maybe.withDefault (viewKickOffSurvey language currentDate nurseId nurse model.kickOffForm)
+        in
+        div [ class "page-activity messaging-center" ]
+            [ header
+            , content
+            , viewModal <|
+                surveyScoreDialog language model.surveyScoreDialogState
+            ]
 
 
 viewKickOffSurvey : Language -> NominalDate -> NurseId -> Nurse -> KickOffForm -> Html Msg
@@ -1604,3 +1609,10 @@ messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
                         [ text <| translate language Translate.Cancel ]
                     ]
                 ]
+
+
+viewConsentForm : Language -> NominalDate -> Html Msg
+viewConsentForm language currentDate =
+    div [ class "consent" ]
+        [ p [ class "title" ] [ text <| translate language Translate.ResilienceConsentTitle ]
+        ]
