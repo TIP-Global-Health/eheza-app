@@ -1183,12 +1183,28 @@ type PrenatalSpecialityCareUuidType
     = PrenatalSpecialityCareUuidType
 
 
+type alias PrenatalAspirinId =
+    EntityUuid PrenatalAspirinUuidType
+
+
+type PrenatalAspirinUuidType
+    = PrenatalAspirinUuidType
+
+
 type alias PrenatalCalciumId =
     EntityUuid PrenatalCalciumUuidType
 
 
 type PrenatalCalciumUuidType
     = PrenatalCalciumUuidType
+
+
+type alias PrenatalFefolId =
+    EntityUuid PrenatalFefolUuidType
+
+
+type PrenatalFefolUuidType
+    = PrenatalFefolUuidType
 
 
 type alias PrenatalFolateId =
