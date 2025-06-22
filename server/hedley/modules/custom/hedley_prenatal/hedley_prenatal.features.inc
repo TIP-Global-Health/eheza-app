@@ -27,6 +27,14 @@ function hedley_prenatal_node_info() {
       'title_label' => t('Title'),
       'help' => '',
     ),
+    'prenatal_aspirin' => array(
+      'name' => t('Prenatal Aspirin'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
     'prenatal_blood_gprs_test' => array(
       'name' => t('Prenatal Blood GpRs Test'),
       'base' => 'node_content',
@@ -45,6 +53,14 @@ function hedley_prenatal_node_info() {
     ),
     'prenatal_calcium' => array(
       'name' => t('Prenatal Calcium'),
+      'base' => 'node_content',
+      'description' => '',
+      'has_title' => '1',
+      'title_label' => t('Title'),
+      'help' => '',
+    ),
+    'prenatal_fefol' => array(
+      'name' => t('Prenatal Fefol'),
       'base' => 'node_content',
       'description' => '',
       'has_title' => '1',
