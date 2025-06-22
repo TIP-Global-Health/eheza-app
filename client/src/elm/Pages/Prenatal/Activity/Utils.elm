@@ -691,13 +691,21 @@ continuousHypertensionTreatmentRequired assembled =
 resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
 resolveMedicationTasks currentDate assembled =
     List.filter (expectMedicationTask currentDate assembled)
-        [ TaskCalcium, TaskFolate, TaskIron, TaskMMS, TaskMebendazole ]
+        [ TaskMMS, TaskFefol, TaskFolate, TaskIron, TaskCalcium, TaskAspirin, TaskMebendazole ]
 
 
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate assembled task =
     case task of
+        TaskAspirin ->
+            -- @todo
+            True
+
         TaskCalcium ->
+            True
+
+        TaskFefol ->
+            -- @todo
             True
 
         TaskFolate ->
@@ -726,8 +734,14 @@ expectMedicationTask currentDate assembled task =
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
 medicationTaskCompleted assembled task =
     case task of
+        TaskAspirin ->
+            isJust assembled.measurements.aspirin
+
         TaskCalcium ->
             isJust assembled.measurements.calcium
+
+        TaskFefol ->
+            isJust assembled.measurements.fefol
 
         TaskFolate ->
             isJust assembled.measurements.folate
@@ -6304,6 +6318,14 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
 
         ( _, tasks ) =
             case task of
+                TaskAspirin ->
+                    getMeasurementValueFunc measurements.aspirin
+                        |> medicationAdministrationFormWithDefault data.aspirinForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            aspirinAdministrationFormConfig
+
                 TaskCalcium ->
                     getMeasurementValueFunc measurements.calcium
                         |> medicationAdministrationFormWithDefault data.calciumForm
@@ -6311,6 +6333,14 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
                             currentDate
                             assembled.person
                             calciumAdministrationFormConfig
+
+                TaskFefol ->
+                    getMeasurementValueFunc measurements.fefol
+                        |> medicationAdministrationFormWithDefault data.fefolForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            fefolAdministrationFormConfig
 
                 TaskFolate ->
                     getMeasurementValueFunc measurements.folate
@@ -6347,11 +6377,29 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
+aspirinAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+aspirinAdministrationFormConfig =
+    { medication = FolicAcid
+    , setMedicationAdministeredMsg = SetAspirinAdministered
+    , setReasonForNonAdministration = SetAspirinReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
 calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 calciumAdministrationFormConfig =
     { medication = Calcium
     , setMedicationAdministeredMsg = SetCalciumAdministered
     , setReasonForNonAdministration = SetCalciumReasonForNonAdministration
+    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    }
+
+
+fefolAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+fefolAdministrationFormConfig =
+    { medication = FolicAcid
+    , setMedicationAdministeredMsg = SetFefolAdministered
+    , setReasonForNonAdministration = SetFefolReasonForNonAdministration
     , resolveDosageAndIconFunc = \_ _ _ -> Nothing
     }
 
