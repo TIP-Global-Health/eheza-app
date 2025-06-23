@@ -373,15 +373,19 @@ type TranslationId
     | AddToGroup
     | Administer
     | AdministerAlbendazoleHelper
+    | AdministerAspirinHelper
     | AdministerAzithromycinHelper
+    | AdministerCalciumHelper
     | AdministerCeftriaxoneHelper
-    | AdministerMebendezoleHelper
-    | AdministerMetronidazoleHelper
-    | AdministerPrenatalMebendezoleHelper
+    | AdministerFefolHelper
     | AdministerFolicAcidHelper
     | AdministerHIVARVHelper
     | AdministerIronHelper
+    | AdministerMebendezoleHelper
+    | AdministerMetronidazoleHelper
+    | AdministerMMSHelper
     | AdministerParacetamolHelper
+    | AdministerPrenatalMebendezoleHelper
     | AdministerVitaminAHelperPrenatal
     | AdministerVitaminAHelperWellChild
     | Administered
@@ -2770,16 +2774,58 @@ translationSet trans =
             , kirundi = Just "Tanga umuti"
             }
 
+        AdministerAlbendazoleHelper ->
+            { english = "Give the child one tablet by mouth"
+            , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
+            , kirundi = Just "Ha umwana ikinini 1 co kumira"
+            }
+
+        AdministerAspirinHelper ->
+            { english = "1 tablet 150 mg by mouth daily"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         AdministerAzithromycinHelper ->
             { english = "By mouth 1x"
             , kinyarwanda = Just "Inshuro imwe mu kanwa"
             , kirundi = Just "Kumira incuro 1"
             }
 
+        AdministerCalciumHelper ->
+            { english = "1 tablet 500 mg by mouth monthly"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         AdministerCeftriaxoneHelper ->
             { english = "IM once"
             , kinyarwanda = Just "Urushinge mu mikaya inshuro imwe"
             , kirundi = Just "Gucisha umuti mu mutsi rimwe"
+            }
+
+        AdministerFefolHelper ->
+            { english = "1 tablet 200mg by mouth daily (equivalent of 65mg Iron and 4mg of Folic Acid)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        AdministerFolicAcidHelper ->
+            { english = "1 tablet 400 IU by mouth daily for 3 months"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        AdministerHIVARVHelper ->
+            { english = "Take 1x a day by mouth"
+            , kinyarwanda = Just "Fata ikinini 1 ku munsi mu kanwa"
+            , kirundi = Just "Ugufata ikinini 1, ukimize, 1 ku munsi"
+            }
+
+        AdministerIronHelper ->
+            { english = "1 tablet 60 mg by mouth 2x a day for 3 months"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         AdministerMebendezoleHelper ->
@@ -2794,40 +2840,22 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        AdministerAlbendazoleHelper ->
-            { english = "Give the child one tablet by mouth"
-            , kinyarwanda = Just "Ha umwana ikinini kimwe akinywe"
-            , kirundi = Just "Ha umwana ikinini 1 co kumira"
-            }
-
-        AdministerPrenatalMebendezoleHelper ->
-            { english = "1 dose once a day for one day"
-            , kinyarwanda = Just "Ikinini kimwe inshuro imwe ku munsi mu munsi umwe"
-            , kirundi = Just "Idoze imwe, Incuro imwe kumusi, ku musi umwe"
-            }
-
-        AdministerFolicAcidHelper ->
-            { english = "Take daily for 3 months"
-            , kinyarwanda = Just "Fata imiti buri munsi mu gihe cy'amexi 3"
-            , kirundi = Just "Fata iminsi yose mu kiringo c'amezi 3"
-            }
-
-        AdministerHIVARVHelper ->
-            { english = "Take 1x a day by mouth"
-            , kinyarwanda = Just "Fata ikinini 1 ku munsi mu kanwa"
-            , kirundi = Just "Ugufata ikinini 1, ukimize, 1 ku munsi"
-            }
-
-        AdministerIronHelper ->
-            { english = "Take 1 60 mg tabs 2x a day x 3 months"
-            , kinyarwanda = Just "Fata mg 1 60 inshuro 2 ku munsi mu mezi atatu"
-            , kirundi = Just "Ugufata ikinini 1 ca 60 mg 2 k'umunsi mu mezi 3"
+        AdministerMMSHelper ->
+            { english = "1 tablet by mouth daily - 180 tablets dispensed"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         AdministerParacetamolHelper ->
             { english = "Take 1 tablet by mouth 3 times a day for 5 days"
             , kinyarwanda = Just "Fata ikinini 1 mu kanwa inshuro 3 ku munsi mu minsi 5"
             , kirundi = Just "Ugufata ikinini 1, ukimize, 3 ku munsi mu minsi 5"
+            }
+
+        AdministerPrenatalMebendezoleHelper ->
+            { english = "1 tablet 500 mg by mouth ONCE"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         AdministerVitaminAHelperPrenatal ->
@@ -11126,6 +11154,18 @@ translationSet trans =
 
                 MMS ->
                     { english = "MMS"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Aspirin ->
+                    { english = "Aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Fefol ->
+                    { english = "Fefol"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

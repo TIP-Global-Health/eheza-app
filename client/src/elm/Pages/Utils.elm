@@ -365,7 +365,7 @@ nonAdministrationReasonToSign sign reason =
             MedicationVitaminA reason
 
         -- Below are not in use, but we specify them explicitly to make
-        -- sure that compile arets if we forget to address new
+        -- sure that compile alrets if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->
             NoMedicationNonAdministrationSigns
@@ -377,6 +377,12 @@ nonAdministrationReasonToSign sign reason =
             NoMedicationNonAdministrationSigns
 
         MMS ->
+            NoMedicationNonAdministrationSigns
+
+        Aspirin ->
+            NoMedicationNonAdministrationSigns
+
+        Fefol ->
             NoMedicationNonAdministrationSigns
 
         NoMedicationDistributionSigns ->

@@ -2852,6 +2852,12 @@ encodeMedicationDistributionSign sign =
             MMS ->
                 "mms"
 
+            Aspirin ->
+                "aspirin"
+
+            Fefol ->
+                "fefol"
+
             NoMedicationDistributionSigns ->
                 "none"
 

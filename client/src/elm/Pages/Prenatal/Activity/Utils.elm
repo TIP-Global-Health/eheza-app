@@ -13,6 +13,7 @@ import Backend.Measurement.Utils
         , muacValueFunc
         , weightValueFunc
         )
+import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -6379,11 +6380,16 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
 
 aspirinAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 aspirinAdministrationFormConfig =
-    { medication = FolicAcid
+    { medication = Aspirin
     , setMedicationAdministeredMsg = SetAspirinAdministered
     , setReasonForNonAdministration = SetAspirinReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveAspirinDosageAndIcon
     }
+
+
+resolveAspirinDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveAspirinDosageAndIcon language currentDate person =
+    Just ( "150 mg", "icon-pills", translate language Translate.AdministerAspirinHelper )
 
 
 calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6391,17 +6397,27 @@ calciumAdministrationFormConfig =
     { medication = Calcium
     , setMedicationAdministeredMsg = SetCalciumAdministered
     , setReasonForNonAdministration = SetCalciumReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveCalciumDosageAndIcon
     }
+
+
+resolveCalciumDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveCalciumDosageAndIcon language currentDate person =
+    Just ( "500 mg", "icon-pills", translate language Translate.AdministerCalciumHelper )
 
 
 fefolAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 fefolAdministrationFormConfig =
-    { medication = FolicAcid
+    { medication = Fefol
     , setMedicationAdministeredMsg = SetFefolAdministered
     , setReasonForNonAdministration = SetFefolReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveFefolDosageAndIcon
     }
+
+
+resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFefolDosageAndIcon language currentDate person =
+    Just ( "200 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
 
 
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6409,8 +6425,13 @@ folateAdministrationFormConfig =
     { medication = FolicAcid
     , setMedicationAdministeredMsg = SetFolateAdministered
     , setReasonForNonAdministration = SetFolateReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveFolicAcidDosageAndIcon
     }
+
+
+resolveFolicAcidDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFolicAcidDosageAndIcon language currentDate person =
+    Just ( "400 UI", "icon-pills", translate language Translate.AdministerFolicAcidHelper )
 
 
 ironAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6418,8 +6439,13 @@ ironAdministrationFormConfig =
     { medication = Iron
     , setMedicationAdministeredMsg = SetIronAdministered
     , setReasonForNonAdministration = SetIronReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveIronDosageAndIcon
     }
+
+
+resolveIronDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveIronDosageAndIcon language currentDate person =
+    Just ( "120 mg", "icon-pills", translate language Translate.AdministerIronHelper )
 
 
 mmsAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6427,8 +6453,13 @@ mmsAdministrationFormConfig =
     { medication = MMS
     , setMedicationAdministeredMsg = SetMMSAdministered
     , setReasonForNonAdministration = SetMMSReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveMMSDosageAndIcon
     }
+
+
+resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMMSDosageAndIcon language currentDate person =
+    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6436,5 +6467,10 @@ mebendazoleAdministrationFormConfig =
     { medication = Mebendezole
     , setMedicationAdministeredMsg = SetMebendazoleAdministered
     , setReasonForNonAdministration = SetMebendazoleReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
     }
+
+
+resolveMebendezoleDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMebendezoleDosageAndIcon language currentDate person =
+    Just ( "500 mg", "icon-pills", translate language Translate.AdministerPrenatalMebendezoleHelper )

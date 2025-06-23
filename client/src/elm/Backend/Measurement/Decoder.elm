@@ -3494,6 +3494,12 @@ decodeMedicationDistributionSign =
                     "mms" ->
                         succeed MMS
 
+                    "aspirin" ->
+                        succeed Aspirin
+
+                    "fefol" ->
+                        succeed Fefol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 

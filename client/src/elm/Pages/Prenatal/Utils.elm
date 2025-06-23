@@ -1758,46 +1758,10 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
             else
                 Nothing
-
-        resolveModerateAnemiaSet diagnosis =
-            if
-                diagnosed diagnosis assembled
-                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
-            then
-                Just
-                    ( Translate.MedicationDistributionHelperAnemia
-                    , [ Iron, FolicAcid ]
-                    , []
-                    )
-
-            else
-                Nothing
     in
     case phase of
         PrenatalEncounterPhaseInitial ->
             let
-                -- Not for Postpartum encounter.
-                mebendazoleSet =
-                    let
-                        prescribeMebendazole =
-                            (assembled.encounter.encounterType == NurseEncounter)
-                                && showMebendazoleQuestion currentDate assembled
-                                && (getMeasurementValueFunc assembled.measurements.medication
-                                        |> Maybe.andThen .signs
-                                        |> Maybe.map (EverySet.member Mebendazole >> not)
-                                        |> Maybe.withDefault False
-                                   )
-                    in
-                    if prescribeMebendazole then
-                        Just
-                            ( Translate.MedicationDistributionHelperMebendazole
-                            , [ Mebendezole ]
-                            , []
-                            )
-
-                    else
-                        Nothing
-
                 gonorheaSet =
                     if diagnosed DiagnosisGonorrhea assembled then
                         Just
@@ -1856,10 +1820,8 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                     )
             in
             Maybe.Extra.values
-                [ mebendazoleSet
-                , resolveHIVPositiveSet DiagnosisHIVInitialPhase
+                [ resolveHIVPositiveSet DiagnosisHIVInitialPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipInitialPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaInitialPhase
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
@@ -1869,7 +1831,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             Maybe.Extra.values
                 [ resolveHIVPositiveSet DiagnosisHIVRecurrentPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipRecurrentPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaRecurrentPhase
                 ]
 
 

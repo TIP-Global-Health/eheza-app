@@ -2044,6 +2044,7 @@ type alias SendToHC =
 
 type MedicationDistributionSign
     = Amoxicillin
+    | Aspirin
     | Coartem
     | ORS
     | Zinc
@@ -2063,6 +2064,7 @@ type MedicationDistributionSign
       -- Pregnancy supplements - in addition to Iron and Folic acid.
     | Calcium
     | MMS
+    | Fefol
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
