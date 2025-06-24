@@ -113,7 +113,9 @@ expectActivity currentDate site assembled activity =
                     expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
-                    noNurseEncounters
+                    resolveMedicationTasks currentDate assembled
+                        |> List.isEmpty
+                        |> not
 
                 DangerSigns ->
                     True
@@ -697,39 +699,95 @@ resolveMedicationTasks currentDate assembled =
 
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate assembled task =
-    case task of
-        TaskAspirin ->
-            -- @todo
-            True
-
-        TaskCalcium ->
-            True
-
-        TaskFefol ->
-            -- @todo
-            True
-
-        TaskFolate ->
-            True
-
-        TaskIron ->
-            True
-
-        TaskMMS ->
-            True
-
-        TaskMebendazole ->
-            -- From 24 weeks EGA.
+    let
+        egaAboveOrEqualWeek week =
             Maybe.map
                 (\lmpDate ->
                     let
                         egaInWeeks =
                             calculateEGAWeeks currentDate lmpDate
                     in
-                    egaInWeeks >= 24
+                    egaInWeeks >= week
                 )
                 assembled.globalLmpDate
                 |> Maybe.withDefault False
+
+        medicationNotAdministeredToday getMeasurementFunc =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map ((/=) AdministeredToday)
+                |> Maybe.withDefault True
+
+        medicationNeverAdministeredPreviously getMeasurementFunc =
+            List.filter
+                (.measurements
+                    >> getMeasurementFunc
+                    >> getMeasurementValueFunc
+                    >> Maybe.map ((==) AdministeredToday)
+                    >> Maybe.withDefault False
+                )
+                assembled.nursePreviousEncountersData
+                |> List.isEmpty
+    in
+    case task of
+        TaskAspirin ->
+            let
+                allMeasurements =
+                    assembled.measurements :: List.map .measurements assembled.nursePreviousEncountersData
+
+                hypertensionBeforePregnancy =
+                    List.filter
+                        (.medicalHistory
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.signs >> EverySet.member HypertensionBeforePregnancy)
+                            >> Maybe.withDefault False
+                        )
+                        allMeasurements
+                        |> List.isEmpty
+                        |> not
+
+                historyOfPreeclampsia =
+                    List.filter
+                        (.obstetricHistoryStep2
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.signs >> EverySet.member ObstetricHistoryPreeclampsiaPreviousPregnancy)
+                            >> Maybe.withDefault False
+                        )
+                        allMeasurements
+                        |> List.isEmpty
+                        |> not
+            in
+            (hypertensionBeforePregnancy || historyOfPreeclampsia)
+                && medicationNeverAdministeredPreviously .aspirin
+                && egaAboveOrEqualWeek 12
+
+        TaskCalcium ->
+            medicationNeverAdministeredPreviously .calcium
+                && egaAboveOrEqualWeek 14
+
+        TaskFefol ->
+            medicationNeverAdministeredPreviously .fefol
+                && medicationNeverAdministeredPreviously .iron
+                && medicationNeverAdministeredPreviously .folate
+                && medicationNotAdministeredToday .iron
+                && medicationNotAdministeredToday .folate
+
+        TaskFolate ->
+            medicationNeverAdministeredPreviously .folate
+                && medicationNeverAdministeredPreviously .fefol
+                && medicationNotAdministeredToday .fefol
+
+        TaskIron ->
+            medicationNeverAdministeredPreviously .iron
+                && medicationNeverAdministeredPreviously .fefol
+                && medicationNotAdministeredToday .fefol
+
+        TaskMMS ->
+            medicationNeverAdministeredPreviously .mms
+
+        TaskMebendazole ->
+            medicationNeverAdministeredPreviously .mebendazole
+                && egaAboveOrEqualWeek 24
 
 
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
