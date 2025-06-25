@@ -6633,18 +6633,62 @@ function hedley_reports_prenatal_generate_expected_initial_activities(array $enc
     else {
       $change_date_obj = new DateTime($change_date);
       if ($encounter_data['start_date_obj'] >= $change_date_obj) {
-        // Encounter has started after the change.
-        $expected[] = 'prenatal_calcium';
-        $expected[] = 'prenatal_folate';
-        $expected[] = 'prenatal_iron';
-        $expected[] = 'prenatal_mms';
+        if (!hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mms')) {
+          $expected[] = 'prenatal_mms';
+        }
+
+        if (
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+          !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_iron') &&
+          !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_folate')
+        ) {
+          $expected[] = 'prenatal_fefol';
+        }
+
+        if (
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+          !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+        ) {
+          $expected[] = 'prenatal_folate';
+        }
+
+        if (
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+          !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+        ) {
+          $expected[] = 'prenatal_iron';
+        }
 
         // Mebendazole activity is expected from EGA 24.
         $lmp_date = $encounter_data['lmp_date'];
         if (!empty($lmp_date)) {
           $lmp_date_obj = new DateTime($lmp_date);
           $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
-          if ($ega_in_weeks >= 24) {
+
+          if (
+            ($ega_in_weeks >= 12) &&
+            !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_aspirin') &&
+            // @todo: (hypertensionBeforePregnancy || historyOfPreeclampsia)
+            true
+          ) {
+            $expected[] = 'prenatal_aspirin';
+          }
+
+          if (
+            ($ega_in_weeks >= 14) &&
+            !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_calcium')
+          ) {
+            $expected[] = 'prenatal_calcium';
+          }
+
+          if (
+            ($ega_in_weeks >= 24) &&
+            !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mebendazole')
+          ) {
             $expected[] = 'prenatal_mebendazole';
           }
         }
@@ -8693,6 +8737,63 @@ function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_da
       if ($symptom['value'] === $symptom_value) {
         return TRUE;
       }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during previous encounters.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified medication was distributed in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_previously(array $encounter_data, $medication_type) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $medication_measurement = $previous_encounter_data['measurements_by_type'][$medication_type];
+    if (empty($medication_measurement) || empty($medication_measurement->field_administration_note[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($medication_measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+      if ($note['value'] === 'administered-today') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_today(array $encounter_data, $medication_type) {
+  $medication_measurement = $encounter_data['measurements_by_type'][$medication_type];
+  if (empty($medication_measurement) || empty($medication_measurement->field_administration_note[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($medication_measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+    if ($note['value'] === 'administered-today') {
+      return TRUE;
     }
   }
 
