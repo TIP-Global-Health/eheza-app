@@ -1741,8 +1741,8 @@ translationSet transId =
                 PrenatalFamilyPlanning ->
                     translationSet FamilyPlanning
 
-                PrenatalFelol ->
-                    { english = "Felol"
+                PrenatalFefol ->
+                    { english = "Fefol"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }

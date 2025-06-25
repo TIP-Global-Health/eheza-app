@@ -616,7 +616,7 @@ prenatalActivityFromMapping mapped =
             Just PrenatalAspirin
 
         "g1" ->
-            Just PrenatalFelol
+            Just PrenatalFefol
 
         _ ->
             Nothing

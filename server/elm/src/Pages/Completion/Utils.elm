@@ -310,7 +310,7 @@ allPrenatalActivities =
     , PrenatalCorePhysicalExam
     , PrenatalDangerSigns
     , PrenatalFamilyPlanning
-    , PrenatalFelol
+    , PrenatalFefol
     , PrenatalFolate
     , PrenatalFollowUp
     , PrenatalGuExam
