@@ -6368,6 +6368,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'prenatal_iron' => 'c1',
     'prenatal_mms' => 'd1',
     'prenatal_mebendazole' => 'e1',
+    'prenatal_aspirin' => 'f1',
+    'prenatal_felol' => 'g1',
   ];
 
   // Load all encounters of current participant.

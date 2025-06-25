@@ -612,6 +612,12 @@ prenatalActivityFromMapping mapped =
         "e1" ->
             Just PrenatalMMS
 
+        "f1" ->
+            Just PrenatalAspirin
+
+        "g1" ->
+            Just PrenatalFelol
+
         _ ->
             Nothing
 
