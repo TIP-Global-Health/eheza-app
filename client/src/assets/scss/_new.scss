@@ -3847,6 +3847,22 @@ div.page-report.acute-illness {
       &.gi {
         background: $color-purple;
       }
+
+      &.ent {
+        background: $color-green;
+      }
+
+      &.eyes {
+        background: $color-light-blue;
+      }
+
+      &.gu {
+        background: $color-gray;
+      }
+
+      &.oral {
+        background: $color-dark-blue;
+      }
     }
 
     div.pane.physical-exam .ui.table {
