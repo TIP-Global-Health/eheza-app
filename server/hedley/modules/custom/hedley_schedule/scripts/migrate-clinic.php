@@ -23,7 +23,7 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 // We're just testing that field_clinic has a value.
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', 'person')
@@ -68,7 +68,7 @@ while (TRUE) {
       '@id' => $node->nid,
     ];
 
-    $relationship_query = new EntityFieldQuery();
+    $relationship_query = hedley_general_create_entity_field_query_excluding_deleted();
     $relationship_query
       ->entityCondition('entity_type', 'node')
       ->propertyCondition('type', 'relationship')
@@ -93,7 +93,7 @@ while (TRUE) {
       $child->field_health_center->set($mother->field_clinic->field_health_center->getIdentifier());
       $child->save();
 
-      $participation_query = new EntityFieldQuery();
+      $participation_query = hedley_general_create_entity_field_query_excluding_deleted();
       $participation_query
         ->entityCondition('entity_type', 'node')
         ->propertyCondition('type', 'pmtct_participant')

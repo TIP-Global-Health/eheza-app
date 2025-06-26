@@ -26,13 +26,12 @@ $exclude_set = drush_get_option('exclude_set', FALSE);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 $type = 'individual_participant';
-$base_query = new EntityFieldQuery();
+$base_query = hedley_general_create_entity_field_query_excluding_deleted();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->entityCondition('bundle', $type)
   ->fieldCondition('field_encounter_type', 'value', 'child-scoreboard')
-  ->propertyCondition('status', NODE_PUBLISHED)
-  ->addTag('exclude_deleted');
+  ->propertyCondition('status', NODE_PUBLISHED);
 
 $count_query = clone $base_query;
 $count_query->propertyCondition('nid', $nid, '>');

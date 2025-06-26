@@ -17,6 +17,7 @@ features[ctools][] = strongarm:strongarm:1
 features[features_api][] = api:2
 features[field_base][] = field_education_topics
 features[field_base][] = field_participating_patients
+features[field_instance][] = node-education_session-field_deleted
 features[field_instance][] = node-education_session-field_education_topics
 features[field_instance][] = node-education_session-field_nurse
 features[field_instance][] = node-education_session-field_participating_patients

@@ -33,6 +33,10 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
       'sub_property' => 'field_group_type',
     ];
 
+    $public_fields['deleted'] = [
+      'property' => 'field_deleted',
+    ];
+
     // The label is decorative only.
     unset($public_fields['label']);
 
@@ -43,7 +47,15 @@ class HedleyRestfulSessions extends HedleyRestfulSyncBase {
    * {@inheritdoc}
    */
   protected function alterQueryForViewWithDbSelect(SelectQuery $query) {
-    hedley_general_join_field_to_query($query, 'node', 'field_clinic', FALSE);
+    $field_names = [
+      'field_clinic',
+      'field_deleted',
+    ];
+
+    foreach ($field_names as $field_name) {
+      hedley_general_join_field_to_query($query, 'node', $field_name, FALSE);
+    }
+
     hedley_general_join_field_to_query($query, 'node', 'field_scheduled_date', FALSE, NULL, NULL, TRUE);
     // Get the UUID of the Clinic.
     hedley_general_join_field_to_query($query, 'node', 'field_uuid', TRUE, "field_clinic.field_clinic_target_id", 'uuid_clinic');
