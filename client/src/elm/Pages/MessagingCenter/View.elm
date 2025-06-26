@@ -22,17 +22,7 @@ import Maybe
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
 import Pages.Page exposing (Page(..), UserPage(..))
-import Pages.Utils
-    exposing
-        ( customPopup
-        , taskCompleted
-        , viewCheckBoxSelectInput
-        , viewCustomLabel
-        , viewQuestionLabel
-        , viewSaveAction
-        , viewSelectListInput
-        , viewTasksCount
-        )
+import Pages.Utils exposing (customPopup, taskCompleted, viewBoolInput, viewCheckBoxSelectInput, viewCustomLabel, viewQuestionLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData
 import Time exposing (posixToMillis)
 import Translate exposing (Language, translate, translateText)
@@ -63,7 +53,7 @@ view language currentTime nurseId nurse db model =
                 ]
     in
     if not model.hasGivenConsent then
-        viewConsentForm language currentDate
+        viewConsentForm language currentDate nurseId nurse model.consentForm
 
     else
         let
@@ -1611,8 +1601,12 @@ messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
                 ]
 
 
-viewConsentForm : Language -> NominalDate -> Html Msg
-viewConsentForm language currentDate =
+viewConsentForm : Language -> NominalDate -> NurseId -> Nurse -> ConsentForm -> Html Msg
+viewConsentForm language currentDate nurseId nurse form =
+    let
+        agreesToParticipateUpdateFunc value form_ =
+            { form_ | agreesToParticipate = Just value }
+    in
     div [ class "consent" ]
         [ p [ class "title" ] [ text <| translate language Translate.ResilienceConsentTitle ]
         , p [ class "title" ] [ text <| translate language Translate.ResilienceConsentSubTitle ]
@@ -1629,4 +1623,19 @@ viewConsentForm language currentDate =
         , p [] [ text <| translate language Translate.ResilienceConsentParagraph3 ]
         , p [] [ text <| translate language Translate.ResilienceConsentParagraph4 ]
         , p [ class "greeting" ] [ text <| translate language Translate.ResilienceConsentSubTitle ]
+        , div [ class "full content" ]
+            [ div [ class "ui form" ]
+                [ viewQuestionLabel language Translate.ResilienceConsentSubTitle
+                , viewBoolInput
+                    language
+                    form.agreesToParticipate
+                    SetConsentAgree
+                    "consent-agree"
+                    Nothing
+                ]
+            ]
+        , viewSaveAction
+            language
+            (SaveConsent nurseId nurse)
+            (form.agreesToParticipate == Nothing)
         ]

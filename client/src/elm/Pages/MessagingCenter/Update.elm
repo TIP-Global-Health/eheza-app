@@ -20,6 +20,7 @@ import Gizra.NominalDate exposing (NominalDate)
 import Gizra.Update exposing (sequenceExtra)
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (resolveSurveyScoreDialogState, surveyAnswerToScore, surveyQuestionsAnswered)
+import Pages.Page exposing (Page(..), UserPage(..))
 import Time
 import Time.Extra
 
@@ -306,6 +307,39 @@ update currentTime currentDate db msg model =
                         , timeRead = Just currentTime
                     }
                 )
+            )
+
+        SetConsentAgree value ->
+            let
+                form =
+                    model.consentForm
+
+                updatedForm =
+                    { form | agreesToParticipate = Just value }
+            in
+            ( { model | consentForm = updatedForm }
+            , Cmd.none
+            , []
+            )
+
+        SaveConsent nurseId nurse ->
+            let
+                redirectMsg =
+                    case model.consentForm.agreesToParticipate of
+                        Just False ->
+                            [ App.Model.SetActivePage PinCodePage ]
+
+                        _ ->
+                            []
+
+                updateMsg =
+                    Backend.Nurse.Model.UpdateNurse nurseId nurse
+                        |> Backend.Model.MsgNurse nurseId
+                        |> App.Model.MsgIndexedDb
+            in
+            ( { model | hasGivenConsent = True }
+            , Cmd.none
+            , updateMsg :: redirectMsg
             )
 
 
