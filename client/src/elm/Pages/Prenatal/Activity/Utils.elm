@@ -13,6 +13,7 @@ import Backend.Measurement.Utils
         , muacValueFunc
         , weightValueFunc
         )
+import Backend.Person.Model exposing (Person)
 import Backend.PrenatalActivity.Model exposing (..)
 import Backend.PrenatalEncounter.Model exposing (PrenatalEncounterType(..), PrenatalIndicator(..))
 import Backend.PrenatalEncounter.Types exposing (PrenatalDiagnosis(..))
@@ -112,7 +113,9 @@ expectActivity currentDate site assembled activity =
                     expectMalariaPreventionActivity PhaseInitial assembled
 
                 Backend.PrenatalActivity.Model.Medication ->
-                    noNurseEncounters
+                    resolveMedicationTasks currentDate assembled
+                        |> List.isEmpty
+                        |> not
 
                 DangerSigns ->
                     True
@@ -691,43 +694,113 @@ continuousHypertensionTreatmentRequired assembled =
 resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
 resolveMedicationTasks currentDate assembled =
     List.filter (expectMedicationTask currentDate assembled)
-        [ TaskCalcium, TaskFolate, TaskIron, TaskMMS, TaskMebendazole ]
+        [ TaskMMS, TaskFefol, TaskFolate, TaskIron, TaskCalcium, TaskAspirin, TaskMebendazole ]
 
 
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
 expectMedicationTask currentDate assembled task =
-    case task of
-        TaskCalcium ->
-            True
-
-        TaskFolate ->
-            True
-
-        TaskIron ->
-            True
-
-        TaskMMS ->
-            True
-
-        TaskMebendazole ->
-            -- From 24 weeks EGA.
+    let
+        egaAboveOrEqualWeek week =
             Maybe.map
                 (\lmpDate ->
                     let
                         egaInWeeks =
                             calculateEGAWeeks currentDate lmpDate
                     in
-                    egaInWeeks >= 24
+                    egaInWeeks >= week
                 )
                 assembled.globalLmpDate
                 |> Maybe.withDefault False
+
+        medicationNotAdministeredToday getMeasurementFunc =
+            getMeasurementFunc assembled.measurements
+                |> getMeasurementValueFunc
+                |> Maybe.map ((/=) AdministeredToday)
+                |> Maybe.withDefault True
+
+        medicationNeverAdministeredPreviously getMeasurementFunc =
+            List.filter
+                (.measurements
+                    >> getMeasurementFunc
+                    >> getMeasurementValueFunc
+                    >> Maybe.map ((==) AdministeredToday)
+                    >> Maybe.withDefault False
+                )
+                assembled.nursePreviousEncountersData
+                |> List.isEmpty
+    in
+    case task of
+        TaskAspirin ->
+            let
+                allMeasurements =
+                    assembled.measurements :: List.map .measurements assembled.nursePreviousEncountersData
+
+                hypertensionBeforePregnancy =
+                    List.filter
+                        (.medicalHistory
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.signs >> EverySet.member HypertensionBeforePregnancy)
+                            >> Maybe.withDefault False
+                        )
+                        allMeasurements
+                        |> List.isEmpty
+                        |> not
+
+                historyOfPreeclampsia =
+                    List.filter
+                        (.obstetricHistoryStep2
+                            >> getMeasurementValueFunc
+                            >> Maybe.map (.signs >> EverySet.member ObstetricHistoryPreeclampsiaPreviousPregnancy)
+                            >> Maybe.withDefault False
+                        )
+                        allMeasurements
+                        |> List.isEmpty
+                        |> not
+            in
+            (hypertensionBeforePregnancy || historyOfPreeclampsia)
+                && medicationNeverAdministeredPreviously .aspirin
+                && egaAboveOrEqualWeek 12
+
+        TaskCalcium ->
+            medicationNeverAdministeredPreviously .calcium
+                && egaAboveOrEqualWeek 14
+
+        TaskFefol ->
+            medicationNeverAdministeredPreviously .fefol
+                && medicationNeverAdministeredPreviously .iron
+                && medicationNeverAdministeredPreviously .folate
+                && medicationNotAdministeredToday .iron
+                && medicationNotAdministeredToday .folate
+
+        TaskFolate ->
+            medicationNeverAdministeredPreviously .folate
+                && medicationNeverAdministeredPreviously .fefol
+                && medicationNotAdministeredToday .fefol
+
+        TaskIron ->
+            medicationNeverAdministeredPreviously .iron
+                && medicationNeverAdministeredPreviously .fefol
+                && medicationNotAdministeredToday .fefol
+
+        TaskMMS ->
+            medicationNeverAdministeredPreviously .mms
+
+        TaskMebendazole ->
+            medicationNeverAdministeredPreviously .mebendazole
+                && egaAboveOrEqualWeek 24
 
 
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
 medicationTaskCompleted assembled task =
     case task of
+        TaskAspirin ->
+            isJust assembled.measurements.aspirin
+
         TaskCalcium ->
             isJust assembled.measurements.calcium
+
+        TaskFefol ->
+            isJust assembled.measurements.fefol
 
         TaskFolate ->
             isJust assembled.measurements.folate
@@ -6304,6 +6377,14 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
 
         ( _, tasks ) =
             case task of
+                TaskAspirin ->
+                    getMeasurementValueFunc measurements.aspirin
+                        |> medicationAdministrationFormWithDefault data.aspirinForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            aspirinAdministrationFormConfig
+
                 TaskCalcium ->
                     getMeasurementValueFunc measurements.calcium
                         |> medicationAdministrationFormWithDefault data.calciumForm
@@ -6311,6 +6392,14 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
                             currentDate
                             assembled.person
                             calciumAdministrationFormConfig
+
+                TaskFefol ->
+                    getMeasurementValueFunc measurements.fefol
+                        |> medicationAdministrationFormWithDefault data.fefolForm
+                        |> medicationAdministrationFormInputsAndTasks English
+                            currentDate
+                            assembled.person
+                            fefolAdministrationFormConfig
 
                 TaskFolate ->
                     getMeasurementValueFunc measurements.folate
@@ -6347,13 +6436,46 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
+aspirinAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+aspirinAdministrationFormConfig =
+    { medication = Aspirin
+    , setMedicationAdministeredMsg = SetAspirinAdministered
+    , setReasonForNonAdministration = SetAspirinReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveAspirinDosageAndIcon
+    }
+
+
+resolveAspirinDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveAspirinDosageAndIcon language currentDate person =
+    Just ( "150 mg", "icon-pills", translate language Translate.AdministerAspirinHelper )
+
+
 calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 calciumAdministrationFormConfig =
     { medication = Calcium
     , setMedicationAdministeredMsg = SetCalciumAdministered
     , setReasonForNonAdministration = SetCalciumReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveCalciumDosageAndIcon
     }
+
+
+resolveCalciumDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveCalciumDosageAndIcon language currentDate person =
+    Just ( "500 mg", "icon-pills", translate language Translate.AdministerCalciumHelper )
+
+
+fefolAdministrationFormConfig : MedicationAdministrationFormConfig Msg
+fefolAdministrationFormConfig =
+    { medication = Fefol
+    , setMedicationAdministeredMsg = SetFefolAdministered
+    , setReasonForNonAdministration = SetFefolReasonForNonAdministration
+    , resolveDosageAndIconFunc = resolveFefolDosageAndIcon
+    }
+
+
+resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFefolDosageAndIcon language currentDate person =
+    Just ( "200 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
 
 
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6361,8 +6483,13 @@ folateAdministrationFormConfig =
     { medication = FolicAcid
     , setMedicationAdministeredMsg = SetFolateAdministered
     , setReasonForNonAdministration = SetFolateReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveFolicAcidDosageAndIcon
     }
+
+
+resolveFolicAcidDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFolicAcidDosageAndIcon language currentDate person =
+    Just ( "400 UI", "icon-pills", translate language Translate.AdministerFolicAcidHelper )
 
 
 ironAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6370,8 +6497,13 @@ ironAdministrationFormConfig =
     { medication = Iron
     , setMedicationAdministeredMsg = SetIronAdministered
     , setReasonForNonAdministration = SetIronReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveIronDosageAndIcon
     }
+
+
+resolveIronDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveIronDosageAndIcon language currentDate person =
+    Just ( "120 mg", "icon-pills", translate language Translate.AdministerIronHelper )
 
 
 mmsAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6379,8 +6511,13 @@ mmsAdministrationFormConfig =
     { medication = MMS
     , setMedicationAdministeredMsg = SetMMSAdministered
     , setReasonForNonAdministration = SetMMSReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveMMSDosageAndIcon
     }
+
+
+resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMMSDosageAndIcon language currentDate person =
+    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg
@@ -6388,5 +6525,10 @@ mebendazoleAdministrationFormConfig =
     { medication = Mebendezole
     , setMedicationAdministeredMsg = SetMebendazoleAdministered
     , setReasonForNonAdministration = SetMebendazoleReasonForNonAdministration
-    , resolveDosageAndIconFunc = \_ _ _ -> Nothing
+    , resolveDosageAndIconFunc = resolveMebendezoleDosageAndIcon
     }
+
+
+resolveMebendezoleDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMebendezoleDosageAndIcon language currentDate person =
+    Just ( "500 mg", "icon-pills", translate language Translate.AdministerPrenatalMebendezoleHelper )

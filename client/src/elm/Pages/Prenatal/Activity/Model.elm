@@ -138,9 +138,15 @@ type Msg
     | SaveFamilyPlanning PersonId (Maybe ( PrenatalFamilyPlanningId, PrenatalFamilyPlanning ))
       -- MedicationMsgs
     | SetActiveMedicationTask MedicationTask
+    | SetAspirinAdministered Bool
+    | SetAspirinReasonForNonAdministration AdministrationNote
+    | SaveAspirin PersonId (Maybe ( PrenatalAspirinId, PrenatalAspirin )) (Maybe MedicationTask)
     | SetCalciumAdministered Bool
     | SetCalciumReasonForNonAdministration AdministrationNote
     | SaveCalcium PersonId (Maybe ( PrenatalCalciumId, PrenatalCalcium )) (Maybe MedicationTask)
+    | SetFefolAdministered Bool
+    | SetFefolReasonForNonAdministration AdministrationNote
+    | SaveFefol PersonId (Maybe ( PrenatalFefolId, PrenatalFefol )) (Maybe MedicationTask)
     | SetFolateAdministered Bool
     | SetFolateReasonForNonAdministration AdministrationNote
     | SaveFolate PersonId (Maybe ( PrenatalFolateId, PrenatalFolate )) (Maybe MedicationTask)
@@ -412,7 +418,9 @@ emptyFamilyPlanningData =
 
 
 type alias MedicationData =
-    { calciumForm : MedicationAdministrationForm
+    { aspirinForm : MedicationAdministrationForm
+    , calciumForm : MedicationAdministrationForm
+    , fefolForm : MedicationAdministrationForm
     , folateForm : MedicationAdministrationForm
     , ironForm : MedicationAdministrationForm
     , mmsForm : MedicationAdministrationForm
@@ -423,8 +431,10 @@ type alias MedicationData =
 
 emptyMedicationData : MedicationData
 emptyMedicationData =
-    { calciumForm = emptyMedicationAdministrationForm
+    { aspirinForm = emptyMedicationAdministrationForm
+    , calciumForm = emptyMedicationAdministrationForm
     , folateForm = emptyMedicationAdministrationForm
+    , fefolForm = emptyMedicationAdministrationForm
     , ironForm = emptyMedicationAdministrationForm
     , mmsForm = emptyMedicationAdministrationForm
     , mebendazoleForm = emptyMedicationAdministrationForm

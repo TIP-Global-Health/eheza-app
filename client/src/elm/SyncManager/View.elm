@@ -659,6 +659,9 @@ viewAuthorityEntity backendAuthorityEntity =
             BackendAuthorityPrenatalEncounter identifier ->
                 text <| "Prenatal Encounter for person ID " ++ fromEntityUuid identifier.entity.participant
 
+            BackendAuthorityPrenatalAspirin identifier ->
+                viewMeasurement identifier "Prenatal Aspirin"
+
             BackendAuthorityPrenatalBloodGpRsTest identifier ->
                 viewMeasurement identifier "Prenatal Blood GpRs Test"
 
@@ -670,6 +673,9 @@ viewAuthorityEntity backendAuthorityEntity =
 
             BackendAuthorityPrenatalFamilyPlanning identifier ->
                 viewMeasurement identifier "Prenatal Family Planning"
+
+            BackendAuthorityPrenatalFefol identifier ->
+                viewMeasurement identifier "Prenatal Fefol"
 
             BackendAuthorityPrenatalFolate identifier ->
                 viewMeasurement identifier "Prenatal Folate"

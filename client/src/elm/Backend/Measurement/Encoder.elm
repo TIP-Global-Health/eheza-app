@@ -820,6 +820,16 @@ encodeSpecialityCareSign sign =
                 "none"
 
 
+encodePrenatalAspirin : PrenatalAspirin -> List ( String, Value )
+encodePrenatalAspirin =
+    encodePrenatalMeasurement encodePrenatalAspirinValue
+
+
+encodePrenatalAspirinValue : AdministrationNote -> List ( String, Value )
+encodePrenatalAspirinValue note =
+    encodePrenatalMedicationValue "prenatal_aspirin" note
+
+
 encodePrenatalCalcium : PrenatalCalcium -> List ( String, Value )
 encodePrenatalCalcium =
     encodePrenatalMeasurement encodePrenatalCalciumValue
@@ -828,6 +838,16 @@ encodePrenatalCalcium =
 encodePrenatalCalciumValue : AdministrationNote -> List ( String, Value )
 encodePrenatalCalciumValue note =
     encodePrenatalMedicationValue "prenatal_calcium" note
+
+
+encodePrenatalFefol : PrenatalFefol -> List ( String, Value )
+encodePrenatalFefol =
+    encodePrenatalMeasurement encodePrenatalFefolValue
+
+
+encodePrenatalFefolValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFefolValue note =
+    encodePrenatalMedicationValue "prenatal_fefol" note
 
 
 encodePrenatalFolate : PrenatalFolate -> List ( String, Value )
@@ -2959,6 +2979,12 @@ encodeMedicationDistributionSign sign =
 
             MMS ->
                 "mms"
+
+            Aspirin ->
+                "aspirin"
+
+            Fefol ->
+                "fefol"
 
             NoMedicationDistributionSigns ->
                 "none"

@@ -1737,11 +1737,19 @@ type alias PartnerHIVTestValue =
     }
 
 
+type alias PrenatalAspirin =
+    PrenatalMeasurement AdministrationNote
+
+
 type alias PrenatalCalcium =
     PrenatalMeasurement AdministrationNote
 
 
 type alias PrenatalFolate =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFefol =
     PrenatalMeasurement AdministrationNote
 
 
@@ -2087,6 +2095,7 @@ type alias SendToHC =
 
 type MedicationDistributionSign
     = Amoxicillin
+    | Aspirin
     | Coartem
     | ORS
     | Zinc
@@ -2106,6 +2115,7 @@ type MedicationDistributionSign
       -- Pregnancy supplements - in addition to Iron and Folic acid.
     | Calcium
     | MMS
+    | Fefol
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
@@ -3394,7 +3404,9 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , aspirin : Maybe ( PrenatalAspirinId, PrenatalAspirin )
     , calcium : Maybe ( PrenatalCalciumId, PrenatalCalcium )
+    , fefol : Maybe ( PrenatalFefolId, PrenatalFefol )
     , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
     , iron : Maybe ( PrenatalIronId, PrenatalIron )
     , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
@@ -3444,7 +3456,9 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , aspirin = Nothing
     , calcium = Nothing
+    , fefol = Nothing
     , folate = Nothing
     , iron = Nothing
     , mms = Nothing

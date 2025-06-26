@@ -6388,6 +6388,8 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     'prenatal_iron' => 'c1',
     'prenatal_mms' => 'd1',
     'prenatal_mebendazole' => 'e1',
+    'prenatal_aspirin' => 'f1',
+    'prenatal_fefol' => 'g1',
   ];
 
   // Load all encounters of current participant.
@@ -6534,6 +6536,7 @@ function hedley_reports_generate_completion_data_for_prenatal($participant, $exc
     $expected = hedley_reports_prenatal_generate_expected_initial_activities($encounter_data);
     hedley_reports_prenatal_add_history_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_examination_activities($encounter_data, $expected);
+    hedley_reports_prenatal_add_medication_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_immunisation_activities($encounter_data, $expected);
     hedley_reports_prenatal_add_mental_health_activity($encounter_data, $expected);
     hedley_reports_prenatal_add_photo_activity($encounter_data, $expected);
@@ -6610,7 +6613,6 @@ function hedley_reports_prenatal_generate_vaccination_history_data(array $encoun
  * Here we add activities with simple logic from:
  *  - Pregnancy Dating.
  *  - Family Planning.
- *  - Medication.
  *  - Malaria prevention (Resource).
  *  - Danger Signs.
  *  - Symptom Review.
@@ -6638,39 +6640,6 @@ function hedley_reports_prenatal_generate_expected_initial_activities(array $enc
     $launch_date_obj = new DateTime($launch_date);
     if ($encounter_data['start_date_obj'] >= $launch_date_obj) {
       $expected[] = 'prenatal_symptom_review';
-    }
-  }
-
-  if ($encounter_type == 'nurse' && empty($previous_nurse_encounters_data)) {
-    // Medications were changed - from single medication activity,
-    // to 5 activities for each of medication types.
-    $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
-    if (!$change_date) {
-      $expected[] = 'medication';
-    }
-    else {
-      $change_date_obj = new DateTime($change_date);
-      if ($encounter_data['start_date_obj'] >= $change_date_obj) {
-        // Encounter has started after the change.
-        $expected[] = 'prenatal_calcium';
-        $expected[] = 'prenatal_folate';
-        $expected[] = 'prenatal_iron';
-        $expected[] = 'prenatal_mms';
-
-        // Mebendazole activity is expected from EGA 24.
-        $lmp_date = $encounter_data['lmp_date'];
-        if (!empty($lmp_date)) {
-          $lmp_date_obj = new DateTime($lmp_date);
-          $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
-          if ($ega_in_weeks >= 24) {
-            $expected[] = 'prenatal_mebendazole';
-          }
-        }
-      }
-      else {
-        // Encounter has started before the change.
-        $expected[] = 'medication';
-      }
     }
   }
 
@@ -6760,6 +6729,103 @@ function hedley_reports_prenatal_add_examination_activities(array $encounter_dat
       $expected[] = 'prenatal_gu_exam';
     }
   }
+}
+
+/**
+ * Adds Medication activities to the expected list, if conditions match.
+ *
+ * @param array $encounter_data
+ *   An associative array containing data about the encounter.
+ * @param array &$expected
+ *   An array of expected activity names, passed by reference.
+ */
+function hedley_reports_prenatal_add_medication_activities(array $encounter_data, array &$expected) {
+  $encounter_type = $encounter_data['encounter_type'];
+  if ($encounter_type !== 'nurse') {
+    return;
+  }
+
+  $expected_activities = [];
+
+  // Medications were changed - from single medication activity,
+  // to 7 activities for each of medication types.
+  $change_date = variable_get('hedley_prenatal_change_medications', FALSE);
+  if (!$change_date) {
+    $expected_activities[] = 'medication';
+  }
+  else {
+    $change_date_obj = new DateTime($change_date);
+    if ($encounter_data['start_date_obj'] >= $change_date_obj) {
+      if (!hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mms')) {
+        $expected_activities[] = 'prenatal_mms';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_folate')
+      ) {
+        $expected_activities[] = 'prenatal_fefol';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_folate') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+      ) {
+        $expected_activities[] = 'prenatal_folate';
+      }
+
+      if (
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_iron') &&
+        !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_fefol') &&
+        !hedley_reports_prenatal_medication_distributed_today($encounter_data, 'prenatal_fefol')
+      ) {
+        $expected_activities[] = 'prenatal_iron';
+      }
+
+      // Activities expected from certain EGA week.
+      $lmp_date = $encounter_data['lmp_date'];
+      if (!empty($lmp_date)) {
+        $lmp_date_obj = new DateTime($lmp_date);
+        $ega_in_weeks = hedley_reports_prenatal_calculate_ega_weeks($lmp_date_obj, $encounter_data['start_date_obj']);
+
+        if (
+          ($ega_in_weeks >= 12) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_aspirin') &&
+          (hedley_reports_prenatal_medical_history_sign_recorded_previously($encounter_data, 'hypertension-before-pregnancy') ||
+            hedley_reports_prenatal_medical_history_sign_recorded_today($encounter_data, 'hypertension-before-pregnancy') ||
+            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously($encounter_data, 'preeclampsia-previous-pregnancy') ||
+            hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today($encounter_data, 'preeclampsia-previous-pregnancy')
+          )
+        ) {
+          $expected_activities[] = 'prenatal_aspirin';
+        }
+
+        if (
+          ($ega_in_weeks >= 14) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_calcium')
+        ) {
+          $expected_activities[] = 'prenatal_calcium';
+        }
+
+        if (
+          ($ega_in_weeks >= 24) &&
+          !hedley_reports_prenatal_medication_distributed_previously($encounter_data, 'prenatal_mebendazole')
+        ) {
+          $expected_activities[] = 'prenatal_mebendazole';
+        }
+      }
+    }
+    else {
+      // Encounter has started before the change.
+      $expected_activities[] = 'medication';
+    }
+  }
+
+  $expected = array_merge($expected, $expected_activities);
 }
 
 /**
@@ -8703,14 +8769,185 @@ function hedley_reports_prenatal_diagnosed_any_of(array $encounter_data, array $
 function hedley_reports_prenatal_symptom_recorded_previously(array $encounter_data, $symptom_value) {
   $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
   foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
-    $symptom_review_measurement = $previous_encounter_data['measurements_by_type']['prenatal_symptom_review'];
-    if (empty($symptom_review_measurement) || empty($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
+    $measurement = $previous_encounter_data['measurements_by_type']['prenatal_symptom_review'];
+    if (empty($measurement) || empty($measurement->field_prenatal_symptoms[LANGUAGE_NONE])) {
       continue;
     }
-    foreach ($symptom_review_measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
+    foreach ($measurement->field_prenatal_symptoms[LANGUAGE_NONE] as $symptom) {
       if ($symptom['value'] === $symptom_value) {
         return TRUE;
       }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during previous encounters.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified medication was distributed in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_previously(array $encounter_data, $medication_type) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type'][$medication_type];
+    if (empty($measurement) || empty($measurement->field_administration_note[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+      if ($note['value'] === 'administered-today') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if a specific medication was distributed during current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $medication_type
+ *   The type of medication distributed (medication activity).
+ *
+ * @return bool
+ *   TRUE if the medication was distributed; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medication_distributed_today(array $encounter_data, $medication_type) {
+  $measurement = $encounter_data['measurements_by_type'][$medication_type];
+  if (empty($measurement) || empty($measurement->field_administration_note[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_administration_note[LANGUAGE_NONE] as $note) {
+    if ($note['value'] === 'administered-today') {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given medical history sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $sign_value
+ *   The sign value to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medical_history_sign_recorded_previously(array $encounter_data, $sign_value) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type']['medical_history'];
+    if (empty($measurement) || empty($measurement->field_medical_history[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_medical_history[LANGUAGE_NONE] as $symptom) {
+      if ($symptom['value'] === $sign_value) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given medical history sign was recorded at current encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $sign_value
+ *   The sign value to search for.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded today; FALSE otherwise.
+ */
+function hedley_reports_prenatal_medical_history_sign_recorded_today(array $encounter_data, $sign_value) {
+  $measurement = $encounter_data['measurements_by_type']['medical_history'];
+  if (empty($measurement) || empty($measurement->field_medical_history[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_medical_history[LANGUAGE_NONE] as $symptom) {
+    if ($symptom['value'] === $sign_value) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given obstetric history step2 sign was recorded at this encounter.
+ *
+ * @param array $encounter_data
+ *   The encounter data.
+ * @param string $sign_value
+ *   The sign value to search for.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded today; FALSE otherwise.
+ */
+function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_previously(array $encounter_data, $sign_value) {
+  $previous_nurse_encounters_data = $encounter_data['previous_nurse_encounters_data'];
+  foreach ($previous_nurse_encounters_data as $previous_encounter_data) {
+    $measurement = $previous_encounter_data['measurements_by_type']['obstetric_history_step2'];
+    if (empty($measurement) || empty($measurement->field_obstetric_history_step2[LANGUAGE_NONE])) {
+      continue;
+    }
+    foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $symptom) {
+      if ($symptom['value'] === $sign_value) {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Checks if given  obstetric history step2 sign was recorded previously.
+ *
+ * This function iterates over previous nurse encounters to determine if a
+ * specified sign was recorded in any of them.
+ *
+ * @param array $encounter_data
+ *   The encounter data, including previous nurse encounters.
+ * @param string $sign_value
+ *   The sign value to search for in previous encounters.
+ *
+ * @return bool
+ *   TRUE if the sign was recorded previously; FALSE otherwise.
+ */
+function hedley_reports_prenatal_obstetric_history_step2_sign_recorded_today(array $encounter_data, $sign_value) {
+  $measurement = $encounter_data['measurements_by_type']['obstetric_history_step2'];
+  if (empty($measurement) || empty($measurement->field_obstetric_history_step2[LANGUAGE_NONE])) {
+    return FALSE;
+  }
+
+  foreach ($measurement->field_obstetric_history_step2[LANGUAGE_NONE] as $symptom) {
+    if ($symptom['value'] === $sign_value) {
+      return TRUE;
     }
   }
 
