@@ -60,11 +60,13 @@ type ObstetricHistoryStep
 
 
 type MedicationTask
-    = TaskCalcium
+    = TaskAspirin
+    | TaskCalcium
+    | TaskFefol
     | TaskFolate
     | TaskIron
-    | TaskMMS
     | TaskMebendazole
+    | TaskMMS
 
 
 type PrePregnancyClassification

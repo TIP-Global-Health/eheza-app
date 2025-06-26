@@ -661,11 +661,13 @@ type Revision
     | PhotoRevision PhotoId Photo
     | PmtctParticipantRevision PmtctParticipantId PmtctParticipant
     | PregnancyTestRevision PregnancyTestId PregnancyTest
+    | PrenatalAspirinRevision PrenatalAspirinId PrenatalAspirin
     | PrenatalBloodGpRsTestRevision PrenatalBloodGpRsTestId PrenatalBloodGpRsTest
     | PrenatalBreastfeedingRevision PrenatalBreastfeedingId PrenatalBreastfeeding
     | PrenatalCalciumRevision PrenatalCalciumId PrenatalCalcium
     | PrenatalEncounterRevision PrenatalEncounterId PrenatalEncounter
     | PrenatalFamilyPlanningRevision PrenatalFamilyPlanningId PrenatalFamilyPlanning
+    | PrenatalFefolRevision PrenatalFefolId PrenatalFefol
     | PrenatalFolateRevision PrenatalFolateId PrenatalFolate
     | PrenatalFollowUpRevision PrenatalFollowUpId PrenatalFollowUp
     | PrenatalGUExamRevision PrenatalGUExamId PrenatalGUExam

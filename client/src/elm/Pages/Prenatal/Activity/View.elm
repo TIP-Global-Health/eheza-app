@@ -1118,8 +1118,14 @@ viewMedicationContent language currentDate assembled data =
             let
                 iconClass =
                     case task of
+                        TaskAspirin ->
+                            "aspirin"
+
                         TaskCalcium ->
                             "calcium"
+
+                        TaskFefol ->
+                            "fefol"
 
                         TaskFolate ->
                             "folate"
@@ -1165,6 +1171,14 @@ viewMedicationContent language currentDate assembled data =
 
         viewForm =
             case activeTask of
+                Just TaskAspirin ->
+                    getMeasurementValueFunc measurements.aspirin
+                        |> medicationAdministrationFormWithDefault data.aspirinForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            aspirinAdministrationFormConfig
+
                 Just TaskCalcium ->
                     getMeasurementValueFunc measurements.calcium
                         |> medicationAdministrationFormWithDefault data.calciumForm
@@ -1172,6 +1186,14 @@ viewMedicationContent language currentDate assembled data =
                             currentDate
                             assembled.person
                             calciumAdministrationFormConfig
+
+                Just TaskFefol ->
+                    getMeasurementValueFunc measurements.fefol
+                        |> medicationAdministrationFormWithDefault data.fefolForm
+                        |> viewMedicationAdministrationForm language
+                            currentDate
+                            assembled.person
+                            fefolAdministrationFormConfig
 
                 Just TaskFolate ->
                     getMeasurementValueFunc measurements.folate
@@ -1220,8 +1242,14 @@ viewMedicationContent language currentDate assembled data =
 
                         saveMsg =
                             case task of
+                                TaskAspirin ->
+                                    SaveAspirin personId measurements.aspirin nextTask
+
                                 TaskCalcium ->
                                     SaveCalcium personId measurements.calcium nextTask
+
+                                TaskFefol ->
+                                    SaveFefol personId measurements.fefol nextTask
 
                                 TaskFolate ->
                                     SaveFolate personId measurements.folate nextTask

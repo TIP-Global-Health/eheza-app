@@ -989,6 +989,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                             Backend.Measurement.Decoder.decodePregnancyTest
                             BackendAuthorityPregnancyTest
 
+                    "prenatal_aspirin" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalAspirin
+                            BackendAuthorityPrenatalAspirin
+
                     "prenatal_blood_gprs_test" ->
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalBloodGpRsTest
@@ -1013,6 +1018,11 @@ decodeBackendAuthorityEntity uuidDecoder identifierDecoder =
                         doDecode
                             Backend.Measurement.Decoder.decodePrenatalFamilyPlanning
                             BackendAuthorityPrenatalFamilyPlanning
+
+                    "prenatal_fefol" ->
+                        doDecode
+                            Backend.Measurement.Decoder.decodePrenatalFefol
+                            BackendAuthorityPrenatalFefol
 
                     "prenatal_folate" ->
                         doDecode

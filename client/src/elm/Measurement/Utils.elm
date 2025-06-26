@@ -10360,7 +10360,13 @@ medicationAdministrationFormInputsAndTasks language currentDate person config fo
                     (\( dosage, icon, helper ) ->
                         [ h2 [] [ text <| translate language Translate.ActionsToTake ++ ":" ]
                         , div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.Administer (Translate.MedicationDistributionSign config.medication) icon "" dosage Nothing
+                            [ viewAdministeredMedicationCustomLabel language
+                                Translate.Administer
+                                (Translate.MedicationDistributionSign config.medication)
+                                ""
+                                icon
+                                dosage
+                                Nothing
                             , div [ class "prescription" ] [ text <| helper ++ "." ]
                             ]
                         ]

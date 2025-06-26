@@ -162,7 +162,9 @@ decodePrenatalMeasurements =
         |> optional "prenatal_gu_exam" (decodeHead decodePrenatalGUExam) Nothing
         |> optional "prenatal_speciality_care" (decodeHead decodePrenatalSpecialityCare) Nothing
         |> optional "prenatal_partner_hiv_test" (decodeHead decodePrenatalPartnerHIVTest) Nothing
+        |> optional "prenatal_aspirin" (decodeHead decodePrenatalAspirin) Nothing
         |> optional "prenatal_calcium" (decodeHead decodePrenatalCalcium) Nothing
+        |> optional "prenatal_fefol" (decodeHead decodePrenatalFefol) Nothing
         |> optional "prenatal_folate" (decodeHead decodePrenatalFolate) Nothing
         |> optional "prenatal_iron" (decodeHead decodePrenatalIron) Nothing
         |> optional "prenatal_mms" (decodeHead decodePrenatalMMS) Nothing
@@ -3573,6 +3575,12 @@ decodeMedicationDistributionSign =
                     "mms" ->
                         succeed MMS
 
+                    "aspirin" ->
+                        succeed Aspirin
+
+                    "fefol" ->
+                        succeed Fefol
+
                     "none" ->
                         succeed NoMedicationDistributionSigns
 
@@ -5054,8 +5062,18 @@ decodeOutsideCareMedication =
             )
 
 
+decodePrenatalAspirin : Decoder PrenatalAspirin
+decodePrenatalAspirin =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
 decodePrenatalCalcium : Decoder PrenatalCalcium
 decodePrenatalCalcium =
+    decodePrenatalMeasurement decodeAdministrationNoteField
+
+
+decodePrenatalFefol : Decoder PrenatalFefol
+decodePrenatalFefol =
     decodePrenatalMeasurement decodeAdministrationNoteField
 
 

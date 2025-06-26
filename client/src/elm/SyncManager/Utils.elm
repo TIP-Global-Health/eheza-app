@@ -794,6 +794,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
         BackendAuthorityPregnancyTest identifier ->
             getIdentifier identifier "pregnancy_testing"
 
+        BackendAuthorityPrenatalAspirin identifier ->
+            getIdentifier identifier "prenatal_aspirin"
+
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             getIdentifier identifier "prenatal_blood_gprs_test"
 
@@ -808,6 +811,9 @@ getBackendAuthorityEntityIdentifier backendAuthorityEntity =
 
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             getIdentifier identifier "prenatal_family_planning"
+
+        BackendAuthorityPrenatalFefol identifier ->
+            getIdentifier identifier "prenatal_fefol"
 
         BackendAuthorityPrenatalFolate identifier ->
             getIdentifier identifier "prenatal_folate"
@@ -1586,6 +1592,9 @@ encodeBackendAuthorityEntity entity =
         BackendAuthorityPregnancyTest identifier ->
             encode Backend.Measurement.Encoder.encodePregnancyTest identifier
 
+        BackendAuthorityPrenatalAspirin identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalAspirin identifier
+
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalBloodGpRsTest identifier
 
@@ -1600,6 +1609,9 @@ encodeBackendAuthorityEntity entity =
 
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalFamilyPlanning identifier
+
+        BackendAuthorityPrenatalFefol identifier ->
+            encode Backend.Measurement.Encoder.encodePrenatalFefol identifier
 
         BackendAuthorityPrenatalFolate identifier ->
             encode Backend.Measurement.Encoder.encodePrenatalFolate identifier
@@ -2444,6 +2456,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
         BackendAuthorityPregnancyTest identifier ->
             PregnancyTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
+        BackendAuthorityPrenatalAspirin identifier ->
+            PrenatalAspirinRevision (toEntityUuid identifier.uuid) identifier.entity
+
         BackendAuthorityPrenatalBloodGpRsTest identifier ->
             PrenatalBloodGpRsTestRevision (toEntityUuid identifier.uuid) identifier.entity
 
@@ -2458,6 +2473,9 @@ backendAuthorityEntityToRevision backendAuthorityEntity =
 
         BackendAuthorityPrenatalFamilyPlanning identifier ->
             PrenatalFamilyPlanningRevision (toEntityUuid identifier.uuid) identifier.entity
+
+        BackendAuthorityPrenatalFefol identifier ->
+            PrenatalFefolRevision (toEntityUuid identifier.uuid) identifier.entity
 
         BackendAuthorityPrenatalFolate identifier ->
             PrenatalFolateRevision (toEntityUuid identifier.uuid) identifier.entity

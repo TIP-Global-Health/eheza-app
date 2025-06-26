@@ -393,6 +393,9 @@ decodeRevision =
                     "pmtct_participant" ->
                         decodeWithUuid PmtctParticipantRevision decodePmtctParticipant
 
+                    "prenatal_aspirin" ->
+                        decodeWithUuid PrenatalAspirinRevision decodePrenatalAspirin
+
                     "prenatal_blood_gprs_test" ->
                         decodeWithUuid PrenatalBloodGpRsTestRevision decodePrenatalBloodGpRsTest
 
@@ -407,6 +410,9 @@ decodeRevision =
 
                     "prenatal_family_planning" ->
                         decodeWithUuid PrenatalFamilyPlanningRevision decodePrenatalFamilyPlanning
+
+                    "prenatal_fefol" ->
+                        decodeWithUuid PrenatalFefolRevision decodePrenatalFefol
 
                     "prenatal_folate" ->
                         decodeWithUuid PrenatalFolateRevision decodePrenatalFolate
