@@ -5854,3 +5854,22 @@ div.page-activity.hiv {
     color: $color-text;
   }
 }
+
+.consent {
+  background: $color-white;
+  padding: 30px 25px 30px 25px;
+  color: $color-text;
+  text-align: left;
+
+  .title {
+    font-weight: bold;
+    text-align: center;
+
+    &.note {
+      font-style: italic;
+    }
+  }
+  .greeting {
+    font-weight: bold;
+  }
+}
