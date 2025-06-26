@@ -820,6 +820,84 @@ encodeSpecialityCareSign sign =
                 "none"
 
 
+encodePrenatalAspirin : PrenatalAspirin -> List ( String, Value )
+encodePrenatalAspirin =
+    encodePrenatalMeasurement encodePrenatalAspirinValue
+
+
+encodePrenatalAspirinValue : AdministrationNote -> List ( String, Value )
+encodePrenatalAspirinValue note =
+    encodePrenatalMedicationValue "prenatal_aspirin" note
+
+
+encodePrenatalCalcium : PrenatalCalcium -> List ( String, Value )
+encodePrenatalCalcium =
+    encodePrenatalMeasurement encodePrenatalCalciumValue
+
+
+encodePrenatalCalciumValue : AdministrationNote -> List ( String, Value )
+encodePrenatalCalciumValue note =
+    encodePrenatalMedicationValue "prenatal_calcium" note
+
+
+encodePrenatalFefol : PrenatalFefol -> List ( String, Value )
+encodePrenatalFefol =
+    encodePrenatalMeasurement encodePrenatalFefolValue
+
+
+encodePrenatalFefolValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFefolValue note =
+    encodePrenatalMedicationValue "prenatal_fefol" note
+
+
+encodePrenatalFolate : PrenatalFolate -> List ( String, Value )
+encodePrenatalFolate =
+    encodePrenatalMeasurement encodePrenatalFolateValue
+
+
+encodePrenatalFolateValue : AdministrationNote -> List ( String, Value )
+encodePrenatalFolateValue note =
+    encodePrenatalMedicationValue "prenatal_folate" note
+
+
+encodePrenatalIron : PrenatalIron -> List ( String, Value )
+encodePrenatalIron =
+    encodePrenatalMeasurement encodePrenatalIronValue
+
+
+encodePrenatalIronValue : AdministrationNote -> List ( String, Value )
+encodePrenatalIronValue note =
+    encodePrenatalMedicationValue "prenatal_iron" note
+
+
+encodePrenatalMMS : PrenatalMMS -> List ( String, Value )
+encodePrenatalMMS =
+    encodePrenatalMeasurement encodePrenatalMMSValue
+
+
+encodePrenatalMMSValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMMSValue note =
+    encodePrenatalMedicationValue "prenatal_mms" note
+
+
+encodePrenatalMebendazole : PrenatalMebendazole -> List ( String, Value )
+encodePrenatalMebendazole =
+    encodePrenatalMeasurement encodePrenatalMebendazoleValue
+
+
+encodePrenatalMebendazoleValue : AdministrationNote -> List ( String, Value )
+encodePrenatalMebendazoleValue note =
+    encodePrenatalMedicationValue "prenatal_mebendazole" note
+
+
+encodePrenatalMedicationValue : String -> AdministrationNote -> List ( String, Value )
+encodePrenatalMedicationValue type_ note =
+    [ ( "administration_note", encodeAdministrationNote note )
+    , ( "deleted", bool False )
+    , ( "type", string type_ )
+    ]
+
+
 encodeNutrition : ChildNutrition -> List ( String, Value )
 encodeNutrition =
     encodeGroupMeasurement (encodeNutritionValueWithType "nutrition")
@@ -1329,6 +1407,7 @@ encodeLastMenstrualPeriodValue value =
     , ( "type", string "last_menstrual_period" )
     ]
         ++ encodeNullable "not_confident_reason" value.notConfidentReason encodeLmpDateNotConfidentReason
+        ++ encodeNullable "weight" value.prePregnancyWeight encodeWeightInKg
 
 
 encodeLmpDateNotConfidentReason : LmpDateNotConfidentReason -> Value
@@ -2766,6 +2845,18 @@ encodeMedicationDistributionSign sign =
 
             VitaminA ->
                 "vitamina"
+
+            Calcium ->
+                "calcium"
+
+            MMS ->
+                "mms"
+
+            Aspirin ->
+                "aspirin"
+
+            Fefol ->
+                "fefol"
 
             NoMedicationDistributionSigns ->
                 "none"

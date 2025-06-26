@@ -365,12 +365,24 @@ nonAdministrationReasonToSign sign reason =
             MedicationVitaminA reason
 
         -- Below are not in use, but we specify them explicitly to make
-        -- sure that compile arets if we forget to address new
+        -- sure that compile alerts if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->
             NoMedicationNonAdministrationSigns
 
         LemonJuiceOrHoney ->
+            NoMedicationNonAdministrationSigns
+
+        Calcium ->
+            NoMedicationNonAdministrationSigns
+
+        MMS ->
+            NoMedicationNonAdministrationSigns
+
+        Aspirin ->
+            NoMedicationNonAdministrationSigns
+
+        Fefol ->
             NoMedicationNonAdministrationSigns
 
         NoMedicationDistributionSigns ->
@@ -710,14 +722,22 @@ viewMeasurementInput language maybeCurrentValue setMsg inputClass unitTranslatio
 
 viewPreviousMeasurement : Language -> Maybe Float -> TranslationId -> Html any
 viewPreviousMeasurement language maybePreviousValue unitTranslationId =
+    viewPreviousMeasurementCustom language
+        maybePreviousValue
+        Translate.PreviousFloatMeasurement
+        Translate.PreviousMeasurementNotFound
+        unitTranslationId
+
+
+viewPreviousMeasurementCustom : Language -> Maybe Float -> (Float -> TranslationId) -> TranslationId -> TranslationId -> Html any
+viewPreviousMeasurementCustom language maybePreviousValue foundTranslationId notFoundTranslationId unitTranslationId =
     let
         message =
             maybePreviousValue
                 |> unwrap
-                    (translate language Translate.PreviousMeasurementNotFound)
+                    (translate language notFoundTranslationId)
                     (\previousValue ->
-                        (previousValue
-                            |> Translate.PreviousFloatMeasurement
+                        (foundTranslationId previousValue
                             |> translate language
                         )
                             ++ " "

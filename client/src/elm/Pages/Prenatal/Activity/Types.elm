@@ -57,3 +57,27 @@ type WarningPopupType msg
 type ObstetricHistoryStep
     = ObstetricHistoryFirstStep
     | ObstetricHistorySecondStep
+
+
+type MedicationTask
+    = TaskAspirin
+    | TaskCalcium
+    | TaskFefol
+    | TaskFolate
+    | TaskIron
+    | TaskMebendazole
+    | TaskMMS
+
+
+type PrePregnancyClassification
+    = PrePregnancyUnderWeight
+    | PrePregnancyNormal
+    | PrePregnancyOverweight
+    | PrePregnancyObesity
+
+
+type GWGClassification
+    = GWGSeverelyInadequate
+    | GWGInadequate
+    | GWGAdequate
+    | GWGExcessive

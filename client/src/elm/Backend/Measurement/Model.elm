@@ -653,6 +653,7 @@ type PostpartumChildDangerSign
 
 type alias LastMenstrualPeriodValue =
     { date : NominalDate
+    , prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
     , confirmation : Bool
@@ -1736,6 +1737,34 @@ type alias PartnerHIVTestValue =
     }
 
 
+type alias PrenatalAspirin =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalCalcium =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFolate =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalFefol =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalIron =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMMS =
+    PrenatalMeasurement AdministrationNote
+
+
+type alias PrenatalMebendazole =
+    PrenatalMeasurement AdministrationNote
+
+
 
 -- ACUTE ILLNESS MEASUREMENTS
 
@@ -2015,6 +2044,7 @@ type alias SendToHC =
 
 type MedicationDistributionSign
     = Amoxicillin
+    | Aspirin
     | Coartem
     | ORS
     | Zinc
@@ -2028,9 +2058,13 @@ type MedicationDistributionSign
     | Lamivudine
     | Dolutegravir
     | TDF3TC
-      -- Anemia medication
+      -- Anemia medication and pregnancy supplements.
     | Iron
     | FolicAcid
+      -- Pregnancy supplements - in addition to Iron and Folic acid.
+    | Calcium
+    | MMS
+    | Fefol
       -- Gonorhea medication
     | Ceftriaxone
     | Azithromycin
@@ -3319,6 +3353,13 @@ type alias PrenatalMeasurements =
     , guExam : Maybe ( PrenatalGUExamId, PrenatalGUExam )
     , specialityCare : Maybe ( PrenatalSpecialityCareId, PrenatalSpecialityCare )
     , partnerHIVTest : Maybe ( PrenatalPartnerHIVTestId, PrenatalPartnerHIVTest )
+    , aspirin : Maybe ( PrenatalAspirinId, PrenatalAspirin )
+    , calcium : Maybe ( PrenatalCalciumId, PrenatalCalcium )
+    , fefol : Maybe ( PrenatalFefolId, PrenatalFefol )
+    , folate : Maybe ( PrenatalFolateId, PrenatalFolate )
+    , iron : Maybe ( PrenatalIronId, PrenatalIron )
+    , mms : Maybe ( PrenatalMMSId, PrenatalMMS )
+    , mebendazole : Maybe ( PrenatalMebendazoleId, PrenatalMebendazole )
     }
 
 
@@ -3364,6 +3405,13 @@ emptyPrenatalMeasurements =
     , guExam = Nothing
     , specialityCare = Nothing
     , partnerHIVTest = Nothing
+    , aspirin = Nothing
+    , calcium = Nothing
+    , fefol = Nothing
+    , folate = Nothing
+    , iron = Nothing
+    , mms = Nothing
+    , mebendazole = Nothing
     }
 
 

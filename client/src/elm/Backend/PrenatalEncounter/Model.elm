@@ -112,6 +112,13 @@ type alias Model =
     , saveBreastfeeding : WebData ()
     , saveGUExam : WebData ()
     , saveSpecialityCare : WebData ()
+    , saveAspirin : WebData ()
+    , saveCalcium : WebData ()
+    , saveFefol : WebData ()
+    , saveFolate : WebData ()
+    , saveIron : WebData ()
+    , saveMMS : WebData ()
+    , saveMebendazole : WebData ()
     }
 
 
@@ -158,6 +165,13 @@ emptyModel =
     , saveBreastfeeding = NotAsked
     , saveGUExam = NotAsked
     , saveSpecialityCare = NotAsked
+    , saveAspirin = NotAsked
+    , saveCalcium = NotAsked
+    , saveFefol = NotAsked
+    , saveFolate = NotAsked
+    , saveIron = NotAsked
+    , saveMMS = NotAsked
+    , saveMebendazole = NotAsked
     }
 
 
@@ -179,6 +193,20 @@ type Msg
     | HandleSavedMedicalHistory (WebData ())
     | SaveMedication PersonId (Maybe MedicationId) MedicationValue
     | HandleSavedMedication (WebData ())
+    | SaveAspirin PersonId (Maybe PrenatalAspirinId) AdministrationNote
+    | HandleSavedAspirin (WebData ())
+    | SaveCalcium PersonId (Maybe PrenatalCalciumId) AdministrationNote
+    | HandleSavedCalcium (WebData ())
+    | SaveFefol PersonId (Maybe PrenatalFefolId) AdministrationNote
+    | HandleSavedFefol (WebData ())
+    | SaveFolate PersonId (Maybe PrenatalFolateId) AdministrationNote
+    | HandleSavedFolate (WebData ())
+    | SaveIron PersonId (Maybe PrenatalIronId) AdministrationNote
+    | HandleSavedIron (WebData ())
+    | SaveMMS PersonId (Maybe PrenatalMMSId) AdministrationNote
+    | HandleSavedMMS (WebData ())
+    | SaveMebendazole PersonId (Maybe PrenatalMebendazoleId) AdministrationNote
+    | HandleSavedMebendazole (WebData ())
     | SaveObstetricalExam PersonId (Maybe ObstetricalExamId) ObstetricalExamValue
     | HandleSavedObstetricalExam (WebData ())
     | SaveObstetricHistory PersonId (Maybe ObstetricHistoryId) ObstetricHistoryValue
