@@ -365,7 +365,7 @@ nonAdministrationReasonToSign sign reason =
             MedicationVitaminA reason
 
         -- Below are not in use, but we specify them explicitly to make
-        -- sure that compile alrets if we forget to address new
+        -- sure that compile alerts if we forget to address new
         -- MedicationDistributionSign, when added.
         Albendazole ->
             NoMedicationNonAdministrationSigns
