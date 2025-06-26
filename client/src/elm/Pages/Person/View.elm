@@ -1320,11 +1320,19 @@ viewCreateEditForm language currentDate coordinates site features geoInfo revers
 
         contactInformationSection =
             if originBasedSettings.expectedAge /= ExpectChild then
-                [ h3
-                    [ class "ui header" ]
+                [ h3 [ class "ui header" ]
                     [ text <| translate language Translate.ContactInformation ++ ":" ]
-                , [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm ]
-                    |> fieldset [ class "registration-form address-info" ]
+                , fieldset [ class "registration-form contact-info" ]
+                    [ viewTextInput language Translate.TelephoneNumber Backend.Person.Form.phoneNumber False personForm
+                    , div [ class "ui header secondary" ]
+                        [ text <| translate language Translate.SpousePartner ++ ":" ]
+                    , viewTextInput language Translate.Name Backend.Person.Form.spouseName False personForm
+                    , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.spousePhoneNumber False personForm
+                    , div [ class "ui header secondary" ]
+                        [ text <| translate language Translate.NextOfKin ++ ":" ]
+                    , viewTextInput language Translate.Name Backend.Person.Form.nextOfKinName False personForm
+                    , viewTextInput language Translate.TelephoneNumber Backend.Person.Form.nextOfKinPhoneNumber False personForm
+                    ]
                     |> Html.map (MsgForm operation initiator)
                 ]
 
