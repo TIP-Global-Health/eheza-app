@@ -1511,6 +1511,64 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetAspirinAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.aspirinForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | aspirinForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetAspirinReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.aspirinForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | aspirinForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveAspirin personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    model.medicationData.aspirinForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveAspirin personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
         SetCalciumAdministered value ->
             let
                 updatedForm =
@@ -1557,6 +1615,64 @@ update language currentDate id isLabTech db msg model =
                         |> toAdministrationNoteWithDefault measurement
                         |> Maybe.map
                             (Backend.PrenatalEncounter.Model.SaveCalcium personId measurementId
+                                >> Backend.Model.MsgPrenatalEncounter id
+                                >> App.Model.MsgIndexedDb
+                                >> List.singleton
+                            )
+                        |> Maybe.withDefault []
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
+        SetFefolAdministered value ->
+            let
+                updatedForm =
+                    model.medicationData.fefolForm
+                        |> (\form -> { form | medicationAdministered = Just value, reasonForNonAdministration = Nothing })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | fefolForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SetFefolReasonForNonAdministration value ->
+            let
+                updatedForm =
+                    model.medicationData.fefolForm
+                        |> (\form -> { form | reasonForNonAdministration = Just value })
+
+                updatedData =
+                    model.medicationData
+                        |> (\data -> { data | fefolForm = updatedForm })
+            in
+            ( { model | medicationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        SaveFefol personId saved nextTask ->
+            let
+                measurementId =
+                    Maybe.map Tuple.first saved
+
+                measurement =
+                    getMeasurementValueFunc saved
+
+                extraMsgs =
+                    generateMedicationMsgs nextTask
+
+                appMsgs =
+                    model.medicationData.fefolForm
+                        |> toAdministrationNoteWithDefault measurement
+                        |> Maybe.map
+                            (Backend.PrenatalEncounter.Model.SaveFefol personId measurementId
                                 >> Backend.Model.MsgPrenatalEncounter id
                                 >> App.Model.MsgIndexedDb
                                 >> List.singleton

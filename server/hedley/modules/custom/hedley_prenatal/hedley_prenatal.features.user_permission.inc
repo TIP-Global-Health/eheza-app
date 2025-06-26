@@ -21,6 +21,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'create prenatal_aspirin content'.
+  $permissions['create prenatal_aspirin content'] = array(
+    'name' => 'create prenatal_aspirin content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'create prenatal_blood_gprs_test content'.
   $permissions['create prenatal_blood_gprs_test content'] = array(
     'name' => 'create prenatal_blood_gprs_test content',
@@ -44,6 +54,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'create prenatal_calcium content'.
   $permissions['create prenatal_calcium content'] = array(
     'name' => 'create prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'create prenatal_fefol content'.
+  $permissions['create prenatal_fefol content'] = array(
+    'name' => 'create prenatal_fefol content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -290,6 +310,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete any prenatal_aspirin content'.
+  $permissions['delete any prenatal_aspirin content'] = array(
+    'name' => 'delete any prenatal_aspirin content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete any prenatal_blood_gprs_test content'.
   $permissions['delete any prenatal_blood_gprs_test content'] = array(
     'name' => 'delete any prenatal_blood_gprs_test content',
@@ -311,6 +340,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete any prenatal_calcium content'.
   $permissions['delete any prenatal_calcium content'] = array(
     'name' => 'delete any prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete any prenatal_fefol content'.
+  $permissions['delete any prenatal_fefol content'] = array(
+    'name' => 'delete any prenatal_fefol content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -533,6 +571,15 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'delete own prenatal_aspirin content'.
+  $permissions['delete own prenatal_aspirin content'] = array(
+    'name' => 'delete own prenatal_aspirin content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'delete own prenatal_blood_gprs_test content'.
   $permissions['delete own prenatal_blood_gprs_test content'] = array(
     'name' => 'delete own prenatal_blood_gprs_test content',
@@ -554,6 +601,15 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'delete own prenatal_calcium content'.
   $permissions['delete own prenatal_calcium content'] = array(
     'name' => 'delete own prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'delete own prenatal_fefol content'.
+  $permissions['delete own prenatal_fefol content'] = array(
+    'name' => 'delete own prenatal_fefol content',
     'roles' => array(
       'administrator' => 'administrator',
     ),
@@ -777,6 +833,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit any prenatal_aspirin content'.
+  $permissions['edit any prenatal_aspirin content'] = array(
+    'name' => 'edit any prenatal_aspirin content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit any prenatal_blood_gprs_test content'.
   $permissions['edit any prenatal_blood_gprs_test content'] = array(
     'name' => 'edit any prenatal_blood_gprs_test content',
@@ -800,6 +866,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit any prenatal_calcium content'.
   $permissions['edit any prenatal_calcium content'] = array(
     'name' => 'edit any prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit any prenatal_fefol content'.
+  $permissions['edit any prenatal_fefol content'] = array(
+    'name' => 'edit any prenatal_fefol content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',
@@ -1047,6 +1123,16 @@ function hedley_prenatal_user_default_permissions() {
     'module' => 'node',
   );
 
+  // Exported permission: 'edit own prenatal_aspirin content'.
+  $permissions['edit own prenatal_aspirin content'] = array(
+    'name' => 'edit own prenatal_aspirin content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
   // Exported permission: 'edit own prenatal_blood_gprs_test content'.
   $permissions['edit own prenatal_blood_gprs_test content'] = array(
     'name' => 'edit own prenatal_blood_gprs_test content',
@@ -1070,6 +1156,16 @@ function hedley_prenatal_user_default_permissions() {
   // Exported permission: 'edit own prenatal_calcium content'.
   $permissions['edit own prenatal_calcium content'] = array(
     'name' => 'edit own prenatal_calcium content',
+    'roles' => array(
+      'administrator' => 'administrator',
+      'sync' => 'sync',
+    ),
+    'module' => 'node',
+  );
+
+  // Exported permission: 'edit own prenatal_fefol content'.
+  $permissions['edit own prenatal_fefol content'] = array(
+    'name' => 'edit own prenatal_fefol content',
     'roles' => array(
       'administrator' => 'administrator',
       'sync' => 'sync',

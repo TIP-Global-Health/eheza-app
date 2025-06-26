@@ -1681,6 +1681,12 @@ translationSet transId =
 
         PrenatalActivity activity ->
             case activity of
+                PrenatalAspirin ->
+                    { english = "Low dose Aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Nothing
@@ -1734,6 +1740,12 @@ translationSet transId =
 
                 PrenatalFamilyPlanning ->
                     translationSet FamilyPlanning
+
+                PrenatalFefol ->
+                    { english = "Fefol"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 PrenatalFolate ->
                     { english = "Folate"
