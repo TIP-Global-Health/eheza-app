@@ -28,6 +28,7 @@ type alias Nurse =
     , resilienceMaritalStatus : Maybe MaritalStatus
     , resilienceNextReminder : Maybe Time.Posix
     , resilienceMessages : Dict ResilienceMessageId ResilienceMessage
+    , resilienceConsentGiven : Maybe Bool
     }
 
 
