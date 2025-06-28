@@ -106,7 +106,7 @@ import Pages.EducationSession.Model
 import Pages.GlobalCaseManagement.Model exposing (CaseManagementFilter(..), FollowUpDueOption(..), LabsEntryState(..))
 import Pages.GroupEncounterTypes.Model exposing (GroupEncounterType(..))
 import Pages.HIV.Activity.Model
-import Pages.MessagingCenter.Model exposing (MessagingTab(..))
+import Pages.MessagingCenter.Model exposing (MessagingTab(..), ReasonForNotConsenting(..))
 import Pages.NCD.Activity.Types exposing (ExaminationTask(..), MedicalHistoryTask(..))
 import Pages.NCD.ProgressReport.Model exposing (NCDRiskFactor(..))
 import Pages.NCD.RecurrentActivity.Types
@@ -1359,6 +1359,7 @@ type TranslationId
     | ReasonForNotIsolating ReasonForNotIsolating
     | ReasonForNotTaking ReasonForNotTaking
     | ReasonForNotProvidingHealthEducation ReasonForNotProvidingHealthEducation
+    | ReasonForNotConsenting ReasonForNotConsenting
     | Received
     | ReceivedFolicAcid
     | ReceivedFrom
@@ -18025,6 +18026,44 @@ translationSet trans =
                     , kinyarwanda = Just "Nta mpamvu"
                     , kirundi = Just "Nta citwazo"
                     }
+
+                ReasonForNotConsenting reason ->
+                    case reason of
+                        ManyOtherCommitments ->
+                            { english = "I have many other commitments/ responsibilities"
+                            , kinyarwanda = "Mfite izindi nshingano nyinshi."
+                            , kirundi = Nothing
+                            }
+
+                        NoDedicatedTimeForTheProgram ->
+                            { english = "I don’t have a dedicated time for this program."
+                            , kinyarwanda = "Ntabwo mfite igihe cyihariye cyo kwitabira iyi gahunda."
+                            , kirundi = Nothing
+                            }
+
+                        ProgramNotAddressingMyStressors ->
+                            { english = "I don’t feel the program addresses the stressors I’m currently facing."
+                            , kinyarwanda = "Ntabwo numva ko iyi gahunda yita ku munaniro ukabije mpura nawo mu buzima bwanjye muri iki gihe."
+                            , kirundi = Nothing
+                            }
+
+                        DontWantToBeSeenAsStruggling ->
+                            { english = "I don’t want others to assume I’m struggling or not coping."
+                            , kinyarwanda = "Ntabwo nshaka ko abandi batekereza ko nta bushobozi mfite bwo guhangana n’ibibazo."
+                            , kirundi = Nothing
+                            }
+
+                        TriedSimilarProgramBefore ->
+                            { english = "I tried a similar program in the past and didn’t find it helpful."
+                            , kinyarwanda = "Nitabiriye indi gahunda isa n’iyi mu gihe cyashize, ariko ntiyigeze imfasha nagato."
+                            , kirundi = Nothing
+                            }
+
+                        NotInterestedInProgram ->
+                            { english = "I am not interested in the program."
+                            , kinyarwanda = "Nta bushake mfite bwo kwitabira iyo gahunda."
+                            , kirundi = Nothing
+                            }
 
         ReasonForNotTaking reason ->
             case reason of

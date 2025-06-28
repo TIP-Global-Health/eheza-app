@@ -32,13 +32,25 @@ type alias Model =
     }
 
 
+type ReasonForNotConsenting
+    = ManyOtherCommitments
+    | NoDedicatedTimeForTheProgram
+    | ProgramNotAddressingMyStressors
+    | DontWantToBeSeenAsStruggling
+    | TriedSimilarProgramBefore
+    | NotInterestedInProgram
+
+
 type alias ConsentForm =
-    { agreesToParticipate : Maybe Bool }
+    { agreesToParticipate : Maybe Bool
+    , reasonsToNotConsent : Maybe ReasonForNotConsenting
+    }
 
 
 emptyConsentForm : ConsentForm
 emptyConsentForm =
     { agreesToParticipate = Nothing
+    , reasonsToNotConsent = Nothing
     }
 
 
