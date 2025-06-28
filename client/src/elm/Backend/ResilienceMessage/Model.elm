@@ -51,6 +51,15 @@ type ResilienceMessageOrder
     | ResilienceMessage23
 
 
+type ReasonForNotConsenting
+    = ManyOtherCommitments
+    | NoDedicatedTimeForTheProgram
+    | ProgramNotAddressingMyStressors
+    | DontWantToBeSeenAsStruggling
+    | TriedSimilarProgramBefore
+    | NotInterestedInProgram
+
+
 type alias Model =
     { updateMessage : WebData () }
 

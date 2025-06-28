@@ -333,7 +333,15 @@ update currentTime currentDate db msg model =
                             False
 
                 nurseWithConsent =
-                    { nurse | resilienceConsentGiven = Just userAnswer }
+                    { nurse
+                        | resilienceConsentGiven = Just userAnswer
+                        , resilienceConsentReason =
+                            if userAnswer then
+                                Nothing
+
+                            else
+                                model.consentForm.reasonsToNotConsent
+                    }
 
                 redirectMsg =
                     if userAnswer == False then
@@ -351,7 +359,10 @@ update currentTime currentDate db msg model =
                     else
                         { model
                             | hasGivenConsent = False
-                            , consentForm = { agreesToParticipate = Nothing }
+                            , consentForm =
+                                { agreesToParticipate = Nothing
+                                , reasonsToNotConsent = Nothing
+                                }
                         }
 
                 updateMsg =
@@ -362,6 +373,19 @@ update currentTime currentDate db msg model =
             ( updatedModel
             , Cmd.none
             , updateMsg :: redirectMsg
+            )
+
+        SelectConsentReason reason ->
+            let
+                form =
+                    model.consentForm
+
+                updatedForm =
+                    { form | reasonsToNotConsent = Just reason }
+            in
+            ( { model | consentForm = updatedForm }
+            , Cmd.none
+            , []
             )
 
 

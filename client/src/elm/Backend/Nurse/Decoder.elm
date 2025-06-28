@@ -10,7 +10,7 @@ import Backend.Person.Decoder
         , decodeMaritalStatus
         , decodeUbudehe
         )
-import Backend.ResilienceMessage.Decoder exposing (decodeResilienceMessages)
+import Backend.ResilienceMessage.Decoder exposing (decodeReasonForNotConsenting, decodeResilienceMessages)
 import EverySet exposing (EverySet)
 import Gizra.NominalDate exposing (decodeYYYYMMDD)
 import Gizra.TimePosix exposing (decodeSecondsAsPosix)
@@ -39,6 +39,7 @@ decodeNurse =
         |> optional "next_reminder" (nullable decodeSecondsAsPosix) Nothing
         |> optional "resilience_messages" decodeResilienceMessages Dict.empty
         |> optional "resilience_consent_given" (nullable bool) Nothing
+        |> optional "resilience_consent_reason" (map Just decodeReasonForNotConsenting) Nothing
 
 
 decodeRoles : Decoder (EverySet Role)
