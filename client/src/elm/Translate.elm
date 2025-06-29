@@ -22855,7 +22855,7 @@ translationSet trans =
                     translationSet EmptyString
 
         SpousePartner ->
-            { english = "Spouse/Partner"
+            { english = "Spouse / Partner"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
