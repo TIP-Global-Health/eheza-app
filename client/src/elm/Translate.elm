@@ -6423,6 +6423,12 @@ translationSet trans =
                     , kirundi = Just "Amahasa"
                     }
 
+                UnclearImprecise ->
+                    { english = "Unclear / Imprecise"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 Backend.Measurement.Model.Unknown ->
                     { english = "Unknown"
                     , kinyarwanda = Just "Ntibizwi"

@@ -3477,7 +3477,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                 ]
            , viewCheckBoxSelectInput language
                 [ Transverse, Cephalic, Unknown ]
-                [ FetalBreech, Twins ]
+                [ FetalBreech, Twins, UnclearImprecise ]
                 form.fetalPresentation
                 SetObstetricalExamFetalPresentation
                 Translate.FetalPresentation
