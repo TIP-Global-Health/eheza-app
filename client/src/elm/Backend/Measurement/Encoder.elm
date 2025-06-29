@@ -1602,6 +1602,9 @@ encodeFetalPresentation sign =
             Twins ->
                 "twins"
 
+            UnclearImprecise ->
+                "unclear-imprecise"
+
             Unknown ->
                 "unknown"
 

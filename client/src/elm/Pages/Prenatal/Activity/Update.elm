@@ -1177,8 +1177,19 @@ update language currentDate id isLabTech db msg model =
             let
                 updatedData =
                     let
+                        valueAsInt =
+                            String.toInt value
+                                |> Maybe.andThen
+                                    (\number ->
+                                        if number == 0 then
+                                            Nothing
+
+                                        else
+                                            Just number
+                                    )
+
                         updatedForm =
-                            formUpdateFunc (String.toInt value) model.examinationData.obstetricalExamForm
+                            formUpdateFunc valueAsInt model.examinationData.obstetricalExamForm
                     in
                     model.examinationData
                         |> (\data -> { data | obstetricalExamForm = updatedForm })
@@ -1240,6 +1251,38 @@ update language currentDate id isLabTech db msg model =
                 updatedForm =
                     model.examinationData.obstetricalExamForm
                         |> (\form -> { form | displayFundalPalpablePopup = False })
+
+                updatedData =
+                    model.examinationData
+                        |> (\data -> { data | obstetricalExamForm = updatedForm })
+            in
+            ( { model | examinationData = updatedData }
+            , Cmd.none
+            , []
+            )
+
+        ToggleFetalHeartRateNotAudible ->
+            let
+                form =
+                    model.examinationData.obstetricalExamForm
+
+                notAudible =
+                    Maybe.map not form.fetalHeartRateNotAudible
+                        |> Maybe.withDefault True
+
+                fetalHeartRate =
+                    if notAudible then
+                        Just 0
+
+                    else
+                        Nothing
+
+                updatedForm =
+                    { form
+                        | fetalHeartRate = fetalHeartRate
+                        , fetalHeartRateDirty = True
+                        , fetalHeartRateNotAudible = Just notAudible
+                    }
 
                 updatedData =
                     model.examinationData
