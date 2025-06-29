@@ -248,8 +248,14 @@ viewContactInformationPane language currentDate db person =
     div [ class "contact-information" ]
         [ viewItemHeading language Translate.ContactInformation "blue"
         , div [ class "pane-content" ]
-            [ viewLineItem language Translate.TelephoneNumber (person.telephoneNumber |> Maybe.withDefault "")
+            [ viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.telephoneNumber)
             , viewLineItem language Translate.HealthCenter healthCenterName
+            , div [ class "heading" ] [ text <| (translate language <| Translate.SpousePartner) ++ ":" ]
+            , viewLineItem language Translate.Name (Maybe.withDefault "" person.spouseName)
+            , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.spousePhoneNumber)
+            , div [ class "heading" ] [ text <| (translate language <| Translate.NextOfKin) ++ ":" ]
+            , viewLineItem language Translate.Name (Maybe.withDefault "" person.nextOfKinName)
+            , viewLineItem language Translate.TelephoneNumber (Maybe.withDefault "" person.nextOfKinPhoneNumber)
             ]
         ]
 

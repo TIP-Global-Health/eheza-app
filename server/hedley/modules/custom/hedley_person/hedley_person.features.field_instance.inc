@@ -528,7 +528,7 @@ function hedley_person_field_default_field_instances() {
         'display_label' => 1,
       ),
       'type' => 'options_onoff',
-      'weight' => 29,
+      'weight' => 33,
     ),
   );
 
@@ -844,7 +844,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 23,
+      'weight' => 27,
     ),
   );
 
@@ -884,7 +884,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 24,
+      'weight' => 28,
     ),
   );
 
@@ -1038,7 +1038,87 @@ function hedley_person_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
+      'weight' => 29,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_next_of_kin_name'.
+  $field_instances['node-person-field_next_of_kin_name'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 34,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_next_of_kin_name',
+    'label' => 'Next of kin name',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
       'weight' => 25,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_next_of_kin_phone_number'.
+  $field_instances['node-person-field_next_of_kin_phone_number'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 33,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_next_of_kin_phone_number',
+    'label' => 'Next of kin phone number',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 26,
     ),
   );
 
@@ -1254,7 +1334,7 @@ function hedley_person_field_default_field_instances() {
         'rows' => 5,
       ),
       'type' => 'text_textarea',
-      'weight' => 26,
+      'weight' => 30,
     ),
   );
 
@@ -1379,7 +1459,87 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'entityreference_autocomplete',
-      'weight' => 28,
+      'weight' => 32,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_spouse_name'.
+  $field_instances['node-person-field_spouse_name'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 32,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_spouse_name',
+    'label' => 'Spouse name',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 23,
+    ),
+  );
+
+  // Exported field_instance: 'node-person-field_spouse_phone_number'.
+  $field_instances['node-person-field_spouse_phone_number'] = array(
+    'bundle' => 'person',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'text',
+        'settings' => array(),
+        'type' => 'text_default',
+        'weight' => 31,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_spouse_phone_number',
+    'label' => 'Spouse phone number',
+    'required' => 0,
+    'settings' => array(
+      'text_processing' => 0,
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'text',
+      'settings' => array(
+        'size' => 60,
+      ),
+      'type' => 'text_textfield',
+      'weight' => 24,
     ),
   );
 
@@ -1456,7 +1616,7 @@ function hedley_person_field_default_field_instances() {
         'size' => 60,
       ),
       'type' => 'text_textfield',
-      'weight' => 27,
+      'weight' => 31,
     ),
   );
 
@@ -1774,6 +1934,8 @@ function hedley_person_field_default_field_instances() {
   t('Mode of delivery');
   t('NCDA Data');
   t('National ID number');
+  t('Next of kin name');
+  t('Next of kin phone number');
   t('Number of children');
   t('Number of children under 5 years old');
   t('Person');
@@ -1795,6 +1957,8 @@ function hedley_person_field_default_field_instances() {
   t('Second name');
   t('Sector');
   t('Shards');
+  t('Spouse name');
+  t('Spouse phone number');
   t('The UUID will be automatically generated -- you need not enter it.');
   t('The child the person is the parent of, or caregiver for.');
   t('The person who is the parent or caregiver of another person.');
