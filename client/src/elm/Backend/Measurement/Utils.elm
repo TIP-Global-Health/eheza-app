@@ -4746,3 +4746,26 @@ medicalHistoryMentalHealthIssueFromString sign =
 
         _ ->
             Nothing
+
+
+skippedFormToString : SkippedForm -> String
+skippedFormToString skipped =
+    case skipped of
+        SkippedHeight ->
+            "height"
+
+        SkippedWeight ->
+            "weight"
+
+
+skippedFormFromString : String -> Maybe SkippedForm
+skippedFormFromString skipped =
+    case skipped of
+        "height" ->
+            Just SkippedHeight
+
+        "weight" ->
+            Just SkippedWeight
+
+        _ ->
+            Nothing
