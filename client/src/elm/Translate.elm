@@ -775,6 +775,7 @@ type TranslationId
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
+    | HeartRateNotAudible
     | Height
     | High
     | HighRiskCase
@@ -6383,6 +6384,12 @@ translationSet trans =
             { english = "Fetal Heart Rate"
             , kinyarwanda = Just "Uko umutima w'umwana utera"
             , kirundi = Just "Urugero rw'umwana ari mu nda"
+            }
+
+        HeartRateNotAudible ->
+            { english = "Heart rate not audible"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         FetalMovement ->

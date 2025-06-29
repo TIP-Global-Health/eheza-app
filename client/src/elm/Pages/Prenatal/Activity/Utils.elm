@@ -4327,6 +4327,17 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    fetalHeartRate =
+                        valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+
+                    fetalHeartRateNotAudible =
+                        if fetalHeartRate == Just 0 then
+                            Just True
+
+                        else
+                            Just False
+                in
                 { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
                 , fundalHeight =
                     maybeValueConsideringIsDirtyField form.fundalHeightDirty
@@ -4335,8 +4346,9 @@ obstetricalExamFormWithDefault form saved =
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
-                , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+                , fetalHeartRate = fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
+                , fetalHeartRateNotAudible = fetalHeartRateNotAudible
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
                 , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
