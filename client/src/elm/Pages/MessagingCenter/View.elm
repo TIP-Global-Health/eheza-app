@@ -8,7 +8,7 @@ import Backend.Nurse.Model exposing (Nurse, ResilienceRole(..))
 import Backend.Nurse.Utils exposing (resilienceRoleToString)
 import Backend.Person.Model exposing (EducationLevel(..), MaritalStatus(..), allUbudehes)
 import Backend.Person.Utils exposing (educationLevelToInt, genderToString, maritalStatusToString, ubudeheToInt)
-import Backend.ResilienceMessage.Model exposing (ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
+import Backend.ResilienceMessage.Model exposing (ReasonForNotConsenting(..), ResilienceCategory(..), ResilienceMessage, ResilienceMessageOrder(..))
 import Backend.ResilienceSurvey.Model exposing (ResilienceSurveyQuestionOption(..), ResilienceSurveyType(..))
 import Date exposing (Unit(..))
 import DateSelector.SelectorPopup exposing (viewCalendarPopup)
@@ -1633,6 +1633,26 @@ viewConsentForm language currentDate nurseId nurse form =
                     "consent-agree"
                     Nothing
                 ]
+            , case form.agreesToParticipate of
+                Just False ->
+                    div [ class "ui form" ]
+                        [ viewQuestionLabel language Translate.WhyNot
+                        , viewCheckBoxSelectInput language
+                            [ ManyOtherCommitments
+                            , NoDedicatedTimeForTheProgram
+                            , ProgramNotAddressingMyStressors
+                            , DontWantToBeSeenAsStruggling
+                            , TriedSimilarProgramBefore
+                            , NotInterestedInProgram
+                            ]
+                            []
+                            form.reasonsToNotConsent
+                            SelectConsentReason
+                            Translate.ReasonForNotConsenting
+                        ]
+
+                _ ->
+                    text ""
             ]
         , viewSaveAction
             language
