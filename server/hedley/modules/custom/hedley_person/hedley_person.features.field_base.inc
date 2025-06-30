@@ -607,6 +607,62 @@ function hedley_person_field_default_field_bases() {
     'type' => 'text_long',
   );
 
+  // Exported field_base: 'field_resilience_consent'.
+  $field_bases['field_resilience_consent'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_resilience_consent',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        0 => '',
+        1 => '',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_boolean',
+  );
+
+  // Exported field_base: 'field_resilience_consent_reason'.
+  $field_bases['field_resilience_consent_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_resilience_consent_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'many_other_commitments' => 'Many other commitments',
+        'no_dedicated_time' => 'No dedicated time for the program',
+        'program_not_addressing_stressors' => 'Program not addressing my stressors',
+        'dont_want_to_be_seen_as_struggling' => 'Don\'t want to be seen as struggling',
+        'tried_similar_program' => 'Tried similar program before',
+        'not_interested' => 'Not interested in program',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_resilience_role'.
   $field_bases['field_resilience_role'] = array(
     'active' => 1,
