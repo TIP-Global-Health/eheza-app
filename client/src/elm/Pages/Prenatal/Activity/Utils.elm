@@ -4348,7 +4348,7 @@ obstetricalExamFormWithDefault form saved =
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
                 , fetalHeartRate = fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
-                , fetalHeartRateNotAudible = fetalHeartRateNotAudible
+                , fetalHeartRateNotAudible = or form.fetalHeartRateNotAudible fetalHeartRateNotAudible
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
                 , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
@@ -5479,16 +5479,19 @@ toPrenatalMentalHealthValue form =
 
 immunisationTaskCompleted : NominalDate -> AssembledData -> ImmunisationTask -> Bool
 immunisationTaskCompleted currentDate data task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectImmunisationTask currentDate data
+    in
     case task of
         TaskTetanus ->
-            let
-                measurements =
-                    data.measurements
-
-                taskExpected =
-                    expectImmunisationTask currentDate data
-            in
             (not <| taskExpected TaskTetanus) || isJust measurements.tetanusImmunisation
+
+        TaskOverview ->
+            not <| taskExpected TaskOverview
 
 
 expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Bool
@@ -5508,7 +5511,10 @@ expectImmunisationTask currentDate assembled task =
                 |> Maybe.withDefault False
     in
     immunisationTaskToVaccineType task
-        |> isTaskExpected
+        |> Maybe.map isTaskExpected
+        -- Only task that is not converted to vaccine type
+        -- is 'Overview', which we always show.
+        |> Maybe.withDefault True
 
 
 generateFutureVaccinationsDataByHistory : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
@@ -5559,16 +5565,19 @@ generateFutureVaccinationsData currentDate globalLmpDate vaccinationDict =
         |> Maybe.withDefault []
 
 
-immunisationTaskToVaccineType : ImmunisationTask -> PrenatalVaccineType
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe PrenatalVaccineType
 immunisationTaskToVaccineType task =
     case task of
         TaskTetanus ->
-            VaccineTetanus
+            Just VaccineTetanus
+
+        TaskOverview ->
+            Nothing
 
 
 immunisationTasks : List ImmunisationTask
 immunisationTasks =
-    [ TaskTetanus ]
+    [ TaskTetanus, TaskOverview ]
 
 
 generateSuggestedVaccinations : NominalDate -> Int -> AssembledData -> List ( PrenatalVaccineType, VaccineDose )
@@ -5692,20 +5701,22 @@ immunisationTasksCompletedFromTotal :
     -> Pages.Prenatal.Activity.Types.ImmunisationTask
     -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate site assembled data task =
-    let
-        vaccineType =
-            immunisationTaskToVaccineType task
+    immunisationTaskToVaccineType task
+        |> Maybe.map
+            (\vaccineType ->
+                let
+                    form =
+                        case vaccineType of
+                            VaccineTetanus ->
+                                getMeasurementValueFunc assembled.measurements.tetanusImmunisation
+                                    |> vaccinationFormWithDefault data.tetanusForm
 
-        form =
-            case vaccineType of
-                VaccineTetanus ->
-                    getMeasurementValueFunc assembled.measurements.tetanusImmunisation
-                        |> vaccinationFormWithDefault data.tetanusForm
-
-        ( _, tasksActive, tasksCompleted ) =
-            vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
-    in
-    ( tasksActive, tasksCompleted )
+                    ( _, tasksActive, tasksCompleted ) =
+                        vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
+                in
+                ( tasksActive, tasksCompleted )
+            )
+        |> Maybe.withDefault ( 0, 0 )
 
 
 vaccinationFormDynamicContentAndTasks :

@@ -16648,6 +16648,9 @@ translationSet trans =
                     , kirundi = Just "Rudadaza"
                     }
 
+                Pages.Prenatal.Activity.Types.TaskOverview ->
+                    translationSet Overview
+
         PrenatalImmunisationDescription task ->
             case task of
                 VaccineTetanus ->
