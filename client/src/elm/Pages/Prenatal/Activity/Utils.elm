@@ -355,7 +355,7 @@ activityCompleted currentDate site assembled activity =
 
         PrenatalImmunisation ->
             (not <| expectActivity currentDate site assembled PrenatalImmunisation)
-                || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
+                || List.all (immunisationTaskCompleted currentDate assembled) immunisationVaccinationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
             isJust assembled.measurements.breastfeeding
@@ -4327,6 +4327,17 @@ obstetricalExamFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    fetalHeartRate =
+                        valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+
+                    fetalHeartRateNotAudible =
+                        if fetalHeartRate == Just 0 then
+                            Just True
+
+                        else
+                            Just False
+                in
                 { fundalPalpable = or form.fundalPalpable (Just value.fundalPalpable)
                 , fundalHeight =
                     maybeValueConsideringIsDirtyField form.fundalHeightDirty
@@ -4335,8 +4346,9 @@ obstetricalExamFormWithDefault form saved =
                 , fundalHeightDirty = form.fundalHeightDirty
                 , fetalPresentation = or form.fetalPresentation (Just value.fetalPresentation)
                 , fetalMovement = or form.fetalMovement (Just value.fetalMovement)
-                , fetalHeartRate = valueConsideringIsDirtyField form.fetalHeartRateDirty form.fetalHeartRate value.fetalHeartRate
+                , fetalHeartRate = fetalHeartRate
                 , fetalHeartRateDirty = form.fetalHeartRateDirty
+                , fetalHeartRateNotAudible = or form.fetalHeartRateNotAudible fetalHeartRateNotAudible
                 , cSectionScar = or form.cSectionScar (Just value.cSectionScar)
                 , displayFundalPalpablePopup = form.displayFundalPalpablePopup
                 }
@@ -5467,16 +5479,19 @@ toPrenatalMentalHealthValue form =
 
 immunisationTaskCompleted : NominalDate -> AssembledData -> ImmunisationTask -> Bool
 immunisationTaskCompleted currentDate data task =
+    let
+        measurements =
+            data.measurements
+
+        taskExpected =
+            expectImmunisationTask currentDate data
+    in
     case task of
         TaskTetanus ->
-            let
-                measurements =
-                    data.measurements
-
-                taskExpected =
-                    expectImmunisationTask currentDate data
-            in
             (not <| taskExpected TaskTetanus) || isJust measurements.tetanusImmunisation
+
+        TaskOverview ->
+            not <| taskExpected TaskOverview
 
 
 expectImmunisationTask : NominalDate -> AssembledData -> ImmunisationTask -> Bool
@@ -5496,7 +5511,10 @@ expectImmunisationTask currentDate assembled task =
                 |> Maybe.withDefault False
     in
     immunisationTaskToVaccineType task
-        |> isTaskExpected
+        |> Maybe.map isTaskExpected
+        -- Only task that is not converted to vaccine type
+        -- is 'Overview', which we always show.
+        |> Maybe.withDefault True
 
 
 generateFutureVaccinationsDataByHistory : NominalDate -> AssembledData -> List ( PrenatalVaccineType, Maybe ( VaccineDose, NominalDate ) )
@@ -5547,16 +5565,24 @@ generateFutureVaccinationsData currentDate globalLmpDate vaccinationDict =
         |> Maybe.withDefault []
 
 
-immunisationTaskToVaccineType : ImmunisationTask -> PrenatalVaccineType
+immunisationTaskToVaccineType : ImmunisationTask -> Maybe PrenatalVaccineType
 immunisationTaskToVaccineType task =
     case task of
         TaskTetanus ->
-            VaccineTetanus
+            Just VaccineTetanus
+
+        TaskOverview ->
+            Nothing
+
+
+immunisationVaccinationTasks : List ImmunisationTask
+immunisationVaccinationTasks =
+    [ TaskTetanus ]
 
 
 immunisationTasks : List ImmunisationTask
 immunisationTasks =
-    [ TaskTetanus ]
+    immunisationVaccinationTasks ++ [ TaskOverview ]
 
 
 generateSuggestedVaccinations : NominalDate -> Int -> AssembledData -> List ( PrenatalVaccineType, VaccineDose )
@@ -5680,20 +5706,22 @@ immunisationTasksCompletedFromTotal :
     -> Pages.Prenatal.Activity.Types.ImmunisationTask
     -> ( Int, Int )
 immunisationTasksCompletedFromTotal language currentDate site assembled data task =
-    let
-        vaccineType =
-            immunisationTaskToVaccineType task
+    immunisationTaskToVaccineType task
+        |> Maybe.map
+            (\vaccineType ->
+                let
+                    form =
+                        case vaccineType of
+                            VaccineTetanus ->
+                                getMeasurementValueFunc assembled.measurements.tetanusImmunisation
+                                    |> vaccinationFormWithDefault data.tetanusForm
 
-        form =
-            case vaccineType of
-                VaccineTetanus ->
-                    getMeasurementValueFunc assembled.measurements.tetanusImmunisation
-                        |> vaccinationFormWithDefault data.tetanusForm
-
-        ( _, tasksActive, tasksCompleted ) =
-            vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
-    in
-    ( tasksActive, tasksCompleted )
+                    ( _, tasksActive, tasksCompleted ) =
+                        vaccinationFormDynamicContentAndTasks language currentDate site assembled vaccineType form
+                in
+                ( tasksActive, tasksCompleted )
+            )
+        |> Maybe.withDefault ( 0, 0 )
 
 
 vaccinationFormDynamicContentAndTasks :

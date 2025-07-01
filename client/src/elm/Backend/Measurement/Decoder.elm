@@ -2131,6 +2131,9 @@ decodeFetalPresentation =
                     "twins" ->
                         succeed Twins
 
+                    "unclear-imprecise" ->
+                        succeed UnclearImprecise
+
                     "unknown" ->
                         succeed Unknown
 

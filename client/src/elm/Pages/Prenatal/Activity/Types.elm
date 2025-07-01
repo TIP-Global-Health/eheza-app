@@ -43,6 +43,7 @@ type TreatmentReviewTask
 
 type ImmunisationTask
     = TaskTetanus
+    | TaskOverview
 
 
 type WarningPopupType msg
