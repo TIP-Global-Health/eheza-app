@@ -355,7 +355,7 @@ activityCompleted currentDate site assembled activity =
 
         PrenatalImmunisation ->
             (not <| expectActivity currentDate site assembled PrenatalImmunisation)
-                || List.all (immunisationTaskCompleted currentDate assembled) immunisationTasks
+                || List.all (immunisationTaskCompleted currentDate assembled) immunisationVaccinationTasks
 
         Backend.PrenatalActivity.Model.Breastfeeding ->
             isJust assembled.measurements.breastfeeding
@@ -5575,9 +5575,14 @@ immunisationTaskToVaccineType task =
             Nothing
 
 
+immunisationVaccinationTasks : List ImmunisationTask
+immunisationVaccinationTasks =
+    [ TaskTetanus ]
+
+
 immunisationTasks : List ImmunisationTask
 immunisationTasks =
-    [ TaskTetanus, TaskOverview ]
+    immunisationVaccinationTasks ++ [ TaskOverview ]
 
 
 generateSuggestedVaccinations : NominalDate -> Int -> AssembledData -> List ( PrenatalVaccineType, VaccineDose )

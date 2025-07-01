@@ -4325,6 +4325,9 @@ update language currentDate id isLabTech db msg model =
                 measurement =
                     getMeasurementValueFunc saved
 
+                extraMsgs =
+                    [ SetActiveImmunisationTask TaskOverview ]
+
                 appMsgs =
                     model.immunisationData.tetanusForm
                         |> toVaccinationValueWithDefault measurement
@@ -4337,7 +4340,6 @@ update language currentDate id isLabTech db msg model =
                                 [ Backend.PrenatalEncounter.Model.SaveTetanusImmunisation personId measurementId value
                                     |> Backend.Model.MsgPrenatalEncounter id
                                     |> App.Model.MsgIndexedDb
-                                , App.Model.SetActivePage <| UserPage <| PrenatalEncounterPage id
                                 ]
                             )
                         |> Maybe.withDefault []
@@ -4346,6 +4348,7 @@ update language currentDate id isLabTech db msg model =
             , Cmd.none
             , appMsgs
             )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
         SetPostpartumTreatmentReviewBoolInput formUpdateFunc value ->
             let

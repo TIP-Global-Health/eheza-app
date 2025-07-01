@@ -2583,11 +2583,7 @@ viewImmunisationContent language currentDate site assembled data =
                         saveMsg =
                             case task of
                                 TaskTetanus ->
-                                    let
-                                        personId =
-                                            assembled.participant.person
-                                    in
-                                    SaveTetanusImmunisation personId measurements.tetanusImmunisation
+                                    SaveTetanusImmunisation assembled.participant.person measurements.tetanusImmunisation
 
                                 TaskOverview ->
                                     SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
