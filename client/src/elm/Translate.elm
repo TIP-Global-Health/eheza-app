@@ -926,6 +926,8 @@ type TranslationId
     | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LabResultsNormalRange LabResultsHistoryMode
     | LabResultsPaneHeader LabResultsCurrentMode
+    | LateFirstANCVisitQuestion
+    | LateFirstANCVisitReason LateFirstANCVisitReason
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -9934,6 +9936,20 @@ translationSet trans =
             , kinyarwanda = Just "Isuzuma riheruka"
             , kirundi = Just "Kurabwa ubwanyuma"
             }
+
+        LateFirstANCVisitQuestion ->
+            { english = "Why has the patient NOT had an ANC visit in her first trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        LateFirstANCVisitReason reason ->
+            case reason of
+                ReasonTodo ->
+                    { english = "@todo"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         LastContacted ->
             { english = "Last Contacted"
