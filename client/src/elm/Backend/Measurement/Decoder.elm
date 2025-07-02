@@ -1922,6 +1922,7 @@ decodeLastMenstrualPeriod =
         |> optional "weight" (nullable (map WeightInKg decodeFloat)) Nothing
         |> required "confident" bool
         |> optional "not_confident_reason" (nullable decodeLmpDateNotConfidentReason) Nothing
+        |> optional "late_first_visit_reason" (nullable decodeLateFirstANCVisitReason) Nothing
         |> optional "confirmation" (decodeWithFallback False bool) False
         |> decodePrenatalMeasurement
 
@@ -1934,6 +1935,17 @@ decodeLmpDateNotConfidentReason =
                 lmpDateNotConfidentReasonFromString reason
                     |> Maybe.map succeed
                     |> Maybe.withDefault (reason ++ " is not a recognized LmpDateNotConfidentReason" |> fail)
+            )
+
+
+decodeLateFirstANCVisitReason : Decoder LateFirstANCVisitReason
+decodeLateFirstANCVisitReason =
+    string
+        |> andThen
+            (\reason ->
+                lateFirstANCVisitReasonFromString reason
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (reason ++ " is not a recognized LateFirstANCVisitReason" |> fail)
             )
 
 
