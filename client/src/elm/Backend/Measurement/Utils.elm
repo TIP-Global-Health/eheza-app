@@ -3893,6 +3893,23 @@ lmpDateNotConfidentReasonFromString value =
             Nothing
 
 
+lateFirstANCVisitReasonToString : LateFirstANCVisitReason -> String
+lateFirstANCVisitReasonToString value =
+    case value of
+        ReasonTodo ->
+            "todo"
+
+
+lateFirstANCVisitReasonFromString : String -> Maybe LateFirstANCVisitReason
+lateFirstANCVisitReasonFromString value =
+    case value of
+        "todo" ->
+            Just ReasonTodo
+
+        _ ->
+            Nothing
+
+
 bloodSmearResultToString : BloodSmearResult -> String
 bloodSmearResultToString value =
     case value of
