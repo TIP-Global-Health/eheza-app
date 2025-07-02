@@ -5777,6 +5777,44 @@ function hedley_activity_field_default_field_instances() {
       'weight' => 7,
     ),
   );
+  
+  // Exported field_instance:
+  // 'node-last_menstrual_period-field_late_first_visit_reason'.
+  $field_instances['node-last_menstrual_period-field_late_first_visit_reason'] = array(
+    'bundle' => 'last_menstrual_period',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_late_first_visit_reason',
+    'label' => 'Late first visit reason',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_buttons',
+      'weight' => 9,
+    ),
+  );  
 
   // Exported field_instance:
   // 'node-last_menstrual_period-field_not_confident_reason'.
