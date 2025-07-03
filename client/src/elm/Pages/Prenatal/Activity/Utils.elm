@@ -374,14 +374,14 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsNextVisit, NextStepsWait ]
 
                 NursePostpartumEncounter ->
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
-                    [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
+                    [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNextVisit, NextStepsNewbornEnrolment ]
     in
     List.filter (expectNextStepsTask currentDate assembled) tasks
 
@@ -545,6 +545,14 @@ expectNextStepsTask currentDate assembled task =
                         |> Maybe.withDefault False
                    )
 
+        NextStepsNextVisit ->
+            List.member assembled.encounter.encounterType
+                [ NurseEncounter
+                , ChwFirstEncounter
+                , ChwSecondEncounter
+                , ChwThirdPlusEncounter
+                ]
+
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
 nextStepsTaskCompleted currentDate assembled task =
@@ -658,6 +666,9 @@ nextStepsTaskCompleted currentDate assembled task =
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map .patientNotified
                 |> Maybe.withDefault False
+
+        NextStepsNextVisit ->
+            isJust assembled.encounter.nextVisitDate
 
 
 continuousHypertensionTreatmentRequired : AssembledData -> Bool
@@ -3237,6 +3248,9 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             ( completed
             , 1
             )
+
+        NextStepsNextVisit ->
+            ( 1, 1 )
 
 
 appointmentConfirmationFormInutsAndTasks :

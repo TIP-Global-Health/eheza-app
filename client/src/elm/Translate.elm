@@ -1110,6 +1110,7 @@ type TranslationId
     | NextPediatricVisit Bool
     | NextSteps
     | NextStepsTask Bool Pages.AcuteIllness.Activity.Types.NextStepsTask
+    | NextVisit
     | NightSweatsLabel
     | NightSweatsQuestion
     | No
@@ -12827,6 +12828,12 @@ translationSet trans =
                     -- consistant with other types of Covid steps.
                     translationSet MedicationDistribution
 
+        NextVisit ->
+            { english = "Next Visit"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         NightSweatsLabel ->
             { english = "Night sweats"
             , kinyarwanda = Just "Kubira ibyuya nijoro"
@@ -16584,6 +16591,12 @@ translationSet trans =
                     { english = "Wait"
                     , kinyarwanda = Just "Tegereza"
                     , kirundi = Just "Rindira"
+                    }
+
+                Pages.Prenatal.Activity.Types.NextStepsNextVisit ->
+                    { english = "Next ANC Visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
         PrescribedMedication ->
