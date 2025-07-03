@@ -25,6 +25,7 @@ type NextStepsTask
     | NextStepsNewbornEnrolment
     | NextStepsMedicationDistribution
     | NextStepsWait
+    | NextStepsNextVisit
 
 
 type SymptomReviewStep

@@ -2094,6 +2094,9 @@ viewNextStepsContent language currentDate isChw assembled data =
                         NextStepsWait ->
                             "next-steps-wait"
 
+                        NextStepsNextVisit ->
+                            "next-steps-next-visit"
+
                 isActive =
                     activeTask == Just task
 
@@ -2134,6 +2137,9 @@ viewNextStepsContent language currentDate isChw assembled data =
             Maybe.andThen (\task -> Dict.get task tasksCompletedFromTotalDict) activeTask
                 |> Maybe.withDefault ( 0, 0 )
 
+        nextVisitDate =
+            resolveNextVisitDate assembled
+
         viewForm =
             case activeTask of
                 Just NextStepsAppointmentConfirmation ->
@@ -2172,6 +2178,9 @@ viewNextStepsContent language currentDate isChw assembled data =
 
                 Just NextStepsWait ->
                     viewWaitForm language currentDate assembled
+
+                Just NextStepsNextVisit ->
+                    viewNextVisitForm language currentDate nextVisitDate assembled
 
                 Nothing ->
                     emptyNode
@@ -2263,6 +2272,10 @@ viewNextStepsContent language currentDate isChw assembled data =
                                             SaveWait personId (Just measurementId) { value | patientNotified = True }
                                         )
                                         measurements.labsResults
+                                        |> Maybe.withDefault NoOp
+
+                                NextStepsNextVisit ->
+                                    Maybe.map (\date -> SaveNextVisitDate date secondPhase nextTask) nextVisitDate
                                         |> Maybe.withDefault NoOp
                     in
                     case task of
@@ -4162,6 +4175,78 @@ viewReferralForm language currentDate assembled form =
     in
     div [ class "ui form referral" ]
         inputs
+
+
+viewNextVisitForm : Language -> NominalDate -> Maybe NominalDate -> AssembledData -> Html Msg
+viewNextVisitForm language currentDate nextVisitDate assembled =
+    Maybe.map
+        (\date ->
+            [ viewLabel language Translate.NextVisit
+            , div [ class "date" ] [ text <| formatDDMMYYYY date ]
+            ]
+        )
+        nextVisitDate
+        |> Maybe.withDefault []
+        |> div [ class "ui form next-visit" ]
+
+
+resolveNextVisitDate : AssembledData -> Maybe NominalDate
+resolveNextVisitDate assembled =
+    let
+        egaWeekOnFirstVisit =
+            Maybe.map2 calculateEGAWeeks
+                (assembled.encounter.startDate
+                    :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                    ++ List.map .startDate assembled.nursePreviousEncountersData
+                    |> List.sortWith Date.compare
+                    |> List.head
+                )
+                assembled.globalLmpDate
+
+        firstVisitAt28Plus =
+            Maybe.map (\date -> date >= 28) egaWeekOnFirstVisit
+                |> Maybe.withDefault False
+
+        firstVisitAt22To27 =
+            Maybe.map (\date -> (date >= 22) && (date < 28)) egaWeekOnFirstVisit
+                |> Maybe.withDefault False
+    in
+    Maybe.map (calculateEGAWeeks assembled.encounter.startDate) assembled.globalLmpDate
+        |> Maybe.map
+            (\egaWeekCurrent ->
+                let
+                    gap =
+                        if egaWeekCurrent < 20 then
+                            8
+
+                        else if egaWeekCurrent < 26 then
+                            6
+
+                        else if egaWeekCurrent < 30 then
+                            4
+
+                        else if egaWeekCurrent < 32 then
+                            if firstVisitAt22To27 then
+                                2
+
+                            else
+                                4
+
+                        else if egaWeekCurrent < 34 then
+                            if firstVisitAt28Plus then
+                                2
+
+                            else
+                                4
+
+                        else if egaWeekCurrent < 40 then
+                            2
+
+                        else
+                            1
+                in
+                Date.add Weeks gap assembled.encounter.startDate
+            )
 
 
 

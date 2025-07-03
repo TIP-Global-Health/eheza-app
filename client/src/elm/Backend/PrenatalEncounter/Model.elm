@@ -182,6 +182,7 @@ type Msg
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted
+    | SetNextVisitDate NominalDate
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
