@@ -6475,7 +6475,7 @@ fefolAdministrationFormConfig =
 
 resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
 resolveFefolDosageAndIcon language currentDate person =
-    Just ( "200 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
+    Just ( "200 mg/0.4 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
 
 
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
