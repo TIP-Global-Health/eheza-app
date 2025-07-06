@@ -543,6 +543,9 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
                 , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
+                , reinforceFefol = or form.reinforceFefol (Maybe.map (EverySet.member ReinforceSignFefol) value.reinforceTreatmentSigns)
+                , reinforceMMS = or form.reinforceMMS (Maybe.map (EverySet.member ReinforceSignMMS) value.reinforceTreatmentSigns)
+                , repeatHemoglobinTest = or form.repeatHemoglobinTest (Maybe.map (EverySet.member ReinforceSignRepeatHemoglobinTest) value.reinforceTreatmentSigns)
                 }
             )
 
@@ -579,6 +582,9 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
                 , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
+                , reinforceFefol = or form.reinforceFefol (Maybe.map (EverySet.member ReinforceSignFefol) value.reinforceTreatmentSigns)
+                , reinforceMMS = or form.reinforceMMS (Maybe.map (EverySet.member ReinforceSignMMS) value.reinforceTreatmentSigns)
+                , repeatHemoglobinTest = or form.repeatHemoglobinTest (Maybe.map (EverySet.member ReinforceSignRepeatHemoglobinTest) value.reinforceTreatmentSigns)
                 }
             )
 
@@ -637,7 +643,10 @@ toMedicationDistributionValueWithDefault valueForNone saved form =
         |> toMedicationDistributionValue valueForNone
 
 
-toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValue :
+    MedicationDistributionSign
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValue valueForNone form =
     let
         distributionSigns =
@@ -661,20 +670,31 @@ toMedicationDistributionValue valueForNone form =
             form.nonAdministrationSigns
                 |> Maybe.withDefault EverySet.empty
                 |> ifEverySetEmpty NoMedicationNonAdministrationSigns
-                |> Just
 
         recommendedTreatmentSigns =
             Maybe.map EverySet.fromList form.recommendedTreatmentSigns
-                |> Just
 
         avoidingGuidanceReason =
             Maybe.map EverySet.singleton form.hypertensionAvoidingGuidanceReason
-                |> Just
+
+        reinforceTreatmentSigns =
+            Maybe.Extra.combine
+                [ ifNullableTrue ReinforceSignFefol form.reinforceFefol
+                , ifNullableTrue ReinforceSignMMS form.reinforceMMS
+                , ifNullableTrue ReinforceSignRepeatHemoglobinTest form.repeatHemoglobinTest
+                ]
+                |> Maybe.map (List.foldl EverySet.union EverySet.empty)
     in
-    Maybe.map PrenatalMedicationDistributionValue distributionSigns
-        |> andMap nonAdministrationSigns
-        |> andMap recommendedTreatmentSigns
-        |> andMap avoidingGuidanceReason
+    Maybe.map
+        (\signs ->
+            { distributionSigns = signs
+            , nonAdministrationSigns = nonAdministrationSigns
+            , recommendedTreatmentSigns = recommendedTreatmentSigns
+            , avoidingGuidanceReason = avoidingGuidanceReason
+            , reinforceTreatmentSigns = reinforceTreatmentSigns
+            }
+        )
+        distributionSigns
 
 
 resolveMedicationDistributionInputsAndTasks :

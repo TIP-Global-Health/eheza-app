@@ -2786,6 +2786,7 @@ encodePrenatalMedicationDistributionValue value =
     ]
         ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
         ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
+        ++ encodeEverySetNullable "field_reinforce_treatment_signs" value.reinforceTreatmentSigns encodeReinforceTreatmentSign
 
 
 encodeMedicationDistributionSign : MedicationDistributionSign -> Value
@@ -2932,6 +2933,11 @@ encodeRecommendedTreatmentSign =
 encodeAvoidingGuidanceReason : AvoidingGuidanceReason -> Value
 encodeAvoidingGuidanceReason =
     avoidingGuidanceReasonToString >> string
+
+
+encodeReinforceTreatmentSign : ReinforceTreatmentSign -> Value
+encodeReinforceTreatmentSign =
+    reinforceTreatmentSignToString >> string
 
 
 encodeTravelHistory : TravelHistory -> List ( String, Value )

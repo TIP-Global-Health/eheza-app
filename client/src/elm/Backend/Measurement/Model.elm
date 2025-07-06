@@ -1440,6 +1440,7 @@ type alias PrenatalMedicationDistributionValue =
     , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
     , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
     , avoidingGuidanceReason : Maybe (EverySet AvoidingGuidanceReason)
+    , reinforceTreatmentSigns : Maybe (EverySet ReinforceTreatmentSign)
     }
 
 
@@ -1507,6 +1508,13 @@ type AvoidingGuidanceReason
     | AvoidingGuidanceHypertensionPatientUnableToAfford
     | AvoidingGuidanceHypertensionReinforceAdherence
     | AvoidingGuidanceHypertensionOther
+
+
+type ReinforceTreatmentSign
+    = ReinforceSignFefol
+    | ReinforceSignMMS
+    | ReinforceSignRepeatHemoglobinTest
+    | NoReinforceTreatmentSigns
 
 
 type alias PrenatalSymptomReview =
