@@ -1398,11 +1398,14 @@ type TranslationId
     | RegisterNewContact
     | RegisterNewParticipant
     | RegistratingHealthCenter
+    | ReinforceAdherenceQuestion
+    | ReinforceAdherenceTo
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
     | RemindMe
     | RemindMePhrase
     | RenalDisease
+    | RepeatHemoglobinTestQuestion
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
     | ReportComponentNCD ReportComponentNCD
@@ -18966,10 +18969,28 @@ translationSet trans =
             , kirundi = Just "Ivuriro ryandika/kwiyandikisha kw'ivuriro"
             }
 
+        ReinforceAdherenceQuestion ->
+            { english = "Have you counseled the patient on adherence to"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ReinforceAdherenceTo ->
+            { english = "Reinforce adherence to"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         RenalDisease ->
             { english = "Renal Disease"
             , kinyarwanda = Just "Indwara z'impyiko"
             , kirundi = Just "Ingwara yo mu mafyigo"
+            }
+
+        RepeatHemoglobinTestQuestion ->
+            { english = "Have you counseled the patient to return to the health center to repeat the hemoglobin test in four weeks"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         RemainingForDownloadLabel ->

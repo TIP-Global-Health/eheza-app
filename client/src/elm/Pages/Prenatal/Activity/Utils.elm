@@ -6482,11 +6482,6 @@ fefolAdministrationFormConfig =
     }
 
 
-resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveFefolDosageAndIcon language currentDate person =
-    Just ( "200 mg/0.4 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
-
-
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 folateAdministrationFormConfig =
     { medication = FolicAcid
@@ -6522,11 +6517,6 @@ mmsAdministrationFormConfig =
     , setReasonForNonAdministration = SetMMSReasonForNonAdministration
     , resolveDosageAndIconFunc = resolveMMSDosageAndIcon
     }
-
-
-resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveMMSDosageAndIcon language currentDate person =
-    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg

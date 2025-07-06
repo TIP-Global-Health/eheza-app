@@ -12,7 +12,14 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEverySet, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Measurement.Utils
+    exposing
+        ( generateVaccinationProgressForVaccine
+        , toEverySet
+        , viewAdministeredMedicationCustomLabel
+        , viewAdministeredMedicationQuestion
+        , viewReinforceAdherenceQuestion
+        )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Types exposing (..)
@@ -796,6 +803,17 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                     else
                         ( [], 0, 0 )
+
+                ( anemiaInputs, anemiaCompleted, anemiaActive ) =
+                    if diagnosedModerateAnemiaByPhase phase assembled then
+                        resolveReinforceTreatmentForAnemia language
+                            currentDate
+                            assembled.person
+                            setMedicationDistributionBoolInputMsg
+                            form
+
+                    else
+                        ( [], 0, 0 )
             in
             case phase of
                 PrenatalEncounterPhaseInitial ->
@@ -857,6 +875,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         ++ urinaryTractInfectionInputs
                         ++ candidiasisInputs
                         ++ mastitisInputs
+                        ++ anemiaInputs
                     , malariaCompleted
                         + hypertensionCompleted
                         + syphilisCompleted
@@ -864,6 +883,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         + urinaryTractInfectionCompleted
                         + candidiasisCompleted
                         + mastitisCompleted
+                        + anemiaCompleted
                     , malariaActive
                         + syphilisActive
                         + hypertensionActive
@@ -871,18 +891,98 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         + urinaryTractInfectionActive
                         + candidiasisActive
                         + mastitisActive
+                        + anemiaActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
-                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs
-                    , malariaCompleted + syphilisCompleted + hypertensionCompleted
-                    , malariaActive + syphilisActive + hypertensionActive
+                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs ++ anemiaInputs
+                    , malariaCompleted + syphilisCompleted + hypertensionCompleted + anemiaCompleted
+                    , malariaActive + syphilisActive + hypertensionActive + anemiaActive
                     )
     in
     ( inputsByMedications ++ inputsByDiagnoses
     , completedByMedications + completedByDiagnoses
     , activeByMedications + activeByDiagnoses
     )
+
+
+resolveReinforceTreatmentForAnemia :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveReinforceTreatmentForAnemia language currentDate person setMedicationDistributionBoolInputMsg form =
+    let
+        fefolInstructions =
+            resolveFefolDosageAndIcon language currentDate person
+                |> Maybe.map
+                    (\( dosage, icon, prescription ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign Fefol) ("(" ++ dosage ++ ")") icon "" Nothing
+                            , div [ class "prescription" ] [ text <| prescription ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        fefolUpdateFunc value form_ =
+            { form_ | reinforceFefol = Just value }
+
+        mmsInstructions =
+            resolveMMSDosageAndIcon language currentDate person
+                |> Maybe.map
+                    (\( dosage, icon, prescription ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign MMS) ("(" ++ dosage ++ ")") icon "" Nothing
+                            , div [ class "prescription" ] [ text <| prescription ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        mmsUpdateFunc value form_ =
+            { form_ | reinforceMMS = Just value }
+
+        repeatHemoglobinTestUpdateFunc value form_ =
+            { form_ | repeatHemoglobinTest = Just value }
+    in
+    ( [ fefolInstructions
+      , viewReinforceAdherenceQuestion language (Translate.MedicationDistributionSign Fefol)
+      , viewBoolInput
+            language
+            form.reinforceFefol
+            (setMedicationDistributionBoolInputMsg fefolUpdateFunc)
+            "fefol-medication"
+            Nothing
+      , mmsInstructions
+      , viewReinforceAdherenceQuestion language (Translate.MedicationDistributionSign MMS)
+      , viewBoolInput
+            language
+            form.reinforceMMS
+            (setMedicationDistributionBoolInputMsg mmsUpdateFunc)
+            "mms-medication"
+            Nothing
+      , viewQuestionLabel language Translate.RepeatHemoglobinTestQuestion
+      , viewBoolInput
+            language
+            form.repeatHemoglobinTest
+            (setMedicationDistributionBoolInputMsg repeatHemoglobinTestUpdateFunc)
+            "repeate-hemoglobin-test"
+            Nothing
+      ]
+    , taskCompleted form.reinforceFefol + taskCompleted form.reinforceMMS + taskCompleted form.repeatHemoglobinTest
+    , 3
+    )
+
+
+resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFefolDosageAndIcon language currentDate person =
+    Just ( "200 mg/0.4 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
+
+
+resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMMSDosageAndIcon language currentDate person =
+    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks :
@@ -3067,6 +3167,16 @@ diagnosedMalariaByPhase phase assembled =
                 , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
                 ]
                 assembled
+
+
+diagnosedModerateAnemiaByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedModerateAnemiaByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosed DiagnosisModerateAnemiaInitialPhase assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosed DiagnosisModerateAnemiaRecurrentPhase assembled
 
 
 diagnosedSyphilisByPhase : PrenatalEncounterPhase -> AssembledData -> Bool

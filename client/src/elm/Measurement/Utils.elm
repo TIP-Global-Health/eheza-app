@@ -10440,6 +10440,17 @@ viewAdministeredMedicationQuestion language medicineTranslationId =
         ]
 
 
+viewReinforceAdherenceQuestion : Language -> TranslationId -> Html any
+viewReinforceAdherenceQuestion language medicineTranslationId =
+    div [ class "label" ]
+        [ text <|
+            translate language Translate.ReinforceAdherenceQuestion
+                ++ " "
+                ++ translate language medicineTranslationId
+                ++ "?"
+        ]
+
+
 renderDatePart : Language -> Maybe NominalDate -> List (Html any)
 renderDatePart language maybeDate =
     maybeDate
