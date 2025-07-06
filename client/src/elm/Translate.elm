@@ -2793,7 +2793,7 @@ translationSet trans =
             }
 
         AdministerCalciumHelper ->
-            { english = "1 tablet 500 mg by mouth monthly"
+            { english = "1 tablet 500 mg by mouth daily"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
