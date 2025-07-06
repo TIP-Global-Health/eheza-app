@@ -920,7 +920,7 @@ resolveReinforceTreatmentForAnemia language currentDate person setMedicationDist
                 |> Maybe.map
                     (\( dosage, icon, prescription ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign Fefol) ("(" ++ dosage ++ ")") icon "" Nothing
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign Fefol) (" (" ++ dosage ++ ")") icon "" Nothing
                             , div [ class "prescription" ] [ text <| prescription ++ "." ]
                             ]
                     )
@@ -932,10 +932,10 @@ resolveReinforceTreatmentForAnemia language currentDate person setMedicationDist
         mmsInstructions =
             resolveMMSDosageAndIcon language currentDate person
                 |> Maybe.map
-                    (\( dosage, icon, prescription ) ->
+                    (\( _, icon, _ ) ->
                         div [ class "instructions" ]
-                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign MMS) ("(" ++ dosage ++ ")") icon "" Nothing
-                            , div [ class "prescription" ] [ text <| prescription ++ "." ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign MMS) "" icon "" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.OneTabletByMouthDaily ++ "." ]
                             ]
                     )
                 |> Maybe.withDefault emptyNode

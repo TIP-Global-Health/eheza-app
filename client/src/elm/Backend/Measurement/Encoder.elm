@@ -2786,7 +2786,7 @@ encodePrenatalMedicationDistributionValue value =
     ]
         ++ encodeEverySetNullable "recommended_treatment" value.recommendedTreatmentSigns encodeRecommendedTreatmentSign
         ++ encodeEverySetNullable "avoiding_guidance_reason" value.avoidingGuidanceReason encodeAvoidingGuidanceReason
-        ++ encodeEverySetNullable "field_reinforce_treatment_signs" value.reinforceTreatmentSigns encodeReinforceTreatmentSign
+        ++ encodeEverySetNullable "reinforce_treatment_signs" value.reinforceTreatmentSigns encodeReinforceTreatmentSign
 
 
 encodeMedicationDistributionSign : MedicationDistributionSign -> Value
