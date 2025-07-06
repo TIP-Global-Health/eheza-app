@@ -678,12 +678,19 @@ toMedicationDistributionValue valueForNone form =
             Maybe.map EverySet.singleton form.hypertensionAvoidingGuidanceReason
 
         reinforceTreatmentSigns =
-            Maybe.Extra.combine
-                [ ifNullableTrue ReinforceSignFefol form.reinforceFefol
-                , ifNullableTrue ReinforceSignMMS form.reinforceMMS
-                , ifNullableTrue ReinforceSignRepeatHemoglobinTest form.repeatHemoglobinTest
-                ]
-                |> Maybe.map (List.foldl EverySet.union EverySet.empty)
+            if List.all isNothing [ form.reinforceFefol, form.reinforceMMS, form.repeatHemoglobinTest ] then
+                -- Form values not set, meaning that renforce treatment was not required.
+                -- As a result, we need to set it to Nothing at value (and not the
+                -- "no value" sign).
+                Nothing
+
+            else
+                Maybe.Extra.combine
+                    [ ifNullableTrue ReinforceSignFefol form.reinforceFefol
+                    , ifNullableTrue ReinforceSignMMS form.reinforceMMS
+                    , ifNullableTrue ReinforceSignRepeatHemoglobinTest form.repeatHemoglobinTest
+                    ]
+                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoReinforceTreatmentSigns)
     in
     Maybe.map
         (\signs ->
