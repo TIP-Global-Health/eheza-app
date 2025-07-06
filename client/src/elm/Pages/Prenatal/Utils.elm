@@ -1785,20 +1785,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
             else
                 Nothing
-
-        resolveModerateAnemiaSet diagnosis =
-            if
-                diagnosed diagnosis assembled
-                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
-            then
-                Just
-                    ( Translate.MedicationDistributionHelperAnemia
-                    , [ Iron, FolicAcid ]
-                    , []
-                    )
-
-            else
-                Nothing
     in
     case phase of
         PrenatalEncounterPhaseInitial ->
@@ -1886,7 +1872,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 [ mebendazoleSet
                 , resolveHIVPositiveSet DiagnosisHIVInitialPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipInitialPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaInitialPhase
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
@@ -1896,7 +1881,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             Maybe.Extra.values
                 [ resolveHIVPositiveSet DiagnosisHIVRecurrentPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipRecurrentPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaRecurrentPhase
                 ]
 
 
@@ -2875,6 +2859,13 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
     getMeasurementValueFunc measurements.medicationDistribution
         |> Maybe.andThen .recommendedTreatmentSigns
         |> Maybe.map (Backend.Measurement.Utils.recommendedTreatmentMeasurementTaken allowedSigns)
+        |> Maybe.withDefault False
+
+
+reinforceTreatmentSignsCompleted : PrenatalMeasurements -> Bool
+reinforceTreatmentSignsCompleted measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map (.reinforceTreatmentSigns >> isJust)
         |> Maybe.withDefault False
 
 

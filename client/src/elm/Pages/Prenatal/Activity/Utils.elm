@@ -499,6 +499,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisModerateAnemiaInitialPhase
                                     ]
                                     assembled
                                 || continuousHypertensionTreatmentRequired assembled
@@ -644,6 +645,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
                     else
                         True
+
+                anemiaTreatmentCompleted =
+                    if diagnosed DiagnosisModerateAnemiaInitialPhase assembled then
+                        reinforceTreatmentSignsCompleted assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionCompleted
                 && malariaTreatmentCompleted
@@ -653,6 +661,7 @@ nextStepsTaskCompleted currentDate assembled task =
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
                 && mastitisTreatmentCompleted
+                && anemiaTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
