@@ -882,6 +882,7 @@ type ObstetricHistoryStep2Sign
     | ObstetricHistoryIncompleteCervixPreviousPregnancy
     | ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
     | ObstetricHistoryPartialPlacentaPreviousDelivery
+    | ObstetricHistoryPlacentaAbruptionPreviousDelivery
     | ObstetricHistorySevereHemorrhagingPreviousDelivery
     | ObstetricHistoryConvulsionsPreviousDelivery
     | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery

@@ -1668,6 +1668,7 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'baby-died-on-day-of-birth-previous-delivery' => 'Baby Died On Day Of Birth Previous Delivery',
         'partial-placenta-previous-delivery' => 'Partial Placenta Previous Delivery',
+        'placenta-abruption-previous-delivery' => 'Placenta Abruption Previous Delivery',
         'severe-hemorrhaging-previous-delivery' => 'Severe Hemorrhaging Previous Delivery',
         'preeclampsia-previous-pregnancy' => 'Preeclampsia Previous Pregnancy',
         'convulsions-previous-delivery' => 'Convulsions Previous Delivery',
