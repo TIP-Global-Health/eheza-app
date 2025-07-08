@@ -1967,6 +1967,7 @@ decodeMedicalHistoryValue =
         |> optional "mental_health_issues"
             (decodeEverySet decodeMedicalHistoryMentalHealthIssue)
             (EverySet.singleton NoMedicalHistoryMentalHealthIssue)
+        |> optional "preeclampsia_in_family" decodeOccursInFamilySign NotKnownIfOccurs
 
 
 decodeMedicalHistorySign : Decoder MedicalHistorySign
@@ -2010,6 +2011,17 @@ decodeMedicalHistoryMentalHealthIssue =
                 medicalHistoryMentalHealthIssueFromString s
                     |> Maybe.map succeed
                     |> Maybe.withDefault (s ++ " is not a recognized MedicalHistoryMentalHealthIssue" |> fail)
+            )
+
+
+decodeOccursInFamilySign : Decoder OccursInFamilySign
+decodeOccursInFamilySign =
+    string
+        |> andThen
+            (\s ->
+                occursInFamilySignFromString s
+                    |> Maybe.map succeed
+                    |> Maybe.withDefault (s ++ " is not a recognized OccursInFamilySign" |> fail)
             )
 
 

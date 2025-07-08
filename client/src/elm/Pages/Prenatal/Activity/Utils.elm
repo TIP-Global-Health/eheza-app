@@ -3702,6 +3702,7 @@ medicalHistoryFormWithDefault form saved =
                 , physicalConditions = or form.physicalConditions (Just <| EverySet.toList value.physicalConditions)
                 , infectiousDiseases = or form.infectiousDiseases (Just <| EverySet.toList value.infectiousDiseases)
                 , mentalHealthIssues = or form.mentalHealthIssues (Just <| EverySet.toList value.mentalHealthIssues)
+                , preeclampsiaInFamily = or form.preeclampsiaInFamily (Just value.preeclampsiaInFamily)
                 }
             )
 
@@ -3714,11 +3715,12 @@ toMedicalHistoryValueWithDefault saved form =
 
 toMedicalHistoryValue : MedicalHistoryForm -> Maybe MedicalHistoryValue
 toMedicalHistoryValue form =
-    Maybe.map4 MedicalHistoryValue
+    Maybe.map5 MedicalHistoryValue
         (Maybe.map EverySet.fromList form.signs)
         (Maybe.map EverySet.fromList form.physicalConditions)
         (Maybe.map EverySet.fromList form.infectiousDiseases)
         (Maybe.map EverySet.fromList form.mentalHealthIssues)
+        form.preeclampsiaInFamily
 
 
 medicationFormWithDefault : MedicationForm -> Maybe MedicationValue -> MedicationForm

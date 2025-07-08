@@ -682,6 +682,7 @@ type TranslationId
     | Extremities
     | Eyes
     | Facility
+    | FamilyHistoryOfPreeclampsia
     | FamilyInformation
     | FamilyMembers
     | FamilyPlanningCurentlyQuestion
@@ -1021,6 +1022,7 @@ type TranslationId
     | MedicalHistoryInfectiousDiseasesReviewQuestion
     | MedicalHistoryMentalHealthIssueReviewQuestion
     | MedicalHistoryPhysicalConditionsReviewQuestion
+    | MedicalHistoryPreeclampsiaInFamilyQuestion
     | MedicalHistorySignsReviewQuestion
     | MedicationForFeverPast6HoursQuestion
     | MedicationForMalariaTodayQuestion
@@ -1173,6 +1175,7 @@ type TranslationId
     | ObstetricHistory
     | ObstetricHistoryStep2Sign ObstetricHistoryStep2Sign
     | ObstetricHistorySignsReviewQuestion
+    | OccursInFamilySign OccursInFamilySign
     | OK
     | On
     | OneVisit
@@ -6210,6 +6213,12 @@ translationSet trans =
             { english = "Facility"
             , kinyarwanda = Just "Ivuriro"
             , kirundi = Just "Ikigo"
+            }
+
+        FamilyHistoryOfPreeclampsia ->
+            { english = "Family history of pre-eclampsia"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         FamilyInformation ->
@@ -11283,6 +11292,12 @@ translationSet trans =
             , kirundi = Nothing
             }
 
+        MedicalHistoryPreeclampsiaInFamilyQuestion ->
+            { english = "Family History: Has your mother or sister ever had pre-eclampsia during pregnancy"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MedicalHistorySignsReviewQuestion ->
             { english = "Does the patient have any of the following medical conditions"
             , kinyarwanda = Just "Umurwayi yaba afite kimwe muri ibi bibazo by’ubuzima"
@@ -13750,6 +13765,20 @@ translationSet trans =
             , kinyarwanda = Just "Ese umurwayi yaba yarigeze kugira ibi bibazo mu gihe cy’inda zabanje"
             , kirundi = Nothing
             }
+
+        OccursInFamilySign sign ->
+            case sign of
+                DoesOccur ->
+                    translationSet Yes
+
+                DoesNotOccur ->
+                    translationSet No
+
+                NotKnownIfOccurs ->
+                    { english = "Don't now"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         OK ->
             { english = "OK"

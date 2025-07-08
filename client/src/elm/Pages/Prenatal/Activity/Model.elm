@@ -81,6 +81,7 @@ type Msg
     | SaveOBHistoryStep2 PersonId (Maybe ( ObstetricHistoryStep2Id, ObstetricHistoryStep2 )) (Maybe HistoryTask)
       -- HistoryMsgs, Medical
     | SetMedicalHistorySigns MedicalHistorySign
+    | SetPreeclampsiaInFamily OccursInFamilySign
     | SetMedicalHistoryPhysicalCondition MedicalHistoryPhysicalCondition
     | SetMedicalHistoryInfectiousDisease MedicalHistoryInfectiousDisease
     | SetMedicalHistoryMentalHealthIssue MedicalHistoryMentalHealthIssue
@@ -837,6 +838,7 @@ type alias MedicalHistoryForm =
     , physicalConditions : Maybe (List MedicalHistoryPhysicalCondition)
     , infectiousDiseases : Maybe (List MedicalHistoryInfectiousDisease)
     , mentalHealthIssues : Maybe (List MedicalHistoryMentalHealthIssue)
+    , preeclampsiaInFamily : Maybe OccursInFamilySign
     }
 
 
@@ -846,6 +848,7 @@ emptyMedicalHistoryForm =
     , physicalConditions = Nothing
     , infectiousDiseases = Nothing
     , mentalHealthIssues = Nothing
+    , preeclampsiaInFamily = Nothing
     }
 
 
