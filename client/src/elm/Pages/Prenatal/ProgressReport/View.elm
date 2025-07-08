@@ -761,9 +761,21 @@ viewObstetricHistoryPane language currentDate measurements =
                     )
                 |> Maybe.withDefault []
 
+        medicalHistory =
+            getMeasurementValueFunc measurements.medicalHistory
+                |> Maybe.map
+                    (\value ->
+                        [ translate language Translate.FamilyHistoryOfPreeclampsia
+                            ++ ": "
+                            ++ (translate language <| Translate.OccursInFamilySign value.preeclampsiaInFamily)
+                        ]
+                    )
+                |> Maybe.withDefault []
+
         content =
             obsetricHistory
                 ++ obstetricHistoryStep2
+                ++ medicalHistory
                 |> List.map (\alert -> li [] [ text alert ])
                 |> ul []
                 |> List.singleton
