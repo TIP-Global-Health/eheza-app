@@ -21,6 +21,7 @@ import Html.Events exposing (onClick)
 import Maybe
 import Pages.MessagingCenter.Model exposing (..)
 import Pages.MessagingCenter.Utils exposing (..)
+import Pages.MessagingConsent.View
 import Pages.Page exposing (Page(..), UserPage(..))
 import Pages.Utils exposing (customPopup, taskCompleted, viewBoolInput, viewCheckBoxSelectInput, viewCustomLabel, viewQuestionLabel, viewSaveAction, viewSelectListInput, viewTasksCount)
 import RemoteData
@@ -53,7 +54,11 @@ view language currentTime nurseId nurse db model =
                 ]
     in
     if not model.hasGivenConsent then
-        viewConsentForm language currentDate nurseId nurse model.consentForm
+        Pages.MessagingConsent.View.view language
+            currentTime
+            nurseId
+            nurse
+            model
 
     else
         let
@@ -1599,63 +1604,3 @@ messageOptionsDialog language currentTime currentDate nurseId nurse tab state =
                         [ text <| translate language Translate.Cancel ]
                     ]
                 ]
-
-
-viewConsentForm : Language -> NominalDate -> NurseId -> Nurse -> ConsentForm -> Html Msg
-viewConsentForm language currentDate nurseId nurse form =
-    let
-        agreesToParticipateUpdateFunc value form_ =
-            { form_ | agreesToParticipate = Just value }
-    in
-    div [ class "consent" ]
-        [ p [ class "title" ] [ text <| translate language Translate.ResilienceConsentTitle ]
-        , p [ class "title" ] [ text <| translate language Translate.ResilienceConsentSubTitle ]
-        , p [ class "greeting" ] [ text <| translate language Translate.ResilienceConsentGreeting ]
-        , p [] [ text <| translate language Translate.ResilienceConsentParagraph1 ]
-        , ul []
-            [ li [] [ text <| translate language Translate.ResilienceConsentBullet1 ]
-            , li [] [ text <| translate language Translate.ResilienceConsentBullet2 ]
-            , li [] [ text <| translate language Translate.ResilienceConsentBullet3 ]
-            , li [] [ text <| translate language Translate.ResilienceConsentBullet4 ]
-            , li [] [ text <| translate language Translate.ResilienceConsentBullet5 ]
-            ]
-        , p [] [ text <| translate language Translate.ResilienceConsentParagraph2 ]
-        , p [] [ text <| translate language Translate.ResilienceConsentParagraph3 ]
-        , p [] [ text <| translate language Translate.ResilienceConsentParagraph4 ]
-        , p [ class "greeting" ] [ text <| translate language Translate.ResilienceConsentSubTitle ]
-        , div [ class "full content" ]
-            [ div [ class "ui form" ]
-                [ viewQuestionLabel language Translate.ResilienceConsentSubTitle
-                , viewBoolInput
-                    language
-                    form.agreesToParticipate
-                    SetConsentAgree
-                    "consent-agree"
-                    Nothing
-                ]
-            , case form.agreesToParticipate of
-                Just False ->
-                    div [ class "ui form" ]
-                        [ viewQuestionLabel language Translate.WhyNot
-                        , viewCheckBoxSelectInput language
-                            [ ManyOtherCommitments
-                            , NoDedicatedTimeForTheProgram
-                            , ProgramNotAddressingMyStressors
-                            , DontWantToBeSeenAsStruggling
-                            , TriedSimilarProgramBefore
-                            , NotInterestedInProgram
-                            ]
-                            []
-                            form.reasonsToNotConsent
-                            SelectConsentReason
-                            Translate.ReasonForNotConsenting
-                        ]
-
-                _ ->
-                    text ""
-            ]
-        , viewSaveAction
-            language
-            (SaveConsent nurseId nurse)
-            (form.agreesToParticipate == Nothing)
-        ]

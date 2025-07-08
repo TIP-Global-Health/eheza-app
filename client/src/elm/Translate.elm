@@ -1421,8 +1421,9 @@ type TranslationId
     | ResilienceConsentParagraph3
     | ResilienceConsentParagraph4
     | ResilienceConsentParagraph5
-    | ResilienceConsentParagraph6
+    | ResilienceConsentQuestion
     | ResilienceConsentSubTitle
+    | ResilienceConsentSubTitle2
     | ResilienceConsentTitle
     | ResilienceMessage
     | ResilienceMessageIntroduction1Title
@@ -19283,8 +19284,8 @@ translationSet trans =
             , kirundi = Nothing
             }
 
-        ResilienceConsentParagraph6 ->
-            { english = "Do you agree to participate in the program?"
+        ResilienceConsentQuestion ->
+            { english = "Do you agree to participate in the program"
             , kinyarwanda = Just "Uremera kwitabira iyi gahunda?"
             , kirundi = Nothing
             }
@@ -19292,6 +19293,12 @@ translationSet trans =
         ResilienceConsentSubTitle ->
             { english = "TIP Resilience message"
             , kinyarwanda = Just "TIP Ubutumwa bwo kwifasha kwiyitaho"
+            , kirundi = Nothing
+            }
+
+        ResilienceConsentSubTitle2 ->
+            { english = "Consent to Participate"
+            , kinyarwanda = Just "Kwemera kwitabira"
             , kirundi = Nothing
             }
 
