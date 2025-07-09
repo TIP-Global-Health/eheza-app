@@ -3044,9 +3044,9 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
                 , ObstetricHistoryPartialPlacentaPreviousDelivery
                 , ObstetricHistoryPlacentaAbruptionPreviousDelivery
+                , ObstetricHistorySevereHemorrhagingPreviousDelivery
                 ]
-                [ ObstetricHistorySevereHemorrhagingPreviousDelivery
-                , ObstetricHistoryConvulsionsPreviousDelivery
+                [ ObstetricHistoryConvulsionsPreviousDelivery
                 , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
                 , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
                 , ObstetricHistorySmallForGestationalAgePreviousDelivery
