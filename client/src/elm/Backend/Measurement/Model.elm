@@ -895,6 +895,9 @@ type ObstetricHistoryStep2Sign
     | ObstetricHistorySevereHemorrhagingPreviousDelivery
     | ObstetricHistoryConvulsionsPreviousDelivery
     | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+    | ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+    | ObstetricHistorySmallForGestationalAgePreviousDelivery
+    | ObstetricHistoryIntraUterineDeathPreviousDelivery
     | NoObstetricHistoryStep2Sign
     | MigrateObstetricHistoryStep2Sign
 

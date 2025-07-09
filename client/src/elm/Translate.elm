@@ -13760,6 +13760,24 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                ObstetricHistoryChildWithLowBirthweightPreviousDelivery ->
+                    { english = "A child with low birthweight"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistorySmallForGestationalAgePreviousDelivery ->
+                    { english = "Small for gestational age"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryIntraUterineDeathPreviousDelivery ->
+                    { english = "Intra-uterine death"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoObstetricHistoryStep2Sign ->
                     translationSet NoneOfTheAbove
 

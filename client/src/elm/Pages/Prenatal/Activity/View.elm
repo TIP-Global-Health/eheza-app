@@ -3030,7 +3030,7 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
             ]
       , viewCheckBoxSelectInput language
             [ LessThan18Month, MoreThan5Years ]
-            [ Neither ]
+            [ MoreThan10Years, Neither ]
             form.previousDeliveryPeriod
             SetPreviousDeliveryPeriod
             Translate.PreviousDeliveryPeriods
@@ -3043,11 +3043,14 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 , ObstetricHistoryIncompleteCervixPreviousPregnancy
                 , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
                 , ObstetricHistoryPartialPlacentaPreviousDelivery
+                , ObstetricHistoryPlacentaAbruptionPreviousDelivery
                 ]
-                [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
-                , ObstetricHistorySevereHemorrhagingPreviousDelivery
+                [ ObstetricHistorySevereHemorrhagingPreviousDelivery
                 , ObstetricHistoryConvulsionsPreviousDelivery
                 , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+                , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+                , ObstetricHistorySmallForGestationalAgePreviousDelivery
+                , ObstetricHistoryIntraUterineDeathPreviousDelivery
                 ]
                 (Maybe.withDefault [] form.signs)
                 (Just NoObstetricHistoryStep2Sign)
