@@ -3071,10 +3071,11 @@ medicalFormInputsAndTasks language currentDate assembled form =
     ( [ viewQuestionLabel language Translate.MedicalHistorySignsReviewQuestion
       , viewCheckBoxMultipleSelectInput language
             [ Asthma
+            , AutoimmuneDisease
             , CardiacDisease
-            , Diabetes
             ]
-            [ HypertensionBeforePregnancy
+            [ Diabetes
+            , HypertensionBeforePregnancy
             , RenalDisease
             ]
             (Maybe.withDefault [] form.signs)
