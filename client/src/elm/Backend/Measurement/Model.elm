@@ -856,6 +856,7 @@ type CSectionReason
 type PreviousDeliveryPeriod
     = LessThan18Month
     | MoreThan5Years
+    | MoreThan10Years
     | Neither
 
 

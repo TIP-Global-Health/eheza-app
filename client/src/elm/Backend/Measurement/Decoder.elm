@@ -2358,6 +2358,9 @@ decodePreviousDeliveryPeriod =
                     "more-than-5-years" ->
                         succeed MoreThan5Years
 
+                    "more-than-10-years" ->
+                        succeed MoreThan10Years
+
                     "neither" ->
                         succeed Neither
 

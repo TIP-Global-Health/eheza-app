@@ -2005,7 +2005,8 @@ function hedley_activity_field_default_field_bases() {
       'allowed_values' => array(
         'less-than-18-month' => 'Less than 18 Month',
         'more-than-5-years' => 'More Than 5 Years',
-        'neither' => 'Neither',
+        'more-than-10-years' => 'More Than 10 Years',
+        'neither' => 'None of these',
       ),
       'allowed_values_function' => '',
     ),

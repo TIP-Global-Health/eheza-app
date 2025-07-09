@@ -17749,11 +17749,14 @@ translationSet trans =
                     , kirundi = Just "Imyaka irenga 5 iraheze"
                     }
 
-                Neither ->
-                    { english = "Neither"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta na kimwe"
+                MoreThan10Years ->
+                    { english = "More than 10 years ago"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
+
+                Neither ->
+                    translationSet NoneOfThese
 
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ String.fromFloat value
