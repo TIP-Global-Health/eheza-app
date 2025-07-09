@@ -15200,6 +15200,21 @@ translationSet trans =
                     , kirundi = Just "Ingorane zimutuma ashobora kwiyahura"
                     }
 
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 DiagnosisOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -15686,6 +15701,21 @@ translationSet trans =
                     { english = "Suicide Risk"
                     , kinyarwanda = Just "Afite ibyago byo kwiyahura"
                     , kirundi = Just "Ingorane zimutuma ashobora kwiyahura"
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 DiagnosisOther ->
