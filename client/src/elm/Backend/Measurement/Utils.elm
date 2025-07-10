@@ -3896,15 +3896,69 @@ lmpDateNotConfidentReasonFromString value =
 lateFirstANCVisitReasonToString : LateFirstANCVisitReason -> String
 lateFirstANCVisitReasonToString value =
     case value of
-        ReasonTodo ->
-            "todo"
+        ReasonLackOfFunds ->
+            "lack-of-funds"
+
+        ReasonLackOfHealthInsurance ->
+            "lack-of-health-insurance"
+
+        ReasonPartnerAccompanimentRequirement ->
+            "partner-accompaniment-requirement"
+
+        ReasonUndetectedPregnancy ->
+            "undetected-pregnancy"
+
+        ReasonLongDistancesToHealthFacilities ->
+            "long-distances-to-health-facilities"
+
+        ReasonNegativePastExperiences ->
+            "negative-past-experiences"
+
+        ReasonTraditionalBeliefs ->
+            "traditional-beliefs"
+
+        ReasonLackOfAwarenessToANC ->
+            "lack-of-awareness-to-anc"
+
+        ReasonDelayedRecognitionOfSymptoms ->
+            "delayed-recognition-of-symptoms"
+
+        ReasonOtherReasons ->
+            "other-reasons"
 
 
 lateFirstANCVisitReasonFromString : String -> Maybe LateFirstANCVisitReason
 lateFirstANCVisitReasonFromString value =
     case value of
-        "todo" ->
-            Just ReasonTodo
+        "lack-of-funds" ->
+            Just ReasonLackOfFunds
+
+        "lack-of-health-insurance" ->
+            Just ReasonLackOfHealthInsurance
+
+        "partner-accompaniment-requirement" ->
+            Just ReasonPartnerAccompanimentRequirement
+
+        "undetected-pregnancy" ->
+            Just ReasonUndetectedPregnancy
+
+        "long-distances-to-health-facilities" ->
+            Just ReasonLongDistancesToHealthFacilities
+
+        "negative-past-experiences" ->
+            Just ReasonNegativePastExperiences
+
+        "traditional-beliefs" ->
+            Just ReasonTraditionalBeliefs
+
+        "lack-of-awareness-to-anc" ->
+            Just ReasonLackOfAwarenessToANC
+
+        "delayed-recognition-of-symptoms" ->
+            Just ReasonDelayedRecognitionOfSymptoms
+
+        "other-reasons" ->
+            Just ReasonOtherReasons
 
         _ ->
             Nothing

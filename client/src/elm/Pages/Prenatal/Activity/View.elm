@@ -459,7 +459,17 @@ viewPregnancyDatingContent language currentDate assembled data =
                         if firstVisitEGAWeek > 12 then
                             ( [ viewQuestionLabel language Translate.LateFirstANCVisitQuestion
                               , viewCheckBoxSelectInput language
-                                    [ ReasonTodo ]
+                                    [ ReasonLackOfFunds
+                                    , ReasonLackOfHealthInsurance
+                                    , ReasonPartnerAccompanimentRequirement
+                                    , ReasonUndetectedPregnancy
+                                    , ReasonLongDistancesToHealthFacilities
+                                    , ReasonNegativePastExperiences
+                                    , ReasonTraditionalBeliefs
+                                    , ReasonLackOfAwarenessToANC
+                                    , ReasonDelayedRecognitionOfSymptoms
+                                    , ReasonOtherReasons
+                                    ]
                                     []
                                     form.lateFirstVisitReason
                                     SetLateFirstVisitReason

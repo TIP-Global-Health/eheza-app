@@ -1143,7 +1143,16 @@ function hedley_activity_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'todo' => 'Todo',
+        'lack-of-funds' => 'Lack Of Funds',
+        'lack-of-health-insurance' => 'Lack Of Health Insurance',
+        'partner-accompaniment-requirement' => 'Partner Accompaniment Requirement',
+        'undetected-pregnancy' => 'Undetected Pregnancy',
+        'long-distances-to-health-facilities' => 'Long Distances To Health Hacilities',
+        'negative-past-experiences' => 'Negative Past Experiences',
+        'traditional-beliefs' => 'Traditional Beliefs',
+        'lack-of-awareness-to-anc' => 'Lack Of Awareness To ANC',
+        'delayed-recognition-of-symptoms' => 'Delayed Recognition Of Symptoms',
+        'other-reasons' => 'Other Reasons',
       ),
       'allowed_values_function' => '',
     ),

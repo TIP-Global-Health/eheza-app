@@ -668,8 +668,16 @@ type LmpDateNotConfidentReason
 
 
 type LateFirstANCVisitReason
-    = -- @todo: add reasons
-      ReasonTodo
+    = ReasonLackOfFunds
+    | ReasonLackOfHealthInsurance
+    | ReasonPartnerAccompanimentRequirement
+    | ReasonUndetectedPregnancy
+    | ReasonLongDistancesToHealthFacilities
+    | ReasonNegativePastExperiences
+    | ReasonTraditionalBeliefs
+    | ReasonLackOfAwarenessToANC
+    | ReasonDelayedRecognitionOfSymptoms
+    | ReasonOtherReasons
 
 
 type alias LastMenstrualPeriod =
