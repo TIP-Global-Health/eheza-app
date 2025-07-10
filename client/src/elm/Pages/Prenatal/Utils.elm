@@ -3663,6 +3663,7 @@ applyDiagnosesHierarchy =
         >> applyMalariaWithAnemiaDiagnosesHierarchy
         >> applyAnemiaDiagnosesHierarchy
         >> applyMastitisDiagnosesHierarchy
+        >> applyPreeclampsiaRiskDiagnosesHierarchy
         >> applyGeneralDiagnosesHierarchy
 
 
@@ -3745,6 +3746,20 @@ applyAnemiaDiagnosesHierarchy diagnoses =
     then
         EverySet.remove DiagnosisSevereAnemiaInitialPhase diagnoses
             |> EverySet.remove DiagnosisSevereAnemiaRecurrentPhase
+
+    else
+        diagnoses
+
+
+applyPreeclampsiaRiskDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyPreeclampsiaRiskDiagnosesHierarchy diagnoses =
+    -- When Severe Anamia with compliations is diagnosed, we eliminate
+    -- Severe Anamia standalone diagnosis.
+    if
+        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+            [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+    then
+        EverySet.remove DiagnosisModerateRiskOfPreeclampsia diagnoses
 
     else
         diagnoses

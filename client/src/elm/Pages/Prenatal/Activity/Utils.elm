@@ -2226,6 +2226,24 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        moderateRiskPreeclampsiaDiagnosed =
+            let
+                byAgeAndFirstPregnancy =
+                    False
+
+                byBMI =
+                    calculateBmi
+                        (resolveMeasuredHeight assembled
+                            |> Maybe.map getHeightValue
+                        )
+                        (getMeasurementValueFunc assembled.measurements.nutrition
+                            |> Maybe.map (.weight >> weightValueFunc)
+                        )
+                        |> Maybe.map (\bmi -> bmi >= 30)
+                        |> Maybe.withDefault False
+            in
+            byBMI
+
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
 
@@ -3555,6 +3573,15 @@ liveChildBorn =
                     False
         )
         >> Maybe.withDefault False
+
+
+resolveLastValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolveLastValue assembled measurementFunc valueFunc =
+    (assembled.measurements
+        :: (List.map .measurements assembled.nursePreviousEncountersData |> List.reverse)
+    )
+        |> List.filterMap (measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
+        |> List.head
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
