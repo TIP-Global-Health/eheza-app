@@ -4601,6 +4601,9 @@ obstetricHistoryStep2SignToString sign =
         ObstetricHistoryPartialPlacentaPreviousDelivery ->
             "partial-placenta-previous-delivery"
 
+        ObstetricHistoryPlacentaAbruptionPreviousDelivery ->
+            "placenta-abruption-previous-delivery"
+
         ObstetricHistorySevereHemorrhagingPreviousDelivery ->
             "severe-hemorrhaging-previous-delivery"
 
@@ -4634,6 +4637,9 @@ obstetricHistoryStep2SignFromString sign =
 
         "partial-placenta-previous-delivery" ->
             Just ObstetricHistoryPartialPlacentaPreviousDelivery
+
+        "placenta-abruption-previous-delivery" ->
+            Just ObstetricHistoryPlacentaAbruptionPreviousDelivery
 
         "severe-hemorrhaging-previous-delivery" ->
             Just ObstetricHistorySevereHemorrhagingPreviousDelivery

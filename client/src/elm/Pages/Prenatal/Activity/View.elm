@@ -3065,8 +3065,9 @@ obstetricFormSecondStepInputsAndTasks language currentDate assembled form =
                 , ObstetricHistoryGestationalDiabetesPreviousPregnancy
                 , ObstetricHistoryIncompleteCervixPreviousPregnancy
                 , ObstetricHistoryBabyDiedOnDayOfBirthPreviousDelivery
+                , ObstetricHistoryPartialPlacentaPreviousDelivery
                 ]
-                [ ObstetricHistoryPartialPlacentaPreviousDelivery
+                [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
                 , ObstetricHistorySevereHemorrhagingPreviousDelivery
                 , ObstetricHistoryConvulsionsPreviousDelivery
                 , ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery

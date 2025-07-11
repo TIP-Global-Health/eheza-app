@@ -13777,6 +13777,12 @@ translationSet trans =
                 ObstetricHistoryPartialPlacentaPreviousDelivery ->
                     translationSet PlacentaPrevia
 
+                ObstetricHistoryPlacentaAbruptionPreviousDelivery ->
+                    { english = "Placenta Abruption"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 ObstetricHistorySevereHemorrhagingPreviousDelivery ->
                     { english = "Severe Hemorrhaging (>500 ml)"
                     , kinyarwanda = Just "Kuva cyane (>500 ml)"
