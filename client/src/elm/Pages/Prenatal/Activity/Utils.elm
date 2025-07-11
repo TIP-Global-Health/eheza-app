@@ -2246,6 +2246,150 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 |> Maybe.map ((==) RhesusNegative)
                 |> Maybe.withDefault False
 
+        moderateRiskPreeclampsiaDiagnosed =
+            let
+                byAgeAndFirstPregnancy =
+                    let
+                        ageInYears =
+                            Maybe.map2
+                                (Date.diff Years)
+                                assembled.person.birthDate
+                                assembled.globalLmpDate
+
+                        totalPregnancies =
+                            List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                                allMeasurements
+                                |> List.head
+                                |> Maybe.map
+                                    (\value ->
+                                        value.termPregnancy + value.preTermPregnancy
+                                    )
+                    in
+                    Maybe.map2
+                        (\ageYears pregnanciesCount ->
+                            (pregnanciesCount == 0)
+                                && (ageYears < 18 || ageYears >= 35)
+                        )
+                        ageInYears
+                        totalPregnancies
+                        |> Maybe.withDefault False
+
+                byBMI =
+                    calculateBmi
+                        (resolveMeasuredHeight assembled
+                            |> Maybe.map getHeightValue
+                        )
+                        (getMeasurementValueFunc assembled.measurements.nutrition
+                            |> Maybe.map (.weight >> weightValueFunc)
+                        )
+                        |> Maybe.map (\bmi -> bmi >= 30)
+                        |> Maybe.withDefault False
+
+                byPreeclampsiaInFamily =
+                    List.filterMap (.medicalHistory >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map (.preeclampsiaInFamily >> (==) DoesOccur)
+                        |> Maybe.withDefault False
+
+                byStillbornChildren =
+                    List.filterMap (.obstetricHistory >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map
+                            (\value ->
+                                value.stillbirthsAtTerm + value.stillbirthsPreTerm > 0
+                            )
+                        |> Maybe.withDefault False
+
+                byObstetricHistorySigns =
+                    List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map
+                            (\value ->
+                                let
+                                    byPeriodFromPreviousPregnancy =
+                                        EverySet.member MoreThan10Years value.previousDeliveryPeriod
+
+                                    bySigns =
+                                        List.any
+                                            (\sign ->
+                                                EverySet.member sign value.signs
+                                            )
+                                            [ ObstetricHistoryPlacentaAbruptionPreviousDelivery
+                                            , ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+                                            , ObstetricHistorySmallForGestationalAgePreviousDelivery
+                                            , ObstetricHistoryIntraUterineDeathPreviousDelivery
+                                            ]
+                                in
+                                byPeriodFromPreviousPregnancy || bySigns
+                            )
+                        |> Maybe.withDefault False
+            in
+            byAgeAndFirstPregnancy
+                || byBMI
+                || byPreeclampsiaInFamily
+                || byStillbornChildren
+                || byObstetricHistorySigns
+
+        highRiskPreeclampsiaDiagnosed =
+            let
+                byPreviousPreeclampsia =
+                    List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map
+                            (\value ->
+                                EverySet.member ObstetricHistoryPreeclampsiaPreviousPregnancy value.signs
+                            )
+                        |> Maybe.withDefault False
+
+                byFetalPresentation =
+                    List.filterMap (.obstetricalExam >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map (.fetalPresentation >> (==) Twins)
+                        |> Maybe.withDefault False
+
+                byMedicalHistorySigns =
+                    List.filterMap (.medicalHistory >> getMeasurementValueFunc)
+                        allMeasurements
+                        |> List.head
+                        |> Maybe.map
+                            (\value ->
+                                List.any
+                                    (\sign ->
+                                        EverySet.member sign value.signs
+                                    )
+                                    [ HypertensionBeforePregnancy
+                                    , Diabetes
+                                    , RenalDisease
+                                    , AutoimmuneDisease
+                                    ]
+                            )
+                        |> Maybe.withDefault False
+
+                byHypertensionDiagnoses =
+                    diagnosedHypertensionPrevoiusly assembled
+                        || List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            hypertensionDiagnoses
+
+                byDiabetesDiagnoses =
+                    diagnosedDiabetesPrevoiusly assembled
+                        || List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            diabetesDiagnoses
+            in
+            byPreviousPreeclampsia
+                || byFetalPresentation
+                || byMedicalHistorySigns
+                || byHypertensionDiagnoses
+                || byDiabetesDiagnoses
+
+        allMeasurements =
+            assembled.measurements
+                :: (List.map .measurements assembled.nursePreviousEncountersData |> List.reverse)
+
         resolveEGAWeeksAndThen func =
             resolveEGAInWeeksAndThen func egaInWeeks
 
@@ -2253,6 +2397,52 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
             matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled
     in
     case diagnosis of
+        DiagnosisModerateRiskOfPreeclampsia ->
+            moderateRiskPreeclampsiaDiagnosed
+                && (not <| diagnosedRiskOfPreeclampsiaPrevoiusly assembled)
+                -- We don't diagnose Preeclampsia RISK, if any kind of
+                -- Preeclampsia was diagnosed previously, or at current encounter.
+                && (not <|
+                        diagnosedPreviouslyAnyOf
+                            (DiagnosisEclampsia :: preeclampsiaDiagnoses)
+                            assembled
+                   )
+                && (not <|
+                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            preeclampsiaDiagnoses
+                   )
+
+        DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+            highRiskPreeclampsiaDiagnosed
+                && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
+                -- We don't diagnose Preeclampsia RISK, if any kind of
+                -- Preeclampsia was diagnosed previously, or at current encounter.
+                && (not <|
+                        diagnosedPreviouslyAnyOf
+                            (DiagnosisEclampsia :: preeclampsiaDiagnoses)
+                            assembled
+                   )
+                && (not <|
+                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            preeclampsiaDiagnoses
+                   )
+
+        DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+            (not <| diagnosedAtInitalPhase DiagnosisHighRiskOfPreeclampsiaInitialPhase)
+                && highRiskPreeclampsiaDiagnosed
+                -- We don't diagnose Preeclampsia RISK, if any kind of
+                -- Preeclampsia was diagnosed previously, or at current encounter.
+                && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
+                && (not <|
+                        diagnosedPreviouslyAnyOf
+                            (DiagnosisEclampsia :: preeclampsiaDiagnoses)
+                            assembled
+                   )
+                && (not <|
+                        List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            preeclampsiaDiagnoses
+                   )
+
         DiagnosisChronicHypertensionImmediate ->
             -- Hypertension is a chronic diagnosis for whole duration
             -- of pregnancy.
@@ -3578,6 +3768,15 @@ liveChildBorn =
                     False
         )
         >> Maybe.withDefault False
+
+
+resolveLastRecordedValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b
+resolveLastRecordedValue assembled measurementFunc valueFunc =
+    (assembled.measurements
+        :: (List.map .measurements assembled.nursePreviousEncountersData |> List.reverse)
+    )
+        |> List.filterMap (measurementFunc >> Maybe.map (Tuple.second >> .value >> valueFunc))
+        |> List.head
 
 
 resolvePreviousValue : AssembledData -> (PrenatalMeasurements -> Maybe ( id, PrenatalMeasurement a )) -> (a -> b) -> Maybe b

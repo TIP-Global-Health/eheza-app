@@ -3073,6 +3073,18 @@ diagnosedModeratePreeclampsiaPrevoiusly assembled =
     diagnosedPreviouslyAnyOf moderatePreeclampsiaDiagnoses assembled
 
 
+diagnosedHighRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
+diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled =
+    diagnosedPreviouslyAnyOf highRiskOfPreeclampsiaDiagnoses assembled
+
+
+{-| Hight or moderate risk.
+-}
+diagnosedRiskOfPreeclampsiaPrevoiusly : AssembledData -> Bool
+diagnosedRiskOfPreeclampsiaPrevoiusly assembled =
+    diagnosedPreviouslyAnyOf riskOfPreeclampsiaDiagnoses assembled
+
+
 resolveARVReferralDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
 resolveARVReferralDiagnosis nursePreviousEncountersData =
     List.filterMap
@@ -3133,6 +3145,11 @@ hypertensionlikeDiagnoses =
     hypertensionDiagnoses
         ++ preeclampsiaDiagnoses
         ++ [ DiagnosisEclampsia ]
+
+
+diagnosedDiabetesPrevoiusly : AssembledData -> Bool
+diagnosedDiabetesPrevoiusly assembled =
+    diagnosedPreviouslyAnyOf diabetesDiagnoses assembled
 
 
 resolvePreviousDiabetesDiagnosis : List PreviousEncounterData -> Maybe PrenatalDiagnosis
@@ -3319,6 +3336,16 @@ severeAnemiaDiagnoses =
     , DiagnosisSevereAnemiaWithComplicationsInitialPhase
     , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
     ]
+
+
+highRiskOfPreeclampsiaDiagnoses : List PrenatalDiagnosis
+highRiskOfPreeclampsiaDiagnoses =
+    [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+
+
+riskOfPreeclampsiaDiagnoses : List PrenatalDiagnosis
+riskOfPreeclampsiaDiagnoses =
+    DiagnosisModerateRiskOfPreeclampsia :: highRiskOfPreeclampsiaDiagnoses
 
 
 generateVaccinationProgress : List PrenatalMeasurements -> VaccinationProgressDict
@@ -3791,6 +3818,7 @@ applyDiagnosesHierarchy =
         >> applyMalariaWithAnemiaDiagnosesHierarchy
         >> applyAnemiaDiagnosesHierarchy
         >> applyMastitisDiagnosesHierarchy
+        >> applyPreeclampsiaRiskDiagnosesHierarchy
         >> applyGeneralDiagnosesHierarchy
 
 
@@ -3873,6 +3901,20 @@ applyAnemiaDiagnosesHierarchy diagnoses =
     then
         EverySet.remove DiagnosisSevereAnemiaInitialPhase diagnoses
             |> EverySet.remove DiagnosisSevereAnemiaRecurrentPhase
+
+    else
+        diagnoses
+
+
+applyPreeclampsiaRiskDiagnosesHierarchy : EverySet PrenatalDiagnosis -> EverySet PrenatalDiagnosis
+applyPreeclampsiaRiskDiagnosesHierarchy diagnoses =
+    -- When Severe Anamia with compliations is diagnosed, we eliminate
+    -- Severe Anamia standalone diagnosis.
+    if
+        List.any (\diagnosis -> EverySet.member diagnosis diagnoses)
+            [ DiagnosisHighRiskOfPreeclampsiaInitialPhase, DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ]
+    then
+        EverySet.remove DiagnosisModerateRiskOfPreeclampsia diagnoses
 
     else
         diagnoses

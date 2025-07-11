@@ -1720,6 +1720,11 @@ encodePreviousDeliveryPeriod sign =
             MoreThan5Years ->
                 "more-than-5-years"
 
+            MoreThan10Years ->
+                "more-than-10-years"
+
+            -- After adding 'more than 10 years', actual meaninng of
+            -- this option becomes 'none of these'.
             Neither ->
                 "neither"
 
