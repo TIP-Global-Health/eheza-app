@@ -686,6 +686,7 @@ type alias LastMenstrualPeriod =
 
 type MedicalHistorySign
     = Asthma
+    | AutoimmuneDisease
     | CardiacDisease
     | Diabetes
     | HypertensionBeforePregnancy

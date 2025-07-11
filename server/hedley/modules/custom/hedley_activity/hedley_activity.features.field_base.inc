@@ -1307,6 +1307,7 @@ function hedley_activity_field_default_field_bases() {
         'bowed-legs' => 'Bowed Legs',
         'hiv' => 'HIV',
         'mental-health-history' => 'Mental health history',
+        'autoimmune-disease' => 'Autoimmune Disease',
         'none' => 'None of these',
       ),
       'allowed_values_function' => '',

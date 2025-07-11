@@ -4696,6 +4696,9 @@ medicalHistorySignToString sign =
         MentalHealthHistory ->
             "mental-health-history"
 
+        AutoimmuneDisease ->
+            "autoimmune-disease"
+
         NoMedicalHistorySigns ->
             "none"
 
@@ -4735,6 +4738,9 @@ medicalHistorySignFromString sign =
 
         "mental-health-history" ->
             Just MentalHealthHistory
+
+        "autoimmune-disease" ->
+            Just AutoimmuneDisease
 
         "none" ->
             Just NoMedicalHistorySigns

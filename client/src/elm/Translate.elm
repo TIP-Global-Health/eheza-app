@@ -11014,6 +11014,12 @@ translationSet trans =
                 Backend.Measurement.Model.RenalDisease ->
                     translationSet RenalDisease
 
+                Backend.Measurement.Model.AutoimmuneDisease ->
+                    { english = "Autoimmune Disease"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoMedicalHistorySigns ->
                     translationSet NoneOfTheAbove
 
