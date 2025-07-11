@@ -792,6 +792,7 @@ type FetalPresentation
     | FetalBreech
     | Cephalic
     | Twins
+    | UnclearImprecise
     | Unknown
 
 

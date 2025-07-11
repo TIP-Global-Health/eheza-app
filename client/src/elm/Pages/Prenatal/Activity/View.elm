@@ -37,6 +37,7 @@ import Measurement.Model
         , MedicationAdministrationFormConfig
         , OutsideCareStep(..)
         , VaccinationFormViewMode(..)
+        , VaccinationStatus(..)
         , VitalsForm
         , VitalsFormMode(..)
         )
@@ -2504,6 +2505,11 @@ viewImmunisationContent language currentDate site assembled data =
                             , isJust measurements.tetanusImmunisation
                             )
 
+                        TaskOverview ->
+                            ( "vaccination-overview"
+                            , False
+                            )
+
                 isActive =
                     activeTask == Just task
 
@@ -2548,7 +2554,7 @@ viewImmunisationContent language currentDate site assembled data =
                 |> Maybe.withDefault ( 0, 0 )
 
         ( formForView, fullScreen, allowSave ) =
-            Maybe.map immunisationTaskToVaccineType activeTask
+            Maybe.andThen immunisationTaskToVaccineType activeTask
                 |> Maybe.map
                     (\vaccineType ->
                         let
@@ -2564,7 +2570,11 @@ viewImmunisationContent language currentDate site assembled data =
                         , vaccinationForm.viewMode == ViewModeInitial
                         )
                     )
-                |> Maybe.withDefault ( emptyNode, False, False )
+                |> Maybe.withDefault
+                    ( viewVaccinationOverviewForm language currentDate assembled
+                    , True
+                    , True
+                    )
 
         actions =
             Maybe.map
@@ -2573,11 +2583,10 @@ viewImmunisationContent language currentDate site assembled data =
                         saveMsg =
                             case task of
                                 TaskTetanus ->
-                                    let
-                                        personId =
-                                            assembled.participant.person
-                                    in
-                                    SaveTetanusImmunisation personId measurements.tetanusImmunisation
+                                    SaveTetanusImmunisation assembled.participant.person measurements.tetanusImmunisation
+
+                                TaskOverview ->
+                                    SetActivePage <| UserPage <| PrenatalEncounterPage assembled.id
 
                         disabled =
                             tasksCompleted /= totalTasks
@@ -2611,6 +2620,69 @@ viewImmunisationContent language currentDate site assembled data =
             ]
         ]
     ]
+
+
+viewVaccinationOverviewForm : Language -> NominalDate -> AssembledData -> Html any
+viewVaccinationOverviewForm language currentDate assembled =
+    div [ class "ui form vaccination-overview" ] <|
+        viewVaccinationOverview language currentDate assembled
+
+
+viewVaccinationOverview : Language -> NominalDate -> AssembledData -> List (Html any)
+viewVaccinationOverview language currentDate assembled =
+    let
+        entriesHeading =
+            div [ class "heading vaccination" ]
+                [ div [ class "name" ] [ text <| translate language Translate.Immunisation ]
+                , div [ class "date" ] [ text <| translate language Translate.DateReceived ]
+                , div [ class "next-due" ] [ text <| translate language Translate.NextDue ]
+                , div [ class "status" ] [ text <| translate language Translate.StatusLabel ]
+                ]
+
+        futureVaccinationsData =
+            generateFutureVaccinationsDataByProgress currentDate assembled
+                |> Dict.fromList
+
+        entries =
+            Dict.toList assembled.vaccinationProgress
+                |> List.map viewVaccinationEntry
+
+        viewVaccinationEntry ( vaccineType, doses ) =
+            let
+                nextDue =
+                    Dict.get vaccineType futureVaccinationsData
+                        |> Maybe.Extra.join
+                        |> Maybe.map Tuple.second
+
+                nextDueText =
+                    Maybe.map formatDDMMYYYY nextDue
+                        |> Maybe.withDefault ""
+
+                ( status, statusClass ) =
+                    Maybe.map
+                        (\dueDate ->
+                            if Date.compare dueDate currentDate == LT then
+                                ( StatusBehind, "behind" )
+
+                            else
+                                ( StatusUpToDate, "up-to-date" )
+                        )
+                        nextDue
+                        |> Maybe.withDefault ( StatusCompleted, "completed" )
+            in
+            div [ class "entry vaccination" ]
+                [ div [ class "cell name" ] [ text <| translate language <| Translate.PrenatalVaccineLabel vaccineType ]
+                , Dict.values doses
+                    |> List.sortWith Date.compare
+                    |> List.map (formatDDMMYYYY >> text >> List.singleton >> p [])
+                    |> div [ class "cell date" ]
+                , div [ classList [ ( "cell next-due ", True ), ( "red", status == StatusBehind ) ] ]
+                    [ text nextDueText ]
+                , div [ class <| "cell status " ++ statusClass ]
+                    [ text <| translate language <| Translate.VaccinationStatus status ]
+                ]
+    in
+    entriesHeading :: entries
 
 
 viewSpecialityCareContent : Language -> NominalDate -> AssembledData -> SpecialityCareData -> List (Html Msg)
@@ -3459,7 +3531,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                     }
 
         fetalHeartRateUpdateFunc value form_ =
-            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True }
+            { form_ | fetalHeartRate = value, fetalHeartRateDirty = True, fetalHeartRateNotAudible = Just False }
 
         fetalMovementUpdateFunc value form_ =
             { form_ | fetalMovement = Just value }
@@ -3467,6 +3539,21 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
         fetalHeartRatePreviousValue =
             resolvePreviousValue assembled .obstetricalExam .fetalHeartRate
                 |> Maybe.map toFloat
+
+        fetalHeartRateInput =
+            if fetalHeartRateNotAudibleChecked then
+                emptyNode
+
+            else
+                viewMeasurementInput
+                    language
+                    (Maybe.map toFloat form.fetalHeartRate)
+                    (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
+                    "fetal-heart-rate"
+                    Translate.BeatsPerMinuteUnitLabel
+
+        fetalHeartRateNotAudibleChecked =
+            form.fetalHeartRateNotAudible == Just True
     in
     ( fundalHeightHtml
         ++ [ div [ class "ui grid" ]
@@ -3477,7 +3564,7 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                 ]
            , viewCheckBoxSelectInput language
                 [ Transverse, Cephalic, Unknown ]
-                [ FetalBreech, Twins ]
+                [ FetalBreech, Twins, UnclearImprecise ]
                 form.fetalPresentation
                 SetObstetricalExamFetalPresentation
                 Translate.FetalPresentation
@@ -3501,13 +3588,20 @@ obstetricalExamFormInputsAndTasks language currentDate assembled form =
                 , div [ class "four wide column" ]
                     [ alerts.fetalHeartRate ]
                 ]
-           , viewMeasurementInput
-                language
-                (Maybe.map toFloat form.fetalHeartRate)
-                (SetObstetricalExamIntMeasurement fetalHeartRateUpdateFunc)
-                "fetal-heart-rate"
-                Translate.BeatsPerMinuteUnitLabel
+           , fetalHeartRateInput
            , viewPreviousMeasurement language fetalHeartRatePreviousValue Translate.BeatsPerMinuteUnitLabel
+           , div
+                [ class "ui checkbox activity"
+                , onClick ToggleFetalHeartRateNotAudible
+                ]
+                [ input
+                    [ type_ "checkbox"
+                    , checked fetalHeartRateNotAudibleChecked
+                    , classList [ ( "checked", fetalHeartRateNotAudibleChecked ) ]
+                    ]
+                    []
+                , label [] [ text <| translate language Translate.HeartRateNotAudible ]
+                ]
            , div [ class "separator" ] []
            , viewLabel language Translate.PreviousCSectionScar
            , viewCheckBoxSelectInput language

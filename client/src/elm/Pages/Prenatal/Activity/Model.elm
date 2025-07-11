@@ -122,6 +122,7 @@ type Msg
     | SetObstetricalExamFetalPresentation FetalPresentation
     | SetObstetricalExamCSectionScar CSectionScar
     | HideFundalPalpablePopup
+    | ToggleFetalHeartRateNotAudible
     | SaveObstetricalExam PersonId (Maybe ( ObstetricalExamId, ObstetricalExam )) (Maybe ExaminationTask)
       -- ExaminationMsgs, Breast Exam
     | SetBreastExamBoolInput (Bool -> BreastExamForm -> BreastExamForm) Bool
@@ -878,6 +879,7 @@ type alias ObstetricalExamForm =
     , fetalMovement : Maybe Bool
     , fetalHeartRate : Maybe Int
     , fetalHeartRateDirty : Bool
+    , fetalHeartRateNotAudible : Maybe Bool
     , cSectionScar : Maybe CSectionScar
     , displayFundalPalpablePopup : Bool
     }
@@ -892,6 +894,7 @@ emptyObstetricalExamForm =
     , fetalMovement = Nothing
     , fetalHeartRate = Nothing
     , fetalHeartRateDirty = False
+    , fetalHeartRateNotAudible = Nothing
     , cSectionScar = Nothing
     , displayFundalPalpablePopup = False
     }

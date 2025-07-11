@@ -775,6 +775,7 @@ type TranslationId
     | HeartMurmur
     | HeartCPESign HeartCPESign
     | HeartRate
+    | HeartRateNotAudible
     | Height
     | High
     | HighRiskCase
@@ -6385,6 +6386,12 @@ translationSet trans =
             , kirundi = Just "Urugero rw'umwana ari mu nda"
             }
 
+        HeartRateNotAudible ->
+            { english = "Heart rate not audible"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         FetalMovement ->
             { english = "Fetal Movement"
             , kinyarwanda = Just "Uko umwana akina mu nda"
@@ -6421,6 +6428,12 @@ translationSet trans =
                     { english = "Twins"
                     , kinyarwanda = Just "Impanga"
                     , kirundi = Just "Amahasa"
+                    }
+
+                UnclearImprecise ->
+                    { english = "Unclear / Imprecise"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 Backend.Measurement.Model.Unknown ->
@@ -16634,6 +16647,9 @@ translationSet trans =
                     , kinyarwanda = Just "Agakwega"
                     , kirundi = Just "Rudadaza"
                     }
+
+                Pages.Prenatal.Activity.Types.TaskOverview ->
+                    translationSet Overview
 
         PrenatalImmunisationDescription task ->
             case task of
