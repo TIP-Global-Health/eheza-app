@@ -668,8 +668,16 @@ type LmpDateNotConfidentReason
 
 
 type LateFirstANCVisitReason
-    = -- @todo: add reasons
-      ReasonTodo
+    = ReasonLackOfFunds
+    | ReasonLackOfHealthInsurance
+    | ReasonPartnerAccompanimentRequirement
+    | ReasonUndetectedPregnancy
+    | ReasonLongDistancesToHealthFacilities
+    | ReasonNegativePastExperiences
+    | ReasonTraditionalBeliefs
+    | ReasonLackOfAwarenessToANC
+    | ReasonDelayedRecognitionOfSymptoms
+    | ReasonOtherReasons
 
 
 type alias LastMenstrualPeriod =
@@ -1460,6 +1468,7 @@ type alias PrenatalMedicationDistributionValue =
     , nonAdministrationSigns : EverySet MedicationNonAdministrationSign
     , recommendedTreatmentSigns : Maybe (EverySet RecommendedTreatmentSign)
     , avoidingGuidanceReason : Maybe (EverySet AvoidingGuidanceReason)
+    , reinforceTreatmentSigns : Maybe (EverySet ReinforceTreatmentSign)
     }
 
 
@@ -1527,6 +1536,13 @@ type AvoidingGuidanceReason
     | AvoidingGuidanceHypertensionPatientUnableToAfford
     | AvoidingGuidanceHypertensionReinforceAdherence
     | AvoidingGuidanceHypertensionOther
+
+
+type ReinforceTreatmentSign
+    = ReinforceSignFefol
+    | ReinforceSignMMS
+    | ReinforceSignRepeatHemoglobinTest
+    | NoReinforceTreatmentSigns
 
 
 type alias PrenatalSymptomReview =

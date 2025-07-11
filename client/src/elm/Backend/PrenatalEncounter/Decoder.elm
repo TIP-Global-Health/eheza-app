@@ -33,6 +33,7 @@ decodePrenatalEncounter =
         |> optional "prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "past_prenatal_diagnoses" decodeDiagnoses (EverySet.singleton NoPrenatalDiagnosis)
         |> optional "prenatal_indicators" (decodeEverySet decodePrenatalIndicator) EverySet.empty
+        |> optional "next_visit_date" (nullable decodeYYYYMMDD) Nothing
         |> optional "shard" (nullable decodeEntityUuid) Nothing
 
 

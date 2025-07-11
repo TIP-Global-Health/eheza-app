@@ -374,14 +374,14 @@ resolveNextStepsTasks currentDate assembled =
             case assembled.encounter.encounterType of
                 NurseEncounter ->
                     -- The order is important. Do not change.
-                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsWait ]
+                    [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC, NextStepsNextVisit, NextStepsWait ]
 
                 NursePostpartumEncounter ->
                     [ NextStepsHealthEducation, NextStepsMedicationDistribution, NextStepsSendToHC ]
 
                 _ ->
                     -- The order is important. Do not change.
-                    [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNewbornEnrolment ]
+                    [ NextStepsAppointmentConfirmation, NextStepsSendToHC, NextStepsFollowUp, NextStepsHealthEducation, NextStepsNextVisit, NextStepsNewbornEnrolment ]
     in
     List.filter (expectNextStepsTask currentDate assembled) tasks
 
@@ -499,6 +499,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisModerateAnemiaInitialPhase
                                     ]
                                     assembled
                                 || continuousHypertensionTreatmentRequired assembled
@@ -544,6 +545,14 @@ expectNextStepsTask currentDate assembled task =
                             )
                         |> Maybe.withDefault False
                    )
+
+        NextStepsNextVisit ->
+            List.member assembled.encounter.encounterType
+                [ NurseEncounter
+                , ChwFirstEncounter
+                , ChwSecondEncounter
+                , ChwThirdPlusEncounter
+                ]
 
 
 nextStepsTaskCompleted : NominalDate -> AssembledData -> NextStepsTask -> Bool
@@ -644,6 +653,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
                     else
                         True
+
+                anemiaTreatmentCompleted =
+                    if diagnosed DiagnosisModerateAnemiaInitialPhase assembled then
+                        reinforceTreatmentSignsCompleted assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionCompleted
                 && malariaTreatmentCompleted
@@ -653,11 +669,15 @@ nextStepsTaskCompleted currentDate assembled task =
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
                 && mastitisTreatmentCompleted
+                && anemiaTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
                 |> Maybe.map .patientNotified
                 |> Maybe.withDefault False
+
+        NextStepsNextVisit ->
+            isJust assembled.encounter.nextVisitDate
 
 
 continuousHypertensionTreatmentRequired : AssembledData -> Bool
@@ -3427,6 +3447,9 @@ nextStepsTasksCompletedFromTotal language currentDate isChw assembled data task 
             ( completed
             , 1
             )
+
+        NextStepsNextVisit ->
+            ( 1, 1 )
 
 
 appointmentConfirmationFormInutsAndTasks :
@@ -6704,11 +6727,6 @@ fefolAdministrationFormConfig =
     }
 
 
-resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveFefolDosageAndIcon language currentDate person =
-    Just ( "200 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
-
-
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 folateAdministrationFormConfig =
     { medication = FolicAcid
@@ -6744,11 +6762,6 @@ mmsAdministrationFormConfig =
     , setReasonForNonAdministration = SetMMSReasonForNonAdministration
     , resolveDosageAndIconFunc = resolveMMSDosageAndIcon
     }
-
-
-resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveMMSDosageAndIcon language currentDate person =
-    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg

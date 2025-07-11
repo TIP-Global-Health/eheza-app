@@ -3845,6 +3845,23 @@ update language currentDate id isLabTech db msg model =
             )
                 |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
 
+        SaveNextVisitDate date secondPhaseRequired nextTask ->
+            let
+                extraMsgs =
+                    generateNextStepsMsgs secondPhaseRequired nextTask
+
+                appMsgs =
+                    [ Backend.PrenatalEncounter.Model.SetNextVisitDate date
+                        |> Backend.Model.MsgPrenatalEncounter id
+                        |> App.Model.MsgIndexedDb
+                    ]
+            in
+            ( model
+            , Cmd.none
+            , appMsgs
+            )
+                |> sequenceExtra (update language currentDate id isLabTech db) extraMsgs
+
         SetSymptomReviewStep step ->
             let
                 updatedData =

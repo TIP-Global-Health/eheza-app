@@ -258,6 +258,7 @@ type Msg
     | SetAvoidingGuidanceReason AvoidingGuidanceReason
     | SaveMedicationDistribution PersonId (Maybe ( PrenatalMedicationDistributionId, PrenatalMedicationDistribution )) Bool (Maybe NextStepsTask)
     | SaveWait PersonId (Maybe PrenatalLabsResultsId) LabsResultsValue
+    | SaveNextVisitDate NominalDate Bool (Maybe NextStepsTask)
       -- SYMPTOMREVIEWMsgs
     | SetSymptomReviewStep SymptomReviewStep
     | SetPrenatalSymptom PrenatalSymptom
