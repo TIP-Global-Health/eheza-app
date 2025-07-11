@@ -63,6 +63,7 @@ type Msg
     | SetLmpDate Date
     | SetLmpDateConfident Bool
     | SetLmpDateNotConfidentReason LmpDateNotConfidentReason
+    | SetLateFirstVisitReason LateFirstANCVisitReason
     | SetPrePregnancyWeight String
     | SavePregnancyDating IndividualEncounterParticipantId PersonId (Maybe ( LastMenstrualPeriodId, LastMenstrualPeriod ))
       -- HistoryMsgs
@@ -755,13 +756,22 @@ type alias PregnancyDatingForm =
     , lmpDateConfident : Maybe Bool
     , chwLmpConfirmation : Maybe Bool
     , lmpDateNotConfidentReason : Maybe LmpDateNotConfidentReason
+    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , dateSelectorPopupState : Maybe (DateSelectorConfig Msg)
     }
 
 
 emptyPregnancyDatingForm : PregnancyDatingForm
 emptyPregnancyDatingForm =
-    PregnancyDatingForm Nothing Nothing False Nothing Nothing Nothing Nothing
+    { lmpDate = Nothing
+    , prePregnancyWeight = Nothing
+    , prePregnancyWeightDirty = False
+    , lmpDateConfident = Nothing
+    , chwLmpConfirmation = Nothing
+    , lmpDateNotConfidentReason = Nothing
+    , lateFirstVisitReason = Nothing
+    , dateSelectorPopupState = Nothing
+    }
 
 
 type alias ObstetricFormFirstStep =

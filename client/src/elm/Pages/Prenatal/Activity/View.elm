@@ -379,8 +379,7 @@ viewPregnancyDatingContent : Language -> NominalDate -> AssembledData -> Pregnan
 viewPregnancyDatingContent language currentDate assembled data =
     let
         form =
-            assembled.measurements.lastMenstrualPeriod
-                |> getMeasurementValueFunc
+            getMeasurementValueFunc assembled.measurements.lastMenstrualPeriod
                 |> lastMenstrualPeriodFormWithDefault data.form
 
         ( newLmpInputSection, newLmpInputTasksCompleted, newLmpInputTasksTotal ) =
@@ -446,6 +445,45 @@ viewPregnancyDatingContent language currentDate assembled data =
             , 3 + derivedTasksTotal
             )
 
+        ( lateFirstVisitInput, lateFirstVisitTasksCompleted, lateFirstVisitTasksTotal ) =
+            Maybe.map2 calculateEGAWeeks
+                (assembled.encounter.startDate
+                    :: List.map (\( date, _, _ ) -> date) assembled.chwPreviousMeasurementsWithDates
+                    ++ List.map .startDate assembled.nursePreviousEncountersData
+                    |> List.sortWith Date.compare
+                    |> List.head
+                )
+                form.lmpDate
+                |> Maybe.map
+                    (\firstVisitEGAWeek ->
+                        if firstVisitEGAWeek > 12 then
+                            ( [ viewQuestionLabel language Translate.LateFirstANCVisitQuestion
+                              , viewCheckBoxSelectInput language
+                                    [ ReasonLackOfFunds
+                                    , ReasonLackOfHealthInsurance
+                                    , ReasonPartnerAccompanimentRequirement
+                                    , ReasonUndetectedPregnancy
+                                    , ReasonLongDistancesToHealthFacilities
+                                    , ReasonNegativePastExperiences
+                                    , ReasonTraditionalBeliefs
+                                    , ReasonLackOfAwarenessToANC
+                                    , ReasonDelayedRecognitionOfSymptoms
+                                    , ReasonOtherReasons
+                                    ]
+                                    []
+                                    form.lateFirstVisitReason
+                                    SetLateFirstVisitReason
+                                    Translate.LateFirstANCVisitReason
+                              ]
+                            , taskCompleted form.lateFirstVisitReason
+                            , 1
+                            )
+
+                        else
+                            ( [], 0, 0 )
+                    )
+                |> Maybe.withDefault ( [], 0, 0 )
+
         ( inputs, tasksCompleted, totalTasks ) =
             if assembled.encounter.encounterType == NurseEncounter then
                 let
@@ -483,28 +521,28 @@ viewPregnancyDatingContent language currentDate assembled data =
                                 ]
                         in
                         if form.chwLmpConfirmation == Just False then
-                            ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection
-                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted
-                            , 1 + newLmpInputTasksTotal
+                            ( chwLmpConfirmationSection lmpValueByChw ++ newLmpInputSection ++ lateFirstVisitInput
+                            , chwLmpConfirmationTasksCompleted + newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                            , 1 + newLmpInputTasksTotal + lateFirstVisitTasksTotal
                             )
 
                         else
-                            ( chwLmpConfirmationSection lmpValueByChw
-                            , chwLmpConfirmationTasksCompleted
-                            , 1
+                            ( chwLmpConfirmationSection lmpValueByChw ++ lateFirstVisitInput
+                            , chwLmpConfirmationTasksCompleted + lateFirstVisitTasksCompleted
+                            , 1 + lateFirstVisitTasksTotal
                             )
                     )
                     lmpValueTakenByChw
                     |> Maybe.withDefault
-                        ( newLmpInputSection
-                        , newLmpInputTasksCompleted
-                        , newLmpInputTasksTotal
+                        ( newLmpInputSection ++ lateFirstVisitInput
+                        , newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                        , newLmpInputTasksTotal + lateFirstVisitTasksTotal
                         )
 
             else
-                ( newLmpInputSection
-                , newLmpInputTasksCompleted
-                , newLmpInputTasksTotal
+                ( newLmpInputSection ++ lateFirstVisitInput
+                , newLmpInputTasksCompleted + lateFirstVisitTasksCompleted
+                , newLmpInputTasksTotal + lateFirstVisitTasksTotal
                 )
 
         ( edd, ega ) =

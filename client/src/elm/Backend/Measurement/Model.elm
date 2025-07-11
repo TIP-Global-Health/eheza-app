@@ -656,6 +656,7 @@ type alias LastMenstrualPeriodValue =
     , prePregnancyWeight : Maybe WeightInKg
     , confident : Bool
     , notConfidentReason : Maybe LmpDateNotConfidentReason
+    , lateFirstVisitReason : Maybe LateFirstANCVisitReason
     , confirmation : Bool
     }
 
@@ -664,6 +665,19 @@ type LmpDateNotConfidentReason
     = ReasonIrregularMenses
     | ReasonOnFamilyPlanningMethod
     | ReasonCanNotRememberDates
+
+
+type LateFirstANCVisitReason
+    = ReasonLackOfFunds
+    | ReasonLackOfHealthInsurance
+    | ReasonPartnerAccompanimentRequirement
+    | ReasonUndetectedPregnancy
+    | ReasonLongDistancesToHealthFacilities
+    | ReasonNegativePastExperiences
+    | ReasonTraditionalBeliefs
+    | ReasonLackOfAwarenessToANC
+    | ReasonDelayedRecognitionOfSymptoms
+    | ReasonOtherReasons
 
 
 type alias LastMenstrualPeriod =

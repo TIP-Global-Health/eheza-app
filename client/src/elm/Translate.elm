@@ -926,6 +926,8 @@ type TranslationId
     | LabResultsHistoryModeLabel LabResultsHistoryMode
     | LabResultsNormalRange LabResultsHistoryMode
     | LabResultsPaneHeader LabResultsCurrentMode
+    | LateFirstANCVisitQuestion
+    | LateFirstANCVisitReason LateFirstANCVisitReason
     | LastChecked
     | LastContacted
     | LastSuccesfulContactLabel
@@ -9934,6 +9936,74 @@ translationSet trans =
             , kinyarwanda = Just "Isuzuma riheruka"
             , kirundi = Just "Kurabwa ubwanyuma"
             }
+
+        LateFirstANCVisitQuestion ->
+            { english = "Why has the patient NOT had an ANC visit in her first trimester"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        LateFirstANCVisitReason reason ->
+            case reason of
+                ReasonLackOfFunds ->
+                    { english = "Poverty/lack of funds for transport or services"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonLackOfHealthInsurance ->
+                    { english = "Lack of health insurance"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonPartnerAccompanimentRequirement ->
+                    { english = "Partner accompaniment requirement for 1st visit"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonUndetectedPregnancy ->
+                    { english = "Unplanned or undetected pregnancies"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonLongDistancesToHealthFacilities ->
+                    { english = "Long distances to health facilities"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonNegativePastExperiences ->
+                    { english = "Negative past experiences with providers/ facility"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonTraditionalBeliefs ->
+                    { english = "Traditional beliefs about hiding early pregnancy"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonLackOfAwarenessToANC ->
+                    { english = "Lack of awareness about the importance of early ANC"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonDelayedRecognitionOfSymptoms ->
+                    { english = "Delayed recognition of pregnancy symptoms"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ReasonOtherReasons ->
+                    { english = "Other reasons"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         LastContacted ->
             { english = "Last Contacted"

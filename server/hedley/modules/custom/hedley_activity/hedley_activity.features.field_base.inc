@@ -1126,6 +1126,40 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'datetime',
   );
 
+  // Exported field_base: 'field_late_first_visit_reason'.
+  $field_bases['field_late_first_visit_reason'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_late_first_visit_reason',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'lack-of-funds' => 'Lack Of Funds',
+        'lack-of-health-insurance' => 'Lack Of Health Insurance',
+        'partner-accompaniment-requirement' => 'Partner Accompaniment Requirement',
+        'undetected-pregnancy' => 'Undetected Pregnancy',
+        'long-distances-to-health-facilities' => 'Long Distances To Health Facilities',
+        'negative-past-experiences' => 'Negative Past Experiences',
+        'traditional-beliefs' => 'Traditional Beliefs',
+        'lack-of-awareness-to-anc' => 'Lack Of Awareness To ANC',
+        'delayed-recognition-of-symptoms' => 'Delayed Recognition Of Symptoms',
+        'other-reasons' => 'Other Reasons',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_legs'.
   $field_bases['field_legs'] = array(
     'active' => 1,
