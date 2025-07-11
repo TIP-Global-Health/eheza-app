@@ -5777,7 +5777,7 @@ function hedley_activity_field_default_field_instances() {
       'weight' => 7,
     ),
   );
-  
+
   // Exported field_instance:
   // 'node-last_menstrual_period-field_late_first_visit_reason'.
   $field_instances['node-last_menstrual_period-field_late_first_visit_reason'] = array(
@@ -5814,7 +5814,7 @@ function hedley_activity_field_default_field_instances() {
       'type' => 'options_buttons',
       'weight' => 9,
     ),
-  );  
+  );
 
   // Exported field_instance:
   // 'node-last_menstrual_period-field_not_confident_reason'.
@@ -6414,6 +6414,44 @@ function hedley_activity_field_default_field_instances() {
       'settings' => array(),
       'type' => 'options_buttons',
       'weight' => 8,
+    ),
+  );
+
+  // Exported field_instance:
+  // 'node-medical_history-field_preeclampsia_in_family'.
+  $field_instances['node-medical_history-field_preeclampsia_in_family'] = array(
+    'bundle' => 'medical_history',
+    'default_value' => NULL,
+    'deleted' => 0,
+    'description' => '',
+    'display' => array(
+      'default' => array(
+        'label' => 'above',
+        'module' => 'list',
+        'settings' => array(),
+        'type' => 'list_default',
+        'weight' => 10,
+      ),
+      'teaser' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
+    ),
+    'entity_type' => 'node',
+    'field_name' => 'field_preeclampsia_in_family',
+    'label' => 'Preeclampsia in family',
+    'required' => 0,
+    'settings' => array(
+      'user_register_form' => FALSE,
+    ),
+    'widget' => array(
+      'active' => 1,
+      'module' => 'options',
+      'settings' => array(),
+      'type' => 'options_select',
+      'weight' => 11,
     ),
   );
 
@@ -16149,6 +16187,7 @@ function hedley_activity_field_default_field_instances() {
   t('Infectious Disease History');
   t('Lactation signs');
   t('Last Menstrual Period');
+  t('Late first visit reason');
   t('Leave blank -- it will be entered automatically.');
   t('Leave blank -- it will be filled in automatically.');
   t('Leave this blank -- it will be automatically generated.');
@@ -16181,6 +16220,7 @@ function hedley_activity_field_default_field_instances() {
   t('Postpartum mother');
   t('Pre-pregnancy Weight');
   t('PreTerm Pregnancy');
+  t('Preeclampsia in family');
   t('Prenatal Encounter');
   t('Prenatal Health Education');
   t('Previous Delivery (Partially DEPRECATED)');

@@ -736,7 +736,14 @@ type alias MedicalHistoryValue =
     , physicalConditions : EverySet MedicalHistoryPhysicalCondition
     , infectiousDiseases : EverySet MedicalHistoryInfectiousDisease
     , mentalHealthIssues : EverySet MedicalHistoryMentalHealthIssue
+    , preeclampsiaInFamily : OccursInFamilySign
     }
+
+
+type OccursInFamilySign
+    = DoesOccur
+    | DoesNotOccur
+    | NotKnownIfOccurs
 
 
 type MedicationSign

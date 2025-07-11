@@ -3104,6 +3104,13 @@ medicalFormInputsAndTasks language currentDate assembled form =
             (Just NoMedicalHistorySigns)
             SetMedicalHistorySigns
             Translate.MedicalHistorySign
+      , viewQuestionLabel language Translate.MedicalHistoryPreeclampsiaInFamilyQuestion
+      , viewCheckBoxSelectInput language
+            [ DoesOccur, DoesNotOccur ]
+            [ NotKnownIfOccurs ]
+            form.preeclampsiaInFamily
+            SetPreeclampsiaInFamily
+            Translate.OccursInFamilySign
       , viewQuestionLabel language Translate.MedicalHistoryPhysicalConditionsReviewQuestion
       , viewCheckBoxMultipleSelectInput language
             [ PhysicalConditionUterineMyomaCurrent

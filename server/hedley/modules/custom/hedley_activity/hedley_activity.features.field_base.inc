@@ -1835,6 +1835,33 @@ function hedley_activity_field_default_field_bases() {
     'type' => 'list_text',
   );
 
+  // Exported field_base: 'field_preeclampsia_in_family'.
+  $field_bases['field_preeclampsia_in_family'] = array(
+    'active' => 1,
+    'cardinality' => 1,
+    'deleted' => 0,
+    'entity_id_type' => NULL,
+    'entity_types' => array(),
+    'field_name' => 'field_preeclampsia_in_family',
+    'indexes' => array(
+      'value' => array(
+        0 => 'value',
+      ),
+    ),
+    'locked' => 0,
+    'module' => 'list',
+    'settings' => array(
+      'allowed_values' => array(
+        'yes' => 'Yes',
+        'no' => 'No',
+        'do-not-know' => 'Don\'t know',
+      ),
+      'allowed_values_function' => '',
+    ),
+    'translatable' => 0,
+    'type' => 'list_text',
+  );
+
   // Exported field_base: 'field_prenatal_encounter'.
   $field_bases['field_prenatal_encounter'] = array(
     'active' => 1,

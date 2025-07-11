@@ -4858,3 +4858,32 @@ medicalHistoryMentalHealthIssueFromString sign =
 
         _ ->
             Nothing
+
+
+occursInFamilySignToString : OccursInFamilySign -> String
+occursInFamilySignToString sign =
+    case sign of
+        DoesOccur ->
+            "yes"
+
+        DoesNotOccur ->
+            "no"
+
+        NotKnownIfOccurs ->
+            "do-not-know"
+
+
+occursInFamilySignFromString : String -> Maybe OccursInFamilySign
+occursInFamilySignFromString sign =
+    case sign of
+        "yes" ->
+            Just DoesOccur
+
+        "no" ->
+            Just DoesNotOccur
+
+        "do-not-know" ->
+            Just NotKnownIfOccurs
+
+        _ ->
+            Nothing

@@ -607,6 +607,23 @@ update language currentDate id isLabTech db msg model =
             , []
             )
 
+        SetPreeclampsiaInFamily value ->
+            let
+                form =
+                    medicalHistoryForm
+
+                updatedForm =
+                    { form | preeclampsiaInFamily = Just value }
+
+                updatedData =
+                    model.historyData
+                        |> (\data -> { data | medicalForm = updatedForm })
+            in
+            ( { model | historyData = updatedData }
+            , Cmd.none
+            , []
+            )
+
         SetMedicalHistoryPhysicalCondition value ->
             let
                 form =
