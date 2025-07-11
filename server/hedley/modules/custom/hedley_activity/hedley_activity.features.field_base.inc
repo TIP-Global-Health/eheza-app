@@ -1147,7 +1147,7 @@ function hedley_activity_field_default_field_bases() {
         'lack-of-health-insurance' => 'Lack Of Health Insurance',
         'partner-accompaniment-requirement' => 'Partner Accompaniment Requirement',
         'undetected-pregnancy' => 'Undetected Pregnancy',
-        'long-distances-to-health-facilities' => 'Long Distances To Health Hacilities',
+        'long-distances-to-health-facilities' => 'Long Distances To Health Facilities',
         'negative-past-experiences' => 'Negative Past Experiences',
         'traditional-beliefs' => 'Traditional Beliefs',
         'lack-of-awareness-to-anc' => 'Lack Of Awareness To ANC',
