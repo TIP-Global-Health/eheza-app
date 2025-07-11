@@ -499,6 +499,7 @@ expectNextStepsTask currentDate assembled task =
                                     , DiagnosisCandidiasis
                                     , DiagnosisGonorrhea
                                     , DiagnosisTrichomonasOrBacterialVaginosis
+                                    , DiagnosisModerateAnemiaInitialPhase
                                     ]
                                     assembled
                                 || continuousHypertensionTreatmentRequired assembled
@@ -652,6 +653,13 @@ nextStepsTaskCompleted currentDate assembled task =
 
                     else
                         True
+
+                anemiaTreatmentCompleted =
+                    if diagnosed DiagnosisModerateAnemiaInitialPhase assembled then
+                        reinforceTreatmentSignsCompleted assembled.measurements
+
+                    else
+                        True
             in
             medicationDistributionCompleted
                 && malariaTreatmentCompleted
@@ -661,6 +669,7 @@ nextStepsTaskCompleted currentDate assembled task =
                 && candidiasisTreatmentCompleted
                 && urinaryTractInfectionTreatmentCompleted
                 && mastitisTreatmentCompleted
+                && anemiaTreatmentCompleted
 
         NextStepsWait ->
             getMeasurementValueFunc assembled.measurements.labsResults
@@ -6517,11 +6526,6 @@ fefolAdministrationFormConfig =
     }
 
 
-resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveFefolDosageAndIcon language currentDate person =
-    Just ( "200 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
-
-
 folateAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 folateAdministrationFormConfig =
     { medication = FolicAcid
@@ -6557,11 +6561,6 @@ mmsAdministrationFormConfig =
     , setReasonForNonAdministration = SetMMSReasonForNonAdministration
     , resolveDosageAndIconFunc = resolveMMSDosageAndIcon
     }
-
-
-resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveMMSDosageAndIcon language currentDate person =
-    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 mebendazoleAdministrationFormConfig : MedicationAdministrationFormConfig Msg

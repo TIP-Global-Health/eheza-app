@@ -12,7 +12,14 @@ import Gizra.NominalDate exposing (NominalDate, diffDays)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Maybe.Extra exposing (andMap, isJust, isNothing, or, unwrap)
-import Measurement.Utils exposing (generateVaccinationProgressForVaccine, toEverySet, viewAdministeredMedicationCustomLabel, viewAdministeredMedicationQuestion)
+import Measurement.Utils
+    exposing
+        ( generateVaccinationProgressForVaccine
+        , toEverySet
+        , viewAdministeredMedicationCustomLabel
+        , viewAdministeredMedicationQuestion
+        , viewReinforceAdherenceQuestion
+        )
 import Measurement.View exposing (viewActionTakenLabel, viewMultipleTreatmentWithDosage, viewTreatmentOptionWithDosage)
 import Pages.Prenatal.Model exposing (..)
 import Pages.Prenatal.Types exposing (..)
@@ -543,6 +550,9 @@ medicationDistributionFormWithDefaultInitialPhase form saved =
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
                 , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
+                , reinforceFefol = or form.reinforceFefol (Maybe.map (EverySet.member ReinforceSignFefol) value.reinforceTreatmentSigns)
+                , reinforceMMS = or form.reinforceMMS (Maybe.map (EverySet.member ReinforceSignMMS) value.reinforceTreatmentSigns)
+                , repeatHemoglobinTest = or form.repeatHemoglobinTest (Maybe.map (EverySet.member ReinforceSignRepeatHemoglobinTest) value.reinforceTreatmentSigns)
                 }
             )
 
@@ -579,6 +589,9 @@ medicationDistributionFormWithDefaultRecurrentPhase form saved =
                 , recommendedTreatmentSigns = or form.recommendedTreatmentSigns (Maybe.map EverySet.toList value.recommendedTreatmentSigns)
                 , hypertensionAvoidingGuidanceReason = maybeValueConsideringIsDirtyField form.hypertensionAvoidingGuidanceReasonDirty form.hypertensionAvoidingGuidanceReason hypertensionAvoidingGuidanceReason
                 , hypertensionAvoidingGuidanceReasonDirty = form.hypertensionAvoidingGuidanceReasonDirty
+                , reinforceFefol = or form.reinforceFefol (Maybe.map (EverySet.member ReinforceSignFefol) value.reinforceTreatmentSigns)
+                , reinforceMMS = or form.reinforceMMS (Maybe.map (EverySet.member ReinforceSignMMS) value.reinforceTreatmentSigns)
+                , repeatHemoglobinTest = or form.repeatHemoglobinTest (Maybe.map (EverySet.member ReinforceSignRepeatHemoglobinTest) value.reinforceTreatmentSigns)
                 }
             )
 
@@ -637,7 +650,10 @@ toMedicationDistributionValueWithDefault valueForNone saved form =
         |> toMedicationDistributionValue valueForNone
 
 
-toMedicationDistributionValue : MedicationDistributionSign -> MedicationDistributionForm -> Maybe PrenatalMedicationDistributionValue
+toMedicationDistributionValue :
+    MedicationDistributionSign
+    -> MedicationDistributionForm
+    -> Maybe PrenatalMedicationDistributionValue
 toMedicationDistributionValue valueForNone form =
     let
         distributionSigns =
@@ -661,20 +677,38 @@ toMedicationDistributionValue valueForNone form =
             form.nonAdministrationSigns
                 |> Maybe.withDefault EverySet.empty
                 |> ifEverySetEmpty NoMedicationNonAdministrationSigns
-                |> Just
 
         recommendedTreatmentSigns =
             Maybe.map EverySet.fromList form.recommendedTreatmentSigns
-                |> Just
 
         avoidingGuidanceReason =
             Maybe.map EverySet.singleton form.hypertensionAvoidingGuidanceReason
-                |> Just
+
+        reinforceTreatmentSigns =
+            if List.all isNothing [ form.reinforceFefol, form.reinforceMMS, form.repeatHemoglobinTest ] then
+                -- Form values not set, meaning that renforce treatment was not required.
+                -- As a result, we need to set it to Nothing at value (and not the
+                -- "no value" sign).
+                Nothing
+
+            else
+                Maybe.Extra.combine
+                    [ ifNullableTrue ReinforceSignFefol form.reinforceFefol
+                    , ifNullableTrue ReinforceSignMMS form.reinforceMMS
+                    , ifNullableTrue ReinforceSignRepeatHemoglobinTest form.repeatHemoglobinTest
+                    ]
+                    |> Maybe.map (List.foldl EverySet.union EverySet.empty >> ifEverySetEmpty NoReinforceTreatmentSigns)
     in
-    Maybe.map PrenatalMedicationDistributionValue distributionSigns
-        |> andMap nonAdministrationSigns
-        |> andMap recommendedTreatmentSigns
-        |> andMap avoidingGuidanceReason
+    Maybe.map
+        (\signs ->
+            { distributionSigns = signs
+            , nonAdministrationSigns = nonAdministrationSigns
+            , recommendedTreatmentSigns = recommendedTreatmentSigns
+            , avoidingGuidanceReason = avoidingGuidanceReason
+            , reinforceTreatmentSigns = reinforceTreatmentSigns
+            }
+        )
+        distributionSigns
 
 
 resolveMedicationDistributionInputsAndTasks :
@@ -769,6 +803,17 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
 
                     else
                         ( [], 0, 0 )
+
+                ( anemiaInputs, anemiaCompleted, anemiaActive ) =
+                    if diagnosedModerateAnemiaByPhase phase assembled then
+                        resolveReinforceTreatmentForAnemia language
+                            currentDate
+                            assembled.person
+                            setMedicationDistributionBoolInputMsg
+                            form
+
+                    else
+                        ( [], 0, 0 )
             in
             case phase of
                 PrenatalEncounterPhaseInitial ->
@@ -830,6 +875,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         ++ urinaryTractInfectionInputs
                         ++ candidiasisInputs
                         ++ mastitisInputs
+                        ++ anemiaInputs
                     , malariaCompleted
                         + hypertensionCompleted
                         + syphilisCompleted
@@ -837,6 +883,7 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         + urinaryTractInfectionCompleted
                         + candidiasisCompleted
                         + mastitisCompleted
+                        + anemiaCompleted
                     , malariaActive
                         + syphilisActive
                         + hypertensionActive
@@ -844,18 +891,98 @@ resolveMedicationDistributionInputsAndTasks language currentDate phase assembled
                         + urinaryTractInfectionActive
                         + candidiasisActive
                         + mastitisActive
+                        + anemiaActive
                     )
 
                 PrenatalEncounterPhaseRecurrent ->
-                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs
-                    , malariaCompleted + syphilisCompleted + hypertensionCompleted
-                    , malariaActive + syphilisActive + hypertensionActive
+                    ( malariaInputs ++ syphilisInputs ++ hypertensionInputs ++ anemiaInputs
+                    , malariaCompleted + syphilisCompleted + hypertensionCompleted + anemiaCompleted
+                    , malariaActive + syphilisActive + hypertensionActive + anemiaActive
                     )
     in
     ( inputsByMedications ++ inputsByDiagnoses
     , completedByMedications + completedByDiagnoses
     , activeByMedications + activeByDiagnoses
     )
+
+
+resolveReinforceTreatmentForAnemia :
+    Language
+    -> NominalDate
+    -> Person
+    -> ((Bool -> MedicationDistributionForm -> MedicationDistributionForm) -> Bool -> msg)
+    -> MedicationDistributionForm
+    -> ( List (Html msg), Int, Int )
+resolveReinforceTreatmentForAnemia language currentDate person setMedicationDistributionBoolInputMsg form =
+    let
+        fefolInstructions =
+            resolveFefolDosageAndIcon language currentDate person
+                |> Maybe.map
+                    (\( dosage, icon, prescription ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign Fefol) (" (" ++ dosage ++ ")") icon "" Nothing
+                            , div [ class "prescription" ] [ text <| prescription ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        fefolUpdateFunc value form_ =
+            { form_ | reinforceFefol = Just value }
+
+        mmsInstructions =
+            resolveMMSDosageAndIcon language currentDate person
+                |> Maybe.map
+                    (\( _, icon, _ ) ->
+                        div [ class "instructions" ]
+                            [ viewAdministeredMedicationCustomLabel language Translate.ReinforceAdherenceTo (Translate.MedicationDistributionSign MMS) "" icon "" Nothing
+                            , div [ class "prescription" ] [ text <| translate language Translate.OneTabletByMouthDaily ++ "." ]
+                            ]
+                    )
+                |> Maybe.withDefault emptyNode
+
+        mmsUpdateFunc value form_ =
+            { form_ | reinforceMMS = Just value }
+
+        repeatHemoglobinTestUpdateFunc value form_ =
+            { form_ | repeatHemoglobinTest = Just value }
+    in
+    ( [ fefolInstructions
+      , viewReinforceAdherenceQuestion language (Translate.MedicationDistributionSign Fefol)
+      , viewBoolInput
+            language
+            form.reinforceFefol
+            (setMedicationDistributionBoolInputMsg fefolUpdateFunc)
+            "fefol-medication"
+            Nothing
+      , mmsInstructions
+      , viewReinforceAdherenceQuestion language (Translate.MedicationDistributionSign MMS)
+      , viewBoolInput
+            language
+            form.reinforceMMS
+            (setMedicationDistributionBoolInputMsg mmsUpdateFunc)
+            "mms-medication"
+            Nothing
+      , viewQuestionLabel language Translate.RepeatHemoglobinTestQuestion
+      , viewBoolInput
+            language
+            form.repeatHemoglobinTest
+            (setMedicationDistributionBoolInputMsg repeatHemoglobinTestUpdateFunc)
+            "repeate-hemoglobin-test"
+            Nothing
+      ]
+    , taskCompleted form.reinforceFefol + taskCompleted form.reinforceMMS + taskCompleted form.repeatHemoglobinTest
+    , 3
+    )
+
+
+resolveFefolDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveFefolDosageAndIcon language currentDate person =
+    Just ( "200 mg/0.4 mg", "icon-pills", translate language Translate.AdministerFefolHelper )
+
+
+resolveMMSDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
+resolveMMSDosageAndIcon language currentDate person =
+    Just ( "", "icon-pills", translate language Translate.AdministerMMSHelper )
 
 
 resolveRecommendedTreatmentForDiagnosedHypertensionInputsAndTasks :
@@ -1758,20 +1885,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
 
             else
                 Nothing
-
-        resolveModerateAnemiaSet diagnosis =
-            if
-                diagnosed diagnosis assembled
-                    && (not <| referToHospitalDueToAdverseEventForAnemiaTreatment assembled)
-            then
-                Just
-                    ( Translate.MedicationDistributionHelperAnemia
-                    , [ Iron, FolicAcid ]
-                    , []
-                    )
-
-            else
-                Nothing
     in
     case phase of
         PrenatalEncounterPhaseInitial ->
@@ -1859,7 +1972,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
                 [ mebendazoleSet
                 , resolveHIVPositiveSet DiagnosisHIVInitialPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipInitialPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaInitialPhase
                 , gonorheaSet
                 , trichomonasOrBVSet
                 , vitaminASet
@@ -1869,7 +1981,6 @@ resolveRequiredMedicationsSet language currentDate phase assembled =
             Maybe.Extra.values
                 [ resolveHIVPositiveSet DiagnosisHIVRecurrentPhase
                 , resolveDiscordantPartnershipSet DiagnosisDiscordantPartnershipRecurrentPhase
-                , resolveModerateAnemiaSet DiagnosisModerateAnemiaRecurrentPhase
                 ]
 
 
@@ -2851,6 +2962,13 @@ recommendedTreatmentMeasurementTaken allowedSigns measurements =
         |> Maybe.withDefault False
 
 
+reinforceTreatmentSignsCompleted : PrenatalMeasurements -> Bool
+reinforceTreatmentSignsCompleted measurements =
+    getMeasurementValueFunc measurements.medicationDistribution
+        |> Maybe.map (.reinforceTreatmentSigns >> isJust)
+        |> Maybe.withDefault False
+
+
 resolveRecommendedTreatmentSectionState : Bool -> List RecommendedTreatmentSign -> Maybe (List RecommendedTreatmentSign) -> ( Int, Int )
 resolveRecommendedTreatmentSectionState isDiagnosed allowedSigns currentSigns =
     if isDiagnosed then
@@ -3049,6 +3167,16 @@ diagnosedMalariaByPhase phase assembled =
                 , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
                 ]
                 assembled
+
+
+diagnosedModerateAnemiaByPhase : PrenatalEncounterPhase -> AssembledData -> Bool
+diagnosedModerateAnemiaByPhase phase assembled =
+    case phase of
+        PrenatalEncounterPhaseInitial ->
+            diagnosed DiagnosisModerateAnemiaInitialPhase assembled
+
+        PrenatalEncounterPhaseRecurrent ->
+            diagnosed DiagnosisModerateAnemiaRecurrentPhase assembled
 
 
 diagnosedSyphilisByPhase : PrenatalEncounterPhase -> AssembledData -> Bool

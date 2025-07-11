@@ -1769,6 +1769,41 @@ avoidingGuidanceReasonToString value =
             "hypertension-other"
 
 
+reinforceTreatmentSignFromString : String -> Maybe ReinforceTreatmentSign
+reinforceTreatmentSignFromString value =
+    case value of
+        "anemia-fefol" ->
+            Just ReinforceSignFefol
+
+        "anemia-mms" ->
+            Just ReinforceSignMMS
+
+        "anemia-repeat-test" ->
+            Just ReinforceSignRepeatHemoglobinTest
+
+        "none" ->
+            Just NoReinforceTreatmentSigns
+
+        _ ->
+            Nothing
+
+
+reinforceTreatmentSignToString : ReinforceTreatmentSign -> String
+reinforceTreatmentSignToString value =
+    case value of
+        ReinforceSignFefol ->
+            "anemia-fefol"
+
+        ReinforceSignMMS ->
+            "anemia-mms"
+
+        ReinforceSignRepeatHemoglobinTest ->
+            "anemia-repeat-test"
+
+        NoReinforceTreatmentSigns ->
+            "none"
+
+
 illnessSymptomToString : IllnessSymptom -> String
 illnessSymptomToString symptom =
     case symptom of

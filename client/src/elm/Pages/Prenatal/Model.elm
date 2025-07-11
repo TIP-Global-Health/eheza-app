@@ -72,6 +72,11 @@ type alias MedicationDistributionForm =
     , recommendedTreatmentSigns : Maybe (List RecommendedTreatmentSign)
     , hypertensionAvoidingGuidanceReason : Maybe AvoidingGuidanceReason
     , hypertensionAvoidingGuidanceReasonDirty : Bool
+
+    -- Moderate anemia treatment.
+    , reinforceFefol : Maybe Bool
+    , reinforceMMS : Maybe Bool
+    , repeatHemoglobinTest : Maybe Bool
     }
 
 
@@ -93,6 +98,9 @@ emptyMedicationDistributionForm =
     , recommendedTreatmentSigns = Nothing
     , hypertensionAvoidingGuidanceReason = Nothing
     , hypertensionAvoidingGuidanceReasonDirty = False
+    , reinforceFefol = Nothing
+    , reinforceMMS = Nothing
+    , repeatHemoglobinTest = Nothing
     }
 
 

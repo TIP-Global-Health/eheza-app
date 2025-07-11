@@ -1176,6 +1176,7 @@ type TranslationId
     | ObstetricHistorySignsReviewQuestion
     | OK
     | On
+    | OneTabletByMouthDaily
     | OneVisit
     | OnceAMonth
     | OnceAWeek
@@ -1401,11 +1402,14 @@ type TranslationId
     | RegisterNewContact
     | RegisterNewParticipant
     | RegistratingHealthCenter
+    | ReinforceAdherenceQuestion
+    | ReinforceAdherenceTo
     | RemainingForDownloadLabel
     | RemainingForUploadLabel
     | RemindMe
     | RemindMePhrase
     | RenalDisease
+    | RepeatHemoglobinTestQuestion
     | ReportAge String
     | ReportComponentAntenatal ReportComponentAntenatal
     | ReportComponentNCD ReportComponentNCD
@@ -2797,7 +2801,7 @@ translationSet trans =
             }
 
         AdministerCalciumHelper ->
-            { english = "1 tablet 500 mg by mouth monthly"
+            { english = "1 tablet 500 mg by mouth daily"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -2809,10 +2813,7 @@ translationSet trans =
             }
 
         AdministerFefolHelper ->
-            { english = "1 tablet 200mg by mouth daily (equivalent of 65mg Iron and 4mg of Folic Acid)"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
+            translationSet OneTabletByMouthDaily
 
         AdministerFolicAcidHelper ->
             { english = "1 tablet 400 IU by mouth daily for 3 months"
@@ -13818,6 +13819,12 @@ translationSet trans =
             , kirundi = Just "Kuri"
             }
 
+        OneTabletByMouthDaily ->
+            { english = "1 tablet by mouth daily"
+            , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
+            , kirundi = Just "Ikinini kimwe co kumira ku munsi buri munsi"
+            }
+
         OneVisit ->
             { english = "One visit"
             , kinyarwanda = Just "Inshuro imwe"
@@ -18444,16 +18451,10 @@ translationSet trans =
                     }
 
                 TreatmentHydrochlorothiazide ->
-                    { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
-                    , kirundi = Just "Ikinini kimwe co kumira ku munsi buri munsi"
-                    }
+                    translationSet OneTabletByMouthDaily
 
                 TreatmentAmlodipine ->
-                    { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
-                    , kirundi = Just "Ikinini kimwe co kumira ku munsi buri munsi"
-                    }
+                    translationSet OneTabletByMouthDaily
 
                 TreatmentNifedipine ->
                     { english = "1 tablet by mouth twice a day"
@@ -18468,16 +18469,10 @@ translationSet trans =
                     }
 
                 TreatmentLisinopril ->
-                    { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
-                    , kirundi = Just "Ikinini kimwe co kumira ku munsi buri munsi"
-                    }
+                    translationSet OneTabletByMouthDaily
 
                 TreatmentAtenlol ->
-                    { english = "1 tablet by mouth daily"
-                    , kinyarwanda = Just "ikinini kimwe mu kanwa buri munsi"
-                    , kirundi = Just "Ikinini kimwe co kumira ku munsi buri munsi"
-                    }
+                    translationSet OneTabletByMouthDaily
 
                 TreatmentCloxacillin ->
                     { english = "2 capsules by mouth 3 times a day for 7 days"
@@ -19073,10 +19068,28 @@ translationSet trans =
             , kirundi = Just "Ivuriro ryandika/kwiyandikisha kw'ivuriro"
             }
 
+        ReinforceAdherenceQuestion ->
+            { english = "Have you counseled the patient on adherence to"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        ReinforceAdherenceTo ->
+            { english = "Reinforce adherence to"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         RenalDisease ->
             { english = "Renal Disease"
             , kinyarwanda = Just "Indwara z'impyiko"
             , kirundi = Just "Ingwara yo mu mafyigo"
+            }
+
+        RepeatHemoglobinTestQuestion ->
+            { english = "Have you counseled the patient to return to the health center to repeat the hemoglobin test in four weeks"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
             }
 
         RemainingForDownloadLabel ->
