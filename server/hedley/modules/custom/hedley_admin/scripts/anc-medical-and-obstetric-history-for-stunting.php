@@ -41,8 +41,7 @@ if (empty($newborns)) {
 // Create mapping between newborn ID and its pregnancy.
 $newborns_mapping = [];
 foreach ($newborns as $newborn) {
-  $newborns_mapping[$newborn['field_newborn_target_id']] = $newborn['entity_id'];
-  $newborns_ids[] = $newborn['field_newborn_target_id'];
+  $newborns_mapping[$newborn->field_newborn_target_id] = $newborn->entity_id;
 }
 
 $newborns_ids = array_keys($newborns_mapping);
@@ -62,6 +61,7 @@ if (empty($newborns_heights_ids)) {
 
 $stunting_heights = db_select('field_data_field_zscore_age', 'zscores')
   ->fields('zscores', ['entity_id'])
+  ->condition('entity_id', $newborns_heights_ids, 'IN')
   ->condition('field_zscore_age_value', -2, '<')
   ->execute()
   ->fetchAllAssoc('entity_id');
@@ -70,5 +70,111 @@ if (empty($stunting_heights_ids)) {
   drush_print("There are no height measurements indicating stunting for newborns in DB.");
   return;
 }
+
+$data = [];
+$chunks = array_chunk($stunting_heights_ids, $batch);
+foreach ($chunks as $ids) {
+  // Free up memory.
+  drupal_static_reset();
+
+  $nodes = node_load_multiple($ids);
+  foreach ($nodes as $node) {
+    $child_id = $node->field_person[LANGUAGE_NONE][0]['target_id'];
+    $data[$child_id] = [
+      'child_id' => $child_id,
+      'pregnancy_id' => $newborns_mapping[$child_id],
+    ];
+  }
+}
+
+$chunks = array_chunk($data, $batch);
+foreach ($chunks as $chunk) {
+  foreach ($chunk as $child_data) {
+    $pregnancy = node_load($child_data['pregnancy_id']);
+    $data[$child_data['child_id']]['mother_id'] = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'prenatal_encounter')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_individual_participant', 'target_id', $child_data['pregnancy_id'])
+      ->propertyOrderBy('nid')
+      ->execute();
+
+    if (empty($result['node'])) {
+      continue;
+    }
+    $encounters = array_keys($result['node']);
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'medical_history')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', $encounters, 'IN')
+      ->range(0, 1)
+      ->execute();
+
+    if (!empty($result['node'])) {
+      $medical_history_signs = [];
+      $medical_history = node_load(key($result['node']));
+      $fields = [
+        $medical_history->field_medical_history[LANGUAGE_NONE],
+        $medical_history->field_physical_condition_history[LANGUAGE_NONE],
+        $medical_history->field_infectious_disease_history[LANGUAGE_NONE],
+        $medical_history->field_mental_health_issues[LANGUAGE_NONE],
+      ];
+      foreach ($fields as $field_values) {
+        foreach ($field_values as $item) {
+          if (in_array($item['value'], ['none', 'migrate'])) {
+            continue;
+          }
+          $medical_history_signs[] = $item['value'];
+        }
+      }
+      $data[$child_data['child_id']]['medical'] = implode(' & ', $medical_history_signs);
+    }
+
+    $query = new EntityFieldQuery();
+    $result = $query
+      ->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'obstetric_history_step2')
+      ->propertyCondition('status', NODE_PUBLISHED)
+      ->fieldCondition('field_prenatal_encounter', 'target_id', $encounters, 'IN')
+      ->range(0, 1)
+      ->execute();
+
+    if (!empty($result['node'])) {
+      $obstetric_history_signs = [];
+      $obstetric_history = node_load(key($result['node']));
+      $fields = [
+        $obstetric_history->field_obstetric_history[LANGUAGE_NONE],
+        $obstetric_history->field_previous_delivery_period[LANGUAGE_NONE],
+        $obstetric_history->field_obstetric_history_step2[LANGUAGE_NONE],
+        $obstetric_history->field_previous_delivery[LANGUAGE_NONE],
+      ];
+      foreach ($fields as $field_values) {
+        foreach ($field_values as $item) {
+          if (in_array($item['value'], ['none', 'migrate', 'neither'])) {
+            continue;
+          }
+          $obstetric_history_signs[] = $item['value'];
+        }
+      }
+      $data[$child_data['child_id']]['obstetric'] = implode(' & ', $obstetric_history_signs);
+    }
+  }
+}
+
+drush_print("Child ID,Mother ID,Medical,Obstetric");
+foreach ($data as $item) {
+  $child_id = $item['child_id'];
+  $mother_id = $item['mother_id'];
+  $medical = $item['medical'];
+  $obstetric = $item['obstetric'];
+  drush_print("$child_id,$mother_id,$medical,$obstetric");
+}
+
 
 drush_print("Done!");
