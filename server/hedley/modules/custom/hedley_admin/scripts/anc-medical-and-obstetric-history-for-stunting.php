@@ -25,80 +25,50 @@ $batch = drush_get_option('batch', 50);
 $memory_limit = drush_get_option('memory_limit', 800);
 
 
-$base_query = db_select('field_data_field_newborn', 'newborns')
+$query = db_select('field_data_field_newborn', 'newborns')
   ->fields('newborns', ['entity_id', 'field_newborn_target_id']);
 
+$newborns = $query
+  ->execute()
+  ->fetchAll();
 
-$count_query = clone $base_query;
-$count = $count_query->execute()->rowCount();
-
-if ($count == 0) {
+if (empty($newborns)) {
+  // No more items left.
   drush_print("There are no newborns in DB.");
-  exit;
+  return;
 }
 
-drush_print("Located $count newborns.");
-exit;
+// Create mapping between newborn ID and its pregnancy.
+$newborns_mapping = [];
+foreach ($newborns as $newborn) {
+  $newborns_mapping[$newborn['field_newborn_target_id']] = $newborn['entity_id'];
+  $newborns_ids[] = $newborn['field_newborn_target_id'];
+}
 
-while (TRUE) {
-  // Free up memory.
-  drupal_static_reset();
+$newborns_ids = array_keys($newborns_mapping);
+// Now we want all height (all types) measurements that contain
+// z-score that indicates stunting.
+$newborns_heights = db_select('field_data_field_person', 'persons')
+  ->fields('persons', ['entity_id'])
+  ->condition('bundle', HEDLEY_ACTIVITY_HEIGHT_BUNDLES, 'IN')
+  ->condition('field_person_target_id', $newborns_ids, 'IN')
+  ->execute()
+  ->fetchAllAssoc('entity_id');
+$newborns_heights_ids = array_keys($newborns_heights);
+if (empty($newborns_heights_ids)) {
+  drush_print("There are no height measurements for newborns in DB.");
+  return;
+}
 
-  $query = clone $base_query;
-  if ($nid) {
-    $query->condition('entity_id', $nid, '>');
-  }
-
-  $result = $query
-    ->range(0, $batch)
-    ->execute()
-    ->fetchAllAssoc('entity_id');
-
-  if (empty($result)) {
-    // No more items left.
-    break;
-  }
-
-  $ids = array_keys($result);
-  $nodes = node_load_multiple($ids);
-  $count = 0;
-  foreach ($nodes as $node) {
-    $fid = $node->field_photo[LANGUAGE_NONE][0]['fid'];
-    $file = file_load($fid);
-    $new_uri = str_replace('.jpg', '_r.jpg', $file->uri);
-
-    $file = file_copy($file, $new_uri, 'FILE_EXISTS_RENAME');
-    if (!$file) {
-      drush_print("Failed to rotate photo with ID $node->nid - copy file phase");
-      continue;
-    }
-
-    $image = image_load($file->uri);
-
-    try {
-      image_rotate($image, 90);
-      image_save($image);
-      file_save($file);
-    }
-    catch (Exception $e) {
-      drush_print("Failed to rotate photo with ID $node->nid - rotate image phase");
-    }
-
-    $node->field_photo[LANGUAGE_NONE][0]['fid'] = $file->fid;
-    $node->field_photo[LANGUAGE_NONE][0]['width'] = 600;
-    $node->field_photo[LANGUAGE_NONE][0]['height'] = 800;
-    node_save($node);
-    $count++;
-  }
-
-  $nid = end($ids);
-
-  drush_print("Successfully rotated $count photos.");
-
-  if (round(memory_get_usage() / 1048576) >= $memory_limit) {
-    drush_print(dt('Stopped before out of memory. Start process from the node ID @nid', ['@nid' => $nid]));
-    return;
-  }
+$stunting_heights = db_select('field_data_field_zscore_age', 'zscores')
+  ->fields('zscores', ['entity_id'])
+  ->condition('field_zscore_age_value', -2, '<')
+  ->execute()
+  ->fetchAllAssoc('entity_id');
+$stunting_heights_ids = array_keys($stunting_heights);
+if (empty($stunting_heights_ids)) {
+  drush_print("There are no height measurements indicating stunting for newborns in DB.");
+  return;
 }
 
 drush_print("Done!");
