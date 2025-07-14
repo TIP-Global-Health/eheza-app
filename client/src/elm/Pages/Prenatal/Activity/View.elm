@@ -4237,12 +4237,25 @@ resolveNextVisitDate assembled =
         |> Maybe.map
             (\egaWeekCurrent ->
                 let
+                    -- If moderate Anemia was diagnosed, next visit is supposed
+                    -- to take place within 4 weeks.
+                    moderateAnemiaDiagnosed =
+                        diagnosedAnyOf [ DiagnosisModerateAnemiaInitialPhase, DiagnosisModerateAnemiaRecurrentPhase ] assembled
+
                     gap =
                         if egaWeekCurrent < 20 then
-                            8
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                8
 
                         else if egaWeekCurrent < 26 then
-                            6
+                            if moderateAnemiaDiagnosed then
+                                4
+
+                            else
+                                6
 
                         else if egaWeekCurrent < 30 then
                             4
