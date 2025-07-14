@@ -2,9 +2,7 @@
 
 /**
  * @file
- * Rotates photos that were uploaded by old Chrome versions.
- *
- * Where the photo is a portrait, but got width 800 and height 600.
+ * Associate children with stunting to medical & obstetric history at ANC.
  *
  * Execution:  drush scr
  *   profiles/hedley/modules/custom/hedley_admin/scripts/anc-medical-and-obstetric-history-for-stunting.php.
@@ -34,7 +32,7 @@ $newborns = $query
 
 if (empty($newborns)) {
   // No more items left.
-  drush_print("There are no newborns in DB.");
+  drush_print('There are no newborns in DB.');
   return;
 }
 
@@ -45,8 +43,8 @@ foreach ($newborns as $newborn) {
 }
 
 $newborns_ids = array_keys($newborns_mapping);
-// Now we want all height (all types) measurements that contain
-// z-score that indicates stunting.
+// Now we want height (all types) measurements that contain
+// z-score which indicates stunting.
 $newborns_heights = db_select('field_data_field_person', 'persons')
   ->fields('persons', ['entity_id'])
   ->condition('bundle', HEDLEY_ACTIVITY_HEIGHT_BUNDLES, 'IN')
@@ -55,10 +53,11 @@ $newborns_heights = db_select('field_data_field_person', 'persons')
   ->fetchAllAssoc('entity_id');
 $newborns_heights_ids = array_keys($newborns_heights);
 if (empty($newborns_heights_ids)) {
-  drush_print("There are no height measurements for newborns in DB.");
+  drush_print('There are no height measurements for newborns in DB.');
   return;
 }
 
+// Stunting are those that got zscore value bellow -2.
 $stunting_heights = db_select('field_data_field_zscore_age', 'zscores')
   ->fields('zscores', ['entity_id'])
   ->condition('entity_id', $newborns_heights_ids, 'IN')
@@ -89,6 +88,9 @@ foreach ($chunks as $ids) {
 
 $chunks = array_chunk($data, $batch);
 foreach ($chunks as $chunk) {
+  // Free up memory.
+  drupal_static_reset();
+
   foreach ($chunk as $child_data) {
     $pregnancy = node_load($child_data['pregnancy_id']);
     $child = node_load($child_data['child_id']);
@@ -109,6 +111,7 @@ foreach ($chunks as $chunk) {
     }
     $encounters = array_keys($result['node']);
 
+    // Add medical history data.
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
@@ -142,6 +145,7 @@ foreach ($chunks as $chunk) {
       $data[$child->nid]['medical'] = implode(' & ', $medical_history_signs);
     }
 
+    // Add obstetric history data.
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
