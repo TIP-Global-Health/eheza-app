@@ -120,17 +120,21 @@ foreach ($chunks as $chunk) {
       $medical_history_signs = [];
       $medical_history = node_load(key($result['node']));
       $fields = [
-        $medical_history->field_medical_history[LANGUAGE_NONE],
-        $medical_history->field_physical_condition_history[LANGUAGE_NONE],
-        $medical_history->field_infectious_disease_history[LANGUAGE_NONE],
-        $medical_history->field_mental_health_issues[LANGUAGE_NONE],
+        'field_medical_history',
+        'field_physical_condition_history',
+        'field_infectious_disease_history',
+        'field_mental_health_issues',
       ];
-      foreach ($fields as $field_values) {
+      foreach ($fields as $field) {
+        $field_values = $medical_history->{$field}[LANGUAGE_NONE];
+        if (empty($field_values)) {
+          continue;
+        }
         foreach ($field_values as $item) {
           if (in_array($item['value'], ['none', 'migrate'])) {
             continue;
           }
-          $medical_history_signs[] = $item['value'];
+          $medical_history_signs[] = get_field_sign_label($field, $item['value']);
         }
       }
       $data[$child_data['child_id']]['medical'] = implode(' & ', $medical_history_signs);
@@ -149,17 +153,21 @@ foreach ($chunks as $chunk) {
       $obstetric_history_signs = [];
       $obstetric_history = node_load(key($result['node']));
       $fields = [
-        $obstetric_history->field_obstetric_history[LANGUAGE_NONE],
-        $obstetric_history->field_previous_delivery_period[LANGUAGE_NONE],
-        $obstetric_history->field_obstetric_history_step2[LANGUAGE_NONE],
-        $obstetric_history->field_previous_delivery[LANGUAGE_NONE],
+        'field_obstetric_history',
+        'field_previous_delivery_period',
+        'field_obstetric_history_step2',
+        'field_previous_delivery',
       ];
       foreach ($fields as $field_values) {
+        $field_values = $obstetric_history->{$field}[LANGUAGE_NONE];
+        if (empty($field_values)) {
+          continue;
+        }
         foreach ($field_values as $item) {
           if (in_array($item['value'], ['none', 'migrate', 'neither'])) {
             continue;
           }
-          $obstetric_history_signs[] = $item['value'];
+          $obstetric_history_signs[] = get_field_sign_label($field, $item['value']);
         }
       }
       $data[$child_data['child_id']]['obstetric'] = implode(' & ', $obstetric_history_signs);
@@ -178,3 +186,10 @@ foreach ($data as $item) {
 
 
 drush_print("Done!");
+
+function get_field_sign_label($field, $value) {
+  $field_info = field_info_field($field);
+  $allowed_values = $field_info['settings']['allowed_values'];
+
+  return isset($allowed_values[$value]) ? $allowed_values[$value] : $value;
+}
