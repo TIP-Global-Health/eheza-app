@@ -91,7 +91,9 @@ $chunks = array_chunk($data, $batch);
 foreach ($chunks as $chunk) {
   foreach ($chunk as $child_data) {
     $pregnancy = node_load($child_data['pregnancy_id']);
-    $data[$child_data['child_id']]['mother_id'] = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
+    $child = node_load($child_data['child_id']);
+    $data[$child->nid]['birth_date'] = explode(' ', $child->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $data[$child->nid]['mother_id'] = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
 
     $query = new EntityFieldQuery();
     $result = $query
@@ -137,7 +139,7 @@ foreach ($chunks as $chunk) {
           $medical_history_signs[] = get_field_sign_label($field, $item['value']);
         }
       }
-      $data[$child_data['child_id']]['medical'] = implode(' & ', $medical_history_signs);
+      $data[$child->nid]['medical'] = implode(' & ', $medical_history_signs);
     }
 
     $query = new EntityFieldQuery();
@@ -170,22 +172,22 @@ foreach ($chunks as $chunk) {
           $obstetric_history_signs[] = get_field_sign_label($field, $item['value']);
         }
       }
-      $data[$child_data['child_id']]['obstetric'] = implode(' & ', $obstetric_history_signs);
+      $data[$child->nid]['obstetric'] = implode(' & ', $obstetric_history_signs);
     }
   }
 }
 
 // Print results in CSV format.
 drush_print();
-drush_print("Child ID,Mother ID,Medical,Obstetric");
+drush_print("Child ID,Mother ID,Child Birth Date,Medical,Obstetric");
 foreach ($data as $item) {
   $child_id = $item['child_id'];
   $mother_id = $item['mother_id'];
+  $birth_date = $item['birth_date'];
   $medical = $item['medical'];
   $obstetric = $item['obstetric'];
-  drush_print("$child_id,$mother_id,$medical,$obstetric");
+  drush_print("$child_id,$mother_id,$birth_date,$medical,$obstetric");
 }
-
 
 /**
  * Resolves the label of the value for given field.
