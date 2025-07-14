@@ -158,7 +158,7 @@ foreach ($chunks as $chunk) {
         'field_obstetric_history_step2',
         'field_previous_delivery',
       ];
-      foreach ($fields as $field_values) {
+      foreach ($fields as $field) {
         $field_values = $obstetric_history->{$field}[LANGUAGE_NONE];
         if (empty($field_values)) {
           continue;
