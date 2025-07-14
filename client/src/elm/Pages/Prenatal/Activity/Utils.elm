@@ -714,7 +714,7 @@ continuousHypertensionTreatmentRequired assembled =
 resolveMedicationTasks : NominalDate -> AssembledData -> List MedicationTask
 resolveMedicationTasks currentDate assembled =
     List.filter (expectMedicationTask currentDate assembled)
-        [ TaskMMS, TaskFefol, TaskFolate, TaskIron, TaskCalcium, TaskAspirin, TaskMebendazole ]
+        [ TaskMMS, TaskFefol, TaskFolate, TaskIron, TaskCalcium, TaskMebendazole ]
 
 
 expectMedicationTask : NominalDate -> AssembledData -> MedicationTask -> Bool
@@ -750,37 +750,6 @@ expectMedicationTask currentDate assembled task =
                 |> List.isEmpty
     in
     case task of
-        TaskAspirin ->
-            let
-                allMeasurements =
-                    assembled.measurements :: List.map .measurements assembled.nursePreviousEncountersData
-
-                hypertensionBeforePregnancy =
-                    List.filter
-                        (.medicalHistory
-                            >> getMeasurementValueFunc
-                            >> Maybe.map (.signs >> EverySet.member HypertensionBeforePregnancy)
-                            >> Maybe.withDefault False
-                        )
-                        allMeasurements
-                        |> List.isEmpty
-                        |> not
-
-                historyOfPreeclampsia =
-                    List.filter
-                        (.obstetricHistoryStep2
-                            >> getMeasurementValueFunc
-                            >> Maybe.map (.signs >> EverySet.member ObstetricHistoryPreeclampsiaPreviousPregnancy)
-                            >> Maybe.withDefault False
-                        )
-                        allMeasurements
-                        |> List.isEmpty
-                        |> not
-            in
-            (hypertensionBeforePregnancy || historyOfPreeclampsia)
-                && medicationNeverAdministeredPreviously .aspirin
-                && egaAboveOrEqualWeek 12
-
         TaskCalcium ->
             medicationNeverAdministeredPreviously .calcium
                 && egaAboveOrEqualWeek 14
@@ -813,9 +782,6 @@ expectMedicationTask currentDate assembled task =
 medicationTaskCompleted : AssembledData -> MedicationTask -> Bool
 medicationTaskCompleted assembled task =
     case task of
-        TaskAspirin ->
-            isJust assembled.measurements.aspirin
-
         TaskCalcium ->
             isJust assembled.measurements.calcium
 
@@ -6631,14 +6597,6 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
 
         ( _, tasks ) =
             case task of
-                TaskAspirin ->
-                    getMeasurementValueFunc measurements.aspirin
-                        |> medicationAdministrationFormWithDefault data.aspirinForm
-                        |> medicationAdministrationFormInputsAndTasks English
-                            currentDate
-                            assembled.person
-                            aspirinAdministrationFormConfig
-
                 TaskCalcium ->
                     getMeasurementValueFunc measurements.calcium
                         |> medicationAdministrationFormWithDefault data.calciumForm

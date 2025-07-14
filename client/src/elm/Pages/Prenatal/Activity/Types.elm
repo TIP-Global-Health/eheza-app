@@ -62,8 +62,7 @@ type ObstetricHistoryStep
 
 
 type MedicationTask
-    = TaskAspirin
-    | TaskCalcium
+    = TaskCalcium
     | TaskFefol
     | TaskFolate
     | TaskIron

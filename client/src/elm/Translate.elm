@@ -9087,12 +9087,6 @@ translationSet trans =
 
         PrenatalMedicationTask task ->
             case task of
-                TaskAspirin ->
-                    { english = "Low Dose Aspirin"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
                 TaskCalcium ->
                     { english = "Calcium"
                     , kinyarwanda = Nothing
