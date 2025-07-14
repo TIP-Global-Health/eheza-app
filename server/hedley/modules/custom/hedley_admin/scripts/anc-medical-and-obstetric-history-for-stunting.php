@@ -175,6 +175,8 @@ foreach ($chunks as $chunk) {
   }
 }
 
+// Print results in CSV format.
+drush_print();
 drush_print("Child ID,Mother ID,Medical,Obstetric");
 foreach ($data as $item) {
   $child_id = $item['child_id'];
@@ -184,8 +186,6 @@ foreach ($data as $item) {
   drush_print("$child_id,$mother_id,$medical,$obstetric");
 }
 
-
-drush_print("Done!");
 
 /**
  * Resolves the label of the value for given field.
