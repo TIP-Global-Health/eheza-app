@@ -187,6 +187,9 @@ foreach ($data as $item) {
 
 drush_print("Done!");
 
+/**
+ * Resolves the label of the value for given field.
+ */
 function get_field_sign_label($field, $value) {
   $field_info = field_info_field($field);
   $allowed_values = $field_info['settings']['allowed_values'];
