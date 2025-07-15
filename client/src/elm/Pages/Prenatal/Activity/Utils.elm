@@ -1675,7 +1675,7 @@ generatePrenatalDiagnosesForNurse currentDate assembled =
                     |> EverySet.fromList
 
         diagnosesByLabResultsAndExamination =
-            resolveLabResultsAndExaminationDiagnoses assembled.encounter.encounterType
+            resolveLabResultsAndExaminationDiagnoses currentDate assembled
                 |> List.filter (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSignsList assembled)
                 |> EverySet.fromList
 
@@ -3224,9 +3224,9 @@ emergencyObstetricCareServicesDiagnoses =
     ]
 
 
-resolveLabResultsAndExaminationDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
-resolveLabResultsAndExaminationDiagnoses encounterType =
-    case encounterType of
+resolveLabResultsAndExaminationDiagnoses : NominalDate -> AssembledData -> List PrenatalDiagnosis
+resolveLabResultsAndExaminationDiagnoses currentDate assembled =
+    case assembled.encounter.encounterType of
         NursePostpartumEncounter ->
             [ DiagnosisPostpartumEarlyMastitisOrEngorgment
             , DiagnosisPostpartumMastitis
@@ -3235,54 +3235,73 @@ resolveLabResultsAndExaminationDiagnoses encounterType =
             ]
 
         _ ->
-            [ DiagnosisModerateRiskOfPreeclampsia
-            , DiagnosisHighRiskOfPreeclampsiaInitialPhase
-            , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
-            , DiagnosisChronicHypertensionImmediate
-            , DiagnosisChronicHypertensionAfterRecheck
-            , DiagnosisGestationalHypertensionImmediate
-            , DiagnosisGestationalHypertensionAfterRecheck
-            , DiagnosisModeratePreeclampsiaInitialPhase
-            , DiagnosisModeratePreeclampsiaRecurrentPhase
-            , DiagnosisSeverePreeclampsiaInitialPhase
-            , DiagnosisSeverePreeclampsiaRecurrentPhase
-            , DiagnosisHIVInitialPhase
-            , DiagnosisHIVRecurrentPhase
-            , DiagnosisHIVDetectableViralLoadInitialPhase
-            , DiagnosisHIVDetectableViralLoadRecurrentPhase
-            , DiagnosisDiscordantPartnershipInitialPhase
-            , DiagnosisDiscordantPartnershipRecurrentPhase
-            , DiagnosisSyphilisInitialPhase
-            , DiagnosisSyphilisRecurrentPhase
-            , DiagnosisSyphilisWithComplicationsInitialPhase
-            , DiagnosisSyphilisWithComplicationsRecurrentPhase
-            , DiagnosisNeurosyphilisInitialPhase
-            , DiagnosisNeurosyphilisRecurrentPhase
-            , DiagnosisHepatitisBInitialPhase
-            , DiagnosisHepatitisBRecurrentPhase
-            , DiagnosisMalariaInitialPhase
-            , DiagnosisMalariaRecurrentPhase
-            , DiagnosisMalariaMedicatedContinuedInitialPhase
-            , DiagnosisMalariaMedicatedContinuedRecurrentPhase
-            , DiagnosisMalariaWithAnemiaInitialPhase
-            , DiagnosisMalariaWithAnemiaRecurrentPhase
-            , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
-            , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
-            , DiagnosisMalariaWithSevereAnemiaInitialPhase
-            , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
-            , DiagnosisModerateAnemiaInitialPhase
-            , DiagnosisModerateAnemiaRecurrentPhase
-            , DiagnosisSevereAnemiaInitialPhase
-            , DiagnosisSevereAnemiaRecurrentPhase
-            , DiagnosisSevereAnemiaWithComplicationsInitialPhase
-            , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
-            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
-            , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
-            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
-            , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
-            , DiagnosisRhesusNegativeInitialPhase
-            , DiagnosisRhesusNegativeRecurrentPhase
-            ]
+            let
+                preeclampsiaRiskDiagnoses =
+                    Maybe.map
+                        (\lmpDate ->
+                            let
+                                egaInWeeks =
+                                    calculateEGAWeeks currentDate lmpDate
+                            in
+                            if egaInWeeks >= 12 then
+                                -- Preeclampsia risk diagnoses appear from EGA week 12.
+                                [ DiagnosisModerateRiskOfPreeclampsia
+                                , DiagnosisHighRiskOfPreeclampsiaInitialPhase
+                                , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+                                ]
+
+                            else
+                                []
+                        )
+                        assembled.globalLmpDate
+                        |> Maybe.withDefault []
+            in
+            preeclampsiaRiskDiagnoses
+                ++ [ DiagnosisChronicHypertensionImmediate
+                   , DiagnosisChronicHypertensionAfterRecheck
+                   , DiagnosisGestationalHypertensionImmediate
+                   , DiagnosisGestationalHypertensionAfterRecheck
+                   , DiagnosisModeratePreeclampsiaInitialPhase
+                   , DiagnosisModeratePreeclampsiaRecurrentPhase
+                   , DiagnosisSeverePreeclampsiaInitialPhase
+                   , DiagnosisSeverePreeclampsiaRecurrentPhase
+                   , DiagnosisHIVInitialPhase
+                   , DiagnosisHIVRecurrentPhase
+                   , DiagnosisHIVDetectableViralLoadInitialPhase
+                   , DiagnosisHIVDetectableViralLoadRecurrentPhase
+                   , DiagnosisDiscordantPartnershipInitialPhase
+                   , DiagnosisDiscordantPartnershipRecurrentPhase
+                   , DiagnosisSyphilisInitialPhase
+                   , DiagnosisSyphilisRecurrentPhase
+                   , DiagnosisSyphilisWithComplicationsInitialPhase
+                   , DiagnosisSyphilisWithComplicationsRecurrentPhase
+                   , DiagnosisNeurosyphilisInitialPhase
+                   , DiagnosisNeurosyphilisRecurrentPhase
+                   , DiagnosisHepatitisBInitialPhase
+                   , DiagnosisHepatitisBRecurrentPhase
+                   , DiagnosisMalariaInitialPhase
+                   , DiagnosisMalariaRecurrentPhase
+                   , DiagnosisMalariaMedicatedContinuedInitialPhase
+                   , DiagnosisMalariaMedicatedContinuedRecurrentPhase
+                   , DiagnosisMalariaWithAnemiaInitialPhase
+                   , DiagnosisMalariaWithAnemiaRecurrentPhase
+                   , DiagnosisMalariaWithAnemiaMedicatedContinuedInitialPhase
+                   , DiagnosisMalariaWithAnemiaMedicatedContinuedRecurrentPhase
+                   , DiagnosisMalariaWithSevereAnemiaInitialPhase
+                   , DiagnosisMalariaWithSevereAnemiaRecurrentPhase
+                   , DiagnosisModerateAnemiaInitialPhase
+                   , DiagnosisModerateAnemiaRecurrentPhase
+                   , DiagnosisSevereAnemiaInitialPhase
+                   , DiagnosisSevereAnemiaRecurrentPhase
+                   , DiagnosisSevereAnemiaWithComplicationsInitialPhase
+                   , DiagnosisSevereAnemiaWithComplicationsRecurrentPhase
+                   , Backend.PrenatalEncounter.Types.DiagnosisDiabetesInitialPhase
+                   , Backend.PrenatalEncounter.Types.DiagnosisDiabetesRecurrentPhase
+                   , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesInitialPhase
+                   , Backend.PrenatalEncounter.Types.DiagnosisGestationalDiabetesRecurrentPhase
+                   , DiagnosisRhesusNegativeInitialPhase
+                   , DiagnosisRhesusNegativeRecurrentPhase
+                   ]
 
 
 resolveSymptomsDiagnoses : PrenatalEncounterType -> List PrenatalDiagnosis
