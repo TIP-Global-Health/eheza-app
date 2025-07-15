@@ -6648,20 +6648,6 @@ medicationTasksCompletedFromTotal currentDate assembled data task =
     resolveTasksCompletedFromTotal tasks
 
 
-aspirinAdministrationFormConfig : MedicationAdministrationFormConfig Msg
-aspirinAdministrationFormConfig =
-    { medication = Aspirin
-    , setMedicationAdministeredMsg = SetAspirinAdministered
-    , setReasonForNonAdministration = SetAspirinReasonForNonAdministration
-    , resolveDosageAndIconFunc = resolveAspirinDosageAndIcon
-    }
-
-
-resolveAspirinDosageAndIcon : Language -> NominalDate -> Person -> Maybe ( String, String, String )
-resolveAspirinDosageAndIcon language currentDate person =
-    Just ( "150 mg", "icon-pills", translate language Translate.AdministerAspirinHelper )
-
-
 calciumAdministrationFormConfig : MedicationAdministrationFormConfig Msg
 calciumAdministrationFormConfig =
     { medication = Calcium

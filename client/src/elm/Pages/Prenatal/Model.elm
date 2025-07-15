@@ -52,7 +52,8 @@ type alias VaccinationProgressDict =
 
 
 type alias MedicationDistributionForm =
-    { mebendezole : Maybe Bool
+    { aspirin : Maybe Bool
+    , mebendezole : Maybe Bool
 
     -- Tenofovir is not in use, for now.
     , tenofovir : Maybe Bool
@@ -82,7 +83,8 @@ type alias MedicationDistributionForm =
 
 emptyMedicationDistributionForm : MedicationDistributionForm
 emptyMedicationDistributionForm =
-    { mebendezole = Nothing
+    { aspirin = Nothing
+    , mebendezole = Nothing
     , tenofovir = Nothing
     , lamivudine = Nothing
     , dolutegravir = Nothing

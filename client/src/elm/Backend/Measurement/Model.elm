@@ -2125,6 +2125,7 @@ type AdministrationNote
 
 type MedicationNonAdministrationSign
     = MedicationAmoxicillin AdministrationNote
+    | MedicationAspirin AdministrationNote
     | MedicationCoartem AdministrationNote
     | MedicationORS AdministrationNote
     | MedicationZinc AdministrationNote

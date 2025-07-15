@@ -704,6 +704,9 @@ resolveMedicationsNonAdministrationReasons value =
                     MedicationAmoxicillin reason ->
                         Just ( Amoxicillin, reason )
 
+                    MedicationAspirin reason ->
+                        Just ( Aspirin, reason )
+
                     MedicationCoartem reason ->
                         Just ( Coartem, reason )
 
