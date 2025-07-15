@@ -15856,6 +15856,21 @@ translationSet trans =
 
         PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Patient shows signs of Moderate Risk for Preclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "Patient shows signs of High Risk for Preclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
                 DiagnosisHIVInitialPhase ->
                     { english = "Patient has tested positive for HIV"
                     , kinyarwanda = Just "Afite ubwandu bwa Virusi itera SIDA"

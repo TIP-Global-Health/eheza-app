@@ -3235,7 +3235,10 @@ resolveLabResultsAndExaminationDiagnoses encounterType =
             ]
 
         _ ->
-            [ DiagnosisChronicHypertensionImmediate
+            [ DiagnosisModerateRiskOfPreeclampsia
+            , DiagnosisHighRiskOfPreeclampsiaInitialPhase
+            , DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+            , DiagnosisChronicHypertensionImmediate
             , DiagnosisChronicHypertensionAfterRecheck
             , DiagnosisGestationalHypertensionImmediate
             , DiagnosisGestationalHypertensionAfterRecheck
