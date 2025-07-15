@@ -77,7 +77,7 @@ decodeReasonForNotConsenting =
                     "program_not_addressing_stressors" ->
                         succeed ProgramNotAddressingMyStressors
 
-                    "dont_want_to_be_seen_as_struggling" ->
+                    "do_not_want_to_be_seen_as_struggling" ->
                         succeed DontWantToBeSeenAsStruggling
 
                     "tried_similar_program" ->

@@ -334,7 +334,7 @@ update currentTime currentDate db msg model =
 
                 nurseWithConsent =
                     { nurse
-                        | resilienceConsentGiven = Just userAnswer
+                        | resilienceConsentGiven = userAnswer
                         , resilienceConsentReason =
                             if userAnswer then
                                 Nothing

@@ -624,8 +624,8 @@ function hedley_person_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        0 => '',
-        1 => '',
+        0 => 'No',
+        1 => 'Yes',
       ),
       'allowed_values_function' => '',
     ),
@@ -650,12 +650,12 @@ function hedley_person_field_default_field_bases() {
     'module' => 'list',
     'settings' => array(
       'allowed_values' => array(
-        'many_other_commitments' => 'Many other commitments',
-        'no_dedicated_time' => 'No dedicated time for the program',
-        'program_not_addressing_stressors' => 'Program not addressing my stressors',
-        'dont_want_to_be_seen_as_struggling' => 'Don\'t want to be seen as struggling',
-        'tried_similar_program' => 'Tried similar program before',
-        'not_interested' => 'Not interested in program',
+        'many-other-commitments' => 'Many other commitments',
+        'no-dedicated-time' => 'No dedicated time for the program',
+        'program-not-addressing-stressors' => 'Program not addressing my stressors',
+        'do-not-want-to-be-seen-as-struggling' => 'Do not want to be seen as struggling',
+        'tried-similar-program' => 'Tried similar program before',
+        'not-interested' => 'Not interested in program',
       ),
       'allowed_values_function' => '',
     ),

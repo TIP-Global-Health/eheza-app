@@ -37,6 +37,7 @@ encodeNurse nurse =
     , ( "resilience_program", bool nurse.resilienceProgramEnabled )
     , ( "resilience_start_date", maybe encodeYYYYMMDD nurse.resilienceProgramStartDate )
     , ( "resilience_role", maybe encodeResilienceRole nurse.resilienceRole )
+    , ( "resilience_consent", bool nurse.resilienceConsentGiven )
     , ( "resilience_consent_reason", maybe encodeReasonForNotConsenting nurse.resilienceConsentReason )
     , ( "birth_date", maybe encodeYYYYMMDD nurse.resilienceBirthDate )
     , ( "gender", maybe encodeGender nurse.resilienceGender )
