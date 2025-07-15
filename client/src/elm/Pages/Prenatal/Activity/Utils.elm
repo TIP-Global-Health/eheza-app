@@ -2299,7 +2299,7 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                 || byStillbornChildren
                 || byObstetricHistorySigns
 
-        highRiskPreeclampsiaDiagnosed =
+        highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses =
             let
                 byPreviousPreeclampsia =
                     List.filterMap (.obstetricHistoryStep2 >> getMeasurementValueFunc)
@@ -2336,21 +2336,17 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                             )
                         |> Maybe.withDefault False
 
-                byHypertensionDiagnoses =
+                byPreviousHypertensionDiagnoses =
                     diagnosedHypertensionPrevoiusly assembled
-                        || List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            hypertensionDiagnoses
 
-                byDiabetesDiagnoses =
+                byPreviousDiabetesDiagnoses =
                     diagnosedDiabetesPrevoiusly assembled
-                        || List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
-                            diabetesDiagnoses
             in
             byPreviousPreeclampsia
                 || byFetalPresentation
                 || byMedicalHistorySigns
-                || byHypertensionDiagnoses
-                || byDiabetesDiagnoses
+                || byPreviousHypertensionDiagnoses
+                || byPreviousDiabetesDiagnoses
 
         allMeasurements =
             assembled.measurements
@@ -2379,7 +2375,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
                    )
 
         DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
-            highRiskPreeclampsiaDiagnosed
+            (highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses
+                || -- Hypertension or Diabetes diagnoses were diagnosed during current encounter.
+                   List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                    (hypertensionDiagnoses ++ diabetesDiagnoses)
+            )
                 && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
                 -- We don't diagnose Preeclampsia RISK, if any kind of
                 -- Preeclampsia was diagnosed previously, or at current encounter.
@@ -2395,7 +2395,11 @@ matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled 
 
         DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
             (not <| diagnosedAtInitalPhase DiagnosisHighRiskOfPreeclampsiaInitialPhase)
-                && highRiskPreeclampsiaDiagnosed
+                && (highRiskPreeclampsiaDiagnosedBySignsAndPreviousDiagnoses
+                        || -- Hypertension or Diabetes diagnoses were diagnosed during current encounter.
+                           List.any (matchLabResultsAndExaminationPrenatalDiagnosis egaInWeeks dangerSigns assembled)
+                            (hypertensionDiagnoses ++ diabetesDiagnoses)
+                   )
                 -- We don't diagnose Preeclampsia RISK, if any kind of
                 -- Preeclampsia was diagnosed previously, or at current encounter.
                 && (not <| diagnosedHighRiskOfPreeclampsiaPrevoiusly assembled)
