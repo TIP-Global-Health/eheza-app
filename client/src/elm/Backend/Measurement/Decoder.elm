@@ -3479,6 +3479,9 @@ decodeMedicationDistributionSign =
                     "amoxicillin" ->
                         succeed Amoxicillin
 
+                    "aspirin" ->
+                        succeed Aspirin
+
                     "coartem" ->
                         succeed Coartem
 
@@ -3536,9 +3539,6 @@ decodeMedicationDistributionSign =
                     "mms" ->
                         succeed MMS
 
-                    "aspirin" ->
-                        succeed Aspirin
-
                     "fefol" ->
                         succeed Fefol
 
@@ -3585,6 +3585,11 @@ decodeMedicationNonAdministrationSign =
                                     "amoxicillin" ->
                                         administrationNote
                                             |> Maybe.map (MedicationAmoxicillin >> succeed)
+                                            |> Maybe.withDefault failure
+
+                                    "aspirin" ->
+                                        administrationNote
+                                            |> Maybe.map (MedicationAspirin >> succeed)
                                             |> Maybe.withDefault failure
 
                                     "coartem" ->

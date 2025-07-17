@@ -1005,6 +1005,8 @@ type TranslationId
     | MedicationDistributionHelperHIV
     | MedicationDistributionHelperMebendazole
     | MedicationDistributionHelperGonorrhea
+    | MedicationDistributionHelperPreeclampsiaRiskHigh
+    | MedicationDistributionHelperPreeclampsiaRiskModerate
     | MedicationDistributionHelperTrichomonasOrBacterialVaginosis
     | MedicationDistributionHelperVitaminA
     | MedicationDistributionNoticeGonorrhea
@@ -9087,12 +9089,6 @@ translationSet trans =
 
         PrenatalMedicationTask task ->
             case task of
-                TaskAspirin ->
-                    { english = "Low Dose Aspirin"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
                 TaskCalcium ->
                     { english = "Calcium"
                     , kinyarwanda = Nothing
@@ -11082,6 +11078,18 @@ translationSet trans =
             , kirundi = Just "Uyu mugwayi afise ibimenyetso bishoboka vy'ingwara ya \"gonorrhée\""
             }
 
+        MedicationDistributionHelperPreeclampsiaRiskHigh ->
+            { english = "Patient shows signs of High Risk for Preclampsia"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        MedicationDistributionHelperPreeclampsiaRiskModerate ->
+            { english = "Patient shows signs of Moderate Risk for Preclampsia"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         MedicationDistributionHelperTrichomonasOrBacterialVaginosis ->
             { english = "This patient has signs of possible Trichomonas or Bacterial Vaginosis"
             , kinyarwanda = Just "Umubyeyii afite ibimenyetso bishobora kuba ari ibya Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
@@ -11118,6 +11126,12 @@ translationSet trans =
                     -- Names of Medication, therefore,
                     -- no translation is needed.
                     { english = "Amoxicillin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                Aspirin ->
+                    { english = "Aspirin"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -11254,12 +11268,6 @@ translationSet trans =
 
                 MMS ->
                     { english = "MMS"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
-
-                Aspirin ->
-                    { english = "Aspirin"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -15848,6 +15856,21 @@ translationSet trans =
 
         PrenatalDiagnosisNonUrgentMessage diagnosis ->
             case diagnosis of
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Patient shows signs of Moderate Risk for Preclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "Patient shows signs of High Risk for Preclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisNonUrgentMessage DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
                 DiagnosisHIVInitialPhase ->
                     { english = "Patient has tested positive for HIV"
                     , kinyarwanda = Just "Afite ubwandu bwa Virusi itera SIDA"

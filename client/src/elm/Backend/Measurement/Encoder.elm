@@ -2816,6 +2816,9 @@ encodeMedicationDistributionSign sign =
             Amoxicillin ->
                 "amoxicillin"
 
+            Aspirin ->
+                "aspirin"
+
             Coartem ->
                 "coartem"
 
@@ -2873,9 +2876,6 @@ encodeMedicationDistributionSign sign =
             MMS ->
                 "mms"
 
-            Aspirin ->
-                "aspirin"
-
             Fefol ->
                 "fefol"
 
@@ -2895,6 +2895,9 @@ encodeMedicationNonAdministrationSign sign =
         case sign of
             MedicationAmoxicillin reason ->
                 "amoxicillin-" ++ administrationNoteToString reason
+
+            MedicationAspirin reason ->
+                "aspirin-" ++ administrationNoteToString reason
 
             MedicationCoartem reason ->
                 "coartem-" ++ administrationNoteToString reason
