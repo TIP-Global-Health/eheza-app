@@ -3199,6 +3199,18 @@ viewTreatmentForDiagnosis language date measurements allDiagnoses diagnosis =
         DiagnosisSuicideRisk ->
             mentalHealthMessage
 
+        DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+            -- @todo
+            []
+
+        DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+            -- @todo
+            []
+
+        DiagnosisModerateRiskOfPreeclampsia ->
+            -- @todo
+            []
+
         DiagnosisPostpartumAbdominalPain ->
             undeterminedDiagnosisMessage
 

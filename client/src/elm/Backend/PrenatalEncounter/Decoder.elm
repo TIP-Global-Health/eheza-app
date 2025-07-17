@@ -332,6 +332,15 @@ decodePrenatalDiagnosis =
                     "suicide-risk" ->
                         succeed DiagnosisSuicideRisk
 
+                    "high-risk-of-preeclampsia-initial" ->
+                        succeed DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                    "high-risk-of-preeclampsia-recurrent" ->
+                        succeed DiagnosisHighRiskOfPreeclampsiaRecurrentPhase
+
+                    "moderate-risk-of-preeclampsia" ->
+                        succeed DiagnosisModerateRiskOfPreeclampsia
+
                     "other" ->
                         succeed DiagnosisOther
 

@@ -864,6 +864,7 @@ type CSectionReason
 type PreviousDeliveryPeriod
     = LessThan18Month
     | MoreThan5Years
+    | MoreThan10Years
     | Neither
 
 
@@ -902,6 +903,9 @@ type ObstetricHistoryStep2Sign
     | ObstetricHistorySevereHemorrhagingPreviousDelivery
     | ObstetricHistoryConvulsionsPreviousDelivery
     | ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+    | ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+    | ObstetricHistorySmallForGestationalAgePreviousDelivery
+    | ObstetricHistoryIntraUterineDeathPreviousDelivery
     | NoObstetricHistoryStep2Sign
     | MigrateObstetricHistoryStep2Sign
 

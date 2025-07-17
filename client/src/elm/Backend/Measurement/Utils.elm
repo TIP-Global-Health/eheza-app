@@ -4613,6 +4613,15 @@ obstetricHistoryStep2SignToString sign =
         ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery ->
             "convulsions-and-unconscious-previous-delivery"
 
+        ObstetricHistoryChildWithLowBirthweightPreviousDelivery ->
+            "child-with-low-birthweight-previous-delivery"
+
+        ObstetricHistorySmallForGestationalAgePreviousDelivery ->
+            "small-for-gestational-age-previous-delivery"
+
+        ObstetricHistoryIntraUterineDeathPreviousDelivery ->
+            "intra-uterine-death-previous-delivery"
+
         NoObstetricHistoryStep2Sign ->
             "none"
 
@@ -4649,6 +4658,15 @@ obstetricHistoryStep2SignFromString sign =
 
         "convulsions-and-unconscious-previous-delivery" ->
             Just ObstetricHistoryConvulsionsAndUnconsciousPreviousDelivery
+
+        "child-with-low-birthweight-previous-delivery" ->
+            Just ObstetricHistoryChildWithLowBirthweightPreviousDelivery
+
+        "small-for-gestational-age-previous-delivery" ->
+            Just ObstetricHistorySmallForGestationalAgePreviousDelivery
+
+        "intra-uterine-death-previous-delivery" ->
+            Just ObstetricHistoryIntraUterineDeathPreviousDelivery
 
         "none" ->
             Just NoObstetricHistoryStep2Sign

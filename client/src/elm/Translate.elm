@@ -13822,6 +13822,24 @@ translationSet trans =
                     , kirundi = Nothing
                     }
 
+                ObstetricHistoryChildWithLowBirthweightPreviousDelivery ->
+                    { english = "A child with low birthweight"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistorySmallForGestationalAgePreviousDelivery ->
+                    { english = "Small for gestational age"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                ObstetricHistoryIntraUterineDeathPreviousDelivery ->
+                    { english = "Intra-uterine death"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 NoObstetricHistoryStep2Sign ->
                     translationSet NoneOfTheAbove
 
@@ -15250,6 +15268,21 @@ translationSet trans =
                     , kirundi = Just "Ingorane zimutuma ashobora kwiyahura"
                     }
 
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosis DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 DiagnosisOther ->
                     { english = "Other"
                     , kinyarwanda = Just "Ibindi"
@@ -15736,6 +15769,21 @@ translationSet trans =
                     { english = "Suicide Risk"
                     , kinyarwanda = Just "Afite ibyago byo kwiyahura"
                     , kirundi = Just "Ingorane zimutuma ashobora kwiyahura"
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                    { english = "High Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                    translationSet <| PrenatalDiagnosisForProgressReport DiagnosisHighRiskOfPreeclampsiaInitialPhase
+
+                DiagnosisModerateRiskOfPreeclampsia ->
+                    { english = "Moderate Risk of Preeclampsia"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
 
                 DiagnosisOther ->
@@ -17823,11 +17871,14 @@ translationSet trans =
                     , kirundi = Just "Imyaka irenga 5 iraheze"
                     }
 
-                Neither ->
-                    { english = "Neither"
-                    , kinyarwanda = Just "Nta na kimwe"
-                    , kirundi = Just "Nta na kimwe"
+                MoreThan10Years ->
+                    { english = "More than 10 years ago"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
                     }
+
+                Neither ->
+                    translationSet NoneOfThese
 
         PreviousFloatMeasurement value ->
             { english = "Previous measurement: " ++ String.fromFloat value

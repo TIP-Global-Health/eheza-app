@@ -335,6 +335,15 @@ encodePrenatalDiagnosis diagnosis =
             DiagnosisSuicideRisk ->
                 "suicide-risk"
 
+            DiagnosisHighRiskOfPreeclampsiaInitialPhase ->
+                "high-risk-of-preeclampsia-initial"
+
+            DiagnosisHighRiskOfPreeclampsiaRecurrentPhase ->
+                "high-risk-of-preeclampsia-recurrent"
+
+            DiagnosisModerateRiskOfPreeclampsia ->
+                "moderate-risk-of-preeclampsia"
+
             DiagnosisOther ->
                 "other"
 
