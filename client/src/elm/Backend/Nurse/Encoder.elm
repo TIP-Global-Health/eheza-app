@@ -77,19 +77,19 @@ encodeReasonForNotConsenting : ReasonForNotConsenting -> Value
 encodeReasonForNotConsenting reason =
     case reason of
         ManyOtherCommitments ->
-            string "many_other_commitments"
+            string "many-other-commitments"
 
         NoDedicatedTimeForTheProgram ->
-            string "no_dedicated_time"
+            string "no-dedicated-time"
 
         ProgramNotAddressingMyStressors ->
-            string "program_not_addressing_stressors"
+            string "program-not-addressing-stressors"
 
         DontWantToBeSeenAsStruggling ->
-            string "dont_want_to_be_seen_as_struggling"
+            string "do-not-want-to-be-seen-as-struggling"
 
         TriedSimilarProgramBefore ->
-            string "tried_similar_program"
+            string "tried-similar-program"
 
         NotInterestedInProgram ->
-            string "not_interested"
+            string "not-interested"

@@ -131,6 +131,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       $resilience_start_date = explode(' ', $item->resilience_start_date);
       $item->resilience_start_date = !empty($resilience_start_date[0]) ? $resilience_start_date[0] : NULL;
       $item->resilience_messages = drupal_json_decode($item->resilience_messages);
+      $item->resilience_consent = (bool) $item->resilience_consent;
     }
 
     return $items;

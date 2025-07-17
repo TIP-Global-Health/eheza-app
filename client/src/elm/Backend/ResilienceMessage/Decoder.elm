@@ -68,22 +68,22 @@ decodeReasonForNotConsenting =
         |> andThen
             (\str ->
                 case str of
-                    "many_other_commitments" ->
+                    "many-other-commitments" ->
                         succeed ManyOtherCommitments
 
-                    "no_dedicated_time" ->
+                    "no-dedicated-time" ->
                         succeed NoDedicatedTimeForTheProgram
 
-                    "program_not_addressing_stressors" ->
+                    "program-not-addressing-stressors" ->
                         succeed ProgramNotAddressingMyStressors
 
-                    "do_not_want_to_be_seen_as_struggling" ->
+                    "do-not-want-to-be-seen-as-struggling" ->
                         succeed DontWantToBeSeenAsStruggling
 
-                    "tried_similar_program" ->
+                    "tried-similar-program" ->
                         succeed TriedSimilarProgramBefore
 
-                    "not_interested" ->
+                    "not-interested" ->
                         succeed NotInterestedInProgram
 
                     _ ->
