@@ -139,7 +139,7 @@ foreach ($chunks as $chunk) {
           if (in_array($item['value'], ['none', 'migrate'])) {
             continue;
           }
-          $medical_history_signs[] = get_field_sign_label($field, $item['value']);
+          $medical_history_signs[] = hedley_general_get_field_sign_label($field, $item['value']);
         }
       }
       $data[$child->nid]['medical'] = implode(' & ', $medical_history_signs);
@@ -173,7 +173,7 @@ foreach ($chunks as $chunk) {
           if (in_array($item['value'], ['none', 'migrate', 'neither'])) {
             continue;
           }
-          $obstetric_history_signs[] = get_field_sign_label($field, $item['value']);
+          $obstetric_history_signs[] = hedley_general_get_field_sign_label($field, $item['value']);
         }
       }
       $data[$child->nid]['obstetric'] = implode(' & ', $obstetric_history_signs);
@@ -191,14 +191,4 @@ foreach ($data as $item) {
   $medical = $item['medical'];
   $obstetric = $item['obstetric'];
   drush_print("$child_id,$mother_id,$birth_date,$medical,$obstetric");
-}
-
-/**
- * Resolves the label of the value for given field.
- */
-function get_field_sign_label($field, $value) {
-  $field_info = field_info_field($field);
-  $allowed_values = $field_info['settings']['allowed_values'];
-
-  return isset($allowed_values[$value]) ? $allowed_values[$value] : $value;
 }

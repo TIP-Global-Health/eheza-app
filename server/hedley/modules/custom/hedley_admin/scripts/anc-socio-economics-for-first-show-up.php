@@ -62,8 +62,8 @@ foreach ($chunks as $ids) {
     $mother = node_load($mother_id);
     $data[$pregnancy_id] = [
       'mother_id' => $mother_id,
-      'education_level' => get_field_sign_label('field_education_level', $mother->field_education_level[LANGUAGE_NONE][0]['value']),
-      'marital_status' => get_field_sign_label('field_marital_status', $mother->field_marital_status[LANGUAGE_NONE][0]['value']),
+      'education_level' => hedley_general_get_field_sign_label('field_education_level', $mother->field_education_level[LANGUAGE_NONE][0]['value']),
+      'marital_status' => hedley_general_get_field_sign_label('field_marital_status', $mother->field_marital_status[LANGUAGE_NONE][0]['value']),
       'ubudehe' => $mother->field_ubudehe[LANGUAGE_NONE][0]['value'],
       'days' => $days,
     ];
@@ -79,14 +79,4 @@ foreach ($data as $item) {
   $ubudehe = $item['ubudehe'];
   $days = $item['days'];
   drush_print("$mother_id,$education_level,$marital_status,$ubudehe,$days");
-}
-
-/**
- * Resolves the label of the value for given field.
- */
-function get_field_sign_label($field, $value) {
-  $field_info = field_info_field($field);
-  $allowed_values = $field_info['settings']['allowed_values'];
-
-  return isset($allowed_values[$value]) ? $allowed_values[$value] : $value;
 }

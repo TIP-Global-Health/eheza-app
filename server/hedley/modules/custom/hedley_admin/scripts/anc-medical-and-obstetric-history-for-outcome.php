@@ -66,7 +66,7 @@ foreach ($chunks as $ids) {
 
     $data[$pregnancy_id] = [
       'mother_id' => $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'],
-      'outcome' => get_field_sign_label('field_outcome', $outcome)
+      'outcome' => hedley_general_get_field_sign_label('field_outcome', $outcome),
     ];
 
     $encounters = array_keys($result['node']);
@@ -99,7 +99,7 @@ foreach ($chunks as $ids) {
           if (in_array($item['value'], ['none', 'migrate'])) {
             continue;
           }
-          $medical_history_signs[] = get_field_sign_label($field, $item['value']);
+          $medical_history_signs[] = hedley_general_get_field_sign_label($field, $item['value']);
         }
       }
       $data[$pregnancy_id]['medical'] = implode(' & ', $medical_history_signs);
@@ -133,7 +133,7 @@ foreach ($chunks as $ids) {
           if (in_array($item['value'], ['none', 'migrate', 'neither'])) {
             continue;
           }
-          $obstetric_history_signs[] = get_field_sign_label($field, $item['value']);
+          $obstetric_history_signs[] = hedley_general_get_field_sign_label($field, $item['value']);
         }
       }
       $data[$pregnancy_id]['obstetric'] = implode(' & ', $obstetric_history_signs);
@@ -152,14 +152,4 @@ foreach ($data as $item) {
   $obstetric = $item['obstetric'];
   $outcome = $item['outcome'];
   drush_print("$mother_id,$medical,$obstetric,$outcome");
-}
-
-/**
- * Resolves the label of the value for given field.
- */
-function get_field_sign_label($field, $value) {
-  $field_info = field_info_field($field);
-  $allowed_values = $field_info['settings']['allowed_values'];
-
-  return isset($allowed_values[$value]) ? $allowed_values[$value] : $value;
 }

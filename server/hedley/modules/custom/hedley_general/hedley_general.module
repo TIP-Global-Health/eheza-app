@@ -535,3 +535,21 @@ function hedley_general_build_elm_app($page, array $data) {
   // Return the HTML markup for the Elm application.
   return '<div id="' . $app_id . '"></div>';
 }
+
+/**
+ * Resolves the label of the value for given field.
+ *
+ * @param string $field
+ *   Field name.
+ * @param string $value
+ *   Field value.
+ *
+ * @return string
+ *   Value label.
+ */
+function hedley_general_get_field_sign_label($field, $value) {
+  $field_info = field_info_field($field);
+  $allowed_values = $field_info['settings']['allowed_values'];
+
+  return isset($allowed_values[$value]) ? $allowed_values[$value] : $value;
+}
