@@ -1054,7 +1054,7 @@ viewExaminationContent language currentDate zscores assembled data =
                                 |> Maybe.withDefault form
 
                         prePregnancyWeight =
-                            resolvePrePregnancyWeight assembled
+                            resolvePrePregnancyWeight currentDate assembled
                                 |> Maybe.map weightValueFunc
                     in
                     viewNutritionAssessmentForm language currentDate zscores assembled formWithMeasuredHeight previouslyMeasuredHeight prePregnancyWeight
