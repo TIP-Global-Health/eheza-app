@@ -1332,6 +1332,7 @@ type TranslationId
     | PrenatalVaccineLabel PrenatalVaccineType
     | PrePregnancyWeight
     | PrePregnancyWeightQuestion
+    | PrePregnancyWeightKnownQuestion
     | PreTerm
     | PregnancyConcludedLabel
     | PregnancyOutcomeLabel
@@ -17785,6 +17786,12 @@ translationSet trans =
 
         PrePregnancyWeightQuestion ->
             { english = "What is the patient's baseline (pre-pregnancy) weight"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PrePregnancyWeightKnownQuestion ->
+            { english = "Does the mother know her pre-pregnancy weight"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }

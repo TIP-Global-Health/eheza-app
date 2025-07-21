@@ -3871,7 +3871,12 @@ lastMenstrualPeriodFormWithDefault form saved =
         |> unwrap
             form
             (\value ->
+                let
+                    prePregnancyWeightKnownByValue =
+                        isJust value.prePregnancyWeight
+                in
                 { lmpDate = or form.lmpDate (Just value.date)
+                , prePregnancyWeightKnown = or form.prePregnancyWeightKnown (Just prePregnancyWeightKnownByValue)
                 , prePregnancyWeight =
                     maybeValueConsideringIsDirtyField form.prePregnancyWeightDirty
                         form.prePregnancyWeight
