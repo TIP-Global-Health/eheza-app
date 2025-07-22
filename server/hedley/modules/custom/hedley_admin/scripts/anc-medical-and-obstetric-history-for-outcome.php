@@ -50,6 +50,8 @@ foreach ($chunks as $ids) {
     if (empty($outcome)) {
       continue;
     }
+    $outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
+
 
     $query = new EntityFieldQuery();
     $result = $query
@@ -67,6 +69,7 @@ foreach ($chunks as $ids) {
     $data[$pregnancy_id] = [
       'mother_id' => $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'],
       'outcome' => hedley_general_get_field_sign_label('field_outcome', $outcome),
+      'outcome_location' => hedley_general_get_field_sign_label('field_outcome_location', $outcome_location),
     ];
 
     $encounters = array_keys($result['node']);
@@ -145,11 +148,12 @@ foreach ($chunks as $ids) {
 
 // Print results in CSV format.
 drush_print();
-drush_print("Mother ID,Medical,Obstetric,Outcome");
+drush_print("Mother ID,Medical,Obstetric,Outcome,Outcome location");
 foreach ($data as $item) {
   $mother_id = $item['mother_id'];
   $medical = $item['medical'];
   $obstetric = $item['obstetric'];
   $outcome = $item['outcome'];
-  drush_print("$mother_id,$medical,$obstetric,$outcome");
+  $outcome_location = $item['outcome_location'];
+  drush_print("$mother_id,$medical,$obstetric,$outcome,$outcome_location");
 }
