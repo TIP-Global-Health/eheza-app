@@ -7045,7 +7045,6 @@ translationSet trans =
             , somali = Nothing
             }
 
-
         FetalMovement ->
             { english = "Fetal Movement"
             , kinyarwanda = Just "Uko umwana akina mu nda"
@@ -11161,7 +11160,6 @@ translationSet trans =
                     , kirundi = Nothing
                     , somali = Nothing
                     }
-
 
                 ReasonDelayedRecognitionOfSymptoms ->
                     { english = "Delayed recognition of pregnancy symptoms"
