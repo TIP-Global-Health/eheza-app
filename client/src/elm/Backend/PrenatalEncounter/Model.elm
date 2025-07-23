@@ -16,6 +16,7 @@ type alias PrenatalEncounter =
     , diagnoses : EverySet PrenatalDiagnosis
     , pastDiagnoses : EverySet PrenatalDiagnosis
     , indicators : EverySet PrenatalIndicator
+    , nextVisitDate : Maybe NominalDate
     , shard : Maybe HealthCenterId
     }
 
@@ -29,6 +30,7 @@ emptyPrenatalEncounter participant startDate encounterType shard =
     , diagnoses = EverySet.empty
     , pastDiagnoses = EverySet.empty
     , indicators = EverySet.empty
+    , nextVisitDate = Nothing
     , shard = shard
     }
 
@@ -112,7 +114,9 @@ type alias Model =
     , saveBreastfeeding : WebData ()
     , saveGUExam : WebData ()
     , saveSpecialityCare : WebData ()
+    , saveAspirin : WebData ()
     , saveCalcium : WebData ()
+    , saveFefol : WebData ()
     , saveFolate : WebData ()
     , saveIron : WebData ()
     , saveMMS : WebData ()
@@ -163,7 +167,9 @@ emptyModel =
     , saveBreastfeeding = NotAsked
     , saveGUExam = NotAsked
     , saveSpecialityCare = NotAsked
+    , saveAspirin = NotAsked
     , saveCalcium = NotAsked
+    , saveFefol = NotAsked
     , saveFolate = NotAsked
     , saveIron = NotAsked
     , saveMMS = NotAsked
@@ -176,6 +182,7 @@ type Msg
     | SetPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetPastPrenatalDiagnoses (EverySet PrenatalDiagnosis)
     | SetLabsHistoryCompleted
+    | SetNextVisitDate NominalDate
     | HandleUpdatedPrenatalEncounter (WebData ())
     | SaveBreastExam PersonId (Maybe BreastExamId) BreastExamValue
     | HandleSavedBreastExam (WebData ())
@@ -189,8 +196,12 @@ type Msg
     | HandleSavedMedicalHistory (WebData ())
     | SaveMedication PersonId (Maybe MedicationId) MedicationValue
     | HandleSavedMedication (WebData ())
+    | SaveAspirin PersonId (Maybe PrenatalAspirinId) AdministrationNote
+    | HandleSavedAspirin (WebData ())
     | SaveCalcium PersonId (Maybe PrenatalCalciumId) AdministrationNote
     | HandleSavedCalcium (WebData ())
+    | SaveFefol PersonId (Maybe PrenatalFefolId) AdministrationNote
+    | HandleSavedFefol (WebData ())
     | SaveFolate PersonId (Maybe PrenatalFolateId) AdministrationNote
     | HandleSavedFolate (WebData ())
     | SaveIron PersonId (Maybe PrenatalIronId) AdministrationNote

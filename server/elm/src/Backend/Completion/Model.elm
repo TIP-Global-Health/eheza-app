@@ -214,7 +214,8 @@ type TuberculosisActivity
 
 
 type PrenatalActivity
-    = PrenatalAppointmentConfirmation
+    = PrenatalAspirin
+    | PrenatalAppointmentConfirmation
     | PrenatalBirthPlan
     | PrenatalBloodGprsTest
     | PrenatalBloodGprsTestResult
@@ -224,6 +225,7 @@ type PrenatalActivity
     | PrenatalCorePhysicalExam
     | PrenatalDangerSigns
     | PrenatalFamilyPlanning
+    | PrenatalFefol
     | PrenatalFolate
     | PrenatalFollowUp
     | PrenatalGuExam
