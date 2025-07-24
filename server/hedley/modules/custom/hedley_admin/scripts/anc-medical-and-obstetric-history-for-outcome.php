@@ -34,7 +34,6 @@ $results = $query->execute()->fetchAllAssoc('nid');
 $lmp_ids = array_keys($results);
 
 $chunks = array_chunk($lmp_ids, $batch);
-$processed = 0;
 $data = [];
 foreach ($chunks as $ids) {
   // Free up memory.
@@ -52,7 +51,6 @@ foreach ($chunks as $ids) {
     }
     $outcome_location = $pregnancy->field_outcome_location[LANGUAGE_NONE][0]['value'];
 
-
     $query = new EntityFieldQuery();
     $result = $query
       ->entityCondition('entity_type', 'node')
@@ -66,13 +64,22 @@ foreach ($chunks as $ids) {
       continue;
     }
 
+    $encounters = array_keys($result['node']);
+    $mother_id = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
+    $mother = node_load($mother_id);
+    $birth_date = explode(' ', $mother->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+    $first_encounter_date = explode(' ', $pregnancy->field_expected[LANGUAGE_NONE][0]['value'])[0];
+    $age = (new DateTime($birth_date))->diff(new DateTime($first_encounter_date))->y;
+
     $data[$pregnancy_id] = [
-      'mother_id' => $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'],
+      'mother_id' => $mother_id,
+      'birth_date' => $birth_date,
+      'age' => $age,
+      'first_encounter_date' => $first_encounter_date,
+      'concluded_date' => explode(' ', $pregnancy->field_date_concluded[LANGUAGE_NONE][0]['value'])[0],
       'outcome' => hedley_general_get_field_sign_label('field_outcome', $outcome),
       'outcome_location' => hedley_general_get_field_sign_label('field_outcome_location', $outcome_location),
     ];
-
-    $encounters = array_keys($result['node']);
 
     // Add medical history data.
     $query = new EntityFieldQuery();
@@ -81,6 +88,9 @@ foreach ($chunks as $ids) {
       ->entityCondition('bundle', 'medical_history')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_prenatal_encounter', 'target_id', $encounters, 'IN')
+      // Take most recent one, so in case nurse encounter replaces data of
+      // chw encounter, we get the info recorded by nurse.
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
 
@@ -115,6 +125,9 @@ foreach ($chunks as $ids) {
       ->entityCondition('bundle', 'obstetric_history_step2')
       ->propertyCondition('status', NODE_PUBLISHED)
       ->fieldCondition('field_prenatal_encounter', 'target_id', $encounters, 'IN')
+      // Take most recent one, so in case nurse encounter replaces data of
+      // chw encounter, we get the info recorded by nurse.
+      ->propertyOrderBy('nid', 'DESC')
       ->range(0, 1)
       ->execute();
 
@@ -142,18 +155,20 @@ foreach ($chunks as $ids) {
       $data[$pregnancy_id]['obstetric'] = implode(' & ', $obstetric_history_signs);
     }
   }
-  $processed++;
-  drush_print("Processed $processed chunks.");
 }
 
 // Print results in CSV format.
 drush_print();
-drush_print("Mother ID,Medical,Obstetric,Outcome,Outcome location");
+drush_print("Mother ID,Birth date,Age,First encounter date,Concluded date,Medical,Obstetric,Outcome,Outcome location");
 foreach ($data as $item) {
   $mother_id = $item['mother_id'];
+  $birth_date = $item['birth_date'];
+  $age = $item['age'];
+  $first_encounter_date = $item['first_encounter_date'];
+  $concluded_date = $item['concluded_date'];
   $medical = $item['medical'];
   $obstetric = $item['obstetric'];
   $outcome = $item['outcome'];
   $outcome_location = $item['outcome_location'];
-  drush_print("$mother_id,$medical,$obstetric,$outcome,$outcome_location");
+  drush_print("$mother_id,$birth_date,$age,$first_encounter_date,$concluded_date,$medical,$obstetric,$outcome,$outcome_location");
 }
