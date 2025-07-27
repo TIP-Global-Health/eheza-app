@@ -47,18 +47,18 @@ foreach ($data['measurements_types'] as $measurement_type) {
   }
 }
 
-$labels = [];
+$labels = ['Pregnancy ID', 'Patient ID', 'Patient Birth Date'];
 foreach ($data['measurements_types'] as $measurement_type) {
+  $measurement_name = format_name($measurement_type);
   foreach ($data[$measurement_type] as $field_name => $field_info) {
-    $labels[] = "$measurement_type:$field_name";
+    $name = format_name($field_name);
+    $labels[] = "$measurement_name: $name";
   }
 }
 
 $labels = implode(",", $labels);
 drush_print($labels);
 return;
-
-
 
 $base_query = new EntityFieldQuery();
 $base_query
@@ -86,8 +86,39 @@ while (TRUE) {
   if ($nid) {
     $query->propertyCondition('nid', $nid, '>');
   }
+
+  $result = $query
+    ->range(0, $batch)
+    ->execute();
+
+  if (empty($result['node'])) {
+    // No more items left.
+    break;
+  }
+
+  $ids = array_keys($result['node']);
+  $encounters = node_load_multiple($ids);
+  foreach ($encounters as $encounter) {
+    $pregnancy_id = $encounter->field_individual_participant[LANGUAGE_NONE][0]['target_id'];
+    $pregnancy = node_load($pregnancy_id);
+    $patient_id = $pregnancy->field_person[LANGUAGE_NONE][0]['target_id'];
+    $patient = node_load($patient_id);
+    $birth_date = explode(' ', $patient->field_birth_date[LANGUAGE_NONE][0]['value'])[0];
+  }
 }
 
 
 
 drush_print("Done!");
+
+
+function format_name($name) {
+  // Remove common prefixes
+  $clean_name = preg_replace('/^(prenatal_|field_)/', '', $name);
+
+  // Replace underscores with spaces
+  $clean_name = str_replace('_', ' ', $clean_name);
+
+  // Capitalize first letter of each word
+  return ucwords($clean_name);
+}
