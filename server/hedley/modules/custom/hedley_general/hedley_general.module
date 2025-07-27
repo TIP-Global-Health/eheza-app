@@ -210,13 +210,18 @@ function hedley_general_get_person_content_associated_by_fields($person_id, arra
  *
  * We return both group and individual encounters measurements.
  *
+ * @param array $encounter_types
+ *   Names of encounters for which we want to pull measurements.
+ *
  * @return array
  *   List of content types that are considered as measurements.
  */
-function hedley_general_get_measurement_types() {
+function hedley_general_get_measurement_types(array $encounter_types = []) {
   $measurement_types = [];
   $content_types = array_keys(node_type_get_types());
-  $encounter_types = hedley_general_get_encounter_types();
+  if (empty($encounter_types)) {
+    $encounter_types = hedley_general_get_encounter_types();
+  }
   $measurement_indicator_fields = [];
   foreach ($encounter_types as $encounter_type) {
     $measurement_indicator_fields[] = "field_$encounter_type";
