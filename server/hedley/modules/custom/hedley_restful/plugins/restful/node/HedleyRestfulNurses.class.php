@@ -85,7 +85,7 @@ class HedleyRestfulNurses extends HedleyRestfulSyncBase {
       'field_next_reminder',
       'field_resilience_messages',
       'field_resilience_consent',
-      'field_resilience_consent_reason'
+      'field_resilience_consent_reason',
     ];
 
     foreach ($field_names as $field_name) {
