@@ -4777,7 +4777,7 @@ translationSet trans =
             { english = "Click the check mark if the participant is in attendance. The check mark will appear green when a participant has been signed in."
             , kinyarwanda = Nothing
             , kirundi = Just "Klika ku kavivuzo niba umurwayi yaje."
-            , somali = Nothing
+            , somali = Just "Riix calaamada tikta haddii qofku joogo. Caalamada tikta waxay noqoneysaa cagaar hadii qofku soo galo."
             }
 
         ClinicType clinicType ->
@@ -5730,7 +5730,7 @@ translationSet trans =
             { english = "Diagnostics"
             , kinyarwanda = Just "Gusuzuma uburwayi"
             , kirundi = Just "Gusuzuma uburwayi"
-            , somali = Nothing
+            , somali = Just "Baaritaano"
             }
 
         Diarrhea ->
@@ -6236,70 +6236,70 @@ translationSet trans =
                     { english = "STDs & Prevention of HIV"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Indwara zandurirwa mu mibonano mpuzabitsina no gukingira SIDA"
-                    , somali = Nothing
+                    , somali = Just "Cudurada ku Faafa Galmada & Ka hortaga HIV"
                     }
 
                 TopicMentalHealth ->
                     { english = "Mental Health Diseases & Epilepsy"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Indwara wo mu mutwe n'Intandara"
-                    , somali = Nothing
+                    , somali = Just "Cudurada Dhimirka & Qallalka"
                     }
 
                 TopicMalaria ->
                     { english = "Malarial diseases and the use of mosquito nets"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Indwara za Malariya n'ugukoresha umusegeera"
-                    , somali = Nothing
+                    , somali = Just "Duumada iyo adeegsiga maro kaneecada"
                     }
 
                 TopicChildhoodIllnesses ->
                     { english = "Childhood illnesses (Prevention, danger signs & emergency case management)"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Indwara zikarira abana (Uko zikingirwa, Ibimenyetso mburizi vyazo, n'uko uvyifatamwo mu kumutabara(riza) vyihuta cane)"
-                    , somali = Nothing
+                    , somali = Just "Cuduradda caruurta (Ka hortag, calaamadaha khatart leh, maareynta xaaladaha deg-dega ah)"
                     }
 
                 TopicMalnutrition ->
                     { english = "Malnutrition (The prevention and fight against diseases caused by malnutrition)"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ugufungura nabi canke kurwanya indwara ziterwa n'ugufungura nabi"
-                    , somali = Nothing
+                    , somali = Just "Nafaqo darrada (Ka hortag iyo la dagaalanka cudurada sababo nafaqo darrada)"
                     }
 
                 TopicANCPostpartum ->
                     { english = "Antenatal Care, Postnatal Care & Danger Signs in Pregnancy"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Uko witwara neza wibungenze imbere yo kwibaruka n'inyuma yo kwibaruka, n'ibimenyetso mburizi ku wibungenze"
-                    , somali = Nothing
+                    , somali = Just "Daryeelka Uurreyda, Daryeelka Umusha, Calaamadaha Khatartt ah ee Uurka"
                     }
 
                 TopicFamilyPlanning ->
                     { english = "Family Planning & Sexual and reproductive health"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ugutandukanya imvyaro no kwumvikana ibirabana n'imibonano mpuzabitsina, n'amagara meza mu vy'ibihimba vy'irondoka"
-                    , somali = Nothing
+                    , somali = Just "Kala korinta Carruurta & Caafimaadka Taranka"
                     }
 
                 TopicGender ->
                     { english = "Gender equality, Gender-Based Violence (GBV) & Behavior change"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Uburinganire ku birabana n'igitsina, Amabi afatiye ku gitsina"
-                    , somali = Nothing
+                    , somali = Just "Sinnaanta Jinsiga, Xadgudubka ku saleysan Jinsiga (GBV) & "
                     }
 
                 TopicNCD ->
                     { english = "Non-Communicable Diseases(Diabetes, Hypertension & Asthma)"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Cudurrada aan Faafin (Sokorow, Dhiig kar & Neef)"
                     }
 
         EducationSessionNoCandidatesInVillage ->
             { english = "This village got no candidates for Group Education"
             , kinyarwanda = Nothing
             , kirundi = Just "Iki kigwati nta muntu bafise azoba mu biga ivyigwa m'umugwi"
-            , somali = Nothing
+            , somali = Just "Xaafaddan ma jiro qof u sharraxan Wacyi gelinta Kooxeed"
             }
 
         EducationSessionInitialResultsDisplay display ->
@@ -6308,14 +6308,14 @@ translationSet trans =
                     { english = "Display all participants"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Shira ahabona abitabiriye"
-                    , somali = Nothing
+                    , somali = Just "Muuji dhamaan kasoo qeyb galayaasha"
                     }
 
                 Pages.EducationSession.Model.InitialResultsShown ->
                     { english = "Hide all participants"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Nyegeza abitabiriye bose"
-                    , somali = Nothing
+                    , somali = Just "Qari dhamaan kasoo qeyb galayaasha"
                     }
 
         Ega ->
@@ -6406,7 +6406,7 @@ translationSet trans =
             { english = "Encounter Types"
             , kinyarwanda = Nothing
             , kirundi = Just "Ubwoko bw'umubonano"
-            , somali = Nothing
+            , somali = Just "Raadi qeybaha"
             }
 
         EncounterTypeFollowUpQuestion encounterType ->
@@ -6432,7 +6432,7 @@ translationSet trans =
                     { english = "Do you want to start a HIV Management encounter for"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Urashaka gutangura umubonano kuvyerekeye ingwara y'umugera wa SIDA kuri"
-                    , somali = Nothing
+                    , somali = Just "Ma doonaysaa inaad bilowdo maareynta HIV"
                     }
 
                 HomeVisitEncounter ->
@@ -6455,14 +6455,14 @@ translationSet trans =
                     { english = "Do you want to start a Tuberculosis Management encounter for"
                     , kinyarwanda = Just "Urashaka gutangira isura ryo gukurikirana umurwayi w'igituntu witwa"
                     , kirundi = Just "Urashaka gutangura itunganywa ry'imibonano n'umurwayi w'igituntu kuri"
-                    , somali = Nothing
+                    , somali = Just "loo xisabinayo"
                     }
 
                 WellChildEncounter ->
                     { english = "Do you want to start a Well Child encounter for"
                     , kinyarwanda = Just "Urashaka gutangira isuzuma ry'umwana umeze neza kuri"
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Ma dooneysaa inaad bilowda qorista"
                     }
 
         EncounterTypePageLabel page ->
@@ -7536,7 +7536,7 @@ translationSet trans =
             { english = "Group Education"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Nothing
+            , somali = Just "Wacyi gelin Kooxeed"
             }
 
         GroupEncounterType encounterType ->
@@ -7779,14 +7779,14 @@ translationSet trans =
             { english = "Health Topics"
             , kinyarwanda = Nothing
             , kirundi = Just "Imitwe y'ivyigwa vy'amagara meza"
-            , somali = Nothing
+            , somali = Just "Cinwaanada caafimaadka"
             }
 
         HealthTopicsQuestion ->
             { english = "Which Health Education topics will be covered today"
             , kinyarwanda = Nothing
             , kirundi = Just "Ni uwuhe mutwe w'icigwa c'amagara meza tuza kuraba uno musi"
-            , somali = Nothing
+            , somali = Just "Cinwaankee Wacyi gelinta Caafimaad ee bixineysaa maanta"
             }
 
         Heart ->
@@ -8097,21 +8097,21 @@ translationSet trans =
             { english = "The patient tested positive for HIV on " ++ formatDDMMYYYY date ++ ". Is this date correct"
             , kinyarwanda = Nothing
             , kirundi = Just <| "Uwu murwayi baramutoye umugera wa SIDA kw'igenekerewo rya " ++ formatDDMMYYYY date ++ ". Iryo genekerezo ni ryo"
-            , somali = Nothing
+            , somali = Just <| "Bukaanka waxaa laga helay HIV " ++ formatDDMMYYYY date ++ ". Ma sax baa taariikhdan"
             }
 
         HIVPositiveDiagnosedQuestion ->
             { english = "Was this person diagnosed with HIV"
             , kinyarwanda = Nothing
             , kirundi = Just "Uwu murwayi baramutoye umugera wa SIDA"
-            , somali = Nothing
+            , somali = Just "Qofkan ma laga baaray HIV"
             }
 
         HIVPositiveTestDateQuestion ->
             { english = "When was the positive test date"
             , kinyarwanda = Nothing
             , kirundi = Just "Ni itariki zingahe bamutoye umugera wa SIDA"
-            , somali = Nothing
+            , somali = Just "Goormuu ahaa waqtiga laha helay"
             }
 
         HIVPrescribedMedication medication ->
@@ -8346,7 +8346,7 @@ translationSet trans =
                     { english = "Swollen lymph nodes"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Udusumbi tw'amatembabuzi turavyimvye"
-                    , somali = Nothing
+                    , somali = Just "Qanjiro bararan"
                     }
 
                 HIVSymptomSoreThroat ->
@@ -8356,14 +8356,14 @@ translationSet trans =
                     { english = "Rash"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ukwama uruherehere"
-                    , somali = Nothing
+                    , somali = Just "Nabar"
                     }
 
                 HIVSymptomMuscleJointPain ->
                     { english = "Muscle and joint pain"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ububabare mu nyama no mu ngingo"
-                    , somali = Nothing
+                    , somali = Just "Murqo iyo kala goysyo xanuun"
                     }
 
                 HIVSymptomHeadache ->
@@ -8385,21 +8385,21 @@ translationSet trans =
                     { english = "Coughing up blood"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ugukorora amaraso"
-                    , somali = Nothing
+                    , somali = Just "Dhiig matagaya"
                     }
 
                 HIVSymptomHairLoss ->
                     { english = "Hair loss"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ukumyoka umushatsi"
-                    , somali = Nothing
+                    , somali = Just "Timo daadasho"
                     }
 
                 HIVSymptomMouthUlcers ->
                     { english = "Mouth ulcers"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Ibikomere vyo mu kanwa"
-                    , somali = Nothing
+                    , somali = Just "Boogo afka ah"
                     }
 
                 HIVSymptomDifficultyBreathing ->
@@ -8415,7 +8415,7 @@ translationSet trans =
             { english = "Which, if any, of these symptoms does the patient have"
             , kinyarwanda = Nothing
             , kirundi = Just "Ni ikihe kimenyetso gikomeye mu bimenyetso umurwayi afise"
-            , somali = Nothing
+            , somali = Just "Calaamadahee kamid ah kuwan oo uu uu leeyahay bukaanka"
             }
 
         HIVTreatmentSign sign ->
@@ -8758,7 +8758,7 @@ translationSet trans =
             { english = "Check for Immunization"
             , kinyarwanda = Just "Kureba Gahunda y'ikingira"
             , kirundi = Nothing
-            , somali = Nothing
+            , somali = Just "Hubi Tallaalka"
             }
 
         ImmunizationHistory ->
@@ -8809,7 +8809,7 @@ translationSet trans =
                     { english = "First HIV Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano wambere werekeye ingwara y’umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha HIV Koowaad"
                     }
 
                 HomeVisitEncounter ->
@@ -8881,7 +8881,7 @@ translationSet trans =
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano kuvyerekeye ingwara y'umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha HIV"
                     }
 
                 HomeVisitEncounter ->
@@ -8916,7 +8916,7 @@ translationSet trans =
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Just "Umubonano werekeye indwara y'igituntu"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha Qaaxada"
                     }
 
                 WellChildEncounter ->
@@ -8924,7 +8924,7 @@ translationSet trans =
                         { english = "Well Child Visit"
                         , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
-                        , somali = Nothing
+                        , somali = Just "Booqashada Canuga Fayow"
                         }
 
                     else
@@ -8961,7 +8961,7 @@ translationSet trans =
                     { english = "Select HIV Visit"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Hitamo isuzuma kuvyerekeye ingwara y'umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Dooro Booqasho HIV"
                     }
 
                 HomeVisitEncounter ->
@@ -9004,7 +9004,7 @@ translationSet trans =
                         { english = "Select Well Child Visit"
                         , kinyarwanda = Just "Hitamo Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
-                        , somali = Nothing
+                        , somali = Just "Dooro Booqashada Canuga Fayow"
                         }
 
                     else
@@ -9041,7 +9041,7 @@ translationSet trans =
                     { english = "Subsequent HIV Visit"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano kuvyerekeye isuzuma ku ngwara y'umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Booqasho is xig xigta ee HIV"
                     }
 
                 HomeVisitEncounter ->
@@ -9101,7 +9101,7 @@ translationSet trans =
                     { english = "HIV Management"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Gukurikira ingwara y’umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Maareynta HIV"
                     }
 
                 HomeVisitEncounter ->
@@ -9136,7 +9136,7 @@ translationSet trans =
                         { english = "Well Child Visit"
                         , kinyarwanda = Just "Isura ku buzima bwiza bw'umwana"
                         , kirundi = Nothing
-                        , somali = Nothing
+                        , somali = Just "Booqashada Canuga Fayow"
                         }
 
                     else
@@ -11283,7 +11283,7 @@ translationSet trans =
             { english = "Less Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
             , kirundi = Just "Imiti Ikoreshwa gake igabanya imigera ya SIDA   "
-            , somali = Nothing
+            , somali = Just "Dawada ugu yar ee Anti-Retroviral ah"
             }
 
         LevelOfEducationLabel ->
@@ -12990,7 +12990,7 @@ translationSet trans =
             { english = "Most Common Anti-Retroviral Medications"
             , kinyarwanda = Nothing
             , kirundi = Just "Imiti ikoreshwa cane igabanya imigera ya SIDA"
-            , somali = Nothing
+            , somali = Just "Dawada ugu badan ee Anti-Retroviral ah"
             }
 
         MostRecentPregnancyDeliveryMethod ->
@@ -14422,7 +14422,7 @@ translationSet trans =
                 { english = "Next immunization visit at the health center"
                 , kinyarwanda = Just "Gahuda Ikurikira yo Gukingiza ku Kigo Nderabuzima"
                 , kirundi = Just "Ukugendera icandaga rikurikira kw'ivuriro"
-                , somali = Nothing
+                , somali = Just "Booqashada tallaalka soo socota ee xarunta caafimaadka"
                 }
 
             else
@@ -14437,7 +14437,7 @@ translationSet trans =
                 { english = "Next pediatric visit at the health center"
                 , kinyarwanda = Just "Isura ry'umwana rikurikira ku kigo Nderabuzima"
                 , kirundi = Just "Ukuvura abana gukurikira kw'ivuriro"
-                , somali = Nothing
+                , somali = Just "Booqashada ilmaha soo socota ee xarunta caafimaadka"
                 }
 
             else
@@ -18587,7 +18587,7 @@ translationSet trans =
                     { english = "Grief"
                     , kinyarwanda = Just "Intimba"
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Niyadjab"
                     }
 
                 EducationHIVPartnerPresence ->
@@ -18698,7 +18698,7 @@ translationSet trans =
                     { english = "Have you provided grief counseling to the patient"
                     , kinyarwanda = Just "Ese wigeze uha umurwayi ubujyanama bwo gukira intimba/ishavu"
                     , kirundi = Nothing
-                    , somali = Nothing
+                    , somali = Just "Ma siisay bukaanka la talinta niyadjabka"
                     }
 
                 EducationHIVPartnerPresence ->
@@ -18902,7 +18902,7 @@ translationSet trans =
             { english = "Prescribed Medication"
             , kinyarwanda = Just "Imiti yatanzwe"
             , kirundi = Just "Imiti yandikiwe"
-            , somali = Nothing
+            , somali = Just "Dawada la Qoray"
             }
 
         PrenatalRecurrentNextStepsTask task ->
@@ -20265,7 +20265,7 @@ translationSet trans =
             { english = "Prophylaxis Medications"
             , kinyarwanda = Nothing
             , kirundi = Just "Imiti ikinga"
-            , somali = Nothing
+            , somali = Just "Dawada ka Hortaga"
             }
 
         ProvideHealthEducationAndInstructToIsolate ->
@@ -21408,7 +21408,7 @@ translationSet trans =
             { english = "Record Group Education"
             , kinyarwanda = Nothing
             , kirundi = Nothing
-            , somali = Nothing
+            , somali = Just "Qor Wacyigelin Kooxeed"
             }
 
         RecordPregnancyOutcome ->
@@ -26122,7 +26122,7 @@ translationSet trans =
             { english = "Sore Throat"
             , kinyarwanda = Just "Kubabara mu muhogo"
             , kirundi = Just "Kubabara mu muhogo"
-            , somali = Nothing
+            , somali = Just "Dhuun Xanuun"
             }
 
         SpecialityCareHeaderPrefix ->
@@ -27424,7 +27424,7 @@ translationSet trans =
             { english = "Tuberculosis Follow up"
             , kinyarwanda = Just "Gukurikirana umurwayi w'igituntu"
             , kirundi = Just "Gukurikirana umurwayi w'igituntu"
-            , somali = Nothing
+            , somali = Just "Ka war qabka Qaaxada"
             }
 
         TuberculosisFollowUpTestingStageInstructions stage ->
@@ -27433,7 +27433,7 @@ translationSet trans =
                     { english = "Reassess treatment according to results, continue first-line treatment if drug susceptible."
                     , kinyarwanda = Just "Genzura imiti ugendeye ku bisubizo byabonetse, ukomeze imiti y'ikiciro cya mbere niba ari koroherwa."
                     , kirundi = Just "Suzuma imiti ufatiye ku nyishu zabonetse, bandanya umurongo wa mbere w'imiti mugihe habaye akarusho"
-                    , somali = Nothing
+                    , somali = Just "Dib u qiimee daweynta ayadoo la eegayo natiijada,"
                     }
 
                 FollowUpTestingMonth2 ->
@@ -27443,21 +27443,21 @@ translationSet trans =
                     { english = "If positive, Culture and DST - Continuation phase."
                     , kinyarwanda = Just "Niba akigaragaza igituntu, kilitire na DST ari negatifu, umurwayi akomeza imiti yo mu cyiciro gikurikiyeho(RH mu mezi ane)."
                     , kirundi = Just "If positive, Culture and DST, and retest after 15 days."
-                    , somali = Nothing
+                    , somali = Just "Tognaan, Beerid iyo DST - wajiga sii wadida"
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "If positive, Culture and DST, and retest after 15 days."
                     , kinyarwanda = Just "Niba akigaragaza igituntu, ikizamini cya Kilitire na DSt cyogera gukorwa mu minsi 15."
                     , kirundi = Just "Niba akigaragaza igituntu,  igipimo ca culture na DST congera gukorwa mu misi 15"
-                    , somali = Nothing
+                    , somali = Just "Tognaan, Beerid iyo DST, dib u baar 15 maalin kadib."
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "If positive, Culture and DST, and retest after 15 days, if negative - cured."
                     , kinyarwanda = Just "Niba yarakigargaza igituntu ariko ikizamini cy akilitire na DST bikaba negatifu nyuma y'iminsi 15, uwo murwayi aba yarakize."
                     , kirundi = Just "Niba akigaragaza igituntu ariko igipimo ca culture na DST congeye gukorwa bikaba bitacigaragaza inyuma y'imisi 15, uwo murwayi aba yarakize"
-                    , somali = Nothing
+                    , somali = Just "Tognaan, Beerid iyo DST, dib u baar 15 maalin kadib, Tabnaan - la daweeyay"
                     }
 
         TuberculosisFollowUpTestingStageLabel stage ->
@@ -27466,35 +27466,35 @@ translationSet trans =
                     { english = "Month 1"
                     , kinyarwanda = Just "Ukwezi kwa 1"
                     , kirundi = Just "Ukwezi kwa 1"
-                    , somali = Nothing
+                    , somali = Just "Bisha 1aad"
                     }
 
                 FollowUpTestingMonth2 ->
                     { english = "Month 2"
                     , kinyarwanda = Just "Ukwezi kwa 2"
                     , kirundi = Just "Ukwezi kwa 2"
-                    , somali = Nothing
+                    , somali = Just "Bisha 2aad"
                     }
 
                 FollowUpTestingEndMonth2 ->
                     { english = "End Month 2"
                     , kinyarwanda = Just "Arangije ukwezi kwa 2"
                     , kirundi = Just "Arangije ukwezi kwa kabiri "
-                    , somali = Nothing
+                    , somali = Just "Dhamee Bisha 2aad"
                     }
 
                 FollowUpTestingEndMonth5 ->
                     { english = "End Month 5"
                     , kinyarwanda = Just "Arangije ukwezi kwa 5"
                     , kirundi = Just "Arangije ukwezi kwa gatanu"
-                    , somali = Nothing
+                    , somali = Just "Dhamee Bisha 5aad"
                     }
 
                 FollowUpTestingEndMonth6 ->
                     { english = "End Month 6"
                     , kinyarwanda = Just "Arangije ukwezi kwa 6"
                     , kirundi = Just "arangije ukwezi kwa gatandatu"
-                    , somali = Nothing
+                    , somali = Just "Dhamee Bisha 6aad"
                     }
 
         TuberculosisFollowUpTestingStageTest stage ->
@@ -27503,7 +27503,7 @@ translationSet trans =
                     { english = "xPert, Culture, and DST"
                     , kinyarwanda = Just "Ikizamini cya Jenexpati, Kilitire na DST"
                     , kirundi = Just "Igipimo ca GenexPert, Culture na DST"
-                    , somali = Nothing
+                    , somali = Just "Mashiinka Gene Expert, Beerid, iyo DST"
                     }
 
                 FollowUpTestingMonth2 ->
@@ -27513,7 +27513,7 @@ translationSet trans =
                     { english = "Smear microposy at the end of the intensive phase"
                     , kinyarwanda = Just "Gupima igituntu hakoreshejwe mikorosikopi umurwayi arangije imiti y'ikiciro cya mbere"
                     , kirundi = Just "Gupima igituntu hakoreshejwe mikorosikopi (rugagamisha) umurwayi arangije imiti y'igice gikomeye ca mbere"
-                    , somali = Nothing
+                    , somali = Just "Baaritaanka dheecaanka dhamaadka wejiga culus"
                     }
 
                 FollowUpTestingEndMonth5 ->
@@ -29414,7 +29414,7 @@ translateActivePage page =
                             { english = "HIV Participants"
                             , kinyarwanda = Nothing
                             , kirundi = Just "Abarwayi ba SIDA baje"
-                            , somali = Nothing
+                            , somali = Just "Ka qeyb galayaasha HIV"
                             }
 
                         HomeVisitEncounter ->
@@ -29781,21 +29781,21 @@ translateActivePage page =
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Just "Umubonano werekeye indwara y'igituntu"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha Qaaxada"
                     }
 
                 TuberculosisEncounterPage _ ->
                     { english = "Tuberculosis Encounter"
                     , kinyarwanda = Just "Isura ku ndwara y'igituntu"
                     , kirundi = Just "Umubonano werekeye indwara y'igituntu"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha Qaaxada"
                     }
 
                 TuberculosisActivityPage _ _ ->
                     { english = "Tuberculosis Activity"
                     , kinyarwanda = Just "Igikorwa ku ndwara y'igituntu"
                     , kirundi = Just "Igikorwa ku ndwara y'igituntu"
-                    , somali = Nothing
+                    , somali = Just "Howlaha Qaaxada"
                     }
 
                 TuberculosisProgressReportPage _ ->
@@ -29812,21 +29812,21 @@ translateActivePage page =
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano werekeye ingwara y’umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha HIV"
                     }
 
                 HIVEncounterPage _ ->
                     { english = "HIV Encounter"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Umubonano werekeye ingwara y’umugera wa SIDA"
-                    , somali = Nothing
+                    , somali = Just "Ogaanshaha HIV"
                     }
 
                 HIVActivityPage _ _ ->
                     { english = "HIV Activity"
                     , kinyarwanda = Nothing
                     , kirundi = Just "Igikorwa ku barwayi ba SIDA"
-                    , somali = Nothing
+                    , somali = Just "Howlaha HIV"
                     }
 
 
