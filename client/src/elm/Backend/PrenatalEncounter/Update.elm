@@ -49,6 +49,9 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SetLabsHistoryCompleted ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
 
+        SetNextVisitDate date ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | nextVisitDate = Just date }) model
+
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
             , Cmd.none
@@ -127,6 +130,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
             , triggerRollbarOnFailure data
             )
 
+        SaveAspirin personId valueId value ->
+            ( { model | saveAspirin = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalAspirinEndpoint HandleSavedAspirin
+            , []
+            )
+
+        HandleSavedAspirin data ->
+            ( { model | saveAspirin = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
         SaveCalcium personId valueId value ->
             ( { model | saveCalcium = Loading }
             , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalCalciumEndpoint HandleSavedCalcium
@@ -135,6 +150,18 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
         HandleSavedCalcium data ->
             ( { model | saveCalcium = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFefol personId valueId value ->
+            ( { model | saveFefol = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFefolEndpoint HandleSavedFefol
+            , []
+            )
+
+        HandleSavedFefol data ->
+            ( { model | saveFefol = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )
