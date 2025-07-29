@@ -739,9 +739,17 @@ function hedley_update_7045() {
 }
 
 /**
- * Activate newly defined features set.
+ * Sets the date on which Prenatal medication change was delivered.
  */
 function hedley_update_7046() {
+  $now = hedley_stats_convert_timestamp_to_nominal(time());
+  variable_set('hedley_prenatal_change_medications', $now);
+}
+
+/**
+ * Activate newly defined features set.
+ */
+function hedley_update_7047() {
   $features = [
     'hedley_admin_feature_acute_illness_enabled',
     'hedley_admin_feature_antenatal_enabled',

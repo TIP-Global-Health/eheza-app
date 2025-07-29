@@ -19,12 +19,19 @@ import Backend.Completion.Model
         , TuberculosisActivity(..)
         , WellChildActivity(..)
         )
-import Backend.Reports.Model exposing (AcuteIllnessDiagnosis(..), NutritionReportTableType(..))
+import Backend.Reports.Model
+    exposing
+        ( AcuteIllnessDiagnosis(..)
+        , DeliveryLocation(..)
+        , NutritionReportTableType(..)
+        , PregnancyOutcome(..)
+        , PrenatalDiagnosis(..)
+        )
 import Backend.Scoreboard.Model
 import Date
 import Pages.Completion.Model
 import Pages.Components.Types exposing (PopulationSelectionOption(..))
-import Pages.Reports.Model exposing (ReportType(..))
+import Pages.Reports.Model exposing (PregnancyTrimester(..), ReportType(..))
 import Pages.Scoreboard.Model exposing (..)
 import Time exposing (Month(..))
 
@@ -92,10 +99,14 @@ type TranslationId
     | CompletionReportType Pages.Completion.Model.ReportType
     | CoreExam
     | DangerSigns
+    | DeliveryLocation DeliveryLocation
+    | DeliveryLocationsTableHeading
+    | DeliveryLocationsTablePercentage
+    | DeliveryLocationsTableTotals
+    | Demographics
     | Diagnosis
     | Diagnostics
     | District
-    | Demographics
     | DownloadCSV
     | EmptyString
     | Encounters
@@ -105,6 +116,7 @@ type TranslationId
     | FBF
     | Feeding
     | Female
+    | FirstVisit
     | FollowUp
     | FoodSecurity
     | GenerateReport
@@ -138,6 +150,7 @@ type TranslationId
     | Individual
     | InfrastructureEnvironmentWash
     | LoadData
+    | Location
     | Male
     | Medication
     | MedicationDistribution
@@ -169,7 +182,10 @@ type TranslationId
     | NutritionGroup
     | NutritionReportTableType NutritionReportTableType
     | NutritionTotal
+    | OutcomesTableHeading
     | OutsideCare
+    | PatientsWith3OrMoreVisitsPercentage
+    | PatientsWith4OrMoreVisitsPercentage
     | Photo
     | PleaseWaitMessage
     | PMTCT
@@ -177,8 +193,12 @@ type TranslationId
     | PregnanciesActive
     | PregnanciesAll
     | PregnanciesCompleted
+    | PregnancyOutcome PregnancyOutcome
+    | PregnancyOutcomeLabel
     | PregnancyTest
+    | PregnancyTrimester PregnancyTrimester
     | PrenatalActivity PrenatalActivity
+    | PrenatalDiagnosis PrenatalDiagnosis
     | PrevalenceByMonthOneVisitOrMore
     | PrevalenceByMonthTwoVisitsOrMore
     | Province
@@ -213,6 +233,7 @@ type TranslationId
     | TargetedInterventions
     | Total
     | TreatmentReview
+    | Trimester
     | Tuberculosis
     | TuberculosisActivity TuberculosisActivity
     | Vitals
@@ -649,6 +670,44 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        DeliveryLocation location ->
+            case location of
+                FacilityDelivery ->
+                    { english = "Facility"
+                    , kinyarwanda = Just "Ivuriro"
+                    , kirundi = Just "Ikigo"
+                    }
+
+                HomeDelivery ->
+                    { english = "Home"
+                    , kinyarwanda = Just "Mu rugo"
+                    , kirundi = Just "Muhira"
+                    }
+
+        DeliveryLocationsTableHeading ->
+            { english = "Outcome Location"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTablePercentage ->
+            { english = "Percentage of completed pregnancies reported"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        DeliveryLocationsTableTotals ->
+            { english = "Total # delivery outcomes documented"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Demographics ->
+            { english = "Demographics"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         Diagnostics ->
             { english = "Diagnostics"
             , kinyarwanda = Nothing
@@ -657,12 +716,6 @@ translationSet transId =
 
         District ->
             { english = "District"
-            , kinyarwanda = Nothing
-            , kirundi = Nothing
-            }
-
-        Demographics ->
-            { english = "Demographics"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -723,6 +776,12 @@ translationSet transId =
 
         Global ->
             { english = "Global"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        FirstVisit ->
+            { english = "First Visit"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -937,6 +996,12 @@ translationSet transId =
 
         LoadData ->
             { english = "Load Data"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        Location ->
+            { english = "Location"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1326,7 +1391,7 @@ translationSet transId =
                 , kirundi = Nothing
                 }
 
-            else if number > 5 then
+            else if number > 4 then
                 { english = "5+ visits"
                 , kinyarwanda = Nothing
                 , kirundi = Nothing
@@ -1470,8 +1535,26 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        OutcomesTableHeading ->
+            { english = "Outcomes of completed pregnancies (anything 30 days beyond EDD)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         OutsideCare ->
             { english = "Outside Care"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith3OrMoreVisitsPercentage ->
+            { english = "3+ visits (%)"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
+        PatientsWith4OrMoreVisitsPercentage ->
+            { english = "4+ visits (%)"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
@@ -1532,14 +1615,78 @@ translationSet transId =
             , kirundi = Nothing
             }
 
+        PregnancyOutcome outcome ->
+            case outcome of
+                OutcomeLiveAtTerm ->
+                    { english = "Live Birth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z'imbanyi canke zirenga)"
+                    }
+
+                OutcomeLivePreTerm ->
+                    { english = "Live Birth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Kubyara mwana udashyitse (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Imbanyi ivutse imbere y'ikiringo (mbere y'indwi 38)"
+                    }
+
+                OutcomeStillAtTerm ->
+                    { english = "Stillbirth at Term (38 weeks EGA or more)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)"
+                    , kirundi = Just "Kuvyarira ku gihe (Indwi 38 - AGE (z'Igihe co Kwibungenga Caharuwe ) canke zirenga)"
+                    }
+
+                OutcomeStillPreTerm ->
+                    { english = "Stillbirth Preterm (less than 38 weeks EGA)"
+                    , kinyarwanda = Just "Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y'ibyumweru 38)"
+                    , kirundi = Just "Kuvyara imbere yuko igihe kigera (imbere y'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)"
+                    }
+
+                OutcomeAbortions ->
+                    { english = "Abortions (before 24 weeks EGA)"
+                    , kinyarwanda = Just "Kuvanamo inda (mbere y'ibyumweru 24)"
+                    , kirundi = Just "Ugukoroka kw'imbanyi (imbere y'indwi 24 ugereranije nigihe imbanyi imaze)"
+                    }
+
+        PregnancyOutcomeLabel ->
+            { english = "Pregnancy Outcome"
+            , kinyarwanda = Nothing
+            , kirundi = Nothing
+            }
+
         PregnancyTest ->
             { english = "Pregnancy Test"
             , kinyarwanda = Nothing
             , kirundi = Nothing
             }
 
+        PregnancyTrimester trimester ->
+            case trimester of
+                FirstTrimester ->
+                    { english = "First Trimester"
+                    , kinyarwanda = Just "Igihembwe cya mbere"
+                    , kirundi = Just "Igice ca mbere"
+                    }
+
+                SecondTrimester ->
+                    { english = "Second Trimester"
+                    , kinyarwanda = Just "Igihembwe cya kabiri"
+                    , kirundi = Just "Igice ca kabiri"
+                    }
+
+                ThirdTrimester ->
+                    { english = "Third Trimester"
+                    , kinyarwanda = Just "Igihembwe cya gatatu"
+                    , kirundi = Just "Igice ca 3"
+                    }
+
         PrenatalActivity activity ->
             case activity of
+                PrenatalAspirin ->
+                    { english = "Low dose Aspirin"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalAppointmentConfirmation ->
                     { english = "Appointment Confirmation"
                     , kinyarwanda = Nothing
@@ -1570,6 +1717,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalCalcium ->
+                    { english = "Calcium"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalBreastfeeding ->
                     { english = "Breastfeeding"
                     , kinyarwanda = Nothing
@@ -1587,6 +1740,18 @@ translationSet transId =
 
                 PrenatalFamilyPlanning ->
                     translationSet FamilyPlanning
+
+                PrenatalFefol ->
+                    { english = "Fefol"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalFolate ->
+                    { english = "Folate"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
                 PrenatalFollowUp ->
                     translationSet FollowUp
@@ -1645,6 +1810,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalIron ->
+                    { english = "Iron"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalLastMenstrualPeriod ->
                     { english = "Last Menstrual Period"
                     , kinyarwanda = Nothing
@@ -1663,6 +1834,12 @@ translationSet transId =
                     , kirundi = Nothing
                     }
 
+                PrenatalMebendazole ->
+                    { english = "Mebendazole"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
                 PrenatalMedicalHistory ->
                     { english = "Medical History"
                     , kinyarwanda = Nothing
@@ -1677,6 +1854,12 @@ translationSet transId =
 
                 PrenatalMentalHealth ->
                     { english = "Mental Health"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                PrenatalMMS ->
+                    { english = "MMS"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
                     }
@@ -1727,10 +1910,7 @@ translationSet transId =
                     }
 
                 PrenatalPregnancyOutcome ->
-                    { english = "Pregnancy Outcome"
-                    , kinyarwanda = Nothing
-                    , kirundi = Nothing
-                    }
+                    translationSet PregnancyOutcomeLabel
 
                 PrenatalPregnancyTesting ->
                     { english = "Pregnancy Testing"
@@ -1799,6 +1979,386 @@ translationSet transId =
                     { english = "Vitals Recheck"
                     , kinyarwanda = Nothing
                     , kirundi = Nothing
+                    }
+
+        PrenatalDiagnosis diagnosis ->
+            case diagnosis of
+                DiagnosisChronicHypertension ->
+                    { english = "Chronic Hypertension"
+                    , kinyarwanda = Just "Indwara y'Umuvuduko w'Amaraso Imaze Igihe Kirekire"
+                    , kirundi = Just "Umuvuduko ukabije w'amaraso wamaho"
+                    }
+
+                DiagnosisGestationalHypertension ->
+                    { english = "Pregnancy-Induced Hypertension"
+                    , kinyarwanda = Just "Umuvuduko w'amaraso watewe no gutwita"
+                    , kirundi = Just "Umuvuduko w'amaraso utewe n'imbanyi"
+                    }
+
+                DiagnosisModeratePreeclampsia ->
+                    { english = "Mild to Moderate Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Yoroheje"
+                    , kirundi = Just "Umuvuduko w'amaraso mu gihe c'imbanyi woroshe"
+                    }
+
+                DiagnosisSeverePreeclampsia ->
+                    { english = "Severe Preeclampsia"
+                    , kinyarwanda = Just "Preklampusi Ikabije"
+                    , kirundi = Just "Severe Preeclampsia"
+                    }
+
+                DiagnosisEclampsia ->
+                    { english = "Eclampsia"
+                    , kinyarwanda = Just "Ekalampusi"
+                    , kirundi = Just "Éclampsie"
+                    }
+
+                DiagnosisHIV ->
+                    { english = "HIV"
+                    , kinyarwanda = Just "Virusi itera SIDA"
+                    , kirundi = Just "Umugera wa SIDA"
+                    }
+
+                DiagnosisHIVDetectableViralLoad ->
+                    { english = "Detectable HIV Viral Load"
+                    , kinyarwanda = Just "Agaragaza udukoko dutera virusi ya SIDA mu maraso"
+                    , kirundi = Just "Afise umugera wa SIDA ugaragara"
+                    }
+
+                DiagnosisDiscordantPartnership ->
+                    { english = "Discordant Partnership"
+                    , kinyarwanda = Just "Umwe mubo babana afite ubwandu"
+                    , kirundi = Just "Umwe afise umugera wa SIDA kandi uwundi atawafise"
+                    }
+
+                DiagnosisSyphilis ->
+                    { english = "Syphilis"
+                    , kinyarwanda = Just "Mburugu"
+                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
+                    }
+
+                DiagnosisSyphilisWithComplications ->
+                    { english = "Syphilis with Complications"
+                    , kinyarwanda = Just "Mburugu n'ibibazo bishamikiyeho"
+                    , kirundi = Just "Syphilis hamwe n'ingorane"
+                    }
+
+                DiagnosisNeurosyphilis ->
+                    { english = "Neurosyphilis"
+                    , kinyarwanda = Just "Mburugu yageze mu bwonko"
+                    , kirundi = Just "Ingwara yo m'ubwonko"
+                    }
+
+                DiagnosisHepatitisB ->
+                    { english = "Hepatitis B"
+                    , kinyarwanda = Just "Umwijima wo mu bwoko bwa B"
+                    , kirundi = Just "Ingwara y'igitigu"
+                    }
+
+                DiagnosisMalaria ->
+                    { english = "Malaria"
+                    , kinyarwanda = Just "Malariya"
+                    , kirundi = Just "Malariya"
+                    }
+
+                DiagnosisMalariaWithAnemia ->
+                    { english = "Malaria with Anemia"
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye"
+                    , kirundi = Just "Malariya hamwe n'igabanuka ry'amaraso m'umubiri"
+                    }
+
+                DiagnosisMalariaWithSevereAnemia ->
+                    { english = "Malaria with Severe Anemia"
+                    , kinyarwanda = Just "Malariya n'Amaraso Macye Cyane"
+                    , kirundi = Just "Malariya kumwe n'igabanuka ry'amaraso m'umubiri ridasanzwe"
+                    }
+
+                DiagnosisModerateAnemia ->
+                    { english = "Mild to Moderate Anemia"
+                    , kinyarwanda = Just "Amaraso Macye byoroheje"
+                    , kirundi = Just "Igabanuka ry'amaraso kuva bisanzwe"
+                    }
+
+                DiagnosisSevereAnemia ->
+                    { english = "Severe Anemia"
+                    , kinyarwanda = Just "Amaraso Macye Cyane"
+                    , kirundi = Just "Ibura ry'amaraso rikaze"
+                    }
+
+                DiagnosisSevereAnemiaWithComplications ->
+                    { english = "Severe Anemia with Complications"
+                    , kinyarwanda = Just "Amaraso Macye Cyane n'Ibibazo Bishamikiyeho"
+                    , kirundi = Just "Ibura ry'amaraso rikaze hamwe n'ingorane bijanye"
+                    }
+
+                DiagnosisMiscarriage ->
+                    { english = "Miscarriage"
+                    , kinyarwanda = Just "Inda yavuyemo"
+                    , kirundi = Just "Ugukoroka kw'imbanyi"
+                    }
+
+                DiagnosisMolarPregnancy ->
+                    { english = "Molar Pregnancy"
+                    , kinyarwanda = Just "Atwite amahuri"
+                    , kirundi = Just "Imbanyi idakomeye"
+                    }
+
+                DiagnosisPlacentaPrevia ->
+                    { english = "Placenta Previa"
+                    , kinyarwanda = Just "Ingobyi iri hasi ku nkondo y'umura"
+                    , kirundi = Just "Igitereko cugaye isohokera"
+                    }
+
+                DiagnosisPlacentalAbruption ->
+                    { english = "Placental Abruption"
+                    , kinyarwanda = Just "Ingobyi yomotse hakiri kare"
+                    , kirundi = Just "Itabuka ry'igitereko"
+                    }
+
+                DiagnosisUterineRupture ->
+                    { english = "Uterine Rupture"
+                    , kinyarwanda = Just "Nyababyeyi yaturitse"
+                    , kirundi = Just "uguturika kw'igitereko"
+                    }
+
+                DiagnosisObstructedLabor ->
+                    { english = "Obstructed Labor"
+                    , kinyarwanda = Just "Inda yanze kuvuka "
+                    , kirundi = Just "Igikorwa cabujijwe"
+                    }
+
+                DiagnosisPostAbortionSepsis ->
+                    { english = "Post Abortion Sepsis"
+                    , kinyarwanda = Just "Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda"
+                    , kirundi = Just "Birashoboka ko ingwara y'igitereko izamwo"
+                    }
+
+                DiagnosisEctopicPregnancy ->
+                    { english = "Ectopic Pregnancy"
+                    , kinyarwanda = Just "Yasamiye hanze y'umura"
+                    , kirundi = Just "Imbanyi iri hanze y'Igitereko"
+                    }
+
+                DiagnosisPROM ->
+                    { english = "Premature Rupture of Membranes (PROM)"
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare"
+                    , kirundi = Just "Itabuka ry'isimbizo y'umwana mu gitereko imbere yuko imbanyi ishika kw'itarike yayo/igihe cayo"
+                    }
+
+                DiagnosisPPROM ->
+                    { english = "Preterm Premature Rupture of Membranes (PPROM)"
+                    , kinyarwanda = Just "Isuha yamenetse hakiri kare inda itarageza igihe"
+                    , kirundi = Just "Itabuka ry'isimbizo y'umwana mu gitereko imbere yuko imbanyi ishika kw'itarike yayo"
+                    }
+
+                DiagnosisHyperemesisGravidum ->
+                    { english = "Hyperemesis Gravidum"
+                    , kinyarwanda = Just "Kuruka bikabije k'umugore utwite"
+                    , kirundi = Just "Hyperémèse gravidique"
+                    }
+
+                DiagnosisSevereVomiting ->
+                    { english = "Severe Vomiting"
+                    , kinyarwanda = Just "Kuruka bikabije"
+                    , kirundi = Just "Ukudahwa gukaze"
+                    }
+
+                DiagnosisMaternalComplications ->
+                    { english = "Maternal Complications"
+                    , kinyarwanda = Just "Ibibazo bishobora kwibasira umugore utwite"
+                    , kirundi = Just "Ingorane z'abavyeyi"
+                    }
+
+                DiagnosisInfection ->
+                    { english = "Infection"
+                    , kinyarwanda = Just "Indwara iterwa n'udukoko tutabonwa n'amaso (Microbes)"
+                    , kirundi = Just "Ivyanduza"
+                    }
+
+                DiagnosisImminentDelivery ->
+                    { english = "Imminent Delivery"
+                    , kinyarwanda = Just "Kubyara biri hafi"
+                    , kirundi = Just "Gutanga bigaragara/"
+                    }
+
+                DiagnosisLaborAndDelivery ->
+                    { english = "Labor + Delivery"
+                    , kinyarwanda = Just "Kujya ku nda + Kubyara"
+                    , kirundi = Just "Ibise + Kuvyara"
+                    }
+
+                DiagnosisHeartburn ->
+                    { english = "Heartburn"
+                    , kinyarwanda = Just "Ikirungurira"
+                    , kirundi = Just "Ugusha k'umutima"
+                    }
+
+                DiagnosisDeepVeinThrombosis ->
+                    { english = "Deep Vein Thrombosis"
+                    , kinyarwanda = Just "Gufatana(Kuvura) gukabije kw'amaraso"
+                    , kirundi = Just "Umutsi w'indani ufise Thrombose"
+                    }
+
+                DiagnosisPelvicPainIntense ->
+                    { english = "Intense Pelvic Pain"
+                    , kinyarwanda = Just "Ububabare bukabije mu kiziba cy'inda"
+                    , kirundi = Just "Ububabare bukomeye bwo mu nda yo hepfo"
+                    }
+
+                DiagnosisUrinaryTractInfection ->
+                    { english = "Urinary Tract Infection"
+                    , kinyarwanda = Just "Indwara y'ubwandu bw'umuyoboro w'inkari"
+                    , kirundi = Just "Ingwara yo mu miringoti y'umukoyo"
+                    }
+
+                DiagnosisPyelonephritis ->
+                    { english = "Pyelonephritis"
+                    , kinyarwanda = Just "Indwara yo kubyimba impyiko"
+                    , kirundi = Just "Ingwara y'Amafyigo"
+                    }
+
+                DiagnosisCandidiasis ->
+                    { english = "Candidiasis"
+                    , kinyarwanda = Just "Kandidoze"
+                    , kirundi = Just "Candidose"
+                    }
+
+                DiagnosisGonorrhea ->
+                    { english = "Gonorrhea"
+                    , kinyarwanda = Just "Indwara y'umutezi"
+                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka"
+                    }
+
+                DiagnosisTrichomonasOrBacterialVaginosis ->
+                    { english = "Trichomonas or Bacterial Vaginosis"
+                    , kinyarwanda = Just "Tirikomonasi cyangwa Mikorobe zo mu nda ibyara"
+                    , kirundi = Just "Ingwara yo mu bihimba vy'irondoka igaragazwa kenshi no kuhiyagaza"
+                    }
+
+                DiagnosisTuberculosis ->
+                    { english = "Tuberculosis"
+                    , kinyarwanda = Just "Igituntu"
+                    , kirundi = Just "Igituntu"
+                    }
+
+                DiagnosisDiabetes ->
+                    { english = "Diabetes"
+                    , kinyarwanda = Just "Diyabete (Indwara y'igisukari)"
+                    , kirundi = Just "Diyabete"
+                    }
+
+                DiagnosisGestationalDiabetes ->
+                    { english = "Gestational Diabetes"
+                    , kinyarwanda = Just "Diyabete iterwa no gutwita"
+                    , kirundi = Just "Diyabete y'imbanyi"
+                    }
+
+                DiagnosisRhesusNegative ->
+                    { english = "RH Factor Negative"
+                    , kinyarwanda = Just "Rezisi Negatifu"
+                    , kirundi = Just "Rhesus negatif"
+                    }
+
+                DiagnosisDepressionNotLikely ->
+                    { english = "Depression not Likely"
+                    , kinyarwanda = Just "Birashoboka ko adafite indwara y'agahinda gakabije"
+                    , kirundi = Just "Kwihebura ntibishoboka"
+                    }
+
+                DiagnosisDepressionPossible ->
+                    { english = "Depression Possible"
+                    , kinyarwanda = Just "Birashoboka ko yagira indwara y'agahinda gakabije"
+                    , kirundi = Just "Kwihebura birashoboka"
+                    }
+
+                DiagnosisDepressionHighlyPossible ->
+                    { english = "Fairly High Possibility of Depression"
+                    , kinyarwanda = Just "Birashoboka cyane ko afite indwara y'agahinda gakabije"
+                    , kirundi = Just "Birashoboka cane kwihebura"
+                    }
+
+                DiagnosisDepressionProbable ->
+                    { english = "Probable Depression"
+                    , kinyarwanda = Just "Birashoboka ko afite indwara y'agahinda gakabije"
+                    , kirundi = Just "Ukwihebura gushoboka"
+                    }
+
+                DiagnosisSuicideRisk ->
+                    { english = "Suicide Risk"
+                    , kinyarwanda = Just "Afite ibyago byo kwiyahura"
+                    , kirundi = Just "Ingorane zimutuma ashobora kwiyahura"
+                    }
+
+                DiagnosisOther ->
+                    { english = "Other"
+                    , kinyarwanda = Just "Ibindi"
+                    , kirundi = Just "Ibindi"
+                    }
+
+                DiagnosisPostpartumAbdominalPain ->
+                    { english = "Abdominal Pain"
+                    , kinyarwanda = Just "Kubabara mu nda"
+                    , kirundi = Just "Ukubabara mu nda"
+                    }
+
+                DiagnosisPostpartumUrinaryIncontinence ->
+                    { english = "Urinary Incontinence"
+                    , kinyarwanda = Just "Ntabasha kunyara"
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisPostpartumHeadache ->
+                    { english = "Headache"
+                    , kinyarwanda = Just "Kubabara umutwe"
+                    , kirundi = Just "Kumeneka umutwe"
+                    }
+
+                DiagnosisPostpartumFatigue ->
+                    { english = "Fatigue"
+                    , kinyarwanda = Just "umunaniro"
+                    , kirundi = Just "Uburuhe"
+                    }
+
+                DiagnosisPostpartumFever ->
+                    { english = "Fever"
+                    , kinyarwanda = Just "Umuriro"
+                    , kirundi = Just "Ubushuhe"
+                    }
+
+                DiagnosisPostpartumPerinealPainOrDischarge ->
+                    { english = "Perineal Pain or Discharge"
+                    , kinyarwanda = Just "Arababara perine cg aratakaza ibintu budasanzwe"
+                    , kirundi = Just "Ububabare bw'umugongo hepfo"
+                    }
+
+                DiagnosisPostpartumInfection ->
+                    { english = "Infection (Postpartum)"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
+
+                DiagnosisPostpartumExcessiveBleeding ->
+                    { english = "Excessive Bleeding"
+                    , kinyarwanda = Just "Kuva cyane"
+                    , kirundi = Just "Kuva amaraso cane"
+                    }
+
+                DiagnosisPostpartumEarlyMastitisOrEngorgment ->
+                    { english = "Early Mastitis or Engorgement"
+                    , kinyarwanda = Just "Uburwayi bwo kubyimba amabere bwaje kare cyane"
+                    , kirundi = Just "Iyuzura ry'amaberebere (Mastite précoce)"
+                    }
+
+                DiagnosisPostpartumMastitis ->
+                    { english = "Mastitis"
+                    , kinyarwanda = Just "Uburwayi bw'amabere"
+                    , kirundi = Just "Ingwara y'imoko ituma amaberebere adasohoka"
+                    }
+
+                NoPrenatalDiagnosis ->
+                    { english = "None"
+                    , kinyarwanda = Just "Ntabyo"
+                    , kirundi = Just "Nta na kimwe"
                     }
 
         PrevalenceByMonthOneVisitOrMore ->
@@ -1871,6 +2431,12 @@ translationSet transId =
 
                 ReportPrenatal ->
                     translationSet Antenatal
+
+                ReportPrenatalDiagnoses ->
+                    { english = "ANC Diagnoses"
+                    , kinyarwanda = Nothing
+                    , kirundi = Nothing
+                    }
 
         ReportTypeLabel ->
             { english = "Report Type"
@@ -2050,6 +2616,12 @@ translationSet transId =
             { english = "Treatment Review"
             , kinyarwanda = Nothing
             , kirundi = Nothing
+            }
+
+        Trimester ->
+            { english = "Trimester"
+            , kinyarwanda = Just "Igihembwe"
+            , kirundi = Just "Igice"
             }
 
         Tuberculosis ->

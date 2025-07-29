@@ -6637,6 +6637,7 @@ var $author$project$Pages$Reports$Model$ReportAcuteIllness = {$: 'ReportAcuteIll
 var $author$project$Pages$Reports$Model$ReportDemographics = {$: 'ReportDemographics'};
 var $author$project$Pages$Reports$Model$ReportNutrition = {$: 'ReportNutrition'};
 var $author$project$Pages$Reports$Model$ReportPrenatal = {$: 'ReportPrenatal'};
+var $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses = {$: 'ReportPrenatalDiagnoses'};
 var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportType) {
 	switch (reportType) {
 		case 'acute-illness':
@@ -6647,6 +6648,8 @@ var $author$project$Pages$Reports$Utils$reportTypeFromString = function (reportT
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportNutrition);
 		case 'prenatal':
 			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatal);
+		case 'prenatal-diagnoses':
+			return $elm$core$Maybe$Just($author$project$Pages$Reports$Model$ReportPrenatalDiagnoses);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -8327,14 +8330,18 @@ var $author$project$Backend$Completion$Utils$nutritionMotherActivityFromMapping 
 	}
 };
 var $author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation = {$: 'PrenatalAppointmentConfirmation'};
+var $author$project$Backend$Completion$Model$PrenatalAspirin = {$: 'PrenatalAspirin'};
 var $author$project$Backend$Completion$Model$PrenatalBirthPlan = {$: 'PrenatalBirthPlan'};
 var $author$project$Backend$Completion$Model$PrenatalBloodGprsTest = {$: 'PrenatalBloodGprsTest'};
 var $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult = {$: 'PrenatalBloodGprsTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalBreastExam = {$: 'PrenatalBreastExam'};
 var $author$project$Backend$Completion$Model$PrenatalBreastfeeding = {$: 'PrenatalBreastfeeding'};
+var $author$project$Backend$Completion$Model$PrenatalCalcium = {$: 'PrenatalCalcium'};
 var $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam = {$: 'PrenatalCorePhysicalExam'};
 var $author$project$Backend$Completion$Model$PrenatalDangerSigns = {$: 'PrenatalDangerSigns'};
 var $author$project$Backend$Completion$Model$PrenatalFamilyPlanning = {$: 'PrenatalFamilyPlanning'};
+var $author$project$Backend$Completion$Model$PrenatalFefol = {$: 'PrenatalFefol'};
+var $author$project$Backend$Completion$Model$PrenatalFolate = {$: 'PrenatalFolate'};
 var $author$project$Backend$Completion$Model$PrenatalFollowUp = {$: 'PrenatalFollowUp'};
 var $author$project$Backend$Completion$Model$PrenatalGuExam = {$: 'PrenatalGuExam'};
 var $author$project$Backend$Completion$Model$PrenatalHIVPCRTest = {$: 'PrenatalHIVPCRTest'};
@@ -8346,9 +8353,12 @@ var $author$project$Backend$Completion$Model$PrenatalHemoglobinTest = {$: 'Prena
 var $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult = {$: 'PrenatalHemoglobinTestResult'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTest = {$: 'PrenatalHepatitisBTest'};
 var $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult = {$: 'PrenatalHepatitisBTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalIron = {$: 'PrenatalIron'};
 var $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod = {$: 'PrenatalLastMenstrualPeriod'};
+var $author$project$Backend$Completion$Model$PrenatalMMS = {$: 'PrenatalMMS'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTest = {$: 'PrenatalMalariaTest'};
 var $author$project$Backend$Completion$Model$PrenatalMalariaTestResult = {$: 'PrenatalMalariaTestResult'};
+var $author$project$Backend$Completion$Model$PrenatalMebendazole = {$: 'PrenatalMebendazole'};
 var $author$project$Backend$Completion$Model$PrenatalMedicalHistory = {$: 'PrenatalMedicalHistory'};
 var $author$project$Backend$Completion$Model$PrenatalMedication = {$: 'PrenatalMedication'};
 var $author$project$Backend$Completion$Model$PrenatalMedicationDistribution = {$: 'PrenatalMedicationDistribution'};
@@ -8487,6 +8497,20 @@ var $author$project$Backend$Completion$Utils$prenatalActivityFromMapping = funct
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalSyphilisTestResult);
 		case '9+':
 			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalCalcium);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFolate);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalIron);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMebendazole);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalMMS);
+		case 'f1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalAspirin);
+		case 'g1':
+			return $elm$core$Maybe$Just($author$project$Backend$Completion$Model$PrenatalFefol);
 		default:
 			return $elm$core$Maybe$Nothing;
 	}
@@ -8615,9 +8639,9 @@ var $author$project$Backend$Completion$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$CompletionMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
+var $author$project$Backend$CompletionMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
 var $author$project$Backend$Components$Model$HealthCenterData = F2(
 	function (id, name) {
@@ -8650,15 +8674,43 @@ var $author$project$Backend$Components$Decoder$decodeHealthCenterData = A3(
 		'id',
 		$author$project$Gizra$Json$decodeInt,
 		$elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$HealthCenterData)));
-var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$Components$Model$ScopeFull = {$: 'ScopeFull'};
+var $author$project$Backend$Components$Model$ScopeHealthCenters = {$: 'ScopeHealthCenters'};
+var $author$project$Backend$Components$Decoder$decodeMenuScope = A2(
+	$elm$json$Json$Decode$andThen,
+	function (scope) {
+		switch (scope) {
+			case 'full':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeFull);
+			case 'health_centers':
+				return $elm$json$Json$Decode$succeed($author$project$Backend$Components$Model$ScopeHealthCenters);
+			default:
+				return $elm$json$Json$Decode$fail(scope + ' is unknown MenuScope type');
+		}
+	},
+	$elm$json$Json$Decode$string);
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Backend$CompletionMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData)));
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$CompletionMenu$Model$MenuData))));
 var $author$project$Backend$CompletionMenu$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -8931,9 +8983,9 @@ var $author$project$Backend$Reports$Decoder$nutritionDataFromString = function (
 	if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
 		var stunting = _v0.a;
 		var _v1 = _v0.b;
-		var wasting = _v1.a;
+		var underweight = _v1.a;
 		var _v2 = _v1.b;
-		var underweight = _v2.a;
+		var wasting = _v2.a;
 		return $elm$core$Maybe$Just(
 			A3(
 				$author$project$Backend$Reports$Model$NutritionData,
@@ -8997,51 +9049,285 @@ var $author$project$Backend$Reports$Decoder$decodeNutritionEncounterData = A2(
 		return $elm$json$Json$Decode$fail('Failed to decode NutritionEncounterData');
 	},
 	$elm$json$Json$Decode$string);
-var $author$project$Backend$Reports$Model$PrenatalParticipantData = F4(
-	function (created, eddDate, dateConcluded, encounters) {
-		return {created: created, dateConcluded: dateConcluded, eddDate: eddDate, encounters: encounters};
+var $author$project$Backend$Reports$Model$PrenatalParticipantData = F6(
+	function (created, eddDate, dateConcluded, outcome, deliveryLocation, encounters) {
+		return {created: created, dateConcluded: dateConcluded, deliveryLocation: deliveryLocation, eddDate: eddDate, encounters: encounters, outcome: outcome};
 	});
-var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
-var $author$project$Backend$Reports$Model$PrenatalEncounterData = F2(
-	function (startDate, encounterType) {
-		return {encounterType: encounterType, startDate: startDate};
-	});
-var $elm$core$Maybe$map2 = F3(
-	function (func, ma, mb) {
-		if (ma.$ === 'Nothing') {
+var $author$project$Backend$Reports$Model$FacilityDelivery = {$: 'FacilityDelivery'};
+var $author$project$Backend$Reports$Model$HomeDelivery = {$: 'HomeDelivery'};
+var $author$project$Backend$Reports$Decoder$deliveryLocationFromString = function (location) {
+	switch (location) {
+		case 'f':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$FacilityDelivery);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$HomeDelivery);
+		default:
 			return $elm$core$Maybe$Nothing;
-		} else {
-			var a = ma.a;
-			if (mb.$ === 'Nothing') {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var b = mb.a;
-				return $elm$core$Maybe$Just(
-					A2(func, a, b));
-			}
-		}
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodeDeliveryLocation = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized DeliveryLocation'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$deliveryLocationFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$OutcomeAbortions = {$: 'OutcomeAbortions'};
+var $author$project$Backend$Reports$Model$OutcomeLiveAtTerm = {$: 'OutcomeLiveAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeLivePreTerm = {$: 'OutcomeLivePreTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillAtTerm = {$: 'OutcomeStillAtTerm'};
+var $author$project$Backend$Reports$Model$OutcomeStillPreTerm = {$: 'OutcomeStillPreTerm'};
+var $author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString = function (outcome) {
+	switch (outcome) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLiveAtTerm);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeLivePreTerm);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillAtTerm);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeStillPreTerm);
+		case 'e':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$OutcomeAbortions);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Backend$Reports$Decoder$decodePregnancyOutcome = A2(
+	$elm$json$Json$Decode$andThen,
+	function (s) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			$elm$json$Json$Decode$fail(s + ' is not a recognized PregnancyOutcome'),
+			A2(
+				$elm$core$Maybe$map,
+				$elm$json$Json$Decode$succeed,
+				$author$project$Backend$Reports$Decoder$pregnancyOutcomeFromString(s)));
+	},
+	$elm$json$Json$Decode$string);
+var $author$project$Backend$Reports$Model$PrenatalEncounterData = F3(
+	function (startDate, encounterType, diagnoses) {
+		return {diagnoses: diagnoses, encounterType: encounterType, startDate: startDate};
 	});
+var $author$project$Backend$Reports$Model$DiagnosisCandidiasis = {$: 'DiagnosisCandidiasis'};
+var $author$project$Backend$Reports$Model$DiagnosisChronicHypertension = {$: 'DiagnosisChronicHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis = {$: 'DiagnosisDeepVeinThrombosis'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible = {$: 'DiagnosisDepressionHighlyPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely = {$: 'DiagnosisDepressionNotLikely'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionPossible = {$: 'DiagnosisDepressionPossible'};
+var $author$project$Backend$Reports$Model$DiagnosisDepressionProbable = {$: 'DiagnosisDepressionProbable'};
+var $author$project$Backend$Reports$Model$DiagnosisDiabetes = {$: 'DiagnosisDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership = {$: 'DiagnosisDiscordantPartnership'};
+var $author$project$Backend$Reports$Model$DiagnosisEclampsia = {$: 'DiagnosisEclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy = {$: 'DiagnosisEctopicPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes = {$: 'DiagnosisGestationalDiabetes'};
+var $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension = {$: 'DiagnosisGestationalHypertension'};
+var $author$project$Backend$Reports$Model$DiagnosisGonorrhea = {$: 'DiagnosisGonorrhea'};
+var $author$project$Backend$Reports$Model$DiagnosisHIV = {$: 'DiagnosisHIV'};
+var $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad = {$: 'DiagnosisHIVDetectableViralLoad'};
+var $author$project$Backend$Reports$Model$DiagnosisHeartburn = {$: 'DiagnosisHeartburn'};
+var $author$project$Backend$Reports$Model$DiagnosisHepatitisB = {$: 'DiagnosisHepatitisB'};
+var $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum = {$: 'DiagnosisHyperemesisGravidum'};
+var $author$project$Backend$Reports$Model$DiagnosisImminentDelivery = {$: 'DiagnosisImminentDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisInfection = {$: 'DiagnosisInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery = {$: 'DiagnosisLaborAndDelivery'};
+var $author$project$Backend$Reports$Model$DiagnosisMalaria = {$: 'DiagnosisMalaria'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia = {$: 'DiagnosisMalariaWithAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia = {$: 'DiagnosisMalariaWithSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisMaternalComplications = {$: 'DiagnosisMaternalComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisMiscarriage = {$: 'DiagnosisMiscarriage'};
+var $author$project$Backend$Reports$Model$DiagnosisModerateAnemia = {$: 'DiagnosisModerateAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia = {$: 'DiagnosisModeratePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy = {$: 'DiagnosisMolarPregnancy'};
+var $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis = {$: 'DiagnosisNeurosyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisObstructedLabor = {$: 'DiagnosisObstructedLabor'};
+var $author$project$Backend$Reports$Model$DiagnosisOther = {$: 'DiagnosisOther'};
+var $author$project$Backend$Reports$Model$DiagnosisPPROM = {$: 'DiagnosisPPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPROM = {$: 'DiagnosisPROM'};
+var $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense = {$: 'DiagnosisPelvicPainIntense'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia = {$: 'DiagnosisPlacentaPrevia'};
+var $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption = {$: 'DiagnosisPlacentalAbruption'};
+var $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis = {$: 'DiagnosisPostAbortionSepsis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain = {$: 'DiagnosisPostpartumAbdominalPain'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment = {$: 'DiagnosisPostpartumEarlyMastitisOrEngorgment'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding = {$: 'DiagnosisPostpartumExcessiveBleeding'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue = {$: 'DiagnosisPostpartumFatigue'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumFever = {$: 'DiagnosisPostpartumFever'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache = {$: 'DiagnosisPostpartumHeadache'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection = {$: 'DiagnosisPostpartumInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis = {$: 'DiagnosisPostpartumMastitis'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge = {$: 'DiagnosisPostpartumPerinealPainOrDischarge'};
+var $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence = {$: 'DiagnosisPostpartumUrinaryIncontinence'};
+var $author$project$Backend$Reports$Model$DiagnosisPyelonephritis = {$: 'DiagnosisPyelonephritis'};
+var $author$project$Backend$Reports$Model$DiagnosisRhesusNegative = {$: 'DiagnosisRhesusNegative'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemia = {$: 'DiagnosisSevereAnemia'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications = {$: 'DiagnosisSevereAnemiaWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia = {$: 'DiagnosisSeverePreeclampsia'};
+var $author$project$Backend$Reports$Model$DiagnosisSevereVomiting = {$: 'DiagnosisSevereVomiting'};
+var $author$project$Backend$Reports$Model$DiagnosisSuicideRisk = {$: 'DiagnosisSuicideRisk'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilis = {$: 'DiagnosisSyphilis'};
+var $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications = {$: 'DiagnosisSyphilisWithComplications'};
+var $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis = {$: 'DiagnosisTrichomonasOrBacterialVaginosis'};
+var $author$project$Backend$Reports$Model$DiagnosisTuberculosis = {$: 'DiagnosisTuberculosis'};
+var $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection = {$: 'DiagnosisUrinaryTractInfection'};
+var $author$project$Backend$Reports$Model$DiagnosisUterineRupture = {$: 'DiagnosisUterineRupture'};
+var $author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping = function (s) {
+	switch (s) {
+		case 'a':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisChronicHypertension);
+		case 'b':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalHypertension);
+		case 'c':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia);
+		case 'd':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia);
+		case 'g':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEclampsia);
+		case 'h':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIV);
+		case 'i':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad);
+		case 'j':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership);
+		case 'k':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilis);
+		case 'l':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications);
+		case 'm':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisNeurosyphilis);
+		case 'n':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHepatitisB);
+		case 'o':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalaria);
+		case 'p':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia);
+		case 'q':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia);
+		case 'r':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisModerateAnemia);
+		case 's':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemia);
+		case 't':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications);
+		case 'u':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMiscarriage);
+		case 'v':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMolarPregnancy);
+		case 'w':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia);
+		case 'x':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption);
+		case 'y':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUterineRupture);
+		case 'z':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisObstructedLabor);
+		case 'a1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis);
+		case 'b1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy);
+		case 'c1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPROM);
+		case 'd1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPPROM);
+		case 'e1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum);
+		case 'f1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSevereVomiting);
+		case 'g1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisMaternalComplications);
+		case 'h1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisInfection);
+		case 'i1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisImminentDelivery);
+		case 'j1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery);
+		case 'k1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisHeartburn);
+		case 'l1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis);
+		case 'm1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense);
+		case 'n1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection);
+		case 'o1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPyelonephritis);
+		case 'p1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisCandidiasis);
+		case 'q1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGonorrhea);
+		case 'r1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis);
+		case 's1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisTuberculosis);
+		case 't1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDiabetes);
+		case 'u1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes);
+		case 'v1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisRhesusNegative);
+		case 'w1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely);
+		case 'x1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionPossible);
+		case 'y1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible);
+		case 'z1':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisDepressionProbable);
+		case 'a2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisSuicideRisk);
+		case 'b2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisOther);
+		case 'c2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain);
+		case 'd2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence);
+		case 'e2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache);
+		case 'f2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue);
+		case 'g2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumFever);
+		case 'h2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge);
+		case 'i2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumInfection);
+		case 'j2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding);
+		case 'k2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment);
+		case 'l2':
+			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis);
+		default:
+			return $elm$core$Maybe$Nothing;
+	}
+};
 var $author$project$Backend$Reports$Model$ChwFirstEncounter = {$: 'ChwFirstEncounter'};
 var $author$project$Backend$Reports$Model$ChwPostpartumEncounter = {$: 'ChwPostpartumEncounter'};
 var $author$project$Backend$Reports$Model$ChwSecondEncounter = {$: 'ChwSecondEncounter'};
 var $author$project$Backend$Reports$Model$ChwThirdPlusEncounter = {$: 'ChwThirdPlusEncounter'};
+var $author$project$Backend$Reports$Model$NurseEncounter = {$: 'NurseEncounter'};
 var $author$project$Backend$Reports$Model$NursePostpartumEncounter = {$: 'NursePostpartumEncounter'};
 var $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString = function (encounterType) {
 	switch (encounterType) {
 		case 'nurse':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$NurseEncounter);
+			return $author$project$Backend$Reports$Model$NurseEncounter;
 		case 'nurse-postpartum':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$NursePostpartumEncounter);
+			return $author$project$Backend$Reports$Model$NursePostpartumEncounter;
 		case 'chw-1':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwFirstEncounter);
+			return $author$project$Backend$Reports$Model$ChwFirstEncounter;
 		case 'chw-2':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwSecondEncounter);
+			return $author$project$Backend$Reports$Model$ChwSecondEncounter;
 		case 'chw-3':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwThirdPlusEncounter);
+			return $author$project$Backend$Reports$Model$ChwThirdPlusEncounter;
 		case 'chw-postpartum':
-			return $elm$core$Maybe$Just($author$project$Backend$Reports$Model$ChwPostpartumEncounter);
+			return $author$project$Backend$Reports$Model$ChwPostpartumEncounter;
 		default:
-			return $elm$core$Maybe$Nothing;
+			return $author$project$Backend$Reports$Model$NurseEncounter;
 	}
 };
 var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
@@ -9049,51 +9335,34 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalEncounterData = A2(
 	function (s) {
 		var _v0 = A2(
 			$elm$core$String$split,
-			' ',
+			'|',
 			$elm$core$String$trim(s));
-		_v0$2:
-		while (true) {
-			if (_v0.b) {
-				if (!_v0.b.b) {
-					var first = _v0.a;
-					return A2(
-						$elm$core$Maybe$withDefault,
-						$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
-						A2(
-							$elm$core$Maybe$map,
-							function (startDate) {
-								return $elm$json$Json$Decode$succeed(
-									A2($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, $author$project$Backend$Reports$Model$NurseEncounter));
-							},
-							$elm$core$Result$toMaybe(
-								$justinmimbs$date$Date$fromIsoString(first))));
-				} else {
-					if (!_v0.b.b.b) {
-						var first = _v0.a;
-						var _v1 = _v0.b;
-						var second = _v1.a;
-						return A2(
-							$elm$core$Maybe$withDefault,
-							$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
-							A3(
-								$elm$core$Maybe$map2,
-								F2(
-									function (startDate, encounterType) {
-										return $elm$json$Json$Decode$succeed(
-											A2($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType));
-									}),
-								$elm$core$Result$toMaybe(
-									$justinmimbs$date$Date$fromIsoString(first)),
-								$author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second)));
-					} else {
-						break _v0$2;
-					}
-				}
-			} else {
-				break _v0$2;
-			}
+		if (((_v0.b && _v0.b.b) && _v0.b.b.b) && (!_v0.b.b.b.b)) {
+			var first = _v0.a;
+			var _v1 = _v0.b;
+			var second = _v1.a;
+			var _v2 = _v1.b;
+			var third = _v2.a;
+			return A2(
+				$elm$core$Maybe$withDefault,
+				$elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData'),
+				A2(
+					$elm$core$Maybe$map,
+					function (startDate) {
+						var encounterType = $author$project$Backend$Reports$Decoder$prenatalEncounterTypeFromString(second);
+						var diagnoses = $elm$core$String$isEmpty(third) ? _List_Nil : $elm_community$maybe_extra$Maybe$Extra$values(
+							A2(
+								$elm$core$List$map,
+								$author$project$Backend$Reports$Decoder$prenatalDiagnosisFromMapping,
+								A2($elm$core$String$split, ',', third)));
+						return $elm$json$Json$Decode$succeed(
+							A3($author$project$Backend$Reports$Model$PrenatalEncounterData, startDate, encounterType, diagnoses));
+					},
+					$elm$core$Result$toMaybe(
+						$justinmimbs$date$Date$fromIsoString(first))));
+		} else {
+			return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 		}
-		return $elm$json$Json$Decode$fail('Failed to decode PrenatalEncounterData');
 	},
 	$elm$json$Json$Decode$string);
 var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
@@ -9102,19 +9371,29 @@ var $author$project$Backend$Reports$Decoder$decodePrenatalParticipantData = A3(
 	$elm$json$Json$Decode$list($author$project$Backend$Reports$Decoder$decodePrenatalEncounterData),
 	A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-		'dc',
-		$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+		'ol',
+		$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodeDeliveryLocation),
 		$elm$core$Maybe$Nothing,
 		A4(
 			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
-			'edd',
-			$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+			'o',
+			$elm$json$Json$Decode$nullable($author$project$Backend$Reports$Decoder$decodePregnancyOutcome),
 			$elm$core$Maybe$Nothing,
-			A3(
-				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-				'created',
-				$author$project$Gizra$NominalDate$decodeYYYYMMDD,
-				$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))));
+			A4(
+				$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+				'dc',
+				$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+				$elm$core$Maybe$Nothing,
+				A4(
+					$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+					'edd',
+					$elm$json$Json$Decode$nullable($author$project$Gizra$NominalDate$decodeYYYYMMDD),
+					$elm$core$Maybe$Nothing,
+					A3(
+						$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+						'created',
+						$author$project$Gizra$NominalDate$decodeYYYYMMDD,
+						$elm$json$Json$Decode$succeed($author$project$Backend$Reports$Model$PrenatalParticipantData)))))));
 var $NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optionalAt = F4(
 	function (path, valDecoder, fallback, decoder) {
 		return A2(
@@ -9310,19 +9589,24 @@ var $author$project$Backend$Reports$Update$update = F3(
 			});
 		return A4($author$project$Backend$Types$BackendReturn, modelUpdated, $elm$core$Platform$Cmd$none, $author$project$Error$Utils$noError, _List_Nil);
 	});
-var $author$project$Backend$ReportsMenu$Model$MenuData = F2(
-	function (site, healthCenters) {
-		return {healthCenters: healthCenters, site: site};
+var $author$project$Backend$ReportsMenu$Model$MenuData = F3(
+	function (site, healthCenters, scope) {
+		return {healthCenters: healthCenters, scope: scope, site: site};
 	});
-var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A3(
-	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-	'health_centers',
-	$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+var $author$project$Backend$ReportsMenu$Decoder$decodeMenuData = A4(
+	$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
+	'scope',
+	$elm$json$Json$Decode$maybe($author$project$Backend$Components$Decoder$decodeMenuScope),
+	$elm$core$Maybe$Nothing,
 	A3(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
-		'site',
-		$author$project$Backend$Decoder$decodeSite,
-		$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData)));
+		'health_centers',
+		$elm$json$Json$Decode$list($author$project$Backend$Components$Decoder$decodeHealthCenterData),
+		A3(
+			$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$required,
+			'site',
+			$author$project$Backend$Decoder$decodeSite,
+			$elm$json$Json$Decode$succeed($author$project$Backend$ReportsMenu$Model$MenuData))));
 var $author$project$Backend$ReportsMenu$Update$update = F3(
 	function (currentDate, msg, model) {
 		var value = msg.a;
@@ -9838,14 +10122,6 @@ var $author$project$Backend$Scoreboard$Decoder$decodeNutritionCriterionsData = f
 var $author$project$Backend$Scoreboard$Model$emptyNCDAData = {ancNewborn: $author$project$Backend$Scoreboard$Model$emptyANCNewbornData, infrastructureEnvironmentWash: $author$project$Backend$Scoreboard$Model$emptyInfrastructureEnvironmentWashData, nutritionBehavior: $author$project$Backend$Scoreboard$Model$emptyNutritionBehaviorData, targetedInterventions: $author$project$Backend$Scoreboard$Model$emptyTargetedInterventionsData, universalIntervention: $author$project$Backend$Scoreboard$Model$emptyUniversalInterventionData};
 var $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities = {moderate: _List_Nil, normal: _List_Nil, severe: _List_Nil};
 var $author$project$Backend$Scoreboard$Model$emptyNutritionCriterionsData = {muac: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, stunting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, underweight: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities, wasting: $author$project$Backend$Scoreboard$Model$emptyCriterionBySeverities};
-var $elm$json$Json$Decode$maybe = function (decoder) {
-	return $elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
-				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
-			]));
-};
 var $author$project$Backend$Scoreboard$Decoder$decodePatientData = function (currentDate) {
 	return A4(
 		$NoRedInk$elm_json_decode_pipeline$Json$Decode$Pipeline$optional,
@@ -10404,6 +10680,7 @@ var $author$project$Translate$NutritionGroup = {$: 'NutritionGroup'};
 var $author$project$Translate$NutritionIndividual = {$: 'NutritionIndividual'};
 var $author$project$Translate$OutsideCare = {$: 'OutsideCare'};
 var $author$project$Translate$Photo = {$: 'Photo'};
+var $author$project$Translate$PregnancyOutcomeLabel = {$: 'PregnancyOutcomeLabel'};
 var $author$project$Translate$PregnancyTest = {$: 'PregnancyTest'};
 var $author$project$Translate$PrevalenceByMonthOneVisitOrMore = {$: 'PrevalenceByMonthOneVisitOrMore'};
 var $author$project$Translate$PrevalenceByMonthTwoVisitsOrMore = {$: 'PrevalenceByMonthTwoVisitsOrMore'};
@@ -10882,12 +11159,33 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Core Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DangerSigns':
 				return {english: 'Danger Signs', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocation':
+				var location = transId.a;
+				if (location.$ === 'FacilityDelivery') {
+					return {
+						english: 'Facility',
+						kinyarwanda: $elm$core$Maybe$Just('Ivuriro'),
+						kirundi: $elm$core$Maybe$Just('Ikigo')
+					};
+				} else {
+					return {
+						english: 'Home',
+						kinyarwanda: $elm$core$Maybe$Just('Mu rugo'),
+						kirundi: $elm$core$Maybe$Just('Muhira')
+					};
+				}
+			case 'DeliveryLocationsTableHeading':
+				return {english: 'Outcome Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocationsTablePercentage':
+				return {english: 'Percentage of completed pregnancies reported', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'DeliveryLocationsTableTotals':
+				return {english: 'Total # delivery outcomes documented', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Demographics':
+				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Diagnostics':
 				return {english: 'Diagnostics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'District':
 				return {english: 'District', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
-			case 'Demographics':
-				return {english: 'Demographics', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'DownloadCSV':
 				return {english: 'Download CSV', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'EmptyString':
@@ -10908,6 +11206,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Female', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Global':
 				return {english: 'Global', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'FirstVisit':
+				return {english: 'First Visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FollowUp':
 				return {english: 'Follow Up', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'FoodSecurity':
@@ -11021,6 +11321,8 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Infrastructure, Environment & Wash', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'LoadData':
 				return {english: 'Load Data', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Location':
+				return {english: 'Location', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Male':
 				return {english: 'Male', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Medication':
@@ -11312,7 +11614,7 @@ var $author$project$Translate$translationSet = function (transId) {
 				};
 			case 'NumberOfVisits':
 				var number = transId.a;
-				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 5) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
+				return (number === 1) ? {english: '1 visit', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : ((number > 4) ? {english: '5+ visits', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing} : {
 					english: $elm$core$String$fromInt(number) + ' visits',
 					kinyarwanda: $elm$core$Maybe$Nothing,
 					kirundi: $elm$core$Maybe$Nothing
@@ -11413,8 +11715,14 @@ var $author$project$Translate$translationSet = function (transId) {
 				}
 			case 'NutritionTotal':
 				return {english: 'Nutrition (total)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'OutcomesTableHeading':
+				return {english: 'Outcomes of completed pregnancies (anything 30 days beyond EDD)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'OutsideCare':
 				return {english: 'Outside Care', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PatientsWith3OrMoreVisitsPercentage':
+				return {english: '3+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PatientsWith4OrMoreVisitsPercentage':
+				return {english: '4+ visits (%)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'Photo':
 				return {english: 'Photo', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PleaseWaitMessage':
@@ -11437,11 +11745,71 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'All Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnanciesCompleted':
 				return {english: 'Completed Pregnancies', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnancyOutcome':
+				var outcome = transId.a;
+				switch (outcome.$) {
+					case 'OutcomeLiveAtTerm':
+						return {
+							english: 'Live Birth at Term (38 weeks EGA or more)',
+							kinyarwanda: $elm$core$Maybe$Just('Kubyara umwana muzima/Ushyitse (ku byumweru 38 kuzamura)'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse ikomeye ikiringo kigeze (Indwi 38 z\'imbanyi canke zirenga)')
+						};
+					case 'OutcomeLivePreTerm':
+						return {
+							english: 'Live Birth Preterm (less than 38 weeks EGA)',
+							kinyarwanda: $elm$core$Maybe$Just('Kubyara mwana udashyitse (munsi y\'ibyumweru 38)'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi ivutse imbere y\'ikiringo (mbere y\'indwi 38)')
+						};
+					case 'OutcomeStillAtTerm':
+						return {
+							english: 'Stillbirth at Term (38 weeks EGA or more)',
+							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda bageze igihe cyo kuvuka (ku byumweru 38 kuzamura)'),
+							kirundi: $elm$core$Maybe$Just('Kuvyarira ku gihe (Indwi 38 - AGE (z\'Igihe co Kwibungenga Caharuwe ) canke zirenga)')
+						};
+					case 'OutcomeStillPreTerm':
+						return {
+							english: 'Stillbirth Preterm (less than 38 weeks EGA)',
+							kinyarwanda: $elm$core$Maybe$Just('Abana bapfiriye mu nda batagejeje igihe cyo kuvuka (munsi y\'ibyumweru 38)'),
+							kirundi: $elm$core$Maybe$Just('Kuvyara imbere yuko igihe kigera (imbere y\'indwi 38 - AGE (Igihe co Kwibungenga Caharuwe)')
+						};
+					default:
+						return {
+							english: 'Abortions (before 24 weeks EGA)',
+							kinyarwanda: $elm$core$Maybe$Just('Kuvanamo inda (mbere y\'ibyumweru 24)'),
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi (imbere y\'indwi 24 ugereranije nigihe imbanyi imaze)')
+						};
+				}
+			case 'PregnancyOutcomeLabel':
+				return {english: 'Pregnancy Outcome', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PregnancyTest':
 				return {english: 'Pregnancy Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'PregnancyTrimester':
+				var trimester = transId.a;
+				switch (trimester.$) {
+					case 'FirstTrimester':
+						return {
+							english: 'First Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya mbere'),
+							kirundi: $elm$core$Maybe$Just('Igice ca mbere')
+						};
+					case 'SecondTrimester':
+						return {
+							english: 'Second Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya kabiri'),
+							kirundi: $elm$core$Maybe$Just('Igice ca kabiri')
+						};
+					default:
+						return {
+							english: 'Third Trimester',
+							kinyarwanda: $elm$core$Maybe$Just('Igihembwe cya gatatu'),
+							kirundi: $elm$core$Maybe$Just('Igice ca 3')
+						};
+				}
 			case 'PrenatalActivity':
 				var activity = transId.a;
 				switch (activity.$) {
+					case 'PrenatalAspirin':
+						return {english: 'Low dose Aspirin', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalAppointmentConfirmation':
 						return {english: 'Appointment Confirmation', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBirthPlan':
@@ -11452,6 +11820,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						return {english: 'Blood Group and Rhesus Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastExam':
 						return {english: 'Breast Exam', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalCalcium':
+						return {english: 'Calcium', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalBreastfeeding':
 						return {english: 'Breastfeeding', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalCorePhysicalExam':
@@ -11464,6 +11834,10 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$FamilyPlanning;
 						transId = $temp$transId;
 						continue translationSet;
+					case 'PrenatalFefol':
+						return {english: 'Fefol', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalFolate':
+						return {english: 'Folate', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalFollowUp':
 						var $temp$transId = $author$project$Translate$FollowUp;
 						transId = $temp$transId;
@@ -11492,12 +11866,16 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalHIVTestResult':
 						return {english: 'HIV Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalIron':
+						return {english: 'Iron', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalLastMenstrualPeriod':
 						return {english: 'Last Menstrual Period', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTest':
 						return {english: 'Malaria Test', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMalariaTestResult':
 						return {english: 'Malaria Test Result', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMebendazole':
+						return {english: 'Mebendazole', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedicalHistory':
 						return {english: 'Medical History', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalMedication':
@@ -11510,6 +11888,8 @@ var $author$project$Translate$translationSet = function (transId) {
 						continue translationSet;
 					case 'PrenatalMentalHealth':
 						return {english: 'Mental Health', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'PrenatalMMS':
+						return {english: 'MMS', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalNutrition':
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
@@ -11535,7 +11915,9 @@ var $author$project$Translate$translationSet = function (transId) {
 					case 'PrenatalPostpartumTreatmentReview':
 						return {english: 'Postpartum Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalPregnancyOutcome':
-						return {english: 'Pregnancy Outcome', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+						var $temp$transId = $author$project$Translate$PregnancyOutcomeLabel;
+						transId = $temp$transId;
+						continue translationSet;
 					case 'PrenatalPregnancyTesting':
 						return {english: 'Pregnancy Testing', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 					case 'PrenatalRandomBloodSugarTest':
@@ -11587,6 +11969,384 @@ var $author$project$Translate$translationSet = function (transId) {
 					default:
 						return {english: 'Vitals Recheck', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
+			case 'PrenatalDiagnosis':
+				var diagnosis = transId.a;
+				switch (diagnosis.$) {
+					case 'DiagnosisChronicHypertension':
+						return {
+							english: 'Chronic Hypertension',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'Umuvuduko w\'Amaraso Imaze Igihe Kirekire'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko ukabije w\'amaraso wamaho')
+						};
+					case 'DiagnosisGestationalHypertension':
+						return {
+							english: 'Pregnancy-Induced Hypertension',
+							kinyarwanda: $elm$core$Maybe$Just('Umuvuduko w\'amaraso watewe no gutwita'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso utewe n\'imbanyi')
+						};
+					case 'DiagnosisModeratePreeclampsia':
+						return {
+							english: 'Mild to Moderate Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Yoroheje'),
+							kirundi: $elm$core$Maybe$Just('Umuvuduko w\'amaraso mu gihe c\'imbanyi woroshe')
+						};
+					case 'DiagnosisSeverePreeclampsia':
+						return {
+							english: 'Severe Preeclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Preklampusi Ikabije'),
+							kirundi: $elm$core$Maybe$Just('Severe Preeclampsia')
+						};
+					case 'DiagnosisEclampsia':
+						return {
+							english: 'Eclampsia',
+							kinyarwanda: $elm$core$Maybe$Just('Ekalampusi'),
+							kirundi: $elm$core$Maybe$Just('Éclampsie')
+						};
+					case 'DiagnosisHIV':
+						return {
+							english: 'HIV',
+							kinyarwanda: $elm$core$Maybe$Just('Virusi itera SIDA'),
+							kirundi: $elm$core$Maybe$Just('Umugera wa SIDA')
+						};
+					case 'DiagnosisHIVDetectableViralLoad':
+						return {
+							english: 'Detectable HIV Viral Load',
+							kinyarwanda: $elm$core$Maybe$Just('Agaragaza udukoko dutera virusi ya SIDA mu maraso'),
+							kirundi: $elm$core$Maybe$Just('Afise umugera wa SIDA ugaragara')
+						};
+					case 'DiagnosisDiscordantPartnership':
+						return {
+							english: 'Discordant Partnership',
+							kinyarwanda: $elm$core$Maybe$Just('Umwe mubo babana afite ubwandu'),
+							kirundi: $elm$core$Maybe$Just('Umwe afise umugera wa SIDA kandi uwundi atawafise')
+						};
+					case 'DiagnosisSyphilis':
+						return {
+							english: 'Syphilis',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+						};
+					case 'DiagnosisSyphilisWithComplications':
+						return {
+							english: 'Syphilis with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu n\'ibibazo bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Syphilis hamwe n\'ingorane')
+						};
+					case 'DiagnosisNeurosyphilis':
+						return {
+							english: 'Neurosyphilis',
+							kinyarwanda: $elm$core$Maybe$Just('Mburugu yageze mu bwonko'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo m\'ubwonko')
+						};
+					case 'DiagnosisHepatitisB':
+						return {
+							english: 'Hepatitis B',
+							kinyarwanda: $elm$core$Maybe$Just('Umwijima wo mu bwoko bwa B'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'igitigu')
+						};
+					case 'DiagnosisMalaria':
+						return {
+							english: 'Malaria',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya'),
+							kirundi: $elm$core$Maybe$Just('Malariya')
+						};
+					case 'DiagnosisMalariaWithAnemia':
+						return {
+							english: 'Malaria with Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye'),
+							kirundi: $elm$core$Maybe$Just('Malariya hamwe n\'igabanuka ry\'amaraso m\'umubiri')
+						};
+					case 'DiagnosisMalariaWithSevereAnemia':
+						return {
+							english: 'Malaria with Severe Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Malariya n\'Amaraso Macye Cyane'),
+							kirundi: $elm$core$Maybe$Just('Malariya kumwe n\'igabanuka ry\'amaraso m\'umubiri ridasanzwe')
+						};
+					case 'DiagnosisModerateAnemia':
+						return {
+							english: 'Mild to Moderate Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye byoroheje'),
+							kirundi: $elm$core$Maybe$Just('Igabanuka ry\'amaraso kuva bisanzwe')
+						};
+					case 'DiagnosisSevereAnemia':
+						return {
+							english: 'Severe Anemia',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze')
+						};
+					case 'DiagnosisSevereAnemiaWithComplications':
+						return {
+							english: 'Severe Anemia with Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Amaraso Macye Cyane n\'Ibibazo Bishamikiyeho'),
+							kirundi: $elm$core$Maybe$Just('Ibura ry\'amaraso rikaze hamwe n\'ingorane bijanye')
+						};
+					case 'DiagnosisMiscarriage':
+						return {
+							english: 'Miscarriage',
+							kinyarwanda: $elm$core$Maybe$Just('Inda yavuyemo'),
+							kirundi: $elm$core$Maybe$Just('Ugukoroka kw\'imbanyi')
+						};
+					case 'DiagnosisMolarPregnancy':
+						return {
+							english: 'Molar Pregnancy',
+							kinyarwanda: $elm$core$Maybe$Just('Atwite amahuri'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi idakomeye')
+						};
+					case 'DiagnosisPlacentaPrevia':
+						return {
+							english: 'Placenta Previa',
+							kinyarwanda: $elm$core$Maybe$Just('Ingobyi iri hasi ku nkondo y\'umura'),
+							kirundi: $elm$core$Maybe$Just('Igitereko cugaye isohokera')
+						};
+					case 'DiagnosisPlacentalAbruption':
+						return {
+							english: 'Placental Abruption',
+							kinyarwanda: $elm$core$Maybe$Just('Ingobyi yomotse hakiri kare'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'igitereko')
+						};
+					case 'DiagnosisUterineRupture':
+						return {
+							english: 'Uterine Rupture',
+							kinyarwanda: $elm$core$Maybe$Just('Nyababyeyi yaturitse'),
+							kirundi: $elm$core$Maybe$Just('uguturika kw\'igitereko')
+						};
+					case 'DiagnosisObstructedLabor':
+						return {
+							english: 'Obstructed Labor',
+							kinyarwanda: $elm$core$Maybe$Just('Inda yanze kuvuka '),
+							kirundi: $elm$core$Maybe$Just('Igikorwa cabujijwe')
+						};
+					case 'DiagnosisPostAbortionSepsis':
+						return {
+							english: 'Post Abortion Sepsis',
+							kinyarwanda: $elm$core$Maybe$Just('Afite uburwayi bwa infegisiyo yo mu maraso bwatewe no gukuramo inda'),
+							kirundi: $elm$core$Maybe$Just('Birashoboka ko ingwara y\'igitereko izamwo')
+						};
+					case 'DiagnosisEctopicPregnancy':
+						return {
+							english: 'Ectopic Pregnancy',
+							kinyarwanda: $elm$core$Maybe$Just('Yasamiye hanze y\'umura'),
+							kirundi: $elm$core$Maybe$Just('Imbanyi iri hanze y\'Igitereko')
+						};
+					case 'DiagnosisPROM':
+						return {
+							english: 'Premature Rupture of Membranes (PROM)',
+							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo/igihe cayo')
+						};
+					case 'DiagnosisPPROM':
+						return {
+							english: 'Preterm Premature Rupture of Membranes (PPROM)',
+							kinyarwanda: $elm$core$Maybe$Just('Isuha yamenetse hakiri kare inda itarageza igihe'),
+							kirundi: $elm$core$Maybe$Just('Itabuka ry\'isimbizo y\'umwana mu gitereko imbere yuko imbanyi ishika kw\'itarike yayo')
+						};
+					case 'DiagnosisHyperemesisGravidum':
+						return {
+							english: 'Hyperemesis Gravidum',
+							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije k\'umugore utwite'),
+							kirundi: $elm$core$Maybe$Just('Hyperémèse gravidique')
+						};
+					case 'DiagnosisSevereVomiting':
+						return {
+							english: 'Severe Vomiting',
+							kinyarwanda: $elm$core$Maybe$Just('Kuruka bikabije'),
+							kirundi: $elm$core$Maybe$Just('Ukudahwa gukaze')
+						};
+					case 'DiagnosisMaternalComplications':
+						return {
+							english: 'Maternal Complications',
+							kinyarwanda: $elm$core$Maybe$Just('Ibibazo bishobora kwibasira umugore utwite'),
+							kirundi: $elm$core$Maybe$Just('Ingorane z\'abavyeyi')
+						};
+					case 'DiagnosisInfection':
+						return {
+							english: 'Infection',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara iterwa n\'udukoko tutabonwa n\'amaso (Microbes)'),
+							kirundi: $elm$core$Maybe$Just('Ivyanduza')
+						};
+					case 'DiagnosisImminentDelivery':
+						return {
+							english: 'Imminent Delivery',
+							kinyarwanda: $elm$core$Maybe$Just('Kubyara biri hafi'),
+							kirundi: $elm$core$Maybe$Just('Gutanga bigaragara/')
+						};
+					case 'DiagnosisLaborAndDelivery':
+						return {
+							english: 'Labor + Delivery',
+							kinyarwanda: $elm$core$Maybe$Just('Kujya ku nda + Kubyara'),
+							kirundi: $elm$core$Maybe$Just('Ibise + Kuvyara')
+						};
+					case 'DiagnosisHeartburn':
+						return {
+							english: 'Heartburn',
+							kinyarwanda: $elm$core$Maybe$Just('Ikirungurira'),
+							kirundi: $elm$core$Maybe$Just('Ugusha k\'umutima')
+						};
+					case 'DiagnosisDeepVeinThrombosis':
+						return {
+							english: 'Deep Vein Thrombosis',
+							kinyarwanda: $elm$core$Maybe$Just('Gufatana(Kuvura) gukabije kw\'amaraso'),
+							kirundi: $elm$core$Maybe$Just('Umutsi w\'indani ufise Thrombose')
+						};
+					case 'DiagnosisPelvicPainIntense':
+						return {
+							english: 'Intense Pelvic Pain',
+							kinyarwanda: $elm$core$Maybe$Just('Ububabare bukabije mu kiziba cy\'inda'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bukomeye bwo mu nda yo hepfo')
+						};
+					case 'DiagnosisUrinaryTractInfection':
+						return {
+							english: 'Urinary Tract Infection',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'ubwandu bw\'umuyoboro w\'inkari'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu miringoti y\'umukoyo')
+						};
+					case 'DiagnosisPyelonephritis':
+						return {
+							english: 'Pyelonephritis',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara yo kubyimba impyiko'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'Amafyigo')
+						};
+					case 'DiagnosisCandidiasis':
+						return {
+							english: 'Candidiasis',
+							kinyarwanda: $elm$core$Maybe$Just('Kandidoze'),
+							kirundi: $elm$core$Maybe$Just('Candidose')
+						};
+					case 'DiagnosisGonorrhea':
+						return {
+							english: 'Gonorrhea',
+							kinyarwanda: $elm$core$Maybe$Just('Indwara y\'umutezi'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka')
+						};
+					case 'DiagnosisTrichomonasOrBacterialVaginosis':
+						return {
+							english: 'Trichomonas or Bacterial Vaginosis',
+							kinyarwanda: $elm$core$Maybe$Just('Tirikomonasi cyangwa Mikorobe zo mu nda ibyara'),
+							kirundi: $elm$core$Maybe$Just('Ingwara yo mu bihimba vy\'irondoka igaragazwa kenshi no kuhiyagaza')
+						};
+					case 'DiagnosisTuberculosis':
+						return {
+							english: 'Tuberculosis',
+							kinyarwanda: $elm$core$Maybe$Just('Igituntu'),
+							kirundi: $elm$core$Maybe$Just('Igituntu')
+						};
+					case 'DiagnosisDiabetes':
+						return {
+							english: 'Diabetes',
+							kinyarwanda: $elm$core$Maybe$Just('Diyabete (Indwara y\'igisukari)'),
+							kirundi: $elm$core$Maybe$Just('Diyabete')
+						};
+					case 'DiagnosisGestationalDiabetes':
+						return {
+							english: 'Gestational Diabetes',
+							kinyarwanda: $elm$core$Maybe$Just('Diyabete iterwa no gutwita'),
+							kirundi: $elm$core$Maybe$Just('Diyabete y\'imbanyi')
+						};
+					case 'DiagnosisRhesusNegative':
+						return {
+							english: 'RH Factor Negative',
+							kinyarwanda: $elm$core$Maybe$Just('Rezisi Negatifu'),
+							kirundi: $elm$core$Maybe$Just('Rhesus negatif')
+						};
+					case 'DiagnosisDepressionNotLikely':
+						return {
+							english: 'Depression not Likely',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko adafite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Kwihebura ntibishoboka')
+						};
+					case 'DiagnosisDepressionPossible':
+						return {
+							english: 'Depression Possible',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko yagira indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Kwihebura birashoboka')
+						};
+					case 'DiagnosisDepressionHighlyPossible':
+						return {
+							english: 'Fairly High Possibility of Depression',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka cyane ko afite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Birashoboka cane kwihebura')
+						};
+					case 'DiagnosisDepressionProbable':
+						return {
+							english: 'Probable Depression',
+							kinyarwanda: $elm$core$Maybe$Just('Birashoboka ko afite indwara y\'agahinda gakabije'),
+							kirundi: $elm$core$Maybe$Just('Ukwihebura gushoboka')
+						};
+					case 'DiagnosisSuicideRisk':
+						return {
+							english: 'Suicide Risk',
+							kinyarwanda: $elm$core$Maybe$Just('Afite ibyago byo kwiyahura'),
+							kirundi: $elm$core$Maybe$Just('Ingorane zimutuma ashobora kwiyahura')
+						};
+					case 'DiagnosisOther':
+						return {
+							english: 'Other',
+							kinyarwanda: $elm$core$Maybe$Just('Ibindi'),
+							kirundi: $elm$core$Maybe$Just('Ibindi')
+						};
+					case 'DiagnosisPostpartumAbdominalPain':
+						return {
+							english: 'Abdominal Pain',
+							kinyarwanda: $elm$core$Maybe$Just('Kubabara mu nda'),
+							kirundi: $elm$core$Maybe$Just('Ukubabara mu nda')
+						};
+					case 'DiagnosisPostpartumUrinaryIncontinence':
+						return {
+							english: 'Urinary Incontinence',
+							kinyarwanda: $elm$core$Maybe$Just('Ntabasha kunyara'),
+							kirundi: $elm$core$Maybe$Nothing
+						};
+					case 'DiagnosisPostpartumHeadache':
+						return {
+							english: 'Headache',
+							kinyarwanda: $elm$core$Maybe$Just('Kubabara umutwe'),
+							kirundi: $elm$core$Maybe$Just('Kumeneka umutwe')
+						};
+					case 'DiagnosisPostpartumFatigue':
+						return {
+							english: 'Fatigue',
+							kinyarwanda: $elm$core$Maybe$Just('umunaniro'),
+							kirundi: $elm$core$Maybe$Just('Uburuhe')
+						};
+					case 'DiagnosisPostpartumFever':
+						return {
+							english: 'Fever',
+							kinyarwanda: $elm$core$Maybe$Just('Umuriro'),
+							kirundi: $elm$core$Maybe$Just('Ubushuhe')
+						};
+					case 'DiagnosisPostpartumPerinealPainOrDischarge':
+						return {
+							english: 'Perineal Pain or Discharge',
+							kinyarwanda: $elm$core$Maybe$Just('Arababara perine cg aratakaza ibintu budasanzwe'),
+							kirundi: $elm$core$Maybe$Just('Ububabare bw\'umugongo hepfo')
+						};
+					case 'DiagnosisPostpartumInfection':
+						return {english: 'Infection (Postpartum)', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+					case 'DiagnosisPostpartumExcessiveBleeding':
+						return {
+							english: 'Excessive Bleeding',
+							kinyarwanda: $elm$core$Maybe$Just('Kuva cyane'),
+							kirundi: $elm$core$Maybe$Just('Kuva amaraso cane')
+						};
+					case 'DiagnosisPostpartumEarlyMastitisOrEngorgment':
+						return {
+							english: 'Early Mastitis or Engorgement',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bwo kubyimba amabere bwaje kare cyane'),
+							kirundi: $elm$core$Maybe$Just('Iyuzura ry\'amaberebere (Mastite précoce)')
+						};
+					case 'DiagnosisPostpartumMastitis':
+						return {
+							english: 'Mastitis',
+							kinyarwanda: $elm$core$Maybe$Just('Uburwayi bw\'amabere'),
+							kirundi: $elm$core$Maybe$Just('Ingwara y\'imoko ituma amaberebere adasohoka')
+						};
+					default:
+						return {
+							english: 'None',
+							kinyarwanda: $elm$core$Maybe$Just('Ntabyo'),
+							kirundi: $elm$core$Maybe$Just('Nta na kimwe')
+						};
+				}
 			case 'PrevalenceByMonthOneVisitOrMore':
 				return {english: 'Prevalence by month - one visit or more', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'PrevalenceByMonthTwoVisitsOrMore':
@@ -11624,10 +12384,12 @@ var $author$project$Translate$translationSet = function (transId) {
 						var $temp$transId = $author$project$Translate$Nutrition;
 						transId = $temp$transId;
 						continue translationSet;
-					default:
+					case 'ReportPrenatal':
 						var $temp$transId = $author$project$Translate$Antenatal;
 						transId = $temp$transId;
 						continue translationSet;
+					default:
+						return {english: 'ANC Diagnoses', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 				}
 			case 'ReportTypeLabel':
 				return {english: 'Report Type', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
@@ -11739,6 +12501,12 @@ var $author$project$Translate$translationSet = function (transId) {
 				return {english: 'Total', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TreatmentReview':
 				return {english: 'Treatment Review', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
+			case 'Trimester':
+				return {
+					english: 'Trimester',
+					kinyarwanda: $elm$core$Maybe$Just('Igihembwe'),
+					kirundi: $elm$core$Maybe$Just('Igice')
+				};
 			case 'Tuberculosis':
 				return {english: 'Tuberculosis', kinyarwanda: $elm$core$Maybe$Nothing, kirundi: $elm$core$Maybe$Nothing};
 			case 'TuberculosisActivity':
@@ -13086,7 +13854,7 @@ var $myrho$elm_round$Round$round = $myrho$elm_round$Round$roundFun(
 				}
 			}
 		}));
-var $author$project$Pages$Completion$View$calcualtePercentage = F2(
+var $author$project$Pages$Utils$calculatePercentage = F2(
 	function (nominator, total) {
 		return (!total) ? '0' : (A2($myrho$elm_round$Round$round, 2, (nominator / total) * 100) + '%');
 	});
@@ -13153,7 +13921,7 @@ var $author$project$Pages$Completion$View$generateAcuteIllnessReportData = F2(
 							$author$project$Translate$AcuteIllnessActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allAcuteIllnessActivities)
@@ -14236,7 +15004,7 @@ var $author$project$Pages$Completion$View$generateChildScoreboardReportData = F3
 							$author$project$Translate$ChildScoreboardActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14408,7 +15176,7 @@ var $author$project$Pages$Completion$View$generateHIVReportData = F2(
 							$author$project$Translate$HIVActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHIVActivities)
@@ -14478,7 +15246,7 @@ var $author$project$Pages$Completion$View$generateHomeVisitReportData = F2(
 							$author$project$Translate$HomeVisitActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allHomeVisitActivities)
@@ -14570,7 +15338,7 @@ var $author$project$Pages$Completion$View$generateNCDReportData = F2(
 							$author$project$Translate$NCDActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNCDActivities)
@@ -14660,7 +15428,7 @@ var $author$project$Pages$Completion$View$generateWellChildReportData = F4(
 							$author$project$Translate$WellChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				activities)
@@ -14738,7 +15506,7 @@ var $author$project$Pages$Completion$View$generateNutritionGroupReportData = F2(
 								activityTransId(activity)),
 								$elm$core$String$fromInt(expected),
 								$elm$core$String$fromInt(completed),
-								A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+								A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 							]);
 					});
 			});
@@ -14811,7 +15579,7 @@ var $author$project$Pages$Completion$View$generateNutritionIndividualReportData 
 							$author$project$Translate$NutritionChildActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allNutritionIndividualActivities)
@@ -14840,7 +15608,7 @@ var $author$project$Translate$PrenatalActivity = function (a) {
 	return {$: 'PrenatalActivity', a: a};
 };
 var $author$project$Pages$Completion$Utils$allPrenatalActivities = _List_fromArray(
-	[$author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
+	[$author$project$Backend$Completion$Model$PrenatalAspirin, $author$project$Backend$Completion$Model$PrenatalAppointmentConfirmation, $author$project$Backend$Completion$Model$PrenatalBirthPlan, $author$project$Backend$Completion$Model$PrenatalBloodGprsTest, $author$project$Backend$Completion$Model$PrenatalBloodGprsTestResult, $author$project$Backend$Completion$Model$PrenatalBreastExam, $author$project$Backend$Completion$Model$PrenatalBreastfeeding, $author$project$Backend$Completion$Model$PrenatalCalcium, $author$project$Backend$Completion$Model$PrenatalCorePhysicalExam, $author$project$Backend$Completion$Model$PrenatalDangerSigns, $author$project$Backend$Completion$Model$PrenatalFamilyPlanning, $author$project$Backend$Completion$Model$PrenatalFefol, $author$project$Backend$Completion$Model$PrenatalFolate, $author$project$Backend$Completion$Model$PrenatalFollowUp, $author$project$Backend$Completion$Model$PrenatalGuExam, $author$project$Backend$Completion$Model$PrenatalHealthEducation, $author$project$Backend$Completion$Model$PrenatalHemoglobinTest, $author$project$Backend$Completion$Model$PrenatalHemoglobinTestResult, $author$project$Backend$Completion$Model$PrenatalHepatitisBTest, $author$project$Backend$Completion$Model$PrenatalHepatitisBTestResult, $author$project$Backend$Completion$Model$PrenatalHIVPCRTest, $author$project$Backend$Completion$Model$PrenatalHIVPCRTestResult, $author$project$Backend$Completion$Model$PrenatalHIVTest, $author$project$Backend$Completion$Model$PrenatalHIVTestResult, $author$project$Backend$Completion$Model$PrenatalIron, $author$project$Backend$Completion$Model$PrenatalLastMenstrualPeriod, $author$project$Backend$Completion$Model$PrenatalMalariaTest, $author$project$Backend$Completion$Model$PrenatalMalariaTestResult, $author$project$Backend$Completion$Model$PrenatalMebendazole, $author$project$Backend$Completion$Model$PrenatalMedicalHistory, $author$project$Backend$Completion$Model$PrenatalMedication, $author$project$Backend$Completion$Model$PrenatalMedicationDistribution, $author$project$Backend$Completion$Model$PrenatalMentalHealth, $author$project$Backend$Completion$Model$PrenatalMMS, $author$project$Backend$Completion$Model$PrenatalNutrition, $author$project$Backend$Completion$Model$PrenatalObstetricalExam, $author$project$Backend$Completion$Model$PrenatalObstetricHistory, $author$project$Backend$Completion$Model$PrenatalObstetricHistoryStep2, $author$project$Backend$Completion$Model$PrenatalOutsideCare, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTest, $author$project$Backend$Completion$Model$PrenatalPartnerHIVTestResult, $author$project$Backend$Completion$Model$PrenatalPhoto, $author$project$Backend$Completion$Model$PrenatalPostpartumTreatmentReview, $author$project$Backend$Completion$Model$PrenatalPregnancyOutcome, $author$project$Backend$Completion$Model$PrenatalPregnancyTesting, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTest, $author$project$Backend$Completion$Model$PrenatalRandomBloodSugarTestResult, $author$project$Backend$Completion$Model$PrenatalResource, $author$project$Backend$Completion$Model$PrenatalSendToHC, $author$project$Backend$Completion$Model$PrenatalSocialHistory, $author$project$Backend$Completion$Model$PrenatalSpecialityCare, $author$project$Backend$Completion$Model$PrenatalSymptomReview, $author$project$Backend$Completion$Model$PrenatalSyphilisTest, $author$project$Backend$Completion$Model$PrenatalSyphilisTestResult, $author$project$Backend$Completion$Model$PrenatalTetanusImmunisation, $author$project$Backend$Completion$Model$PrenatalTreatmentReview, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTest, $author$project$Backend$Completion$Model$PrenatalUrineDipstickTestResult, $author$project$Backend$Completion$Model$PrenatalVitals, $author$project$Backend$Completion$Model$PrenatalVitalsRecheck]);
 var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 	function (language, records) {
 		return {
@@ -14881,7 +15649,7 @@ var $author$project$Pages$Completion$View$generatePrenatalReportData = F2(
 							$author$project$Translate$PrenatalActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allPrenatalActivities)
@@ -15012,7 +15780,7 @@ var $author$project$Pages$Completion$View$generateTuberculosisReportData = F2(
 							$author$project$Translate$TuberculosisActivity(activity)),
 							$elm$core$String$fromInt(expected),
 							$elm$core$String$fromInt(completed),
-							A2($author$project$Pages$Completion$View$calcualtePercentage, completed, expected)
+							A2($author$project$Pages$Utils$calculatePercentage, completed, expected)
 						]);
 				},
 				$author$project$Pages$Completion$Utils$allTuberculosisActivities)
@@ -15413,21 +16181,30 @@ var $author$project$Pages$Utils$viewLoadDataButton = F3(
 	});
 var $author$project$Pages$CompletionMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$CompletionMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$CompletionMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),
@@ -15578,8 +16355,10 @@ var $author$project$Pages$Reports$Utils$reportTypeToString = function (reportTyp
 			return 'demographics';
 		case 'ReportNutrition':
 			return 'nutrition';
-		default:
+		case 'ReportPrenatal':
 			return 'prenatal';
+		default:
+			return 'prenatal-diagnoses';
 	}
 };
 var $author$project$Translate$AcuteIllnessDiagnosis = function (a) {
@@ -16471,9 +17250,20 @@ var $author$project$Pages$Reports$View$viewDemographicsReportPatients = function
 				])),
 		A2($elm$core$List$map, viewTable, data.tables));
 };
-var $author$project$Pages$Reports$View$viewDemographicsReport = F4(
-	function (language, limitDate, scopeLabel, records) {
-		var demographicsReportPatientsData = A3($author$project$Pages$Reports$View$generateDemographicsReportPatientsData, language, limitDate, records);
+var $author$project$Pages$Reports$View$viewDemographicsReport = F5(
+	function (language, startDate, limitDate, scopeLabel, records) {
+		var demographicsReportPatientsData = A3(
+			$author$project$Pages$Reports$View$generateDemographicsReportPatientsData,
+			language,
+			limitDate,
+			A2(
+				$elm$core$List$filter,
+				function (record) {
+					return !_Utils_eq(
+						A2($justinmimbs$date$Date$compare, record.created, startDate),
+						$elm$core$Basics$LT);
+				},
+				records));
 		var demographicsReportEncountersData = A2($author$project$Pages$Reports$View$generateDemographicsReportEncountersData, language, records);
 		var csvFileName = 'demographics-report-' + ($elm$core$String$toLower(
 			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
@@ -16513,6 +17303,21 @@ var $author$project$Translate$WastingSevere = {$: 'WastingSevere'};
 var $author$project$Translate$Year = function (a) {
 	return {$: 'Year', a: a};
 };
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 'Nothing') {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 'Nothing') {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
 var $author$project$Pages$Reports$View$backendGeneratedNutritionReportTableDateToMetricsResultsTableData = F2(
 	function (language, backendTableData) {
 		var translateCaption = function (caption) {
@@ -17388,33 +18193,33 @@ var $author$project$Pages$Reports$Utils$generateIncidenceNutritionMetricsResults
 			$elm$core$Set$diff,
 			$elm$core$Set$fromList(currentPeriodMetric.stuntingModerate),
 			$elm$core$Set$fromList(previousPeriodStuntingModerateSevere));
-		var calcualtePercentage = F2(
+		var calculatePercentage = F2(
 			function (nominator, total) {
 				return $elm$core$Set$isEmpty(total) ? 0 : (($elm$core$Set$size(nominator) / $elm$core$Set$size(total)) * 100);
 			});
 		return {
 			stuntingModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, stuntingModerateTestedInPreviousPeriod, stuntingModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodStuntingTotal),
 			stuntingSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, stuntingSevereTestedInPreviousPeriod, stuntingSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodStuntingTotal),
 			underweightModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, underweightModerateTestedInPreviousPeriod, underweightModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodUnderweightTotal),
 			underweightSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, underweightSevereTestedInPreviousPeriod, underweightSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodUnderweightTotal),
 			wastingModerate: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, wastingModerateTestedInPreviousPeriod, wastingModerateNotIdentifiedInPreviousPeriod),
 				previousPeriodWastingTotal),
 			wastingSevere: A2(
-				calcualtePercentage,
+				calculatePercentage,
 				A2($elm$core$Set$intersect, wastingSevereTestedInPreviousPeriod, wastingSevereNotIdentifiedInPreviousPeriod),
 				previousPeriodWastingTotal)
 		};
@@ -17582,17 +18387,17 @@ var $author$project$Pages$Reports$Utils$generatePrevalenceNutritionMetricsResult
 		_Utils_ap(
 			metrics.stuntingModerate,
 			_Utils_ap(metrics.stuntingSevere, metrics.stuntingNormal)));
-	var calcualtePercentage = F2(
+	var calculatePercentage = F2(
 		function (nominator, total) {
 			return $elm$core$List$isEmpty(total) ? 0 : (($elm$core$List$length(nominator) / $elm$core$List$length(total)) * 100);
 		});
 	return {
-		stuntingModerate: A2(calcualtePercentage, metrics.stuntingModerate, stuntingTotal),
-		stuntingSevere: A2(calcualtePercentage, metrics.stuntingSevere, stuntingTotal),
-		underweightModerate: A2(calcualtePercentage, metrics.underweightModerate, underweightTotal),
-		underweightSevere: A2(calcualtePercentage, metrics.underweightSevere, underweightTotal),
-		wastingModerate: A2(calcualtePercentage, metrics.wastingModerate, wastingTotal),
-		wastingSevere: A2(calcualtePercentage, metrics.wastingSevere, wastingTotal)
+		stuntingModerate: A2(calculatePercentage, metrics.stuntingModerate, stuntingTotal),
+		stuntingSevere: A2(calculatePercentage, metrics.stuntingSevere, stuntingTotal),
+		underweightModerate: A2(calculatePercentage, metrics.underweightModerate, underweightTotal),
+		underweightSevere: A2(calculatePercentage, metrics.underweightSevere, underweightTotal),
+		wastingModerate: A2(calculatePercentage, metrics.wastingModerate, wastingTotal),
+		wastingSevere: A2(calculatePercentage, metrics.wastingSevere, wastingTotal)
 	};
 };
 var $author$project$Pages$Reports$View$generateMonthlyPrevalenceTableData = F4(
@@ -17866,14 +18671,170 @@ var $author$project$Pages$Reports$View$viewNutritionReport = F5(
 						A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
 					])));
 	});
+var $author$project$Backend$Reports$Model$NoPrenatalDiagnosis = {$: 'NoPrenatalDiagnosis'};
+var $author$project$Translate$PrenatalDiagnosis = function (a) {
+	return {$: 'PrenatalDiagnosis', a: a};
+};
+var $author$project$Backend$Reports$Utils$allPrenatalDiagnoses = _List_fromArray(
+	[$author$project$Backend$Reports$Model$DiagnosisChronicHypertension, $author$project$Backend$Reports$Model$DiagnosisGestationalHypertension, $author$project$Backend$Reports$Model$DiagnosisModeratePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisSeverePreeclampsia, $author$project$Backend$Reports$Model$DiagnosisEclampsia, $author$project$Backend$Reports$Model$DiagnosisHIV, $author$project$Backend$Reports$Model$DiagnosisHIVDetectableViralLoad, $author$project$Backend$Reports$Model$DiagnosisDiscordantPartnership, $author$project$Backend$Reports$Model$DiagnosisSyphilis, $author$project$Backend$Reports$Model$DiagnosisSyphilisWithComplications, $author$project$Backend$Reports$Model$DiagnosisNeurosyphilis, $author$project$Backend$Reports$Model$DiagnosisHepatitisB, $author$project$Backend$Reports$Model$DiagnosisMalaria, $author$project$Backend$Reports$Model$DiagnosisMalariaWithAnemia, $author$project$Backend$Reports$Model$DiagnosisMalariaWithSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisModerateAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemia, $author$project$Backend$Reports$Model$DiagnosisSevereAnemiaWithComplications, $author$project$Backend$Reports$Model$DiagnosisMiscarriage, $author$project$Backend$Reports$Model$DiagnosisMolarPregnancy, $author$project$Backend$Reports$Model$DiagnosisPlacentaPrevia, $author$project$Backend$Reports$Model$DiagnosisPlacentalAbruption, $author$project$Backend$Reports$Model$DiagnosisUterineRupture, $author$project$Backend$Reports$Model$DiagnosisObstructedLabor, $author$project$Backend$Reports$Model$DiagnosisPostAbortionSepsis, $author$project$Backend$Reports$Model$DiagnosisEctopicPregnancy, $author$project$Backend$Reports$Model$DiagnosisPROM, $author$project$Backend$Reports$Model$DiagnosisPPROM, $author$project$Backend$Reports$Model$DiagnosisHyperemesisGravidum, $author$project$Backend$Reports$Model$DiagnosisSevereVomiting, $author$project$Backend$Reports$Model$DiagnosisMaternalComplications, $author$project$Backend$Reports$Model$DiagnosisInfection, $author$project$Backend$Reports$Model$DiagnosisImminentDelivery, $author$project$Backend$Reports$Model$DiagnosisLaborAndDelivery, $author$project$Backend$Reports$Model$DiagnosisHeartburn, $author$project$Backend$Reports$Model$DiagnosisDeepVeinThrombosis, $author$project$Backend$Reports$Model$DiagnosisPelvicPainIntense, $author$project$Backend$Reports$Model$DiagnosisUrinaryTractInfection, $author$project$Backend$Reports$Model$DiagnosisPyelonephritis, $author$project$Backend$Reports$Model$DiagnosisCandidiasis, $author$project$Backend$Reports$Model$DiagnosisGonorrhea, $author$project$Backend$Reports$Model$DiagnosisTrichomonasOrBacterialVaginosis, $author$project$Backend$Reports$Model$DiagnosisTuberculosis, $author$project$Backend$Reports$Model$DiagnosisDiabetes, $author$project$Backend$Reports$Model$DiagnosisGestationalDiabetes, $author$project$Backend$Reports$Model$DiagnosisRhesusNegative, $author$project$Backend$Reports$Model$DiagnosisDepressionNotLikely, $author$project$Backend$Reports$Model$DiagnosisDepressionPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionHighlyPossible, $author$project$Backend$Reports$Model$DiagnosisDepressionProbable, $author$project$Backend$Reports$Model$DiagnosisSuicideRisk, $author$project$Backend$Reports$Model$DiagnosisOther, $author$project$Backend$Reports$Model$DiagnosisPostpartumAbdominalPain, $author$project$Backend$Reports$Model$DiagnosisPostpartumUrinaryIncontinence, $author$project$Backend$Reports$Model$DiagnosisPostpartumHeadache, $author$project$Backend$Reports$Model$DiagnosisPostpartumFatigue, $author$project$Backend$Reports$Model$DiagnosisPostpartumFever, $author$project$Backend$Reports$Model$DiagnosisPostpartumPerinealPainOrDischarge, $author$project$Backend$Reports$Model$DiagnosisPostpartumInfection, $author$project$Backend$Reports$Model$DiagnosisPostpartumExcessiveBleeding, $author$project$Backend$Reports$Model$DiagnosisPostpartumEarlyMastitisOrEngorgment, $author$project$Backend$Reports$Model$DiagnosisPostpartumMastitis, $author$project$Backend$Reports$Model$NoPrenatalDiagnosis]);
+var $author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData = F3(
+	function (language, limitDate, records) {
+		var generateRow = F2(
+			function (label, value) {
+				return _List_fromArray(
+					[
+						A2($author$project$Translate$translate, language, label),
+						$elm$core$String$fromInt(value)
+					]);
+			});
+		var allDiagnoses = A2(
+			$elm$core$List$concatMap,
+			function (encounter) {
+				return $elm$core$List$isEmpty(encounter.diagnoses) ? _List_fromArray(
+					[$author$project$Backend$Reports$Model$NoPrenatalDiagnosis]) : encounter.diagnoses;
+			},
+			A2(
+				$elm$core$List$concatMap,
+				function ($) {
+					return $.encounters;
+				},
+				$elm$core$List$concat(
+					$elm_community$maybe_extra$Maybe$Extra$values(
+						A2(
+							$elm$core$List$map,
+							function ($) {
+								return $.prenatalData;
+							},
+							records)))));
+		var diagnosesCountDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (diagnosis, accum) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						A3($pzp1997$assoc_list$AssocList$insert, diagnosis, 1, accum),
+						A2(
+							$elm$core$Maybe$map,
+							function (value) {
+								return A3($pzp1997$assoc_list$AssocList$insert, diagnosis, value + 1, accum);
+							},
+							A2($pzp1997$assoc_list$AssocList$get, diagnosis, accum)));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			allDiagnoses);
+		var rows = A2(
+			$elm$core$List$map,
+			function (diagnosis) {
+				return A2(
+					generateRow,
+					$author$project$Translate$PrenatalDiagnosis(diagnosis),
+					A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, diagnosis, diagnosesCountDict)));
+			},
+			$author$project$Backend$Reports$Utils$allPrenatalDiagnoses);
+		var totalsRow = A2(
+			generateRow,
+			$author$project$Translate$Total,
+			$elm$core$List$sum(
+				$pzp1997$assoc_list$AssocList$values(diagnosesCountDict)));
+		return {
+			captions: _List_fromArray(
+				[
+					A2($author$project$Translate$translate, language, $author$project$Translate$Diagnosis),
+					A2($author$project$Translate$translate, language, $author$project$Translate$Total)
+				]),
+			heading: '',
+			rows: _Utils_ap(
+				rows,
+				_List_fromArray(
+					[totalsRow]))
+		};
+	});
+var $author$project$Pages$Reports$View$viewPrenatalDiagnosesReport = F4(
+	function (language, limitDate, scopeLabel, records) {
+		var data = A3($author$project$Pages$Reports$View$generatePrenatalDiagnosesReportData, language, limitDate, records);
+		var csvFileName = 'anc-diagnoses-report-' + ($elm$core$String$toLower(
+			A3($elm$core$String$replace, ' ', '-', scopeLabel)) + ('-' + (A2($author$project$Gizra$NominalDate$customFormatDDMMYYYY, '-', limitDate) + '.csv')));
+		var csvContent = $author$project$Pages$Reports$View$reportTableDataToCSV(data);
+		var captionsRow = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('row captions')
+				]),
+			$author$project$Pages$Components$View$viewStandardCells(data.captions));
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('report prenatal-diagnoses')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('table')
+						]),
+					A2(
+						$elm$core$List$cons,
+						captionsRow,
+						A2($elm$core$List$map, $author$project$Pages$Components$View$viewStandardRow, data.rows))),
+					A3($author$project$Pages$Reports$View$viewDownloadCSVButton, language, csvFileName, csvContent)
+				]));
+	});
+var $author$project$Translate$DeliveryLocation = function (a) {
+	return {$: 'DeliveryLocation', a: a};
+};
+var $author$project$Translate$DeliveryLocationsTableHeading = {$: 'DeliveryLocationsTableHeading'};
+var $author$project$Translate$DeliveryLocationsTablePercentage = {$: 'DeliveryLocationsTablePercentage'};
+var $author$project$Translate$DeliveryLocationsTableTotals = {$: 'DeliveryLocationsTableTotals'};
+var $author$project$Translate$EmptyString = {$: 'EmptyString'};
+var $author$project$Pages$Reports$Model$FirstTrimester = {$: 'FirstTrimester'};
+var $author$project$Translate$FirstVisit = {$: 'FirstVisit'};
 var $author$project$Translate$HC = {$: 'HC'};
+var $author$project$Translate$Location = {$: 'Location'};
 var $author$project$Translate$NumberOfVisits = function (a) {
 	return {$: 'NumberOfVisits', a: a};
 };
 var $author$project$Translate$NumberOfVisitsLabel = {$: 'NumberOfVisitsLabel'};
+var $author$project$Translate$OutcomesTableHeading = {$: 'OutcomesTableHeading'};
+var $author$project$Translate$PatientsWith3OrMoreVisitsPercentage = {$: 'PatientsWith3OrMoreVisitsPercentage'};
+var $author$project$Translate$PatientsWith4OrMoreVisitsPercentage = {$: 'PatientsWith4OrMoreVisitsPercentage'};
 var $author$project$Translate$PregnanciesActive = {$: 'PregnanciesActive'};
 var $author$project$Translate$PregnanciesAll = {$: 'PregnanciesAll'};
 var $author$project$Translate$PregnanciesCompleted = {$: 'PregnanciesCompleted'};
+var $author$project$Translate$PregnancyOutcome = function (a) {
+	return {$: 'PregnancyOutcome', a: a};
+};
+var $author$project$Translate$PregnancyTrimester = function (a) {
+	return {$: 'PregnancyTrimester', a: a};
+};
+var $author$project$Pages$Reports$Model$SecondTrimester = {$: 'SecondTrimester'};
+var $author$project$Pages$Reports$Model$ThirdTrimester = {$: 'ThirdTrimester'};
+var $author$project$Translate$Trimester = {$: 'Trimester'};
+var $author$project$Pages$Reports$Utils$eddToLmpDate = function (eddDate) {
+	return A3($justinmimbs$date$Date$add, $justinmimbs$date$Date$Days, -280, eddDate);
+};
+var $author$project$Gizra$NominalDate$diffDays = F2(
+	function (low, high) {
+		return A3($justinmimbs$date$Date$diff, $justinmimbs$date$Date$Days, low, high);
+	});
+var $author$project$Pages$Reports$Utils$resolvePregnancyTrimester = F2(
+	function (date, lmpDate) {
+		var diffInWeeks = (A2($author$project$Gizra$NominalDate$diffDays, lmpDate, date) / 7) | 0;
+		return (diffInWeeks < 13) ? $author$project$Pages$Reports$Model$FirstTrimester : ((diffInWeeks < 28) ? $author$project$Pages$Reports$Model$SecondTrimester : $author$project$Pages$Reports$Model$ThirdTrimester);
+	});
+var $author$project$Gizra$NominalDate$sortByDate = F3(
+	function (getDateFunc, entity1, entity2) {
+		return A2(
+			$justinmimbs$date$Date$compare,
+			getDateFunc(entity1),
+			getDateFunc(entity2));
+	});
 var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 	function (language, limitDate, records) {
 		var resolveValueFromDict = function (key) {
@@ -17885,11 +18846,9 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 		var partitionByNumberOfVisits = A2(
 			$elm$core$List$foldl,
 			F2(
-				function (countedVisits, _v4) {
-					var nurseDict = _v4.a;
-					var chwDict = _v4.b;
+				function (countedVisits, accum) {
 					var resolveKeyForValue = function (value) {
-						return (value > 5) ? (-1) : value;
+						return (value > 4) ? (-1) : value;
 					};
 					var updateDict = F2(
 						function (value, dict) {
@@ -17908,23 +18867,43 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 										A2($pzp1997$assoc_list$AssocList$get, key, dict)));
 							}
 						});
-					return _Utils_Tuple2(
-						A2(updateDict, countedVisits.nurse, nurseDict),
-						A2(updateDict, countedVisits.chw, chwDict));
+					return _Utils_update(
+						accum,
+						{
+							all: A2(updateDict, countedVisits.all, accum.all),
+							chw: A2(updateDict, countedVisits.chw, accum.chw),
+							nurse: A2(updateDict, countedVisits.nurse, accum.nurse)
+						});
 				}),
-			_Utils_Tuple2($pzp1997$assoc_list$AssocList$empty, $pzp1997$assoc_list$AssocList$empty));
-		var generateTableData = F2(
-			function (heading, values) {
-				var generateRowData = F3(
-					function (labelTransId, valueChw, valueNurse) {
+			{all: $pzp1997$assoc_list$AssocList$empty, chw: $pzp1997$assoc_list$AssocList$empty, nurse: $pzp1997$assoc_list$AssocList$empty});
+		var generateTableData = F3(
+			function (heading, rows, values) {
+				var generateRowData = F4(
+					function (labelTransId, valueChw, valueNurse, allValue) {
 						return _List_fromArray(
 							[
 								A2($author$project$Translate$translate, language, labelTransId),
 								$elm$core$String$fromInt(valueChw),
 								$elm$core$String$fromInt(valueNurse),
-								$elm$core$String$fromInt(valueChw + valueNurse)
+								$elm$core$String$fromInt(allValue)
 							]);
 					});
+				var totalsRow = A4(generateRowData, $author$project$Translate$Total, values.chwVisitsTotal, values.nurseVisitsTotal, values.allVisitsTotal);
+				var visitsRows = A2(
+					$elm$core$List$indexedMap,
+					F2(
+						function (index, _v1) {
+							var chwValue = _v1.a;
+							var nurseValue = _v1.b;
+							var allValue = _v1.c;
+							return A4(
+								generateRowData,
+								$author$project$Translate$NumberOfVisits(index + 1),
+								chwValue,
+								nurseValue,
+								allValue);
+						}),
+					rows);
 				return {
 					captions: A2(
 						$elm$core$List$map,
@@ -17932,19 +18911,28 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 						_List_fromArray(
 							[$author$project$Translate$NumberOfVisitsLabel, $author$project$Translate$CHW, $author$project$Translate$HC, $author$project$Translate$All])),
 					heading: A2($author$project$Translate$translate, language, heading) + ':',
-					rows: A2(
-						$elm$core$List$indexedMap,
-						F2(
-							function (index, _v3) {
-								var chwValue = _v3.a;
-								var nurseValue = _v3.b;
-								return A3(
-									generateRowData,
-									$author$project$Translate$NumberOfVisits(index + 1),
-									chwValue,
-									nurseValue);
-							}),
-						values)
+					rows: _Utils_ap(
+						visitsRows,
+						_Utils_ap(
+							_List_fromArray(
+								[totalsRow]),
+							_List_fromArray(
+								[
+									_List_fromArray(
+									[
+										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith3OrMoreVisitsPercentage),
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits3OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits3OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.allVisits3OrMore, values.allVisitsTotal)
+									]),
+									_List_fromArray(
+									[
+										A2($author$project$Translate$translate, language, $author$project$Translate$PatientsWith4OrMoreVisitsPercentage),
+										A2($author$project$Pages$Utils$calculatePercentage, values.chwVisits4OrMore, values.chwVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.nurseVisits4OrMore, values.nurseVisitsTotal),
+										A2($author$project$Pages$Utils$calculatePercentage, values.allVisits4OrMore, values.allVisitsTotal)
+									])
+								])))
 				};
 			});
 		var filtered = A2(
@@ -17977,25 +18965,87 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 							return $.prenatalData;
 						},
 						records))));
-		var countVisitsByType = function (data) {
-			return A2(
-				$elm$core$List$map,
-				function (participantData) {
-					var totalEncounters = $elm$core$List$length(participantData.encounters);
-					var nurseEncounters = $elm$core$List$length(
+		var totalPregnancies = $elm$core$List$length(filtered);
+		var trimestersDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
 						A2(
-							$elm$core$List$filter,
+							$elm$core$Maybe$andThen,
+							function (eddDate) {
+								return A2(
+									$elm$core$Maybe$map,
+									function (firstEncounter) {
+										var trimester = A2(
+											$author$project$Pages$Reports$Utils$resolvePregnancyTrimester,
+											firstEncounter.startDate,
+											$author$project$Pages$Reports$Utils$eddToLmpDate(eddDate));
+										var updated = A2(
+											$elm$core$Maybe$withDefault,
+											1,
+											A2(
+												$elm$core$Maybe$map,
+												$elm$core$Basics$add(1),
+												A2($pzp1997$assoc_list$AssocList$get, trimester, accumDict)));
+										return A3($pzp1997$assoc_list$AssocList$insert, trimester, updated, accumDict);
+									},
+									$elm$core$List$head(
+										A2(
+											$elm$core$List$sortWith,
+											$author$project$Gizra$NominalDate$sortByDate(
+												function ($) {
+													return $.startDate;
+												}),
+											participantData.encounters)));
+							},
+							participantData.eddDate));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			filtered);
+		var firstVisitTable = {
+			captions: A2(
+				$elm$core$List$map,
+				$author$project$Translate$translate(language),
+				_List_fromArray(
+					[$author$project$Translate$Trimester, $author$project$Translate$EmptyString])),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$FirstVisit) + ':',
+			rows: A2(
+				$elm$core$List$map,
+				function (trimester) {
+					var occurances = A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, trimester, trimestersDict));
+					return _List_fromArray(
+						[
 							A2(
-								$elm$core$Basics$composeR,
-								function ($) {
-									return $.encounterType;
-								},
-								$elm$core$Basics$eq($author$project$Backend$Reports$Model$NurseEncounter)),
-							participantData.encounters));
-					return {chw: totalEncounters - nurseEncounters, nurse: nurseEncounters};
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$PregnancyTrimester(trimester)),
+							A2($author$project$Pages$Utils$calculatePercentage, occurances, totalPregnancies)
+						]);
 				},
-				data);
+				_List_fromArray(
+					[$author$project$Pages$Reports$Model$FirstTrimester, $author$project$Pages$Reports$Model$SecondTrimester, $author$project$Pages$Reports$Model$ThirdTrimester]))
 		};
+		var countVisitsByType = $elm$core$List$map(
+			function (participantData) {
+				var totalEncounters = $elm$core$List$length(participantData.encounters);
+				var nurseEncounters = $elm$core$List$length(
+					A2(
+						$elm$core$List$filter,
+						A2(
+							$elm$core$Basics$composeR,
+							function ($) {
+								return $.encounterType;
+							},
+							$elm$core$Basics$eq($author$project$Backend$Reports$Model$NurseEncounter)),
+						participantData.encounters));
+				return {all: totalEncounters, chw: totalEncounters - nurseEncounters, nurse: nurseEncounters};
+			});
 		var _v0 = A2(
 			$elm$core$List$partition,
 			function (participantData) {
@@ -18017,77 +19067,211 @@ var $author$project$Pages$Reports$View$generatePrenatalReportData = F3(
 			filtered);
 		var completed = _v0.a;
 		var active = _v0.b;
-		var _v1 = partitionByNumberOfVisits(
+		var partitionedVisitsForActive = partitionByNumberOfVisits(
 			countVisitsByType(active));
-		var partitionedVisitsForActiveNurse = _v1.a;
-		var partitionedVisitsForActiveChw = _v1.b;
-		var activeChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActiveChw);
-		var activeChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveChw);
-		var activeChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveChw);
-		var activeChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveChw);
-		var activeChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForActiveChw);
-		var activeChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveChw);
-		var activeNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActiveNurse);
-		var activeNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActiveNurse);
-		var activeNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActiveNurse);
-		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActiveNurse);
-		var activeNurseVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForActiveNurse);
-		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActiveNurse);
-		var _v2 = partitionByNumberOfVisits(
+		var activeAllVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.all);
+		var activeAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.all);
+		var activeAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.all);
+		var activeAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.all);
+		var activeAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.all);
+		var activeAllVisitsTotal = (((activeAllVisits1 + activeAllVisits2) + activeAllVisits3) + activeAllVisits4) + activeAllVisits5AndMore;
+		var activeChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.chw);
+		var activeChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.chw);
+		var activeChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.chw);
+		var activeChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.chw);
+		var activeChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.chw);
+		var activeChwVisitsTotal = (((activeChwVisits1 + activeChwVisits2) + activeChwVisits3) + activeChwVisits4) + activeChwVisits5AndMore;
+		var activeNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForActive.nurse);
+		var activeNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForActive.nurse);
+		var activeNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForActive.nurse);
+		var activeNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForActive.nurse);
+		var activeNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForActive.nurse);
+		var activeNurseVisitsTotal = (((activeNurseVisits1 + activeNurseVisits2) + activeNurseVisits3) + activeNurseVisits4) + activeNurseVisits5AndMore;
+		var deliveryLocationsDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
+						A2(
+							$elm$core$Maybe$map,
+							function (location) {
+								var updated = A2(
+									$elm$core$Maybe$withDefault,
+									1,
+									A2(
+										$elm$core$Maybe$map,
+										$elm$core$Basics$add(1),
+										A2($pzp1997$assoc_list$AssocList$get, location, accumDict)));
+								return A3($pzp1997$assoc_list$AssocList$insert, location, updated, accumDict);
+							},
+							participantData.deliveryLocation));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			completed);
+		var deliveryLocationsTable = function () {
+			var totalCompletedPregnancies = $elm$core$List$length(completed);
+			var homeDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$HomeDelivery, deliveryLocationsDict));
+			var facilityDeliveries = A2(
+				$elm$core$Maybe$withDefault,
+				0,
+				A2($pzp1997$assoc_list$AssocList$get, $author$project$Backend$Reports$Model$FacilityDelivery, deliveryLocationsDict));
+			var totalDeliveries = facilityDeliveries + homeDeliveries;
+			return {
+				captions: A2(
+					$elm$core$List$map,
+					$author$project$Translate$translate(language),
+					_List_fromArray(
+						[$author$project$Translate$Location, $author$project$Translate$EmptyString])),
+				heading: A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTableHeading) + ':',
+				rows: _List_fromArray(
+					[
+						_List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$DeliveryLocation($author$project$Backend$Reports$Model$FacilityDelivery)),
+							$elm$core$String$fromInt(facilityDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$DeliveryLocation($author$project$Backend$Reports$Model$HomeDelivery)),
+							$elm$core$String$fromInt(homeDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTableTotals),
+							$elm$core$String$fromInt(totalDeliveries)
+						]),
+						_List_fromArray(
+						[
+							A2($author$project$Translate$translate, language, $author$project$Translate$DeliveryLocationsTablePercentage),
+							A2($author$project$Pages$Utils$calculatePercentage, totalDeliveries, totalCompletedPregnancies)
+						])
+					])
+			};
+		}();
+		var outcomesDict = A3(
+			$elm$core$List$foldl,
+			F2(
+				function (participantData, accumDict) {
+					return A2(
+						$elm$core$Maybe$withDefault,
+						accumDict,
+						A2(
+							$elm$core$Maybe$map,
+							function (outcome) {
+								var updated = A2(
+									$elm$core$Maybe$withDefault,
+									1,
+									A2(
+										$elm$core$Maybe$map,
+										$elm$core$Basics$add(1),
+										A2($pzp1997$assoc_list$AssocList$get, outcome, accumDict)));
+								return A3($pzp1997$assoc_list$AssocList$insert, outcome, updated, accumDict);
+							},
+							participantData.outcome));
+				}),
+			$pzp1997$assoc_list$AssocList$empty,
+			completed);
+		var outcomesTable = {
+			captions: A2(
+				$elm$core$List$map,
+				$author$project$Translate$translate(language),
+				_List_fromArray(
+					[$author$project$Translate$PregnancyOutcomeLabel, $author$project$Translate$EmptyString])),
+			heading: A2($author$project$Translate$translate, language, $author$project$Translate$OutcomesTableHeading) + ':',
+			rows: A2(
+				$elm$core$List$map,
+				function (outcome) {
+					var occurances = A2(
+						$elm$core$Maybe$withDefault,
+						0,
+						A2($pzp1997$assoc_list$AssocList$get, outcome, outcomesDict));
+					return _List_fromArray(
+						[
+							A2(
+							$author$project$Translate$translate,
+							language,
+							$author$project$Translate$PregnancyOutcome(outcome)),
+							$elm$core$String$fromInt(occurances)
+						]);
+				},
+				_List_fromArray(
+					[$author$project$Backend$Reports$Model$OutcomeLiveAtTerm, $author$project$Backend$Reports$Model$OutcomeLivePreTerm, $author$project$Backend$Reports$Model$OutcomeStillAtTerm, $author$project$Backend$Reports$Model$OutcomeStillPreTerm, $author$project$Backend$Reports$Model$OutcomeAbortions]))
+		};
+		var partitionedVisitsForCompleted = partitionByNumberOfVisits(
 			countVisitsByType(completed));
-		var partitionedVisitsForCompletedNurse = _v2.a;
-		var partitionedVisitsForCompletedChw = _v2.b;
-		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompletedChw);
-		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompletedChw);
-		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompletedChw);
-		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedChw);
-		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedChw);
-		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedChw);
-		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompletedNurse);
-		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompletedNurse);
-		return _List_fromArray(
-			[
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesAll,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5 + completedChwVisits5, activeNurseVisits5 + completedNurseVisits5),
-						_Utils_Tuple2(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore)
-					])),
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesActive,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(activeChwVisits1, activeNurseVisits1),
-						_Utils_Tuple2(activeChwVisits2, activeNurseVisits2),
-						_Utils_Tuple2(activeChwVisits3, activeNurseVisits3),
-						_Utils_Tuple2(activeChwVisits4, activeNurseVisits4),
-						_Utils_Tuple2(activeChwVisits5, activeNurseVisits5),
-						_Utils_Tuple2(activeChwVisits5AndMore, activeNurseVisits5AndMore)
-					])),
-				A2(
-				generateTableData,
-				$author$project$Translate$PregnanciesCompleted,
-				_List_fromArray(
-					[
-						_Utils_Tuple2(completedChwVisits1, completedNurseVisits1),
-						_Utils_Tuple2(completedChwVisits2, completedNurseVisits2),
-						_Utils_Tuple2(completedChwVisits3, completedNurseVisits3),
-						_Utils_Tuple2(completedChwVisits4, completedNurseVisits4),
-						_Utils_Tuple2(completedChwVisits5, completedNurseVisits5),
-						_Utils_Tuple2(completedChwVisits5AndMore, completedNurseVisits5AndMore)
-					]))
-			]);
+		var completedAllVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.all);
+		var completedAllVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.all);
+		var completedAllVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.all);
+		var completedAllVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.all);
+		var completedAllVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.all);
+		var completedAllVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.all);
+		var completedAllVisitsTotal = (((completedAllVisits1 + completedAllVisits2) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore;
+		var completedChwVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.chw);
+		var completedChwVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.chw);
+		var completedChwVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.chw);
+		var completedChwVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.chw);
+		var completedChwVisits5 = A2(resolveValueFromDict, 5, partitionedVisitsForCompleted.chw);
+		var completedChwVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.chw);
+		var completedChwVisitsTotal = (((completedChwVisits1 + completedChwVisits2) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore;
+		var completedNurseVisits1 = A2(resolveValueFromDict, 1, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits2 = A2(resolveValueFromDict, 2, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits3 = A2(resolveValueFromDict, 3, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits4 = A2(resolveValueFromDict, 4, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisits5AndMore = A2(resolveValueFromDict, -1, partitionedVisitsForCompleted.nurse);
+		var completedNurseVisitsTotal = (((completedNurseVisits1 + completedNurseVisits2) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore;
+		return _Utils_ap(
+			_List_fromArray(
+				[
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesAll,
+					_List_fromArray(
+						[
+							_Utils_Tuple3(activeChwVisits1 + completedChwVisits1, activeNurseVisits1 + completedNurseVisits1, activeAllVisits1 + completedAllVisits1),
+							_Utils_Tuple3(activeChwVisits2 + completedChwVisits2, activeNurseVisits2 + completedNurseVisits2, activeAllVisits2 + completedAllVisits2),
+							_Utils_Tuple3(activeChwVisits3 + completedChwVisits3, activeNurseVisits3 + completedNurseVisits3, activeAllVisits3 + completedAllVisits3),
+							_Utils_Tuple3(activeChwVisits4 + completedChwVisits4, activeNurseVisits4 + completedNurseVisits4, activeAllVisits4 + completedAllVisits4),
+							_Utils_Tuple3(activeChwVisits5AndMore + completedChwVisits5AndMore, activeNurseVisits5AndMore + completedNurseVisits5AndMore, activeAllVisits5AndMore + completedAllVisits5AndMore)
+						]),
+					{allVisits3OrMore: ((((activeAllVisits3 + activeAllVisits4) + activeAllVisits5AndMore) + completedAllVisits3) + completedAllVisits4) + completedAllVisits5AndMore, allVisits4OrMore: ((activeAllVisits4 + activeAllVisits5AndMore) + completedAllVisits4) + completedAllVisits5AndMore, allVisitsTotal: activeAllVisitsTotal + completedAllVisitsTotal, chwVisits3OrMore: ((((activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore) + completedChwVisits3) + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: ((activeChwVisits4 + activeChwVisits5AndMore) + completedChwVisits4) + completedChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal + completedChwVisitsTotal, nurseVisits3OrMore: ((((activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore) + completedNurseVisits3) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: ((activeNurseVisits4 + activeNurseVisits5AndMore) + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal + completedNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesActive,
+					_List_fromArray(
+						[
+							_Utils_Tuple3(activeChwVisits1, activeNurseVisits1, activeAllVisits1),
+							_Utils_Tuple3(activeChwVisits2, activeNurseVisits2, activeAllVisits2),
+							_Utils_Tuple3(activeChwVisits3, activeNurseVisits3, activeAllVisits3),
+							_Utils_Tuple3(activeChwVisits4, activeNurseVisits4, activeAllVisits4),
+							_Utils_Tuple3(activeChwVisits5AndMore, activeNurseVisits5AndMore, activeAllVisits5AndMore)
+						]),
+					{allVisits3OrMore: (activeAllVisits3 + activeAllVisits4) + activeAllVisits5AndMore, allVisits4OrMore: activeAllVisits4 + activeAllVisits5AndMore, allVisitsTotal: activeAllVisitsTotal, chwVisits3OrMore: (activeChwVisits3 + activeChwVisits4) + activeChwVisits5AndMore, chwVisits4OrMore: activeChwVisits4 + activeChwVisits5AndMore, chwVisitsTotal: activeChwVisitsTotal, nurseVisits3OrMore: (activeNurseVisits3 + activeNurseVisits4) + activeNurseVisits5AndMore, nurseVisits4OrMore: activeNurseVisits4 + activeNurseVisits5AndMore, nurseVisitsTotal: activeNurseVisitsTotal}),
+					A3(
+					generateTableData,
+					$author$project$Translate$PregnanciesCompleted,
+					_List_fromArray(
+						[
+							_Utils_Tuple3(completedChwVisits1, completedNurseVisits1, completedAllVisits1),
+							_Utils_Tuple3(completedChwVisits2, completedNurseVisits2, completedAllVisits2),
+							_Utils_Tuple3(completedChwVisits3, completedNurseVisits3, completedAllVisits3),
+							_Utils_Tuple3(completedChwVisits4, completedNurseVisits4, completedAllVisits4),
+							_Utils_Tuple3(completedChwVisits5AndMore, completedNurseVisits5AndMore, completedAllVisits5AndMore)
+						]),
+					{allVisits3OrMore: (completedAllVisits3 + completedAllVisits4) + completedAllVisits5AndMore, allVisits4OrMore: completedAllVisits4 + completedAllVisits5AndMore, allVisitsTotal: completedAllVisitsTotal, chwVisits3OrMore: (completedChwVisits3 + completedChwVisits4) + completedChwVisits5AndMore, chwVisits4OrMore: completedChwVisits4 + completedChwVisits5AndMore, chwVisitsTotal: completedChwVisitsTotal, nurseVisits3OrMore: (completedNurseVisits3 + completedNurseVisits4) + completedNurseVisits5AndMore, nurseVisits4OrMore: completedNurseVisits4 + completedNurseVisits5AndMore, nurseVisitsTotal: completedNurseVisitsTotal})
+				]),
+			_List_fromArray(
+				[firstVisitTable, outcomesTable, deliveryLocationsTable]));
 	});
 var $author$project$Pages$Reports$View$viewPrenatalReport = F4(
 	function (language, limitDate, scopeLabel, records) {
@@ -18304,11 +19488,9 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							$elm$core$Basics$EQ)) ? data.records : A2(
 							$elm$core$List$filterMap,
 							function (record) {
-								if ((!_Utils_eq(
-									A2($justinmimbs$date$Date$compare, record.created, startDate),
-									$elm$core$Basics$LT)) && (!_Utils_eq(
+								if (!_Utils_eq(
 									A2($justinmimbs$date$Date$compare, record.created, limitDate),
-									$elm$core$Basics$GT))) {
+									$elm$core$Basics$GT)) {
 									var filterPrenatalData = $elm$core$Maybe$map(
 										$elm$core$List$filterMap(
 											function (participantData) {
@@ -18438,11 +19620,13 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 							case 'ReportAcuteIllness':
 								return A5($author$project$Pages$Reports$View$viewAcuteIllnessReport, language, limitDate, startDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportDemographics':
-								return A4($author$project$Pages$Reports$View$viewDemographicsReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+								return A5($author$project$Pages$Reports$View$viewDemographicsReport, language, startDate, limitDate, scopeLabel, recordsTillLimitDate);
 							case 'ReportNutrition':
 								return A5($author$project$Pages$Reports$View$viewNutritionReport, language, limitDate, scopeLabel, data.nutritionReportData, model.nutritionReportData);
-							default:
+							case 'ReportPrenatal':
 								return A4($author$project$Pages$Reports$View$viewPrenatalReport, language, limitDate, scopeLabel, recordsTillLimitDate);
+							default:
+								return A4($author$project$Pages$Reports$View$viewPrenatalDiagnosesReport, language, limitDate, scopeLabel, recordsTillLimitDate);
 						}
 					}),
 				model.reportType,
@@ -18476,7 +19660,7 @@ var $author$project$Pages$Reports$View$viewReportsData = F5(
 								language,
 								model.reportType,
 								_List_fromArray(
-									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
+									[$author$project$Pages$Reports$Model$ReportAcuteIllness, $author$project$Pages$Reports$Model$ReportPrenatal, $author$project$Pages$Reports$Model$ReportPrenatalDiagnoses, $author$project$Pages$Reports$Model$ReportDemographics, $author$project$Pages$Reports$Model$ReportNutrition]),
 								$author$project$Pages$Reports$Utils$reportTypeToString,
 								$author$project$Pages$Reports$Model$SetReportType,
 								$author$project$Translate$ReportType,
@@ -18584,6 +19768,13 @@ var $author$project$Utils$GeoLocation$getGeoCellsForBurundi = $pzp1997$assoc_lis
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Kigutu',
+				$elm$core$Maybe$Just(
+					$author$project$Backend$Entities$toEntityId(3)))),
+			_Utils_Tuple2(
+			$author$project$Backend$Entities$toEntityId(21),
+			A2(
+				$author$project$Utils$GeoLocation$GeoLocation,
+				'Kirungu',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(3)))),
 			_Utils_Tuple2(
@@ -21561,35 +22752,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(5),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitega',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(6),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mparaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(7),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gako',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(8),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mibaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(4)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(9),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gatandu',
+				'Mushishi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(4)))),
 			_Utils_Tuple2(
@@ -21600,45 +22763,10 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(10)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(12),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kiziba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(13),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Migezi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(14),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(10)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(16),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mugano',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(17),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kabuye',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(15)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(18),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentonga',
+				'Kabwayi',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(15)))),
 			_Utils_Tuple2(
@@ -21649,19 +22777,12 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(19)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(21),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyentambwe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(22),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitsinda',
+				'Kirungu',
 				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(19)))),
+					$author$project$Backend$Entities$toEntityId(21)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(25),
 			A2(
@@ -21670,21 +22791,7 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(24)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(26),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kaganza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(24)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(28),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Murago',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(27)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(29),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
 				'Karirimvya',
@@ -21694,280 +22801,49 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 			$author$project$Backend$Entities$toEntityId(34),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(35),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kanyiriri',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(36),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirongorokerwa ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(37),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(38),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gitaza',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(39),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kompanyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(33)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(40),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyakuguma ii',
+				'Nyakuguma',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(33)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(42),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakamba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(43),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(44),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruranga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(41)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(45),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mukunde ii',
+				'Kanenge',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(41)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(47),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo a',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(48),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(49),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo c & d',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(46)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(50),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mayengo b',
+				'Mayengo',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(46)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(52),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ngongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(53),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasangu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(54),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kirerama',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(55),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kinindo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(51)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(56),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giheta',
+				'Cabara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(51)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(58),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanirra',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(59),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(60),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buganga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(61),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Munanira',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(62),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamahongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(63),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Yerusalemu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(57)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(64),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rusengo ii',
+				'Gashasha',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(57)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(67),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(68),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Makombe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(69),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati i',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(70),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gahore',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(71),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayange',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(72),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kigwati ii',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(66)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(73),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mutambara ii',
+				'Mutambara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(66)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(75),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Giharo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(76),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
 				'Gatete',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(77),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafunzo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(78),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gasenyi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(79),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Moderne',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(74)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(80),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gisagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(74)))),
 			_Utils_Tuple2(
@@ -21978,143 +22854,24 @@ var $author$project$Utils$GeoLocation$getGeoVillagesForBurundi = $pzp1997$assoc_
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(81)))),
 			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(83),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kibanga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(84),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buhinda',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(85),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(86),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kayabazi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(87),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mahoro',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(81)))),
-			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(89),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruremba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(90),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Soko',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(91),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Muhuta',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(92),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyamiyaga',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(93),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Kavyiru',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(94),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gakuyo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(88)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(95),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Rera',
+				'Mugara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(88)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(98),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Ruhongo',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(99),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Musovu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(100),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Buzimba',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(97)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(101),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabiraba',
+				'Gitwe',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(97)))),
 			_Utils_Tuple2(
 			$author$project$Backend$Entities$toEntityId(103),
 			A2(
 				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mwagu',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(104),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Gafumbe',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(105),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Mambi',
-				$elm$core$Maybe$Just(
-					$author$project$Backend$Entities$toEntityId(102)))),
-			_Utils_Tuple2(
-			$author$project$Backend$Entities$toEntityId(106),
-			A2(
-				$author$project$Utils$GeoLocation$GeoLocation,
-				'Nyabigonzi',
+				'Karagara',
 				$elm$core$Maybe$Just(
 					$author$project$Backend$Entities$toEntityId(102))))
 		]));
@@ -37752,7 +38509,6 @@ var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel1 = function (
 	return $author$project$Translate$Province;
 };
 var $author$project$Translate$Commune = {$: 'Commune'};
-var $author$project$Translate$EmptyString = {$: 'EmptyString'};
 var $author$project$Utils$GeoLocation$resolveGeoSructureLabelLevel2 = function (site) {
 	switch (site.$) {
 		case 'SiteRwanda':
@@ -38080,21 +38836,30 @@ var $author$project$Pages$Components$View$viewDemographicsSelectionActionButton 
 	});
 var $author$project$Pages$ReportsMenu$View$viewMenu = F4(
 	function (language, themePath, data, model) {
-		var populationSelectionInput = A4(
-			$author$project$Pages$Utils$wrapSelectListInput,
-			language,
-			$author$project$Translate$Scope,
-			false,
-			A7(
-				$author$project$Pages$Utils$viewSelectListInput,
+		var populationSelectionInput = function () {
+			var allOptions = _List_fromArray(
+				[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+			var options = A2(
+				$elm$core$Maybe$withDefault,
+				allOptions,
+				A2(
+					$elm$core$Maybe$map,
+					function (scope) {
+						if (scope.$ === 'ScopeFull') {
+							return allOptions;
+						} else {
+							return _List_fromArray(
+								[$author$project$Pages$Components$Types$SelectionOptionHealthCenter]);
+						}
+					},
+					data.scope));
+			return A4(
+				$author$project$Pages$Utils$wrapSelectListInput,
 				language,
-				model.populationSelection,
-				_List_fromArray(
-					[$author$project$Pages$Components$Types$SelectionOptionGlobal, $author$project$Pages$Components$Types$SelectionOptionDemographics, $author$project$Pages$Components$Types$SelectionOptionHealthCenter]),
-				$author$project$Pages$Components$Utils$populationSelectionOptionToString,
-				$author$project$Pages$ReportsMenu$Model$SetPopulationSelection,
-				$author$project$Translate$PopulationSelectionOption,
-				'select-input'));
+				$author$project$Translate$Scope,
+				false,
+				A7($author$project$Pages$Utils$viewSelectListInput, language, model.populationSelection, options, $author$project$Pages$Components$Utils$populationSelectionOptionToString, $author$project$Pages$ReportsMenu$Model$SetPopulationSelection, $author$project$Translate$PopulationSelectionOption, 'select-input'));
+		}();
 		var _v0 = A2(
 			$elm$core$Maybe$withDefault,
 			_Utils_Tuple2(_List_Nil, $author$project$Gizra$Html$emptyNode),

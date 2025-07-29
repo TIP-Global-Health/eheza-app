@@ -1,6 +1,7 @@
 module Pages.ReportsMenu.View exposing (view)
 
 import App.Types exposing (Language)
+import Backend.Components.Model exposing (MenuScope(..))
 import Backend.Model exposing (ModelBackend)
 import Backend.ReportsMenu.Model exposing (MenuData)
 import Gizra.Html exposing (emptyNode)
@@ -41,9 +42,26 @@ viewMenu : Language -> String -> MenuData -> Model -> Html Msg
 viewMenu language themePath data model =
     let
         populationSelectionInput =
+            let
+                allOptions =
+                    [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
+
+                options =
+                    Maybe.map
+                        (\scope ->
+                            case scope of
+                                ScopeFull ->
+                                    allOptions
+
+                                ScopeHealthCenters ->
+                                    [ SelectionOptionHealthCenter ]
+                        )
+                        data.scope
+                        |> Maybe.withDefault allOptions
+            in
             viewSelectListInput language
                 model.populationSelection
-                [ SelectionOptionGlobal, SelectionOptionDemographics, SelectionOptionHealthCenter ]
+                options
                 populationSelectionOptionToString
                 SetPopulationSelection
                 Translate.PopulationSelectionOption

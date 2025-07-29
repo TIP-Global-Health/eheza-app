@@ -33,6 +33,7 @@ type ReportType
     | ReportDemographics
     | ReportNutrition
     | ReportPrenatal
+    | ReportPrenatalDiagnoses
 
 
 type alias NutritionReportData =
@@ -87,6 +88,12 @@ emptyNutritionMetricsResults =
     , underweightModerate = 0
     , underweightSevere = 0
     }
+
+
+type PregnancyTrimester
+    = FirstTrimester
+    | SecondTrimester
+    | ThirdTrimester
 
 
 type Msg

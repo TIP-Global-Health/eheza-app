@@ -23,7 +23,7 @@ if (!drupal_is_cli()) {
 }
 
 // Get allowed memory limit.
-$memory_limit = drush_get_option('memory_limit', 250);
+$memory_limit = drush_get_option('memory_limit', 800);
 
 $fields = field_info_fields();
 $encounter_types = hedley_general_get_encounter_types();

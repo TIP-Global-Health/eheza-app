@@ -2141,7 +2141,21 @@ div.page-activity.home-visit {
       .form.pregnancy-dating .chw-lmp {
         font-size: 25px;
         font-weight: 300;
+        margin-bottom: 10px;
         margin-left: 40px;
+      }
+
+      .form.pregnancy-dating .measurement.weight {
+        margin-bottom: 30px;
+
+        input {
+          border: 2px solid $color-light-gray;
+          color: $color-text;
+          height: 2em;
+          padding: 5px;
+          text-align: center;
+          width: 50%;
+        }
       }
 
       .form.laboratory {
@@ -2192,6 +2206,8 @@ div.page-activity.prenatal {
   .ui.full.segment {
 
     .full.content {
+
+      @include ncda-vaccination;
 
       .form.medication {
 
@@ -2289,8 +2305,6 @@ div.page-activity.prenatal {
         margin-bottom: 20px;
       }
 
-      @include ncda-vaccination;
-
       .ui.form.labs-history {
 
         .instructions,
@@ -2330,6 +2344,39 @@ div.page-activity.prenatal {
             padding: 0 20px;
             text-transform: uppercase;
           }
+        }
+      }
+
+      .ui.form.examination.nutrition-assessment {
+
+        .gwg-label .label {
+          font-size: 20px;
+          text-align: center;
+        }
+
+        .gwg-value {
+          font-weight: 700;
+          margin-top: 10px;
+          text-align: center;
+
+          p.red {
+            color: $color-red-alert;
+          }
+
+          p.yellow {
+            color: $color-orange;
+          }
+
+          p.green {
+            color: $color-green;
+          }
+        }
+
+        .nutritional-supplement-alert {
+          color: $color-red-alert;
+          font-size: 16px;
+          font-weight: 700;
+          text-align: center;
         }
       }
 
@@ -2401,6 +2448,7 @@ div.page-activity.hiv {
 }
 
 div.page-activity.well-child,
+div.page-activity.prenatal,
 div.page-activity.child-scoreboard {
 
   .ui.full.segment {
@@ -3101,7 +3149,8 @@ div.page-report.clinical .ui.unstackable.items {
     }
   }
 
-  .vaccination-history {
+  .vaccination-history,
+  .medication-history {
 
     .pane-content {
       padding-left: 0;
@@ -4082,6 +4131,7 @@ div.page-report.hiv {
   }
 }
 
+div.page-activity.prenatal,
 div.page-activity.well-child,
 div.page-report.acute-illness,
 div.page-report.well-child,
@@ -4115,6 +4165,18 @@ div.page-report.clinical {
 
     .status {
       width: 20%;
+    }
+  }
+
+  .heading.medication {
+
+    .name {
+      width: 50%;
+    }
+
+    .date {
+      text-align: center;
+      width: 50%;
     }
   }
 
@@ -4179,6 +4241,7 @@ div.page-report.clinical {
   }
 
   .entry.vaccination {
+
     .name {
       width: 35%;
     }
@@ -4196,6 +4259,22 @@ div.page-report.clinical {
 
       &.red {
         color: $color-velvet
+      }
+    }
+  }
+
+  .entry.medication {
+
+    .name {
+      width: 50%;
+    }
+
+    .date {
+      text-align: center;
+      width: 50%;
+
+      p {
+        margin-bottom: 0;
       }
     }
   }

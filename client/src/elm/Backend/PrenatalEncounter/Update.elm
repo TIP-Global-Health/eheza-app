@@ -49,6 +49,9 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
         SetLabsHistoryCompleted ->
             updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | indicators = EverySet.insert IndicatorHistoryLabsCompleted encounter.indicators }) model
 
+        SetNextVisitDate date ->
+            updateEncounter currentDate encounterId maybeEncounter (\encounter -> { encounter | nextVisitDate = Just date }) model
+
         HandleUpdatedPrenatalEncounter data ->
             ( { model | updatePrenatalEncounter = data }
             , Cmd.none
@@ -123,6 +126,90 @@ update currentDate nurseId healthCenterId encounterId maybeEncounter msg model =
 
         HandleSavedMedication data ->
             ( { model | saveMedication = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveAspirin personId valueId value ->
+            ( { model | saveAspirin = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalAspirinEndpoint HandleSavedAspirin
+            , []
+            )
+
+        HandleSavedAspirin data ->
+            ( { model | saveAspirin = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveCalcium personId valueId value ->
+            ( { model | saveCalcium = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalCalciumEndpoint HandleSavedCalcium
+            , []
+            )
+
+        HandleSavedCalcium data ->
+            ( { model | saveCalcium = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFefol personId valueId value ->
+            ( { model | saveFefol = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFefolEndpoint HandleSavedFefol
+            , []
+            )
+
+        HandleSavedFefol data ->
+            ( { model | saveFefol = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveFolate personId valueId value ->
+            ( { model | saveFolate = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalFolateEndpoint HandleSavedFolate
+            , []
+            )
+
+        HandleSavedFolate data ->
+            ( { model | saveFolate = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveIron personId valueId value ->
+            ( { model | saveIron = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalIronEndpoint HandleSavedIron
+            , []
+            )
+
+        HandleSavedIron data ->
+            ( { model | saveIron = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveMMS personId valueId value ->
+            ( { model | saveMMS = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMMSEndpoint HandleSavedMMS
+            , []
+            )
+
+        HandleSavedMMS data ->
+            ( { model | saveMMS = data }
+            , Cmd.none
+            , triggerRollbarOnFailure data
+            )
+
+        SaveMebendazole personId valueId value ->
+            ( { model | saveMebendazole = Loading }
+            , saveMeasurementCmd currentDate encounterId personId nurseId healthCenterId valueId value prenatalMebendazoleEndpoint HandleSavedMebendazole
+            , []
+            )
+
+        HandleSavedMebendazole data ->
+            ( { model | saveMebendazole = data }
             , Cmd.none
             , triggerRollbarOnFailure data
             )

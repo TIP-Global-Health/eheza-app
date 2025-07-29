@@ -1183,6 +1183,62 @@ type PrenatalSpecialityCareUuidType
     = PrenatalSpecialityCareUuidType
 
 
+type alias PrenatalAspirinId =
+    EntityUuid PrenatalAspirinUuidType
+
+
+type PrenatalAspirinUuidType
+    = PrenatalAspirinUuidType
+
+
+type alias PrenatalCalciumId =
+    EntityUuid PrenatalCalciumUuidType
+
+
+type PrenatalCalciumUuidType
+    = PrenatalCalciumUuidType
+
+
+type alias PrenatalFefolId =
+    EntityUuid PrenatalFefolUuidType
+
+
+type PrenatalFefolUuidType
+    = PrenatalFefolUuidType
+
+
+type alias PrenatalFolateId =
+    EntityUuid PrenatalFolateUuidType
+
+
+type PrenatalFolateUuidType
+    = PrenatalFolateUuidType
+
+
+type alias PrenatalIronId =
+    EntityUuid PrenatalIronUuidType
+
+
+type PrenatalIronUuidType
+    = PrenatalIronUuidType
+
+
+type alias PrenatalMMSId =
+    EntityUuid PrenatalMMSUuidType
+
+
+type PrenatalMMSUuidType
+    = PrenatalMMSUuidType
+
+
+type alias PrenatalMebendazoleId =
+    EntityUuid PrenatalMebendazoleUuidType
+
+
+type PrenatalMebendazoleUuidType
+    = PrenatalMebendazoleUuidType
+
+
 type alias NCDEncounterId =
     EntityUuid NCDEncounterUuidType
 
