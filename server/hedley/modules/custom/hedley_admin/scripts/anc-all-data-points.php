@@ -80,7 +80,7 @@ $base_query = new EntityFieldQuery();
 $base_query
   ->entityCondition('entity_type', 'node')
   ->propertyCondition('type', $type)
-  ->propertyOrderBy('nid')
+  ->propertyOrderBy('nid', 'DESC')
   ->addTag('exclude_deleted');
 
 $count_query = clone $base_query;
@@ -95,7 +95,7 @@ if ($count == 0) {
 while (TRUE) {
   $query = clone $base_query;
   if ($nid) {
-    $query->propertyCondition('nid', $nid, '>');
+    $query->propertyCondition('nid', $nid, '<');
   }
 
   $result = $query
